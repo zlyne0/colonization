@@ -1,15 +1,7 @@
 package promitech.colonization;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.TileImprovement;
-import net.sf.freecol.common.model.TileImprovementType;
-import net.sf.freecol.common.model.TileResource;
-import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Directions;
 import promitech.colonization.math.Point;
 
@@ -17,17 +9,17 @@ import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.InputAdapter;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Main extends ApplicationAdapter {
-	private static final int TILE_WIDTH = 128;
-	private static final int TILE_HEIGHT = 64;
 	
 	SpriteBatch batch;
 	OrthographicCamera camera;
+	OrthographicCamera cameraYdown;
 	
 	private InputKeyboardDevice inputKeyboardDevice = new InputKeyboardDevice();
 	private MapRenderer mapRenderer; 
@@ -42,7 +34,11 @@ public class Main extends ApplicationAdapter {
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.update();
-		
+
+		cameraYdown = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		cameraYdown.setToOrtho(true, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		cameraYdown.update();
+        
 		batch = new SpriteBatch();
 
 		
@@ -106,6 +102,21 @@ public class Main extends ApplicationAdapter {
 		batch.begin();
 		mapRenderer.render(batch, game.map);
 		batch.end();
+		drawFPS();
 	}
+	
+	private BitmapFont font;	
+	
+	private void drawFPS() {
+		if (font == null) {
+			font = new BitmapFont(true);
+		}
+		batch.setProjectionMatrix(cameraYdown.combined);
+		batch.begin();
+		font.setColor(Color.GREEN);
+		font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
+		batch.end();
+	}
+	
 	
 }
