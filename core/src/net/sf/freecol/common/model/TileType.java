@@ -23,6 +23,10 @@ public final class TileType {
 		return type.equals(OCEAN) || type.equals(HIGH_SEAS) || type.equals(GREAT_RIVER);
 	}
 
+	public boolean isHighSea() {
+		return type.equals(HIGH_SEAS);
+	}
+	
 	public boolean isLand() {
 		return !isWater();
 	}

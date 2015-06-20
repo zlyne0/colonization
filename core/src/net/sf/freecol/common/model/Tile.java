@@ -1,7 +1,10 @@
 package net.sf.freecol.common.model;
 
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.LinkedList;
+import java.util.SortedSet;
+import java.util.TreeSet;
 
 import org.xml.sax.Attributes;
 
@@ -40,9 +43,10 @@ public class Tile {
 	public void addTileResources(TileResource tileResource) {
 		this.tileResources.add(tileResource);
 	}
-	
+
 	public void addTexture(SortableTexture texture) {
 		fieldTextures.add(texture);
+		Collections.sort(fieldTextures);
 	}
 
 	public void addOverlayTexture(Frame frame) {
@@ -50,10 +54,6 @@ public class Tile {
 			throw new NullPointerException();
 		}
 		overlayTexture.add(frame);
-	}
-	
-	public void sort() {
-		Collections.sort(fieldTextures);
 	}
 	
 	public void draw(SpriteBatch batch, int rx, int ry) {

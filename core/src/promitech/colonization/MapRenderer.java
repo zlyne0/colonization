@@ -1,16 +1,25 @@
 package promitech.colonization;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
+import net.sf.freecol.common.model.TileImprovementType;
+import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileType;
+import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Point;
 
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
 
 public class MapRenderer {
+	public static final int TILE_WIDTH = 128;
+	public static final int TILE_HEIGHT = 64;
 	
 	public abstract class TileDrawer {
 		protected SpriteBatch batch;
@@ -40,10 +49,7 @@ public class MapRenderer {
 	}
 	
     private final GameResources gameResources;
-    //private final DynamicObjectMapSector dynamicObjectMapSector;
-    
     private final BackgroundTileDrawer backgroundTileDrawer = new BackgroundTileDrawer();
-//    private final ObjectsTileDrawer objectsTileDrawer = new ObjectsTileDrawer();
 
     public Vector2 cameraPosition = new Vector2();
     
@@ -57,16 +63,11 @@ public class MapRenderer {
     }
     
     
-	public static final int TILE_WIDTH = 128;
-	public static final int TILE_HEIGHT = 64;
-    
     public void render(SpriteBatch batch, final Map map) {
     	backgroundTileDrawer.batch = batch;
     	backgroundTileDrawer.map = map;
-//    	objectsTileDrawer.batch = batch;
-//    	objectsTileDrawer.map = map;
     	
-    	int x, y, yy;
+    	int x, y;
     	int rx = 0;
     	int ry = 0;
     	Tile tile;
@@ -158,7 +159,21 @@ public class MapRenderer {
 		return "model.tile.delta_" + direction + (tileImprovement.magnitude == 1 ? "_small" : "_large");		
 	}
 
+	public String hillsKey() {
+		Randomizer randomizer = Randomizer.getInstance();		
+		String keyPrefix = "model.tile.hills.overlay";
+		int countForPrefix = gameResources.getCountForPrefix(keyPrefix);
+		return keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
+		
+	}
 
+	public String mountainsKey() {
+		Randomizer randomizer = Randomizer.getInstance();		
+		String keyPrefix = "model.tile.mountains.overlay";
+		int countForPrefix = gameResources.getCountForPrefix(keyPrefix);
+		return keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
+	}
+	
 	public String forestImgKey(TileType type, TileImprovement riverTileImprovement) {
 		if (riverTileImprovement != null) {
 			return type.getTypeStr() + ".forest" + riverTileImprovement.style;
@@ -166,5 +181,122 @@ public class MapRenderer {
 			return type.getTypeStr() + ".forest";
 		}
 	}
+
+	public void initMapTiles(Map map) {
+		Texture terainImage;
+		String key;
+		
+		for (int y=0; y<map.height; y++) {
+			for (int x=0; x<map.width; x++) {
+				Tile tile = map.getTile(x, y);
+				
+				key = tileKey(tile.type, x, y);
+				terainImage = gameResources.getImage(key);
+				tile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+				
+				// add images for beach
+				if (tile.type.isWater() && tile.style > 0) {
+					int edgeStyle = tile.style >> 4;
+					if (edgeStyle > 0) {
+						key = tileEdgeKey(edgeStyle, x, y);
+						terainImage = gameResources.getImage(key);
+						tile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+					}
+					int cornerStyle = tile.style & 15;
+					if (cornerStyle > 0) {
+						key = tileCornerKey(cornerStyle, x, y);
+						terainImage = gameResources.getImage(key);
+						tile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+					}
+				}
+			}
+		}
+		
+		List<Direction> borderDirections = new ArrayList<Direction>();
+		borderDirections.addAll(Direction.longSides);
+		borderDirections.addAll(Direction.corners);
+		
+		for (int y=0; y<map.height; y++) {
+			for (int x=0; x<map.width; x++) {
+				Tile tile = map.getTile(x, y);
+	            for (Direction direction : Direction.values()) {
+					Tile borderTile = map.getTile(x, y, direction);
+					if (borderTile == null) {
+						continue;
+					}
+					if (tile.type.hasTheSameTerain(borderTile.type)) {
+						continue;
+					}
+					if (tile.type.isWater() || borderTile.type.isWater()) {
+						if (!tile.type.isWater() && borderTile.type.isWater()) {
+							direction = direction.getReverseDirection();
+							key = tileBorder(tile.type, direction, x, y);
+							terainImage = gameResources.getImage(key);
+							borderTile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+						}
+						if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
+							direction = direction.getReverseDirection();
+							key = tileBorder(tile.type, direction, x, y);
+							terainImage = gameResources.getImage(key);
+							borderTile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+						}
+					} else {
+						direction = direction.getReverseDirection();
+						key = tileBorder(tile.type, direction, x, y);
+						terainImage = gameResources.getImage(key);
+						borderTile.addTexture(new SortableTexture(terainImage, tile.type.getOrder()));
+					}
+					
+					if (Direction.longSides.contains(direction) && tile.type.isWater()) {
+						TileImprovement riverTileImprovement = borderTile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+						if (riverTileImprovement != null) {
+							key = riverDelta(direction, riverTileImprovement);
+							terainImage = gameResources.getImage(key);
+							tile.addTexture(new SortableTexture(terainImage, -1));
+						}
+					}
+				}
+			}
+		}
+		
+		Frame frame;
+		
+		for (int y=0; y<map.height; y++) {
+			for (int x=0; x<map.width; x++) {
+				Tile tile = map.getTile(x, y);
+				if (tile.type.getTypeStr().equals("model.tile.hills")) {
+					key = hillsKey();
+					tile.addOverlayTexture(gameResources.getFrame(key));
+				}
+				if (tile.type.getTypeStr().equals("model.tile.mountains")) {
+					key = mountainsKey();
+					tile.addOverlayTexture(gameResources.getFrame(key));
+				}
+				if (tile.type.isForested()) {
+					TileImprovement riverTileImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+					key = forestImgKey(tile.type, riverTileImprovement);
+					tile.addOverlayTexture(gameResources.getFrame(key));
+				}
+				for (TileResource tileResource : tile.tileResources) {
+					key = tileResourceKey(tileResource.getResourceType());
+					frame = gameResources.getCenterAdjustFrameTexture(key);
+					tile.addOverlayTexture(frame);
+				}
+				
+				for (TileImprovement tileImprovement : tile.tileImprovements) {
+					key = "model.tile.river" + tileImprovement.style;
+					tile.addOverlayTexture(gameResources.getFrame(key));
+				}
+				
+				if (tile.lostCityRumour) {
+					key = tileLastCityRumour();
+					frame = gameResources.getCenterAdjustFrameTexture(key);
+					tile.addOverlayTexture(frame);
+				}
+			}
+		}
+		
+	}
+	
 	
 }
