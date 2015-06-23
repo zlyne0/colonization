@@ -174,6 +174,11 @@ public class MapRenderer {
 		return keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
 	}
 	
+	public String riverKey(String style) {
+		return "model.tile.river" + style;
+		
+	}
+	
 	public String forestImgKey(TileType type, TileImprovement riverTileImprovement) {
 		if (riverTileImprovement != null) {
 			return type.getTypeStr() + ".forest" + riverTileImprovement.style;
@@ -272,10 +277,14 @@ public class MapRenderer {
 					key = mountainsKey();
 					tile.addOverlayTexture(gameResources.getFrame(key));
 				}
+				// draw forest with river
 				if (tile.type.isForested()) {
 					TileImprovement riverTileImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 					key = forestImgKey(tile.type, riverTileImprovement);
-					tile.addOverlayTexture(gameResources.getFrame(key));
+					frame = gameResources.getFrame(key);
+					if (frame != null) {
+						tile.addOverlayTexture(frame);
+					}
 				}
 				for (TileResource tileResource : tile.tileResources) {
 					key = tileResourceKey(tileResource.getResourceType());
@@ -284,8 +293,9 @@ public class MapRenderer {
 				}
 				
 				for (TileImprovement tileImprovement : tile.tileImprovements) {
-					key = "model.tile.river" + tileImprovement.style;
-					tile.addOverlayTexture(gameResources.getFrame(key));
+					if (tileImprovement.type.isRiver()) {
+						tile.addOverlayTexture(gameResources.getFrame(riverKey(tileImprovement.style)));
+					}
 				}
 				
 				if (tile.lostCityRumour) {

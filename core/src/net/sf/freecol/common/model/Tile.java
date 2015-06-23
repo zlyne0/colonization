@@ -1,19 +1,14 @@
 package net.sf.freecol.common.model;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.LinkedList;
-import java.util.SortedSet;
-import java.util.TreeSet;
 
 import org.xml.sax.Attributes;
 
-import promitech.colonization.MapRenderer;
 import promitech.colonization.SortableTexture;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.savegame.XmlNodeParser;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Tile {
@@ -96,10 +91,12 @@ public class Tile {
 			int tileStyle = getIntAttribute(attributes, "style");
 			String idStr = getStrAttribute(attributes, "id").replaceAll("tile:", "");
 			
-			TileType tileType = rootGame.specification.getTileTypeByTypeStr(tileTypeStr);
+			TileType tileType = specification.getTileTypeByTypeStr(tileTypeStr);
 			tile = new Tile(Integer.parseInt(idStr), tileType, tileStyle);
 			tile.connected = getIntAttribute(attributes, "connected", 0);
-			rootGame.map.createTile(x, y, tile);
+			
+			Map.Xml xmlMap = getParentXmlParser();
+			xmlMap.map.createTile(x, y, tile);
 		}
 
 		@Override

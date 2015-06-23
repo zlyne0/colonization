@@ -24,7 +24,7 @@ public class TileResource {
 		public void startElement(String qName, Attributes attributes) {
 			String resourceTypeStr = getStrAttribute(attributes, "type");
 			int quantity = getIntAttribute(attributes, "quantity");
-			ResourceType resourceType = rootGame.specification.getResourceTypeByStr(resourceTypeStr);
+			ResourceType resourceType = specification.getResourceTypeByStr(resourceTypeStr);
 
 			TileResource tileResource = new TileResource(resourceType);
 			tileResource.quantity = quantity;

@@ -1,5 +1,9 @@
 package net.sf.freecol.common.model;
 
+import org.xml.sax.Attributes;
+
+import promitech.colonization.savegame.XmlNodeParser;
+
 public final class TileType {
 
 	private static final String GREAT_RIVER = "model.tile.greatRiver";
@@ -54,4 +58,25 @@ public final class TileType {
 	public void setOrder(int order) {
 		this.order = order;
 	}
+	
+	public static class Xml extends XmlNodeParser {
+		public Xml(XmlNodeParser parent) {
+			super(parent);
+		}
+
+		@Override
+		public void startElement(String qName, Attributes attributes) {
+			String id = getStrAttribute(attributes, "id");
+			boolean isForest = getBooleanAttribute(attributes, "is-forest");
+			TileType tileType = new TileType(id, isForest);
+			
+			((Specification.Xml)this.parentXmlNodeParser).specification.addTileType(tileType);
+		}
+
+		@Override
+		public String getTagName() {
+			return "tile-type";
+		}
+	}
+	
 }

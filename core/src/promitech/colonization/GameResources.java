@@ -43,8 +43,6 @@ public class GameResources {
 		InputStream stream = fh.read();
 		prop.load(stream);
 		stream.close();
-		
-		//loadImages();
 	}
 	
 	private Texture loadImage(String key) {
@@ -76,6 +74,9 @@ public class GameResources {
 		Frame frame = frameByName.get(key);
 		if (frame == null) {
 			Texture texture = getImage(key);
+			if (texture == null) {
+				return null;
+			}
 			frame = new Frame(texture);
 			frameByName.put(key, frame);
 		}

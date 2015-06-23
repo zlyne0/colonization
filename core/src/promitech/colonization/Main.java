@@ -1,9 +1,11 @@
 package promitech.colonization;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.math.Directions;
 import promitech.colonization.math.Point;
+import promitech.colonization.savegame.SaveGameParser;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -70,8 +72,7 @@ public class Main extends ApplicationAdapter {
 		
 		try {
 			SaveGameParser saveGameParser = new SaveGameParser();
-			saveGameParser.parse();
-			game = saveGameParser.game;
+			game = saveGameParser.parse();
 			
 			gameResources.load();
 			

@@ -1,12 +1,9 @@
 package net.sf.freecol.common.model;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import org.xml.sax.Attributes;
-import org.xml.sax.SAXException;
 
 import promitech.colonization.Direction;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class Map {
 
@@ -48,5 +45,31 @@ public class Map {
 	public String toString() {
 		return "width = " + width + ", height = " + height;
 	}
+
+	public static class Xml extends XmlNodeParser {
+		Map map;
+		
+		public Xml(XmlNodeParser parent) {
+			super(parent);
+			
+			addNode(new Tile.Xml(this));
+		}
+
+		@Override
+		public void startElement(String qName, Attributes attributes) {
+			int width = getIntAttribute(attributes, "width");
+			int height = getIntAttribute(attributes, "height");
+			map = new Map(width, height);
+			
+			((Game.Xml)parentXmlNodeParser).game.map = map;
+		}
+
+		@Override
+		public String getTagName() {
+			return "map";
+		}
+		
+	}
+
 	
 }

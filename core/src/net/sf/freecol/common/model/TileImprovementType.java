@@ -26,7 +26,8 @@ public class TileImprovementType {
 		public void startElement(String qName, Attributes attributes) {
 			String id = getStrAttribute(attributes, "id");
 			TileImprovementType tileImprovementType = new TileImprovementType(id);
-			rootGame.specification.addTileimprovementType(tileImprovementType);
+			
+			((Specification.Xml)this.parentXmlNodeParser).specification.addTileimprovementType(tileImprovementType);
 		}
 
 		@Override

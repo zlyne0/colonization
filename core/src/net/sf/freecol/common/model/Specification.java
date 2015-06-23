@@ -5,6 +5,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.xml.sax.Attributes;
+
+import promitech.colonization.savegame.XmlNodeParser;
+
 public class Specification {
 	private List<TileType> tileTypes = new ArrayList<TileType>();
 	private Map<String,TileType> tileTypeByTileTypeStr = new HashMap<String, TileType>();
@@ -49,5 +53,28 @@ public class Specification {
 		}
 		return resourceType;
 	}
+	
+	public static class Xml extends XmlNodeParser {
+		public Xml(Game.Xml parent) {
+			super(parent);
+			addNode(new TileType.Xml(this));
+			addNode(new ResourceType.Xml(this));
+			addNode(new TileImprovementType.Xml(this));
+		}
+
+		@Override
+		public void startElement(String qName, Attributes attributes) {
+			specification = new Specification();
+			Game.Xml xmlGame = getParentXmlParser();
+			xmlGame.game.specification = specification;
+		}
+
+		@Override
+		public String getTagName() {
+			return "freecol-specification";
+		}
+	}
+	
+	
 }
 

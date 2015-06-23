@@ -2,7 +2,7 @@ package promitech.colonization.savegame;
 
 import java.util.HashMap;
 
-import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -11,7 +11,8 @@ public abstract class XmlNodeParser {
 	private java.util.Map<String,XmlNodeParser> nodes = new HashMap<String, XmlNodeParser>();
 	public final XmlNodeParser parentXmlNodeParser;
 	
-	public Game rootGame;
+	// unique entities
+	protected static Specification specification;  
 	
 	public XmlNodeParser(XmlNodeParser parent) {
 		this.parentXmlNodeParser = parent;

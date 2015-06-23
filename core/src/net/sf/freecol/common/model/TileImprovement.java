@@ -11,7 +11,19 @@ public class TileImprovement {
 	
 	public TileImprovement(TileImprovementType type, String style) {
 		this.type = type;
-		this.style = style;
+		if (style != null) {
+			StringBuilder sb = new StringBuilder();
+			for (int i = 0; i < style.length(); i++) {
+				char c = style.charAt(i);
+				if (Character.digit(c, Character.MAX_RADIX) < 0) {
+					break;
+				}
+				sb.append((c == '0') ? "0" : "1");
+			}
+			this.style = sb.toString();		
+		} else {
+			this.style = style;
+		}
 	}
 	
 	public static class Xml extends XmlNodeParser {
@@ -24,7 +36,7 @@ public class TileImprovement {
 		public void startElement(String qName, Attributes attributes) {
 			String typeStr = getStrAttribute(attributes, "type");
 			String style = getStrAttribute(attributes, "style");
-			TileImprovementType type = rootGame.specification.getTileImprovementTypeBy(typeStr);
+			TileImprovementType type = specification.getTileImprovementTypeBy(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(type, style);
 			tileImprovement.magnitude = getIntAttribute(attributes, "magnitude", 0);
 			
