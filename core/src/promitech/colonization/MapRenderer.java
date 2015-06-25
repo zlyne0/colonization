@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.TileType;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Point;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -23,7 +24,7 @@ public class MapRenderer {
 	
 	public abstract class TileDrawer {
 		protected SpriteBatch batch;
-		protected final Point p = new Point();
+		protected final Point screenPoint = new Point(); 
 		protected int mapx;
 		protected int mapy;
 		
@@ -34,27 +35,37 @@ public class MapRenderer {
 			return mapx >= 0 && mapx < map.width && mapy >= 0 && mapy < map.height;
 		}
 		
-		public abstract void draw();
-		
-		public void drawLayerTile() {
-		}
+		public abstract void draw();		
 	}
 	
-	private class BackgroundTileDrawer extends TileDrawer {
+	private class TerainBackgroundTileDrawer extends TileDrawer {
 		@Override
 		public void draw() {
 			tile = map.getTile(mapx, mapy);
-			drawLayerTile();
+			tile.draw(batch, screenPoint.x, screenPoint.y);
+		}
+	}
+
+	private class TerainForegroundTileDrawer extends TileDrawer {
+		@Override
+		public void draw() {
+			tile = map.getTile(mapx, mapy);
+			tile.drawOverlay(batch, screenPoint.x, screenPoint.y);
 		}
 	}
 	
     private final GameResources gameResources;
-    private final BackgroundTileDrawer backgroundTileDrawer = new BackgroundTileDrawer();
+    private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
+    private final TerainForegroundTileDrawer terainForegroundTileDrawer = new TerainForegroundTileDrawer();
 
     public Vector2 cameraPosition = new Vector2();
     
     private DebugInformationRenderer debugInformationRenderer; 
 	public boolean debug = true;
+	private final Point screenMin = new Point();
+	private final Point screenMax = new Point();
+	private int x;
+	private int y;
     
     public MapRenderer(GameResources gameResources) {
     	this.gameResources = gameResources;
@@ -62,48 +73,60 @@ public class MapRenderer {
         debugInformationRenderer.gameResources = gameResources;
     }
     
+    private void drawLayer(TileDrawer tileDrawer) {
+    	for (y=screenMin.y; y<screenMax.y; y++) {
+    		for (x=screenMin.x; x<screenMax.x; x++) {
+    			tileDrawer.mapx = x;
+    			tileDrawer.mapy = y;
+    			mapToScreenCords(x, y, tileDrawer.screenPoint);
+    			tileDrawer.draw();
+    		}
+    	}
+    }
+    
+    private void preparePartOfMapToRender(final Map map) {
+    	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
+    	screenToMapCords(Gdx.graphics.getWidth() + TILE_WIDTH*2, 500 + TILE_HEIGHT, screenMax);
+    	
+    	if (screenMin.x < 0) {
+    		screenMin.x = 0;
+    	}
+    	if (screenMin.y < 0) {
+    		screenMin.y = 0;
+    	}
+    	if (screenMax.x >= map.width) {
+    		screenMax.x = map.width;
+    	}
+    	if (screenMax.y >= map.height) {
+    		screenMax.y = map.height;
+    	}
+    }
     
     public void render(SpriteBatch batch, final Map map) {
-    	backgroundTileDrawer.batch = batch;
-    	backgroundTileDrawer.map = map;
+    	terainBackgroundTileDrawer.batch = batch;
+    	terainBackgroundTileDrawer.map = map;
     	
-    	int x, y;
-    	int rx = 0;
-    	int ry = 0;
-    	Tile tile;
-    	for (y=0; y<map.height; y++) {
-    		for (x=0; x<map.width; x++) {
-    			//yy = map.height - y - 1;
-                rx = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
-                ry = (TILE_HEIGHT / 2) * y;
-                
-                rx += cameraPosition.x;
-                ry += cameraPosition.y;
-                
-                tile = map.getTile(x, y);
-                tile.draw(batch, rx, 500 - ry);
-    		}
-    	}
-
-    	for (y=0; y<map.height; y++) {
-    		for (x=0; x<map.width; x++) {
-    			//yy = map.height - y - 1;
-                rx = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
-                ry = (TILE_HEIGHT / 2) * y;
-                
-                rx += cameraPosition.x;
-                ry += cameraPosition.y;
-                
-                tile = map.getTile(x, y);
-                tile.drawOverlay(batch, rx, 500 - ry);
-    		}
-    	}
+    	terainForegroundTileDrawer.batch = batch;
+    	terainForegroundTileDrawer.map = map;
+    	
+    	preparePartOfMapToRender(map);
+    	drawLayer(terainBackgroundTileDrawer);
+    	drawLayer(terainForegroundTileDrawer);
     	
         if (debug) {
         	debugInformationRenderer.render(batch, map);
         }
     }
     
+    private void mapToScreenCords(int x, int y, Point p) {
+        p.x = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
+        p.y = (TILE_HEIGHT / 2) * y;
+        
+        p.x += cameraPosition.x;
+        p.y += cameraPosition.y;
+    	
+        p.y = 500 - p.y;
+    }
     
     public void screenToMapCords(int screenX, int screenY, Point p) {
         double x, y, pX, pY;
