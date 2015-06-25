@@ -6,6 +6,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public final class TileType {
 
+	private static final String MODEL_TILE_LAKE = "model.tile.lake";
 	private static final String GREAT_RIVER = "model.tile.greatRiver";
     private static final String OCEAN = "model.tile.ocean";
 	private static final String HIGH_SEAS = "model.tile.highSeas";
@@ -24,7 +25,7 @@ public final class TileType {
 	}
 	
 	public boolean isWater() {
-		return type.equals(OCEAN) || type.equals(HIGH_SEAS) || type.equals(GREAT_RIVER);
+		return type.equals(OCEAN) || type.equals(HIGH_SEAS) || type.equals(GREAT_RIVER) || type.equals(MODEL_TILE_LAKE);
 	}
 
 	public boolean isHighSea() {
