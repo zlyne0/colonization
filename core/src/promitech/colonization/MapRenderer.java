@@ -309,16 +309,15 @@ public class MapRenderer {
 						tile.addOverlayTexture(frame);
 					}
 				}
-				for (TileResource tileResource : tile.tileResources) {
-					key = tileResourceKey(tileResource.getResourceType());
-					frame = gameResources.getCenterAdjustFrameTexture(key);
-					tile.addOverlayTexture(frame);
-				}
-				
 				for (TileImprovement tileImprovement : tile.tileImprovements) {
 					if (tileImprovement.type.isRiver()) {
 						tile.addOverlayTexture(gameResources.getFrame(riverKey(tileImprovement.style)));
 					}
+				}
+				for (TileResource tileResource : tile.tileResources) {
+					key = tileResourceKey(tileResource.getResourceType());
+					frame = gameResources.getCenterAdjustFrameTexture(key);
+					tile.addOverlayTexture(frame);
 				}
 				
 				if (tile.lostCityRumour) {
