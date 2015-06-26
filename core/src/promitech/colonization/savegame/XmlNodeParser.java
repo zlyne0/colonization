@@ -8,6 +8,9 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public abstract class XmlNodeParser {
+    public static final int INFINITY = Integer.MAX_VALUE;
+    public static final int UNDEFINED = Integer.MIN_VALUE;
+    
 	private java.util.Map<String,XmlNodeParser> nodes = new HashMap<String, XmlNodeParser>();
 	public final XmlNodeParser parentXmlNodeParser;
 	

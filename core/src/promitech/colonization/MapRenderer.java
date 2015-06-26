@@ -158,7 +158,7 @@ public class MapRenderer {
 	}
 
 	public String tileResourceKey(ResourceType resourceType) {
-		return resourceType.getResourceTypeId() + ".image";
+		return resourceType.getId() + ".image";
 	}
 	
 	public String tileKey(TileType type, int x, int y) {

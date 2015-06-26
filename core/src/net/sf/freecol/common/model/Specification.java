@@ -13,8 +13,9 @@ public class Specification {
 	private List<TileType> tileTypes = new ArrayList<TileType>();
 	private Map<String,TileType> tileTypeByTileTypeStr = new HashMap<String, TileType>();
 	
-	private Map<String,ResourceType> resourceTypes = new HashMap<String,ResourceType>();
-	private Map<String,TileImprovementType> tileImprovementTypeByStr = new HashMap<String, TileImprovementType>();
+	public final MapIdEntities<TileImprovementType> tileImprovementTypes = new MapIdEntities<TileImprovementType>();
+	public final MapIdEntities<UnitType> unitTypes = new MapIdEntities<UnitType>();
+	public final MapIdEntities<ResourceType> resourceTypes = new MapIdEntities<ResourceType>();
 	
 	public void addTileType(TileType tileType) {
 		tileType.setOrder(tileTypes.size());
@@ -30,36 +31,13 @@ public class Specification {
 		return tileType;
 	}
 	
-	public void addResourceType(ResourceType resourceType) {
-		resourceTypes.put(resourceType.getResourceTypeId(), resourceType);
-	}
-	
-	public void addTileimprovementType(TileImprovementType type) {
-		tileImprovementTypeByStr.put(type.id, type);
-	}
-	
-	public TileImprovementType getTileImprovementTypeBy(String typeStr) {
-		TileImprovementType type = tileImprovementTypeByStr.get(typeStr);
-		if (type == null) {
-			throw new IllegalArgumentException("can not find tile improvment type by str: " + typeStr);
-		}
-		return type;
-	}
-	
-	public ResourceType getResourceTypeByStr(String resourceTypeStr) {
-		ResourceType resourceType = resourceTypes.get(resourceTypeStr);
-		if (resourceType == null) {
-			throw new IllegalArgumentException("can not find resource type by str: " + resourceTypeStr);
-		}
-		return resourceType;
-	}
-	
 	public static class Xml extends XmlNodeParser {
 		public Xml(Game.Xml parent) {
 			super(parent);
 			addNode(new TileType.Xml(this));
 			addNode(new ResourceType.Xml(this));
 			addNode(new TileImprovementType.Xml(this));
+            addNode(new UnitType.Xml(this));
 		}
 
 		@Override

@@ -36,7 +36,7 @@ public class TileImprovement {
 		public void startElement(String qName, Attributes attributes) {
 			String typeStr = getStrAttribute(attributes, "type");
 			String style = getStrAttribute(attributes, "style");
-			TileImprovementType type = specification.getTileImprovementTypeBy(typeStr);
+			TileImprovementType type = specification.tileImprovementTypes.getById(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(type, style);
 			tileImprovement.magnitude = getIntAttribute(attributes, "magnitude", 0);
 			

@@ -4,20 +4,19 @@ import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class ResourceType {
-
-	private final String resourceTypeId;
+public class ResourceType implements Identifiable {
+	private final String id;
 	
-	public ResourceType(String resourceTypeId) {
-		this.resourceTypeId = resourceTypeId;
+	public ResourceType(String id) {
+		this.id = id;
 	}
 
-	public String getResourceTypeId() {
-		return resourceTypeId;
+	@Override
+	public String getId() {
+		return id;
 	}
 	
 	public static class Xml extends XmlNodeParser {
-
 		public Xml(XmlNodeParser parent) {
 			super(parent);
 		}
@@ -26,7 +25,7 @@ public class ResourceType {
 		public void startElement(String qName, Attributes attributes) {
 			String id = getStrAttribute(attributes, "id");
 			ResourceType resourceType = new ResourceType(id);
-			((Specification.Xml)this.parentXmlNodeParser).specification.addResourceType(resourceType);
+			specification.resourceTypes.add(resourceType);
 		}
 
 		@Override
@@ -34,5 +33,4 @@ public class ResourceType {
 			return "resource-type";
 		}
 	}
-	
 }
