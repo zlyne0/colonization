@@ -80,6 +80,7 @@ public class Tile {
 			
 			addNode(new TileResource.Xml(this));
 			addNode(new TileImprovement.Xml(this));
+			addNode(new Unit.Xml(this));
 		}
 
 		@Override

@@ -70,6 +70,10 @@ public class UnitType implements Identifiable {
         return id;
     }
     
+    public String toString() {
+        return id;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml(XmlNodeParser parent) {
             super(parent);
