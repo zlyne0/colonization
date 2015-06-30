@@ -19,6 +19,9 @@ public class Tile {
 	public boolean lostCityRumour = false;
 	private int connected = 0;
 	
+	public Colony colony;
+	public IndianSettlement indianSettlement;
+	
 	private LinkedList<SortableTexture> fieldTextures = new LinkedList<SortableTexture>();
 	private LinkedList<Frame> overlayTexture = new LinkedList<Frame>();
 	
@@ -81,6 +84,8 @@ public class Tile {
 			addNode(new TileResource.Xml(this));
 			addNode(new TileImprovement.Xml(this));
 			addNode(new Unit.Xml(this));
+            addNode(new IndianSettlement.Xml(this));
+            addNode(new Colony.Xml(this));
 		}
 
 		@Override

@@ -201,6 +201,10 @@ public class MapRenderer {
 		return "model.tile.river" + style;
 		
 	}
+
+	public String settlementImage(String id) {
+	    return id + ".image";
+	}
 	
 	public String forestImgKey(TileType type, TileImprovement riverTileImprovement) {
 		if (riverTileImprovement != null) {
@@ -324,6 +328,15 @@ public class MapRenderer {
 					key = tileLastCityRumour();
 					frame = gameResources.getCenterAdjustFrameTexture(key);
 					tile.addOverlayTexture(frame);
+				}
+				
+				if (tile.indianSettlement != null) {
+				    key = settlementImage(tile.indianSettlement.type);
+				    tile.addOverlayTexture(gameResources.getFrame(key));
+				}
+				if (tile.colony != null) {
+                    key = settlementImage(tile.colony.type);
+                    tile.addOverlayTexture(gameResources.getFrame(key));
 				}
 			}
 		}
