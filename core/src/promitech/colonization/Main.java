@@ -88,6 +88,8 @@ public class Main extends ApplicationAdapter {
 	
 	@Override
 	public void render () {
+		frameRenderMillis = System.currentTimeMillis();
+		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
@@ -103,6 +105,9 @@ public class Main extends ApplicationAdapter {
 		batch.begin();
 		mapRenderer.render(batch, game.map);
 		batch.end();
+		
+		frameRenderMillis = System.currentTimeMillis() - frameRenderMillis;
+		
 		drawFPS();
 	}
 	
@@ -115,9 +120,10 @@ public class Main extends ApplicationAdapter {
 		batch.setProjectionMatrix(cameraYdown.combined);
 		batch.begin();
 		font.setColor(Color.GREEN);
-		font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond(), 20, 20);
+		font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + ", time: " + frameRenderMillis, 20, 20);
 		batch.end();
 	}
 	
+	private long frameRenderMillis;
 	
 }
