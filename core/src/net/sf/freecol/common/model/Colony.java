@@ -6,6 +6,33 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Colony extends Settlement {
 
+    private boolean isUndead() {
+        return false;
+    }
+    
+    private int getDisplayUnitCount() {
+        return 1;
+    }
+    
+    private String getStockadeKey() {
+        return null;
+    }
+    
+    public String getImageKey() {
+        if (isUndead()) {
+            return "undead";
+        }
+        int count = getDisplayUnitCount();
+        String key = (count <= 3) ? "small"
+            : (count <= 7) ? "medium"
+            : "large";
+        String stockade = getStockadeKey();
+        if (stockade != null) {
+            key += "." + stockade;
+        }
+        return "model.settlement." + key + ".image";
+    }
+    
     public static class Xml extends XmlNodeParser {
 
         public Xml(XmlNodeParser parent) {
@@ -14,9 +41,13 @@ public class Colony extends Settlement {
 
         @Override
         public void startElement(String qName, Attributes attributes) {
+            String strAttribute = getStrAttribute(attributes, "settlementType");
+            Player owner = game.players.getById(getStrAttribute(attributes, "owner"));
+            
             Colony colony = new Colony();
             colony.name = getStrAttribute(attributes, "name");
-            colony.type = getStrAttribute(attributes, "settlementType");
+            colony.owner = owner;
+            colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             tileXmlParser.tile.colony = colony;

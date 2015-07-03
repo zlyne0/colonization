@@ -5,6 +5,22 @@ import org.xml.sax.Attributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianSettlement extends Settlement {
+    
+    /** The missionary at this settlement. */
+    protected Unit missionary = null;
+    
+    public String getImageKey() {
+        return owner.nationType.getId()
+            + (settlementType.isCapital() ? ".capital" : ".settlement")
+            + ((hasMissionary()) ? "" : ".mission")
+            + ".image";
+    }
+    
+    
+    private boolean hasMissionary() {
+        return missionary != null;
+    }
+
 
     public static class Xml extends XmlNodeParser {
 
@@ -16,7 +32,9 @@ public class IndianSettlement extends Settlement {
         public void startElement(String qName, Attributes attributes) {
             IndianSettlement is = new IndianSettlement();
             is.name = getStrAttribute(attributes, "name");
-            is.type = getStrAttribute(attributes, "settlementType");
+            Player owner = game.players.getById(getStrAttribute(attributes, "owner"));
+            is.owner = owner;
+            is.settlementType = owner.nationType.settlementTypes.getById(getStrAttribute(attributes, "settlementType"));
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             tileXmlParser.tile.indianSettlement = is;

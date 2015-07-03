@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.ResourceType;
+import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -202,8 +203,8 @@ public class MapRenderer {
 		
 	}
 
-	public String settlementImage(String id) {
-	    return id + ".image";
+	public String settlementImage(SettlementType settlementType) {
+	    return settlementType.getId() + ".image";
 	}
 	
 	public String forestImgKey(TileType type, TileImprovement riverTileImprovement) {
@@ -331,11 +332,11 @@ public class MapRenderer {
 				}
 				
 				if (tile.indianSettlement != null) {
-				    key = settlementImage(tile.indianSettlement.type);
+				    key = settlementImage(tile.indianSettlement.settlementType);
 				    tile.addOverlayTexture(gameResources.getFrame(key));
 				}
 				if (tile.colony != null) {
-                    key = settlementImage(tile.colony.type);
+                    key = settlementImage(tile.colony.settlementType);
                     tile.addOverlayTexture(gameResources.getFrame(key));
 				}
 			}
