@@ -203,10 +203,6 @@ public class MapRenderer {
 		
 	}
 
-	public String settlementImage(SettlementType settlementType) {
-	    return settlementType.getId() + ".image";
-	}
-	
 	public String forestImgKey(TileType type, TileImprovement riverTileImprovement) {
 		if (riverTileImprovement != null) {
 			return type.getTypeStr() + ".forest" + riverTileImprovement.style;
@@ -331,13 +327,14 @@ public class MapRenderer {
 					tile.addOverlayTexture(frame);
 				}
 				
+				
 				if (tile.indianSettlement != null) {
-				    key = settlementImage(tile.indianSettlement.settlementType);
-				    tile.addOverlayTexture(gameResources.getFrame(key));
+				    key = tile.indianSettlement.getImageKey();
+				    tile.addOverlayTexture(gameResources.getCenterAdjustFrameTexture(key));
 				}
 				if (tile.colony != null) {
-                    key = settlementImage(tile.colony.settlementType);
-                    tile.addOverlayTexture(gameResources.getFrame(key));
+                    key = tile.colony.getImageKey();
+                    tile.addOverlayTexture(gameResources.getCenterAdjustFrameTexture(key));
 				}
 			}
 		}

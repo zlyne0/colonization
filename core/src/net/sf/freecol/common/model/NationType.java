@@ -38,6 +38,10 @@ public class NationType implements Identifiable {
         return id;
     }
 
+    public String toString() {
+    	return "nationType: " + id;
+    }
+    
     public static abstract class Xml extends XmlNodeParser {
         protected NationType nationType;
         

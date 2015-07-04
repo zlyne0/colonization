@@ -84,8 +84,8 @@ public class Tile {
 			addNode(new TileResource.Xml(this));
 			addNode(new TileImprovement.Xml(this));
 			addNode(new Unit.Xml(this));
+			addNode(new Colony.Xml(this));
             addNode(new IndianSettlement.Xml(this));
-            addNode(new Colony.Xml(this));
 		}
 
 		@Override

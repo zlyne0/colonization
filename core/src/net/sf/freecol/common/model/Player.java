@@ -7,6 +7,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class Player implements Identifiable {
 
     private String id;
+    String nationId;
     NationType nationType;
     
     @Override
@@ -28,6 +29,7 @@ public class Player implements Identifiable {
             }
             Player player = new Player();
             player.id = getStrAttribute(attributes, "id");
+            player.nationId = getStrAttribute(attributes, "nationId");
             player.nationType = specification.nationTypes.getById(nationTypeStr);
             
             Game.Xml gameXml = getParentXmlParser();

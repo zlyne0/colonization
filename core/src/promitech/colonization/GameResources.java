@@ -48,7 +48,7 @@ public class GameResources {
 	private Texture loadImage(String key) {
 		String imagePath = (String)prop.get(key);
 		if (imagePath == null) {
-			throw new IllegalArgumentException("can not find resource value for key: " + key); 
+			throw new IllegalArgumentException("can not find resource propertie value for key: " + key); 
 		}
 		imagePath = "rules/classic/" + imagePath;
 		

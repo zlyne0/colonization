@@ -10,17 +10,26 @@ public class IndianSettlement extends Settlement {
     protected Unit missionary = null;
     
     public String getImageKey() {
-        return owner.nationType.getId()
-            + (settlementType.isCapital() ? ".capital" : ".settlement")
-            + ((hasMissionary()) ? "" : ".mission")
-            + ".image";
+    	String st = owner.nationId;
+    	
+    	if (settlementType.isCapital()) {
+    		st += ".capital";
+    	} else {
+    		st += ".settlement";
+    	}
+    	
+    	if (hasMissionary()) {
+    		st += "";
+    	} else {
+    		st += ".mission";
+    	}
+    	st += ".image";
+        return st;
     }
-    
     
     private boolean hasMissionary() {
         return missionary != null;
     }
-
 
     public static class Xml extends XmlNodeParser {
 
@@ -42,7 +51,7 @@ public class IndianSettlement extends Settlement {
 
         @Override
         public String getTagName() {
-            return "colony";
+            return "indianSettlement";
         }
         
     }
