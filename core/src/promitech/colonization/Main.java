@@ -30,8 +30,8 @@ public class Main extends ApplicationAdapter {
 	
 	@Override
 	public void create () {
-		mapRenderer = new MapRenderer(gameResources);
-		mapRenderer.cameraPosition.set(-23 * 64, -80 * 32 );
+		mapRenderer = new MapRenderer(gameResources, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		mapRenderer.centerCameraOnTileCords(24, 78);
 	
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());

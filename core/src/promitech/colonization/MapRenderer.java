@@ -5,7 +5,6 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.ResourceType;
-import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -14,7 +13,6 @@ import net.sf.freecol.common.model.TileType;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Point;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.math.Vector2;
@@ -59,7 +57,9 @@ public class MapRenderer {
     private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
     private final TerainForegroundTileDrawer terainForegroundTileDrawer = new TerainForegroundTileDrawer();
 
-    public Vector2 cameraPosition = new Vector2();
+    public final Vector2 cameraPosition = new Vector2();
+    private final int screenWidth;
+    private final int screenHeight;
     
     private DebugInformationRenderer debugInformationRenderer; 
 	public boolean debug = true;
@@ -67,8 +67,10 @@ public class MapRenderer {
 	private final Point screenMax = new Point();
 	private int x;
 	private int y;
-    
-    public MapRenderer(GameResources gameResources) {
+	
+    public MapRenderer(GameResources gameResources, int screenWidth, int screenHeight) {
+    	this.screenWidth = screenWidth;
+    	this.screenHeight = screenHeight;
     	this.gameResources = gameResources;
         debugInformationRenderer = new DebugInformationRenderer(this);
         debugInformationRenderer.gameResources = gameResources;
@@ -87,7 +89,7 @@ public class MapRenderer {
     
     private void preparePartOfMapToRender(final Map map) {
     	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
-    	screenToMapCords(Gdx.graphics.getWidth() + TILE_WIDTH*2, 500 + TILE_HEIGHT, screenMax);
+    	screenToMapCords(screenWidth + TILE_WIDTH*2, screenHeight + TILE_HEIGHT, screenMax);
     	
     	if (screenMin.x < 0) {
     		screenMin.x = 0;
@@ -126,7 +128,7 @@ public class MapRenderer {
         p.x += cameraPosition.x;
         p.y += cameraPosition.y;
     	
-        p.y = 500 - p.y;
+        p.y = screenHeight - p.y;
     }
     
     public void screenToMapCords(int screenX, int screenY, Point p) {
@@ -144,6 +146,18 @@ public class MapRenderer {
         p.x = (int) Math.floor((x - y) / 2) + 1 /* + this.camera.x */;
         p.y = (int) (y + x + 2) /* + this.camera.y */;
     }
+
+	public void centerCameraOnTileCords(int mapx, int mapy) {
+		cameraPosition.set(0, 0);
+    	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
+    	screenToMapCords(screenWidth + TILE_WIDTH*2, screenHeight + TILE_HEIGHT, screenMax);
+		
+    	int halfX = (screenMax.x - screenMin.x) / 2; 
+    	int halfY = (screenMax.y - screenMin.y) / 2; 
+    	
+		cameraPosition.set(-(mapx - halfX/2) * TILE_WIDTH, -(mapy - halfY) * TILE_HEIGHT/2 );
+		cameraPosition.add(TILE_WIDTH/2, 0);
+	}
     
     public boolean isEven(int x, int y) {
         return ((y % 8 <= 2) || ((x + y) % 2 == 0 ));
@@ -340,6 +354,7 @@ public class MapRenderer {
 		}
 		
 	}
+
 	
 	
 }
