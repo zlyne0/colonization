@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model;
 
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedList;
+import java.util.Set;
 
 import org.xml.sax.Attributes;
 
@@ -27,6 +29,8 @@ public class Tile {
 	
 	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
 	public final LinkedList<TileImprovement> tileImprovements = new LinkedList<TileImprovement>();
+	
+	private final Set<String> exploredByPlayers = new HashSet<String>();
 	
 	public Tile(int id, TileType type, int style) {
 		this.id = id;
@@ -75,6 +79,10 @@ public class Tile {
 		return null;
 	}
 	
+	public boolean isUnexplored(Player player) {
+		return !exploredByPlayers.contains(player.getId());
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		protected Tile tile;
 		
@@ -109,6 +117,10 @@ public class Tile {
 		public void startReadChildren(String qName, Attributes attributes) {
 			if (qName.equals("lostCityRumour")) {
 				tile.lostCityRumour = true;
+			}
+			if (qName.equals("cachedTile")) {
+				String playerId = getStrAttribute(attributes, "player");
+				tile.exploredByPlayers.add(playerId);
 			}
 		}
 		

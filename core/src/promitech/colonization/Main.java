@@ -81,7 +81,7 @@ public class Main extends ApplicationAdapter {
 			e.printStackTrace();
 		}
 		
-		mapRenderer.initMapTiles(game.map);
+		mapRenderer.initMapTiles(game.map, game.players.getById("player:1"));
 	}
 
 	

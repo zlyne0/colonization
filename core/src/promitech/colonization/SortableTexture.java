@@ -6,6 +6,12 @@ public class SortableTexture implements Comparable<SortableTexture> {
 
 	public final Texture texture;
 	public final int index;
+
+	public SortableTexture(Texture texture) {
+		this.texture = texture;
+		// alway on top
+		this.index = -10000;
+	}
 	
 	public SortableTexture(Texture texture, int index) {
 		this.texture = texture;
