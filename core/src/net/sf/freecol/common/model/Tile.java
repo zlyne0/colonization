@@ -24,8 +24,9 @@ public class Tile {
 	public Colony colony;
 	public IndianSettlement indianSettlement;
 	
-	private LinkedList<SortableTexture> fieldTextures = new LinkedList<SortableTexture>();
-	private LinkedList<Frame> overlayTexture = new LinkedList<Frame>();
+	private LinkedList<SortableTexture> backgroundTerainTextures = new LinkedList<SortableTexture>();
+	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
+	private LinkedList<Frame> objectTextures = new LinkedList<Frame>();
 	
 	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
 	public final LinkedList<TileImprovement> tileImprovements = new LinkedList<TileImprovement>();
@@ -46,26 +47,61 @@ public class Tile {
 		this.tileResources.add(tileResource);
 	}
 
-	public void addTexture(SortableTexture texture) {
-		fieldTextures.add(texture);
-		Collections.sort(fieldTextures);
+	public void addBackgroundTerainTexture(SortableTexture texture) {
+		backgroundTerainTextures.add(texture);
+		Collections.sort(backgroundTerainTextures);
 	}
 
-	public void addOverlayTexture(Frame frame) {
+	public void addForegroundTerainTexture(Frame frame) {
 		if (frame == null) {
 			throw new NullPointerException();
 		}
-		overlayTexture.add(frame);
+		foregroundTerainTextures.add(frame);
+	}
+	
+	public void addObjectTexture(Frame frame) {
+		objectTextures.add(frame);
+	}
+	
+	public boolean hasRoad() {
+		if (colony != null || indianSettlement != null) {
+			return true;
+		}
+		for (TileImprovement imprv : tileImprovements) {
+			if (imprv.type.isRoad()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isPlowed() {
+		for (TileImprovement imprv : tileImprovements) {
+			if (imprv.type.isPlowed()) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean hasSettlement() {
+		return colony != null || indianSettlement != null;
 	}
 	
 	public void draw(SpriteBatch batch, int rx, int ry) {
-		for (SortableTexture texture : fieldTextures) {
+		for (SortableTexture texture : backgroundTerainTextures) {
 			batch.draw(texture.texture, rx, ry);
 		}
 	}
 	
 	public void drawOverlay(SpriteBatch batch, int rx, int ry) {
-		for (Frame frame : overlayTexture) {
+		for (Frame frame : foregroundTerainTextures) {
+			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
+		}
+	}
+
+	public void drawObjects(SpriteBatch batch, int rx, int ry) {
+		for (Frame frame : objectTextures) {
 			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
 		}
 	}

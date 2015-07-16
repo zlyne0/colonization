@@ -1,12 +1,5 @@
 package promitech.colonization;
 
-import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.Tile;
-import promitech.colonization.math.Directions;
-import promitech.colonization.math.Point;
-import promitech.colonization.savegame.SaveGameParser;
-
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
@@ -16,23 +9,30 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Tile;
+import promitech.colonization.math.Directions;
+import promitech.colonization.math.Point;
+import promitech.colonization.savegame.SaveGameParser;
 
 public class Main extends ApplicationAdapter {
 	
+	ShapeRenderer shapeRenderer;
 	SpriteBatch batch;
 	OrthographicCamera camera;
 	OrthographicCamera cameraYdown;
 	
 	private InputKeyboardDevice inputKeyboardDevice = new InputKeyboardDevice();
 	private MapRenderer mapRenderer; 
-	private final GameResources gameResources = new GameResources();
+	private GameResources gameResources;
 	private Game game;
+	private Player player;
 	
 	@Override
 	public void create () {
-		mapRenderer = new MapRenderer(gameResources, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
-		mapRenderer.centerCameraOnTileCords(24, 78);
-	
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.update();
@@ -42,7 +42,7 @@ public class Main extends ApplicationAdapter {
 		cameraYdown.update();
         
 		batch = new SpriteBatch();
-
+		shapeRenderer = new ShapeRenderer();
 		
         Gdx.input.setInputProcessor(new InputAdapter() {
         	@Override
@@ -69,7 +69,9 @@ public class Main extends ApplicationAdapter {
          		return false;
         	}
         });
-		
+
+		gameResources = new GameResources();
+        
 		try {
 			SaveGameParser saveGameParser = new SaveGameParser();
 			game = saveGameParser.parse();
@@ -80,11 +82,16 @@ public class Main extends ApplicationAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		player = game.players.getById("player:1");
 		
-		mapRenderer.initMapTiles(game.map, game.players.getById("player:1"));
+		mapRenderer = new MapRenderer(
+				game.map, gameResources, 
+				Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
+				batch, shapeRenderer
+		);
+		mapRenderer.centerCameraOnTileCords(24, 78);
+		mapRenderer.initMapTiles(game.map, player);
 	}
-
-	
 	
 	@Override
 	public void render () {
@@ -102,8 +109,9 @@ public class Main extends ApplicationAdapter {
 		}
 		
 		batch.setProjectionMatrix(camera.combined);
+		shapeRenderer.setProjectionMatrix(camera.combined);
 		batch.begin();
-		mapRenderer.render(batch, game.map);
+		mapRenderer.render(player);
 		batch.end();
 		
 		frameRenderMillis = System.currentTimeMillis() - frameRenderMillis;

@@ -9,6 +9,7 @@ import java.util.Properties;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 
 import net.sf.freecol.common.model.ResourceType;
@@ -150,7 +151,11 @@ public class GameResources {
 	public Frame tileLastCityRumour() {
 		return getCenterAdjustFrameTexture("lostCityRumour.image");
 	}
-    
+
+	public Frame plowed() {
+		return getCenterAdjustFrameTexture("model.improvement.plow.image");
+	}
+	
 	public Texture riverDelta(Direction direction, TileImprovement tileImprovement) {
 		String key = "model.tile.delta_" + direction + (tileImprovement.magnitude == 1 ? "_small" : "_large");
 		return getImage(key);
@@ -186,5 +191,18 @@ public class GameResources {
 		}
 		return getFrame(key);
 	}
-	
+
+	public Color getColor(String propKey) {
+		String colorName = (String)prop.get(propKey);
+		if (colorName == null) {
+			throw new IllegalArgumentException("can not find prop value for key: " + propKey);
+		}
+		colorName = colorName.replaceAll("urn:color:", "");
+		colorName = colorName.toLowerCase();
+		if (colorName.startsWith("0x")) {
+			colorName = colorName.replaceAll("0x", "");
+			return Color.valueOf(colorName);
+		}
+		throw new IllegalArgumentException("not implemented getColor by key: " + propKey + ", val: " + colorName);
+	}
 }
