@@ -10,8 +10,9 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Unit {
 
+	private Player owner;
     private UnitType unitType;
-    
+    private UnitRole unitRole;
     private List<Unit> containedUnits;
     
     public String toString() {
@@ -33,6 +34,25 @@ public class Unit {
         containedUnits.add(containerUnit);
     }
     
+    public String resourceImageKey() {
+    	// TODO: there is problem with two units
+    	if (!owner.nationType.isEuropean()) {
+    		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
+    			return unitType.getId() + unitRole.getRoleSuffix() + ".native.image";
+    		}
+    	}
+    	// model.unit.freeColonist.soldier.native.image
+    	// model.unit.freeColonist.native.image
+    	return unitType.getId() + unitRole.getRoleSuffix() + ".image"; 
+//    	return unitType.getId() + unitRole.getRoleSuffix()
+//	        + ((owner.nationType.isEuropean()) ? "" : ".native")
+//	        + ".image";
+    }
+
+	public Player getOwner() {
+		return owner;
+	}
+
     public static class Xml extends XmlNodeParser {
         
         private boolean secoundLevel = false;
@@ -45,17 +65,24 @@ public class Unit {
         @Override
         public void startElement(String qName, Attributes attributes) {
             String unitTypeStr = getStrAttribute(attributes, "unitType");
+            String unitRoleStr = getStrAttribute(attributes, "role");
             
             UnitType unitType = specification.unitTypes.getById(unitTypeStr);
             Unit unit = new Unit();
+            unit.unitRole = specification.unitRoles.getById(unitRoleStr);
             unit.unitType = unitType;
             
             if (containerUnit == null) {
                 containerUnit = unit;
+                Tile.Xml tileXmlParser = getParentXmlParser();
+                tileXmlParser.tile.addUnit(unit);
             } else {
                 secoundLevel = true;
                 containerUnit.addUnit(unit);
             }
+            
+            String ownerStr = getStrAttribute(attributes, "owner");
+            unit.owner = game.players.getById(ownerStr);
         }
 
         @Override

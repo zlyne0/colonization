@@ -30,6 +30,7 @@ public class NationType implements Identifiable {
     public static enum SettlementNumber { LOW, AVERAGE, HIGH }
     public static enum AggressionLevel { LOW, AVERAGE, HIGH }
 
+    private boolean european = false;
     private String id;
     public final MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
 
@@ -38,6 +39,10 @@ public class NationType implements Identifiable {
         return id;
     }
 
+    public boolean isEuropean() {
+    	return european;
+    }
+    
     public String toString() {
     	return "nationType: " + id;
     }
@@ -50,9 +55,12 @@ public class NationType implements Identifiable {
             addNode(new SettlementType.Xml(this));
         }
 
+        protected abstract boolean isEuropean();
+        
         @Override
         public void startElement(String qName, Attributes attributes) {
             nationType = new NationType();
+            nationType.european = isEuropean();
             nationType.id = getStrAttribute(attributes, "id");
             specification.nationTypes.add(nationType);
         }
@@ -67,6 +75,10 @@ public class NationType implements Identifiable {
         public String getTagName() {
             return "indian-nation-type";
         }
+        
+        protected boolean isEuropean() {
+        	return false;
+        }
     }
     
     public static class EuropeanXml extends Xml {
@@ -77,6 +89,10 @@ public class NationType implements Identifiable {
         @Override
         public String getTagName() {
             return "european-nation-type";
+        }
+        
+        protected boolean isEuropean() {
+        	return true;
         }
     }
 }

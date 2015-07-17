@@ -7,12 +7,16 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class Player implements Identifiable {
 
     private String id;
-    String nationId;
+    Nation nation;
     NationType nationType;
     
     @Override
     public String getId() {
         return id;
+    }
+    
+    public Nation getNation() {
+    	return nation;
     }
     
     public static class Xml extends XmlNodeParser {
@@ -27,9 +31,11 @@ public class Player implements Identifiable {
             if (nationTypeStr == null) {
                 return;
             }
+            String nationIdStr = getStrAttribute(attributes, "nationId");
+            
             Player player = new Player();
             player.id = getStrAttribute(attributes, "id");
-            player.nationId = getStrAttribute(attributes, "nationId");
+            player.nation = specification.nations.getById(nationIdStr);
             player.nationType = specification.nationTypes.getById(nationTypeStr);
             
             Game.Xml gameXml = getParentXmlParser();
@@ -41,4 +47,5 @@ public class Player implements Identifiable {
             return "player";
         }
     }
+
 }

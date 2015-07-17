@@ -10,7 +10,7 @@ public class IndianSettlement extends Settlement {
     protected Unit missionary = null;
     
     public String getImageKey() {
-    	String st = owner.nationId;
+    	String st = owner.getNation().getId();
     	
     	if (settlementType.isCapital()) {
     		st += ".capital";

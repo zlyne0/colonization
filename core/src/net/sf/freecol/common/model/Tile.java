@@ -23,6 +23,7 @@ public class Tile {
 	
 	public Colony colony;
 	public IndianSettlement indianSettlement;
+	private LinkedList<Unit> units = new LinkedList<Unit>();
 	
 	private LinkedList<SortableTexture> backgroundTerainTextures = new LinkedList<SortableTexture>();
 	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
@@ -40,7 +41,7 @@ public class Tile {
 	}
 	
 	public String toString() {
-		return "id: " + id + ", type: " + type.toString() + ", style: " + style; 
+		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unitCount: " + unitsCount(); 
 	}
 	
 	public void addTileResources(TileResource tileResource) {
@@ -61,6 +62,18 @@ public class Tile {
 	
 	public void addObjectTexture(Frame frame) {
 		objectTextures.add(frame);
+	}
+
+	public int unitsCount() {
+		return units.size();
+	}
+	
+	public Unit firstUnit() {
+		return units.getFirst();
+	}
+
+	public void addUnit(Unit unit) {
+		units.add(unit);
 	}
 	
 	public boolean hasRoad() {
@@ -165,7 +178,4 @@ public class Tile {
 			return "tile";
 		}
 	}
-	
-	
-	
 }

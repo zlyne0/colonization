@@ -197,12 +197,17 @@ public class GameResources {
 		if (colorName == null) {
 			throw new IllegalArgumentException("can not find prop value for key: " + propKey);
 		}
+		return colorFromValue(colorName);
+	}
+	
+	public static Color colorFromValue(String colorName) {
 		colorName = colorName.replaceAll("urn:color:", "");
 		colorName = colorName.toLowerCase();
 		if (colorName.startsWith("0x")) {
 			colorName = colorName.replaceAll("0x", "");
 			return Color.valueOf(colorName);
+		} else {
+			return new Color((Integer.parseInt(colorName) << 8) | 0xff);
 		}
-		throw new IllegalArgumentException("not implemented getColor by key: " + propKey + ", val: " + colorName);
 	}
 }

@@ -5,6 +5,7 @@ import java.util.HashMap;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -18,6 +19,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Point;
@@ -179,15 +181,69 @@ public class MapRenderer {
 	}
 	
 	private class ObjectsTileDrawer extends TileDrawer {
+		
+		private static final int UNIT_IMAGE_OFFSET = 20;
+		
+		private BitmapFont font = new BitmapFont(false);
+		protected Player player;
+		
+		private int w = MapRenderer.TILE_WIDTH;
+		private int h = MapRenderer.TILE_HEIGHT;
+
 		@Override
 		public void draw() {
+			if (tile.isUnexplored(player)) {
+				return;
+			}
 			tile.drawObjects(batch, screenPoint.x, screenPoint.y);
+			
+			if (tile.unitsCount() > 0 && !tile.hasSettlement()) {
+				Unit firstUnit = tile.firstUnit();
+				Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
+				drawUnit(firstUnit, frame);
+			}
+		}
+		
+		private void drawUnit(Unit unit, Frame frame) {
+			batch.draw(frame.texture, 
+					screenPoint.x + frame.offsetX, screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
+			);
+			
+			drawUnitChip(unit);
+		}
+		
+		private void drawUnitChip(Unit unit) {
+			int cx = screenPoint.x + 35;
+			int cy = screenPoint.y + h - 5;
+			
+			batch.end();
+			shapeRenderer.begin(ShapeType.Filled);
+			shapeRenderer.setColor(unit.getOwner().getNation().getColor());
+			shapeRenderer.rect(cx, cy, 17, 20);
+			shapeRenderer.end();
+
+			shapeRenderer.begin(ShapeType.Line);
+			shapeRenderer.setColor(Color.BLACK);
+			shapeRenderer.rect(cx, cy, 17, 20);
+			
+			if (tile.unitsCount() > 1) {
+				shapeRenderer.setColor(Color.WHITE);
+				int max = tile.unitsCount() > 10 ? 10 : tile.unitsCount(); 
+				for (int i=0; i<max; i++) {
+					shapeRenderer.line(cx - 7, cy - (i*2) + 19, cx - 1, cy - (i*2) + 19);
+				}
+			}
+			
+			shapeRenderer.end();
+			
+			batch.begin();
+			font.setColor(Color.BLACK);
+			font.draw(batch, "G", cx + 2, cy + 20 - 2);
 		}
 	}
 	
 	private final SpriteBatch batch; 
 	private final Map map; 
-	private final ShapeRenderer shapeRenderer;
 	private final GameResources gameResources;
 	
     private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
@@ -220,7 +276,6 @@ public class MapRenderer {
         
         this.map = map;
         this.batch = spriteBatch;
-        this.shapeRenderer = shapeRenderer;
         
     	terainBackgroundTileDrawer.batch = batch;
     	terainBackgroundTileDrawer.map = map;
@@ -234,6 +289,7 @@ public class MapRenderer {
     	
     	objectsTileDrawer.batch = batch;
     	objectsTileDrawer.map = map;
+    	objectsTileDrawer.shapeRenderer = shapeRenderer;
     }
     
     private void drawLayer(TileDrawer tileDrawer) {
@@ -280,8 +336,10 @@ public class MapRenderer {
     	Gdx.gl20.glLineWidth(3);
     	drawLayer(roadsTileDrawer);
     	roadsTileDrawer.shapeRenderer.end();
+    	Gdx.gl20.glLineWidth(1);
     	batch.begin();
     	
+    	objectsTileDrawer.player = player;
     	drawLayer(objectsTileDrawer);
     	
         if (debug) {

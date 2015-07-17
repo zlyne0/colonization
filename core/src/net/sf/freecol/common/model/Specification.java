@@ -15,8 +15,10 @@ public class Specification {
 	
 	public final MapIdEntities<TileImprovementType> tileImprovementTypes = new MapIdEntities<TileImprovementType>();
 	public final MapIdEntities<UnitType> unitTypes = new MapIdEntities<UnitType>();
+	public final MapIdEntities<UnitRole> unitRoles = new MapIdEntities<UnitRole>();
 	public final MapIdEntities<ResourceType> resourceTypes = new MapIdEntities<ResourceType>();
     public final MapIdEntities<NationType> nationTypes = new MapIdEntities<NationType>();
+    public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
 	
 	public void addTileType(TileType tileType) {
 		tileType.setOrder(tileTypes.size());
@@ -39,8 +41,10 @@ public class Specification {
 			addNode(new ResourceType.Xml(this));
 			addNode(new TileImprovementType.Xml(this));
             addNode(new UnitType.Xml(this));
+            addNode(new UnitRole.Xml(this));
             addNode(new NationType.IndianXml(this));
             addNode(new NationType.EuropeanXml(this));
+            addNode(new Nation.Xml(this));
 		}
 
 		@Override

@@ -5,6 +5,9 @@ import org.xml.sax.Attributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType implements Identifiable {
+	
+	public static final String FREE_COLONIST = "model.unit.freeColonist";
+	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
     public static final int DEFAULT_OFFENCE = 0;
