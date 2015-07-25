@@ -1,22 +1,21 @@
 package promitech.colonization;
 
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Player;
+import promitech.colonization.actors.MapActor;
+import promitech.colonization.infrastructure.CenterSizableViewport;
+import promitech.colonization.savegame.SaveGameParser;
+
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
-import com.badlogic.gdx.InputAdapter;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-
-import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Player;
-import net.sf.freecol.common.model.Tile;
-import promitech.colonization.math.Directions;
-import promitech.colonization.math.Point;
-import promitech.colonization.savegame.SaveGameParser;
+import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class Main extends ApplicationAdapter {
 	
@@ -25,14 +24,16 @@ public class Main extends ApplicationAdapter {
 	OrthographicCamera camera;
 	OrthographicCamera cameraYdown;
 	
-	private InputKeyboardDevice inputKeyboardDevice = new InputKeyboardDevice();
-	private MapRenderer mapRenderer; 
 	private GameResources gameResources;
 	private Game game;
 	private Player player;
 	
+	
+	private Stage stage;
+	
 	@Override
 	public void create () {
+		
         camera = new OrthographicCamera(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.setToOrtho(false, Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
         camera.update();
@@ -44,32 +45,6 @@ public class Main extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		shapeRenderer = new ShapeRenderer();
 		
-        Gdx.input.setInputProcessor(new InputAdapter() {
-        	@Override
-        	public boolean touchUp(int screenX, int screenY, int pointer, int button) {
-        		if (button == Input.Buttons.LEFT) {
-        		    Point p = new Point();
-        		    mapRenderer.screenToMapCords(screenX, screenY, p);
-        		    
-        		    System.out.println("p = " + p);
-        			Tile tile = game.map.getTile(p.x, p.y);
-        			if (tile != null) {
-        				System.out.println("tile: " + tile);
-        				
-//        				Direction direction  = Direction.N;
-//						Tile t1 = game.map.getTile(p.x, p.y, direction.getNextDirection());
-//						Tile t2 = game.map.getTile(p.x, p.y, direction.getPreviousDirection());
-//        				System.out.println("" + direction.getNextDirection() + " " + t1);
-//        				System.out.println("" + direction.getPreviousDirection() + " " + t2);
-        				
-        			} else {
-        				System.out.println("tile is null");
-        			}
-        		}
-         		return false;
-        	}
-        });
-
 		gameResources = new GameResources();
         
 		try {
@@ -84,13 +59,22 @@ public class Main extends ApplicationAdapter {
 		}
 		player = game.players.getById("player:1");
 		
-		mapRenderer = new MapRenderer(
-				game.map, gameResources, 
-				Gdx.graphics.getWidth(), Gdx.graphics.getHeight(),
-				batch, shapeRenderer
-		);
-		mapRenderer.centerCameraOnTileCords(24, 78);
-		mapRenderer.initMapTiles(game.map, player);
+		MapActor mapActor = new MapActor(player, game, gameResources);
+		
+		//stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
+		stage = new Stage();
+		Gdx.input.setInputProcessor(stage);
+		
+        Table w = new Table();
+		w.setFillParent(true);
+		w.defaults().fillX();
+		w.defaults().fillY();
+		w.defaults().expandX();
+		w.defaults().expandY();
+		w.add(mapActor);
+		w.pack();
+		
+		stage.addActor(w);		
 	}
 	
 	@Override
@@ -100,19 +84,8 @@ public class Main extends ApplicationAdapter {
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 		
-		inputKeyboardDevice.recognizeInput();
-		Directions moveDirection = inputKeyboardDevice.getMoveDirection();
-		if (moveDirection != null) {
-		    mapRenderer.cameraPosition.add(moveDirection.vx * 10, moveDirection.vy * 10);
-		    System.out.println("moveDirection " + moveDirection + " camera.position " + mapRenderer.cameraPosition);
-			//pointOperations.getCameraPoint().add(moveDirection.vx, moveDirection.vy);
-		}
-		
-		batch.setProjectionMatrix(camera.combined);
-		shapeRenderer.setProjectionMatrix(camera.combined);
-		batch.begin();
-		mapRenderer.render(player);
-		batch.end();
+		stage.act();
+		stage.draw();
 		
 		frameRenderMillis = System.currentTimeMillis() - frameRenderMillis;
 		
@@ -120,6 +93,7 @@ public class Main extends ApplicationAdapter {
 	}
 	
 	private BitmapFont font;	
+	private long frameRenderMillis;
 	
 	private void drawFPS() {
 		if (font == null) {
@@ -131,7 +105,9 @@ public class Main extends ApplicationAdapter {
 		font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + ", time: " + frameRenderMillis, 20, 20);
 		batch.end();
 	}
-	
-	private long frameRenderMillis;
-	
+
+    @Override
+    public void resize(int width, int height) {
+        stage.getViewport().update(width, height, true);
+    }
 }

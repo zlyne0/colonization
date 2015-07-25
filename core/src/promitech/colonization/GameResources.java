@@ -15,6 +15,7 @@ import com.badlogic.gdx.graphics.Texture;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
+import promitech.colonization.actors.MapRenderer;
 import promitech.colonization.gdx.Frame;
 
 public class GameResources {

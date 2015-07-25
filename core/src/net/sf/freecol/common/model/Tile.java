@@ -1,17 +1,12 @@
 package net.sf.freecol.common.model;
 
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.Set;
 
 import org.xml.sax.Attributes;
 
-import promitech.colonization.SortableTexture;
-import promitech.colonization.gdx.Frame;
 import promitech.colonization.savegame.XmlNodeParser;
-
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 
 public class Tile {
 	
@@ -24,10 +19,6 @@ public class Tile {
 	public Colony colony;
 	public IndianSettlement indianSettlement;
 	private LinkedList<Unit> units = new LinkedList<Unit>();
-	
-	private LinkedList<SortableTexture> backgroundTerainTextures = new LinkedList<SortableTexture>();
-	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
-	private LinkedList<Frame> objectTextures = new LinkedList<Frame>();
 	
 	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
 	public final LinkedList<TileImprovement> tileImprovements = new LinkedList<TileImprovement>();
@@ -46,22 +37,6 @@ public class Tile {
 	
 	public void addTileResources(TileResource tileResource) {
 		this.tileResources.add(tileResource);
-	}
-
-	public void addBackgroundTerainTexture(SortableTexture texture) {
-		backgroundTerainTextures.add(texture);
-		Collections.sort(backgroundTerainTextures);
-	}
-
-	public void addForegroundTerainTexture(Frame frame) {
-		if (frame == null) {
-			throw new NullPointerException();
-		}
-		foregroundTerainTextures.add(frame);
-	}
-	
-	public void addObjectTexture(Frame frame) {
-		objectTextures.add(frame);
 	}
 
 	public int unitsCount() {
@@ -99,24 +74,6 @@ public class Tile {
 	
 	public boolean hasSettlement() {
 		return colony != null || indianSettlement != null;
-	}
-	
-	public void draw(SpriteBatch batch, int rx, int ry) {
-		for (SortableTexture texture : backgroundTerainTextures) {
-			batch.draw(texture.texture, rx, ry);
-		}
-	}
-	
-	public void drawOverlay(SpriteBatch batch, int rx, int ry) {
-		for (Frame frame : foregroundTerainTextures) {
-			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
-		}
-	}
-
-	public void drawObjects(SpriteBatch batch, int rx, int ry) {
-		for (Frame frame : objectTextures) {
-			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
-		}
 	}
 	
 	public TileImprovement getTileImprovementByType(String typeStr) {

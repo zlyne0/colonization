@@ -1,4 +1,4 @@
-package promitech.colonization;
+package promitech.colonization.gdx;
 
 import com.badlogic.gdx.graphics.Texture;
 

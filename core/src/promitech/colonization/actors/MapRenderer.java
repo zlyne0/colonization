@@ -1,28 +1,26 @@
-package promitech.colonization;
+package promitech.colonization.actors;
 
 import java.util.HashMap;
 
+import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import promitech.colonization.Direction;
+import promitech.colonization.GameResources;
+import promitech.colonization.actors.MapRenderer.TileDrawer;
+import promitech.colonization.gdx.Frame;
+import promitech.colonization.math.Point;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Bezier;
 import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
-
-import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Player;
-import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.TileImprovement;
-import net.sf.freecol.common.model.TileImprovementType;
-import net.sf.freecol.common.model.TileResource;
-import net.sf.freecol.common.model.Unit;
-import promitech.colonization.MapRenderer.TileDrawer;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.math.Point;
 
 class RoadsTileDrawer extends TileDrawer {
 	private int SAMPLE_POINTS = 100;
@@ -150,7 +148,7 @@ public class MapRenderer {
 	public static final int TILE_HEIGHT = 64;
 	
 	public static abstract class TileDrawer {
-		protected SpriteBatch batch;
+		protected Batch batch;
 		protected ShapeRenderer shapeRenderer;
 		protected final Point screenPoint = new Point(); 
 		protected int mapx;
@@ -158,6 +156,8 @@ public class MapRenderer {
 		
 		protected Map map;
 		protected Tile tile;
+		protected TileDrawModel tileDrawModel;
+		protected MapDrawModel mapDrawModel;
 		
 		public boolean areCoordinatesOnMap() {
 			return mapx >= 0 && mapx < map.width && mapy >= 0 && mapy < map.height;
@@ -169,14 +169,14 @@ public class MapRenderer {
 	private class TerainBackgroundTileDrawer extends TileDrawer {
 		@Override
 		public void draw() {
-			tile.draw(batch, screenPoint.x, screenPoint.y);
+			tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
 		}
 	}
 
 	private class TerainForegroundTileDrawer extends TileDrawer {
 		@Override
 		public void draw() {
-			tile.drawOverlay(batch, screenPoint.x, screenPoint.y);
+			tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
 		}
 	}
 	
@@ -195,7 +195,7 @@ public class MapRenderer {
 			if (tile.isUnexplored(player)) {
 				return;
 			}
-			tile.drawObjects(batch, screenPoint.x, screenPoint.y);
+			tileDrawModel.drawObjects(batch, screenPoint.x, screenPoint.y);
 			
 			if (tile.unitsCount() > 0 && !tile.hasSettlement()) {
 				Unit firstUnit = tile.firstUnit();
@@ -242,8 +242,9 @@ public class MapRenderer {
 		}
 	}
 	
-	private final SpriteBatch batch; 
 	private final Map map; 
+	private final MapDrawModel mapDrawModel;
+	private final Player playerMap;
 	private final GameResources gameResources;
 	
     private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
@@ -252,44 +253,40 @@ public class MapRenderer {
     private final ObjectsTileDrawer objectsTileDrawer = new ObjectsTileDrawer();
 
     public final Vector2 cameraPosition = new Vector2();
-    private final int screenWidth;
-    private final int screenHeight;
+    private int screenWidth = 0;
+    private int screenHeight = 0;
     
-    private DebugInformationRenderer debugInformationRenderer; 
-	public boolean debug = true;
 	private final Point screenMin = new Point();
 	private final Point screenMax = new Point();
 	private int x;
 	private int y;
 	
 	
-    public MapRenderer(Map map, GameResources gameResources, int screenWidth, int screenHeight, 
-    		SpriteBatch spriteBatch, ShapeRenderer shapeRenderer) 
-    {
-    	this.screenWidth = screenWidth;
-    	this.screenHeight = screenHeight;
+	public MapRenderer(Player playerMap, Map map, MapDrawModel mapDrawModel, 
+			GameResources gameResources, ShapeRenderer shapeRenderer ) 
+	{
+    	this.playerMap = playerMap;
+    	this.map = map;
+    	this.mapDrawModel = mapDrawModel;
     	this.gameResources = gameResources;
-        debugInformationRenderer = new DebugInformationRenderer(this);
-        debugInformationRenderer.gameResources = gameResources;
-        
+    	
         roadsTileDrawer = new RoadsTileDrawer(gameResources);
         
-        this.map = map;
-        this.batch = spriteBatch;
-        
-    	terainBackgroundTileDrawer.batch = batch;
     	terainBackgroundTileDrawer.map = map;
-    	
-    	terainForegroundTileDrawer.batch = batch;
     	terainForegroundTileDrawer.map = map;
-    	
     	roadsTileDrawer.map = map;
-    	roadsTileDrawer.batch = batch;
-    	roadsTileDrawer.shapeRenderer = shapeRenderer;
-    	
-    	objectsTileDrawer.batch = batch;
     	objectsTileDrawer.map = map;
+    	
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
+    	
+    	roadsTileDrawer.renderForPlayer = playerMap;
+    	objectsTileDrawer.player = playerMap;
+    }
+    
+    public void setMapRendererSize(int width, int height) {
+    	this.screenWidth = width;
+    	this.screenHeight = height;
     }
     
     private void drawLayer(TileDrawer tileDrawer) {
@@ -298,6 +295,7 @@ public class MapRenderer {
     			tileDrawer.mapx = x;
     			tileDrawer.mapy = y;
     			tileDrawer.tile = tileDrawer.map.getTile(x, y);
+    			tileDrawer.tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
     			mapToScreenCords(x, y, tileDrawer.screenPoint);
     			tileDrawer.draw();
     		}
@@ -322,16 +320,18 @@ public class MapRenderer {
     	}
     }
     
-    public void render(final Player player) {
+    public void render(Batch batch) {
+    	terainBackgroundTileDrawer.batch = batch;
+    	terainForegroundTileDrawer.batch = batch;
+    	roadsTileDrawer.batch = batch;
+    	objectsTileDrawer.batch = batch;
+
     	
     	preparePartOfMapToRender(map);
     	drawLayer(terainBackgroundTileDrawer);
-
-    	
     	drawLayer(terainForegroundTileDrawer);
     	
     	batch.end();
-    	roadsTileDrawer.renderForPlayer = player;
     	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
     	Gdx.gl20.glLineWidth(3);
     	drawLayer(roadsTileDrawer);
@@ -339,12 +339,7 @@ public class MapRenderer {
     	Gdx.gl20.glLineWidth(1);
     	batch.begin();
     	
-    	objectsTileDrawer.player = player;
     	drawLayer(objectsTileDrawer);
-    	
-        if (debug) {
-        	debugInformationRenderer.render(batch, map);
-        }
     }
     
     private void mapToScreenCords(int x, int y, Point p) {
@@ -385,151 +380,4 @@ public class MapRenderer {
 		cameraPosition.add(TILE_WIDTH/2, 0);
 	}
     
-	public void initMapTiles(Map map, Player player) {
-		for (int y=0; y<map.height; y++) {
-			for (int x=0; x<map.width; x++) {
-				Tile tile = map.getTile(x, y);
-				renderTerainAndBeaches(tile, player, x, y);
-			}
-		}
-		
-		for (int y=0; y<map.height; y++) {
-			for (int x=0; x<map.width; x++) {
-				Tile tile = map.getTile(x, y);
-				if (tile.isUnexplored(player)) {
-					continue;
-				}
-	            for (Direction direction : Direction.values()) {
-					Tile borderTile = map.getTile(x, y, direction);
-					if (borderTile == null) {
-						continue;
-					}
-					renderBordersAndRivers(tile, borderTile, direction, x, y, player);
-				}
-			}
-		}
-		
-		for (int y=0; y<map.height; y++) {
-			for (int x=0; x<map.width; x++) {
-				Tile tile = map.getTile(x, y);
-				renderResources(tile, x, y, player);
-			}
-		}
-		
-	}
-
-	private void renderTerainAndBeaches(Tile tile, Player player, int x, int y) {
-		Texture img;
-		
-		if (tile.isUnexplored(player)) {
-			img = gameResources.unexploredTile(x, y);
-			tile.addBackgroundTerainTexture(new SortableTexture(img));
-			return;
-		}
-		
-		img = gameResources.tile(tile.type, x, y);
-		tile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-		
-		// add images for beach
-		if (tile.type.isWater() && tile.style > 0) {
-			int edgeStyle = tile.style >> 4;
-    		if (edgeStyle > 0) {
-    			img = gameResources.tileEdge(edgeStyle, x, y);
-    			tile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-    		}
-    		int cornerStyle = tile.style & 15;
-    		if (cornerStyle > 0) {
-    			img = gameResources.tileCorner(cornerStyle, x, y);
-    			tile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-    		}
-		}
-	}
-	
-	private void renderBordersAndRivers(Tile tile, Tile borderTile, Direction direction, int x, int y, Player player) {
-		Texture img;
-		
-		if (borderTile.isUnexplored(player)) {
-			img = gameResources.unexploredBorder(direction, x, y);
-			tile.addBackgroundTerainTexture(new SortableTexture(img));
-			return;
-		}
-		
-		if (tile.type.hasTheSameTerain(borderTile.type)) {
-			return;
-		}
-		
-		if (tile.type.isWater() || borderTile.type.isWater()) {
-			if (!tile.type.isWater() && borderTile.type.isWater()) {
-				direction = direction.getReverseDirection();
-				img = gameResources.tileBorder(tile.type, direction, x, y);
-				borderTile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-			}
-			if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
-				direction = direction.getReverseDirection();
-				img = gameResources.tileBorder(tile.type, direction, x, y);
-				borderTile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-			}
-		} else {
-			direction = direction.getReverseDirection();
-			img = gameResources.tileBorder(tile.type, direction, x, y);
-			borderTile.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
-		}
-		
-		if (Direction.longSides.contains(direction) && tile.type.isWater()) {
-			TileImprovement riverTileImprovement = borderTile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
-			if (riverTileImprovement != null) {
-				img = gameResources.riverDelta(direction, riverTileImprovement);
-				tile.addBackgroundTerainTexture(new SortableTexture(img, -1));
-			}
-		}
-	}
-	
-	private void renderResources(Tile tile, int x, int y, Player player) {
-		if (tile.isUnexplored(player)) {
-			return;
-		}
-		
-		Frame frame;
-		
-		if (tile.isPlowed()) {
-			tile.addForegroundTerainTexture(gameResources.plowed());
-		}
-		if (tile.type.getTypeStr().equals("model.tile.hills")) {
-			tile.addForegroundTerainTexture(gameResources.hills());
-		}
-		if (tile.type.getTypeStr().equals("model.tile.mountains")) {
-			tile.addForegroundTerainTexture(gameResources.mountainsKey());
-		}
-		// draw forest with river
-		if (tile.type.isForested()) {
-			TileImprovement riverTileImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
-			frame = gameResources.forestImg(tile.type, riverTileImprovement);
-			if (frame != null) {
-				tile.addForegroundTerainTexture(frame);
-			}
-		}
-		for (TileImprovement tileImprovement : tile.tileImprovements) {
-			if (tileImprovement.type.isRiver()) {
-				tile.addForegroundTerainTexture(gameResources.river(tileImprovement.style));
-			}
-		}
-		for (TileResource tileResource : tile.tileResources) {
-			frame = gameResources.tileResource(tileResource.getResourceType());
-			tile.addForegroundTerainTexture(frame);
-		}
-		
-		if (tile.lostCityRumour) {
-			tile.addForegroundTerainTexture(gameResources.tileLastCityRumour());
-		}
-		
-		
-		if (tile.indianSettlement != null) {
-		    String key = tile.indianSettlement.getImageKey();
-		    tile.addObjectTexture(gameResources.getCenterAdjustFrameTexture(key));
-		}
-		if (tile.colony != null) {
-            String key = tile.colony.getImageKey();
-            tile.addObjectTexture(gameResources.getCenterAdjustFrameTexture(key));
-		}
-	}
 }
