@@ -34,7 +34,6 @@ public class Colony extends Settlement {
     }
     
     public static class Xml extends XmlNodeParser {
-
         public Xml(XmlNodeParser parent) {
             super(parent);
         }
@@ -45,12 +44,16 @@ public class Colony extends Settlement {
             Player owner = game.players.getById(getStrAttribute(attributes, "owner"));
             
             Colony colony = new Colony();
+            colony.id = getStrAttribute(attributes, "id");
             colony.name = getStrAttribute(attributes, "name");
             colony.owner = owner;
             colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             tileXmlParser.tile.colony = colony;
+            
+            colony.tile = tileXmlParser.tile;
+            owner.settlements.add(colony);
         }
 
         @Override

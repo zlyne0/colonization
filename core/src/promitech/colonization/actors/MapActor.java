@@ -76,8 +76,6 @@ public class MapActor extends Actor {
 		});
 		
 		mapRenderer = new MapRenderer(player, game.map, mapDrawModel, gameResources, shapeRenderer);
-		mapRenderer.centerCameraOnTileCords(24, 78);
-		
 		mapDrawModel.initialize(game.map, player, gameResources);
 	}
 	
@@ -103,6 +101,7 @@ public class MapActor extends Actor {
 	@Override
 	protected void sizeChanged() {
 		mapRenderer.setMapRendererSize((int)getWidth(), (int)getHeight());
+		mapRenderer.centerCameraOnTileCords(24, 78);
 	}
 
 	public void keyDirection(Directions moveDirection) {

@@ -5,12 +5,15 @@ import java.util.LinkedList;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
+import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.gdx.SortableTexture;
 
@@ -20,8 +23,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 class TileDrawModel {
 	private LinkedList<SortableTexture> backgroundTerainTextures = new LinkedList<SortableTexture>();
 	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
-	private LinkedList<Frame> objectTextures = new LinkedList<Frame>();
-
+	private boolean fogOfWar = true;
+	Frame settlementImage;
+	
 	public void draw(Batch batch, int rx, int ry) {
 		for (SortableTexture texture : backgroundTerainTextures) {
 			batch.draw(texture.texture, rx, ry);
@@ -34,9 +38,9 @@ class TileDrawModel {
 		}
 	}
 
-	public void drawObjects(Batch batch, int rx, int ry) {
-		for (Frame frame : objectTextures) {
-			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
+	public void drawSettlementImage(Batch batch, int rx, int ry) {
+		if (settlementImage != null) {
+			batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
 		}
 	}
 	
@@ -51,23 +55,25 @@ class TileDrawModel {
 		}
 		foregroundTerainTextures.add(frame);
 	}
-	
-	public void addObjectTexture(Frame frame) {
-		objectTextures.add(frame);
-	}
 
 	public void clear() {
 		backgroundTerainTextures.clear();
 		foregroundTerainTextures.clear();
-		objectTextures.clear();
+		fogOfWar = true;
 	}
 	
 	public String toString() {
 		return "drawModel backgroundTerains: " + backgroundTerainTextures.size() + 
-				", foregroundTerains: " + foregroundTerainTextures.size() +
-				", objectTextures: " + objectTextures.size();
+				", foregroundTerains: " + foregroundTerainTextures.size();
 	}
-	
+
+	public boolean isFogOfWar() {
+		return fogOfWar;
+	}
+
+	public void withoutFogOfWar() {
+		this.fogOfWar = false;
+	}
 }
 
 class TileDrawModelInitializer {
@@ -80,6 +86,9 @@ class TileDrawModelInitializer {
 	private Tile borderTile;
 	private TileDrawModel tileDrawModel;
 	private TileDrawModel borderTileDrawModel;
+	private MapDrawModel mapDrawModel;
+	
+	private SpiralIterator spiralIterator;
 	
 	private Frame frame;
 	private Texture img;
@@ -92,9 +101,13 @@ class TileDrawModelInitializer {
 		if (player == null) {
 			throw new IllegalArgumentException("player should not be null");
 		}
+		
+		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
 	public void initMapTiles(MapDrawModel mapDrawModel) {
+		this.mapDrawModel = mapDrawModel;
+		
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
 				tile = map.getTile(x, y);
@@ -130,8 +143,39 @@ class TileDrawModelInitializer {
 			}
 		}
 		
+		fogOfWarForUnits();
+		fogOfWarForSettlements();
 	}
 
+	private void fogOfWarForSettlements() {
+		for (Settlement settlement : player.settlements.entities()) {
+			x = settlement.tile.x;
+			y = settlement.tile.y;
+			int visibleRadius = settlement.settlementType.getVisibleRadius();
+			initFogOfWarForNeighboursTiles(visibleRadius);
+		}
+	}
+
+	private void fogOfWarForUnits() {
+		for (Unit unit : player.units.entities()) {
+			int radius = unit.lineOfSight();
+			x = unit.tile.x;
+			y = unit.tile.y;
+			initFogOfWarForNeighboursTiles(radius);
+		}
+	}
+
+	private void initFogOfWarForNeighboursTiles(int radius) {
+		TileDrawModel t = mapDrawModel.getTileDrawModel(x, y);;
+		t.withoutFogOfWar();
+		spiralIterator.reset(x, y, true, radius);
+		while (spiralIterator.hasNext()) {
+			t = mapDrawModel.getTileDrawModel(spiralIterator.getX(), spiralIterator.getY());
+			t.withoutFogOfWar();
+			spiralIterator.next();
+		}
+	}
+	
 	private void renderTerainAndBeaches() {
 		if (tile.isUnexplored(player)) {
 			img = gameResources.unexploredTile(x, y);
@@ -233,11 +277,11 @@ class TileDrawModelInitializer {
 		
 		if (tile.indianSettlement != null) {
 		    String key = tile.indianSettlement.getImageKey();
-		    tileDrawModel.addObjectTexture(gameResources.getCenterAdjustFrameTexture(key));
+		    tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
 		}
 		if (tile.colony != null) {
             String key = tile.colony.getImageKey();
-            tileDrawModel.addObjectTexture(gameResources.getCenterAdjustFrameTexture(key));
+		    tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
 		}
 	}
 }

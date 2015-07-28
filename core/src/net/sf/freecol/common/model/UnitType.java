@@ -14,6 +14,7 @@ public class UnitType implements Identifiable {
     public static final int DEFAULT_DEFENCE = 1;
 
     private String id;
+    public final MapIdEntities<Modifier> modifiers = new MapIdEntities<Modifier>(); 
     
     /**
      * The offence of this UnitType. Only Units with an offence value
@@ -76,17 +77,36 @@ public class UnitType implements Identifiable {
     public String toString() {
         return id;
     }
+
+	public int lineOfSight() {
+		float base = lineOfSight;
+		Modifier modifier = modifiers.getByIdOrNull(Modifier.LINE_OF_SIGHT_BONUS);
+		if (modifier != null) {
+			base = modifier.apply(base);
+		}
+		return (int)base;
+	}
     
     public static class Xml extends XmlNodeParser {
+    	private UnitType ut;
+    	
         public Xml(XmlNodeParser parent) {
             super(parent);
+            XmlNodeParser xml = new Modifier.Xml(this)
+	            .addSetter(new ObjectFromNodeSetter() {
+					@Override
+					public void set(Identifiable entity) {
+						ut.modifiers.add((Modifier)entity);
+					}
+				});
+            addNode(xml);
         }
 
         @Override
         public void startElement(String qName, Attributes attributes) {
             String id = getStrAttribute(attributes, "id");
             
-            UnitType ut = new UnitType(id);
+            ut = new UnitType(id);
             ut.offence = getIntAttribute(attributes, "offence", DEFAULT_OFFENCE);
             ut.defence = getIntAttribute(attributes, "defence", DEFAULT_DEFENCE);
             ut.movement = getIntAttribute(attributes, "movement", DEFAULT_MOVEMENT);

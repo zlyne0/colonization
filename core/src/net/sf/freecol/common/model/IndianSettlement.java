@@ -47,6 +47,9 @@ public class IndianSettlement extends Settlement {
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             tileXmlParser.tile.indianSettlement = is;
+            is.tile = tileXmlParser.tile;
+   
+            owner.settlements.add(is);
         }
 
         @Override

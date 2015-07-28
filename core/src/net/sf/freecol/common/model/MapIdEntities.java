@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 
 public class MapIdEntities<T extends Identifiable> {
@@ -15,6 +16,26 @@ public class MapIdEntities<T extends Identifiable> {
             throw new IllegalArgumentException("can not find entity by id: " + id);
         }
         return en;
+    }
+    
+    public T first() {
+    	if (entities.isEmpty()) {
+    		return null;
+    	}
+    	return entities.values().iterator().next();
+    }
+    
+    public T getByIdOrNull(String id) {
+        T en = entities.get(id);
+        return en;
+    }
+    
+    public int size() {
+    	return entities.size();
+    }
+    
+    public Collection<T> entities() {
+    	return entities.values();
     }
 }
 

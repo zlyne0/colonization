@@ -8,12 +8,19 @@ import org.xml.sax.SAXException;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit {
+public class Unit implements Identifiable {
 
+	private String id;
 	private Player owner;
     private UnitType unitType;
     private UnitRole unitRole;
     private List<Unit> containedUnits;
+    public Tile tile;
+
+	@Override
+	public String getId() {
+		return id;
+	}
     
     public String toString() {
         String st = "unitType = " + unitType;
@@ -35,24 +42,22 @@ public class Unit {
     }
     
     public String resourceImageKey() {
-    	// TODO: there is problem with two units
     	if (!owner.nationType.isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
     			return unitType.getId() + unitRole.getRoleSuffix() + ".native.image";
     		}
     	}
-    	// model.unit.freeColonist.soldier.native.image
-    	// model.unit.freeColonist.native.image
     	return unitType.getId() + unitRole.getRoleSuffix() + ".image"; 
-//    	return unitType.getId() + unitRole.getRoleSuffix()
-//	        + ((owner.nationType.isEuropean()) ? "" : ".native")
-//	        + ".image";
     }
 
 	public Player getOwner() {
 		return owner;
 	}
 
+	public int lineOfSight() {
+		return unitType.lineOfSight();
+	}
+	
     public static class Xml extends XmlNodeParser {
         
         private boolean secoundLevel = false;
@@ -69,20 +74,24 @@ public class Unit {
             
             UnitType unitType = specification.unitTypes.getById(unitTypeStr);
             Unit unit = new Unit();
+            unit.id = getStrAttribute(attributes, "id");
             unit.unitRole = specification.unitRoles.getById(unitRoleStr);
             unit.unitType = unitType;
             
+            Tile.Xml tileXmlParser = getParentXmlParser();
+            unit.tile = tileXmlParser.tile;
             if (containerUnit == null) {
                 containerUnit = unit;
-                Tile.Xml tileXmlParser = getParentXmlParser();
-                tileXmlParser.tile.addUnit(unit);
+                tileXmlParser.tile.units.add(unit);
             } else {
                 secoundLevel = true;
                 containerUnit.addUnit(unit);
             }
             
             String ownerStr = getStrAttribute(attributes, "owner");
-            unit.owner = game.players.getById(ownerStr);
+            Player owner = game.players.getById(ownerStr);
+            unit.owner = owner;
+            owner.units.add(unit);
         }
 
         @Override
@@ -99,5 +108,4 @@ public class Unit {
             return "unit";
         }
     }
-
 }

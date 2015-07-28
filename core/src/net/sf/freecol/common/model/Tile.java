@@ -10,6 +10,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Tile {
 	
+	public final int x;
+	public final int y;
 	public final TileType type;
 	public final int style;
 	public final int id;
@@ -18,37 +20,27 @@ public class Tile {
 	
 	public Colony colony;
 	public IndianSettlement indianSettlement;
-	private LinkedList<Unit> units = new LinkedList<Unit>();
+	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
 	public final LinkedList<TileImprovement> tileImprovements = new LinkedList<TileImprovement>();
 	
 	private final Set<String> exploredByPlayers = new HashSet<String>();
 	
-	public Tile(int id, TileType type, int style) {
+	public Tile(int id, int x, int y, TileType type, int style) {
 		this.id = id;
+		this.x = x;
+		this.y = y;
 		this.type = type;
 		this.style = style;
 	}
 	
 	public String toString() {
-		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unitCount: " + unitsCount(); 
+		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}
 	
 	public void addTileResources(TileResource tileResource) {
 		this.tileResources.add(tileResource);
-	}
-
-	public int unitsCount() {
-		return units.size();
-	}
-	
-	public Unit firstUnit() {
-		return units.getFirst();
-	}
-
-	public void addUnit(Unit unit) {
-		units.add(unit);
 	}
 	
 	public boolean hasRoad() {
@@ -76,6 +68,20 @@ public class Tile {
 		return colony != null || indianSettlement != null;
 	}
 	
+	public boolean hasSettlementOwnedBy(Player player) {
+		return colony != null && colony.owner.equals(player) || indianSettlement != null && indianSettlement.owner.equals(player);
+	}
+
+	public Settlement getSettlement() {
+		if (colony != null) {
+			return colony;
+		}
+		if (indianSettlement != null) {
+			return indianSettlement;
+		}
+		return null;
+	}
+
 	public TileImprovement getTileImprovementByType(String typeStr) {
 		for (TileImprovement ti : tileImprovements) {
 			if (ti.type.id.equals(typeStr)) {
@@ -112,7 +118,7 @@ public class Tile {
 			String idStr = getStrAttribute(attributes, "id").replaceAll("tile:", "");
 			
 			TileType tileType = specification.getTileTypeByTypeStr(tileTypeStr);
-			tile = new Tile(Integer.parseInt(idStr), tileType, tileStyle);
+			tile = new Tile(Integer.parseInt(idStr), x, y, tileType, tileStyle);
 			tile.connected = getIntAttribute(attributes, "connected", 0);
 			
 			Map.Xml xmlMap = getParentXmlParser();
@@ -135,4 +141,5 @@ public class Tile {
 			return "tile";
 		}
 	}
+
 }

@@ -29,13 +29,15 @@ import promitech.colonization.savegame.XmlNodeParser;
  */
 public class SettlementType implements Identifiable {
 
-    private String id;
+    private static final int DEFAULT_VISIBLE_RADIUS = 2;
+
+	private String id;
     
     /** Whether this SettlementType is a capital. */
     private boolean capital = false;
 
     /** How many tiles this SettlementType can see. */
-    private int visibleRadius = 2;
+    private int visibleRadius = DEFAULT_VISIBLE_RADIUS;
 
     /** How many tiles this SettlementType can claim. */
     private int claimableRadius = 1;
@@ -187,6 +189,7 @@ public class SettlementType implements Identifiable {
             SettlementType settlementType = new SettlementType();
             settlementType.id = getStrAttribute(attributes, "id");
             settlementType.capital = getBooleanAttribute(attributes, "capital");
+            settlementType.visibleRadius = getIntAttribute(attributes, "visibleRadius", DEFAULT_VISIBLE_RADIUS);
             
             NationType.Xml nationTypeXml = getParentXmlParser();
             nationTypeXml.nationType.settlementTypes.add(settlementType);

@@ -14,8 +14,14 @@ import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Pixmap;
+import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.g2d.PolygonRegion;
+import com.badlogic.gdx.graphics.g2d.PolygonSprite;
+import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
+import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Bezier;
@@ -166,14 +172,14 @@ public class MapRenderer {
 		public abstract void draw();		
 	}
 	
-	private class TerainBackgroundTileDrawer extends TileDrawer {
+	private static class TerainBackgroundTileDrawer extends TileDrawer {
 		@Override
 		public void draw() {
 			tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
 		}
 	}
 
-	private class TerainForegroundTileDrawer extends TileDrawer {
+	private static class TerainForegroundTileDrawer extends TileDrawer {
 		@Override
 		public void draw() {
 			tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
@@ -195,10 +201,13 @@ public class MapRenderer {
 			if (tile.isUnexplored(player)) {
 				return;
 			}
-			tileDrawModel.drawObjects(batch, screenPoint.x, screenPoint.y);
+			tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
+			if (tileDrawModel.isFogOfWar()) {
+				return;
+			}
 			
-			if (tile.unitsCount() > 0 && !tile.hasSettlement()) {
-				Unit firstUnit = tile.firstUnit();
+			if (tile.units.size() > 0 && !tile.hasSettlement()) {
+				Unit firstUnit = tile.units.first();
 				Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
 				drawUnit(firstUnit, frame);
 			}
@@ -226,9 +235,9 @@ public class MapRenderer {
 			shapeRenderer.setColor(Color.BLACK);
 			shapeRenderer.rect(cx, cy, 17, 20);
 			
-			if (tile.unitsCount() > 1) {
+			if (tile.units.size() > 1) {
 				shapeRenderer.setColor(Color.WHITE);
-				int max = tile.unitsCount() > 10 ? 10 : tile.unitsCount(); 
+				int max = tile.units.size() > 10 ? 10 : tile.units.size(); 
 				for (int i=0; i<max; i++) {
 					shapeRenderer.line(cx - 7, cy - (i*2) + 19, cx - 1, cy - (i*2) + 19);
 				}
@@ -242,6 +251,49 @@ public class MapRenderer {
 		}
 	}
 	
+	private static class FogOfWarDrawer extends TileDrawer {
+		public static final Color FOG_OF_WAR_COLOR = new Color(0f, 0f, 0f, 0.3f);
+
+		private PolygonSpriteBatch polyBatch;
+		private PolygonSprite poly;
+		
+		public FogOfWarDrawer() {
+			int w = MapRenderer.TILE_WIDTH;
+			int h = MapRenderer.TILE_HEIGHT;
+
+//	         0
+//	       /   \
+//	      3-----1
+//	       \   /
+//	         2 
+            Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
+            pix.setColor(FOG_OF_WAR_COLOR); 
+            pix.fill();
+            Texture textureSolid = new Texture(pix);
+            PolygonRegion polyReg = new PolygonRegion(new TextureRegion(textureSolid),
+            	new float[] {       
+                  	w/2,  0,        
+                  	w,  h/2,        
+                  	w/2,  h,        
+                  	0,  h/2         
+                }, new short[] {
+                	0, 1, 3,
+                    3, 1, 2         
+                }
+            );
+            poly = new PolygonSprite(polyReg);
+            polyBatch = new PolygonSpriteBatch();
+		}
+		
+		@Override
+		public void draw() {
+			if (tileDrawModel.isFogOfWar()) {
+	            poly.setPosition(screenPoint.x, screenPoint.y);
+	            poly.draw(polyBatch);
+			}
+		}
+	}
+	
 	private final Map map; 
 	private final MapDrawModel mapDrawModel;
 	private final Player playerMap;
@@ -251,10 +303,11 @@ public class MapRenderer {
     private final TerainForegroundTileDrawer terainForegroundTileDrawer = new TerainForegroundTileDrawer();
     private final RoadsTileDrawer roadsTileDrawer;
     private final ObjectsTileDrawer objectsTileDrawer = new ObjectsTileDrawer();
+    private final FogOfWarDrawer fogOfWarDrawer = new FogOfWarDrawer();
 
     public final Vector2 cameraPosition = new Vector2();
-    private int screenWidth = 0;
-    private int screenHeight = 0;
+    private int screenWidth = -1;
+    private int screenHeight = -1;
     
 	private final Point screenMin = new Point();
 	private final Point screenMax = new Point();
@@ -276,9 +329,11 @@ public class MapRenderer {
     	terainForegroundTileDrawer.map = map;
     	roadsTileDrawer.map = map;
     	objectsTileDrawer.map = map;
+    	fogOfWarDrawer.map = map;
     	
     	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
+    	fogOfWarDrawer.shapeRenderer = shapeRenderer;
     	
     	roadsTileDrawer.renderForPlayer = playerMap;
     	objectsTileDrawer.player = playerMap;
@@ -325,12 +380,29 @@ public class MapRenderer {
     	terainForegroundTileDrawer.batch = batch;
     	roadsTileDrawer.batch = batch;
     	objectsTileDrawer.batch = batch;
+    	fogOfWarDrawer.batch = batch;
 
-    	
     	preparePartOfMapToRender(map);
+    	
     	drawLayer(terainBackgroundTileDrawer);
     	drawLayer(terainForegroundTileDrawer);
+    	drawRoadLayer(batch);
+    	drawLayer(objectsTileDrawer);
+    	drawFogOfWarLayer(batch);
+    }
+    
+    private void drawFogOfWarLayer(Batch batch) {
+    	batch.end();
     	
+    	fogOfWarDrawer.polyBatch.begin();
+    	fogOfWarDrawer.polyBatch.enableBlending();
+    	drawLayer(fogOfWarDrawer);
+    	fogOfWarDrawer.polyBatch.end();
+    	
+    	batch.begin();
+	}
+
+    private void drawRoadLayer(Batch batch) {
     	batch.end();
     	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
     	Gdx.gl20.glLineWidth(3);
@@ -338,11 +410,9 @@ public class MapRenderer {
     	roadsTileDrawer.shapeRenderer.end();
     	Gdx.gl20.glLineWidth(1);
     	batch.begin();
-    	
-    	drawLayer(objectsTileDrawer);
     }
     
-    private void mapToScreenCords(int x, int y, Point p) {
+	private void mapToScreenCords(int x, int y, Point p) {
         p.x = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
         p.y = (TILE_HEIGHT / 2) * y;
         
@@ -369,6 +439,9 @@ public class MapRenderer {
     }
 
 	public void centerCameraOnTileCords(int mapx, int mapy) {
+		if (screenWidth == -1 && screenHeight == -1) {
+			throw new IllegalStateException("screen size not set");
+		}
 		cameraPosition.set(0, 0);
     	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
     	screenToMapCords(screenWidth + TILE_WIDTH*2, screenHeight + TILE_HEIGHT, screenMax);

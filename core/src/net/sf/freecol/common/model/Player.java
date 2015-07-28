@@ -9,6 +9,8 @@ public class Player implements Identifiable {
     private String id;
     Nation nation;
     NationType nationType;
+    public MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+    public MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     
     @Override
     public String getId() {

@@ -3,12 +3,17 @@ package promitech.colonization.savegame;
 import java.util.HashMap;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.Specification;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public abstract class XmlNodeParser {
+	public static abstract class ObjectFromNodeSetter {
+		public abstract void set(Identifiable entity);
+	}
+	
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
     
@@ -25,6 +30,17 @@ public abstract class XmlNodeParser {
 	
 	public void addNode(XmlNodeParser node) {
 		nodes.put(node.getTagName(), node);
+	}
+	
+	private ObjectFromNodeSetter setter;
+	public XmlNodeParser addSetter(ObjectFromNodeSetter setter) {
+		this.setter = setter;
+		return this;
+	}
+	public void addToParent(Identifiable entity) {
+		if (setter != null) {
+			setter.set(entity);
+		}
 	}
 	
 	public XmlNodeParser parserForTag(String qName) {
@@ -48,6 +64,10 @@ public abstract class XmlNodeParser {
 		return Integer.parseInt(attributes.getValue(name));
 	}
 
+	public float getFloatAttribute(Attributes attributes, String name) {
+		return Float.parseFloat(attributes.getValue(name));
+	}
+	
 	public int getIntAttribute(Attributes attributes, String name, int defaultVal) {
 		String val = attributes.getValue(name);
 		if (val == null) {
@@ -63,6 +83,14 @@ public abstract class XmlNodeParser {
 	public boolean getBooleanAttribute(Attributes attributes, String name) {
 		String val = attributes.getValue(name);
 		return val != null && "true".equals(val.toLowerCase());
+	}
+	
+	public <T extends Enum<T>> T getEnumAttribute(Attributes attributes, Class<T> enumClass, String name) {
+		String val = attributes.getValue(name);
+		if (val == null) {
+			return null;
+		}
+		return Enum.valueOf(enumClass, val.toUpperCase());
 	}
 	
 	public abstract String getTagName();
