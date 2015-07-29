@@ -358,8 +358,9 @@ public class MapRenderer {
     }
     
     private void preparePartOfMapToRender(final Map map) {
-    	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
-    	screenToMapCords(screenWidth + TILE_WIDTH*2, screenHeight + TILE_HEIGHT, screenMax);
+		// there is transformation screenY = screenHeight - screenY;
+    	screenToMapCords(0-TILE_WIDTH, screenHeight + TILE_HEIGHT, screenMin);
+    	screenToMapCords(screenWidth + TILE_WIDTH*2, -TILE_HEIGHT, screenMax);
     	
     	if (screenMin.x < 0) {
     		screenMin.x = 0;
@@ -393,6 +394,8 @@ public class MapRenderer {
     
     private void drawFogOfWarLayer(Batch batch) {
     	batch.end();
+    	fogOfWarDrawer.polyBatch.setProjectionMatrix(batch.getProjectionMatrix());
+    	fogOfWarDrawer.polyBatch.setTransformMatrix(batch.getTransformMatrix());
     	
     	fogOfWarDrawer.polyBatch.begin();
     	fogOfWarDrawer.polyBatch.enableBlending();
@@ -424,7 +427,8 @@ public class MapRenderer {
     
     public void screenToMapCords(int screenX, int screenY, Point p) {
         double x, y, pX, pY;
-
+        screenY = screenHeight - screenY;
+        
         int hWidth = TILE_WIDTH / 2;
         int hHeight = TILE_HEIGHT / 2;
 
@@ -443,8 +447,9 @@ public class MapRenderer {
 			throw new IllegalStateException("screen size not set");
 		}
 		cameraPosition.set(0, 0);
-    	screenToMapCords(0-TILE_WIDTH, 0-TILE_HEIGHT, screenMin);
-    	screenToMapCords(screenWidth + TILE_WIDTH*2, screenHeight + TILE_HEIGHT, screenMax);
+		// there is transformation screenY = screenHeight - screenY;
+    	screenToMapCords(0-TILE_WIDTH, screenHeight + TILE_HEIGHT, screenMin);
+    	screenToMapCords(screenWidth + TILE_WIDTH*2, -TILE_HEIGHT, screenMax);
 		
     	int halfX = (screenMax.x - screenMin.x) / 2; 
     	int halfY = (screenMax.y - screenMin.y) / 2; 
