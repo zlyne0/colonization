@@ -7,6 +7,9 @@ public class MapIdEntities<T extends Identifiable> {
     private java.util.Map<String,T> entities = new HashMap<String,T>();
     
     public void add(T entity) {
+        if (entity instanceof SortableEntity) {
+            ((SortableEntity)entity).setOrder(entities.size());
+        }
         entities.put(entity.getId(), entity);
     }
     

@@ -1,38 +1,17 @@
 package net.sf.freecol.common.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-
 import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Specification {
-	private List<TileType> tileTypes = new ArrayList<TileType>();
-	private Map<String,TileType> tileTypeByTileTypeStr = new HashMap<String, TileType>();
-	
+public class Specification {	
+	public final MapIdEntities<TileType> tileTypes = new MapIdEntities<TileType>();
 	public final MapIdEntities<TileImprovementType> tileImprovementTypes = new MapIdEntities<TileImprovementType>();
 	public final MapIdEntities<UnitType> unitTypes = new MapIdEntities<UnitType>();
 	public final MapIdEntities<UnitRole> unitRoles = new MapIdEntities<UnitRole>();
 	public final MapIdEntities<ResourceType> resourceTypes = new MapIdEntities<ResourceType>();
     public final MapIdEntities<NationType> nationTypes = new MapIdEntities<NationType>();
     public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
-	
-	public void addTileType(TileType tileType) {
-		tileType.setOrder(tileTypes.size());
-		this.tileTypes.add(tileType);
-		this.tileTypeByTileTypeStr.put(tileType.getTypeStr(), tileType);
-	}
-
-	public TileType getTileTypeByTypeStr(String tileTypeStr) {
-		TileType tileType = tileTypeByTileTypeStr.get(tileTypeStr);
-		if (tileType == null) {
-			throw new IllegalArgumentException("can not find tile type by str: " + tileTypeStr);
-		}
-		return tileType;
-	}
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml(Game.Xml parent) {
@@ -59,7 +38,5 @@ public class Specification {
 			return "freecol-specification";
 		}
 	}
-	
-	
 }
 

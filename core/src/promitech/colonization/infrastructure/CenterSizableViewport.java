@@ -1,5 +1,6 @@
 package promitech.colonization.infrastructure;
 
+import com.badlogic.gdx.graphics.Camera;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.utils.Scaling;
 import com.badlogic.gdx.utils.viewport.ScalingViewport;
@@ -7,6 +8,7 @@ import com.badlogic.gdx.utils.viewport.ScalingViewport;
 public class CenterSizableViewport extends ScalingViewport {
     private final int maxWidth;
     private final int maxHeight;
+    private boolean screenSmallerThenRequired = false;
    
     public CenterSizableViewport(float worldWidth, float worldHeight, int maxWidth, int maxHeight) {
         super(Scaling.fit, worldWidth, worldHeight);
@@ -14,7 +16,14 @@ public class CenterSizableViewport extends ScalingViewport {
         this.maxWidth = maxWidth;
         this.maxHeight = maxHeight;
     }
-   
+
+    public CenterSizableViewport(float worldWidth, float worldHeight, int maxWidth, int maxHeight, Camera camera) {
+        super(Scaling.fit, worldWidth, worldHeight, camera);
+       
+        this.maxWidth = maxWidth;
+        this.maxHeight = maxHeight;
+    }
+    
     @Override
     public void update(int screenWidth, int screenHeight, boolean centerCamera) {
         int newScreenWidth = screenWidth;
@@ -31,6 +40,8 @@ public class CenterSizableViewport extends ScalingViewport {
         int viewportWidth = Math.round(scaled.x);
         int viewportHeight = Math.round(scaled.y);
        
+        screenSmallerThenRequired = screenWidth <= viewportWidth || screenHeight <= viewportHeight;
+        
         // Center.
         setScreenBounds((screenWidth - viewportWidth) / 2, (screenHeight - viewportHeight) / 2, viewportWidth, viewportHeight);
         apply(centerCamera);

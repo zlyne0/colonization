@@ -127,15 +127,15 @@ public class GameResources {
 	public Texture tile(TileType type, int x, int y) {
 		String key = null;
 		if (isEven(x, y)) {
-			key = type.getTypeStr() + ".center0.image";
+			key = type.getId() + ".center0.image";
 		} else {
-			key = type.getTypeStr() + ".center1.image";
+			key = type.getId() + ".center1.image";
 		}
 		return getImage(key);
 	}
 	
 	public Texture tileBorder(TileType type, Direction direction, int x, int y) {
-		String key = type.getTypeStr() + ".border_" + direction + ((isEven(x, y)) ?  "_even" : "_odd") + ".image";
+		String key = type.getId() + ".border_" + direction + ((isEven(x, y)) ?  "_even" : "_odd") + ".image";
 		return getImage(key);
 	}
 
@@ -186,9 +186,9 @@ public class GameResources {
 	public Frame forestImg(TileType type, TileImprovement riverTileImprovement) {
 		String key;
 		if (riverTileImprovement != null) {
-			key = type.getTypeStr() + ".forest" + riverTileImprovement.style;
+			key = type.getId() + ".forest" + riverTileImprovement.style;
 		} else {
-			key = type.getTypeStr() + ".forest";
+			key = type.getId() + ".forest";
 		}
 		return getFrame(key);
 	}

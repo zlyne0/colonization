@@ -117,7 +117,7 @@ public class Tile {
 			int tileStyle = getIntAttribute(attributes, "style");
 			String idStr = getStrAttribute(attributes, "id").replaceAll("tile:", "");
 			
-			TileType tileType = specification.getTileTypeByTypeStr(tileTypeStr);
+			TileType tileType = specification.tileTypes.getById(tileTypeStr);
 			tile = new Tile(Integer.parseInt(idStr), x, y, tileType, tileStyle);
 			tile.connected = getIntAttribute(attributes, "connected", 0);
 			

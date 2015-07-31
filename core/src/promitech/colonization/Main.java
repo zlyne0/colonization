@@ -4,7 +4,9 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Player;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.infrastructure.CenterSizableViewport;
+import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.hud.HudStage;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -16,6 +18,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class Main extends ApplicationAdapter {
 	
@@ -30,6 +33,7 @@ public class Main extends ApplicationAdapter {
 	
 	
 	private Stage stage;
+	private HudStage hudStage;
 	
 	@Override
 	public void create () {
@@ -61,9 +65,10 @@ public class Main extends ApplicationAdapter {
 		
 		MapActor mapActor = new MapActor(player, game, gameResources);
 		
+		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameResources);
 		//stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
 		stage = new Stage();
-		Gdx.input.setInputProcessor(stage);
+		Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
 		
         Table w = new Table();
 		w.setFillParent(true);
@@ -83,9 +88,15 @@ public class Main extends ApplicationAdapter {
 		
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        //Gdx.gl.glEnable(GL20.GL_BLEND);
 		
-		stage.act();
-		stage.draw();
+        stage.getViewport().apply();
+        stage.act();
+        stage.draw();
+
+        hudStage.getViewport().apply();
+        hudStage.act();
+        hudStage.draw();
 		
 		frameRenderMillis = System.currentTimeMillis() - frameRenderMillis;
 		
@@ -109,5 +120,6 @@ public class Main extends ApplicationAdapter {
     @Override
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
+        hudStage.getViewport().update(width, height, true);
     }
 }

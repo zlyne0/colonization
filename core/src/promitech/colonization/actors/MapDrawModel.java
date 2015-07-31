@@ -246,10 +246,10 @@ class TileDrawModelInitializer {
 		if (tile.isPlowed()) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.plowed());
 		}
-		if (tile.type.getTypeStr().equals("model.tile.hills")) {
+		if (tile.type.getId().equals("model.tile.hills")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.hills());
 		}
-		if (tile.type.getTypeStr().equals("model.tile.mountains")) {
+		if (tile.type.getId().equals("model.tile.mountains")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.mountainsKey());
 		}
 		// draw forest with river

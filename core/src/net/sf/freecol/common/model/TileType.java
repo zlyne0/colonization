@@ -4,32 +4,37 @@ import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public final class TileType {
+public final class TileType implements Identifiable, SortableEntity {
 
 	private static final String MODEL_TILE_LAKE = "model.tile.lake";
 	private static final String GREAT_RIVER = "model.tile.greatRiver";
     private static final String OCEAN = "model.tile.ocean";
 	private static final String HIGH_SEAS = "model.tile.highSeas";
 	
+	private final String id;
 	private int order;
-	private String type;
 	boolean isForest;
 	
 	public TileType(String id, boolean isForest) {
-		this.type = id;
+		this.id = id;
 		this.isForest = isForest;
 	}
 
+    @Override
+    public String getId() {
+        return id;
+    }
+    
 	public String toString() {
-		return type + ":" + order;
+		return id + ":" + order;
 	}
 	
 	public boolean isWater() {
-		return type.equals(OCEAN) || type.equals(HIGH_SEAS) || type.equals(GREAT_RIVER) || type.equals(MODEL_TILE_LAKE);
+		return id.equals(OCEAN) || id.equals(HIGH_SEAS) || id.equals(GREAT_RIVER) || id.equals(MODEL_TILE_LAKE);
 	}
 
 	public boolean isHighSea() {
-		return type.equals(HIGH_SEAS);
+		return id.equals(HIGH_SEAS);
 	}
 	
 	public boolean isLand() {
@@ -41,15 +46,11 @@ public final class TileType {
 	}
 	
 	public boolean hasDifferentTerain(TileType tType) {
-		return !this.type.equals(tType.type);
+		return !this.id.equals(tType.id);
 	}
 
 	public boolean isForested() {
-		return type.indexOf("Forest") != -1;
-	}
-	
-	public String getTypeStr() {
-		return type;
+		return isForest;
 	}
 
 	public int getOrder() {
@@ -71,7 +72,7 @@ public final class TileType {
 			boolean isForest = getBooleanAttribute(attributes, "is-forest");
 			TileType tileType = new TileType(id, isForest);
 			
-			((Specification.Xml)this.parentXmlNodeParser).specification.addTileType(tileType);
+			((Specification.Xml)this.parentXmlNodeParser).specification.tileTypes.add(tileType);
 		}
 
 		@Override
@@ -79,5 +80,5 @@ public final class TileType {
 			return "tile-type";
 		}
 	}
-	
+
 }
