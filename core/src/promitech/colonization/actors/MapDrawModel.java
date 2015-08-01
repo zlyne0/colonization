@@ -274,14 +274,9 @@ class TileDrawModelInitializer {
 			tileDrawModel.addForegroundTerainTexture(gameResources.tileLastCityRumour());
 		}
 		
-		
-		if (tile.indianSettlement != null) {
-		    String key = tile.indianSettlement.getImageKey();
-		    tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
-		}
-		if (tile.colony != null) {
-            String key = tile.colony.getImageKey();
-		    tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
+		if (tile.getSettlement() != null) {
+			String key = tile.getSettlement().getImageKey();
+			tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
 		}
 	}
 }

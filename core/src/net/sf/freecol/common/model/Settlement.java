@@ -14,4 +14,18 @@ public abstract class Settlement implements Identifiable {
 	public String getId() {
 		return id;
 	}
+
+	public String getName() {
+		return name;
+	}
+
+	public Player getOwner() {
+		return owner;
+	}
+
+	public abstract boolean isColony();
+
+	public Colony getColony() {
+		return (Colony)this;
+	}
 }

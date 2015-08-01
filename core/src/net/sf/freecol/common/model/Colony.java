@@ -10,13 +10,18 @@ public class Colony extends Settlement {
         return false;
     }
     
-    private int getDisplayUnitCount() {
+    public int getDisplayUnitCount() {
         return 1;
     }
     
     private String getStockadeKey() {
         return null;
     }
+
+	@Override
+	public boolean isColony() {
+		return true;
+	}
     
     public String getImageKey() {
         if (isUndead()) {
@@ -50,7 +55,7 @@ public class Colony extends Settlement {
             colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
             
             Tile.Xml tileXmlParser = getParentXmlParser();
-            tileXmlParser.tile.colony = colony;
+            tileXmlParser.tile.settlement = colony;
             
             colony.tile = tileXmlParser.tile;
             owner.settlements.add(colony);
@@ -62,4 +67,5 @@ public class Colony extends Settlement {
         }
         
     }
+
 }

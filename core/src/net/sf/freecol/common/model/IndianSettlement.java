@@ -27,6 +27,11 @@ public class IndianSettlement extends Settlement {
         return st;
     }
     
+	@Override
+	public boolean isColony() {
+		return false;
+	}
+    
     private boolean hasMissionary() {
         return missionary != null;
     }
@@ -46,7 +51,7 @@ public class IndianSettlement extends Settlement {
             is.settlementType = owner.nationType.settlementTypes.getById(getStrAttribute(attributes, "settlementType"));
             
             Tile.Xml tileXmlParser = getParentXmlParser();
-            tileXmlParser.tile.indianSettlement = is;
+            tileXmlParser.tile.settlement = is;
             is.tile = tileXmlParser.tile;
    
             owner.settlements.add(is);

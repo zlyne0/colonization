@@ -18,8 +18,7 @@ public class Tile {
 	public boolean lostCityRumour = false;
 	private int connected = 0;
 	
-	public Colony colony;
-	public IndianSettlement indianSettlement;
+	protected Settlement settlement;
 	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
@@ -44,7 +43,7 @@ public class Tile {
 	}
 	
 	public boolean hasRoad() {
-		if (colony != null || indianSettlement != null) {
+		if (settlement != null) {
 			return true;
 		}
 		for (TileImprovement imprv : tileImprovements) {
@@ -65,21 +64,15 @@ public class Tile {
 	}
 	
 	public boolean hasSettlement() {
-		return colony != null || indianSettlement != null;
+		return settlement != null;
 	}
 	
 	public boolean hasSettlementOwnedBy(Player player) {
-		return colony != null && colony.owner.equals(player) || indianSettlement != null && indianSettlement.owner.equals(player);
+		return settlement != null && settlement.owner.equals(player);
 	}
 
 	public Settlement getSettlement() {
-		if (colony != null) {
-			return colony;
-		}
-		if (indianSettlement != null) {
-			return indianSettlement;
-		}
-		return null;
+		return settlement;
 	}
 
 	public TileImprovement getTileImprovementByType(String typeStr) {

@@ -2,6 +2,7 @@ package promitech.colonization.actors;
 
 import java.util.HashMap;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
@@ -10,14 +11,15 @@ import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
@@ -187,21 +189,22 @@ public class MapRenderer {
 	}
 	
 	private class ObjectsTileDrawer extends TileDrawer {
-		
 		private static final int UNIT_IMAGE_OFFSET = 20;
 		
-		private BitmapFont font = new BitmapFont(false);
 		protected Player player;
 		
 		private int w = MapRenderer.TILE_WIDTH;
 		private int h = MapRenderer.TILE_HEIGHT;
 
+		private ObjectsTileDrawer() {
+		}
+		
 		@Override
 		public void draw() {
 			if (tile.isUnexplored(player)) {
 				return;
 			}
-			tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
+			drawSettlement();
 			if (tileDrawModel.isFogOfWar()) {
 				return;
 			}
@@ -210,6 +213,27 @@ public class MapRenderer {
 				Unit firstUnit = tile.units.first();
 				Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
 				drawUnit(firstUnit, frame);
+			}
+		}
+		
+		private void drawSettlement() {
+			if (!tile.hasSettlement()) {
+				return;
+			}
+			tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
+			
+			FontResource fr = FontResource.instance();
+			
+			float strWidth = fr.strWidth(fr.getCityNamesFont(), tile.getSettlement().getName());
+			fr.getCityNamesFont().setColor(tile.getSettlement().getOwner().getNation().getColor());
+			fr.getCityNamesFont().draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
+			
+			if (tile.hasSettlementOwnedBy(player) && tile.getSettlement().isColony()) {
+				Colony colony = tile.getSettlement().getColony();
+				fr.getCitySizeFont().setColor(Color.WHITE);
+				fr.getCitySizeFont().draw(batch, "" + colony.getDisplayUnitCount(), 
+						screenPoint.x + w/2, screenPoint.y + h/2 + 5
+				);
 			}
 		}
 		
@@ -246,8 +270,9 @@ public class MapRenderer {
 			shapeRenderer.end();
 			
 			batch.begin();
-			font.setColor(Color.BLACK);
-			font.draw(batch, "G", cx + 2, cy + 20 - 2);
+			
+			FontResource.instance().getUnitBoxFont().setColor(Color.BLACK);
+			FontResource.instance().getUnitBoxFont().draw(batch, "G", cx + 2, cy + 20 - 2);
 		}
 	}
 	

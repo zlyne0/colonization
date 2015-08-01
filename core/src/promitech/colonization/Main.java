@@ -3,7 +3,7 @@ package promitech.colonization;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Player;
 import promitech.colonization.actors.MapActor;
-import promitech.colonization.infrastructure.CenterSizableViewport;
+import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.hud.HudStage;
@@ -52,6 +52,8 @@ public class Main extends ApplicationAdapter {
 		gameResources = new GameResources();
         
 		try {
+			FontResource.instance().load();
+			
 			SaveGameParser saveGameParser = new SaveGameParser();
 			game = saveGameParser.parse();
 			
@@ -86,9 +88,10 @@ public class Main extends ApplicationAdapter {
 	public void render () {
 		frameRenderMillis = System.currentTimeMillis();
 		
+//		Gdx.gl.glEnable(GL20.GL_BLEND);
+//    	Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-        //Gdx.gl.glEnable(GL20.GL_BLEND);
 		
         stage.getViewport().apply();
         stage.act();
@@ -121,5 +124,10 @@ public class Main extends ApplicationAdapter {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         hudStage.getViewport().update(width, height, true);
+    }
+    
+    @Override
+    public void dispose() {
+    	FontResource.instance().dispose();
     }
 }
