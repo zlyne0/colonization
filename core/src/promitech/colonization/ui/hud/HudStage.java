@@ -16,7 +16,9 @@ public class HudStage extends Stage {
         {Direction.NW, Direction.N, Direction.NE},
     };
 
-    private final ShapeRenderer shapeRenderer = new ShapeRenderer();;
+    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
+    
+    public final HudInfoPanel hudInfoPanel; 
 
     public HudStage(Viewport viewport, GameResources gameResources) {
         super(viewport);
@@ -33,7 +35,8 @@ public class HudStage extends Stage {
             }
         }
 
-        addActor(new HudInfoPanel(gameResources));
+        hudInfoPanel = new HudInfoPanel(gameResources);
+        addActor(hudInfoPanel);
     }
 
     @Override

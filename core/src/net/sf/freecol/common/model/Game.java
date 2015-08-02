@@ -8,6 +8,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class Game {
 
 	public Map map;
+	public Player playingPlayer;
 	public Specification specification;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
 	

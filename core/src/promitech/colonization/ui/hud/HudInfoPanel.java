@@ -1,20 +1,82 @@
 package promitech.colonization.ui.hud;
 
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovement;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.MapActor;
+import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 
-class HudInfoPanel extends Actor {
+public class HudInfoPanel extends Actor {
     private Texture infoPanelSkin;
+    private MapActor mapActor;
+    private ShapeRenderer shapeRenderer = new ShapeRenderer();
     
     public HudInfoPanel(GameResources gameResources) {
         infoPanelSkin = gameResources.getImage("InfoPanel.skin");
+        
+        addListener(new InputListener() {
+        	@Override
+        	public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+        		return true;
+        	}
+        });
+    }
+
+    @Override
+    protected void setStage(Stage stage) {
+    	super.setStage(stage);
+		setBounds(
+				stage.getWidth() - infoPanelSkin.getWidth(), 0,
+				infoPanelSkin.getWidth(), infoPanelSkin.getHeight()
+		);
     }
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.draw(infoPanelSkin, getStage().getWidth() - infoPanelSkin.getWidth(), 0);
+        batch.draw(infoPanelSkin, getX(), 0);
+        
+        mapActor.drawSelectedTile(batch, shapeRenderer, getX() + 30, getY() + 10);
+        
+        drawTileDescription(batch);
     }
+
+    private void drawTileDescription(Batch batch) {
+    	Tile tile = mapActor.mapDrawModel().selectedTile;
+    	if (tile == null) {
+    		return;
+    	}
+    	BitmapFont titleFont = FontResource.getInfoPanelTitleFont();
+    	
+    	String descKey;
+    	if (tile.isUnexplored(mapActor.mapDrawModel().playingPlayer)) {
+    		descKey = "unexplored";
+    	} else {
+    		descKey = Messages.nameKey(tile.type.getId());
+    	}
+    	StringBuilder desc = new StringBuilder(Messages.msg(descKey));
+    	
+    	for (TileImprovement improvement : tile.tileImprovements) {
+    		if (improvement.isComplete()) {
+    			descKey = Messages.descriptionKey(improvement.type.id);
+    			desc.append(", ");
+    			desc.append(Messages.msg(descKey));
+    		}
+    	}
+    	float descWidth = FontResource.strWidth(titleFont, desc.toString());
+    	titleFont.draw(batch, desc, getX() + getWidth()/2 - descWidth/2, getY() + 130);
+    }
+    
+	public void setMapActor(MapActor mapActor) {
+		this.mapActor = mapActor;
+	}
 }

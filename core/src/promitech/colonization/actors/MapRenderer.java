@@ -13,13 +13,14 @@ import promitech.colonization.actors.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.math.Point;
+import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.PolygonRegion;
 import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
@@ -158,7 +159,7 @@ public class MapRenderer {
 	public static abstract class TileDrawer {
 		protected Batch batch;
 		protected ShapeRenderer shapeRenderer;
-		protected final Point screenPoint = new Point(); 
+		protected final Vector2 screenPoint = new Vector2(); 
 		protected int mapx;
 		protected int mapy;
 		
@@ -204,7 +205,9 @@ public class MapRenderer {
 			if (tile.isUnexplored(player)) {
 				return;
 			}
+			
 			drawSettlement();
+			drawFocus();
 			if (tileDrawModel.isFogOfWar()) {
 				return;
 			}
@@ -215,6 +218,30 @@ public class MapRenderer {
 				drawUnit(firstUnit, frame);
 			}
 		}
+
+		private void drawFocus() {
+			if (!mapDrawModel.unitFocus.equals(mapx, mapy)) {
+				return;
+			}
+			
+			batch.end();
+			
+			mapToScreenCords(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y, objectsTileDrawer.screenPoint);
+			
+			Gdx.gl20.glLineWidth(3);
+			shapeRenderer.begin(ShapeType.Line);
+			shapeRenderer.setColor(Color.WHITE);
+			shapeRenderer.ellipse(
+					objectsTileDrawer.screenPoint.x + TILE_WIDTH/4, 
+					objectsTileDrawer.screenPoint.y + TILE_HEIGHT/4, 
+					TILE_WIDTH/2,
+					TILE_HEIGHT/2
+			);
+			shapeRenderer.end();
+			Gdx.gl20.glLineWidth(1);
+			
+			batch.begin();
+		}
 		
 		private void drawSettlement() {
 			if (!tile.hasSettlement()) {
@@ -222,16 +249,16 @@ public class MapRenderer {
 			}
 			tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
 			
-			FontResource fr = FontResource.instance();
+			BitmapFont font = FontResource.getCityNamesFont();
 			
-			float strWidth = fr.strWidth(fr.getCityNamesFont(), tile.getSettlement().getName());
-			fr.getCityNamesFont().setColor(tile.getSettlement().getOwner().getNation().getColor());
-			fr.getCityNamesFont().draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
+			float strWidth = FontResource.strWidth(font, tile.getSettlement().getName());
+			font.setColor(tile.getSettlement().getOwner().getNation().getColor());
+			font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
 			
 			if (tile.hasSettlementOwnedBy(player) && tile.getSettlement().isColony()) {
 				Colony colony = tile.getSettlement().getColony();
-				fr.getCitySizeFont().setColor(Color.WHITE);
-				fr.getCitySizeFont().draw(batch, "" + colony.getDisplayUnitCount(), 
+				font.setColor(Color.WHITE);
+				font.draw(batch, "" + colony.getDisplayUnitCount(), 
 						screenPoint.x + w/2, screenPoint.y + h/2 + 5
 				);
 			}
@@ -246,8 +273,8 @@ public class MapRenderer {
 		}
 		
 		private void drawUnitChip(Unit unit) {
-			int cx = screenPoint.x + 35;
-			int cy = screenPoint.y + h - 5;
+			float cx = screenPoint.x + 35;
+			float cy = screenPoint.y + h - 5;
 			
 			batch.end();
 			shapeRenderer.begin(ShapeType.Filled);
@@ -271,8 +298,8 @@ public class MapRenderer {
 			
 			batch.begin();
 			
-			FontResource.instance().getUnitBoxFont().setColor(Color.BLACK);
-			FontResource.instance().getUnitBoxFont().draw(batch, "G", cx + 2, cy + 20 - 2);
+			FontResource.getUnitBoxFont().setColor(Color.BLACK);
+			FontResource.getUnitBoxFont().draw(batch, "G", cx + 2, cy + 20 - 2);
 		}
 	}
 	
@@ -330,6 +357,7 @@ public class MapRenderer {
     private final ObjectsTileDrawer objectsTileDrawer = new ObjectsTileDrawer();
     private final FogOfWarDrawer fogOfWarDrawer = new FogOfWarDrawer();
 
+    private final ShapeRenderer shapeRenderer;
     public final Vector2 cameraPosition = new Vector2();
     private int screenWidth = -1;
     private int screenHeight = -1;
@@ -346,7 +374,9 @@ public class MapRenderer {
     	this.playerMap = playerMap;
     	this.map = map;
     	this.mapDrawModel = mapDrawModel;
+    	this.objectsTileDrawer.mapDrawModel = mapDrawModel;
     	this.gameResources = gameResources;
+    	this.shapeRenderer = shapeRenderer;
     	
         roadsTileDrawer = new RoadsTileDrawer(gameResources);
         
@@ -362,6 +392,7 @@ public class MapRenderer {
     	
     	roadsTileDrawer.renderForPlayer = playerMap;
     	objectsTileDrawer.player = playerMap;
+    	
     }
     
     public void setMapRendererSize(int width, int height) {
@@ -408,6 +439,11 @@ public class MapRenderer {
     	objectsTileDrawer.batch = batch;
     	fogOfWarDrawer.batch = batch;
 
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
+    	objectsTileDrawer.shapeRenderer = shapeRenderer;
+    	fogOfWarDrawer.shapeRenderer = shapeRenderer;
+    	
+    	
     	preparePartOfMapToRender(map);
     	
     	drawLayer(terainBackgroundTileDrawer);
@@ -416,7 +452,7 @@ public class MapRenderer {
     	drawLayer(objectsTileDrawer);
     	drawFogOfWarLayer(batch);
     }
-    
+
     private void drawFogOfWarLayer(Batch batch) {
     	batch.end();
     	fogOfWarDrawer.polyBatch.setProjectionMatrix(batch.getProjectionMatrix());
@@ -440,7 +476,7 @@ public class MapRenderer {
     	batch.begin();
     }
     
-	private void mapToScreenCords(int x, int y, Point p) {
+	private void mapToScreenCords(int x, int y, Vector2 p) {
         p.x = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
         p.y = (TILE_HEIGHT / 2) * y;
         
@@ -482,5 +518,44 @@ public class MapRenderer {
 		cameraPosition.set(-(mapx - halfX/2) * TILE_WIDTH, -(mapy - halfY) * TILE_HEIGHT/2 );
 		cameraPosition.add(TILE_WIDTH/2, 0);
 	}
+
+	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float px, float py) {
+		if (mapDrawModel.unitFocus.equals(-1, -1)) {
+			return;
+		}
+		Tile tile = map.getTile(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
+		mapDrawModel.selectedTile = tile;
+
+    	terainBackgroundTileDrawer.batch = batch;
+    	terainForegroundTileDrawer.batch = batch;
+    	roadsTileDrawer.batch = batch;
+
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
+    	objectsTileDrawer.shapeRenderer = shapeRenderer;
+    	fogOfWarDrawer.shapeRenderer = shapeRenderer;
+		
+    	drawInfoPanelTile(terainBackgroundTileDrawer, px, py, tile);
+    	drawInfoPanelTile(terainForegroundTileDrawer, px, py, tile);
+    	
+    	if (tile.hasRoad()) {
+	    	batch.end();
+	    	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
+	    	Gdx.gl20.glLineWidth(3);
+	    	drawInfoPanelTile(roadsTileDrawer, px, py, tile);
+	    	roadsTileDrawer.shapeRenderer.end();
+	    	Gdx.gl20.glLineWidth(1);
+	    	batch.begin();
+    	}
+	}
     
+	private void drawInfoPanelTile(TileDrawer tileDrawer, float px, float py, Tile tile) {
+		tileDrawer.mapx = tile.x;
+		tileDrawer.mapy = tile.y;
+		tileDrawer.tile = tile;
+		tileDrawer.tileDrawModel = mapDrawModel.getTileDrawModel(tile.x, tile.y);
+		tileDrawer.screenPoint.x = px;
+		tileDrawer.screenPoint.y = py;
+		tileDrawer.draw();
+	}
+	
 }

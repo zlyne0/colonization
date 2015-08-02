@@ -16,6 +16,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.gdx.SortableTexture;
+import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -26,19 +27,19 @@ class TileDrawModel {
 	private boolean fogOfWar = true;
 	Frame settlementImage;
 	
-	public void draw(Batch batch, int rx, int ry) {
+	public void draw(Batch batch, float rx, float ry) {
 		for (SortableTexture texture : backgroundTerainTextures) {
 			batch.draw(texture.texture, rx, ry);
 		}
 	}
 	
-	public void drawOverlay(Batch batch, int rx, int ry) {
+	public void drawOverlay(Batch batch, float rx, float ry) {
 		for (Frame frame : foregroundTerainTextures) {
 			batch.draw(frame.texture, rx + frame.offsetX, ry + frame.offsetY);
 		}
 	}
 
-	public void drawSettlementImage(Batch batch, int rx, int ry) {
+	public void drawSettlementImage(Batch batch, float rx, float ry) {
 		if (settlementImage != null) {
 			batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
 		}
@@ -286,8 +287,12 @@ public class MapDrawModel {
 	private int height;
 	
 	private TileDrawModel[][] tilesDrawModel;
+	final Point unitFocus = new Point(-1, -1);
+	public Tile selectedTile;
+	public Player playingPlayer;
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {
+		this.playingPlayer = player;
 		width = map.width;
 		height = map.height;
 		

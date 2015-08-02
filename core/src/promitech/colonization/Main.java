@@ -3,10 +3,12 @@ package promitech.colonization;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Player;
 import promitech.colonization.actors.MapActor;
+import promitech.colonization.infrastructure.CenterSizableViewport;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.hud.HudStage;
+import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
@@ -29,7 +31,6 @@ public class Main extends ApplicationAdapter {
 	
 	private GameResources gameResources;
 	private Game game;
-	private Player player;
 	
 	
 	private Stage stage;
@@ -52,7 +53,8 @@ public class Main extends ApplicationAdapter {
 		gameResources = new GameResources();
         
 		try {
-			FontResource.instance().load();
+			Messages.instance().load();
+			FontResource.load();
 			
 			SaveGameParser saveGameParser = new SaveGameParser();
 			game = saveGameParser.parse();
@@ -63,11 +65,15 @@ public class Main extends ApplicationAdapter {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		player = game.players.getById("player:1");
+		game.playingPlayer = game.players.getById("player:1");
 		
-		MapActor mapActor = new MapActor(player, game, gameResources);
+		
+		
+		MapActor mapActor = new MapActor(game, gameResources);
 		
 		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameResources);
+		hudStage.hudInfoPanel.setMapActor(mapActor);
+		
 		//stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
 		stage = new Stage();
 		Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
@@ -128,6 +134,7 @@ public class Main extends ApplicationAdapter {
     
     @Override
     public void dispose() {
-    	FontResource.instance().dispose();
+    	FontResource.dispose();
+    	Messages.instance().dispose();
     }
 }

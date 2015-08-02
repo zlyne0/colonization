@@ -1,12 +1,10 @@
 package promitech.colonization.actors;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GameResources;
 import promitech.colonization.InputKeyboardDevice;
 import promitech.colonization.math.Directions;
-import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -24,7 +22,7 @@ public class MapActor extends Actor {
 	private InputKeyboardDevice inputKeyboardDevice = new InputKeyboardDevice();
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
-	public MapActor(Player player, final Game game, GameResources gameResources) {
+	public MapActor(final Game game, GameResources gameResources) {
 		addListener(new InputListener() {
 			private boolean pressed = false;
 			private final Vector2 v = new Vector2();
@@ -56,27 +54,28 @@ public class MapActor extends Actor {
 		addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("screenPoint: " + x + ", " + y);
-    		    Point p = new Point();
-    		    mapRenderer.screenToMapCords((int)x, (int)y, p);
-    		    
-    		    System.out.println("p = " + p);
-    			Tile tile = game.map.getTile(p.x, p.y);
+				mapRenderer.screenToMapCords((int)x, (int)y, mapDrawModel.unitFocus);
+				mapDrawModel.selectedTile = game.map.getTile(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
+
+				
+    			Tile tile = mapDrawModel.selectedTile;
+    			System.out.println("screenPoint: " + x + ", " + y);
+    			System.out.println("p = " + mapDrawModel.unitFocus);
     			if (tile != null) {
     				System.out.println("tile: " + tile);
     			} else {
     				System.out.println("tile is null");
     			}
     			
-    			Object tileDrawModel = mapDrawModel.getTileDrawModel(p.x, p.y);
+    			Object tileDrawModel = mapDrawModel.getTileDrawModel(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
     			if (tileDrawModel != null) {
     				System.out.println("drawmodel = " + tileDrawModel.toString());
     			}
 			}
 		});
 		
-		mapRenderer = new MapRenderer(player, game.map, mapDrawModel, gameResources, shapeRenderer);
-		mapDrawModel.initialize(game.map, player, gameResources);
+		mapRenderer = new MapRenderer(game.playingPlayer, game.map, mapDrawModel, gameResources, shapeRenderer);
+		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
 	}
 	
 	@Override
@@ -108,5 +107,12 @@ public class MapActor extends Actor {
 	    mapRenderer.cameraPosition.add(moveDirection.vx * 10, moveDirection.vy * 10);
 	    System.out.println("moveDirection " + moveDirection + " camera.position " + mapRenderer.cameraPosition);
 	}
-	
+
+	public void drawSelectedTile(Batch batch, ShapeRenderer shapeRenderer, float px, float py) {
+		mapRenderer.drawSelectedTileOnInfoPanel(batch, shapeRenderer, px, py);
+	}
+
+	public MapDrawModel mapDrawModel() {
+		return mapDrawModel;
+	}
 }

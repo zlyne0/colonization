@@ -10,11 +10,12 @@ import com.badlogic.gdx.utils.ObjectFloatMap;
 
 public class FontResource {
 
-	private static final FontResource fontResource = new FontResource();
+	private static final FontResource instance = new FontResource();
 	
 	private BitmapFont cityNamesFont;
 	private BitmapFont citySizeFont;
 	private BitmapFont unitBoxFont = new BitmapFont(false);
+	private BitmapFont infoPanelTileFont = new BitmapFont();
 	
 	private GlyphLayout glyphLayout = new GlyphLayout();
 	
@@ -23,11 +24,16 @@ public class FontResource {
 	private FontResource() {
 	}
 	
-	public static FontResource instance() {
-		return fontResource;
+	public static void load() {
+		instance.internalLoad();
 	}
 	
-	public void load() {
+	private void internalLoad() {
+		initFromFont1();
+		initFromFont2();
+	}
+
+	private void initFromFont1() {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("base/resources/fonts/LiberationSerif-Regular.ttf"));
 		
 		FreeTypeFontParameter params = new FreeTypeFontParameter();
@@ -36,41 +42,60 @@ public class FontResource {
 		params.borderWidth = 1;
 		cityNamesFont = generator.generateFont(params);
 		
+		params = new FreeTypeFontParameter();
 		params.size = (int)(32 * Gdx.graphics.getDensity());
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
 		citySizeFont = generator.generateFont(params);
 		
 		generator.dispose();
-		
 	}
 	
-	public float strWidth(BitmapFont strFont, String str) {
-		if (stringWidth.containsKey(str)) {
-			return stringWidth.get(str, 0);
+	private void initFromFont2() {
+		FreeTypeFontParameter params = null;
+		
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("base/resources/fonts/Imperator.ttf"));
+		params = new FreeTypeFontParameter();
+		params.size = (int)(24 * Gdx.graphics.getDensity());
+		params.borderColor = Color.BLACK;
+		params.borderWidth = 0;
+		infoPanelTileFont = generator.generateFont(params);
+		infoPanelTileFont.setColor(Color.BLACK);
+		
+		generator.dispose();
+	}
+	
+	public static float strWidth(BitmapFont strFont, String str) {
+		if (instance.stringWidth.containsKey(str)) {
+			return instance.stringWidth.get(str, 0);
 		}
-		glyphLayout.setText(strFont, str);
-		float w = glyphLayout.width;
-		stringWidth.put(str, w);
+		instance.glyphLayout.setText(strFont, str);
+		float w = instance.glyphLayout.width;
+		instance.stringWidth.put(str, w);
 		return w;
 	}
 	
-	public void dispose() {
-		cityNamesFont.dispose();
-		citySizeFont.dispose();
-		unitBoxFont.dispose();
+	public static void dispose() {
+		instance.cityNamesFont.dispose();
+		instance.citySizeFont.dispose();
+		instance.unitBoxFont.dispose();
+		instance.infoPanelTileFont.dispose();
 	}
 
-	public BitmapFont getCityNamesFont() {
-		return cityNamesFont;
+	public static BitmapFont getCityNamesFont() {
+		return instance.cityNamesFont;
 	}
 
-	public BitmapFont getCitySizeFont() {
-		return citySizeFont;
+	public static BitmapFont getCitySizeFont() {
+		return instance.citySizeFont;
 	}
 
-	public BitmapFont getUnitBoxFont() {
-		return unitBoxFont;
+	public static BitmapFont getUnitBoxFont() {
+		return instance.unitBoxFont;
+	}
+
+	public static BitmapFont getInfoPanelTitleFont() {
+		return instance.infoPanelTileFont;
 	}
 	
 }

@@ -25,7 +25,9 @@ public class SaveGameParser {
 		
 		//FileHandle fh = Gdx.files.internal("maps/savegame.xml");
 		//FileHandle fh = Gdx.files.internal("maps/america_map.xml");
-        FileHandle fh = Gdx.files.internal("maps/dutch_1522.xml");
+        //FileHandle fh = Gdx.files.internal("maps/dutch_1522.xml");
+        FileHandle fh = Gdx.files.internal("maps/savegame_1600.xml");
+        
 		InputStream read = fh.read();
 		
 		SAXParserFactory factory = SAXParserFactory.newInstance();

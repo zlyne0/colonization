@@ -8,6 +8,7 @@ public class TileImprovement {
 	public final TileImprovementType type;
 	public final String style;
 	public int magnitude = 0;
+	private int turns = 0;
 	
 	public TileImprovement(TileImprovementType type, String style) {
 		this.type = type;
@@ -26,6 +27,10 @@ public class TileImprovement {
 		}
 	}
 	
+	public boolean isComplete() {
+		return turns <= 0;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
 		public Xml(XmlNodeParser parent) {
@@ -39,6 +44,7 @@ public class TileImprovement {
 			TileImprovementType type = specification.tileImprovementTypes.getById(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(type, style);
 			tileImprovement.magnitude = getIntAttribute(attributes, "magnitude", 0);
+			tileImprovement.turns = getIntAttribute(attributes, "turns");
 			
 			((Tile.Xml)parentXmlNodeParser).tile.tileImprovements.add(tileImprovement);
 		}
