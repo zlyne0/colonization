@@ -4,10 +4,10 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.MapActor;
+import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -17,12 +17,12 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class HudInfoPanel extends Actor {
-    private Texture infoPanelSkin;
+    private Frame infoPanelSkin;
     private MapActor mapActor;
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     
     public HudInfoPanel(GameResources gameResources) {
-        infoPanelSkin = gameResources.getImage("InfoPanel.skin");
+        infoPanelSkin = gameResources.getFrame("InfoPanel.skin");
         
         addListener(new InputListener() {
         	@Override
@@ -36,14 +36,14 @@ public class HudInfoPanel extends Actor {
     protected void setStage(Stage stage) {
     	super.setStage(stage);
 		setBounds(
-				stage.getWidth() - infoPanelSkin.getWidth(), 0,
-				infoPanelSkin.getWidth(), infoPanelSkin.getHeight()
+				stage.getWidth() - infoPanelSkin.texture.getRegionWidth(), 0,
+				infoPanelSkin.texture.getRegionWidth(), infoPanelSkin.texture.getRegionHeight()
 		);
     }
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
-        batch.draw(infoPanelSkin, getX(), 0);
+        batch.draw(infoPanelSkin.texture, getX(), 0);
         
         mapActor.drawSelectedTile(batch, shapeRenderer, getX() + 30, getY() + 10);
         

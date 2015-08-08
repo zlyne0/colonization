@@ -7,22 +7,24 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.files.FileHandle;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Texture;
-
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
 import promitech.colonization.actors.MapRenderer;
 import promitech.colonization.gdx.Frame;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.Texture;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas;
+import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+
 public class GameResources {
 	
 	private Properties prop = new Properties();
 	
-	private Map<String,Texture> imagesByName = new HashMap<String, Texture>();
+	private Map<String,TextureAtlas> atlasByName = new HashMap<String, TextureAtlas>();	
 	private Map<String,Integer> countByPrefix = new HashMap<String, Integer>();
 	private Map<String,Frame> frameByName = new HashMap<String,Frame>();
 	private Map<String,Frame> centerAdjustFrameTextureByName = new HashMap<String,Frame>();
@@ -50,58 +52,75 @@ public class GameResources {
 		stream.close();
 	}
 	
-	private Texture loadImage(String key) {
+	TextureAtlas layer1;
+	TextureAtlas layer2;
+	
+	private AtlasRegion loadImage(String key) {
 		String imagePath = (String)prop.get(key);
 		if (imagePath == null) {
 			throw new IllegalArgumentException("can not find resource propertie value for key: " + key); 
 		}
+		
+		//
+		// model.tile.greatRiver.center0.image=:atlas:atlasPath.pack:regionName
+		//
+		if (imagePath.startsWith(":atlas")) {
+			String atlasString[] = imagePath.split(":");
+			String atlasPath = atlasString[2];
+			String regionName = atlasString[3];
+
+			TextureAtlas atlas = atlasByName.get(atlasPath);
+			if (atlas == null) {
+				atlas = new TextureAtlas("rules/classic/" + atlasPath);
+				atlasByName.put(atlasPath, atlas);
+			}
+			AtlasRegion findRegion = atlas.findRegion(regionName);
+			if (findRegion == null) {
+				throw new IllegalArgumentException("can not find image for key: " + key);
+			}
+			return findRegion;
+		}		
 		imagePath = "rules/classic/" + imagePath;
 		
 		FileHandle imageFileHandle = Gdx.files.internal(imagePath);
 		if (!imageFileHandle.exists()) {
 			throw new IllegalArgumentException("can not find image for path: " + imagePath + " and resource key " + key);
 		}
-		Texture img = new Texture(imageFileHandle);
-		imagesByName.put(key, img);
-		return img;
+		Texture texture = new Texture(imageFileHandle);
+		return new AtlasRegion(texture, 0, 0, texture.getWidth(), texture.getHeight());
 	}
 
-	public Texture getImage(String key) {
-		Texture texture = imagesByName.get(key);
-		if (texture == null) {
-			texture = loadImage(key);
-			//throw new IllegalArgumentException("can not find image by key: " + key);
-		}
-		return texture;
-	}
-	
 	public Frame getFrame(String key) {
-		Frame frame = frameByName.get(key);
+		return getFrame(key, 0);
+	}
+
+	public Frame getFrame(String key, int zIndex) {
+		String mapKey = "" + zIndex + ":" + key;
+		Frame frame = frameByName.get(mapKey);
 		if (frame == null) {
-			Texture texture = getImage(key);
-			if (texture == null) {
-				return null;
-			}
-			frame = new Frame(texture);
-			frameByName.put(key, frame);
+			AtlasRegion region = loadImage(key);
+			frame = new Frame(region, zIndex);
+			frame.key = key;
+			frameByName.put(mapKey, frame);
 		}
 		return frame;
 	}
 	
 	public Frame getCenterAdjustFrameTexture(String key) {
-		Frame frame = centerAdjustFrameTextureByName.get(key);
-		if (frame == null) {
-			Texture texture = getImage(key);
-			int ox = 0, oy = 0;
-			if (texture.getWidth() != MapRenderer.TILE_WIDTH) {
-				ox = MapRenderer.TILE_WIDTH / 2 - texture.getWidth() / 2;
-			}
-			if (texture.getHeight() != MapRenderer.TILE_HEIGHT) {
-				oy += MapRenderer.TILE_HEIGHT / 2 - texture.getHeight() / 2;
-			}
-			frame = new Frame(texture, ox, oy);
-			centerAdjustFrameTextureByName.put(key, frame);
+		Frame frame = frameByName.get(key);
+		if (frame != null) {
+			return frame;
 		}
+		AtlasRegion region = loadImage(key);
+		int ox = 0, oy = 0;
+		if (region.getRegionWidth() != MapRenderer.TILE_WIDTH) {
+			ox = MapRenderer.TILE_WIDTH / 2 - region.getRegionWidth() / 2;
+		}
+		if (region.getRegionHeight() != MapRenderer.TILE_HEIGHT) {
+			oy += MapRenderer.TILE_HEIGHT / 2 - region.getRegionHeight() / 2;
+		}
+		frame = new Frame(region, ox, oy);
+		centerAdjustFrameTextureByName.put(key, frame);
 		return frame;
 	}
 
@@ -109,14 +128,14 @@ public class GameResources {
         return ((y % 8 <= 2) || ((x + y) % 2 == 0 ));
     }
     
-    public Texture tileEdge(int edgeStyle, int x, int y) {
+    public Frame tileEdge(int edgeStyle, int x, int y, int zIndex) {
     	String key = "model.tile.beach.edge" + edgeStyle + ((isEven(x, y)) ? "_even" : "_odd");
-    	return getImage(key);
+    	return getFrame(key, zIndex);
     }
 
-	public Texture tileCorner(int cornerStyle, int x, int y) {
+	public Frame tileCorner(int cornerStyle, int x, int y, int zIndex) {
 		String key = "model.tile.beach.corner" + cornerStyle + ((isEven(x, y)) ? "_even" : "_odd");
-		return getImage(key);
+		return getFrame(key, zIndex);
 	}
 
 	public Frame tileResource(ResourceType resourceType) {
@@ -124,29 +143,29 @@ public class GameResources {
 		return getCenterAdjustFrameTexture(key);
 	}
 
-	public Texture tile(TileType type, int x, int y) {
+	public Frame tile(TileType type, int x, int y) {
 		String key = null;
 		if (isEven(x, y)) {
 			key = type.getId() + ".center0.image";
 		} else {
 			key = type.getId() + ".center1.image";
 		}
-		return getImage(key);
+		return getFrame(key, type.getOrder());
 	}
 	
-	public Texture tileBorder(TileType type, Direction direction, int x, int y) {
+	public Frame tileBorder(TileType type, Direction direction, int x, int y, int zIndex) {
 		String key = type.getId() + ".border_" + direction + ((isEven(x, y)) ?  "_even" : "_odd") + ".image";
-		return getImage(key);
+		return getFrame(key, zIndex);
 	}
 
-	public Texture unexploredTile(int x, int y) {
+	public Frame unexploredTile(int x, int y) {
 		String key = "model.tile.unexplored.center" + (isEven(x, y) ? "0" : "1") + ".image";
-		return getImage(key);
+		return getFrame(key, Frame.DEEPEST_ORDER);
 	}
-
-    public Texture unexploredBorder(Direction direction, int x, int y) {
+	
+    public Frame unexploredBorder(Direction direction, int x, int y) {
     	String key = "model.tile.unexplored.border_" + direction + (isEven(x, y) ?  "_even" : "_odd") + ".image";
-    	return getImage(key);
+    	return getFrame(key, Frame.DEEPEST_ORDER);
     }
 	
 	public Frame tileLastCityRumour() {
@@ -157,9 +176,9 @@ public class GameResources {
 		return getCenterAdjustFrameTexture("model.improvement.plow.image");
 	}
 	
-	public Texture riverDelta(Direction direction, TileImprovement tileImprovement) {
+	public Frame riverDelta(Direction direction, TileImprovement tileImprovement) {
 		String key = "model.tile.delta_" + direction + (tileImprovement.magnitude == 1 ? "_small" : "_large");
-		return getImage(key);
+		return getFrame(key);
 	}
 
 	public Frame hills() {

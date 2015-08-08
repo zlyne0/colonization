@@ -15,21 +15,19 @@ import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
-import promitech.colonization.gdx.SortableTexture;
 import promitech.colonization.math.Point;
 
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 class TileDrawModel {
-	private LinkedList<SortableTexture> backgroundTerainTextures = new LinkedList<SortableTexture>();
+	private LinkedList<Frame> backgroundTerainTextures = new LinkedList<Frame>();
 	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
 	private boolean fogOfWar = true;
 	Frame settlementImage;
 	
 	public void draw(Batch batch, float rx, float ry) {
-		for (SortableTexture texture : backgroundTerainTextures) {
-			batch.draw(texture.texture, rx, ry);
+		for (Frame frame : backgroundTerainTextures) {
+			batch.draw(frame.texture, rx, ry);
 		}
 	}
 	
@@ -45,7 +43,7 @@ class TileDrawModel {
 		}
 	}
 	
-	public void addBackgroundTerainTexture(SortableTexture texture) {
+	public void addBackgroundTerainTexture(Frame texture) {
 		backgroundTerainTextures.add(texture);
 		Collections.sort(backgroundTerainTextures);
 	}
@@ -64,8 +62,12 @@ class TileDrawModel {
 	}
 	
 	public String toString() {
-		return "drawModel backgroundTerains: " + backgroundTerainTextures.size() + 
-				", foregroundTerains: " + foregroundTerainTextures.size();
+		StringBuilder sb = new StringBuilder();
+		sb.append("drawModel backgroundTerains: " + backgroundTerainTextures.size() + "\n");
+		for (Frame f : backgroundTerainTextures){
+			sb.append(f.toString()).append("\n");
+		}
+		return sb.toString() + ", foregroundTerains: " + foregroundTerainTextures.size();
 	}
 
 	public boolean isFogOfWar() {
@@ -92,7 +94,6 @@ class TileDrawModelInitializer {
 	private SpiralIterator spiralIterator;
 	
 	private Frame frame;
-	private Texture img;
 	
 	public TileDrawModelInitializer(Map map, Player player, GameResources gameResources) {
 		this.map = map;
@@ -179,33 +180,33 @@ class TileDrawModelInitializer {
 	
 	private void renderTerainAndBeaches() {
 		if (tile.isUnexplored(player)) {
-			img = gameResources.unexploredTile(x, y);
-			tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img));
+			frame = gameResources.unexploredTile(x, y);
+			tileDrawModel.addBackgroundTerainTexture(frame);
 			return;
 		}
 		
-		img = gameResources.tile(tile.type, x, y);
-		tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+		frame = gameResources.tile(tile.type, x, y);
+		tileDrawModel.addBackgroundTerainTexture(frame);
 		
 		// add images for beach
 		if (tile.type.isWater() && tile.style > 0) {
 			int edgeStyle = tile.style >> 4;
     		if (edgeStyle > 0) {
-    			img = gameResources.tileEdge(edgeStyle, x, y);
-    			tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.type.getOrder());
+    			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
     		int cornerStyle = tile.style & 15;
     		if (cornerStyle > 0) {
-    			img = gameResources.tileCorner(cornerStyle, x, y);
-    			tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.type.getOrder());
+    			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
 		}
 	}
 	
 	private void renderBordersAndRivers(Direction direction) {
 		if (borderTile.isUnexplored(player)) {
-			img = gameResources.unexploredBorder(direction, x, y);
-			tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img));
+			frame = gameResources.unexploredBorder(direction, x, y);
+			tileDrawModel.addBackgroundTerainTexture(frame);
 			return;
 		}
 		
@@ -216,25 +217,25 @@ class TileDrawModelInitializer {
 		if (tile.type.isWater() || borderTile.type.isWater()) {
 			if (!tile.type.isWater() && borderTile.type.isWater()) {
 				direction = direction.getReverseDirection();
-				img = gameResources.tileBorder(tile.type, direction, x, y);
-				borderTileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 			if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
 				direction = direction.getReverseDirection();
-				img = gameResources.tileBorder(tile.type, direction, x, y);
-				borderTileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 		} else {
 			direction = direction.getReverseDirection();
-			img = gameResources.tileBorder(tile.type, direction, x, y);
-			borderTileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, tile.type.getOrder()));
+			frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+			borderTileDrawModel.addBackgroundTerainTexture(frame);
 		}
 		
 		if (Direction.longSides.contains(direction) && tile.type.isWater()) {
 			TileImprovement riverTileImprovement = borderTile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 			if (riverTileImprovement != null) {
-				img = gameResources.riverDelta(direction, riverTileImprovement);
-				tileDrawModel.addBackgroundTerainTexture(new SortableTexture(img, -1));
+				frame = gameResources.riverDelta(direction, riverTileImprovement);
+				tileDrawModel.addBackgroundTerainTexture(frame);
 			}
 		}
 	}

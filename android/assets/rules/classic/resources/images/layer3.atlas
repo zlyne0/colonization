@@ -1,0 +1,230 @@
+
+layer3.png
+size: 1113,208
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+aztec_city
+  rotate: false
+  xy: 544, 142
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+inca_city
+  rotate: false
+  xy: 544, 142
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+coin
+  rotate: false
+  xy: 974, 3
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+cotton
+  rotate: false
+  xy: 1008, 3
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+fish
+  rotate: false
+  xy: 1064, 162
+  size: 47, 44
+  orig: 47, 44
+  offset: 0, 0
+  index: -1
+furs
+  rotate: false
+  xy: 927, 44
+  size: 54, 34
+  orig: 54, 34
+  offset: 0, 0
+  index: -1
+game
+  rotate: false
+  xy: 877, 22
+  size: 48, 56
+  orig: 48, 56
+  offset: 0, 0
+  index: -1
+grain
+  rotate: false
+  xy: 1042, 16
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+haloDark
+  rotate: false
+  xy: 2, 6
+  size: 400, 200
+  orig: 400, 200
+  offset: 0, 0
+  index: -1
+indian_camp
+  rotate: false
+  xy: 674, 142
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+indian_village
+  rotate: false
+  xy: 804, 142
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+large
+  rotate: false
+  xy: 902, 80
+  size: 100, 60
+  orig: 100, 60
+  offset: 0, 0
+  index: -1
+large_fort
+  rotate: false
+  xy: 404, 51
+  size: 130, 75
+  orig: 130, 75
+  offset: 0, 0
+  index: -1
+large_fortress
+  rotate: false
+  xy: 404, 128
+  size: 138, 78
+  orig: 138, 78
+  offset: 0, 0
+  index: -1
+large_stockade
+  rotate: false
+  xy: 790, 80
+  size: 110, 60
+  orig: 110, 60
+  offset: 0, 0
+  index: -1
+lostCityRumour
+  rotate: false
+  xy: 1068, 110
+  size: 38, 50
+  orig: 38, 50
+  offset: 0, 0
+  index: -1
+lumber
+  rotate: false
+  xy: 983, 37
+  size: 45, 41
+  orig: 45, 41
+  offset: 0, 0
+  index: -1
+medium
+  rotate: false
+  xy: 664, 19
+  size: 95, 49
+  orig: 95, 49
+  offset: 0, 0
+  index: -1
+medium_fort
+  rotate: false
+  xy: 674, 70
+  size: 114, 70
+  orig: 114, 70
+  offset: 0, 0
+  index: -1
+medium_stockade
+  rotate: false
+  xy: 562, 16
+  size: 100, 58
+  orig: 100, 58
+  offset: 0, 0
+  index: -1
+minerals
+  rotate: false
+  xy: 1077, 76
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+nativeLand
+  rotate: false
+  xy: 761, 50
+  size: 21, 18
+  orig: 21, 18
+  offset: 0, 0
+  index: -1
+oasis
+  rotate: false
+  xy: 501, 2
+  size: 59, 47
+  orig: 59, 47
+  offset: 0, 0
+  index: -1
+ore
+  rotate: false
+  xy: 927, 6
+  size: 45, 36
+  orig: 45, 36
+  offset: 0, 0
+  index: -1
+plowed
+  rotate: false
+  xy: 934, 142
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+silver
+  rotate: false
+  xy: 1030, 50
+  size: 45, 36
+  orig: 45, 36
+  offset: 0, 0
+  index: -1
+small
+  rotate: false
+  xy: 1004, 88
+  size: 62, 52
+  orig: 62, 52
+  offset: 0, 0
+  index: -1
+small_stockade
+  rotate: false
+  xy: 790, 28
+  size: 85, 50
+  orig: 85, 50
+  offset: 0, 0
+  index: -1
+sugar
+  rotate: false
+  xy: 1077, 42
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+tileTaken
+  rotate: false
+  xy: 544, 76
+  size: 128, 64
+  orig: 128, 64
+  offset: 0, 0
+  index: -1
+tobacco
+  rotate: false
+  xy: 1076, 8
+  size: 32, 32
+  orig: 32, 32
+  offset: 0, 0
+  index: -1
+undead
+  rotate: false
+  xy: 404, 2
+  size: 95, 47
+  orig: 95, 47
+  offset: 0, 0
+  index: -1

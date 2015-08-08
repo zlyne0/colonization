@@ -1,156 +1,16 @@
 package promitech.colonization.actors;
 
-import java.util.HashMap;
-
-import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
-import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.MapRenderer.TileDrawer;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.math.Point;
-import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.Pixmap;
-import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.PolygonRegion;
-import com.badlogic.gdx.graphics.g2d.PolygonSprite;
-import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.math.Bezier;
-import com.badlogic.gdx.math.Path;
 import com.badlogic.gdx.math.Vector2;
-
-class RoadsTileDrawer extends TileDrawer {
-	private int SAMPLE_POINTS = 100;
-	private float SAMPLE_POINT_DISTANCE = 1f / SAMPLE_POINTS;
-	
-	// tile width and height
-	private int w = MapRenderer.TILE_WIDTH;
-	private int h = MapRenderer.TILE_HEIGHT;
-	
-	private java.util.Map<Direction,Vector2> edgePoints = new HashMap<Direction, Vector2>();
-	private final Color roadColor;
-	
-	// paths from direction to direction
-	private Path<Vector2>[][] paths = null;
-	private Vector2 centerOfTile = new Vector2(w/2, h/2);
-	Player renderForPlayer;
-
-	private final Vector2 p1 = new Vector2();
-	private final Vector2 p2 = new Vector2();
-	private boolean tmpPointInited = false;
-	private int borderRoadCount = 0;
-	
-	public RoadsTileDrawer(GameResources gameResources) {
-		roadColor = gameResources.getColor("road.color");
-		
-		edgePoints.put(Direction.N,  new Vector2(w / 2, h));
-		edgePoints.put(Direction.NE, new Vector2(w * 0.75f, h * 0.75f ));
-		edgePoints.put(Direction.E,  new Vector2(w, h / 2));
-		edgePoints.put(Direction.SE, new Vector2(w * 0.75f, h * 0.25f ));
-		edgePoints.put(Direction.S,  new Vector2(w / 2, 0));
-		edgePoints.put(Direction.SW, new Vector2(w * 0.25f, h * 0.25f ));
-		edgePoints.put(Direction.W,  new Vector2(0, h / 2));
-		edgePoints.put(Direction.NW, new Vector2(w * 0.25f, h * 0.75f ));
-		
-		initPaths();
-	}
-	
-	private void initPaths() {
-		paths = new Path[Direction.values().length][Direction.values().length];
-		
-		for (Direction dSrc : Direction.values()) {
-			for (Direction dDest : Direction.values()) {
-				paths[dSrc.ordinal()][dDest.ordinal()] = new Bezier<Vector2>(edgePoints.get(dSrc), centerOfTile, edgePoints.get(dDest));
-			}
-		}
-	}
-	
-	private void draw(Direction src, Direction dest) {
-		tmpPointInited = false;
-		if (src == dest) {
-			throw new IllegalArgumentException("can not draw road from the same source and destination direction (" + src + ")");
-		} 
-		Path<Vector2> road = paths[src.ordinal()][dest.ordinal()];
-		
-		float val = 0f;
-		while (val <= 1f) {
-			if (!tmpPointInited) {
-				road.valueAt(p1, val);
-				val += SAMPLE_POINT_DISTANCE;
-				road.valueAt(p2, val);
-				tmpPointInited = true;
-			} else {
-				p1.set(p2);
-				road.valueAt(p2, val);
-			}
-			shapeRenderer.line(
-					p1.x + screenPoint.x, p1.y + screenPoint.y, 
-					p2.x + screenPoint.x, p2.y + screenPoint.y
-			);
-			val += SAMPLE_POINT_DISTANCE;
-		}
-	}
-
-	@Override
-	public void draw() {
-		if (tile.isUnexplored(renderForPlayer) || !tile.hasRoad()) {
-			return;
-		}
-		borderRoadCount = 0;
-		shapeRenderer.setColor(roadColor);
-		Direction directionForOneRoad = null;
-		
-		for (int iSrc = 0; iSrc < Direction.values().length; iSrc++) {
-			Direction srcDirection = Direction.values()[iSrc];
-			Tile srcTile = map.getTile(mapx, mapy, srcDirection);
-			if (srcTile == null || !srcTile.hasRoad()) {
-				continue;
-			}
-			borderRoadCount++;
-			directionForOneRoad = srcDirection;
-			
-			for (int iDest = iSrc + 1; iDest < Direction.values().length; iDest++) {
-				Direction destDirection = Direction.values()[iDest];
-				Tile destTile = map.getTile(mapx, mapy, destDirection);
-				if (destTile == null) {
-					continue;
-				}
-				if (!destTile.hasRoad()) {
-					continue;
-				}
-				draw(srcDirection, destDirection);
-			}
-		}
-		if (borderRoadCount == 0) {
-			if (!tile.hasSettlement()) {
-				shapeRenderer.ellipse(
-						centerOfTile.x + screenPoint.x - 25, centerOfTile.y + screenPoint.y - 12, 
-						50, 25
-				);
-			}
-		} else {
-			if (borderRoadCount == 1) {
-				Vector2 p2 = edgePoints.get(directionForOneRoad);
-				shapeRenderer.line(
-						centerOfTile.x + screenPoint.x, centerOfTile.y + screenPoint.y,
-						p2.x + screenPoint.x, p2.y + screenPoint.y
-				);
-			}
-		}
-	}
-}
 
 public class MapRenderer {
 	public static final int TILE_WIDTH = 128;
@@ -189,163 +49,6 @@ public class MapRenderer {
 		}
 	}
 	
-	private class ObjectsTileDrawer extends TileDrawer {
-		private static final int UNIT_IMAGE_OFFSET = 20;
-		
-		protected Player player;
-		
-		private int w = MapRenderer.TILE_WIDTH;
-		private int h = MapRenderer.TILE_HEIGHT;
-
-		private ObjectsTileDrawer() {
-		}
-		
-		@Override
-		public void draw() {
-			if (tile.isUnexplored(player)) {
-				return;
-			}
-			
-			drawSettlement();
-			drawFocus();
-			if (tileDrawModel.isFogOfWar()) {
-				return;
-			}
-			
-			if (tile.units.size() > 0 && !tile.hasSettlement()) {
-				Unit firstUnit = tile.units.first();
-				Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
-				drawUnit(firstUnit, frame);
-			}
-		}
-
-		private void drawFocus() {
-			if (!mapDrawModel.unitFocus.equals(mapx, mapy)) {
-				return;
-			}
-			
-			batch.end();
-			
-			mapToScreenCords(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y, objectsTileDrawer.screenPoint);
-			
-			Gdx.gl20.glLineWidth(3);
-			shapeRenderer.begin(ShapeType.Line);
-			shapeRenderer.setColor(Color.WHITE);
-			shapeRenderer.ellipse(
-					objectsTileDrawer.screenPoint.x + TILE_WIDTH/4, 
-					objectsTileDrawer.screenPoint.y + TILE_HEIGHT/4, 
-					TILE_WIDTH/2,
-					TILE_HEIGHT/2
-			);
-			shapeRenderer.end();
-			Gdx.gl20.glLineWidth(1);
-			
-			batch.begin();
-		}
-		
-		private void drawSettlement() {
-			if (!tile.hasSettlement()) {
-				return;
-			}
-			tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
-			
-			BitmapFont font = FontResource.getCityNamesFont();
-			
-			float strWidth = FontResource.strWidth(font, tile.getSettlement().getName());
-			font.setColor(tile.getSettlement().getOwner().getNation().getColor());
-			font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
-			
-			if (tile.hasSettlementOwnedBy(player) && tile.getSettlement().isColony()) {
-				Colony colony = tile.getSettlement().getColony();
-				font.setColor(Color.WHITE);
-				font.draw(batch, "" + colony.getDisplayUnitCount(), 
-						screenPoint.x + w/2, screenPoint.y + h/2 + 5
-				);
-			}
-		}
-		
-		private void drawUnit(Unit unit, Frame frame) {
-			batch.draw(frame.texture, 
-					screenPoint.x + frame.offsetX, screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
-			);
-			
-			drawUnitChip(unit);
-		}
-		
-		private void drawUnitChip(Unit unit) {
-			float cx = screenPoint.x + 35;
-			float cy = screenPoint.y + h - 5;
-			
-			batch.end();
-			shapeRenderer.begin(ShapeType.Filled);
-			shapeRenderer.setColor(unit.getOwner().getNation().getColor());
-			shapeRenderer.rect(cx, cy, 17, 20);
-			shapeRenderer.end();
-
-			shapeRenderer.begin(ShapeType.Line);
-			shapeRenderer.setColor(Color.BLACK);
-			shapeRenderer.rect(cx, cy, 17, 20);
-			
-			if (tile.units.size() > 1) {
-				shapeRenderer.setColor(Color.WHITE);
-				int max = tile.units.size() > 10 ? 10 : tile.units.size(); 
-				for (int i=0; i<max; i++) {
-					shapeRenderer.line(cx - 7, cy - (i*2) + 19, cx - 1, cy - (i*2) + 19);
-				}
-			}
-			
-			shapeRenderer.end();
-			
-			batch.begin();
-			
-			FontResource.getUnitBoxFont().setColor(Color.BLACK);
-			FontResource.getUnitBoxFont().draw(batch, "G", cx + 2, cy + 20 - 2);
-		}
-	}
-	
-	private static class FogOfWarDrawer extends TileDrawer {
-		public static final Color FOG_OF_WAR_COLOR = new Color(0f, 0f, 0f, 0.3f);
-
-		private PolygonSpriteBatch polyBatch;
-		private PolygonSprite poly;
-		
-		public FogOfWarDrawer() {
-			int w = MapRenderer.TILE_WIDTH;
-			int h = MapRenderer.TILE_HEIGHT;
-
-//	         0
-//	       /   \
-//	      3-----1
-//	       \   /
-//	         2 
-            Pixmap pix = new Pixmap(1, 1, Pixmap.Format.RGBA8888);
-            pix.setColor(FOG_OF_WAR_COLOR); 
-            pix.fill();
-            Texture textureSolid = new Texture(pix);
-            PolygonRegion polyReg = new PolygonRegion(new TextureRegion(textureSolid),
-            	new float[] {       
-                  	w/2,  0,        
-                  	w,  h/2,        
-                  	w/2,  h,        
-                  	0,  h/2         
-                }, new short[] {
-                	0, 1, 3,
-                    3, 1, 2         
-                }
-            );
-            poly = new PolygonSprite(polyReg);
-            polyBatch = new PolygonSpriteBatch();
-		}
-		
-		@Override
-		public void draw() {
-			if (tileDrawModel.isFogOfWar()) {
-	            poly.setPosition(screenPoint.x, screenPoint.y);
-	            poly.draw(polyBatch);
-			}
-		}
-	}
-	
 	private final Map map; 
 	private final MapDrawModel mapDrawModel;
 	private final Player playerMap;
@@ -354,7 +57,7 @@ public class MapRenderer {
     private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
     private final TerainForegroundTileDrawer terainForegroundTileDrawer = new TerainForegroundTileDrawer();
     private final RoadsTileDrawer roadsTileDrawer;
-    private final ObjectsTileDrawer objectsTileDrawer = new ObjectsTileDrawer();
+    private final ObjectsTileDrawer objectsTileDrawer;
     private final FogOfWarDrawer fogOfWarDrawer = new FogOfWarDrawer();
 
     private final ShapeRenderer shapeRenderer;
@@ -371,14 +74,15 @@ public class MapRenderer {
 	public MapRenderer(Player playerMap, Map map, MapDrawModel mapDrawModel, 
 			GameResources gameResources, ShapeRenderer shapeRenderer ) 
 	{
+		roadsTileDrawer = new RoadsTileDrawer(gameResources);
+		objectsTileDrawer = new ObjectsTileDrawer(gameResources);
+		
     	this.playerMap = playerMap;
     	this.map = map;
     	this.mapDrawModel = mapDrawModel;
     	this.objectsTileDrawer.mapDrawModel = mapDrawModel;
     	this.gameResources = gameResources;
     	this.shapeRenderer = shapeRenderer;
-    	
-        roadsTileDrawer = new RoadsTileDrawer(gameResources);
         
     	terainBackgroundTileDrawer.map = map;
     	terainForegroundTileDrawer.map = map;
@@ -400,7 +104,8 @@ public class MapRenderer {
     	this.screenHeight = height;
     }
     
-    private void drawLayer(TileDrawer tileDrawer) {
+    private void drawLayer(Batch batch, TileDrawer tileDrawer) {
+    	tileDrawer.batch = batch;
     	for (y=screenMin.y; y<screenMax.y; y++) {
     		for (x=screenMin.x; x<screenMax.x; x++) {
     			tileDrawer.mapx = x;
@@ -417,7 +122,7 @@ public class MapRenderer {
 		// there is transformation screenY = screenHeight - screenY;
     	screenToMapCords(0-TILE_WIDTH, screenHeight + TILE_HEIGHT, screenMin);
     	screenToMapCords(screenWidth + TILE_WIDTH*2, -TILE_HEIGHT, screenMax);
-    	
+
     	if (screenMin.x < 0) {
     		screenMin.x = 0;
     	}
@@ -433,23 +138,18 @@ public class MapRenderer {
     }
     
     public void render(Batch batch) {
-    	terainBackgroundTileDrawer.batch = batch;
-    	terainForegroundTileDrawer.batch = batch;
-    	roadsTileDrawer.batch = batch;
     	objectsTileDrawer.batch = batch;
     	fogOfWarDrawer.batch = batch;
 
-    	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
     	
-    	
     	preparePartOfMapToRender(map);
-    	
-    	drawLayer(terainBackgroundTileDrawer);
-    	drawLayer(terainForegroundTileDrawer);
+  
+    	drawLayer(batch, terainBackgroundTileDrawer);
+    	drawLayer(batch, terainForegroundTileDrawer);
     	drawRoadLayer(batch);
-    	drawLayer(objectsTileDrawer);
+    	drawLayer(batch, objectsTileDrawer);
     	drawFogOfWarLayer(batch);
     }
 
@@ -460,7 +160,7 @@ public class MapRenderer {
     	
     	fogOfWarDrawer.polyBatch.begin();
     	fogOfWarDrawer.polyBatch.enableBlending();
-    	drawLayer(fogOfWarDrawer);
+    	drawLayer(batch, fogOfWarDrawer);
     	fogOfWarDrawer.polyBatch.end();
     	
     	batch.begin();
@@ -468,9 +168,10 @@ public class MapRenderer {
 
     private void drawRoadLayer(Batch batch) {
     	batch.end();
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
     	Gdx.gl20.glLineWidth(3);
-    	drawLayer(roadsTileDrawer);
+    	drawLayer(batch, roadsTileDrawer);
     	roadsTileDrawer.shapeRenderer.end();
     	Gdx.gl20.glLineWidth(1);
     	batch.begin();

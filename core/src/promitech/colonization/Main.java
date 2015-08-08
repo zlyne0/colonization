@@ -1,9 +1,14 @@
 package promitech.colonization;
 
+import java.nio.IntBuffer;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.TileType;
 import promitech.colonization.actors.MapActor;
-import promitech.colonization.infrastructure.CenterSizableViewport;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.savegame.SaveGameParser;
@@ -20,6 +25,7 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.BufferUtils;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 public class Main extends ApplicationAdapter {
@@ -68,7 +74,6 @@ public class Main extends ApplicationAdapter {
 		game.playingPlayer = game.players.getById("player:1");
 		
 		
-		
 		MapActor mapActor = new MapActor(game, gameResources);
 		
 		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameResources);
@@ -98,7 +103,7 @@ public class Main extends ApplicationAdapter {
 //    	Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
-		
+
         stage.getViewport().apply();
         stage.act();
         stage.draw();
@@ -119,10 +124,16 @@ public class Main extends ApplicationAdapter {
 		if (font == null) {
 			font = new BitmapFont(true);
 		}
+		
+		IntBuffer intBuffer = BufferUtils.newIntBuffer(16);
+		Gdx.gl20.glGetIntegerv(GL20.GL_MAX_TEXTURE_SIZE, intBuffer);
+		
 		batch.setProjectionMatrix(cameraYdown.combined);
 		batch.begin();
 		font.setColor(Color.GREEN);
 		font.draw(batch, "FPS: " + Gdx.graphics.getFramesPerSecond() + ", time: " + frameRenderMillis, 20, 20);
+		font.draw(batch, "TextureSize: " + intBuffer.get(), 20, 40);
+		font.draw(batch, "Density: " + Gdx.graphics.getDensity(), 20, 60);
 		batch.end();
 	}
 
