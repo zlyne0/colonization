@@ -86,7 +86,11 @@ public class UnitType implements Identifiable {
 		}
 		return (int)base;
 	}
-    
+
+	public int getHitPoints() {
+		return hitPoints;
+	}
+	
     public static class Xml extends XmlNodeParser {
     	private UnitType ut;
     	

@@ -2,6 +2,8 @@ package promitech.colonization.ui.hud;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
+import net.sf.freecol.common.model.Unit;
+import promitech.colonization.GameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.gdx.Frame;
@@ -21,7 +23,12 @@ public class HudInfoPanel extends Actor {
     private MapActor mapActor;
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     
-    public HudInfoPanel(GameResources gameResources) {
+    private final GameResources gameResources;
+    private final GameController gameController;
+    
+    public HudInfoPanel(GameController gameController, GameResources gameResources) {
+    	this.gameController = gameController;
+    	this.gameResources = gameResources;
         infoPanelSkin = gameResources.getFrame("InfoPanel.skin");
         
         addListener(new InputListener() {
@@ -45,16 +52,27 @@ public class HudInfoPanel extends Actor {
     public void draw(Batch batch, float parentAlpha) {
         batch.draw(infoPanelSkin.texture, getX(), 0);
         
-        mapActor.drawSelectedTile(batch, shapeRenderer, getX() + 30, getY() + 10);
-        
-        drawTileDescription(batch);
+    	Unit unit = mapActor.mapDrawModel().selectedUnit;
+    	if (unit != null) {
+    		drawUnitDescription(batch, unit);
+    	} else {
+    		Tile tile = mapActor.mapDrawModel().selectedTile;
+    		if (tile != null) {
+    			mapActor.drawSelectedTile(batch, shapeRenderer, getX() + 30, getY() + 10);
+    			drawTileDescription(batch, tile);
+    		}
+    	}
     }
 
-    private void drawTileDescription(Batch batch) {
-    	Tile tile = mapActor.mapDrawModel().selectedTile;
-    	if (tile == null) {
-    		return;
-    	}
+    private void drawUnitDescription(Batch batch, Unit unit) {
+    	Frame frame = gameResources.getCenterAdjustFrameTexture(unit.resourceImageKey());
+    	
+		batch.draw(frame.texture, 
+				getX() + frame.offsetX, getY() + frame.offsetY + 30
+		);
+	}
+
+	private void drawTileDescription(Batch batch, Tile tile) {
     	BitmapFont titleFont = FontResource.getInfoPanelTitleFont();
     	
     	String descKey;

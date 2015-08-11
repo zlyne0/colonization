@@ -2,6 +2,7 @@ package promitech.colonization.actors;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.MapRenderer.TileDrawer;
@@ -39,13 +40,41 @@ class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-		if (tile.units.size() > 0 && !tile.hasSettlement()) {
+		boolean drawUnits = true;
+		if (mapDrawModel.selectedUnit != null) {
+			Tile selectedUnitTile = mapDrawModel.selectedUnit.getTile();
+			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
+				drawUnitFocus();
+				Frame frame = gameResources.getCenterAdjustFrameTexture(mapDrawModel.selectedUnit.resourceImageKey());
+				drawUnit(mapDrawModel.selectedUnit, frame);
+				drawUnits = false;
+			}
+		}
+		if (drawUnits && tile.units.size() > 0 && !tile.hasSettlement()) {
 			Unit firstUnit = tile.units.first();
 			Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
 			drawUnit(firstUnit, frame);
 		}
 	}
 
+	private void drawUnitFocus() {
+		batch.end();
+		
+		Gdx.gl20.glLineWidth(3);
+		shapeRenderer.begin(ShapeType.Line);
+		shapeRenderer.setColor(Color.WHITE);
+		shapeRenderer.ellipse(
+				screenPoint.x + MapRenderer.TILE_WIDTH/4, 
+				screenPoint.y + MapRenderer.TILE_HEIGHT/4, 
+				MapRenderer.TILE_WIDTH/2,
+				MapRenderer.TILE_HEIGHT/2
+		);
+		shapeRenderer.end();
+		Gdx.gl20.glLineWidth(1);
+		
+		batch.begin();
+	}
+	
 	private void drawFocus() {
 		if (!mapDrawModel.unitFocus.equals(mapx, mapy)) {
 			return;
@@ -54,7 +83,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		Gdx.gl20.glLineWidth(3);
 		shapeRenderer.begin(ShapeType.Line);
-		shapeRenderer.setColor(Color.WHITE);
+		shapeRenderer.setColor(Color.PURPLE);
 		shapeRenderer.ellipse(
 				screenPoint.x + MapRenderer.TILE_WIDTH/4, 
 				screenPoint.y + MapRenderer.TILE_HEIGHT/4, 

@@ -220,12 +220,11 @@ public class MapRenderer {
 		cameraPosition.add(TILE_WIDTH/2, 0);
 	}
 
-	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float px, float py) {
-		if (mapDrawModel.unitFocus.equals(-1, -1)) {
+	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
+		if (mapDrawModel.selectedTile == null) {
 			return;
 		}
-		Tile tile = map.getTile(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
-		mapDrawModel.selectedTile = tile;
+		Tile tile = mapDrawModel.selectedTile;
 
     	terainBackgroundTileDrawer.batch = batch;
     	terainForegroundTileDrawer.batch = batch;
@@ -235,14 +234,14 @@ public class MapRenderer {
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
 		
-    	drawInfoPanelTile(terainBackgroundTileDrawer, px, py, tile);
-    	drawInfoPanelTile(terainForegroundTileDrawer, px, py, tile);
+    	drawInfoPanelTile(terainBackgroundTileDrawer, screenX, screenY, tile);
+    	drawInfoPanelTile(terainForegroundTileDrawer, screenX, screenY, tile);
     	
     	if (tile.hasRoad()) {
 	    	batch.end();
 	    	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
 	    	Gdx.gl20.glLineWidth(3);
-	    	drawInfoPanelTile(roadsTileDrawer, px, py, tile);
+	    	drawInfoPanelTile(roadsTileDrawer, screenX, screenY, tile);
 	    	roadsTileDrawer.shapeRenderer.end();
 	    	Gdx.gl20.glLineWidth(1);
 	    	batch.begin();

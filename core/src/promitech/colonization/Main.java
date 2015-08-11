@@ -1,13 +1,8 @@
 package promitech.colonization;
 
 import java.nio.IntBuffer;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.TileType;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
@@ -74,9 +69,11 @@ public class Main extends ApplicationAdapter {
 		game.playingPlayer = game.players.getById("player:1");
 		
 		
-		MapActor mapActor = new MapActor(game, gameResources);
 		
-		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameResources);
+		MapActor mapActor = new MapActor(game, gameResources);
+		GameController gameController = new GameController(game.playingPlayer, mapActor);
+		
+		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources);
 		hudStage.hudInfoPanel.setMapActor(mapActor);
 		
 		//stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
@@ -99,8 +96,8 @@ public class Main extends ApplicationAdapter {
 	public void render () {
 		frameRenderMillis = System.currentTimeMillis();
 		
-//		Gdx.gl.glEnable(GL20.GL_BLEND);
-//    	Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+    	Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 		Gdx.gl.glClearColor(0, 0, 0, 1);
 		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
 

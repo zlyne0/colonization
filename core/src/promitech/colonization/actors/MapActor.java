@@ -2,9 +2,11 @@ package promitech.colonization.actors;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.InputKeyboardDevice;
 import promitech.colonization.math.Directions;
+import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -52,22 +54,30 @@ public class MapActor extends Actor {
 		});
 		
 		addListener(new ClickListener() {
+			private final Point tmpPoint = new Point(); 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				mapRenderer.screenToMapCords((int)x, (int)y, mapDrawModel.unitFocus);
-				mapDrawModel.selectedTile = game.map.getTile(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
-
+				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
+				
+				
+				mapDrawModel.selectedTile = game.map.getTile(tmpPoint.x, tmpPoint.y);
+				if (mapDrawModel.selectedTile.hasSettlement()) {
+				} else {
+					Unit first = mapDrawModel.selectedTile.units.first();
+					if (first != null && first.isOwner(mapDrawModel.playingPlayer)) {
+						mapDrawModel.selectedUnit = mapDrawModel.selectedTile.units.first();
+					}
+				}
 				
     			Tile tile = mapDrawModel.selectedTile;
     			System.out.println("screenPoint: " + x + ", " + y);
-    			System.out.println("p = " + mapDrawModel.unitFocus);
+    			System.out.println("p = " + tmpPoint);
     			if (tile != null) {
     				System.out.println("tile: " + tile);
     			} else {
     				System.out.println("tile is null");
     			}
-    			
-    			Object tileDrawModel = mapDrawModel.getTileDrawModel(mapDrawModel.unitFocus.x, mapDrawModel.unitFocus.y);
+    			Object tileDrawModel = mapDrawModel.getTileDrawModel(tmpPoint.x, tmpPoint.y);
     			if (tileDrawModel != null) {
     				System.out.println("drawmodel = " + tileDrawModel.toString());
     			}
@@ -103,13 +113,17 @@ public class MapActor extends Actor {
 		mapRenderer.centerCameraOnTileCords(24, 78);
 	}
 
-	public void keyDirection(Directions moveDirection) {
+	public void centerCameraOnTile(Tile tile) {
+		mapRenderer.centerCameraOnTileCords(tile.x, tile.y);
+	}
+	
+	private void keyDirection(Directions moveDirection) {
 	    mapRenderer.cameraPosition.add(moveDirection.vx * 10, moveDirection.vy * 10);
 	    System.out.println("moveDirection " + moveDirection + " camera.position " + mapRenderer.cameraPosition);
 	}
 
-	public void drawSelectedTile(Batch batch, ShapeRenderer shapeRenderer, float px, float py) {
-		mapRenderer.drawSelectedTileOnInfoPanel(batch, shapeRenderer, px, py);
+	public void drawSelectedTile(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
+		mapRenderer.drawSelectedTileOnInfoPanel(batch, shapeRenderer, screenX, screenY);
 	}
 
 	public MapDrawModel mapDrawModel() {

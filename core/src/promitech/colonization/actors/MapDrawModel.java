@@ -161,8 +161,8 @@ class TileDrawModelInitializer {
 	private void fogOfWarForUnits() {
 		for (Unit unit : player.units.entities()) {
 			int radius = unit.lineOfSight();
-			x = unit.tile.x;
-			y = unit.tile.y;
+			x = unit.getTile().x;
+			y = unit.getTile().y;
 			initFogOfWarForNeighboursTiles(radius);
 		}
 	}
@@ -290,6 +290,7 @@ public class MapDrawModel {
 	private TileDrawModel[][] tilesDrawModel;
 	final Point unitFocus = new Point(-1, -1);
 	public Tile selectedTile;
+	public Unit selectedUnit;
 	public Player playingPlayer;
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {

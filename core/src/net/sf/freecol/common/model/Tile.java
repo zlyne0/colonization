@@ -8,7 +8,7 @@ import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Tile {
+public class Tile implements Location {
 	
 	public final int x;
 	public final int y;
