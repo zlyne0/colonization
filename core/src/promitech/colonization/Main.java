@@ -68,10 +68,10 @@ public class Main extends ApplicationAdapter {
 		}
 		game.playingPlayer = game.players.getById("player:1");
 		
-		
-		
 		MapActor mapActor = new MapActor(game, gameResources);
-		GameController gameController = new GameController(game.playingPlayer, mapActor);
+		GameController gameController = new GameController(game, mapActor);
+		
+		mapActor.setGameController(gameController);
 		
 		hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources);
 		hudStage.hudInfoPanel.setMapActor(mapActor);

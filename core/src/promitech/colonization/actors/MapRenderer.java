@@ -186,7 +186,13 @@ public class MapRenderer {
     	
         p.y = screenHeight - p.y;
     }
-    
+
+	private final Point oneUsePoint = new Point();
+    public Point screenToMapCords(int screenX, int screenY) {
+    	screenToMapCords(screenX, screenY, oneUsePoint);
+    	return oneUsePoint;
+    }
+	
     public void screenToMapCords(int screenX, int screenY, Point p) {
         double x, y, pX, pY;
         screenY = screenHeight - screenY;
@@ -220,6 +226,10 @@ public class MapRenderer {
 		cameraPosition.add(TILE_WIDTH/2, 0);
 	}
 
+	public Point getCenterOfScreen() {
+		return screenToMapCords(screenWidth/2, screenHeight/2);
+	}
+	
 	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
 		if (mapDrawModel.selectedTile == null) {
 			return;

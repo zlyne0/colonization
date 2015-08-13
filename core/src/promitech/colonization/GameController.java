@@ -1,31 +1,78 @@
 package promitech.colonization;
 
-import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.actors.MapActor;
+import promitech.colonization.actors.MapDrawModel;
 import promitech.colonization.gamelogic.UnitIterator;
+import promitech.colonization.math.Point;
 
 public class GameController {
 
+	private final Game game;
+	
 	private final MapActor mapActor;
 	
-	private final Player player;
 	private final UnitIterator unitIterator;
+	private Unit activeUnit;
+	private boolean viewMode = false;
 	
-	public GameController(Player player, MapActor mapActor) {
+	public GameController(final Game game, MapActor mapActor) {
+		this.game = game;
 		this.mapActor = mapActor;
-		this.player = player;
 		
-		unitIterator = new UnitIterator(player, new Unit.ActivePredicate());
+		unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
 	}
 
 	public void nextActiveUnit() {
 		if (unitIterator.hasNext()) {
-			Unit nextUnit = unitIterator.next();
-			mapActor.mapDrawModel().selectedUnit = nextUnit;
-			if (nextUnit != null) {
-				mapActor.centerCameraOnTile(nextUnit.getTile());
+			activeUnit = unitIterator.next();
+			mapActor.mapDrawModel().selectedUnit = activeUnit;
+			if (activeUnit != null) {
+				mapActor.centerCameraOnTile(activeUnit.getTile());
 			} 
+		}
+	}
+
+	public void setViewMode(boolean checked) {
+		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+		if (checked) {
+			viewMode = true;
+			if (mapDrawModel.selectedUnit != null) {
+				mapDrawModel.selectedTile = mapDrawModel.selectedUnit.getTile();
+			} else {
+				Point p = mapActor.getCenterOfScreen();
+				mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
+			}
+			mapActor.mapDrawModel().selectedUnit = null;
+		} else {
+			viewMode = false;
+			mapDrawModel.selectedTile = null;
+			mapDrawModel.selectedUnit = activeUnit;
+			if (activeUnit != null) {
+				mapActor.centerCameraOnTile(activeUnit.getTile());
+			} 
+		}
+	}
+
+	public void clickOnTile(Point p) {
+		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+		
+		if (viewMode) {
+			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
+			mapDrawModel.selectedUnit = null;
+		} else {
+			mapDrawModel.selectedTile = null;
+			Tile tile = game.map.getTile(p.x, p.y);
+
+			if (!tile.hasSettlement()) {
+				Unit first = tile.units.first();
+				if (first != null && first.isOwner(game.playingPlayer)) {
+					mapDrawModel.selectedUnit = tile.units.first();
+					activeUnit = mapDrawModel.selectedUnit;
+				}
+			}
 		}
 	}
 }

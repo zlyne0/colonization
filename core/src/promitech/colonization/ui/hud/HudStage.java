@@ -43,7 +43,37 @@ public class HudStage extends Stage {
         hudInfoPanel = new HudInfoPanel(gameController, gameResources);
         addActor(hudInfoPanel);
         
-        ButtonActor nextUnit = new ButtonActor(shapeRenderer);
+        createNextUnitButton(bw);
+        
+        final RadioButtonActor viewButton = new RadioButtonActor(shapeRenderer);
+        viewButton.setWidth(bw);
+        viewButton.setHeight(bw);
+        viewButton.setX(getWidth() / 2);
+        viewButton.setY(getHeight() - bw - 10);
+        viewButton.addListener(new InputListener() {
+        	@Override
+        	public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+        		viewButton.setChecked(!viewButton.isChecked());
+        		gameController.setViewMode(viewButton.isChecked());
+        		return true;
+        	}
+        });
+        addActor(viewButton);
+        
+        addListener(new InputListener() {
+        	@Override
+        	public boolean keyDown(InputEvent event, int keycode) {
+        		if (keycode == Input.Keys.N) {
+        			gameController.nextActiveUnit();
+        			return true;
+        		}
+        		return super.keyDown(event, keycode);
+        	}
+        });
+    }
+
+	private void createNextUnitButton(int bw) {
+		ButtonActor nextUnit = new ButtonActor(shapeRenderer);
         nextUnit.setWidth(bw);
         nextUnit.setHeight(bw);
         nextUnit.setX(getWidth() - bw - 10);
@@ -57,18 +87,7 @@ public class HudStage extends Stage {
         	
         });
         addActor(nextUnit);
-        
-        addListener(new InputListener() {
-        	@Override
-        	public boolean keyDown(InputEvent event, int keycode) {
-        		if (keycode == Input.Keys.N) {
-        			gameController.nextActiveUnit();
-        			return true;
-        		}
-        		return super.keyDown(event, keycode);
-        	}
-        });
-    }
+	}
 
     @Override
     public void act() {

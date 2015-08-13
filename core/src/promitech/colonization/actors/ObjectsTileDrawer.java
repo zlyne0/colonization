@@ -35,7 +35,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 		
 		drawSettlement();
-		drawFocus();
+		drawTerrainFocus();
 		if (tileDrawModel.isFogOfWar()) {
 			return;
 		}
@@ -44,7 +44,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		if (mapDrawModel.selectedUnit != null) {
 			Tile selectedUnitTile = mapDrawModel.selectedUnit.getTile();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
-				drawUnitFocus();
+				drawFocus();
 				Frame frame = gameResources.getCenterAdjustFrameTexture(mapDrawModel.selectedUnit.resourceImageKey());
 				drawUnit(mapDrawModel.selectedUnit, frame);
 				drawUnits = false;
@@ -57,33 +57,21 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 	}
 
-	private void drawUnitFocus() {
+	private void drawTerrainFocus() {
+		if (mapDrawModel.selectedTile == null 
+				|| mapDrawModel.selectedTile.x != mapx 
+				|| mapDrawModel.selectedTile.y != mapy) {
+			return;
+		}
+		drawFocus();
+	}
+	
+	private void drawFocus() {
 		batch.end();
 		
 		Gdx.gl20.glLineWidth(3);
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(Color.WHITE);
-		shapeRenderer.ellipse(
-				screenPoint.x + MapRenderer.TILE_WIDTH/4, 
-				screenPoint.y + MapRenderer.TILE_HEIGHT/4, 
-				MapRenderer.TILE_WIDTH/2,
-				MapRenderer.TILE_HEIGHT/2
-		);
-		shapeRenderer.end();
-		Gdx.gl20.glLineWidth(1);
-		
-		batch.begin();
-	}
-	
-	private void drawFocus() {
-		if (!mapDrawModel.unitFocus.equals(mapx, mapy)) {
-			return;
-		}
-		batch.end();
-		
-		Gdx.gl20.glLineWidth(3);
-		shapeRenderer.begin(ShapeType.Line);
-		shapeRenderer.setColor(Color.PURPLE);
 		shapeRenderer.ellipse(
 				screenPoint.x + MapRenderer.TILE_WIDTH/4, 
 				screenPoint.y + MapRenderer.TILE_HEIGHT/4, 

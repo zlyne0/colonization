@@ -288,7 +288,6 @@ public class MapDrawModel {
 	private int height;
 	
 	private TileDrawModel[][] tilesDrawModel;
-	final Point unitFocus = new Point(-1, -1);
 	public Tile selectedTile;
 	public Unit selectedUnit;
 	public Player playingPlayer;
