@@ -125,10 +125,10 @@ public class Unit implements Identifiable, Location {
             String unitTypeStr = getStrAttribute(attributes, "unitType");
             String unitRoleStr = getStrAttribute(attributes, "role");
             
-            UnitType unitType = specification.unitTypes.getById(unitTypeStr);
+            UnitType unitType = game.specification.unitTypes.getById(unitTypeStr);
             Unit unit = new Unit();
             unit.id = getStrAttribute(attributes, "id");
-            unit.unitRole = specification.unitRoles.getById(unitRoleStr);
+            unit.unitRole = game.specification.unitRoles.getById(unitRoleStr);
             unit.unitType = unitType;
             unit.state = UnitState.valueOf(getStrAttribute(attributes, "state").toUpperCase());
             unit.movesLeft = getIntAttribute(attributes, "movesLeft");

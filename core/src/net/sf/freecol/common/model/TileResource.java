@@ -14,6 +14,10 @@ public class TileResource {
 		this.resourceType = resourceType;
 	}
 	
+	public ResourceType getResourceType() {
+	    return resourceType;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
 		public Xml(Tile.Xml parent) {
@@ -24,7 +28,7 @@ public class TileResource {
 		public void startElement(String qName, Attributes attributes) {
 			String resourceTypeStr = getStrAttribute(attributes, "type");
 			int quantity = getIntAttribute(attributes, "quantity");
-			ResourceType resourceType = specification.resourceTypes.getById(resourceTypeStr);
+			ResourceType resourceType = game.specification.resourceTypes.getById(resourceTypeStr);
 
 			TileResource tileResource = new TileResource(resourceType);
 			tileResource.quantity = quantity;
@@ -38,10 +42,4 @@ public class TileResource {
 			return "resource";
 		}
 	}
-
-	public ResourceType getResourceType() {
-		return resourceType;
-	}
-	
-	
 }

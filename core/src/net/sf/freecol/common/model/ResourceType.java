@@ -24,8 +24,7 @@ public class ResourceType implements Identifiable {
 		@Override
 		public void startElement(String qName, Attributes attributes) {
 			String id = getStrAttribute(attributes, "id");
-			ResourceType resourceType = new ResourceType(id);
-			specification.resourceTypes.add(resourceType);
+			nodeObject = new ResourceType(id); 
 		}
 
 		@Override

@@ -70,9 +70,7 @@ public final class TileType implements Identifiable, SortableEntity {
 		public void startElement(String qName, Attributes attributes) {
 			String id = getStrAttribute(attributes, "id");
 			boolean isForest = getBooleanAttribute(attributes, "is-forest");
-			TileType tileType = new TileType(id, isForest);
-			
-			((Specification.Xml)this.parentXmlNodeParser).specification.tileTypes.add(tileType);
+			nodeObject = new TileType(id, isForest);
 		}
 
 		@Override

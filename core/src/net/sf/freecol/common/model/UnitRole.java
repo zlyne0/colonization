@@ -31,7 +31,6 @@ public class UnitRole implements Identifiable {
 	}
 	
 	public static class Xml extends XmlNodeParser {
-
 		public Xml(XmlNodeParser parent) {
 			super(parent);
 		}
@@ -39,15 +38,12 @@ public class UnitRole implements Identifiable {
 		@Override
 		public void startElement(String qName, Attributes attributes) {
 			String idStr = getStrAttribute(attributes, "id");
-			
-			UnitRole role = new UnitRole(idStr);
-			specification.unitRoles.add(role);
+			nodeObject = new UnitRole(idStr);
 		}
 
 		@Override
 		public String getTagName() {
 			return "role";
 		}
-
 	}
 }

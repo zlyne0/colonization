@@ -23,6 +23,7 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
             parsersName.add(qName);
             parsers.add(xmlNodeParser);
             xmlNodeParser.startElement(qName, attributes);
+            xmlNodeParser.addToParent();
             return;
         }
         XmlNodeParser parserForTag = xmlNodeParser.parserForTag(qName);
@@ -35,21 +36,27 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         xmlNodeParser = parserForTag;
         
         xmlNodeParser.startElement(qName, attributes);
-        
+        xmlNodeParser.addToParent();
     }
     
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (parsersName.size() > 0 && parsersName.getLast().equals(qName)) {
-            xmlNodeParser.endElement(uri, localName, qName);
-            
-            parsersName.removeLast();
-            parsers.removeLast();
-            if (!parsers.isEmpty()) {
-                xmlNodeParser = parsers.getLast();
+        try {
+            if (parsersName.size() > 0 && parsersName.getLast().equals(qName)) {
+                xmlNodeParser.endElement(uri, localName, qName);
+                //xmlNodeParser.addToParent();
+                
+                parsersName.removeLast();
+                parsers.removeLast();
+                if (!parsers.isEmpty()) {
+                    xmlNodeParser = parsers.getLast();
+                }
+            } else {
+                xmlNodeParser.endReadChildren(qName);
             }
-        } else {
-            xmlNodeParser.endReadChildren(qName);
+        } catch (RuntimeException e) {
+            System.out.println("endElement exception. Element '" + qName + "' Parse list: " + parsersName);
+            throw e;
         }
     }
 }

@@ -100,6 +100,7 @@ public class Modifier implements Identifiable {
 		@Override
 		public void startElement(String qName, Attributes attributes) {
 			Modifier modifier = new Modifier();
+			modifier.id = getStrAttribute(attributes, "id");
 			modifier.value = getFloatAttribute(attributes, "value");
 			modifier.modifierType = getEnumAttribute(attributes, ModifierType.class, "type");
 			modifier.incrementType = getEnumAttribute(attributes, ModifierType.class, "incrementType");
@@ -107,6 +108,7 @@ public class Modifier implements Identifiable {
 				modifier.increment = getFloatAttribute(attributes, "increment");
 			}
 			modifier.modifierIndex = getIntAttribute(attributes, "index", DEFAULT_MODIFIER_INDEX);
+			nodeObject = modifier;
 		}
 
 		@Override

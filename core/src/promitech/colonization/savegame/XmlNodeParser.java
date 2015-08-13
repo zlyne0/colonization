@@ -10,18 +10,16 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
 public abstract class XmlNodeParser {
-	public static abstract class ObjectFromNodeSetter {
-		public abstract void set(Identifiable entity);
-	}
-	
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
     
 	private java.util.Map<String,XmlNodeParser> nodes = new HashMap<String, XmlNodeParser>();
 	public final XmlNodeParser parentXmlNodeParser;
 	
+	public Identifiable nodeObject;
+	
 	// unique entities
-	protected static Specification specification;
+	//protected static Specification specification;
 	protected static Game game;
 	
 	public XmlNodeParser(XmlNodeParser parent) {
@@ -32,15 +30,20 @@ public abstract class XmlNodeParser {
 		nodes.put(node.getTagName(), node);
 	}
 	
-	private ObjectFromNodeSetter setter;
+	public void addAllNodes(XmlNodeParser node) {
+	    nodes.putAll(node.nodes);
+	}
+	
+	protected ObjectFromNodeSetter setter;
 	public XmlNodeParser addSetter(ObjectFromNodeSetter setter) {
 		this.setter = setter;
 		return this;
 	}
-	public void addToParent(Identifiable entity) {
-		if (setter != null) {
-			setter.set(entity);
-		}
+	
+	public void addToParent() {
+	    if (setter != null) {
+	        setter.set(nodeObject);
+	    }
 	}
 	
 	public XmlNodeParser parserForTag(String qName) {

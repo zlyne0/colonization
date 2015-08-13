@@ -39,9 +39,7 @@ public class TileImprovementType implements Identifiable {
 		@Override
 		public void startElement(String qName, Attributes attributes) {
 			String id = getStrAttribute(attributes, "id");
-			TileImprovementType tileImprovementType = new TileImprovementType(id);
-			
-			specification.tileImprovementTypes.add(tileImprovementType);
+			nodeObject = new TileImprovementType(id);
 		}
 
 		@Override

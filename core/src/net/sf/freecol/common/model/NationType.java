@@ -62,7 +62,7 @@ public class NationType implements Identifiable {
             nationType = new NationType();
             nationType.european = isEuropean();
             nationType.id = getStrAttribute(attributes, "id");
-            specification.nationTypes.add(nationType);
+            game.specification.nationTypes.add(nationType);
         }
     }
     

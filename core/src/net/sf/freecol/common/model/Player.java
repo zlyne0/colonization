@@ -29,19 +29,18 @@ public class Player implements Identifiable {
 
         @Override
         public void startElement(String qName, Attributes attributes) {
-            String nationTypeStr = getStrAttribute(attributes, "nationType");
-            if (nationTypeStr == null) {
-                return;
-            }
+            String idStr = getStrAttribute(attributes, "id");
             String nationIdStr = getStrAttribute(attributes, "nationId");
+            String nationTypeStr = getStrAttribute(attributes, "nationType");
             
             Player player = new Player();
-            player.id = getStrAttribute(attributes, "id");
-            player.nation = specification.nations.getById(nationIdStr);
-            player.nationType = specification.nationTypes.getById(nationTypeStr);
+            player.id = idStr;
+            player.nation = game.specification.nations.getById(nationIdStr);
+            if (nationTypeStr != null) {
+                player.nationType = game.specification.nationTypes.getById(nationTypeStr);
+            }
             
-            Game.Xml gameXml = getParentXmlParser();
-            gameXml.game.players.add(player);
+            nodeObject = player;
         }
 
         @Override
@@ -49,5 +48,4 @@ public class Player implements Identifiable {
             return "player";
         }
     }
-
 }

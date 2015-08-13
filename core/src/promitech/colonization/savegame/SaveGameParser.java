@@ -20,7 +20,7 @@ public class SaveGameParser {
 	Specification defaultSpecification;
 	
 	public Game parse() throws IOException, ParserConfigurationException, SAXException {
-		XmlNodeParser.specification = defaultSpecification = loadDefaultSpecification();
+		defaultSpecification = loadDefaultSpecification();
 
 		
 		//FileHandle fh = Gdx.files.internal("maps/savegame.xml");
@@ -33,7 +33,7 @@ public class SaveGameParser {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 
-		final Game.Xml xmlGame = new Game.Xml();
+		final Game.Xml xmlGame = new Game.Xml(defaultSpecification);
 		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlGame);
 		
 		saxParser.parse(read, df);
@@ -50,7 +50,7 @@ public class SaveGameParser {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 
-		final Game.Xml xmlGame = new Game.Xml();
+		final Game.Xml xmlGame = new Game.Xml(new Specification());
 		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlGame);
 		saxParser.parse(read, df);
 		read.close();

@@ -35,13 +35,14 @@ public class Nation implements Identifiable {
 		public void startElement(String qName, Attributes attributes) {
 			String nationTypeStr = getStrAttribute(attributes, "nation-type");
 			String id = getStrAttribute(attributes, "id");
-			NationType type = specification.nationTypes.getById(nationTypeStr);
+			NationType type = game.specification.nationTypes.getById(nationTypeStr);
 			
 			String colorStrVal = getStrAttribute(attributes, "color");
 			
-			Nation nation = new Nation(id,type);
+            Nation nation = new Nation(id, type);
 			nation.color = GameResources.colorFromValue(colorStrVal);
-			specification.nations.add(nation);
+			
+			nodeObject = nation;
 		}
 		
 		@Override

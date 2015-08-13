@@ -75,7 +75,7 @@ public class UnitType implements Identifiable {
     }
     
     public String toString() {
-        return id;
+        return id + " modifiersCount: " + modifiers.size();
     }
 
 	public int lineOfSight() {
@@ -92,25 +92,16 @@ public class UnitType implements Identifiable {
 	}
 	
     public static class Xml extends XmlNodeParser {
-    	private UnitType ut;
-    	
         public Xml(XmlNodeParser parent) {
             super(parent);
-            XmlNodeParser xml = new Modifier.Xml(this)
-	            .addSetter(new ObjectFromNodeSetter() {
-					@Override
-					public void set(Identifiable entity) {
-						ut.modifiers.add((Modifier)entity);
-					}
-				});
-            addNode(xml);
+            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
         }
 
         @Override
         public void startElement(String qName, Attributes attributes) {
             String id = getStrAttribute(attributes, "id");
             
-            ut = new UnitType(id);
+            UnitType ut = new UnitType(id);
             ut.offence = getIntAttribute(attributes, "offence", DEFAULT_OFFENCE);
             ut.defence = getIntAttribute(attributes, "defence", DEFAULT_DEFENCE);
             ut.movement = getIntAttribute(attributes, "movement", DEFAULT_MOVEMENT);
@@ -124,7 +115,7 @@ public class UnitType implements Identifiable {
             ut.skill = getIntAttribute(attributes, "skill", Xml.UNDEFINED);
             ut.price = getIntAttribute(attributes, "price", Xml.UNDEFINED);
             
-            specification.unitTypes.add(ut);
+            nodeObject = ut;
         }
 
         @Override
