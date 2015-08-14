@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import org.xml.sax.Attributes;
 
 import promitech.colonization.Direction;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Map {
@@ -52,7 +53,13 @@ public class Map {
 		public Xml(XmlNodeParser parent) {
 			super(parent);
 			
-			addNode(new Tile.Xml(this));
+			addNode(new Tile.Xml(this).addSetter(new ObjectFromNodeSetter() {
+                @Override
+                public void set(Identifiable entity) {
+                    Tile tile = (Tile)entity;
+                    map.createTile(tile.x, tile.y, tile);
+                }
+            }));
 		}
 
 		@Override

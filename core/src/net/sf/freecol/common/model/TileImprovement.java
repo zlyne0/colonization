@@ -4,7 +4,10 @@ import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileImprovement {
+public class TileImprovement implements Identifiable {
+    
+    private String id;
+    
 	public final TileImprovementType type;
 	public final String style;
 	public int magnitude = 0;
@@ -26,6 +29,11 @@ public class TileImprovement {
 			this.style = style;
 		}
 	}
+
+	@Override
+	public String getId() {
+	    return id;
+	}
 	
 	public boolean isComplete() {
 		return turns <= 0;
@@ -33,7 +41,7 @@ public class TileImprovement {
 	
 	public static class Xml extends XmlNodeParser {
 
-		public Xml(XmlNodeParser parent) {
+	    public Xml(XmlNodeParser parent) {
 			super(parent);
 		}
 
@@ -45,8 +53,9 @@ public class TileImprovement {
 			TileImprovement tileImprovement = new TileImprovement(type, style);
 			tileImprovement.magnitude = getIntAttribute(attributes, "magnitude", 0);
 			tileImprovement.turns = getIntAttribute(attributes, "turns");
+			tileImprovement.id = getStrAttribute(attributes, "id");
 			
-			((Tile.Xml)parentXmlNodeParser).tile.tileImprovements.add(tileImprovement);
+			nodeObject = tileImprovement;
 		}
 
 		@Override
@@ -55,5 +64,4 @@ public class TileImprovement {
 		}
 		
 	}
-	
 }

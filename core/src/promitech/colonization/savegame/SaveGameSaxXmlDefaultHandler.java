@@ -23,7 +23,7 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
             parsersName.add(qName);
             parsers.add(xmlNodeParser);
             xmlNodeParser.startElement(qName, attributes);
-            xmlNodeParser.addToParent();
+            //xmlNodeParser.addToParent();
             return;
         }
         XmlNodeParser parserForTag = xmlNodeParser.parserForTag(qName);
@@ -36,7 +36,7 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         xmlNodeParser = parserForTag;
         
         xmlNodeParser.startElement(qName, attributes);
-        xmlNodeParser.addToParent();
+        //xmlNodeParser.addToParent();
     }
     
     @Override
@@ -44,7 +44,7 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         try {
             if (parsersName.size() > 0 && parsersName.getLast().equals(qName)) {
                 xmlNodeParser.endElement(uri, localName, qName);
-                //xmlNodeParser.addToParent();
+                xmlNodeParser.addToParent();
                 
                 parsersName.removeLast();
                 parsers.removeLast();

@@ -50,17 +50,14 @@ public class IndianSettlement extends Settlement {
             is.owner = owner;
             is.settlementType = owner.nationType.settlementTypes.getById(getStrAttribute(attributes, "settlementType"));
             
-            Tile.Xml tileXmlParser = getParentXmlParser();
-            tileXmlParser.tile.settlement = is;
-            is.tile = tileXmlParser.tile;
-   
             owner.settlements.add(is);
+            
+            nodeObject = is;
         }
 
         @Override
         public String getTagName() {
             return "indianSettlement";
         }
-        
     }
 }

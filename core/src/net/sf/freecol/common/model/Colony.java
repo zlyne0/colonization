@@ -53,19 +53,14 @@ public class Colony extends Settlement {
             colony.name = getStrAttribute(attributes, "name");
             colony.owner = owner;
             colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
-            
-            Tile.Xml tileXmlParser = getParentXmlParser();
-            tileXmlParser.tile.settlement = colony;
-            
-            colony.tile = tileXmlParser.tile;
             owner.settlements.add(colony);
+            
+            nodeObject = colony;
         }
 
         @Override
         public String getTagName() {
             return "colony";
         }
-        
     }
-
 }

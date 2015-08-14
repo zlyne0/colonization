@@ -1,32 +1,31 @@
 package net.sf.freecol.common.model;
 
+import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.Set;
 
 import org.xml.sax.Attributes;
 
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Tile implements Location {
+public class Tile implements Location, Identifiable {
 	
 	public final int x;
 	public final int y;
 	public final TileType type;
 	public final int style;
-	public final int id;
-	public boolean lostCityRumour = false;
+	public final String id;
 	private int connected = 0;
 	
 	protected Settlement settlement;
 	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
-	public final LinkedList<TileResource> tileResources = new LinkedList<TileResource>(); 
-	public final LinkedList<TileImprovement> tileImprovements = new LinkedList<TileImprovement>();
-	
+	private TileItemContainer tileItemContainer;
 	private final Set<String> exploredByPlayers = new HashSet<String>();
 	
-	public Tile(int id, int x, int y, TileType type, int style) {
+	public Tile(String id, int x, int y, TileType type, int style) {
 		this.id = id;
 		this.x = x;
 		this.y = y;
@@ -34,19 +33,34 @@ public class Tile implements Location {
 		this.style = style;
 	}
 	
+	@Override
+	public String getId() {
+	    return "id";
+	}
+	
 	public String toString() {
 		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}
 	
-	public void addTileResources(TileResource tileResource) {
-		this.tileResources.add(tileResource);
+	public Collection<TileImprovement> getTileImprovements() {
+	    if (tileItemContainer == null) {
+	        return Collections.emptyList();
+	    }
+	    return tileItemContainer.improvements.entities();
+	}
+	
+	public Collection<TileResource> getTileResources() {
+	    if (tileItemContainer == null) {
+	        return Collections.emptyList();
+	    }
+	    return tileItemContainer.resources.entities();
 	}
 	
 	public boolean hasRoad() {
 		if (settlement != null) {
 			return true;
 		}
-		for (TileImprovement imprv : tileImprovements) {
+		for (TileImprovement imprv : getTileImprovements()) {
 			if (imprv.type.isRoad()) {
 				return true;
 			}
@@ -55,7 +69,7 @@ public class Tile implements Location {
 	}
 	
 	public boolean isPlowed() {
-		for (TileImprovement imprv : tileImprovements) {
+		for (TileImprovement imprv : getTileImprovements()) {
 			if (imprv.type.isPlowed()) {
 				return true;
 			}
@@ -63,6 +77,13 @@ public class Tile implements Location {
 		return false;
 	}
 	
+    public boolean hasLostCityRumour() {
+        if (tileItemContainer == null) {
+            return false;
+        }
+        return tileItemContainer.lostCityRumours.size() > 0;
+    }
+
 	public boolean hasSettlement() {
 		return settlement != null;
 	}
@@ -76,7 +97,7 @@ public class Tile implements Location {
 	}
 
 	public TileImprovement getTileImprovementByType(String typeStr) {
-		for (TileImprovement ti : tileImprovements) {
+		for (TileImprovement ti : getTileImprovements()) {
 			if (ti.type.id.equals(typeStr)) {
 				return ti;
 			}
@@ -89,16 +110,35 @@ public class Tile implements Location {
 	}
 	
 	public static class Xml extends XmlNodeParser {
-		protected Tile tile;
-		
+	    protected Tile tile;
+	    
 		public Xml(XmlNodeParser parent) {
 			super(parent);
 			
-			addNode(new TileResource.Xml(this));
-			addNode(new TileImprovement.Xml(this));
+			addNode(new TileItemContainer.Xml(this).addSetter(new ObjectFromNodeSetter() {
+                @Override
+                public void set(Identifiable entity) {
+                    ((Tile)nodeObject).tileItemContainer = (TileItemContainer)entity;
+                }
+            }));
+			
 			addNode(new Unit.Xml(this));
-			addNode(new Colony.Xml(this));
-            addNode(new IndianSettlement.Xml(this));
+			addNode(new Colony.Xml(this).addSetter(new ObjectFromNodeSetter() {
+                @Override
+                public void set(Identifiable entity) {
+                    Colony colony = (Colony)entity;
+                    ((Tile)nodeObject).settlement = colony;
+                    colony.tile = (Tile)nodeObject;
+                }
+            }));
+            addNode(new IndianSettlement.Xml(this).addSetter(new ObjectFromNodeSetter() {
+                @Override
+                public void set(Identifiable entity) {
+                    IndianSettlement is = (IndianSettlement)entity;
+                    ((Tile)nodeObject).settlement = is;
+                    is.tile = ((Tile)nodeObject);
+                }
+            }));
 		}
 
 		@Override
@@ -108,21 +148,17 @@ public class Tile implements Location {
 			
 			String tileTypeStr = getStrAttribute(attributes, "type");
 			int tileStyle = getIntAttribute(attributes, "style");
-			String idStr = getStrAttribute(attributes, "id").replaceAll("tile:", "");
+			String idStr = getStrAttribute(attributes, "id");
 			
 			TileType tileType = game.specification.tileTypes.getById(tileTypeStr);
-			tile = new Tile(Integer.parseInt(idStr), x, y, tileType, tileStyle);
+			tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = getIntAttribute(attributes, "connected", 0);
 			
-			Map.Xml xmlMap = getParentXmlParser();
-			xmlMap.map.createTile(x, y, tile);
+			nodeObject = tile;
 		}
 
 		@Override
 		public void startReadChildren(String qName, Attributes attributes) {
-			if (qName.equals("lostCityRumour")) {
-				tile.lostCityRumour = true;
-			}
 			if (qName.equals("cachedTile")) {
 				String playerId = getStrAttribute(attributes, "player");
 				tile.exploredByPlayers.add(playerId);
@@ -134,5 +170,4 @@ public class Tile implements Location {
 			return "tile";
 		}
 	}
-
 }

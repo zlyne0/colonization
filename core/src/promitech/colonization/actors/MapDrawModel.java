@@ -262,17 +262,17 @@ class TileDrawModelInitializer {
 				tileDrawModel.addForegroundTerainTexture(frame);
 			}
 		}
-		for (TileImprovement tileImprovement : tile.tileImprovements) {
+		for (TileImprovement tileImprovement : tile.getTileImprovements()) {
 			if (tileImprovement.type.isRiver()) {
 				tileDrawModel.addForegroundTerainTexture(gameResources.river(tileImprovement.style));
 			}
 		}
-		for (TileResource tileResource : tile.tileResources) {
+		for (TileResource tileResource : tile.getTileResources()) {
 			frame = gameResources.tileResource(tileResource.getResourceType());
 			tileDrawModel.addForegroundTerainTexture(frame);
 		}
 		
-		if (tile.lostCityRumour) {
+		if (tile.hasLostCityRumour()) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.tileLastCityRumour());
 		}
 		

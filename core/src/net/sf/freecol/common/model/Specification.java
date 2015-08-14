@@ -1,5 +1,9 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.EuropeanNationType;
+import net.sf.freecol.common.model.specification.IndianNationType;
+import net.sf.freecol.common.model.specification.NationType;
+
 import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
@@ -28,18 +32,18 @@ public class Specification implements Identifiable {
             addNode(new MapIdEntities.Xml(this, "unit-types", "unitTypes", UnitType.class));
             addNode(new MapIdEntities.Xml(this, "roles", "unitRoles", UnitRole.class));
             
-            addNode(new NationType.IndianXml(this));
-            addNode(new NationType.EuropeanXml(this));
-
+            addNode(new MapIdEntities.Xml(this, "european-nation-types", "nationTypes", EuropeanNationType.class));
+            addNode(new MapIdEntities.Xml(this, "indian-nation-types", "nationTypes", IndianNationType.class));
+            
             addNode(new MapIdEntities.Xml(this, "nations", "nations", Nation.class));
 		}
 
 		@Override
 		public void startElement(String qName, Attributes attributes) {
-		    game.specification = new Specification();
-			Game.Xml xmlGame = getParentXmlParser();
-			nodeObject = game.specification;
-			xmlGame.game.specification = game.specification;
+		    Specification specification = new Specification();
+		    nodeObject = specification;
+		    
+		    game.specification = specification;
 		}
 
 		@Override

@@ -4,7 +4,9 @@ import java.util.HashMap;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.TileType;
 
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -29,6 +31,11 @@ public abstract class XmlNodeParser {
 	public void addNode(XmlNodeParser node) {
 		nodes.put(node.getTagName(), node);
 	}
+	
+	public void addNodeMapIdEntities(String wrapperTag, String filedName, Class entityClass) {
+	}
+    public void addNodeMapIdEntities(String filedName, Class entityClass) {
+    }
 	
 	public void addAllNodes(XmlNodeParser node) {
 	    nodes.putAll(node.nodes);
@@ -58,6 +65,7 @@ public abstract class XmlNodeParser {
 	public abstract void startElement(String qName, Attributes attributes);
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 	}
+	@Deprecated
 	public void startReadChildren(String qName, Attributes attributes) {
 	}
 	public void endReadChildren(String qName) {

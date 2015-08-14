@@ -83,7 +83,7 @@ public class HudInfoPanel extends Actor {
     	}
     	StringBuilder desc = new StringBuilder(Messages.msg(descKey));
     	
-    	for (TileImprovement improvement : tile.tileImprovements) {
+    	for (TileImprovement improvement : tile.getTileImprovements()) {
     		if (improvement.isComplete()) {
     			descKey = Messages.descriptionKey(improvement.type.id);
     			desc.append(", ");

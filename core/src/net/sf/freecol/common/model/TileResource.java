@@ -4,8 +4,10 @@ import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileResource {
+public class TileResource implements Identifiable {
 	private static final int UNLIMITED = -1;
+	
+	private String id;
 	private final ResourceType resourceType;
 	
 	private int quantity = UNLIMITED;
@@ -14,13 +16,18 @@ public class TileResource {
 		this.resourceType = resourceType;
 	}
 	
+	@Override
+	public String getId() {
+	    return id;
+	}
+	
 	public ResourceType getResourceType() {
 	    return resourceType;
 	}
 	
 	public static class Xml extends XmlNodeParser {
 
-		public Xml(Tile.Xml parent) {
+		public Xml(XmlNodeParser parent) {
 			super(parent);
 		}
 
@@ -32,9 +39,9 @@ public class TileResource {
 
 			TileResource tileResource = new TileResource(resourceType);
 			tileResource.quantity = quantity;
+			tileResource.id = getStrAttribute(attributes, "id");
 			
-			Tile.Xml parentXmlParser = getParentXmlParser();
-			parentXmlParser.tile.addTileResources(tileResource);
+			nodeObject = tileResource;
 		}
 
 		@Override

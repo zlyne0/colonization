@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.NationType;
+
 import org.xml.sax.Attributes;
 
 import promitech.colonization.savegame.XmlNodeParser;
