@@ -5,9 +5,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import org.xml.sax.Attributes;
-
 import promitech.colonization.savegame.ObjectFromNodeSetter;
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Tile implements Location, Identifiable {
@@ -142,25 +141,25 @@ public class Tile implements Location, Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			int x = getIntAttribute(attributes, "x");
-			int y = getIntAttribute(attributes, "y");
+        public void startElement(XmlNodeAttributes attr) {
+			int x = attr.getIntAttribute("x");
+			int y = attr.getIntAttribute("y");
 			
-			String tileTypeStr = getStrAttribute(attributes, "type");
-			int tileStyle = getIntAttribute(attributes, "style");
-			String idStr = getStrAttribute(attributes, "id");
+			String tileTypeStr = attr.getStrAttribute("type");
+			int tileStyle = attr.getIntAttribute("style");
+			String idStr = attr.getStrAttribute("id");
 			
 			TileType tileType = game.specification.tileTypes.getById(tileTypeStr);
 			tile = new Tile(idStr, x, y, tileType, tileStyle);
-			tile.connected = getIntAttribute(attributes, "connected", 0);
+			tile.connected = attr.getIntAttribute("connected", 0);
 			
 			nodeObject = tile;
 		}
 
 		@Override
-		public void startReadChildren(String qName, Attributes attributes) {
-			if (qName.equals("cachedTile")) {
-				String playerId = getStrAttribute(attributes, "player");
+		public void startReadChildren(XmlNodeAttributes attr) {
+			if (attr.isQNameEquals("cachedTile")) {
+				String playerId = attr.getStrAttribute("player");
 				tile.exploredByPlayers.add(playerId);
 			}
 		}

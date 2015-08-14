@@ -1,9 +1,8 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Map {
@@ -63,9 +62,9 @@ public class Map {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			int width = getIntAttribute(attributes, "width");
-			int height = getIntAttribute(attributes, "height");
+        public void startElement(XmlNodeAttributes attr) {
+			int width = attr.getIntAttribute("width");
+			int height = attr.getIntAttribute("height");
 			map = new Map(width, height);
 			
 			((Game.Xml)parentXmlNodeParser).game.map = map;

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileImprovementType implements Identifiable {
@@ -37,8 +36,8 @@ public class TileImprovementType implements Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String id = getStrAttribute(attributes, "id");
+        public void startElement(XmlNodeAttributes attr) {
+			String id = attr.getStrAttribute("id");
 			nodeObject = new TileImprovementType(id);
 		}
 

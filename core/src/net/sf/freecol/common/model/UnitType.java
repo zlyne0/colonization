@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType implements Identifiable {
@@ -98,22 +97,22 @@ public class UnitType implements Identifiable {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
-            String id = getStrAttribute(attributes, "id");
+        public void startElement(XmlNodeAttributes attr) {
+            String id = attr.getStrAttribute("id");
             
             UnitType ut = new UnitType(id);
-            ut.offence = getIntAttribute(attributes, "offence", DEFAULT_OFFENCE);
-            ut.defence = getIntAttribute(attributes, "defence", DEFAULT_DEFENCE);
-            ut.movement = getIntAttribute(attributes, "movement", DEFAULT_MOVEMENT);
-            ut.lineOfSight = getIntAttribute(attributes, "lineOfSight", DEFAULT_LINE_OF_SIGHT);
-            ut.scoreValue = getIntAttribute(attributes, "scoreValue", 0);
-            ut.space = getIntAttribute(attributes, "space", 0);
-            ut.spaceTaken = getIntAttribute(attributes, "spaceTaken", 1);
-            ut.hitPoints = getIntAttribute(attributes, "hitPoints", 0);
-            ut.maximumExperience = getIntAttribute(attributes, "maximumExperience", 0);
-            ut.recruitProbability = getIntAttribute(attributes, "recruitProbability", 0);
-            ut.skill = getIntAttribute(attributes, "skill", Xml.UNDEFINED);
-            ut.price = getIntAttribute(attributes, "price", Xml.UNDEFINED);
+            ut.offence = attr.getIntAttribute("offence", DEFAULT_OFFENCE);
+            ut.defence = attr.getIntAttribute("defence", DEFAULT_DEFENCE);
+            ut.movement = attr.getIntAttribute("movement", DEFAULT_MOVEMENT);
+            ut.lineOfSight = attr.getIntAttribute("lineOfSight", DEFAULT_LINE_OF_SIGHT);
+            ut.scoreValue = attr.getIntAttribute("scoreValue", 0);
+            ut.space = attr.getIntAttribute("space", 0);
+            ut.spaceTaken = attr.getIntAttribute("spaceTaken", 1);
+            ut.hitPoints = attr.getIntAttribute("hitPoints", 0);
+            ut.maximumExperience = attr.getIntAttribute("maximumExperience", 0);
+            ut.recruitProbability = attr.getIntAttribute("recruitProbability", 0);
+            ut.skill = attr.getIntAttribute("skill", Xml.UNDEFINED);
+            ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
             
             nodeObject = ut;
         }

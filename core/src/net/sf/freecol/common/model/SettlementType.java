@@ -19,10 +19,7 @@
 
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.specification.NationType;
-
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
@@ -187,11 +184,11 @@ public class SettlementType implements Identifiable {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
+        public void startElement(XmlNodeAttributes attr) {
             SettlementType settlementType = new SettlementType();
-            settlementType.id = getStrAttribute(attributes, "id");
-            settlementType.capital = getBooleanAttribute(attributes, "capital");
-            settlementType.visibleRadius = getIntAttribute(attributes, "visibleRadius", DEFAULT_VISIBLE_RADIUS);
+            settlementType.id = attr.getStrAttribute("id");
+            settlementType.capital = attr.getBooleanAttribute("capital");
+            settlementType.visibleRadius = attr.getIntAttribute("visibleRadius", DEFAULT_VISIBLE_RADIUS);
             
             nodeObject = settlementType;
         }

@@ -1,9 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.map.LostCityRumour;
-
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileItemContainer implements Identifiable {
@@ -29,9 +27,9 @@ public class TileItemContainer implements Identifiable {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
+        public void startElement(XmlNodeAttributes attr) {
             TileItemContainer tic = new TileItemContainer();
-            tic.id = getStrAttribute(attributes, "id");
+            tic.id = attr.getStrAttribute("id");
             nodeObject = tic;
         }
         

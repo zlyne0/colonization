@@ -1,9 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.NationType;
-
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Player implements Identifiable {
@@ -30,10 +28,10 @@ public class Player implements Identifiable {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
-            String idStr = getStrAttribute(attributes, "id");
-            String nationIdStr = getStrAttribute(attributes, "nationId");
-            String nationTypeStr = getStrAttribute(attributes, "nationType");
+        public void startElement(XmlNodeAttributes attr) {
+            String idStr = attr.getStrAttribute("id");
+            String nationIdStr = attr.getStrAttribute("nationId");
+            String nationTypeStr = attr.getStrAttribute("nationType");
             
             Player player = new Player();
             player.id = idStr;

@@ -1,13 +1,11 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.NationType;
-
-import org.xml.sax.Attributes;
+import promitech.colonization.GameResources;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeParser;
 
 import com.badlogic.gdx.graphics.Color;
-
-import promitech.colonization.GameResources;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class Nation implements Identifiable {
 	private final String id;
@@ -34,12 +32,12 @@ public class Nation implements Identifiable {
 		}
 		
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String nationTypeStr = getStrAttribute(attributes, "nation-type");
-			String id = getStrAttribute(attributes, "id");
+        public void startElement(XmlNodeAttributes attr) {
+			String nationTypeStr = attr.getStrAttribute("nation-type");
+			String id = attr.getStrAttribute("id");
 			NationType type = game.specification.nationTypes.getById(nationTypeStr);
 			
-			String colorStrVal = getStrAttribute(attributes, "color");
+			String colorStrVal = attr.getStrAttribute("color");
 			
             Nation nation = new Nation(id, type);
 			nation.color = GameResources.colorFromValue(colorStrVal);

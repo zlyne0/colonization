@@ -32,9 +32,13 @@ public abstract class XmlNodeParser {
 		nodes.put(node.getTagName(), node);
 	}
 	
-	public void addNodeMapIdEntities(String wrapperTag, String filedName, Class entityClass) {
+	private java.util.Map<String, String> mapField = new HashMap<String, String>();
+    private java.util.Map<String, Class> mapFieldClass = new HashMap<String, Class>();
+	public void addNodeForMapIdEntities(String wrapperTag, String filedName, Class entityClass) {
+	    mapField.put(wrapperTag, filedName);
+	    mapFieldClass.put(wrapperTag, entityClass);
 	}
-    public void addNodeMapIdEntities(String filedName, Class entityClass) {
+    public void addNodeForMapIdEntities(String filedName, Class entityClass) {
     }
 	
 	public void addAllNodes(XmlNodeParser node) {
@@ -62,47 +66,15 @@ public abstract class XmlNodeParser {
 		return (T)parentXmlNodeParser;
 	}
 	
-	public abstract void startElement(String qName, Attributes attributes);
+	public abstract void startElement(XmlNodeAttributes attr);
 	public void endElement(String uri, String localName, String qName) throws SAXException {
 	}
 	@Deprecated
-	public void startReadChildren(String qName, Attributes attributes) {
+	public void startReadChildren(XmlNodeAttributes attr) {
 	}
 	public void endReadChildren(String qName) {
 	}
 	
-	public int getIntAttribute(Attributes attributes, String name) {
-		return Integer.parseInt(attributes.getValue(name));
-	}
-
-	public float getFloatAttribute(Attributes attributes, String name) {
-		return Float.parseFloat(attributes.getValue(name));
-	}
-	
-	public int getIntAttribute(Attributes attributes, String name, int defaultVal) {
-		String val = attributes.getValue(name);
-		if (val == null) {
-			return defaultVal;
-		}
-		return Integer.parseInt(val);
-	}
-	
-	public String getStrAttribute(Attributes attributes, String name) {
-		return attributes.getValue(name);
-	}
-
-	public boolean getBooleanAttribute(Attributes attributes, String name) {
-		String val = attributes.getValue(name);
-		return val != null && "true".equals(val.toLowerCase());
-	}
-	
-	public <T extends Enum<T>> T getEnumAttribute(Attributes attributes, Class<T> enumClass, String name) {
-		String val = attributes.getValue(name);
-		if (val == null) {
-			return null;
-		}
-		return Enum.valueOf(enumClass, val.toUpperCase());
-	}
 	
 	public abstract String getTagName();
 }

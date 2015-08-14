@@ -11,6 +11,8 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
     LinkedList<String> parsersName = new LinkedList<String>();
     XmlNodeParser xmlNodeParser;
     
+    private final XmlNodeAttributes nodeAttributes = new XmlNodeAttributes();
+    
     public SaveGameSaxXmlDefaultHandler(XmlNodeParser rootXmlNodeParser) {
         xmlNodeParser = rootXmlNodeParser;
         parsersName.add(rootXmlNodeParser.getTagName());
@@ -22,20 +24,27 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         if (xmlNodeParser.getTagName().equals("unit") && qName.equals("unit")) {
             parsersName.add(qName);
             parsers.add(xmlNodeParser);
-            xmlNodeParser.startElement(qName, attributes);
+
+            nodeAttributes.qName = qName;
+            nodeAttributes.attributes = attributes;
+            xmlNodeParser.startElement(nodeAttributes);
             //xmlNodeParser.addToParent();
             return;
         }
         XmlNodeParser parserForTag = xmlNodeParser.parserForTag(qName);
         if (parserForTag == null) {
-            xmlNodeParser.startReadChildren(qName, attributes);
+            nodeAttributes.qName = qName;
+            nodeAttributes.attributes = attributes;
+            xmlNodeParser.startReadChildren(nodeAttributes);
             return;
         }
         parsersName.add(qName);
         parsers.add(parserForTag);
         xmlNodeParser = parserForTag;
-        
-        xmlNodeParser.startElement(qName, attributes);
+
+        nodeAttributes.qName = qName;
+        nodeAttributes.attributes = attributes;
+        xmlNodeParser.startElement(nodeAttributes);
         //xmlNodeParser.addToParent();
     }
     

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileImprovement implements Identifiable {
@@ -46,14 +45,14 @@ public class TileImprovement implements Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String typeStr = getStrAttribute(attributes, "type");
-			String style = getStrAttribute(attributes, "style");
+        public void startElement(XmlNodeAttributes attr) {
+			String typeStr = attr.getStrAttribute("type");
+			String style = attr.getStrAttribute("style");
 			TileImprovementType type = game.specification.tileImprovementTypes.getById(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(type, style);
-			tileImprovement.magnitude = getIntAttribute(attributes, "magnitude", 0);
-			tileImprovement.turns = getIntAttribute(attributes, "turns");
-			tileImprovement.id = getStrAttribute(attributes, "id");
+			tileImprovement.magnitude = attr.getIntAttribute("magnitude", 0);
+			tileImprovement.turns = attr.getIntAttribute("turns");
+			tileImprovement.id = attr.getStrAttribute("id");
 			
 			nodeObject = tileImprovement;
 		}

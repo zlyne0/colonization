@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public final class TileType implements Identifiable, SortableEntity {
@@ -67,9 +66,9 @@ public final class TileType implements Identifiable, SortableEntity {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String id = getStrAttribute(attributes, "id");
-			boolean isForest = getBooleanAttribute(attributes, "is-forest");
+        public void startElement(XmlNodeAttributes attr) {
+			String id = attr.getStrAttribute("id");
+			boolean isForest = attr.getBooleanAttribute("is-forest");
 			nodeObject = new TileType(id, isForest);
 		}
 

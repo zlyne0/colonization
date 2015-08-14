@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Modifier implements Identifiable {
@@ -98,16 +97,16 @@ public class Modifier implements Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
+        public void startElement(XmlNodeAttributes attr) {
 			Modifier modifier = new Modifier();
-			modifier.id = getStrAttribute(attributes, "id");
-			modifier.value = getFloatAttribute(attributes, "value");
-			modifier.modifierType = getEnumAttribute(attributes, ModifierType.class, "type");
-			modifier.incrementType = getEnumAttribute(attributes, ModifierType.class, "incrementType");
+			modifier.id = attr.getStrAttribute("id");
+			modifier.value = attr.getFloatAttribute("value");
+			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, "type");
+			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, "incrementType");
 			if (modifier.incrementType != null) {
-				modifier.increment = getFloatAttribute(attributes, "increment");
+				modifier.increment = attr.getFloatAttribute("increment");
 			}
-			modifier.modifierIndex = getIntAttribute(attributes, "index", DEFAULT_MODIFIER_INDEX);
+			modifier.modifierIndex = attr.getIntAttribute("index", DEFAULT_MODIFIER_INDEX);
 			nodeObject = modifier;
 		}
 

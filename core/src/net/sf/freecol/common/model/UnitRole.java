@@ -1,9 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.util.StringUtils;
-
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitRole implements Identifiable {
@@ -36,8 +34,8 @@ public class UnitRole implements Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String idStr = getStrAttribute(attributes, "id");
+        public void startElement(XmlNodeAttributes attr) {
+			String idStr = attr.getStrAttribute("id");
 			nodeObject = new UnitRole(idStr);
 		}
 

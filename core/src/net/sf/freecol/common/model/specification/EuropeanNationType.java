@@ -2,9 +2,7 @@ package net.sf.freecol.common.model.specification;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.SettlementType;
-
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
@@ -17,10 +15,10 @@ public class EuropeanNationType extends NationType {
         }
         
         @Override
-        public void startElement(String qName, Attributes attributes) {
+        public void startElement(XmlNodeAttributes attr) {
             NationType nationType = new EuropeanNationType();
             nationType.european = true;
-            nationType.id = getStrAttribute(attributes, "id");
+            nationType.id = attr.getStrAttribute("id");
             nodeObject = nationType;
         }
         

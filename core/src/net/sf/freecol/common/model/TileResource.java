@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileResource implements Identifiable {
@@ -32,14 +31,14 @@ public class TileResource implements Identifiable {
 		}
 
 		@Override
-		public void startElement(String qName, Attributes attributes) {
-			String resourceTypeStr = getStrAttribute(attributes, "type");
-			int quantity = getIntAttribute(attributes, "quantity");
+        public void startElement(XmlNodeAttributes attr) {
+			String resourceTypeStr = attr.getStrAttribute("type");
+			int quantity = attr.getIntAttribute("quantity");
 			ResourceType resourceType = game.specification.resourceTypes.getById(resourceTypeStr);
 
 			TileResource tileResource = new TileResource(resourceType);
 			tileResource.quantity = quantity;
-			tileResource.id = getStrAttribute(attributes, "id");
+			tileResource.id = attr.getStrAttribute("id");
 			
 			nodeObject = tileResource;
 		}

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
-import org.xml.sax.Attributes;
-
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianSettlement extends Settlement {
@@ -43,12 +42,12 @@ public class IndianSettlement extends Settlement {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
+        public void startElement(XmlNodeAttributes attr) {
             IndianSettlement is = new IndianSettlement();
-            is.name = getStrAttribute(attributes, "name");
-            Player owner = game.players.getById(getStrAttribute(attributes, "owner"));
+            is.name = attr.getStrAttribute("name");
+            Player owner = game.players.getById(attr.getStrAttribute("owner"));
             is.owner = owner;
-            is.settlementType = owner.nationType.settlementTypes.getById(getStrAttribute(attributes, "settlementType"));
+            is.settlementType = owner.nationType.settlementTypes.getById(attr.getStrAttribute("settlementType"));
             
             owner.settlements.add(is);
             

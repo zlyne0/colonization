@@ -3,9 +3,9 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 
+import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Unit implements Identifiable, Location {
@@ -121,18 +121,18 @@ public class Unit implements Identifiable, Location {
         }
 
         @Override
-        public void startElement(String qName, Attributes attributes) {
-            String unitTypeStr = getStrAttribute(attributes, "unitType");
-            String unitRoleStr = getStrAttribute(attributes, "role");
+        public void startElement(XmlNodeAttributes attr) {
+            String unitTypeStr = attr.getStrAttribute("unitType");
+            String unitRoleStr = attr.getStrAttribute("role");
             
             UnitType unitType = game.specification.unitTypes.getById(unitTypeStr);
             Unit unit = new Unit();
-            unit.id = getStrAttribute(attributes, "id");
+            unit.id = attr.getStrAttribute("id");
             unit.unitRole = game.specification.unitRoles.getById(unitRoleStr);
             unit.unitType = unitType;
-            unit.state = UnitState.valueOf(getStrAttribute(attributes, "state").toUpperCase());
-            unit.movesLeft = getIntAttribute(attributes, "movesLeft");
-            unit.hitPoints = getIntAttribute(attributes, "hitPoints");
+            unit.state = UnitState.valueOf(attr.getStrAttribute("state").toUpperCase());
+            unit.movesLeft = attr.getIntAttribute("movesLeft");
+            unit.hitPoints = attr.getIntAttribute("hitPoints");
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             unit.tile = tileXmlParser.tile;
@@ -144,7 +144,7 @@ public class Unit implements Identifiable, Location {
                 containerUnit.addUnit(unit);
             }
             
-            String ownerStr = getStrAttribute(attributes, "owner");
+            String ownerStr = attr.getStrAttribute("owner");
             Player owner = game.players.getById(ownerStr);
             unit.owner = owner;
             owner.units.add(unit);
