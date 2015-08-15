@@ -16,6 +16,9 @@ public class MapRenderer {
 	public static final int TILE_WIDTH = 128;
 	public static final int TILE_HEIGHT = 64;
 	
+	private static final float HORIZONTAL_SCREEN_EDGE_SIZE = TILE_WIDTH;
+	private static final float VERTICAL_SCREEN_EDGE_SIZE = TILE_HEIGHT;
+	
 	public static abstract class TileDrawer {
 		protected Batch batch;
 		protected ShapeRenderer shapeRenderer;
@@ -177,6 +180,12 @@ public class MapRenderer {
     	batch.begin();
     }
     
+    private final Vector2 oneUseVector2 = new Vector2();
+	private Vector2 mapToScreenCords(int x, int y) {
+		mapToScreenCords(x, y, oneUseVector2);
+		return oneUseVector2;
+	}
+    
 	private void mapToScreenCords(int x, int y, Vector2 p) {
         p.x = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
         p.y = (TILE_HEIGHT / 2) * y;
@@ -228,6 +237,17 @@ public class MapRenderer {
 
 	public Point getCenterOfScreen() {
 		return screenToMapCords(screenWidth/2, screenHeight/2);
+	}
+	
+	public boolean isPointOnScreenEdge(int px, int py) {
+		Vector2 sc = mapToScreenCords(px, py);
+		if (	sc.x <= HORIZONTAL_SCREEN_EDGE_SIZE ||
+				sc.x >= screenWidth - HORIZONTAL_SCREEN_EDGE_SIZE ||
+				sc.y <= VERTICAL_SCREEN_EDGE_SIZE || 
+				sc.y >= screenHeight - VERTICAL_SCREEN_EDGE_SIZE) {
+			return true;
+		}
+		return false;
 	}
 	
 	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {

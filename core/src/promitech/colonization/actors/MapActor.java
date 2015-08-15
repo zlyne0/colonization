@@ -1,12 +1,9 @@
 package promitech.colonization.actors;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GameController;
 import promitech.colonization.GameResources;
-import promitech.colonization.InputKeyboardDevice;
-import promitech.colonization.math.Directions;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -22,7 +19,6 @@ public class MapActor extends Actor {
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
 	
-	private InputKeyboardDevice inputKeyboardDevice = new InputKeyboardDevice();
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	private GameController gameController;
@@ -86,11 +82,6 @@ public class MapActor extends Actor {
 	
 	@Override
 	public void act(float delta) {
-		inputKeyboardDevice.recognizeInput();
-		Directions moveDirection = inputKeyboardDevice.getMoveDirection();
-		if (moveDirection != null) {
-			keyDirection(moveDirection);
-		}
 		super.act(delta);
 	}
 	
@@ -117,9 +108,8 @@ public class MapActor extends Actor {
 		return mapRenderer.getCenterOfScreen();
 	}
 	
-	private void keyDirection(Directions moveDirection) {
-	    mapRenderer.cameraPosition.add(moveDirection.vx * 10, moveDirection.vy * 10);
-	    System.out.println("moveDirection " + moveDirection + " camera.position " + mapRenderer.cameraPosition);
+	public boolean isPointOnScreenEdge(int px, int py) {
+		return mapRenderer.isPointOnScreenEdge(px, py);
 	}
 
 	public void drawSelectedTile(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {

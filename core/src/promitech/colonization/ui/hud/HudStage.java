@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 public class HudStage extends Stage {
@@ -18,6 +19,18 @@ public class HudStage extends Stage {
         {Direction.NW, Direction.N, Direction.NE},
     };
 
+    private static IntMap<Direction> directionByKeyCode = new IntMap<Direction>(8);
+    static {
+    	directionByKeyCode.put(Input.Keys.Q, Direction.NW);
+    	directionByKeyCode.put(Input.Keys.W, Direction.N);
+    	directionByKeyCode.put(Input.Keys.E, Direction.NE);
+    	directionByKeyCode.put(Input.Keys.D, Direction.E);
+    	directionByKeyCode.put(Input.Keys.C, Direction.SE);
+    	directionByKeyCode.put(Input.Keys.X, Direction.S);
+    	directionByKeyCode.put(Input.Keys.Z, Direction.SW);
+    	directionByKeyCode.put(Input.Keys.A, Direction.W);
+    }
+    
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     
     public final HudInfoPanel hudInfoPanel; 
@@ -63,8 +76,18 @@ public class HudStage extends Stage {
         addListener(new InputListener() {
         	@Override
         	public boolean keyDown(InputEvent event, int keycode) {
+        		if (keycode == Input.Keys.V) {
+        			viewButton.setChecked(!viewButton.isChecked());
+        			gameController.setViewMode(viewButton.isChecked());
+        			return true;
+        		}
         		if (keycode == Input.Keys.N) {
         			gameController.nextActiveUnit();
+        			return true;
+        		}
+        		Direction direction = directionByKeyCode.get(keycode);
+        		if (direction != null) {
+        			gameController.pressDirectionKey(direction);
         			return true;
         		}
         		return super.keyDown(event, keycode);
@@ -102,7 +125,7 @@ public class HudStage extends Stage {
         button.addListener(new InputListener() {
             @Override
             public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-                System.out.println("move active unit in " + direction + " direction");
+    			gameController.pressDirectionKey(direction);
                 return true;
             }
         });

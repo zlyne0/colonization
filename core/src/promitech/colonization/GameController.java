@@ -75,4 +75,17 @@ public class GameController {
 			}
 		}
 	}
+
+	public void pressDirectionKey(Direction direction) {
+		if (viewMode) {
+			MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
+			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
+			mapDrawModel.selectedTile = game.map.getTile(x, y);
+			
+			if (mapActor.isPointOnScreenEdge(x, y)) {
+				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
+			}
+		}
+	}
 }
