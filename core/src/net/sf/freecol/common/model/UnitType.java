@@ -13,7 +13,8 @@ public class UnitType implements Identifiable {
     public static final int DEFAULT_DEFENCE = 1;
 
     private String id;
-    public final MapIdEntities<Modifier> modifiers = new MapIdEntities<Modifier>(); 
+    public final MapIdEntities<Modifier> modifiers = new MapIdEntities<Modifier>();
+    public final MapIdEntities<Ability> abilities = new MapIdEntities<Ability>();
     
     /**
      * The offence of this UnitType. Only Units with an offence value
@@ -86,6 +87,11 @@ public class UnitType implements Identifiable {
 		return (int)base;
 	}
 
+    public boolean isNaval() {
+    	Ability ability = abilities.getByIdOrNull(Ability.NAVAL_UNIT);
+    	return ability != null && ability.isValue();
+    }
+	
 	public int getHitPoints() {
 		return hitPoints;
 	}
@@ -94,6 +100,7 @@ public class UnitType implements Identifiable {
         public Xml(XmlNodeParser parent) {
             super(parent);
             addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
+            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
         }
 
         @Override

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import org.xml.sax.SAXException;
 
@@ -37,7 +38,7 @@ public class Unit implements Identifiable, Location {
     private int movesLeft;
     private int hitPoints;
     private boolean disposed = false;
-
+    private int visibleGoodsCount = -1;
     
 	@Override
 	public String getId() {
@@ -110,6 +111,67 @@ public class Unit implements Identifiable, Location {
             //&& !isAtSea()
             && !isOnCarrier();
     }
+
+    public final Object getTradeRoute() {
+        return null;
+    }
+	
+    public Location getDestination() {
+        return null;
+    }
+    
+    public UnitState getState() {
+        return state;
+    }
+    
+    public TileImprovement getWorkImprovement() {
+        return null;
+    }
+    
+    public int getMovesLeft() {
+        return movesLeft;
+    }
+    
+    public boolean isNaval() {
+    	return unitType != null && unitType.isNaval();
+    }
+    
+    /**
+     * Get the visible amount of goods that is carried by this unit.
+     *
+     * @return The visible amount of goods carried by this <code>Unit</code>.
+     */
+    public int getVisibleGoodsCount() {
+        return (visibleGoodsCount >= 0) ? visibleGoodsCount : getGoodsSpaceTaken();
+    }
+    
+    public int getGoodsSpaceTaken() {
+    	return 0;
+//        if (!canCarryGoods()) {
+//        	return 0;
+//        }
+//        GoodsContainer gc = getGoodsContainer();
+//        return (gc == null) ? 0 : gc.getSpaceTaken();
+    }
+    
+    public String getOccupationKey(Player player) {
+        return (player.equals(owner))
+            ? ((isDamaged())
+                ? "model.unit.occupation.underRepair"
+                : (getTradeRoute() != null)
+                ? "model.unit.occupation.inTradeRoute"
+                : (getDestination() != null)
+                ? "model.unit.occupation.goingSomewhere"
+                : (getState() == Unit.UnitState.IMPROVING && getWorkImprovement() != null)
+                ? (getWorkImprovement().type.getId() + ".occupationString")
+                : (getState() == Unit.UnitState.ACTIVE && getMovesLeft() <= 0)
+                ? "model.unit.occupation.activeNoMovesLeft"
+                : ("model.unit.occupation."
+                    + getState().toString().toLowerCase(Locale.US)))
+            : (isNaval())
+            ? Integer.toString(getVisibleGoodsCount())
+            : "model.unit.occupation.activeNoMovesLeft";
+    }
 	
     public static class Xml extends XmlNodeParser {
         
@@ -133,6 +195,7 @@ public class Unit implements Identifiable, Location {
             unit.state = UnitState.valueOf(attr.getStrAttribute("state").toUpperCase());
             unit.movesLeft = attr.getIntAttribute("movesLeft");
             unit.hitPoints = attr.getIntAttribute("hitPoints");
+            unit.visibleGoodsCount = attr.getIntAttribute("visibleGoodsCount", -1);
             
             Tile.Xml tileXmlParser = getParentXmlParser();
             unit.tile = tileXmlParser.tile;

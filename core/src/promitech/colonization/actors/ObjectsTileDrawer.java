@@ -8,6 +8,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.actors.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
@@ -113,6 +114,8 @@ class ObjectsTileDrawer extends TileDrawer {
 		drawUnitChip(unit);
 	}
 	
+	private static final int BOX_WIDTH = 17;
+	
 	private void drawUnitChip(Unit unit) {
 		float cx = screenPoint.x + 35;
 		float cy = screenPoint.y + h - 5;
@@ -120,12 +123,12 @@ class ObjectsTileDrawer extends TileDrawer {
 		batch.end();
 		shapeRenderer.begin(ShapeType.Filled);
 		shapeRenderer.setColor(unit.getOwner().getNation().getColor());
-		shapeRenderer.rect(cx, cy, 17, 20);
+		shapeRenderer.rect(cx, cy, BOX_WIDTH, 20);
 		shapeRenderer.end();
 
 		shapeRenderer.begin(ShapeType.Line);
 		shapeRenderer.setColor(Color.BLACK);
-		shapeRenderer.rect(cx, cy, 17, 20);
+		shapeRenderer.rect(cx, cy, BOX_WIDTH, 20);
 		
 		if (tile.units.size() > 1) {
 			shapeRenderer.setColor(Color.WHITE);
@@ -139,7 +142,12 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		batch.begin();
 		
-		FontResource.getUnitBoxFont().setColor(Color.BLACK);
-		FontResource.getUnitBoxFont().draw(batch, "G", cx + 2, cy + 20 - 2);
+		String occupationKey = unit.getOccupationKey(player);
+		String text = Messages.msg(occupationKey);
+		
+		BitmapFont unitBoxFont = FontResource.getUnitBoxFont();
+		unitBoxFont.setColor(Color.BLACK);
+		float textWidth = FontResource.strWidth(unitBoxFont, text);
+		unitBoxFont.draw(batch, text, cx + BOX_WIDTH/2 - textWidth/2, cy + 20 - 2);
 	}
 }
