@@ -1,9 +1,11 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.UnitTypeChange;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class UnitType implements Identifiable {
+public class UnitType extends ObjectWithFeatures {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	
@@ -12,9 +14,7 @@ public class UnitType implements Identifiable {
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
-    private String id;
-    public final MapIdEntities<Modifier> modifiers = new MapIdEntities<Modifier>();
-    public final MapIdEntities<Ability> abilities = new MapIdEntities<Ability>();
+    public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
     
     /**
      * The offence of this UnitType. Only Units with an offence value
@@ -66,41 +66,71 @@ public class UnitType implements Identifiable {
     private int maximumAttrition = Xml.INFINITY;
     
     public UnitType(String id) {
-        this.id = id;
-    }
-    
-    @Override
-    public String getId() {
-        return id;
+    	super(id);
     }
     
     public String toString() {
-        return id + " modifiersCount: " + modifiers.size();
+        return id + " " + super.toString();
     }
 
 	public int lineOfSight() {
 		float base = lineOfSight;
-		Modifier modifier = modifiers.getByIdOrNull(Modifier.LINE_OF_SIGHT_BONUS);
-		if (modifier != null) {
-			base = modifier.apply(base);
-		}
+		base = applyModifier(Modifier.LINE_OF_SIGHT_BONUS, base);
 		return (int)base;
 	}
 
     public boolean isNaval() {
-    	Ability ability = abilities.getByIdOrNull(Ability.NAVAL_UNIT);
-    	return ability != null && ability.isValue();
+    	return hasAbility(Ability.NAVAL_UNIT);
     }
 	
 	public int getHitPoints() {
 		return hitPoints;
 	}
+
+    public boolean isOffensive() {
+        return getBaseOffence() > UnitType.DEFAULT_OFFENCE;
+    }
 	
+    public int getBaseOffence() {
+        return offence;
+    }
+    
+    /**
+     * Can this type of unit be upgraded to another given type by a given
+     * educational change type?
+     *
+     * If the target type is null, return true if the UnitType can be
+     * upgraded to any other type by the given means of education.
+     *
+     * @param newType The <code>UnitType</code> to learn (may be null
+     *     in the case of attempting to move to a native settlement
+     *     when the skill taught there is still unknown).
+     * @param changeType The educational <code>ChangeType</code>.
+     * @return True if this unit type can learn.
+     */
+    public boolean canBeUpgraded(ChangeType changeType) {
+    	return canBeUpgraded(null, changeType);
+    }
+
+    public boolean canBeUpgraded(UnitType newType, ChangeType changeType) {
+        for (UnitTypeChange change : unitTypeChanges.entities()) {
+            if ((newType == null || newType.equalsId(change.getNewUnitTypeId())) && change.isPositiveProbability(changeType)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public int getSpaceTaken() {
+		return spaceTaken;
+	}
+    
     public static class Xml extends XmlNodeParser {
         public Xml(XmlNodeParser parent) {
             super(parent);
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(new MapIdEntities.Xml(this, "unitTypeChanges", UnitTypeChange.class));
         }
 
         @Override

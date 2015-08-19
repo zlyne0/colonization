@@ -4,14 +4,14 @@ import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class UnitRole implements Identifiable {
+public class UnitRole extends ObjectWithFeatures {
 	private static final String MODEL_ROLE_DEFAULT = "model.role.default";
 	
-	private final String id;
 	private final String roleSuffix;
 	
 	public UnitRole(String id) {
-		this.id = id;
+		super(id);
+		
 		if (MODEL_ROLE_DEFAULT.equals(id)) {
 			this.roleSuffix = ""; 
 		} else {
@@ -19,18 +19,20 @@ public class UnitRole implements Identifiable {
 		}
 	}
 	
-	@Override
-	public String getId() {
-		return id;
-	}
-	
 	public String getRoleSuffix() {
 		return roleSuffix;
 	}
 	
+    public boolean isOffensive() {
+        return hasModifier(Modifier.OFFENCE);
+    }
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml(XmlNodeParser parent) {
 			super(parent);
+			
+            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
+            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
 		}
 
 		@Override

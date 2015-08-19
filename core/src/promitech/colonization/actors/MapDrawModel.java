@@ -15,7 +15,6 @@ import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
-import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 
@@ -192,12 +191,12 @@ class TileDrawModelInitializer {
 		if (tile.type.isWater() && tile.style > 0) {
 			int edgeStyle = tile.style >> 4;
     		if (edgeStyle > 0) {
-    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.type.getOrder());
+    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.type.getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
     		int cornerStyle = tile.style & 15;
     		if (cornerStyle > 0) {
-    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.type.getOrder());
+    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.type.getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
 		}
@@ -217,17 +216,17 @@ class TileDrawModelInitializer {
 		if (tile.type.isWater() || borderTile.type.isWater()) {
 			if (!tile.type.isWater() && borderTile.type.isWater()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 			if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 		} else {
 			direction = direction.getReverseDirection();
-			frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getOrder());
+			frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
 			borderTileDrawModel.addBackgroundTerainTexture(frame);
 		}
 		

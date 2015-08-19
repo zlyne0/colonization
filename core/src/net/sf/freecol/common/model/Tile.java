@@ -17,6 +17,7 @@ public class Tile implements Location, Identifiable {
 	public final int style;
 	public final String id;
 	private int connected = 0;
+	private boolean moveToEurope = false;
 	
 	protected Settlement settlement;
 	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
@@ -108,6 +109,14 @@ public class Tile implements Location, Identifiable {
 		return !exploredByPlayers.contains(player.getId());
 	}
 	
+    public boolean isDirectlyHighSeasConnected() {
+    	if (moveToEurope) {
+    		return true;
+    	} else {
+    		return type.isDirectlyHighSeasConnected();
+    	}
+    }
+	
 	public static class Xml extends XmlNodeParser {
 	    protected Tile tile;
 	    
@@ -152,6 +161,7 @@ public class Tile implements Location, Identifiable {
 			TileType tileType = game.specification.tileTypes.getById(tileTypeStr);
 			tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
+			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
 			
 			nodeObject = tile;
 		}

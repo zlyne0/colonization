@@ -11,8 +11,8 @@ public class MapIdEntities<T extends Identifiable> {
     private java.util.Map<String,T> entities = new HashMap<String,T>();
     
     public void add(T entity) {
-        if (entity instanceof SortableEntity) {
-            ((SortableEntity)entity).setOrder(entities.size());
+        if (entity instanceof ObjectWithId) {
+            ((ObjectWithId)entity).setInsertOrder(entities.size());
         }
         entities.put(entity.getId(), entity);
     }
@@ -35,6 +35,18 @@ public class MapIdEntities<T extends Identifiable> {
     public T getByIdOrNull(String id) {
         T en = entities.get(id);
         return en;
+    }
+    
+    public boolean isEmpty() {
+    	return entities.isEmpty();
+    }
+
+    public boolean isNotEmpty() {
+    	return !entities.isEmpty();
+    }
+    
+    public boolean containsId(Identifiable element) {
+    	return entities.containsKey(element.getId());
     }
     
     public int size() {

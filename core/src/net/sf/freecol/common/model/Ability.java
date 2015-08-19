@@ -409,6 +409,11 @@ public final class Ability implements Identifiable {
     	this.id = id;
     }
 
+    public Ability(String id, boolean value) {
+    	this.id = id;
+    	this.value = value;
+    }
+    
     public String getId() {
     	return id;
     }

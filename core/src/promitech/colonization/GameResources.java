@@ -150,7 +150,7 @@ public class GameResources {
 		} else {
 			key = type.getId() + ".center1.image";
 		}
-		return getFrame(key, type.getOrder());
+		return getFrame(key, type.getInsertOrder());
 	}
 	
 	public Frame tileBorder(TileType type, Direction direction, int x, int y, int zIndex) {

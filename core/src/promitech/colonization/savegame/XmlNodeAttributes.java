@@ -35,6 +35,14 @@ public class XmlNodeAttributes {
         return val != null && "true".equals(val.toLowerCase());
     }
     
+    public boolean getBooleanAttribute(String name, boolean defaultValue) {
+        String val = attributes.getValue(name);
+        if (val == null) {
+        	return defaultValue;
+        }
+        return "true".equals(val.toLowerCase());
+    }
+    
     public <T extends Enum<T>> T getEnumAttribute(Class<T> enumClass, String name) {
         String val = attributes.getValue(name);
         if (val == null) {

@@ -6,7 +6,20 @@ import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Specification implements Identifiable {	
+public class Specification implements Identifiable {
+	
+	public static class Options {
+		
+		public boolean getBoolean(String code) {
+			return false;
+		}
+		
+		public void reset() {
+		}
+	}
+	
+	public static final Options options = new Options();
+	
 	public final MapIdEntities<TileType> tileTypes = new MapIdEntities<TileType>();
 	public final MapIdEntities<TileImprovementType> tileImprovementTypes = new MapIdEntities<TileImprovementType>();
 	public final MapIdEntities<UnitType> unitTypes = new MapIdEntities<UnitType>();

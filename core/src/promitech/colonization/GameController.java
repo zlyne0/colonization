@@ -5,6 +5,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.actors.MapDrawModel;
+import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
 
@@ -17,6 +18,7 @@ public class GameController {
 	private final UnitIterator unitIterator;
 	private Unit activeUnit;
 	private boolean viewMode = false;
+	private GameLogic gameLogic = new GameLogic();
 	
 	public GameController(final Game game, MapActor mapActor) {
 		this.game = game;
@@ -77,8 +79,8 @@ public class GameController {
 	}
 
 	public void pressDirectionKey(Direction direction) {
+		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (viewMode) {
-			MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			mapDrawModel.selectedTile = game.map.getTile(x, y);
@@ -86,6 +88,23 @@ public class GameController {
 			if (mapActor.isPointOnScreenEdge(x, y)) {
 				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
 			}
+		} else {
+			Unit unit = mapDrawModel.selectedUnit;
+			if (unit == null) {
+				return;
+			}
+			Tile sourceTile = unit.getTile();
+			if (sourceTile == null) {
+				// move MoveType.MOVE_NO_TILE
+				return;
+			}
+			Tile descTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
+			if (descTile == null) {
+				// move MoveType.MOVE_ILLEGAL
+				return;
+			}
+			MoveType moveType = unit.getMoveType(sourceTile, descTile);
+			System.out.println("moveType = " + moveType);
 		}
 	}
 }

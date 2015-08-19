@@ -3,29 +3,22 @@ package net.sf.freecol.common.model;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public final class TileType implements Identifiable, SortableEntity {
+public final class TileType extends ObjectWithFeatures {
 
 	private static final String MODEL_TILE_LAKE = "model.tile.lake";
 	private static final String GREAT_RIVER = "model.tile.greatRiver";
     private static final String OCEAN = "model.tile.ocean";
 	private static final String HIGH_SEAS = "model.tile.highSeas";
 	
-	private final String id;
-	private int order;
 	boolean isForest;
 	
 	public TileType(String id, boolean isForest) {
-		this.id = id;
+		super(id);
 		this.isForest = isForest;
 	}
-
-    @Override
-    public String getId() {
-        return id;
-    }
     
 	public String toString() {
-		return id + ":" + order;
+		return id + ":" + getInsertOrder();
 	}
 	
 	public boolean isWater() {
@@ -52,17 +45,15 @@ public final class TileType implements Identifiable, SortableEntity {
 		return isForest;
 	}
 
-	public int getOrder() {
-		return order;
-	}
-	
-	public void setOrder(int order) {
-		this.order = order;
-	}
+    public boolean isDirectlyHighSeasConnected() {
+        return hasAbility(Ability.MOVE_TO_EUROPE);
+    }
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml(XmlNodeParser parent) {
 			super(parent);
+            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
+            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
 		}
 
 		@Override
