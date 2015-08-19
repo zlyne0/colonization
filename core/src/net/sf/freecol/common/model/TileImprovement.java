@@ -59,8 +59,11 @@ public class TileImprovement implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "tileimprovement";
+		    return tagName();
 		}
 		
+		public static String tagName() {
+		    return "tileimprovement";
+		}
 	}
 }

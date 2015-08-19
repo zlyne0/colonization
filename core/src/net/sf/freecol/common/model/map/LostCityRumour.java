@@ -27,6 +27,10 @@ public class LostCityRumour implements Identifiable {
 
         @Override
         public String getTagName() {
+            return tagName();
+        }
+
+        public static String tagName() {
             return "lostCityRumour";
         }
     }

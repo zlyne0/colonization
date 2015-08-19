@@ -112,7 +112,11 @@ public class Modifier implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "modifier";
+		    return tagName();
 		}
+		
+        public static String tagName() {
+            return "modifier";
+        }
 	}
 }

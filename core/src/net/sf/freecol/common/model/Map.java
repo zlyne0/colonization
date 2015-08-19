@@ -47,7 +47,7 @@ public class Map {
 	}
 
 	public static class Xml extends XmlNodeParser {
-		Map map;
+		private Map map;
 		
 		public Xml(XmlNodeParser parent) {
 			super(parent);
@@ -67,7 +67,7 @@ public class Map {
 			int height = attr.getIntAttribute("height");
 			map = new Map(width, height);
 			
-			((Game.Xml)parentXmlNodeParser).game.map = map;
+			game.map = map;
 		}
 
 		@Override

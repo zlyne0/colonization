@@ -20,10 +20,9 @@ public class TileItemContainer implements Identifiable {
         
         public Xml(XmlNodeParser parent) {
             super(parent);
-            
-            addNode(new MapIdEntities.Xml(this, "improvements", TileImprovement.class));
-            addNode(new MapIdEntities.Xml(this, "resources", TileResource.class));
-            addNode(new MapIdEntities.Xml(this, "lostCityRumours", LostCityRumour.class));
+            addNodeForMapIdEntities("improvements", TileImprovement.class);
+            addNodeForMapIdEntities("resources", TileResource.class);
+            addNodeForMapIdEntities("lostCityRumours", LostCityRumour.class);
         }
 
         @Override

@@ -1,7 +1,11 @@
 apply plugin: "java"
 
 sourceCompatibility = 1.6
-sourceSets.main.java.srcDirs = [ "src/" ]
+sourceSets.main.java.srcDirs = [ "src/main/java" ]
+sourceSets.test {
+	java.srcDirs = [ "src/test/java" ]
+	resources.srcDirs = [ "src/test/resources" ]
+}
 
 project.ext.mainClassName = "promitech.colonization.desktop.DesktopLauncher"
 project.ext.assetsDir = new File("../android/assets");

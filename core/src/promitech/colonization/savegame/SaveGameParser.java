@@ -18,15 +18,16 @@ import com.badlogic.gdx.files.FileHandle;
 public class SaveGameParser {
 
 	Specification defaultSpecification;
+	private String saveGameFileName;
+	
+	public SaveGameParser(String saveGameFileName) {
+	    this.saveGameFileName = saveGameFileName;
+	}
 	
 	public Game parse() throws IOException, ParserConfigurationException, SAXException {
 		defaultSpecification = loadDefaultSpecification();
 
-		
-		//FileHandle fh = Gdx.files.internal("maps/savegame.xml");
-		//FileHandle fh = Gdx.files.internal("maps/america_map.xml");
-        //FileHandle fh = Gdx.files.internal("maps/dutch_1522.xml");
-        FileHandle fh = Gdx.files.internal("maps/savegame_1600.xml");
+        FileHandle fh = Gdx.files.internal(saveGameFileName);
         
 		InputStream read = fh.read();
 		

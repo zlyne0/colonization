@@ -26,6 +26,10 @@ public class Nation implements Identifiable {
 		return color;
 	}
 	
+	public String toString() {
+	    return id;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml(XmlNodeParser parent) {
 			super(parent);

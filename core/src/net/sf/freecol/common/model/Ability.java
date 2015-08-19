@@ -443,7 +443,11 @@ public final class Ability implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "ability";
+		    return tagName();
 		}
+		
+        public static String tagName() {
+            return "ability";
+        }
     }
 }

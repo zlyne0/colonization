@@ -75,24 +75,6 @@ public class MapIdEntities<T extends Identifiable> {
             addAllNodes(entityXmlParser);
         }
         
-        private XmlNodeParser entityXmlParser(Class<? extends Identifiable> entityClass, XmlNodeParser parent) {
-            Class<XmlNodeParser> xmlClazz = null;
-            for (Class cz : entityClass.getDeclaredClasses()) {
-                if (cz.getSimpleName().equals("Xml")) {
-                    xmlClazz = cz;
-                }
-            }
-            if (xmlClazz == null) {
-                throw new IllegalStateException("can not find inner Xml class in " + entityClass);
-            }
-            try {
-                XmlNodeParser entityXmlParser = xmlClazz.getDeclaredConstructor(XmlNodeParser.class).newInstance(parent);
-                return entityXmlParser;
-            } catch (Exception e) {
-                throw new IllegalStateException(e);
-            }
-        }
-        
         public void addToParent() {
             if (!withWrapperTag) {
                 entityXmlParser.addToParent();

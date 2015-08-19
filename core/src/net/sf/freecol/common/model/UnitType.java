@@ -99,8 +99,8 @@ public class UnitType implements Identifiable {
     public static class Xml extends XmlNodeParser {
         public Xml(XmlNodeParser parent) {
             super(parent);
-            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
-            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
+            addNodeForMapIdEntities("modifiers", Modifier.class);
+            addNodeForMapIdEntities("abilities", Ability.class);
         }
 
         @Override

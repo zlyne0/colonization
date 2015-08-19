@@ -45,7 +45,12 @@ public class TileResource implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "resource";
+		    return tagName();
 		}
+		
+        public static String tagName() {
+            return "resource";
+        }
+		
 	}
 }

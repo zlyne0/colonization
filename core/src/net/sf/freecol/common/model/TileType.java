@@ -76,6 +76,9 @@ public final class TileType implements Identifiable, SortableEntity {
 		public String getTagName() {
 			return "tile-type";
 		}
+		
+		public static String tagName() {
+		    return "tile-type";
+		}
 	}
-
 }

@@ -3,6 +3,9 @@ package promitech.colonization;
 import java.nio.IntBuffer;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
@@ -12,6 +15,7 @@ import promitech.colonization.ui.resources.Messages;
 
 import com.badlogic.gdx.ApplicationAdapter;
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.files.FileHandle;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.OrthographicCamera;
@@ -57,7 +61,7 @@ public class Main extends ApplicationAdapter {
 			Messages.instance().load();
 			FontResource.load();
 			
-			SaveGameParser saveGameParser = new SaveGameParser();
+			SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
 			game = saveGameParser.parse();
 			
 			gameResources.load();

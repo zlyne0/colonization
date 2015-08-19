@@ -29,7 +29,7 @@ public class Game implements Identifiable {
 			super(null);
 			addNode(new Specification.Xml(this));
 			addNode(new Map.Xml(this));
-			addNode(new MapIdEntities.Xml(this, "players", Player.class));
+			addNodeForMapIdEntities("players", Player.class);
 			
 			game.specification = defaultSpecification;
 			XmlNodeParser.game = game;

@@ -21,8 +21,11 @@ public class Player implements Identifiable {
     	return nation;
     }
     
+    public String toString() {
+        return "id = " + id + ", nation = " + nation;
+    }
+    
     public static class Xml extends XmlNodeParser {
-
         public Xml(XmlNodeParser parent) {
             super(parent);
         }
@@ -45,6 +48,10 @@ public class Player implements Identifiable {
 
         @Override
         public String getTagName() {
+            return tagName();
+        }
+        
+        public static String tagName() {
             return "player";
         }
     }

@@ -24,16 +24,14 @@ public class Specification implements Identifiable {
 		public Xml(Game.Xml parent) {
 			super(parent);
 			
-			addNode(new MapIdEntities.Xml(this, "tile-types", "tileTypes", TileType.class));
-			addNode(new MapIdEntities.Xml(this, "resource-types", "resourceTypes", ResourceType.class));
-            addNode(new MapIdEntities.Xml(this, "tileimprovement-types", "tileImprovementTypes", TileImprovementType.class));
-            addNode(new MapIdEntities.Xml(this, "unit-types", "unitTypes", UnitType.class));
-            addNode(new MapIdEntities.Xml(this, "roles", "unitRoles", UnitRole.class));
-            
-            addNode(new MapIdEntities.Xml(this, "european-nation-types", "nationTypes", EuropeanNationType.class));
-            addNode(new MapIdEntities.Xml(this, "indian-nation-types", "nationTypes", IndianNationType.class));
-            
-            addNode(new MapIdEntities.Xml(this, "nations", "nations", Nation.class));
+			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
+            addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
+            addNodeForMapIdEntities("tileimprovement-types", "tileImprovementTypes", TileImprovementType.class);
+            addNodeForMapIdEntities("unit-types", "unitTypes", UnitType.class);
+            addNodeForMapIdEntities("roles", "unitRoles", UnitRole.class);
+            addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);
+            addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
+            addNodeForMapIdEntities("nations", "nations", Nation.class);
 		}
 
 		@Override
