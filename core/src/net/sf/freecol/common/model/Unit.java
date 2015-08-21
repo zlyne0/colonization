@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import org.xml.sax.SAXException;
 
 import promitech.colonization.gamelogic.MoveType;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -34,8 +35,8 @@ public class Unit extends ObjectWithFeatures implements Location {
 	private Player owner;
     private UnitType unitType;
     private UnitRole unitRole;
-    private List<Unit> containedUnits;
-    private Tile tile;
+    public List<Unit> containedUnits;
+    Tile tile;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -59,13 +60,6 @@ public class Unit extends ObjectWithFeatures implements Location {
             st += "]";
         }
         return st;
-    }
-
-    public void addUnit(Unit containerUnit) {
-        if (containedUnits == null) {
-            containedUnits = new ArrayList<Unit>();
-        }
-        containedUnits.add(containerUnit);
     }
     
     public String resourceImageKey() {
@@ -358,12 +352,23 @@ public class Unit extends ObjectWithFeatures implements Location {
     
     public static class Xml extends XmlNodeParser {
         
-        private boolean secoundLevel = false;
-        private Unit containerUnit = null;
+        private final ObjectFromNodeSetter unitOnUnitSetter = new ObjectFromNodeSetter() {
+            @Override
+            public void set(Identifiable entity) {
+                Unit actualUnit = (Unit)nodeObject;
+                Unit newUnit = (Unit)entity;
+                
+                if (actualUnit.containedUnits == null) {
+                    actualUnit.containedUnits = new ArrayList<Unit>();
+                }
+                newUnit.tile = actualUnit.tile;
+                actualUnit.containedUnits.add(newUnit);
+            }
+        };
         
         public Xml(XmlNodeParser parent) {
             super(parent);
-            
+            addNode(Unit.class, unitOnUnitSetter);
             addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
             addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
         }
@@ -382,15 +387,8 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.hitPoints = attr.getIntAttribute("hitPoints");
             unit.visibleGoodsCount = attr.getIntAttribute("visibleGoodsCount", -1);
             
-            Tile.Xml tileXmlParser = getParentXmlParser();
-            unit.tile = tileXmlParser.tile;
-            if (containerUnit == null) {
-                containerUnit = unit;
-                tileXmlParser.tile.units.add(unit);
-            } else {
-                secoundLevel = true;
-                containerUnit.addUnit(unit);
-            }
+            
+            nodeObject = unit;
             
             String ownerStr = attr.getStrAttribute("owner");
             Player owner = game.players.getById(ownerStr);
@@ -399,16 +397,11 @@ public class Unit extends ObjectWithFeatures implements Location {
         }
 
         @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-            if (secoundLevel) {
-                secoundLevel = false;
-            } else {
-                containerUnit = null;
-            }
+        public String getTagName() {
+            return tagName();
         }
         
-        @Override
-        public String getTagName() {
+        public static String tagName() {
             return "unit";
         }
     }

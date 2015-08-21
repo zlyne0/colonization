@@ -14,12 +14,14 @@ public abstract class XmlNodeParser {
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
     
+    private final Map<String, ObjectFromNodeSetter> nodeSimpleEntitySetters = new HashMap<String, ObjectFromNodeSetter>();
+    private final Map<String, Class<? extends Identifiable>> nodeSimpleEntityClass = new HashMap<String, Class<? extends Identifiable>>();
+    
     private final Map<String, String> entityIdMapFieldNameByTag = new HashMap<String, String>();
     private final Map<String, Class<? extends Identifiable>> entityIdMapFieldClassByTag = new HashMap<String, Class<? extends Identifiable>>();
     private final Map<String, Boolean> entityIdMapWrapperTagPosses = new HashMap<String, Boolean>();
 	private final java.util.Map<String,XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
-	private final XmlNodeParser parentXmlNodeParser;
 	public Identifiable nodeObject;
 	
 	// unique entities
@@ -27,13 +29,18 @@ public abstract class XmlNodeParser {
 	protected static Game game;
 	
 	public XmlNodeParser(XmlNodeParser parent) {
-		this.parentXmlNodeParser = parent;
 	}
 	
 	public void addNode(XmlNodeParser node) {
 		nodeParserByTagName.put(node.getTagName(), node);
 	}
     
+	public void addNode(Class<? extends Identifiable> entityClass, ObjectFromNodeSetter setter) {
+	    String tagName = tagNameForEntityClass(entityClass);
+	    nodeSimpleEntitySetters.put(tagName, setter);
+	    nodeSimpleEntityClass.put(tagName, entityClass);
+	}
+	
 	public void addNodeForMapIdEntities(String wrapperTag, String fieldName, Class<? extends Identifiable> entityClass) {
 	    entityIdMapFieldNameByTag.put(wrapperTag, fieldName);
 	    entityIdMapFieldClassByTag.put(wrapperTag, entityClass);
@@ -41,16 +48,11 @@ public abstract class XmlNodeParser {
 	}
 	
     public void addNodeForMapIdEntities(String fieldName, Class<? extends Identifiable> entityClass) {
-        Class<XmlNodeParser> xmlClass = getXmlClassFromEntityClass(entityClass);
-        try {
-            Method tagNameMethod = xmlClass.getDeclaredMethod("tagName");
-            String tagName = (String)tagNameMethod.invoke(null);
-            entityIdMapFieldNameByTag.put(tagName, fieldName);
-            entityIdMapFieldClassByTag.put(tagName, entityClass);
-            entityIdMapWrapperTagPosses.put(tagName, Boolean.FALSE);
-        } catch (Exception e) {
-            throw new IllegalStateException("can not invoke tagName method in Xml for entity " + entityClass);
-        }
+        String tagName = tagNameForEntityClass(entityClass);
+        
+        entityIdMapFieldNameByTag.put(tagName, fieldName);
+        entityIdMapFieldClassByTag.put(tagName, entityClass);
+        entityIdMapWrapperTagPosses.put(tagName, Boolean.FALSE);
     }
 	
 	public void addAllNodes(XmlNodeParser node) {
@@ -61,6 +63,12 @@ public abstract class XmlNodeParser {
 	    XmlNodeParser xmlNodeParser = nodeParserByTagName.get(qName);
 	    if (xmlNodeParser != null) {
 	        return xmlNodeParser;
+	    }
+	    if (nodeSimpleEntitySetters.containsKey(qName)) {
+	        XmlNodeParser entityXmlParser = entityXmlParser(nodeSimpleEntityClass.get(qName), this);
+	        entityXmlParser.addSetter(nodeSimpleEntitySetters.get(qName));
+	        nodeParserByTagName.put(qName, xmlNodeParser);
+	        return entityXmlParser;
 	    }
 	    if (entityIdMapFieldNameByTag.containsKey(qName)) {
 	        if (entityIdMapWrapperTagPosses.get(qName)) {
@@ -83,11 +91,6 @@ public abstract class XmlNodeParser {
 	    if (setter != null) {
 	        setter.set(nodeObject);
 	    }
-	}
-	
-	@SuppressWarnings("unchecked")
-	public <T extends XmlNodeParser> T getParentXmlParser() {
-		return (T)parentXmlNodeParser;
 	}
 	
 	public abstract void startElement(XmlNodeAttributes attr);
@@ -127,6 +130,17 @@ public abstract class XmlNodeParser {
             throw new IllegalStateException("can not find inner Xml class in " + entityClass);
         }
         return xmlClazz;
+    }
+    
+    private String tagNameForEntityClass(Class<? extends Identifiable> entityClass) {
+        try {
+            Class<XmlNodeParser> xmlClass = getXmlClassFromEntityClass(entityClass);
+            Method tagNameMethod = xmlClass.getDeclaredMethod("tagName");
+            String tagName = (String)tagNameMethod.invoke(null);
+            return tagName;
+        } catch (Exception e) {
+            throw new IllegalStateException("can not invoke tagName method in Xml for entity " + entityClass);
+        }
     }
 }
 

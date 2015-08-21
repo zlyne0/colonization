@@ -120,6 +120,15 @@ public class Tile implements Location, Identifiable {
 	public static class Xml extends XmlNodeParser {
 	    protected Tile tile;
 	    
+        private final ObjectFromNodeSetter unitSetter = new ObjectFromNodeSetter() {
+            @Override
+            public void set(Identifiable entity) {
+                Unit unit = (Unit)entity;
+                tile.units.add(unit);
+                unit.tile = tile;
+            }
+        };
+	    
 		public Xml(XmlNodeParser parent) {
 			super(parent);
 			
@@ -130,7 +139,8 @@ public class Tile implements Location, Identifiable {
                 }
             }));
 			
-			addNode(new Unit.Xml(this));
+			addNode(Unit.class, unitSetter);
+			
 			addNode(new Colony.Xml(this).addSetter(new ObjectFromNodeSetter() {
                 @Override
                 public void set(Identifiable entity) {

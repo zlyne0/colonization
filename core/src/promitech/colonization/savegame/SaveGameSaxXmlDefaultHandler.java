@@ -21,16 +21,6 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
     
     @Override
     public void startElement(String uri, String localName, String qName, Attributes attributes) throws SAXException {
-        if (xmlNodeParser.getTagName().equals("unit") && qName.equals("unit")) {
-            parsersName.add(qName);
-            parsers.add(xmlNodeParser);
-
-            nodeAttributes.qName = qName;
-            nodeAttributes.attributes = attributes;
-            xmlNodeParser.startElement(nodeAttributes);
-            //xmlNodeParser.addToParent();
-            return;
-        }
         XmlNodeParser parserForTag = xmlNodeParser.parserForTag(qName);
         if (parserForTag == null) {
             nodeAttributes.qName = qName;
