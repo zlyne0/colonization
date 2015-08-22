@@ -6,9 +6,6 @@ import java.util.Locale;
 
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
-
-import org.xml.sax.SAXException;
-
 import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -192,6 +189,9 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 
     public MoveType getMoveType(Tile from, Tile target) {
+		if (from == null || target == null) {
+			return MoveType.MOVE_NO_TILE;
+		}
     	if (isNaval()) {
     		return getNavalMoveType(from, target);
     	} else {
@@ -401,6 +401,63 @@ public class Unit extends ObjectWithFeatures implements Location {
      */
     public boolean isBeached(Tile tile) {
         return isNaval() && tile != null && tile.type.isLand() && !tile.hasSettlement();
+    }
+    
+    public void setState(UnitState s) {
+        if (state == s) {
+            // No need to do anything when the state is unchanged
+            return;
+        } else if (!checkSetState(s)) {
+            throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + s);
+        } else {
+            this.state = s;
+        }
+    }
+    
+    /**
+     * Checks if a <code>Unit</code> can get the given state set.
+     *
+     * @param s The new state for this Unit.  Should be one of
+     *     {UnitState.ACTIVE, FORTIFIED, ...}.
+     * @return True if the <code>Unit</code> state can be changed to
+     *     the new value.
+     */
+    private boolean checkSetState(UnitState s) {
+        if (getState() == s) return false;
+        switch (s) {
+        case ACTIVE:
+            return true;
+        case FORTIFIED:
+            return getState() == UnitState.FORTIFYING;
+        case FORTIFYING:
+            return getMovesLeft() > 0;
+        case IN_COLONY:
+            return !isNaval();
+        case SENTRY:
+            return true;
+        case SKIPPED:
+            return getState() == UnitState.ACTIVE;
+        default:
+            return false;
+        }
+    }
+    
+    public void setStateToAllChildren(UnitState state) {
+        if (containedUnits != null) {
+            for (Unit u : containedUnits) {
+            	u.setState(state);
+            }
+        }
+    }
+    
+    public void setMovesLeft(int moves) {
+        this.movesLeft = (moves < 0) ? 0 : moves;
+    }
+    
+    public void changeLocation(Tile newTileLocation) {
+    	tile.units.removeId(this);
+    	newTileLocation.units.add(this);
+    	this.tile = newTileLocation;
     }
     
     public static class Xml extends XmlNodeParser {

@@ -2,8 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.Set;
 
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -24,7 +22,6 @@ public class Tile implements Location, Identifiable {
 	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	private TileItemContainer tileItemContainer;
-	private final Set<String> exploredByPlayers = new HashSet<String>();
 	
 	public Tile(String id, int x, int y, TileType type, int style) {
 		this.id = id;
@@ -106,9 +103,6 @@ public class Tile implements Location, Identifiable {
 		return null;
 	}
 	
-	public boolean isUnexplored(Player player) {
-		return !exploredByPlayers.contains(player.getId());
-	}
 	
     public boolean isDirectlyHighSeasConnected() {
     	if (moveToEurope) {
@@ -178,7 +172,8 @@ public class Tile implements Location, Identifiable {
 		public void startReadChildren(XmlNodeAttributes attr) {
 			if (attr.isQNameEquals("cachedTile")) {
 				String playerId = attr.getStrAttribute("player");
-				((Tile)nodeObject).exploredByPlayers.add(playerId);
+				Player player = game.players.getById(playerId);
+				player.setTileAsExplored((Tile)nodeObject, game.map);
 			}
 		}
 		

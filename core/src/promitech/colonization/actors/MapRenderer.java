@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GameResources;
+import promitech.colonization.gdx.Frame;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.Gdx;
@@ -38,17 +39,37 @@ public class MapRenderer {
 		public abstract void draw();		
 	}
 	
-	private static class TerainBackgroundTileDrawer extends TileDrawer {
+	private static class TerrainBackgroundTileDrawer extends TileDrawer {
+		private final Frame unexploredFrame;
+		private final Player player;
+		
+		public TerrainBackgroundTileDrawer(GameResources gameResources, Player player) {
+			unexploredFrame = gameResources.unexploredTile(1, 1);
+			this.player = player;
+		}
+		
 		@Override
 		public void draw() {
-			tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
+			if (player.isTileExplored(mapx, mapy)) {
+				tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
+			} else {
+				batch.draw(unexploredFrame.texture, screenPoint.x, screenPoint.y);
+			}
 		}
 	}
 
-	private static class TerainForegroundTileDrawer extends TileDrawer {
+	private static class TerrainForegroundTileDrawer extends TileDrawer {
+		private final Player player;
+		
+		public TerrainForegroundTileDrawer(Player player) {
+			this.player = player;
+		}
+		
 		@Override
 		public void draw() {
-			tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
+			if (player.isTileExplored(mapx, mapy)) {
+				tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
+			}
 		}
 	}
 	
@@ -57,11 +78,11 @@ public class MapRenderer {
 	private final Player playerMap;
 	private final GameResources gameResources;
 	
-    private final TerainBackgroundTileDrawer terainBackgroundTileDrawer = new TerainBackgroundTileDrawer();
-    private final TerainForegroundTileDrawer terainForegroundTileDrawer = new TerainForegroundTileDrawer();
+    private final TerrainBackgroundTileDrawer terrainBackgroundTileDrawer;
+    private final TerrainForegroundTileDrawer terrainForegroundTileDrawer;
     private final RoadsTileDrawer roadsTileDrawer;
     private final ObjectsTileDrawer objectsTileDrawer;
-    private final FogOfWarDrawer fogOfWarDrawer = new FogOfWarDrawer();
+    private final FogOfWarDrawer fogOfWarDrawer;
 
     private final ShapeRenderer shapeRenderer;
     public final Vector2 cameraPosition = new Vector2();
@@ -77,6 +98,9 @@ public class MapRenderer {
 	public MapRenderer(Player playerMap, Map map, MapDrawModel mapDrawModel, 
 			GameResources gameResources, ShapeRenderer shapeRenderer ) 
 	{
+		fogOfWarDrawer = new FogOfWarDrawer(playerMap);
+		terrainForegroundTileDrawer = new TerrainForegroundTileDrawer(playerMap);
+		terrainBackgroundTileDrawer = new TerrainBackgroundTileDrawer(gameResources, playerMap);
 		roadsTileDrawer = new RoadsTileDrawer(gameResources);
 		objectsTileDrawer = new ObjectsTileDrawer(gameResources);
 		
@@ -87,8 +111,8 @@ public class MapRenderer {
     	this.gameResources = gameResources;
     	this.shapeRenderer = shapeRenderer;
         
-    	terainBackgroundTileDrawer.map = map;
-    	terainForegroundTileDrawer.map = map;
+    	terrainBackgroundTileDrawer.map = map;
+    	terrainForegroundTileDrawer.map = map;
     	roadsTileDrawer.map = map;
     	objectsTileDrawer.map = map;
     	fogOfWarDrawer.map = map;
@@ -149,8 +173,8 @@ public class MapRenderer {
     	
     	preparePartOfMapToRender(map);
   
-    	drawLayer(batch, terainBackgroundTileDrawer);
-    	drawLayer(batch, terainForegroundTileDrawer);
+    	drawLayer(batch, terrainBackgroundTileDrawer);
+    	drawLayer(batch, terrainForegroundTileDrawer);
     	drawRoadLayer(batch);
     	drawLayer(batch, objectsTileDrawer);
     	drawFogOfWarLayer(batch);
@@ -186,7 +210,7 @@ public class MapRenderer {
 		return oneUseVector2;
 	}
     
-	private void mapToScreenCords(int x, int y, Vector2 p) {
+	public void mapToScreenCords(int x, int y, Vector2 p) {
         p.x = (TILE_WIDTH * x) + ((y % 2 == 1) ? TILE_HEIGHT : 0);
         p.y = (TILE_HEIGHT / 2) * y;
         
@@ -256,16 +280,16 @@ public class MapRenderer {
 		}
 		Tile tile = mapDrawModel.selectedTile;
 
-    	terainBackgroundTileDrawer.batch = batch;
-    	terainForegroundTileDrawer.batch = batch;
+    	terrainBackgroundTileDrawer.batch = batch;
+    	terrainForegroundTileDrawer.batch = batch;
     	roadsTileDrawer.batch = batch;
 
     	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
 		
-    	drawInfoPanelTile(terainBackgroundTileDrawer, screenX, screenY, tile);
-    	drawInfoPanelTile(terainForegroundTileDrawer, screenX, screenY, tile);
+    	drawInfoPanelTile(terrainBackgroundTileDrawer, screenX, screenY, tile);
+    	drawInfoPanelTile(terrainForegroundTileDrawer, screenX, screenY, tile);
     	
     	if (tile.hasRoad()) {
 	    	batch.end();

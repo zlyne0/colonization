@@ -31,13 +31,13 @@ class ObjectsTileDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (tile.isUnexplored(player)) {
+		if (player.isTileUnExplored(tile)) {
 			return;
 		}
 		
 		drawSettlement();
 		drawTerrainFocus();
-		if (tileDrawModel.isFogOfWar()) {
+		if (player.hasFogOfWar(tile)) {
 			return;
 		}
 		
@@ -45,6 +45,13 @@ class ObjectsTileDrawer extends TileDrawer {
 		if (mapDrawModel.selectedUnit != null) {
 			Tile selectedUnitTile = mapDrawModel.selectedUnit.getTile();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
+				
+				if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(mapDrawModel.selectedUnit)) {
+					if (mapDrawModel.unitDislocationAnimation.nextStep()) {
+						screenPoint.set(mapDrawModel.unitDislocationAnimation.v);
+					}
+				}
+				
 				drawFocus();
 				Frame frame = gameResources.getCenterAdjustFrameTexture(mapDrawModel.selectedUnit.resourceImageKey());
 				drawUnit(mapDrawModel.selectedUnit, frame);

@@ -1,5 +1,6 @@
 package promitech.colonization.actors;
 
+import net.sf.freecol.common.model.Player;
 import promitech.colonization.actors.MapRenderer.TileDrawer;
 
 import com.badlogic.gdx.graphics.Color;
@@ -15,8 +16,10 @@ class FogOfWarDrawer extends TileDrawer {
 
 	PolygonSpriteBatch polyBatch;
 	private PolygonSprite poly;
+	private final Player player;
 	
-	public FogOfWarDrawer() {
+	public FogOfWarDrawer(Player player) {
+		this.player = player;
 		int w = MapRenderer.TILE_WIDTH;
 		int h = MapRenderer.TILE_HEIGHT;
 
@@ -46,7 +49,7 @@ class FogOfWarDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (tileDrawModel.isFogOfWar()) {
+		if (player.hasFogOfWar(mapx, mapy)) {
             poly.setPosition(screenPoint.x, screenPoint.y);
             poly.draw(polyBatch);
 		}

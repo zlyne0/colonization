@@ -76,10 +76,10 @@ public class HudInfoPanel extends Actor {
     	BitmapFont titleFont = FontResource.getInfoPanelTitleFont();
     	
     	String descKey;
-    	if (tile.isUnexplored(mapActor.mapDrawModel().playingPlayer)) {
-    		descKey = "unexplored";
-    	} else {
+    	if (mapActor.mapDrawModel().playingPlayer.isTileExplored(tile.x, tile.y)) {
     		descKey = Messages.nameKey(tile.type.getId());
+    	} else {
+    		descKey = "unexplored";
     	}
     	StringBuilder desc = new StringBuilder(Messages.msg(descKey));
     	

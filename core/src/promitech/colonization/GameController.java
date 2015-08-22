@@ -3,8 +3,11 @@ package promitech.colonization;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.actors.MapDrawModel;
+import promitech.colonization.actors.UnitDislocationAnimation;
+import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimation;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
@@ -12,13 +15,13 @@ import promitech.colonization.math.Point;
 public class GameController {
 
 	private final Game game;
-	
 	private final MapActor mapActor;
 	
 	private final UnitIterator unitIterator;
 	private Unit activeUnit;
 	private boolean viewMode = false;
 	private GameLogic gameLogic = new GameLogic();
+	private boolean blockUserInteraction = false;
 	
 	public GameController(final Game game, MapActor mapActor) {
 		this.game = game;
@@ -28,6 +31,10 @@ public class GameController {
 	}
 
 	public void nextActiveUnit() {
+		if (blockUserInteraction) {
+			return;
+		}
+		
 		if (unitIterator.hasNext()) {
 			activeUnit = unitIterator.next();
 			mapActor.mapDrawModel().selectedUnit = activeUnit;
@@ -38,6 +45,10 @@ public class GameController {
 	}
 
 	public void setViewMode(boolean checked) {
+		if (blockUserInteraction) {
+			return;
+		}
+		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (checked) {
 			viewMode = true;
@@ -59,6 +70,10 @@ public class GameController {
 	}
 
 	public void clickOnTile(Point p) {
+		if (blockUserInteraction) {
+			return;
+		}
+		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
 		if (viewMode) {
@@ -79,33 +94,60 @@ public class GameController {
 	}
 
 	public void pressDirectionKey(Direction direction) {
+		if (blockUserInteraction) {
+			return;
+		}
+		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (viewMode) {
 			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			mapDrawModel.selectedTile = game.map.getTile(x, y);
 			
-			if (mapActor.isPointOnScreenEdge(x, y)) {
+			if (mapActor.isTileOnScreenEdge(mapDrawModel.selectedTile)) {
 				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
 			}
 		} else {
+			if (mapDrawModel.selectedUnit == null) {
+				return;
+			}
 			Unit unit = mapDrawModel.selectedUnit;
-			if (unit == null) {
-				return;
-			}
 			Tile sourceTile = unit.getTile();
-			if (sourceTile == null) {
-				// move MoveType.MOVE_NO_TILE
-				return;
-			}
 			Tile descTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
-			if (descTile == null) {
-				// move MoveType.MOVE_ILLEGAL
-				return;
-			}
+			
 			MoveType moveType = unit.getMoveType(sourceTile, descTile);
-			int moveCost = unit.getMoveCost(sourceTile, descTile, direction, unit.getMovesLeft());
-			System.out.println("moveType = " + moveType + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
+			System.out.println("moveType = " + moveType);
+			
+			if (moveType == MoveType.MOVE) {
+				unit.setState(UnitState.ACTIVE);
+				unit.setStateToAllChildren(UnitState.SENTRY);
+				int moveCost = unit.getMoveCost(sourceTile, descTile, direction, unit.getMovesLeft());
+				System.out.println("moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
+				unit.setMovesLeft(unit.getMovesLeft() - moveCost);
+				
+				unit.changeLocation(descTile);
+				
+				if (mapActor.isTileOnScreenEdge(unit.getTile())) {
+					mapActor.centerCameraOnTile(unit.getTile());
+				}
+				blockUserInteraction = true;
+				mapActor.startUnitDislocationAnimation(
+					unit, 
+					sourceTile, descTile,
+					endOfUnitDislocationAnimation
+				);
+			}
 		}
 	}
+	
+	private UnitDislocationAnimation.EndOfAnimation endOfUnitDislocationAnimation = new EndOfAnimation() {
+		@Override
+		public void end(Unit unit) {
+			blockUserInteraction = false;
+			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
+			if (exloredNewTiles) {
+				mapActor.resetUnexploredBorders();
+			}
+		}
+	};
 }

@@ -19,13 +19,16 @@ import promitech.colonization.gdx.Frame;
 import com.badlogic.gdx.graphics.g2d.Batch;
 
 class TileDrawModel {
-	private LinkedList<Frame> backgroundTerainTextures = new LinkedList<Frame>();
-	private LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
-	private boolean fogOfWar = true;
+	private final LinkedList<Frame> backgroundTerainTextures = new LinkedList<Frame>();
+	private final LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
+	private final LinkedList<Frame> unexploredBorders = new LinkedList<Frame>();
 	Frame settlementImage;
 	
 	public void draw(Batch batch, float rx, float ry) {
 		for (Frame frame : backgroundTerainTextures) {
+			batch.draw(frame.texture, rx, ry);
+		}
+		for (Frame frame : unexploredBorders) {
 			batch.draw(frame.texture, rx, ry);
 		}
 	}
@@ -49,15 +52,22 @@ class TileDrawModel {
 
 	public void addForegroundTerainTexture(Frame frame) {
 		if (frame == null) {
-			throw new NullPointerException();
+			throw new IllegalArgumentException("frame should not be null");
 		}
 		foregroundTerainTextures.add(frame);
 	}
 
+	public void addUnexploredBorders(Frame frame) {
+		unexploredBorders.add(frame);
+	}
+	
 	public void clear() {
 		backgroundTerainTextures.clear();
 		foregroundTerainTextures.clear();
-		fogOfWar = true;
+	}
+
+	public void resetUnexploredBorders() {
+		unexploredBorders.clear();
 	}
 	
 	public String toString() {
@@ -69,13 +79,7 @@ class TileDrawModel {
 		return sb.toString() + ", foregroundTerains: " + foregroundTerainTextures.size();
 	}
 
-	public boolean isFogOfWar() {
-		return fogOfWar;
-	}
 
-	public void withoutFogOfWar() {
-		this.fogOfWar = false;
-	}
 }
 
 class TileDrawModelInitializer {
@@ -88,13 +92,14 @@ class TileDrawModelInitializer {
 	private Tile borderTile;
 	private TileDrawModel tileDrawModel;
 	private TileDrawModel borderTileDrawModel;
-	private MapDrawModel mapDrawModel;
+	private final MapDrawModel mapDrawModel;
 	
 	private SpiralIterator spiralIterator;
 	
 	private Frame frame;
 	
-	public TileDrawModelInitializer(Map map, Player player, GameResources gameResources) {
+	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Map map, Player player, GameResources gameResources) {
+		this.mapDrawModel = mapDrawModel;
 		this.map = map;
 		this.player = player;
 		this.gameResources = gameResources;
@@ -106,9 +111,7 @@ class TileDrawModelInitializer {
 		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
-	public void initMapTiles(MapDrawModel mapDrawModel) {
-		this.mapDrawModel = mapDrawModel;
-		
+	public void initMapTiles() {
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
 				tile = map.getTile(x, y);
@@ -120,9 +123,6 @@ class TileDrawModelInitializer {
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
 				tile = map.getTile(x, y);
-				if (tile.isUnexplored(player)) {
-					continue;
-				}
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				
 	            for (Direction direction : Direction.values()) {
@@ -144,10 +144,13 @@ class TileDrawModelInitializer {
 			}
 		}
 		
+		player.resetFogOfWar(map);
 		fogOfWarForUnits();
 		fogOfWarForSettlements();
+		initBordersForUnexploredTiles();
 	}
 
+	
 	private void fogOfWarForSettlements() {
 		for (Settlement settlement : player.settlements.entities()) {
 			x = settlement.tile.x;
@@ -159,30 +162,48 @@ class TileDrawModelInitializer {
 
 	private void fogOfWarForUnits() {
 		for (Unit unit : player.units.entities()) {
-			int radius = unit.lineOfSight();
-			x = unit.getTile().x;
-			y = unit.getTile().y;
-			initFogOfWarForNeighboursTiles(radius);
+			removeFogOfWarForUnit(unit);
 		}
 	}
 
+	private void removeFogOfWarForUnit(Unit unit) {
+		int radius = unit.lineOfSight();
+		x = unit.getTile().x;
+		y = unit.getTile().y;
+		initFogOfWarForNeighboursTiles(radius);
+	}
+	
 	private void initFogOfWarForNeighboursTiles(int radius) {
-		TileDrawModel t = mapDrawModel.getTileDrawModel(x, y);;
-		t.withoutFogOfWar();
+		player.removeFogOfWar(x, y, map);
 		spiralIterator.reset(x, y, true, radius);
 		while (spiralIterator.hasNext()) {
-			t = mapDrawModel.getTileDrawModel(spiralIterator.getX(), spiralIterator.getY());
-			t.withoutFogOfWar();
+			player.removeFogOfWar(spiralIterator.getX(), spiralIterator.getY(), map);
 			spiralIterator.next();
 		}
 	}
 	
-	private void renderTerainAndBeaches() {
-		if (tile.isUnexplored(player)) {
-			frame = gameResources.unexploredTile(x, y);
-			tileDrawModel.addBackgroundTerainTexture(frame);
-			return;
+	public void initBordersForUnexploredTiles() {
+		for (y=0; y<map.height; y++) {
+			for (x=0; x<map.width; x++) {
+				tile = map.getTile(x, y);
+				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
+				tileDrawModel.resetUnexploredBorders();
+				
+				for (Direction direction : Direction.values()) {
+					borderTile = map.getTile(x, y, direction);
+					if (borderTile == null) {
+						continue;
+					}
+					if (!player.isTileExplored(borderTile.x, borderTile.y)) {
+						frame = gameResources.unexploredBorder(direction, x, y);
+						tileDrawModel.addUnexploredBorders(frame);
+					}
+				}
+			}
 		}
+	}
+	
+	private void renderTerainAndBeaches() {
 		
 		frame = gameResources.tile(tile.type, x, y);
 		tileDrawModel.addBackgroundTerainTexture(frame);
@@ -203,11 +224,6 @@ class TileDrawModelInitializer {
 	}
 	
 	private void renderBordersAndRivers(Direction direction) {
-		if (borderTile.isUnexplored(player)) {
-			frame = gameResources.unexploredBorder(direction, x, y);
-			tileDrawModel.addBackgroundTerainTexture(frame);
-			return;
-		}
 		
 		if (tile.type.hasTheSameTerain(borderTile.type)) {
 			return;
@@ -240,9 +256,6 @@ class TileDrawModelInitializer {
 	}
 	
 	private void renderResources() {
-		if (tile.isUnexplored(player)) {
-			return;
-		}
 		
 		if (tile.isPlowed()) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.plowed());
@@ -290,6 +303,7 @@ public class MapDrawModel {
 	public Tile selectedTile;
 	public Unit selectedUnit;
 	public Player playingPlayer;
+	public final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {
 		this.playingPlayer = player;
@@ -314,8 +328,8 @@ public class MapDrawModel {
 			}
 		}
 
-		TileDrawModelInitializer initializer = new TileDrawModelInitializer(map, player, gameResources);
-		initializer.initMapTiles(this);
+		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, map, player, gameResources);
+		initializer.initMapTiles();
 	}
 
 	public TileDrawModel getTileDrawModel(int x, int y, Direction direction) {
@@ -336,6 +350,9 @@ public class MapDrawModel {
 	public boolean isCoordinateValid(int x, int y) {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}
-	
-	
+
+	public void resetUnexploredBorders(Map map, GameResources gameResources) {
+		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, map, playingPlayer, gameResources);
+		initializer.initBordersForUnexploredTiles();
+	}
 }

@@ -2,8 +2,10 @@ package promitech.colonization.actors;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameController;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimation;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -16,14 +18,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class MapActor extends Actor {
 
+	private final GameResources gameResources;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
+	private final Game game;
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	private GameController gameController;
 	
 	public MapActor(final Game game, GameResources gameResources) {
+		this.game = game;
+		this.gameResources = gameResources;
+		
 		addListener(new InputListener() {
 			private boolean pressed = false;
 			private final Vector2 v = new Vector2();
@@ -80,6 +87,10 @@ public class MapActor extends Actor {
 		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
 	}
 	
+	public void resetUnexploredBorders() {
+		mapDrawModel.resetUnexploredBorders(game.map, gameResources);
+	}
+	
 	@Override
 	public void act(float delta) {
 		super.act(delta);
@@ -108,8 +119,8 @@ public class MapActor extends Actor {
 		return mapRenderer.getCenterOfScreen();
 	}
 	
-	public boolean isPointOnScreenEdge(int px, int py) {
-		return mapRenderer.isPointOnScreenEdge(px, py);
+	public boolean isTileOnScreenEdge(Tile tile) {
+		return mapRenderer.isPointOnScreenEdge(tile.x, tile.y);
 	}
 
 	public void drawSelectedTile(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
@@ -124,4 +135,12 @@ public class MapActor extends Actor {
 		this.gameController = gameController;
 	}
 
+	public void startUnitDislocationAnimation(
+			Unit unit, 
+			Tile sourceTile, Tile descTile, 
+			EndOfAnimation endOfUnitDislocationAnimation) 
+	{
+		mapDrawModel.unitDislocationAnimation.init(mapRenderer, unit, sourceTile, descTile);
+		mapDrawModel.unitDislocationAnimation.addEndOfAnimation(endOfUnitDislocationAnimation);
+	}
 }
