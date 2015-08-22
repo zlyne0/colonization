@@ -10,6 +10,13 @@ public class TileImprovementType implements Identifiable {
 	
 	public final String id;
 	
+	private int movementCost = 0;	
+	
+	@Override
+	public String getId() {
+		return id;
+	}
+	
 	public TileImprovementType(String id) {
 		this.id = id;
 	}
@@ -25,17 +32,24 @@ public class TileImprovementType implements Identifiable {
     public boolean isPlowed() {
     	return PLOWED_IMPROVEMENT_TYPE_ID.equals(id);
     }
-    
-    public String getId() {
-        return id;
-    }
 	
+    public int getMoveCost(int originalCost) {
+        if (movementCost > 0 && movementCost < originalCost) {
+            return movementCost;
+        } else {
+            return originalCost;
+        }
+    }
+    
 	public static class Xml extends XmlNodeParser {
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String id = attr.getStrAttribute("id");
-			nodeObject = new TileImprovementType(id);
+			TileImprovementType entity = new TileImprovementType(id);
+			entity.movementCost = attr.getIntAttribute("movement-cost", 0);
+			
+			nodeObject = entity;
 		}
 
 		@Override

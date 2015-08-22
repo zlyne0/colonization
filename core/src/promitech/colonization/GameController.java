@@ -104,7 +104,8 @@ public class GameController {
 				return;
 			}
 			MoveType moveType = unit.getMoveType(sourceTile, descTile);
-			System.out.println("moveType = " + moveType);
+			int moveCost = unit.getMoveCost(sourceTile, descTile, direction, unit.getMovesLeft());
+			System.out.println("moveType = " + moveType + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		}
 	}
 }

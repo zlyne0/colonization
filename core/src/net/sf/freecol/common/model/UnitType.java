@@ -125,6 +125,10 @@ public class UnitType extends ObjectWithFeatures {
 		return spaceTaken;
 	}
     
+    public int getMovement() {
+    	return movement;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);

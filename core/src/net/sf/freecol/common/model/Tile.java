@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -117,6 +118,13 @@ public class Tile implements Location, Identifiable {
     	}
     }
 	
+    public int getMoveCost(Direction moveDirection, int basicMoveCost) {
+    	if (tileItemContainer == null) {
+    		return basicMoveCost;
+    	}
+    	return tileItemContainer.getMoveCost(moveDirection, basicMoveCost);
+    }
+    
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {

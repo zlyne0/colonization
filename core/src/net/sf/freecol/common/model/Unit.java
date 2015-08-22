@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 
 import org.xml.sax.SAXException;
 
+import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -348,6 +349,58 @@ public class Unit extends ObjectWithFeatures implements Location {
         } else {
             return MoveType.MOVE_ILLEGAL; // should not happen
         }
+    }
+    
+    /**
+     * Gets the cost of moving this <code>Unit</code> from the given
+     * <code>Tile</code> onto the given <code>Tile</code>. A call to
+     * {@link #getMoveType(Tile, Tile, int)} will return
+     * <code>MOVE_NO_MOVES</code>, if {@link #getMoveCost} returns a move cost
+     * larger than the {@link #getMovesLeft moves left}.
+     *
+     * @param from The <code>Tile</code> this <code>Unit</code> will move
+     *            from.
+     * @param target The <code>Tile</code> this <code>Unit</code> will move
+     *            onto.
+     * @param movesLeft The amount of moves this Unit has left.
+     * @return The cost of moving this unit onto the given <code>Tile</code>.
+     */
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection, int movesLeft) {
+        // Remember to also change map.findPath(...) if you change anything
+        // here.
+
+        int cost = target.type.getBasicMoveCost();
+        if (target.type.isLand() && !isNaval()) {
+        	cost = target.getMoveCost(moveDirection, cost);
+        }
+
+        if (isBeached(from)) {
+            // Ship on land due to it was in a colony which was abandoned
+            cost = movesLeft;
+        } else if (cost > movesLeft) {
+            // Using +2 in order to make 1/3 and 2/3 move count as
+            // 3/3, only when getMovesLeft > 0
+            if ((movesLeft + 2 >= getInitialMovesLeft() 
+            		|| cost <= movesLeft + 2
+            		|| target.hasSettlement()) && movesLeft != 0) {
+                cost = movesLeft;
+            }
+        }
+        return cost;
+    }
+    
+    public int getInitialMovesLeft() {
+    	return (int)unitType.applyModifier(Modifier.MOVEMENT_BONUS, unitType.getMovement());
+    }
+    
+    /**
+     * Would this unit be beached if it was on a particular tile?
+     *
+     * @param tile The <code>Tile</code> to check.
+     * @return True if the unit is a beached ship.
+     */
+    public boolean isBeached(Tile tile) {
+        return isNaval() && tile != null && tile.type.isLand() && !tile.hasSettlement();
     }
     
     public static class Xml extends XmlNodeParser {

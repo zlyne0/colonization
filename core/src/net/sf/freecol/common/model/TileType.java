@@ -11,6 +11,7 @@ public final class TileType extends ObjectWithFeatures {
 	private static final String HIGH_SEAS = "model.tile.highSeas";
 	
 	boolean isForest;
+	private int basicMoveCost;
 	
 	public TileType(String id, boolean isForest) {
 		super(id);
@@ -49,6 +50,10 @@ public final class TileType extends ObjectWithFeatures {
         return hasAbility(Ability.MOVE_TO_EUROPE);
     }
 	
+    public int getBasicMoveCost() {
+    	return basicMoveCost;
+    }
+    
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);
@@ -59,7 +64,11 @@ public final class TileType extends ObjectWithFeatures {
         public void startElement(XmlNodeAttributes attr) {
 			String id = attr.getStrAttribute("id");
 			boolean isForest = attr.getBooleanAttribute("is-forest");
-			nodeObject = new TileType(id, isForest);
+			
+			TileType tileType = new TileType(id, isForest);
+			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
+			
+			nodeObject = tileType; 
 		}
 
 		@Override
