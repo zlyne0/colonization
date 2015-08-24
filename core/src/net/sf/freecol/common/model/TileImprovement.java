@@ -40,10 +40,6 @@ public class TileImprovement implements Identifiable {
 	
 	public static class Xml extends XmlNodeParser {
 
-	    public Xml(XmlNodeParser parent) {
-			super(parent);
-		}
-
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String typeStr = attr.getStrAttribute("type");

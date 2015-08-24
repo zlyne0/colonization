@@ -26,9 +26,8 @@ public class Game implements Identifiable {
 		public Game game = new Game();
 		
 		public Xml(Specification defaultSpecification) {
-			super(null);
-			addNode(new Specification.Xml(this));
-			addNode(new Map.Xml(this));
+			addNode(new Specification.Xml());
+			addNode(new Map.Xml());
 			addNodeForMapIdEntities("players", Player.class);
 			
 			game.specification = defaultSpecification;

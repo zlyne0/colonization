@@ -16,9 +16,6 @@ public class ResourceType implements Identifiable {
 	}
 	
 	public static class Xml extends XmlNodeParser {
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
@@ -28,7 +25,11 @@ public class ResourceType implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "resource-type";
+		    return tagName();
+		}
+		
+		public static String tagName() {
+		    return "resource-type";
 		}
 	}
 }

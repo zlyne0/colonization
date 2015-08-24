@@ -34,9 +34,7 @@ public class Specification implements Identifiable {
     }
     
 	public static class Xml extends XmlNodeParser {
-		public Xml(Game.Xml parent) {
-			super(parent);
-			
+		public Xml() {
 			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
             addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
             addNodeForMapIdEntities("tileimprovement-types", "tileImprovementTypes", TileImprovementType.class);

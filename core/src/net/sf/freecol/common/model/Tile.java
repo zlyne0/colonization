@@ -118,45 +118,35 @@ public class Tile implements Location, Identifiable {
     }
 	
 	public static class Xml extends XmlNodeParser {
-	    protected Tile tile;
 	    
-        private final ObjectFromNodeSetter unitSetter = new ObjectFromNodeSetter() {
-            @Override
-            public void set(Identifiable entity) {
-                Unit unit = (Unit)entity;
-                tile.units.add(unit);
-                unit.tile = tile;
-            }
-        };
-	    
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-			
-			addNode(new TileItemContainer.Xml(this).addSetter(new ObjectFromNodeSetter() {
+		public Xml() {
+		    addNode(TileItemContainer.class, new ObjectFromNodeSetter<Tile,TileItemContainer>() {
                 @Override
-                public void set(Identifiable entity) {
-                    ((Tile)nodeObject).tileItemContainer = (TileItemContainer)entity;
+                public void set(Tile target, TileItemContainer entity) {
+                    target.tileItemContainer = entity;
                 }
-            }));
-			
-			addNode(Unit.class, unitSetter);
-			
-			addNode(new Colony.Xml(this).addSetter(new ObjectFromNodeSetter() {
+            });
+			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
+	            @Override
+	            public void set(Tile target, Unit entity) {
+	                target.units.add(entity);
+	                entity.tile = target;
+	            }
+	        });
+			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {
                 @Override
-                public void set(Identifiable entity) {
-                    Colony colony = (Colony)entity;
-                    ((Tile)nodeObject).settlement = colony;
-                    colony.tile = (Tile)nodeObject;
+                public void set(Tile target, Colony entity) {
+                    target.settlement = entity;
+                    entity.tile = target;
                 }
-            }));
-            addNode(new IndianSettlement.Xml(this).addSetter(new ObjectFromNodeSetter() {
+            });
+            addNode(IndianSettlement.class, new ObjectFromNodeSetter<Tile,IndianSettlement>() {
                 @Override
-                public void set(Identifiable entity) {
-                    IndianSettlement is = (IndianSettlement)entity;
-                    ((Tile)nodeObject).settlement = is;
-                    is.tile = ((Tile)nodeObject);
+                public void set(Tile target, IndianSettlement entity) {
+                    target.settlement = entity;
+                    entity.tile = target;
                 }
-            }));
+            });
 		}
 
 		@Override
@@ -169,7 +159,7 @@ public class Tile implements Location, Identifiable {
 			String idStr = attr.getStrAttribute("id");
 			
 			TileType tileType = game.specification.tileTypes.getById(tileTypeStr);
-			tile = new Tile(idStr, x, y, tileType, tileStyle);
+			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
 			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
 			
@@ -180,13 +170,17 @@ public class Tile implements Location, Identifiable {
 		public void startReadChildren(XmlNodeAttributes attr) {
 			if (attr.isQNameEquals("cachedTile")) {
 				String playerId = attr.getStrAttribute("player");
-				tile.exploredByPlayers.add(playerId);
+				((Tile)nodeObject).exploredByPlayers.add(playerId);
 			}
 		}
 		
 		@Override
 		public String getTagName() {
-			return "tile";
+			return tagName();
+		}
+		
+		public static String tagName() {
+		    return "tile";
 		}
 	}
 }

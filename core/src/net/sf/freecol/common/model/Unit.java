@@ -352,25 +352,19 @@ public class Unit extends ObjectWithFeatures implements Location {
     
     public static class Xml extends XmlNodeParser {
         
-        private final ObjectFromNodeSetter unitOnUnitSetter = new ObjectFromNodeSetter() {
-            @Override
-            public void set(Identifiable entity) {
-                Unit actualUnit = (Unit)nodeObject;
-                Unit newUnit = (Unit)entity;
-                
-                if (actualUnit.containedUnits == null) {
-                    actualUnit.containedUnits = new ArrayList<Unit>();
+        public Xml() {
+            addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
+                @Override
+                public void set(Unit actualUnit, Unit newUnit) {
+                    if (actualUnit.containedUnits == null) {
+                        actualUnit.containedUnits = new ArrayList<Unit>();
+                    }
+                    newUnit.tile = actualUnit.tile;
+                    actualUnit.containedUnits.add(newUnit);
                 }
-                newUnit.tile = actualUnit.tile;
-                actualUnit.containedUnits.add(newUnit);
-            }
-        };
-        
-        public Xml(XmlNodeParser parent) {
-            super(parent);
-            addNode(Unit.class, unitOnUnitSetter);
-            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
-            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
+            });
+            addNodeForMapIdEntities("modifiers", Modifier.class);
+            addNodeForMapIdEntities("abilities", Ability.class);
         }
 
         @Override

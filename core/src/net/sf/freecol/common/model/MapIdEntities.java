@@ -6,6 +6,7 @@ import java.util.HashMap;
 import promitech.colonization.savegame.MapIdEntitySetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.savegame.XmlTagMetaData;
 
 public class MapIdEntities<T extends Identifiable> {
     private java.util.Map<String,T> entities = new HashMap<String,T>();
@@ -63,33 +64,31 @@ public class MapIdEntities<T extends Identifiable> {
         private final XmlNodeParser entityXmlParser;
         private final MapIdEntitySetter entitySetter;
         
-        public Xml(XmlNodeParser parent, String wrapperTagName, String targetFieldName, Class<? extends Identifiable> entityClass) {
-            super(parent);
+        public Xml(String wrapperTagName, String targetFieldName, Class<? extends Identifiable> entityClass) {
             this.withWrapperTag = true;
 
-            entityXmlParser = entityXmlParser(entityClass, this);
+            entityXmlParser = new XmlTagMetaData(entityClass, null).createXmlParser();
             this.tagName = wrapperTagName;
             
-            entitySetter = new MapIdEntitySetter(parent, targetFieldName);
+            entitySetter = new MapIdEntitySetter(targetFieldName);
             entityXmlParser.addSetter(entitySetter);
             addNode(entityXmlParser);
         }
         
-        public Xml(XmlNodeParser parent, String targetFieldName, Class<? extends Identifiable> entityClass) {
-            super(parent);
+        public Xml(String targetFieldName, Class<? extends Identifiable> entityClass) {
             this.withWrapperTag = false;
             
-            entityXmlParser = entityXmlParser(entityClass, parent);
+            entityXmlParser = new XmlTagMetaData(entityClass, null).createXmlParser();
             this.tagName = entityXmlParser.getTagName();
             
-            entitySetter = new MapIdEntitySetter(parent, targetFieldName);
+            entitySetter = new MapIdEntitySetter(targetFieldName);
             entityXmlParser.addSetter(entitySetter);
             addAllNodes(entityXmlParser);
         }
         
-        public void addToParent() {
+        public void addToParent(XmlNodeParser parentXmlParser) {
             if (!withWrapperTag) {
-                entityXmlParser.addToParent();
+                entityXmlParser.addToParent(parentXmlParser);
             }
         }
         
@@ -101,6 +100,14 @@ public class MapIdEntities<T extends Identifiable> {
             }
         }
 
+        public void setMap(XmlNodeParser parentXmlParser) {
+            if (withWrapperTag) {
+                nodeObject = parentXmlParser.nodeObject;
+            } else {
+                nodeObject = entityXmlParser.nodeObject;
+            }
+        }
+        
         @Override
         public String getTagName() {
             return tagName;

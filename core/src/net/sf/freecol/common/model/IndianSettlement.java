@@ -37,10 +37,6 @@ public class IndianSettlement extends Settlement {
 
     public static class Xml extends XmlNodeParser {
 
-        public Xml(XmlNodeParser parent) {
-            super(parent);
-        }
-
         @Override
         public void startElement(XmlNodeAttributes attr) {
             IndianSettlement is = new IndianSettlement();
@@ -56,6 +52,10 @@ public class IndianSettlement extends Settlement {
 
         @Override
         public String getTagName() {
+            return tagName();
+        }
+        
+        public static String tagName() {
             return "indianSettlement";
         }
     }

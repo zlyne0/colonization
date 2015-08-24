@@ -65,9 +65,6 @@ public class UnitTypeChange implements Identifiable {
 	}
     
 	public static class Xml extends XmlNodeParser {
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
@@ -90,7 +87,11 @@ public class UnitTypeChange implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "upgrade";
+		    return tagName();
+		}
+		
+		public static String tagName() {
+		    return "upgrade";
 		}
 	}
 }

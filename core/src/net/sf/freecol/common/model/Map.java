@@ -5,14 +5,16 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Map {
+public class Map extends ObjectWithId {
 
 	public final int width;
 	public final int height;
 	
 	private final Tile[][] tiles;
 	
-	public Map(int width, int height) {
+	public Map(String id, int width, int height) {
+	    super(id);
+	    
 		this.width = width;
 		this.height = height;
 		
@@ -29,7 +31,7 @@ public class Map {
 		}
 		Tile tile = tiles[y][x];
 		if (tile == null) {
-			throw new RuntimeException("not implementd, shoud return empty tile or default");
+			throw new RuntimeException("not implementd, should return empty tile or default");
 		}
 		return tile;
 	}
@@ -47,27 +49,25 @@ public class Map {
 	}
 
 	public static class Xml extends XmlNodeParser {
-		private Map map;
 		
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-			
-			addNode(new Tile.Xml(this).addSetter(new ObjectFromNodeSetter() {
+		public Xml() {
+			addNode(Tile.class, new ObjectFromNodeSetter<Map,Tile>() {
                 @Override
-                public void set(Identifiable entity) {
+                public void set(Map target, Tile entity) {
                     Tile tile = (Tile)entity;
-                    map.createTile(tile.x, tile.y, tile);
+                    target.createTile(tile.x, tile.y, tile);
                 }
-            }));
+            });
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
+		    String idStr = attr.getStrAttribute("id");
 			int width = attr.getIntAttribute("width");
 			int height = attr.getIntAttribute("height");
-			map = new Map(width, height);
-			
+			Map map = new Map(idStr, width, height);
 			game.map = map;
+			nodeObject = map;
 		}
 
 		@Override

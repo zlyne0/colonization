@@ -8,8 +8,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class EuropeanNationType extends NationType {
 
     public static class Xml extends XmlNodeParser {
-        public Xml(XmlNodeParser parent) {
-            super(parent);
+        public Xml() {
             addNodeForMapIdEntities("settlementTypes", SettlementType.class);
         }
         
@@ -23,6 +22,10 @@ public class EuropeanNationType extends NationType {
         
         @Override
         public String getTagName() {
+            return tagName();
+        }
+        
+        public static String tagName() {
             return "european-nation-type";
         }
     }

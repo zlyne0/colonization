@@ -126,11 +126,10 @@ public class UnitType extends ObjectWithFeatures {
 	}
     
     public static class Xml extends XmlNodeParser {
-        public Xml(XmlNodeParser parent) {
-            super(parent);
+        public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
-            addNode(new MapIdEntities.Xml(this, "unitTypeChanges", UnitTypeChange.class));
+            addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
         }
 
         @Override
@@ -156,6 +155,10 @@ public class UnitType extends ObjectWithFeatures {
 
         @Override
         public String getTagName() {
+            return tagName();
+        }
+        
+        public static String tagName() {
             return "unit-type";
         }
     }

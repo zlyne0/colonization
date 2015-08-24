@@ -50,4 +50,14 @@ public class XmlNodeAttributes {
         }
         return Enum.valueOf(enumClass, val.toUpperCase());
     }
+    
+    public String toString() {
+        String st = "";
+        for (int i=0; i<attributes.getLength(); i++) {
+            st += "[";
+            st += attributes.getQName(i) + " = " + attributes.getValue(i);
+            st += "], ";
+        }
+        return "qName = " + qName + ", attributes = {" + st + "}"; 
+    }
 }

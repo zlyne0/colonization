@@ -434,10 +434,7 @@ public final class Ability implements Identifiable {
     }
 
     public static class Xml extends XmlNodeParser {
-        public Xml(XmlNodeParser parent) {
-            super(parent);
-        }
-
+        
         @Override
         public void startElement(XmlNodeAttributes attr) {
         	Ability a = new Ability(attr.getStrAttribute("id"));

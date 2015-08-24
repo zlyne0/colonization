@@ -31,9 +31,6 @@ public class Nation implements Identifiable {
 	}
 	
 	public static class Xml extends XmlNodeParser {
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-		}
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
@@ -51,9 +48,12 @@ public class Nation implements Identifiable {
 		
 		@Override
 		public String getTagName() {
-			return "nation";
+		    return tagName();
 		}
 		
+        public static String tagName() {
+            return "nation";
+        }
 	}
 
 }

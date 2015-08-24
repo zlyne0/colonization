@@ -28,11 +28,9 @@ public class UnitRole extends ObjectWithFeatures {
     }
 	
 	public static class Xml extends XmlNodeParser {
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-			
-            addNode(new MapIdEntities.Xml(this, "modifiers", Modifier.class));
-            addNode(new MapIdEntities.Xml(this, "abilities", Ability.class));
+		public Xml() {
+            addNodeForMapIdEntities("modifiers", Modifier.class);
+            addNodeForMapIdEntities("abilities", Ability.class);
 		}
 
 		@Override
@@ -43,7 +41,11 @@ public class UnitRole extends ObjectWithFeatures {
 
 		@Override
 		public String getTagName() {
-			return "role";
+		    return tagName();
 		}
+		
+        public static String tagName() {
+            return "role";
+        }
 	}
 }

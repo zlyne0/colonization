@@ -31,9 +31,6 @@ public class TileImprovementType implements Identifiable {
     }
 	
 	public static class Xml extends XmlNodeParser {
-		public Xml(XmlNodeParser parent) {
-			super(parent);
-		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
@@ -43,8 +40,12 @@ public class TileImprovementType implements Identifiable {
 
 		@Override
 		public String getTagName() {
-			return "tileimprovement-type";
+		    return tagName();
 		}
+		
+        public static String tagName() {
+            return "tileimprovement-type";
+        }
 	}
 }
 

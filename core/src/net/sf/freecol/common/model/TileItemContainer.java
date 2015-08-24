@@ -18,8 +18,7 @@ public class TileItemContainer implements Identifiable {
     
     public static class Xml extends XmlNodeParser {
         
-        public Xml(XmlNodeParser parent) {
-            super(parent);
+        public Xml() {
             addNodeForMapIdEntities("improvements", TileImprovement.class);
             addNodeForMapIdEntities("resources", TileResource.class);
             addNodeForMapIdEntities("lostCityRumours", LostCityRumour.class);
@@ -34,6 +33,10 @@ public class TileItemContainer implements Identifiable {
         
         @Override
         public String getTagName() {
+            return tagName();
+        }
+
+        public static String tagName() {
             return "tileitemcontainer";
         }
         

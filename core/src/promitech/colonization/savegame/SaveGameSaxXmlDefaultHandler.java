@@ -2,6 +2,8 @@ package promitech.colonization.savegame;
 
 import java.util.LinkedList;
 
+import net.sf.freecol.common.model.MapIdEntities;
+
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
@@ -28,6 +30,8 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
             xmlNodeParser.startReadChildren(nodeAttributes);
             return;
         }
+        XmlNodeParser parentXmlParser = xmlNodeParser;
+        
         parsersName.add(qName);
         parsers.add(parserForTag);
         xmlNodeParser = parserForTag;
@@ -35,7 +39,14 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         nodeAttributes.qName = qName;
         nodeAttributes.attributes = attributes;
         xmlNodeParser.startElement(nodeAttributes);
-        //xmlNodeParser.addToParent();
+        if (xmlNodeParser instanceof MapIdEntities.Xml) {
+            ((MapIdEntities.Xml)xmlNodeParser).setMap(parentXmlParser);
+        }
+        if (xmlNodeParser.nodeObject == null) {
+            System.out.println("parsersName = " + parsersName);
+            throw new IllegalArgumentException("parser nodeObject is null for tag: " + xmlNodeParser.getTagName() + ", xml parser: " + xmlNodeParser.getClass() + ", attributes: " + nodeAttributes); 
+        }
+        xmlNodeParser.addToParent(parentXmlParser);
     }
     
     @Override
@@ -43,7 +54,6 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         try {
             if (parsersName.size() > 0 && parsersName.getLast().equals(qName)) {
                 xmlNodeParser.endElement(uri, localName, qName);
-                xmlNodeParser.addToParent();
                 
                 parsersName.removeLast();
                 parsers.removeLast();
