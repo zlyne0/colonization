@@ -33,7 +33,6 @@ public class Unit extends ObjectWithFeatures implements Location {
 	private Player owner;
     private UnitType unitType;
     private UnitRole unitRole;
-    public List<Unit> containedUnits;
     Tile tile;
 
     private UnitState state = UnitState.ACTIVE;
@@ -42,7 +41,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
     
-    private final UnitLocation unitLocation = new UnitLocation();
+    private UnitLocation unitLocation = null;
     
     public Unit(String id) {
     	super(id);
@@ -50,13 +49,6 @@ public class Unit extends ObjectWithFeatures implements Location {
     
     public String toString() {
         String st = "unitType = " + unitType;
-        if (containedUnits != null) {
-            st += ", contains[";
-            for (Unit u : containedUnits) {
-                st += u.unitType + ", "; 
-            }
-            st += "]";
-        }
         return st;
     }
     
@@ -254,7 +246,7 @@ public class Unit extends ObjectWithFeatures implements Location {
                 return MoveType.MOVE_NO_ACCESS_EMBARK;
             }
             for (Unit u : target.units.entities()) {
-                if (u.unitLocation.canAdd(this)) {
+                if (u.unitLocation != null && u.unitLocation.canAdd(this)) {
                 	return MoveType.EMBARK;
                 }
             }
@@ -443,10 +435,8 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public void setStateToAllChildren(UnitState state) {
-        if (containedUnits != null) {
-            for (Unit u : containedUnits) {
-            	u.setState(state);
-            }
+        if (unitLocation != null) {
+            unitLocation.setStateToAllChildren(state);
         }
     }
     
@@ -459,6 +449,10 @@ public class Unit extends ObjectWithFeatures implements Location {
     	newTileLocation.units.add(this);
     	this.tile = newTileLocation;
     }
+
+    public UnitLocation getUnitLocation() {
+        return unitLocation;
+    }
     
     public static class Xml extends XmlNodeParser {
         
@@ -466,11 +460,11 @@ public class Unit extends ObjectWithFeatures implements Location {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                    if (actualUnit.containedUnits == null) {
-                        actualUnit.containedUnits = new ArrayList<Unit>();
+                    if (actualUnit.unitLocation == null) {
+                        actualUnit.unitLocation = new UnitLocation();
                     }
                     newUnit.tile = actualUnit.tile;
-                    actualUnit.containedUnits.add(newUnit);
+                    actualUnit.unitLocation.addUnit(newUnit);
                 }
             });
             addNodeForMapIdEntities("modifiers", Modifier.class);

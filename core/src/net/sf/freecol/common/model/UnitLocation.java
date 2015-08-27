@@ -1,5 +1,9 @@
 package net.sf.freecol.common.model;
 
+import java.util.Collection;
+
+import net.sf.freecol.common.model.Unit.UnitState;
+
 enum NoAddReason {
     /**
      * No reason why Locatable can not be added.
@@ -63,7 +67,7 @@ enum NoAddReason {
     CLAIM_REQUIRED,
 }
 
-class UnitLocation {
+public class UnitLocation {
 	private MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	private int spaceTaken = 0;
 	
@@ -71,6 +75,10 @@ class UnitLocation {
         return getNoAddReason(unit) == NoAddReason.NONE;
     }
 	
+    public void addUnit(Unit unit) {
+        this.units.add(unit);
+    }
+    
     public NoAddReason getNoAddReason(Unit unit) {
         return (unit == null)
             ? NoAddReason.WRONG_TYPE
@@ -82,8 +90,18 @@ class UnitLocation {
             ? NoAddReason.CAPACITY_EXCEEDED
             : NoAddReason.NONE;
     }
+
+    public void setStateToAllChildren(UnitState state) {
+        for (Unit u : units.entities()) {
+            u.setState(state);
+        }
+    }
     
     public int getUnitCapacity() {
         return Integer.MAX_VALUE; // ;-)
+    }
+
+    public MapIdEntities<Unit> getUnits() {
+        return units;
     }
 }

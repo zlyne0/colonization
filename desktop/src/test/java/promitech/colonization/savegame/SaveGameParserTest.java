@@ -2,11 +2,8 @@ package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitType;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -45,7 +42,7 @@ public class SaveGameParserTest {
         Unit tileUnit = tile.units.getById("unit:6449");
         assertNotNull(tileUnit);
         
-        Unit unit = tileUnit.containedUnits.get(0);
+        Unit unit = tileUnit.getUnitLocation().getUnits().first();
         assertNotNull(unit);
         assertEquals("unit:7049", unit.getId());
     }
