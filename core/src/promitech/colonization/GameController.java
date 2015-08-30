@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
@@ -37,7 +38,7 @@ public class GameController {
 		
 		if (unitIterator.hasNext()) {
 			activeUnit = unitIterator.next();
-			mapActor.mapDrawModel().selectedUnit = activeUnit;
+			mapActor.mapDrawModel().setSelectedUnit(activeUnit);
 			if (activeUnit != null) {
 				mapActor.centerCameraOnTile(activeUnit.getTile());
 			} 
@@ -52,17 +53,17 @@ public class GameController {
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (checked) {
 			viewMode = true;
-			if (mapDrawModel.selectedUnit != null) {
-				mapDrawModel.selectedTile = mapDrawModel.selectedUnit.getTile();
+			if (mapDrawModel.getSelectedUnit() != null) {
+				mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
 			} else {
 				Point p = mapActor.getCenterOfScreen();
 				mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
 			}
-			mapActor.mapDrawModel().selectedUnit = null;
+			mapActor.mapDrawModel().setSelectedUnit(null);
 		} else {
 			viewMode = false;
 			mapDrawModel.selectedTile = null;
-			mapDrawModel.selectedUnit = activeUnit;
+			mapDrawModel.setSelectedUnit(activeUnit);
 			if (activeUnit != null) {
 				mapActor.centerCameraOnTile(activeUnit.getTile());
 			} 
@@ -78,16 +79,16 @@ public class GameController {
 		
 		if (viewMode) {
 			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
-			mapDrawModel.selectedUnit = null;
+			mapDrawModel.setSelectedUnit(null);
 		} else {
 			mapDrawModel.selectedTile = null;
 			Tile tile = game.map.getTile(p.x, p.y);
 
 			if (!tile.hasSettlement()) {
-				Unit first = tile.units.first();
-				if (first != null && first.isOwner(game.playingPlayer)) {
-					mapDrawModel.selectedUnit = tile.units.first();
-					activeUnit = mapDrawModel.selectedUnit;
+				Unit newSelectedUnit = tile.units.first();
+				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
+					mapDrawModel.setSelectedUnit(newSelectedUnit);
+					activeUnit = newSelectedUnit;
 				}
 			}
 		}
@@ -108,10 +109,10 @@ public class GameController {
 				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
 			}
 		} else {
-			if (mapDrawModel.selectedUnit == null) {
+			if (mapDrawModel.getSelectedUnit() == null) {
 				return;
 			}
-			Unit unit = mapDrawModel.selectedUnit;
+			Unit unit = mapDrawModel.getSelectedUnit();
 			Tile sourceTile = unit.getTile();
 			Tile descTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
 			
@@ -150,4 +151,8 @@ public class GameController {
 			}
 		}
 	};
+	
+	public Specification getSpecification() {
+		return game.specification;
+	}
 }

@@ -33,6 +33,15 @@ public class Specification implements Identifiable {
         return "freecol";
     }
     
+    public boolean isUnitTypeExpert(UnitType unitType) {
+		for (UnitRole ur : unitRoles.entities()) {
+			if (ur.expertUnitTypeId != null && ur.expertUnitTypeId.equals(unitType.id)) {
+				return true;
+			}
+		}
+    	return false;
+    }
+    
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
 			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);

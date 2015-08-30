@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -30,9 +28,10 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 	
 	
+    protected String name;
 	private Player owner;
-    private UnitType unitType;
-    private UnitRole unitRole;
+    protected UnitType unitType;
+    protected UnitRole unitRole;
     Tile tile;
 
     private UnitState state = UnitState.ACTIVE;
@@ -40,6 +39,14 @@ public class Unit extends ObjectWithFeatures implements Location {
     private int hitPoints;
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
+    protected int treasureAmount;
+    private boolean expert = false;
+
+    /**
+     * The amount of role-equipment this unit carries, subject to
+     * role.getMaximumCount().  Currently zero or one except for pioneers.
+     */
+    protected int roleCount;
     
     private UnitLocation unitLocation = null;
     
@@ -454,6 +461,21 @@ public class Unit extends ObjectWithFeatures implements Location {
         return unitLocation;
     }
     
+    public boolean canCarryTreasure() {
+        return hasAbility(Ability.CARRY_TREASURE);
+    }
+    
+    public int getTreasureAmount() {
+        if (!canCarryTreasure()) {
+            throw new IllegalStateException("Unit can not carry treasure");
+        }
+        return treasureAmount;
+    }
+    
+	protected boolean isExpert() {
+		return expert;
+	}
+	
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -484,7 +506,11 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.movesLeft = attr.getIntAttribute("movesLeft");
             unit.hitPoints = attr.getIntAttribute("hitPoints");
             unit.visibleGoodsCount = attr.getIntAttribute("visibleGoodsCount", -1);
+            unit.treasureAmount = attr.getIntAttribute("treasureAmount", 0);
+            unit.roleCount = attr.getIntAttribute("roleCount", -1);
+            unit.name = attr.getStrAttribute("name");
             
+            unit.expert = game.specification.isUnitTypeExpert(unitType);
             
             nodeObject = unit;
             

@@ -1,7 +1,9 @@
 package promitech.colonization.actors;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.LinkedList;
+import java.util.List;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Player;
@@ -299,9 +301,11 @@ public class MapDrawModel {
 	private int width;
 	private int height;
 	
+	private final List<ChangeSelectedUnitListener> changeSelectedUnitListeners = new ArrayList<ChangeSelectedUnitListener>();
+	
 	private TileDrawModel[][] tilesDrawModel;
 	public Tile selectedTile;
-	public Unit selectedUnit;
+	private Unit selectedUnit;
 	public Player playingPlayer;
 	public final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	
@@ -354,5 +358,20 @@ public class MapDrawModel {
 	public void resetUnexploredBorders(Map map, GameResources gameResources) {
 		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, map, playingPlayer, gameResources);
 		initializer.initBordersForUnexploredTiles();
+	}
+	
+	public void addChangeSelectedUnitListener(ChangeSelectedUnitListener listener) {
+		this.changeSelectedUnitListeners.add(listener);
+	}
+
+	public Unit getSelectedUnit() {
+		return selectedUnit;
+	}
+	
+	public void setSelectedUnit(Unit selectedUnit) {
+		this.selectedUnit = selectedUnit;
+		for (ChangeSelectedUnitListener l : changeSelectedUnitListeners) {
+			l.changeSelectedUnitAction(selectedUnit);
+		}
 	}
 }

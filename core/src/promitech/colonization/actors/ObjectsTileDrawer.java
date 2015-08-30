@@ -42,19 +42,20 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 		
 		boolean drawUnits = true;
-		if (mapDrawModel.selectedUnit != null) {
-			Tile selectedUnitTile = mapDrawModel.selectedUnit.getTile();
+		Unit selectedUnit = mapDrawModel.getSelectedUnit();
+		if (selectedUnit != null) {
+			Tile selectedUnitTile = selectedUnit.getTile();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
 				
-				if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(mapDrawModel.selectedUnit)) {
+				if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(selectedUnit)) {
 					if (mapDrawModel.unitDislocationAnimation.nextStep()) {
 						screenPoint.set(mapDrawModel.unitDislocationAnimation.v);
 					}
 				}
 				
 				drawFocus();
-				Frame frame = gameResources.getCenterAdjustFrameTexture(mapDrawModel.selectedUnit.resourceImageKey());
-				drawUnit(mapDrawModel.selectedUnit, frame);
+				Frame frame = gameResources.getCenterAdjustFrameTexture(selectedUnit.resourceImageKey());
+				drawUnit(selectedUnit, frame);
 				drawUnits = false;
 			}
 		}
