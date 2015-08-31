@@ -5,7 +5,7 @@ import java.lang.reflect.Field;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 
-public class MapIdEntitySetter extends ObjectFromNodeSetter {
+public class MapIdEntitySetter implements ObjectFromNodeSetter {
     private MapIdEntities<? extends Identifiable> targetMap;
     private final String targetFieldName;
     

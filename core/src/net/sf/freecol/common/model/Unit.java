@@ -153,12 +153,16 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public int getGoodsSpaceTaken() {
-    	return 0;
-//        if (!canCarryGoods()) {
-//        	return 0;
-//        }
+        if (!canCarryGoods()) {
+        	return 0;
+        }
 //        GoodsContainer gc = getGoodsContainer();
 //        return (gc == null) ? 0 : gc.getSpaceTaken();
+        return 0;
+    }
+    
+    public boolean canCarryGoods() {
+        return hasAbility(Ability.CARRY_GOODS);
     }
     
     public boolean hasGoodsCargo() {

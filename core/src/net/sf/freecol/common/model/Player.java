@@ -64,6 +64,7 @@ public class Player extends ObjectWithFeatures {
     Nation nation;
     NationType nationType;
     private PlayerType playerType;
+    private Europe europe;
     public MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     
@@ -127,7 +128,7 @@ public class Player extends ObjectWithFeatures {
     }
     
 	public boolean canMoveToEurope() {
-		return false;
+		return europe != null;
 	}
     
 	/**
@@ -195,11 +196,16 @@ public class Player extends ObjectWithFeatures {
 		}
 		return unexploredTile;
 	}
+
+    public Europe getEurope() {
+        return europe;
+    }
 	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(Europe.class, "europe");
         }
 
         @Override

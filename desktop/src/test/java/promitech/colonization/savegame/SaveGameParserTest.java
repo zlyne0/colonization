@@ -2,8 +2,11 @@ package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.NationType;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,6 +39,10 @@ public class SaveGameParserTest {
         assertEquals(18, game.specification.nationTypes.size());
         assertEquals(25, game.specification.nations.size());
         
+        NationType arawakNationType = game.specification.nationTypes.getById("model.nationType.arawak");
+        SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
+        assertNotNull(settlementType);
+        
         assertEquals(13, game.players.size());
         
         Tile tile = game.map.getTile(31, 23);
@@ -45,5 +52,9 @@ public class SaveGameParserTest {
         Unit unit = tileUnit.getUnitLocation().getUnits().first();
         assertNotNull(unit);
         assertEquals("unit:7049", unit.getId());
+        
+        Player player = game.players.getById("player:1");
+        assertNotNull(player.getEurope());
+        assertEquals("europe:2", player.getEurope().getId());
     }
 }
