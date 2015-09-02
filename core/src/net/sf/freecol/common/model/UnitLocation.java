@@ -69,7 +69,12 @@ enum NoAddReason {
 
 public class UnitLocation {
 	private MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-	private int spaceTaken = 0;
+	
+	private final Unit containerUnit;
+	
+	public UnitLocation(Unit containerUnit) {
+		this.containerUnit = containerUnit;
+	}
 	
     public boolean canAdd(Unit unit) {
         return getNoAddReason(unit) == NoAddReason.NONE;
@@ -79,6 +84,14 @@ public class UnitLocation {
         this.units.add(unit);
     }
     
+    int getSpaceTakenByUnits() {
+        int space = 0;
+    	for (Unit u : units.entities()) {
+    		space += u.unitType.getSpaceTaken();
+    	}
+        return space;
+    }
+    
     public NoAddReason getNoAddReason(Unit unit) {
         return (unit == null)
             ? NoAddReason.WRONG_TYPE
@@ -86,7 +99,7 @@ public class UnitLocation {
             ? NoAddReason.OCCUPIED_BY_ENEMY
             : (units.containsId(unit))
             ? NoAddReason.ALREADY_PRESENT
-            : (unit.getSpaceTaken() + spaceTaken > getUnitCapacity())
+            : (unit.unitType.getSpaceTaken() + containerUnit.getSpaceTaken() > containerUnit.unitType.getSpace())
             ? NoAddReason.CAPACITY_EXCEEDED
             : NoAddReason.NONE;
     }
@@ -95,10 +108,6 @@ public class UnitLocation {
         for (Unit u : units.entities()) {
             u.setState(state);
         }
-    }
-    
-    public int getUnitCapacity() {
-        return Integer.MAX_VALUE; // ;-)
     }
 
     public MapIdEntities<Unit> getUnits() {

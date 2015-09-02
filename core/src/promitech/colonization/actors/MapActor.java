@@ -67,19 +67,20 @@ public class MapActor extends Actor {
 
 				gameController.clickOnTile(tmpPoint);
 				
-				
-//    			Tile tile = mapDrawModel.selectedTile;
-//    			System.out.println("screenPoint: " + x + ", " + y);
-//    			System.out.println("p = " + tmpPoint);
-//    			if (tile != null) {
-//    				System.out.println("tile: " + tile);
-//    			} else {
-//    				System.out.println("tile is null");
-//    			}
-//    			Object tileDrawModel = mapDrawModel.getTileDrawModel(tmpPoint.x, tmpPoint.y);
-//    			if (tileDrawModel != null) {
-//    				System.out.println("drawmodel = " + tileDrawModel.toString());
-//    			}
+				{
+	    			Tile tile = game.map.getTile(tmpPoint.x, tmpPoint.y);
+	    			System.out.println("screenPoint: " + x + ", " + y);
+	    			System.out.println("p = " + tmpPoint);
+	    			if (tile != null) {
+	    				System.out.println("tile: " + tile);
+	    			} else {
+	    				System.out.println("tile is null");
+	    			}
+	    			Object tileDrawModel = mapDrawModel.getTileDrawModel(tmpPoint.x, tmpPoint.y);
+	    			if (tileDrawModel != null) {
+	    				System.out.println("drawmodel = " + tileDrawModel.toString());
+	    			}
+				}
 			}
 		});
 		

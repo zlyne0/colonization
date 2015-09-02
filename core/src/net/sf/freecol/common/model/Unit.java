@@ -92,8 +92,12 @@ public class Unit extends ObjectWithFeatures implements Location {
         return getLocation() instanceof Unit;
     }
     
-    public int getSpaceTaken() {
-        return unitType.getSpaceTaken();
+    int getSpaceTaken() {
+        int space = 0;
+        if (unitLocation != null) {
+        	space += unitLocation.getSpaceTakenByUnits();
+        }
+        return space;
     }
     
     public Location getLocation() {
@@ -517,7 +521,7 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.expert = game.specification.isUnitTypeExpert(unitType);
 
             if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
-                unit.unitLocation = new UnitLocation();
+                unit.unitLocation = new UnitLocation(unit);
             }
             
             nodeObject = unit;

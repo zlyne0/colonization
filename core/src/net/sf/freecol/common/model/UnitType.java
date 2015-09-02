@@ -128,6 +128,10 @@ public class UnitType extends ObjectWithFeatures {
     public int getMovement() {
     	return movement;
     }
+
+    public int getSpace() {
+		return space;
+	}
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
