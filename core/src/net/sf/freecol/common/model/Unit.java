@@ -162,7 +162,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public boolean canCarryGoods() {
-        return hasAbility(Ability.CARRY_GOODS);
+        return unitType.hasAbility(Ability.CARRY_GOODS);
     }
     
     public boolean hasGoodsCargo() {
@@ -486,10 +486,10 @@ public class Unit extends ObjectWithFeatures implements Location {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                    if (actualUnit.unitLocation == null) {
-                        actualUnit.unitLocation = new UnitLocation();
-                    }
                     newUnit.tile = actualUnit.tile;
+                    if (!actualUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
+                        throw new IllegalStateException("unit has not ability carry unit but try add unit to it");
+                    }
                     actualUnit.unitLocation.addUnit(newUnit);
                 }
             });
@@ -515,6 +515,10 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.name = attr.getStrAttribute("name");
             
             unit.expert = game.specification.isUnitTypeExpert(unitType);
+
+            if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
+                unit.unitLocation = new UnitLocation();
+            }
             
             nodeObject = unit;
             
