@@ -5,6 +5,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Colony extends Settlement {
 
+    private GoodsContainer goodsContainer;
+    
     private boolean isUndead() {
         return false;
     }
@@ -36,9 +38,16 @@ public class Colony extends Settlement {
         }
         return "model.settlement." + key + ".image";
     }
+
+    public GoodsContainer getGoodsContainer() {
+        return goodsContainer;
+    }
     
     public static class Xml extends XmlNodeParser {
-
+        public Xml() {
+            addNode(GoodsContainer.class, "goodsContainer");
+        }
+        
         @Override
         public void startElement(XmlNodeAttributes attr) {
             String strAttribute = attr.getStrAttribute("settlementType");

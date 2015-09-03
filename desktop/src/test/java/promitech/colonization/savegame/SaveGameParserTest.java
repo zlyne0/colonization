@@ -1,8 +1,10 @@
 package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Player;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -38,6 +40,7 @@ public class SaveGameParserTest {
         assertEquals(11, game.specification.unitRoles.size());
         assertEquals(18, game.specification.nationTypes.size());
         assertEquals(25, game.specification.nations.size());
+        assertEquals(21, game.specification.goodsTypes.size());
         
         NationType arawakNationType = game.specification.nationTypes.getById("model.nationType.arawak");
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
@@ -56,5 +59,14 @@ public class SaveGameParserTest {
         Player player = game.players.getById("player:1");
         assertNotNull(player.getEurope());
         assertEquals("europe:2", player.getEurope().getId());
+        
+        
+        verifySettlementsGoods(game);
+    }
+
+    private void verifySettlementsGoods(Game game) {
+        Tile tile = game.map.getTile(24, 78);
+        Colony colony = (Colony)tile.getSettlement();
+        assertEquals(10, colony.getGoodsContainer().goods.size());
     }
 }

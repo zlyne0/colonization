@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.EuropeanNationType;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -27,6 +28,7 @@ public class Specification implements Identifiable {
 	public final MapIdEntities<ResourceType> resourceTypes = new MapIdEntities<ResourceType>();
     public final MapIdEntities<NationType> nationTypes = new MapIdEntities<NationType>();
     public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
+    public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
 
     @Override
     public String getId() {
@@ -52,6 +54,7 @@ public class Specification implements Identifiable {
             addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);
             addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
             addNodeForMapIdEntities("nations", "nations", Nation.class);
+            addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
 		}
 
 		@Override
