@@ -97,7 +97,7 @@ public class Modifier implements Identifiable {
         public void startElement(XmlNodeAttributes attr) {
 			Modifier modifier = new Modifier();
 			modifier.id = attr.getStrAttribute("id");
-			modifier.value = attr.getFloatAttribute("value");
+			modifier.value = attr.getFloatAttribute("value", 0);
 			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, "type");
 			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, "incrementType");
 			if (modifier.incrementType != null) {

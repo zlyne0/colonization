@@ -30,4 +30,11 @@ public class ObjectWithFeatures extends ObjectWithId {
 		}
 		return base;
     }
+    
+
+    public void addFeatures(ObjectWithFeatures parent) {
+        this.modifiers.addAll(parent.modifiers);
+        this.abilities.addAll(parent.abilities);
+    }
+    
 }

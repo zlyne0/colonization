@@ -17,6 +17,10 @@ public class MapIdEntities<T extends Identifiable> {
         }
         entities.put(entity.getId(), entity);
     }
+
+    public void addAll(MapIdEntities<T> parentEntities) {
+        entities.putAll(parentEntities.entities);
+    }
     
     public T getById(String id) {
         T en = entities.get(id);
@@ -117,5 +121,6 @@ public class MapIdEntities<T extends Identifiable> {
             return tagName;
         }
     }
+
 }
 

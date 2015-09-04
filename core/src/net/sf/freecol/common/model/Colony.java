@@ -6,6 +6,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class Colony extends Settlement {
 
     private GoodsContainer goodsContainer;
+    public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     
     private boolean isUndead() {
         return false;
@@ -46,6 +47,7 @@ public class Colony extends Settlement {
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(GoodsContainer.class, "goodsContainer");
+            addNodeForMapIdEntities("buildings", Building.class);
         }
         
         @Override

@@ -10,12 +10,20 @@ public class XmlNodeAttributes {
         return qName.equals(qname);
     }
     
-    public int getIntAttribute(String name) {
-        return Integer.parseInt(attributes.getValue(name));
-    }
-
     public float getFloatAttribute(String name) {
         return Float.parseFloat(attributes.getValue(name));
+    }
+    
+    public float getFloatAttribute(String name, float defaultValue) {
+        String val = attributes.getValue(name);
+        if (val == null) {
+            return defaultValue;
+        }
+        return Float.parseFloat(val);
+    }
+    
+    public int getIntAttribute(String name) {
+        return Integer.parseInt(attributes.getValue(name));
     }
     
     public int getIntAttribute(String name, int defaultVal) {

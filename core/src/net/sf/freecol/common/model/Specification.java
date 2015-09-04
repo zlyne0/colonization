@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
@@ -29,6 +30,7 @@ public class Specification implements Identifiable {
     public final MapIdEntities<NationType> nationTypes = new MapIdEntities<NationType>();
     public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
     public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
+    public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
 
     @Override
     public String getId() {
@@ -55,6 +57,7 @@ public class Specification implements Identifiable {
             addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
             addNodeForMapIdEntities("nations", "nations", Nation.class);
             addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
+            addNodeForMapIdEntities("building-types", "buildingTypes", BuildingType.class);
 		}
 
 		@Override
