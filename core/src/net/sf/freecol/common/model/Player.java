@@ -178,9 +178,11 @@ public class Player extends ObjectWithFeatures {
 	 * @return return true when explore new tiles
 	 */
 	public boolean revealMapAfterUnitMove(Map map, Unit unit) {
+		Tile unitTileLocation = unit.getTile();
+		
 		int radius = unit.lineOfSight();
 		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
-		spiralIterator.reset(unit.getTile().x, unit.getTile().y, true, radius);
+		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
 		
 		boolean unexploredTile = false;
 		while (spiralIterator.hasNext()) {

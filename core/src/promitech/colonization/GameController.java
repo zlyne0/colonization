@@ -8,7 +8,8 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.actors.MapActor;
 import promitech.colonization.actors.MapDrawModel;
 import promitech.colonization.actors.UnitDislocationAnimation;
-import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimation;
+import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimationListener;
+import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
@@ -112,42 +113,81 @@ public class GameController {
 			if (mapDrawModel.getSelectedUnit() == null) {
 				return;
 			}
-			Unit unit = mapDrawModel.getSelectedUnit();
-			Tile sourceTile = unit.getTile();
-			Tile descTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
 			
-			MoveType moveType = unit.getMoveType(sourceTile, descTile);
+			MoveContext moveContext = new MoveContext();
+			moveContext.direction = direction;
+			moveContext.unit = mapDrawModel.getSelectedUnit();
+			moveContext.sourceTile = moveContext.unit.getTile();
+			moveContext.descTile = game.map.getTile(moveContext.sourceTile.x, moveContext.sourceTile.y, direction);
+			
+			MoveType moveType = moveContext.unit.getMoveType(moveContext.sourceTile, moveContext.descTile);
+			moveContext.moveType = moveType;
 			System.out.println("moveType = " + moveType);
 			
-			if (moveType == MoveType.MOVE) {
-				unit.setState(UnitState.ACTIVE);
-				unit.setStateToAllChildren(UnitState.SENTRY);
-				int moveCost = unit.getMoveCost(sourceTile, descTile, direction, unit.getMovesLeft());
-				System.out.println("moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
-				unit.setMovesLeft(unit.getMovesLeft() - moveCost);
-				
-				unit.changeLocation(descTile);
-				
-				if (mapActor.isTileOnScreenEdge(unit.getTile())) {
-					mapActor.centerCameraOnTile(unit.getTile());
+			switch (moveType) {
+				case MOVE: {
+					moveUnit(moveContext);
+					
+					guiMoveInteraction(moveContext);
+				} break;
+				case EMBARK: {
+					mapActor.mapDrawModel().setSelectedUnit(null);
+					activeUnit = null;
+
+					embarkUnit(moveContext);
+
+					guiMoveInteraction(moveContext);
+				} break;
+				default: {
+					System.out.println("not handled move type: " + moveType);
 				}
-				blockUserInteraction = true;
-				mapActor.startUnitDislocationAnimation(
-					unit, 
-					sourceTile, descTile,
-					endOfUnitDislocationAnimation
-				);
 			}
 		}
 	}
+
+	private void guiMoveInteraction(MoveContext moveContext) {
+		if (mapActor.isTileOnScreenEdge(moveContext.descTile)) {
+			mapActor.centerCameraOnTile(moveContext.descTile);
+		}
+		blockUserInteraction = true;
+		endOfUnitDislocationAnimation.moveContext = moveContext;
+		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
+	}
 	
-	private UnitDislocationAnimation.EndOfAnimation endOfUnitDislocationAnimation = new EndOfAnimation() {
+	private void moveUnit(MoveContext moveContext) {
+		moveContext.unit.setState(UnitState.ACTIVE);
+		moveContext.unit.setStateToAllChildren(UnitState.SENTRY);
+		int moveCost = moveContext.unit.getMoveCost(moveContext.sourceTile, moveContext.descTile, moveContext.direction);
+		System.out.println("moveLeft = " + moveContext.unit.getMovesLeft() + ", moveCost = " + moveCost);
+		moveContext.unit.reduceMovesLeft(moveCost);
+		moveContext.unit.changeLocation(moveContext.descTile);
+	}
+	
+	private void embarkUnit(MoveContext moveContext) {
+		Unit carrier = null;
+		for (Unit u : moveContext.descTile.units.entities()) {
+			if (u.canAddUnit(moveContext.unit)) {
+				carrier = u;
+				break;
+			}
+		}
+		if (carrier == null) {
+			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
+		}
+		moveContext.unit.setState(UnitState.SKIPPED);
+		moveContext.unit.changeLocation(carrier);
+		moveContext.unit.reduceMovesLeftToZero();
+	}
+	
+	private UnitDislocationAnimation.EndOfAnimationListener endOfUnitDislocationAnimation = new EndOfAnimationListener() {
 		@Override
 		public void end(Unit unit) {
 			blockUserInteraction = false;
-			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
-			if (exloredNewTiles) {
-				mapActor.resetUnexploredBorders();
+			if (MoveType.MOVE.equals(moveContext.moveType)) { 
+				boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
+				if (exloredNewTiles) {
+					mapActor.resetUnexploredBorders();
+				}
 			}
 		}
 	};

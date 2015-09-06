@@ -130,9 +130,9 @@ public class Tile implements Location, Identifiable {
             });
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
-	            public void set(Tile target, Unit entity) {
-	                target.units.add(entity);
-	                entity.tile = target;
+	            public void set(Tile tile, Unit unit) {
+	                tile.units.add(unit);
+	                unit.setLocation(tile);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

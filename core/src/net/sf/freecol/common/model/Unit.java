@@ -32,7 +32,8 @@ public class Unit extends ObjectWithFeatures implements Location {
 	private Player owner;
     protected UnitType unitType;
     protected UnitRole unitRole;
-    Tile tile;
+    
+    private Location location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -69,8 +70,55 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 
 	public Tile getTile() {
-		return tile;
+		if (location == null) {
+			throw new IllegalStateException("location is null");
+		}
+		if (!(location instanceof Tile)) {
+			throw new IllegalStateException("location is not tile but it's " + location.getClass());
+		}
+		return (Tile)location;
 	}
+    
+	public Tile getTileLocationOrNull() {
+		if (location instanceof Tile) {
+			return (Tile)location;
+		}
+		return null;
+	}
+	
+	public void setLocation(Unit unit) {
+		location = unit;
+	}
+	
+	public void setLocation(Tile tile) {
+		location = tile;
+	}
+	
+	public void changeLocation(Unit newUnitLocation) {
+		Tile actualTile = getTileLocationOrNull();
+    	if (actualTile != null) {
+    		this.owner.units.removeId(this);
+    		actualTile.units.removeId(this);
+    	}
+    	newUnitLocation.unitLocation.addUnit(this);
+    	location = newUnitLocation;
+	}
+	
+    public void changeLocation(Tile newTileLocation) {
+    	Tile actualTile = getTileLocationOrNull();
+    	if (actualTile != null) {
+    		actualTile.units.removeId(this);
+    	}
+    	newTileLocation.units.add(this);
+    	location = newTileLocation;
+    }
+
+    public boolean canAddUnit(Unit unit) {
+    	if (unitLocation == null) {
+    		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
+    	}
+    	return unitLocation.canAdd(unit);
+    }
     
 	public Player getOwner() {
 		return owner;
@@ -89,7 +137,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 	
     public boolean isOnCarrier() {
-        return getLocation() instanceof Unit;
+        return location != null && location instanceof Unit;
     }
     
     int getSpaceTaken() {
@@ -99,10 +147,6 @@ public class Unit extends ObjectWithFeatures implements Location {
         }
         return space;
     }
-    
-    public Location getLocation() {
-		return tile;
-	}
 
 	public boolean couldMove() {
         return state == UnitState.ACTIVE
@@ -261,7 +305,7 @@ public class Unit extends ObjectWithFeatures implements Location {
                 return MoveType.MOVE_NO_ACCESS_EMBARK;
             }
             for (Unit u : target.units.entities()) {
-                if (u.unitLocation != null && u.unitLocation.canAdd(this)) {
+                if (u.unitLocation != null && u.canAddUnit(this)) {
                 	return MoveType.EMBARK;
                 }
             }
@@ -372,7 +416,7 @@ public class Unit extends ObjectWithFeatures implements Location {
      * @param movesLeft The amount of moves this Unit has left.
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
-    public int getMoveCost(Tile from, Tile target, Direction moveDirection, int movesLeft) {
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
         // Remember to also change map.findPath(...) if you change anything
         // here.
 
@@ -455,16 +499,15 @@ public class Unit extends ObjectWithFeatures implements Location {
         }
     }
     
-    public void setMovesLeft(int moves) {
-        this.movesLeft = (moves < 0) ? 0 : moves;
-    }
+	public void reduceMovesLeft(int moveCost) {
+		int moves = movesLeft - moveCost;
+		this.movesLeft = (moves < 0) ? 0 : moves;
+	}
     
-    public void changeLocation(Tile newTileLocation) {
-    	tile.units.removeId(this);
-    	newTileLocation.units.add(this);
-    	this.tile = newTileLocation;
-    }
-
+	public void reduceMovesLeftToZero() {
+		this.movesLeft = 0;
+	}
+	
     public UnitLocation getUnitLocation() {
         return unitLocation;
     }
@@ -490,7 +533,7 @@ public class Unit extends ObjectWithFeatures implements Location {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                    newUnit.tile = actualUnit.tile;
+                	newUnit.setLocation(actualUnit);
                     if (!actualUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
                         throw new IllegalStateException("unit has not ability carry unit but try add unit to it");
                     }

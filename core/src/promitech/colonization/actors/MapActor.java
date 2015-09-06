@@ -5,7 +5,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameController;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimation;
+import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimationListener;
+import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
@@ -136,12 +137,9 @@ public class MapActor extends Actor {
 		this.gameController = gameController;
 	}
 
-	public void startUnitDislocationAnimation(
-			Unit unit, 
-			Tile sourceTile, Tile descTile, 
-			EndOfAnimation endOfUnitDislocationAnimation) 
+	public void startUnitDislocationAnimation(MoveContext moveContext, EndOfAnimationListener endOfUnitDislocationAnimation) 
 	{
-		mapDrawModel.unitDislocationAnimation.init(mapRenderer, unit, sourceTile, descTile);
-		mapDrawModel.unitDislocationAnimation.addEndOfAnimation(endOfUnitDislocationAnimation);
+		mapDrawModel.unitDislocationAnimation.init(mapRenderer, moveContext);
+		mapDrawModel.unitDislocationAnimation.addEndOfAnimationListener(endOfUnitDislocationAnimation);
 	}
 }

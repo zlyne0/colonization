@@ -41,28 +41,25 @@ class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-		boolean drawUnits = true;
+		// draw selected unit always on top
+		boolean drawRestOfUnits = true;
 		Unit selectedUnit = mapDrawModel.getSelectedUnit();
-		if (selectedUnit != null) {
+		if (selectedUnit != null && !mapDrawModel.unitDislocationAnimation.isUnitAnimated(selectedUnit)) {
 			Tile selectedUnitTile = selectedUnit.getTile();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
-				
-				if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(selectedUnit)) {
-					if (mapDrawModel.unitDislocationAnimation.nextStep()) {
-						screenPoint.set(mapDrawModel.unitDislocationAnimation.v);
-					}
-				}
-				
-				drawFocus();
-				Frame frame = gameResources.getCenterAdjustFrameTexture(selectedUnit.resourceImageKey());
-				drawUnit(selectedUnit, frame);
-				drawUnits = false;
+				drawUnit(selectedUnit);
+				drawRestOfUnits = false;
 			}
 		}
-		if (drawUnits && tile.units.size() > 0 && !tile.hasSettlement()) {
+		if (drawRestOfUnits && tile.units.size() > 0 && !tile.hasSettlement()) {
 			Unit firstUnit = tile.units.first();
-			Frame frame = gameResources.getCenterAdjustFrameTexture(firstUnit.resourceImageKey());
-			drawUnit(firstUnit, frame);
+			if (!mapDrawModel.unitDislocationAnimation.isUnitAnimated(firstUnit)) {
+				drawUnit(firstUnit);
+			}
+		}
+		
+		if (mapDrawModel.unitDislocationAnimation.isAnimatedUnitTile(mapx, mapy)) {
+			mapDrawModel.unitDislocationAnimation.drawUnit(this);
 		}
 	}
 
@@ -114,7 +111,13 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 	}
 	
-	private void drawUnit(Unit unit, Frame frame) {
+	protected void drawUnit(Unit unit) {
+		Unit selectedUnit = mapDrawModel.getSelectedUnit();
+		if (selectedUnit != null && selectedUnit.equalsId(unit)) {
+			drawFocus();
+		}
+		
+		Frame frame = gameResources.getCenterAdjustFrameTexture(unit.resourceImageKey());
 		batch.draw(frame.texture, 
 				screenPoint.x + frame.offsetX, screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
 		);
