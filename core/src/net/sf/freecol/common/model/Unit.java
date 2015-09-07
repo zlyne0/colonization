@@ -50,6 +50,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     protected int roleCount;
     
     private UnitContainer unitContainer = null;
+    private GoodsContainer goodsContainer = null;
     
     public Unit(String id) {
     	super(id);
@@ -118,6 +119,10 @@ public class Unit extends ObjectWithFeatures implements Location {
     		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
     	}
     	return unitContainer.canAdd(unit);
+    }
+    
+    public GoodsContainer getGoodsContainer() {
+        return goodsContainer;
     }
     
 	public Player getOwner() {
@@ -542,6 +547,7 @@ public class Unit extends ObjectWithFeatures implements Location {
             });
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(GoodsContainer.class, "goodsContainer");
         }
 
         @Override

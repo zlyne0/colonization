@@ -72,6 +72,16 @@ public class SaveGameParserTest {
         assertNotNull(settlementType);
         
         verifySpecificationBuildType(game);
+        verifyShipGoods(game);
+    }
+
+    private void verifyShipGoods(Game game) {
+        Player player = game.players.getById("player:1");
+        Unit privateerUnit = player.units.getById("unit:6900");
+        int goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(game.specification.goodsTypes.getById("model.goods.tools"));
+        assertEquals(100, goodsAmount);
+        goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(game.specification.goodsTypes.getById("model.goods.tradeGoods"));
+        assertEquals(100, goodsAmount);
     }
 
     private void verifySpecificationBuildType(Game game) {
@@ -92,7 +102,7 @@ public class SaveGameParserTest {
     private void verifySettlementsGoods(Game game) {
         Tile tile = game.map.getTile(24, 78);
         Colony colony = (Colony)tile.getSettlement();
-        assertEquals(10, colony.getGoodsContainer().goods.size());
+        assertEquals(10, colony.getGoodsContainer().getGoods().size());
     }
     
     private void verifySettlementsBuildings(Game game) {
