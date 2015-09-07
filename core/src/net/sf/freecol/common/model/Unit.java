@@ -49,7 +49,7 @@ public class Unit extends ObjectWithFeatures implements Location {
      */
     protected int roleCount;
     
-    private UnitLocation unitLocation = null;
+    private UnitContainer unitContainer = null;
     
     public Unit(String id) {
     	super(id);
@@ -100,7 +100,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     		this.owner.units.removeId(this);
     		actualTile.units.removeId(this);
     	}
-    	newUnitLocation.unitLocation.addUnit(this);
+    	newUnitLocation.unitContainer.addUnit(this);
     	location = newUnitLocation;
 	}
 	
@@ -114,10 +114,10 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 
     public boolean canAddUnit(Unit unit) {
-    	if (unitLocation == null) {
+    	if (unitContainer == null) {
     		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
     	}
-    	return unitLocation.canAdd(unit);
+    	return unitContainer.canAdd(unit);
     }
     
 	public Player getOwner() {
@@ -142,8 +142,8 @@ public class Unit extends ObjectWithFeatures implements Location {
     
     int getSpaceTaken() {
         int space = 0;
-        if (unitLocation != null) {
-        	space += unitLocation.getSpaceTakenByUnits();
+        if (unitContainer != null) {
+        	space += unitContainer.getSpaceTakenByUnits();
         }
         return space;
     }
@@ -305,7 +305,7 @@ public class Unit extends ObjectWithFeatures implements Location {
                 return MoveType.MOVE_NO_ACCESS_EMBARK;
             }
             for (Unit u : target.units.entities()) {
-                if (u.unitLocation != null && u.canAddUnit(this)) {
+                if (u.unitContainer != null && u.canAddUnit(this)) {
                 	return MoveType.EMBARK;
                 }
             }
@@ -494,8 +494,8 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public void setStateToAllChildren(UnitState state) {
-        if (unitLocation != null) {
-            unitLocation.setStateToAllChildren(state);
+        if (unitContainer != null) {
+            unitContainer.setStateToAllChildren(state);
         }
     }
     
@@ -508,8 +508,8 @@ public class Unit extends ObjectWithFeatures implements Location {
 		this.movesLeft = 0;
 	}
 	
-    public UnitLocation getUnitLocation() {
-        return unitLocation;
+    public UnitContainer getUnitContainer() {
+        return unitContainer;
     }
     
     public boolean canCarryTreasure() {
@@ -537,7 +537,7 @@ public class Unit extends ObjectWithFeatures implements Location {
                     if (!actualUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
                         throw new IllegalStateException("unit has not ability carry unit but try add unit to it");
                     }
-                    actualUnit.unitLocation.addUnit(newUnit);
+                    actualUnit.unitContainer.addUnit(newUnit);
                 }
             });
             addNodeForMapIdEntities("modifiers", Modifier.class);
@@ -564,7 +564,7 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.expert = game.specification.isUnitTypeExpert(unitType);
 
             if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
-                unit.unitLocation = new UnitLocation(unit);
+                unit.unitContainer = new UnitContainer(unit);
             }
             
             nodeObject = unit;

@@ -43,7 +43,7 @@ public class SaveGameParserTest {
         Unit tileUnit = tile.units.getById("unit:6449");
         assertNotNull(tileUnit);
         
-        Unit unit = tileUnit.getUnitLocation().getUnits().first();
+        Unit unit = tileUnit.getUnitContainer().getUnits().first();
         assertNotNull(unit);
         assertEquals("unit:7049", unit.getId());
         

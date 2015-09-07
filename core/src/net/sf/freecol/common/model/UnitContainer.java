@@ -67,12 +67,12 @@ enum NoAddReason {
     CLAIM_REQUIRED,
 }
 
-public class UnitLocation {
+public class UnitContainer {
 	private MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	private final Unit containerUnit;
 	
-	public UnitLocation(Unit containerUnit) {
+	public UnitContainer(Unit containerUnit) {
 		this.containerUnit = containerUnit;
 	}
 	
