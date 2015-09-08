@@ -57,7 +57,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public String toString() {
-        String st = "unitType = " + unitType;
+        String st = "id = " + id + ", unitType = " + unitType;
         return st;
     }
     
@@ -72,7 +72,7 @@ public class Unit extends ObjectWithFeatures implements Location {
 
 	public Tile getTile() {
 		if (location == null) {
-			throw new IllegalStateException("location is null");
+			throw new IllegalStateException("location is null unit: " + this);
 		}
 		if (!(location instanceof Tile)) {
 			throw new IllegalStateException("location is not tile but it's " + location.getClass());
@@ -578,7 +578,6 @@ public class Unit extends ObjectWithFeatures implements Location {
             String ownerStr = attr.getStrAttribute("owner");
             Player owner = game.players.getById(ownerStr);
             unit.owner = owner;
-            owner.units.add(unit);
         }
 
         @Override

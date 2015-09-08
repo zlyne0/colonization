@@ -107,7 +107,8 @@ public class GameResources {
 	}
 	
 	public Frame getCenterAdjustFrameTexture(String key) {
-		Frame frame = frameByName.get(key);
+		String centerKey = "center: " + key;
+		Frame frame = frameByName.get(centerKey);
 		if (frame != null) {
 			return frame;
 		}
@@ -120,7 +121,7 @@ public class GameResources {
 			oy += MapRenderer.TILE_HEIGHT / 2 - region.getRegionHeight() / 2;
 		}
 		frame = new Frame(region, ox, oy);
-		centerAdjustFrameTextureByName.put(key, frame);
+		centerAdjustFrameTextureByName.put(centerKey, frame);
 		return frame;
 	}
 

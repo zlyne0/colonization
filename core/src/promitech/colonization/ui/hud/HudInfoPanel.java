@@ -2,6 +2,7 @@ package promitech.colonization.ui.hud;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
@@ -24,6 +25,9 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
 public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
+    private static final int GOODS_IMAGE_WIDTH = 32;
+    private static final int UNITS_IMAGE_WIDTH = 35;
+    
     private Frame infoPanelSkin;
     private MapActor mapActor;
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
@@ -85,13 +89,48 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 		}
 		String unitMovesLabel = Messages.msg("moves") + " " + unitLabel.getMovesAsString(selectedUnit);
 		drawUnitDescriptionLine(batch, selectedUnitDescriptions.size()+1, unitMovesLabel);
+		
+		drawUnitContener(batch, unit);
+	}
+
+	private void drawUnitContener(Batch batch, Unit unit) {
+		int containerWidth = 0;
+		if (unit.getGoodsContainer() != null) {
+			containerWidth += unit.getGoodsContainer().getGoods().size() * GOODS_IMAGE_WIDTH;
+		}
+		if (unit.getUnitContainer() != null) {
+			containerWidth += unit.getUnitContainer().getUnits().size() * UNITS_IMAGE_WIDTH;
+		}
+		
+		int x = (int)getWidth() / 2 - containerWidth/2 + 40;
+		if (unit.getGoodsContainer() != null) {
+			BitmapFont font = FontResource.getInfoPanelTitleFont();
+			
+			for (Entry<String, Integer> entrySet : unit.getGoodsContainer().getGoods().entrySet()) {
+				String goodsTypeId = entrySet.getKey();
+				Integer amount = entrySet.getValue();
+				
+				Frame goodsImage = gameResources.getFrame(goodsTypeId + ".image");
+				batch.draw(goodsImage.texture, getX() + x, getY() + 30);
+				font.draw(batch, amount.toString(), getX() + x + 5, getY() + 30);
+				
+				x += GOODS_IMAGE_WIDTH;
+			}
+		}
+		if (unit.getUnitContainer() != null) {
+			for (Unit u : unit.getUnitContainer().getUnits().entities()) {
+				Frame unitImage = gameResources.getFrame(u.resourceImageKey());
+				batch.draw(unitImage.texture, getX() + x, getY() + 10);
+				x += UNITS_IMAGE_WIDTH;
+			}
+		}
 	}
 
 	private void drawUnitDescriptionLine(Batch batch, int lineIndex, String line) {
 		BitmapFont titleFont = FontResource.getInfoPanelTitleFont();
 		titleFont.draw(batch, line, 
 				getX() + getWidth()/2, 
-				getY() + 100 - lineIndex*(titleFont.getCapHeight() + 10)
+				getY() + 150 - lineIndex*(titleFont.getCapHeight() + 10)
 		);
 	}
     
