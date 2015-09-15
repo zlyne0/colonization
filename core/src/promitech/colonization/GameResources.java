@@ -10,7 +10,7 @@ import java.util.Properties;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
-import promitech.colonization.actors.MapRenderer;
+import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.gdx.Frame;
 
 import com.badlogic.gdx.Gdx;

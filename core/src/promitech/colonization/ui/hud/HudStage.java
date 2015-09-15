@@ -1,7 +1,7 @@
 package promitech.colonization.ui.hud;
 
 import promitech.colonization.Direction;
-import promitech.colonization.GameController;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 
 import com.badlogic.gdx.Input;
@@ -32,12 +32,10 @@ public class HudStage extends Stage {
     }
     
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
-    
     public final HudInfoPanel hudInfoPanel; 
-    
-    private final GameController gameController;
+    private final GUIGameController gameController;
 
-    public HudStage(Viewport viewport, final GameController gameController, GameResources gameResources) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
         super(viewport);
         this.gameController = gameController;
 
@@ -53,7 +51,7 @@ public class HudStage extends Stage {
             }
         }
 
-        hudInfoPanel = new HudInfoPanel(gameController, gameResources);
+        hudInfoPanel = new HudInfoPanel(gameController.getSpecification(), gameResources);
         addActor(hudInfoPanel);
         
         createNextUnitButton(bw);

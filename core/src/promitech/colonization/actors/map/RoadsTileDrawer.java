@@ -1,4 +1,4 @@
-package promitech.colonization.actors;
+package promitech.colonization.actors.map;
 
 import java.util.HashMap;
 
@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.MapRenderer.TileDrawer;
+import promitech.colonization.actors.map.MapRenderer.TileDrawer;
 
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.math.Bezier;

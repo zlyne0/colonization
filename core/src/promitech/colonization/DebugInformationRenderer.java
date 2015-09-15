@@ -1,7 +1,7 @@
 package promitech.colonization;
 
 import net.sf.freecol.common.model.Map;
-import promitech.colonization.actors.MapRenderer;
+import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.math.Point;
 
 import com.badlogic.gdx.Gdx;

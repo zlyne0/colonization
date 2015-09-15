@@ -1,37 +1,51 @@
 package promitech.colonization;
 
+import java.io.IOException;
+
+import javax.xml.parsers.ParserConfigurationException;
+
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import promitech.colonization.actors.MapActor;
-import promitech.colonization.actors.MapDrawModel;
-import promitech.colonization.actors.UnitDislocationAnimation;
-import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimationListener;
+import promitech.colonization.actors.map.MapActor;
+import promitech.colonization.actors.map.MapDrawModel;
+import promitech.colonization.actors.map.UnitDislocationAnimation;
+import promitech.colonization.actors.map.UnitDislocationAnimation.EndOfAnimationListener;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
+import promitech.colonization.savegame.SaveGameParser;
 
-public class GameController {
+public class GUIGameController {
 
-	private final Game game;
-	private final MapActor mapActor;
+	private Game game;
+	private UnitIterator unitIterator;
 	
-	private final UnitIterator unitIterator;
+	private MapActor mapActor;
+	
 	private Unit activeUnit;
 	private boolean viewMode = false;
 	private GameLogic gameLogic = new GameLogic();
 	private boolean blockUserInteraction = false;
 	
-	public GameController(final Game game, MapActor mapActor) {
-		this.game = game;
-		this.mapActor = mapActor;
-		
-		unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
+        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
+        game = saveGameParser.parse();
+        game.playingPlayer = game.players.getById("player:1");
+        System.out.println("game = " + game);
+        
+        unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
 	}
-
+	
+    public void setMapActor(MapActor mapActor) {
+        this.mapActor = mapActor;
+    }
+	
 	public void nextActiveUnit() {
 		if (blockUserInteraction) {
 			return;
@@ -72,6 +86,8 @@ public class GameController {
 	}
 
 	public void clickOnTile(Point p) {
+	    clickOnTileDebugInfo(p);
+	    
 		if (blockUserInteraction) {
 			return;
 		}
@@ -95,6 +111,20 @@ public class GameController {
 		}
 	}
 
+	private void clickOnTileDebugInfo(Point p) {
+        Tile tile = game.map.getTile(p.x, p.y);
+        System.out.println("p = " + p);
+        if (tile != null) {
+            System.out.println("tile: " + tile);
+        } else {
+            System.out.println("tile is null");
+        }
+        Object tileDrawModel = mapActor.mapDrawModel().getTileDrawModel(p.x, p.y);
+        if (tileDrawModel != null) {
+            System.out.println("drawmodel = " + tileDrawModel.toString());
+        }
+	}
+	
 	public void pressDirectionKey(Direction direction) {
 		if (blockUserInteraction) {
 			return;
@@ -195,4 +225,8 @@ public class GameController {
 	public Specification getSpecification() {
 		return game.specification;
 	}
+
+    public Game getGame() {
+        return game;
+    }
 }

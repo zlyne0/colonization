@@ -4,18 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
 
-import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.TileImprovement;
-import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitLabel;
-import promitech.colonization.GameController;
-import promitech.colonization.GameResources;
-import promitech.colonization.actors.ChangeSelectedUnitListener;
-import promitech.colonization.actors.MapActor;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
-import promitech.colonization.ui.resources.Messages;
-
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -23,6 +11,18 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovement;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitLabel;
+import promitech.colonization.GameResources;
+import promitech.colonization.actors.map.ChangeSelectedUnitListener;
+import promitech.colonization.actors.map.MapActor;
+import promitech.colonization.gdx.Frame;
+import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.resources.Messages;
 
 public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     private static final int GOODS_IMAGE_WIDTH = 32;
@@ -33,17 +33,15 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     private ShapeRenderer shapeRenderer = new ShapeRenderer();
     
     private final GameResources gameResources;
-    private final GameController gameController;
     
     private Unit selectedUnit;
     private final List<String> selectedUnitDescriptions = new ArrayList<String>(5);
 	private final UnitLabel unitLabel;
     
-    public HudInfoPanel(GameController gameController, GameResources gameResources) {
-    	this.gameController = gameController;
+    public HudInfoPanel(Specification specification, GameResources gameResources) {
     	this.gameResources = gameResources;
         infoPanelSkin = gameResources.getFrame("InfoPanel.skin");
-        unitLabel = new UnitLabel(gameController.getSpecification());
+        unitLabel = new UnitLabel(specification);
         
         addListener(new InputListener() {
         	@Override

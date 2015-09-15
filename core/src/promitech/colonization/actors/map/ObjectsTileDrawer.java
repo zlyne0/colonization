@@ -1,11 +1,11 @@
-package promitech.colonization.actors;
+package promitech.colonization.actors.map;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.MapRenderer.TileDrawer;
+import promitech.colonization.actors.map.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;

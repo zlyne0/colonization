@@ -1,4 +1,4 @@
-package promitech.colonization.actors;
+package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.math.Vector2;
 

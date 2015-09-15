@@ -1,13 +1,4 @@
-package promitech.colonization.actors;
-
-import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
-import promitech.colonization.GameController;
-import promitech.colonization.GameResources;
-import promitech.colonization.actors.UnitDislocationAnimation.EndOfAnimationListener;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.math.Point;
+package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -16,6 +7,14 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Tile;
+import promitech.colonization.GUIGameController;
+import promitech.colonization.GameResources;
+import promitech.colonization.actors.map.UnitDislocationAnimation.EndOfAnimationListener;
+import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.math.Point;
 
 public class MapActor extends Actor {
 
@@ -26,10 +25,8 @@ public class MapActor extends Actor {
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
-	private GameController gameController;
-	
-	public MapActor(final Game game, GameResources gameResources) {
-		this.game = game;
+	public MapActor(final GUIGameController gameController, GameResources gameResources) {
+		this.game = gameController.getGame();
 		this.gameResources = gameResources;
 		
 		addListener(new InputListener() {
@@ -64,24 +61,9 @@ public class MapActor extends Actor {
 			private final Point tmpPoint = new Point(); 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
+			    System.out.println("screenPoint: " + x + ", " + y);
 				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
-
 				gameController.clickOnTile(tmpPoint);
-				
-				{
-	    			Tile tile = game.map.getTile(tmpPoint.x, tmpPoint.y);
-	    			System.out.println("screenPoint: " + x + ", " + y);
-	    			System.out.println("p = " + tmpPoint);
-	    			if (tile != null) {
-	    				System.out.println("tile: " + tile);
-	    			} else {
-	    				System.out.println("tile is null");
-	    			}
-	    			Object tileDrawModel = mapDrawModel.getTileDrawModel(tmpPoint.x, tmpPoint.y);
-	    			if (tileDrawModel != null) {
-	    				System.out.println("drawmodel = " + tileDrawModel.toString());
-	    			}
-				}
 			}
 		});
 		
@@ -131,10 +113,6 @@ public class MapActor extends Actor {
 
 	public MapDrawModel mapDrawModel() {
 		return mapDrawModel;
-	}
-
-	public void setGameController(GameController gameController) {
-		this.gameController = gameController;
 	}
 
 	public void startUnitDislocationAnimation(MoveContext moveContext, EndOfAnimationListener endOfUnitDislocationAnimation) 

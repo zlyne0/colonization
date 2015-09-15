@@ -1,4 +1,4 @@
-package promitech.colonization.actors;
+package promitech.colonization.actors.map;
 
 import java.util.ArrayList;
 import java.util.Collections;
