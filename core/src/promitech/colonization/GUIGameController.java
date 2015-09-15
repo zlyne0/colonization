@@ -27,6 +27,7 @@ public class GUIGameController {
 	private UnitIterator unitIterator;
 	
 	private MapActor mapActor;
+	private ApplicationScreenManager screenManager;
 	
 	private Unit activeUnit;
 	private boolean viewMode = false;
@@ -85,6 +86,19 @@ public class GUIGameController {
 		}
 	}
 
+	public void doubleClickOnTile(Point mapPoint) {
+		if (blockUserInteraction) {
+			return;
+		}
+		Tile tile = game.map.getTile(mapPoint.x, mapPoint.y);
+		if (tile == null) {
+			return;
+		}
+		if (tile.hasSettlement()) {
+			screenManager.setScreen(ApplicationScreenType.SETTLEMENT);
+		}
+	}
+	
 	public void clickOnTile(Point p) {
 	    clickOnTileDebugInfo(p);
 	    
@@ -229,4 +243,9 @@ public class GUIGameController {
     public Game getGame() {
         return game;
     }
+
+	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
+		this.screenManager = screenManager;
+	}
+
 }

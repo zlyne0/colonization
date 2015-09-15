@@ -19,13 +19,14 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         MapActor mapActor = new MapActor(gameController, gameResources);
         gameController.setMapActor(mapActor);
         
+        gameController.setApplicationScreenManager(this.screenManager);
+        
         hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources);
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
         
         //stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
         stage = new Stage();
-        Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
         
         Table w = new Table();
         w.setFillParent(true);
@@ -37,6 +38,16 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         w.pack();
         
         stage.addActor(w);      
+    }
+    
+    @Override
+    public void onShow() {
+        Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
+    }
+    
+    @Override
+    public void onLeave() {
+    	Gdx.input.setInputProcessor(null);
     }
     
     @Override

@@ -8,7 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 
-class ButtonActor extends Actor {
+public class ButtonActor extends Actor {
     private static final Color BUTTON_COLOR = new Color(0.75f, 0.75f, 0.75f, 0.50f);  
     private final ShapeRenderer shapeRenderer;
 

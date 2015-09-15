@@ -61,9 +61,14 @@ public class MapActor extends Actor {
 			private final Point tmpPoint = new Point(); 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-			    System.out.println("screenPoint: " + x + ", " + y);
+				System.out.println("screenPoint: " + x + ", " + y);
 				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
-				gameController.clickOnTile(tmpPoint);
+				
+				if (getTapCount() > 1) {
+					gameController.doubleClickOnTile(tmpPoint);
+				} else {
+					gameController.clickOnTile(tmpPoint);
+				}
 			}
 		});
 		
