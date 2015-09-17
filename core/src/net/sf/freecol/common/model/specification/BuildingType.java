@@ -9,6 +9,8 @@ import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.UnitContainer;
+import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -45,6 +47,7 @@ public class BuildingType extends ObjectWithFeatures {
     int workplaces = 3;
     String upgradesFromId;
     String upgradesToId;
+    int minSkill = UNDEFINED;
     int maxSkill = INFINITY;
     private int upkeep = 0;
     private int priority = Consumer.BUILDING_PRIORITY;
@@ -59,6 +62,25 @@ public class BuildingType extends ObjectWithFeatures {
     public void addProduction(Production production) {
         this.productions.add(production);
     }
+    
+    /**
+     * Gets the reason why a given unit type can not be added to a
+     * building of this type.
+     *
+     * @param unitType The <code>UnitType</code> to test.
+     * @return The reason why adding would fail.
+     */
+    public UnitContainer.NoAddReason getNoAddReason(UnitType unitType) {
+        return (workplaces == 0) ? UnitContainer.NoAddReason.CAPACITY_EXCEEDED
+            : (!unitType.hasSkill()) ? UnitContainer.NoAddReason.MISSING_SKILL
+            : (unitType.getSkill() < minSkill) ? UnitContainer.NoAddReason.MINIMUM_SKILL
+            : (unitType.getSkill() > maxSkill) ? UnitContainer.NoAddReason.MAXIMUM_SKILL
+            : UnitContainer.NoAddReason.NONE;
+    }
+
+	public int getWorkplaces() {
+		return workplaces;
+	}
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
@@ -90,6 +112,7 @@ public class BuildingType extends ObjectWithFeatures {
             }
             
             bt.workplaces = attr.getIntAttribute("workplaces", parent.workplaces);
+            bt.minSkill = attr.getIntAttribute("minSkill", parent.minSkill);
             bt.maxSkill = attr.getIntAttribute("maxSkill", parent.maxSkill);
             bt.upkeep = attr.getIntAttribute("upkeep", parent.upkeep);
             bt.priority = attr.getIntAttribute("priority", parent.priority);
@@ -142,4 +165,5 @@ public class BuildingType extends ObjectWithFeatures {
             return "building-type";
         }
     }
+
 }

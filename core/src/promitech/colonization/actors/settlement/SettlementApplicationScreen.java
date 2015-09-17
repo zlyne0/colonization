@@ -34,7 +34,7 @@ public class SettlementApplicationScreen extends ApplicationScreen {
         });
         stage.addActor(closeButton);
         
-        BuildingsPanelActor buildingsPanelActor = new BuildingsPanelActor(gameController, gameResources);
+        BuildingsPanelActor buildingsPanelActor = new BuildingsPanelActor(gameController);
         stage.addActor(buildingsPanelActor);
 	}
 	

@@ -56,6 +56,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		
 		GUIGameController gameController = new GUIGameController();
 		gameResources = new GameResources();
+		GameResources.instance = gameResources;
 		try {
 		    long s = System.currentTimeMillis();
             Messages.instance().load();

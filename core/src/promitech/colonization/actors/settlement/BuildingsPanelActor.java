@@ -1,19 +1,50 @@
 package promitech.colonization.actors.settlement;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.scenes.scene2d.ui.Window;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GUIGameController;
-import promitech.colonization.GameResources;
-import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
+
+class BuildingDragAndDropTarget extends Target {
+
+	private final BuildingActor targetActor;
+	
+	public BuildingDragAndDropTarget(BuildingActor actor) {
+		super(actor);
+		this.targetActor = actor;
+	}
+
+	@Override
+	public boolean drag(Source source, Payload payload, float x, float y, int pointer) {		
+		if (payload.getObject() instanceof Unit) {
+			Unit unit = (Unit)payload.getObject();
+			NoAddReason reason = targetActor.building.getNoAddReason(unit);
+			if (reason != NoAddReason.NONE) {
+				System.out.println("can not add unit to building: " + ("noAddReason." + reason.toString()));
+				return false;
+			} else {
+				return true;
+			}
+		} 
+		return false;
+	}
+
+	@Override
+	public void drop(Source source, Payload payload, float x, float y, int pointer) {
+		System.out.println("targetActor.building.buildingType " + targetActor.building.buildingType);
+	}
+	
+}
 
 class BuildingsPanelActor extends Window {
 
@@ -24,7 +55,7 @@ class BuildingsPanelActor extends Window {
         }
     }
     
-    BuildingsPanelActor(GUIGameController gameController, GameResources gameResources) {
+    BuildingsPanelActor(GUIGameController gameController) {
         super("buildings panel", new MyWindowStyle());
         
         setFillParent(true);
@@ -39,12 +70,11 @@ class BuildingsPanelActor extends Window {
             Colony colony = (Colony) settlement;
             int i = 0;
             
-            List<BuildingActor> buildingsActors = new ArrayList<BuildingActor>();
-            
             for (Building building : colony.buildings.entities()) {
-                Frame buildingTypeImage = gameResources.buildingTypeImage(building.buildingType);
-                BuildingActor buildingActor = new BuildingActor(building, buildingTypeImage);
-                buildingsActors.add(buildingActor);
+                BuildingActor buildingActor = new BuildingActor(building);
+                buildingActor.initWorkers();
+                
+                BuildingActor.dragAndDrop.addTarget(new BuildingDragAndDropTarget(buildingActor));
                 
                 add(buildingActor);
                 i++;
@@ -53,9 +83,6 @@ class BuildingsPanelActor extends Window {
                 }
             }
             pack();
-            for (BuildingActor ba : buildingsActors) {
-                ba.initWorkers(gameResources, this);
-            }
             
         }
     }

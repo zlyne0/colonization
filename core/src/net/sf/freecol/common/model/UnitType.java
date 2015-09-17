@@ -132,7 +132,20 @@ public class UnitType extends ObjectWithFeatures {
     public int getSpace() {
 		return space;
 	}
+
+	public int getSkill() {
+		return skill;
+	}
     
+    /**
+     * Does this UnitType have a skill?
+     *
+     * @return True if this unit type has a skill.
+     */
+    public boolean hasSkill() {
+        return skill != UNDEFINED;
+    }
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);

@@ -23,6 +23,8 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 
 public class GameResources {
 	
+	public static GameResources instance;
+	
 	private Properties prop = new Properties();
 	
 	private Map<String,TextureAtlas> atlasByName = new HashMap<String, TextureAtlas>();	

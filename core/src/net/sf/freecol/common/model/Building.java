@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import net.sf.freecol.common.model.specification.BuildingType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -13,6 +14,24 @@ public class Building extends ObjectWithId {
         super(id);
     }
 
+	public UnitContainer.NoAddReason getNoAddReason(Unit unit) {
+		if (!unit.isPerson()) {
+			return UnitContainer.NoAddReason.WRONG_TYPE;
+		}
+		UnitContainer.NoAddReason reason = buildingType.getNoAddReason(unit.unitType);
+		
+		if (reason == NoAddReason.NONE) {
+			int workersSpaceTaken = 0;
+			for (Unit u : workers.entities()) {
+				workersSpaceTaken += u.unitType.getSpaceTaken();
+			}
+			if (unit.unitType.getSpaceTaken() + workersSpaceTaken > buildingType.getWorkplaces()) {
+				return UnitContainer.NoAddReason.CAPACITY_EXCEEDED;
+			}
+		}
+		return reason;
+	}    
+    
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
