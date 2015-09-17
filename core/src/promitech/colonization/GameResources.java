@@ -10,6 +10,7 @@ import java.util.Properties;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.specification.BuildingType;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.gdx.Frame;
 
@@ -169,6 +170,10 @@ public class GameResources {
     	return getFrame(key, Frame.DEEPEST_ORDER);
     }
 	
+    public Frame buildingTypeImage(BuildingType buildingType) {
+        return getFrame(buildingType.getId() + ".image");
+    }
+    
 	public Frame tileLastCityRumour() {
 		return getCenterAdjustFrameTexture("lostCityRumour.image");
 	}

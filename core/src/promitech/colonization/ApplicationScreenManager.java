@@ -57,11 +57,14 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		GUIGameController gameController = new GUIGameController();
 		gameResources = new GameResources();
 		try {
+		    long s = System.currentTimeMillis();
             Messages.instance().load();
             FontResource.load();
             gameResources.load();
             
             gameController.initGameFromSavegame();
+            long length = System.currentTimeMillis() - s;
+            System.out.println("loading timeout: " + length);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
@@ -76,7 +79,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 			screen.gameController = gameController;
 			screen.create();
 		}
-		setScreen(ApplicationScreenType.MAP_VIEW);
+		setScreen(ApplicationScreenType.SETTLEMENT);
 	}
 	
 	@Override

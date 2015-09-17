@@ -4,7 +4,6 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
@@ -16,7 +15,8 @@ public class SettlementApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void create() {
-		stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
+        stage = new Stage();
 		
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
 		
@@ -33,6 +33,9 @@ public class SettlementApplicationScreen extends ApplicationScreen {
         	}
         });
         stage.addActor(closeButton);
+        
+        BuildingsPanelActor buildingsPanelActor = new BuildingsPanelActor(gameController, gameResources);
+        stage.addActor(buildingsPanelActor);
 	}
 	
 	@Override
