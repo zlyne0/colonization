@@ -15,8 +15,11 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.BufferUtils;
 
+import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Tile;
+import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
-import promitech.colonization.actors.settlement.SettlementApplicationScreen;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 
@@ -71,7 +74,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		}
 		
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
-		applicationScreensByType.put(ApplicationScreenType.SETTLEMENT, new SettlementApplicationScreen());
+		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;
@@ -80,7 +83,19 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 			screen.gameController = gameController;
 			screen.create();
 		}
-		setScreen(ApplicationScreenType.SETTLEMENT);
+		
+		{
+		    // TODO: for tests only
+            Tile tile = gameController.getGame().map.getTile(24, 78);
+            Settlement settlement = tile.getSettlement();
+            if (settlement.isColony()) {
+                Colony colony = (Colony) settlement;
+                ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
+                colonyScreen.initColony(colony);
+            }
+		}
+		
+		setScreen(ApplicationScreenType.COLONY);
 	}
 	
 	@Override
@@ -134,4 +149,13 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 	public void resize(int width, int height) {
         currentApplicationScreen.resize(width, height);
 	}
+
+	@SuppressWarnings("unchecked")
+    public <T extends ApplicationScreen> T getApplicationScreen(ApplicationScreenType type) {
+        ApplicationScreen applicationScreen = applicationScreensByType.get(type);
+        if (applicationScreen == null) {
+            throw new IllegalStateException("can not find application screen for type: " + type);
+        }
+        return (T)applicationScreen;
+    }
 }

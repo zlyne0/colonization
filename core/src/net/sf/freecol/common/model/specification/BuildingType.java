@@ -19,7 +19,7 @@ public class BuildingType extends ObjectWithFeatures {
     public static class Production {
         private boolean unattended = false;
         private Map<String,Integer> input = new HashMap<String, Integer>(2); 
-        private Map<String,Integer> output = new HashMap<String, Integer>(2); 
+        public Map<String,Integer> output = new HashMap<String, Integer>(2); 
         
         public Production(boolean unattended) {
             this.unattended = unattended;

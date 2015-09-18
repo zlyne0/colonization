@@ -35,5 +35,8 @@ public abstract class ObjectWithId implements Identifiable {
 	public void setInsertOrder(int insertOrder) {
 		this.insertOrder = insertOrder;
 	}
-	
+
+	public String toString() {
+	    return id;
+	}
 }

@@ -1,23 +1,29 @@
-package promitech.colonization.actors.settlement;
+package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
+import net.sf.freecol.common.model.Colony;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.ui.hud.ButtonActor;
 
-public class SettlementApplicationScreen extends ApplicationScreen {
+public class ColonyApplicationScreen extends ApplicationScreen {
 
+    private DragAndDrop dragAndDrop;
 	private Stage stage;
+	private BuildingsPanelActor buildingsPanelActor;
 	
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
-		
+        dragAndDrop = new DragAndDrop();
+        dragAndDrop.setDragActorPosition(0, 0);
+        
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
 		
 		ButtonActor closeButton = new ButtonActor(this.shape);
@@ -34,9 +40,13 @@ public class SettlementApplicationScreen extends ApplicationScreen {
         });
         stage.addActor(closeButton);
         
-        BuildingsPanelActor buildingsPanelActor = new BuildingsPanelActor(gameController);
+        buildingsPanelActor = new BuildingsPanelActor();
         stage.addActor(buildingsPanelActor);
 	}
+
+    public void initColony(Colony colony) {
+        buildingsPanelActor.initBuildings(colony, dragAndDrop);
+    }
 	
 	@Override
 	public void onShow() {
@@ -46,6 +56,8 @@ public class SettlementApplicationScreen extends ApplicationScreen {
 	@Override
 	public void onLeave() {
 		Gdx.input.setInputProcessor(null);
+		
+		dragAndDrop.clear();
 	}
 	
 	@Override

@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model;
 
+import java.util.Map.Entry;
+
+import net.sf.freecol.common.model.specification.BuildingType.Production;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -42,6 +45,16 @@ public class Colony extends Settlement {
 
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
+    }
+    
+    public BuildingProductionInfo productionInfo(Building building) {
+        BuildingProductionInfo info = new BuildingProductionInfo();
+        for (Production production : building.buildingType.productions) {
+            for (Entry<String, Integer> entry : production.output.entrySet()) {
+                info.goods.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return info;
     }
     
     public static class Xml extends XmlNodeParser {

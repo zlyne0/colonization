@@ -6,11 +6,13 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.UnitDislocationAnimation;
@@ -95,7 +97,11 @@ public class GUIGameController {
 			return;
 		}
 		if (tile.hasSettlement()) {
-			screenManager.setScreen(ApplicationScreenType.SETTLEMENT);
+		    if (tile.getSettlement().isColony()) {
+		        ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+		        colonyApplicationScreen.initColony((Colony)tile.getSettlement());
+		        screenManager.setScreen(ApplicationScreenType.COLONY);
+		    }
 		}
 	}
 	

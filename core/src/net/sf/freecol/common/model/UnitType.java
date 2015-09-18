@@ -68,10 +68,6 @@ public class UnitType extends ObjectWithFeatures {
     public UnitType(String id) {
     	super(id);
     }
-    
-    public String toString() {
-        return id + " " + super.toString();
-    }
 
 	public int lineOfSight() {
 		float base = lineOfSight;

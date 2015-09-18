@@ -19,7 +19,6 @@ public class Building extends ObjectWithId {
 			return UnitContainer.NoAddReason.WRONG_TYPE;
 		}
 		UnitContainer.NoAddReason reason = buildingType.getNoAddReason(unit.unitType);
-		
 		if (reason == NoAddReason.NONE) {
 			int workersSpaceTaken = 0;
 			for (Unit u : workers.entities()) {
@@ -32,6 +31,10 @@ public class Building extends ObjectWithId {
 		return reason;
 	}    
     
+	public String toString() {
+	    return "id = " + getId() + ", type = " + buildingType;
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
