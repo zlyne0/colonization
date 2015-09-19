@@ -16,6 +16,7 @@ public class FontResource {
 	private BitmapFont citySizeFont;
 	private BitmapFont unitBoxFont = new BitmapFont(false);
 	private BitmapFont infoPanelTileFont = new BitmapFont();
+	private BitmapFont resourceQuantityFont; 
 	
 	private GlyphLayout glyphLayout = new GlyphLayout();
 	
@@ -47,6 +48,14 @@ public class FontResource {
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
 		citySizeFont = generator.generateFont(params);
+
+		
+		params = new FreeTypeFontParameter(); 
+		params.size = (int)(32 * Gdx.graphics.getDensity());
+		params.borderColor = Color.BLACK;
+		params.borderWidth = 1;
+		params.color = Color.WHITE;
+		resourceQuantityFont = generator.generateFont(params);
 		
 		generator.dispose();
 	}
@@ -80,6 +89,7 @@ public class FontResource {
 		instance.citySizeFont.dispose();
 		instance.unitBoxFont.dispose();
 		instance.infoPanelTileFont.dispose();
+		instance.resourceQuantityFont.dispose();
 	}
 
 	public static BitmapFont getCityNamesFont() {
@@ -98,4 +108,7 @@ public class FontResource {
 		return instance.infoPanelTileFont;
 	}
 	
+	public static BitmapFont getResourceQuantityFont() {
+		return instance.resourceQuantityFont;
+	}
 }

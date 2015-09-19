@@ -50,9 +50,7 @@ public class Colony extends Settlement {
     public BuildingProductionInfo productionInfo(Building building) {
         BuildingProductionInfo info = new BuildingProductionInfo();
         for (Production production : building.buildingType.productions) {
-            for (Entry<String, Integer> entry : production.output.entrySet()) {
-                info.goods.put(entry.getKey(), entry.getValue());
-            }
+    		production.sumProductionType(info.goods, building.workers.entities());
         }
         return info;
     }

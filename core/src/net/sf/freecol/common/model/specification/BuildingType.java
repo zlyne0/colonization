@@ -1,14 +1,17 @@
 package net.sf.freecol.common.model.specification;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitContainer;
 import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -19,7 +22,7 @@ public class BuildingType extends ObjectWithFeatures {
     public static class Production {
         private boolean unattended = false;
         private Map<String,Integer> input = new HashMap<String, Integer>(2); 
-        public Map<String,Integer> output = new HashMap<String, Integer>(2); 
+        private Map<String,Integer> output = new HashMap<String, Integer>(2); 
         
         public Production(boolean unattended) {
             this.unattended = unattended;
@@ -32,6 +35,31 @@ public class BuildingType extends ObjectWithFeatures {
         public void addInput(String goodsType, int amount) {
             this.input.put(goodsType, amount);
         }
+
+		public void sumProductionType(Map<String,Integer> sum, Collection<Unit> workers) {
+			for (Entry<String, Integer> outputEntry : output.entrySet()) {
+				
+				String prodId = outputEntry.getKey();
+				Integer goodProductionInitValue = outputEntry.getValue();
+				if (0 == goodProductionInitValue) {
+					continue;
+				}
+				Integer goodsTypeSum = sum.get(prodId);
+				if (goodsTypeSum == null) {
+					goodsTypeSum = 0;
+				}
+
+				if (unattended && workers.isEmpty()) {
+					goodsTypeSum += goodProductionInitValue;
+				} 
+				if (!unattended && !workers.isEmpty()) {
+					for (Unit worker : workers) {
+						goodsTypeSum += (int)worker.unitType.applyModifier(prodId, goodProductionInitValue);
+					}
+				}
+				sum.put(prodId, goodsTypeSum);
+			}
+		}
     }
     
     /** The required population for an ordinary buildable. */

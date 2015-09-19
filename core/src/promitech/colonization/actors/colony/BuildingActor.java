@@ -1,6 +1,9 @@
 package promitech.colonization.actors.colony;
 
+import java.util.Map.Entry;
+
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
@@ -12,9 +15,11 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.infrastructure.FontResource;
 
 class BuildingActor extends ImageButton {
 	
+	final Colony colony;
     final Building building;
     private Frame resourceProductionImage;
     private int resourceProductionAmount = 0;
@@ -24,20 +29,32 @@ class BuildingActor extends ImageButton {
     	return new TextureRegionDrawable(img.texture);
     }
     
-    BuildingActor(Building building) {
+    BuildingActor(Colony colony, Building building) {
         super(getBuildingTexture(building));
         this.building = building;
+        this.colony = colony;
     }
     
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         
-        if (resourceProductionAmount <= 5) {
-            float startOffsetX = getWidth() / 2  - (resourceProductionAmount * resourceProductionImage.texture.getRegionWidth()) / 2;
-            for (int i=0; i<resourceProductionAmount; i++) {
-                batch.draw(resourceProductionImage.texture, getX() + startOffsetX, getY() + getHeight() - resourceProductionImage.texture.getRegionHeight());
-                startOffsetX += resourceProductionImage.texture.getRegionWidth()/2;
-            }
+        if (resourceProductionAmount > 0) {
+	        float imageDistance = (getWidth() - 40) / resourceProductionAmount;
+	        if (imageDistance > resourceProductionImage.texture.getRegionWidth()) {
+	            imageDistance = resourceProductionImage.texture.getRegionWidth();
+	        }
+
+	        float y = getY() + getHeight() - resourceProductionImage.texture.getRegionHeight();
+	        float startOffsetX = 10;
+	        for (int i=0; i<resourceProductionAmount; i++) {
+	            batch.draw(resourceProductionImage.texture, getX() + startOffsetX, y) ;
+	            startOffsetX += imageDistance;
+	        }
+	        if (resourceProductionAmount > 5) {
+	        	BitmapFont font = FontResource.getResourceQuantityFont();
+	        	y = getY() + getHeight() - resourceProductionImage.texture.getRegionHeight()/2 + font.getCapHeight()/2;
+	        	font.draw(batch, Integer.toString(resourceProductionAmount), getX() + getWidth()/2, y);
+	        }
         }
     }
     
@@ -58,6 +75,7 @@ class BuildingActor extends ImageButton {
         building.workers.removeId(unitActor.unit);
         removeActor(unitActor);
         resetUnitActorPlacement();
+        resetProductionDesc();
     }
 
     void putUnit(UnitActor unitActor) {
@@ -65,6 +83,7 @@ class BuildingActor extends ImageButton {
         
         addActor(unitActor);
         resetUnitActorPlacement();
+        resetProductionDesc();
     }
 
     void resetUnitActorPlacement() {
@@ -77,10 +96,20 @@ class BuildingActor extends ImageButton {
         }
     }
 
-    void initProductionDesc(Colony colony) {
+    void resetProductionDesc() {
         BuildingProductionInfo productionInfo = colony.productionInfo(building);
-        //GameResources.instance.getFrame(key)
-        resourceProductionImage = GameResources.instance.getFrame("model.goods.hammers.image");
-        resourceProductionAmount = 5;
+        if (productionInfo.goods.size() == 0) {
+        	resourceProductionAmount = 0;
+        	resourceProductionImage = null;
+        } else {
+        	if (productionInfo.goods.size() == 1) {
+        		for (Entry<String, Integer> prodEntry : productionInfo.goods.entrySet()) {
+        			resourceProductionImage = GameResources.instance.getFrame(prodEntry.getKey() + ".image");
+        			resourceProductionAmount = prodEntry.getValue();
+        		}
+        	} else {
+        		throw new IllegalStateException("there is more then one production type in building " + building + ", prodInfo: " + productionInfo);
+        	}
+        }
     }
 }

@@ -30,7 +30,7 @@ public class Unit extends ObjectWithFeatures implements Location {
 	
     protected String name;
 	private Player owner;
-    protected UnitType unitType;
+    public UnitType unitType;
     protected UnitRole unitRole;
     
     private Location location;
