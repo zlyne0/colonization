@@ -51,7 +51,7 @@ class BuildingActor extends ImageButton {
 	            startOffsetX += imageDistance;
 	        }
 	        if (resourceProductionAmount > 5) {
-	        	BitmapFont font = FontResource.getResourceQuantityFont();
+	        	BitmapFont font = FontResource.getBuildingGoodsQuantityFont();
 	        	y = getY() + getHeight() - resourceProductionImage.texture.getRegionHeight()/2 + font.getCapHeight()/2;
 	        	font.draw(batch, Integer.toString(resourceProductionAmount), getX() + getWidth()/2, y);
 	        }

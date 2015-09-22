@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.gdx.Frame;
 
@@ -238,4 +239,8 @@ public class GameResources {
 			return new Color((Integer.parseInt(colorName) << 8) | 0xff);
 		}
 	}
+
+    public Frame goodsImage(GoodsType goodsType) {
+        return getFrame(goodsType.getId() + ".image");
+    }
 }

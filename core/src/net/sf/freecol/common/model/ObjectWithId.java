@@ -1,7 +1,15 @@
 package net.sf.freecol.common.model;
 
-public abstract class ObjectWithId implements Identifiable {
+import java.util.Comparator;
 
+public abstract class ObjectWithId implements Identifiable {
+    public static final Comparator<ObjectWithId> INSERT_ORDER_ASC_COMPARATOR = new Comparator<ObjectWithId>() {
+        @Override
+        public int compare(ObjectWithId o1, ObjectWithId o2) {
+            return o1.insertOrder - o2.insertOrder;
+        }
+    };
+    
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
     

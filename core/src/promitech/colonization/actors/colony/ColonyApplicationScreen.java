@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
@@ -16,6 +17,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private DragAndDrop dragAndDrop;
 	private Stage stage;
 	private BuildingsPanelActor buildingsPanelActor;
+	private WarehousePanel resourcesPanel;
 	
 	@Override
 	public void create() {
@@ -41,11 +43,21 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         stage.addActor(closeButton);
         
         buildingsPanelActor = new BuildingsPanelActor();
-        stage.addActor(buildingsPanelActor);
+        resourcesPanel = new WarehousePanel();
+        
+        Table tableLayout = new Table(null);
+        tableLayout.setFillParent(true);
+        tableLayout.row();
+        tableLayout.add(buildingsPanelActor);
+        tableLayout.row();
+        tableLayout.add(resourcesPanel);
+        
+        stage.addActor(tableLayout);
 	}
 
     public void initColony(Colony colony) {
         buildingsPanelActor.initBuildings(colony, dragAndDrop);
+        resourcesPanel.initGoods(gameController.getSpecification(), colony);
     }
 	
 	@Override

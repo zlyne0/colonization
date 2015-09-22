@@ -12,6 +12,11 @@ public class GoodsType extends ObjectWithId {
     boolean ignoreLimit;
     boolean newWorldGoods;
     boolean tradeGoods;
+    boolean storable;
+
+    public boolean isStorable() {
+        return storable;
+    }
     
 	public GoodsType(String id) {
 		super(id);
@@ -29,6 +34,7 @@ public class GoodsType extends ObjectWithId {
             gt.ignoreLimit = attr.getBooleanAttribute("ignore-limit", false);
             gt.newWorldGoods = attr.getBooleanAttribute("new-world-goods", false);
             gt.tradeGoods = attr.getBooleanAttribute("trade-goods", false);
+            gt.storable = attr.getBooleanAttribute("storable", true);
             
             nodeObject = gt;
         }
@@ -41,7 +47,6 @@ public class GoodsType extends ObjectWithId {
         public static String tagName() {
             return "goods-type";
         }
-        
 	}
 	
 }
