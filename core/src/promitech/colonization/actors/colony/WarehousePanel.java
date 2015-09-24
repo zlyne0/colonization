@@ -45,7 +45,22 @@ class WarehouseGoodActor extends ImageButton {
         } else {
             font.setColor(Color.WHITE);
         }
-        font.draw(batch, Integer.toString(amount), getX(), getY());
+        float quantityStrLength = quantityStrLength(font);
+        font.draw(batch, Integer.toString(amount), getX() + getWidth()/2 - quantityStrLength/2, getY());
+    }
+    
+    private float quantityStrLength(BitmapFont font) {
+    	String str = "5";
+    	if (amount >= 100) {
+    		str = "555";
+    	} else {
+    		if (amount < 10) {
+    			str = "5";
+    		} else {
+    			str = "55";
+    		}
+    	}
+    	return FontResource.strWidth(font, str);
     }
 }
 
@@ -56,6 +71,8 @@ class WarehousePanel extends Table {
     public void initGoods(Specification specification, Colony colony) {
         List<GoodsType> goodsTypes = new ArrayList<GoodsType>(specification.goodsTypes.entities());
         Collections.sort(goodsTypes, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+        
+        defaults().space(20);
         
         for (GoodsType goodsType : goodsTypes) {
             if (!goodsType.isStorable()) {

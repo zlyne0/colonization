@@ -23,13 +23,15 @@ import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
 
 public class GameResources {
+	public static final String RESOURCE_PROP_FILENAME = "resources.properties";
 	
 	public static GameResources instance;
 	
-	private Properties prop = new Properties();
+	private Map<String,String> globalProp = new HashMap<String, String>();
+	private Map<String,String> moduleLocationByPropertyName = new HashMap<String, String>();
+	private Map<String,Integer> countByPrefix = new HashMap<String, Integer>();
 	
 	private Map<String,TextureAtlas> atlasByName = new HashMap<String, TextureAtlas>();	
-	private Map<String,Integer> countByPrefix = new HashMap<String, Integer>();
 	private Map<String,Frame> frameByName = new HashMap<String,Frame>();
 	private Map<String,Frame> centerAdjustFrameTextureByName = new HashMap<String,Frame>();
 	
@@ -39,8 +41,8 @@ public class GameResources {
 			return count.intValue();
 		}
 		count = 0;
-		for (Entry<Object, Object> entry : prop.entrySet()) {
-			if (((String)entry.getKey()).startsWith(prefix)) {
+		for (Entry<String, String> entry : globalProp.entrySet()) {
+			if (entry.getKey().startsWith(prefix)) {
 				count++;
 			}
 		};
@@ -49,21 +51,34 @@ public class GameResources {
 	}
 	
 	public void load() throws IOException {
-		FileHandle fh = Gdx.files.internal("rules/classic/resources.properties");
+		loadModule("rules/classic");
+		loadModule("base");
+	}
+	
+	private void loadModule(String moduleLocation) throws IOException {
+		FileHandle fh = Gdx.files.internal(moduleLocation + "/" + RESOURCE_PROP_FILENAME);
 		
+		Properties prop = new Properties();
 		InputStream stream = fh.read();
 		prop.load(stream);
 		stream.close();
+		
+		for (Entry<Object, Object> entry : prop.entrySet()) {
+			moduleLocationByPropertyName.put((String)entry.getKey(), moduleLocation);
+			globalProp.put((String)entry.getKey(), (String)entry.getValue());
+		}
 	}
 	
 	TextureAtlas layer1;
 	TextureAtlas layer2;
 	
 	private AtlasRegion loadImage(String key) {
-		String imagePath = (String)prop.get(key);
+		String imagePath = globalProp.get(key);
 		if (imagePath == null) {
 			throw new IllegalArgumentException("can not find resource propertie value for key: " + key); 
 		}
+		
+		String resLocation = moduleLocationByPropertyName.get(key);
 		
 		//
 		// model.tile.greatRiver.center0.image=:atlas:atlasPath.pack:regionName
@@ -75,7 +90,7 @@ public class GameResources {
 
 			TextureAtlas atlas = atlasByName.get(atlasPath);
 			if (atlas == null) {
-				atlas = new TextureAtlas("rules/classic/" + atlasPath);
+				atlas = new TextureAtlas(resLocation + "/" + atlasPath);
 				atlasByName.put(atlasPath, atlas);
 			}
 			AtlasRegion findRegion = atlas.findRegion(regionName);
@@ -84,7 +99,7 @@ public class GameResources {
 			}
 			return findRegion;
 		}		
-		imagePath = "rules/classic/" + imagePath;
+		imagePath = resLocation + "/" + imagePath;
 		
 		FileHandle imageFileHandle = Gdx.files.internal(imagePath);
 		if (!imageFileHandle.exists()) {
@@ -222,7 +237,7 @@ public class GameResources {
 	}
 
 	public Color getColor(String propKey) {
-		String colorName = (String)prop.get(propKey);
+		String colorName = globalProp.get(propKey);
 		if (colorName == null) {
 			throw new IllegalArgumentException("can not find prop value for key: " + propKey);
 		}

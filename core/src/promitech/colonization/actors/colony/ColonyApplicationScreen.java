@@ -6,10 +6,12 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import net.sf.freecol.common.model.Colony;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.hud.ButtonActor;
 
 public class ColonyApplicationScreen extends ApplicationScreen {
@@ -45,7 +47,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor();
         resourcesPanel = new WarehousePanel();
         
+        Frame paperBackground = gameResources.getFrame("Paper");
+        
         Table tableLayout = new Table(null);
+        tableLayout.setBackground(new TextureRegionDrawable(paperBackground.texture));
         tableLayout.setFillParent(true);
         tableLayout.row();
         tableLayout.add(buildingsPanelActor);

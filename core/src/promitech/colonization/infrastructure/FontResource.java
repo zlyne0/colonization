@@ -117,6 +117,7 @@ public class FontResource {
 	}
 	
 	public static BitmapFont getBuildingGoodsQuantityFont() {
+		instance.buildingGoodsQuantityFont.setColor(Color.WHITE);
 		return instance.buildingGoodsQuantityFont;
 	}
 	
