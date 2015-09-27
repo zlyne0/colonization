@@ -72,8 +72,8 @@ public class MapActor extends Actor {
 			}
 		});
 		
-		mapRenderer = new MapRenderer(game.playingPlayer, game.map, mapDrawModel, gameResources, shapeRenderer);
 		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
+		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
 	}
 	
 	public void resetUnexploredBorders() {

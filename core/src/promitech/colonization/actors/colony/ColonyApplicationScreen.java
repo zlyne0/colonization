@@ -9,8 +9,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Tile;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.hud.ButtonActor;
 
@@ -20,6 +22,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private Stage stage;
 	private BuildingsPanelActor buildingsPanelActor;
 	private WarehousePanel resourcesPanel;
+	private TerrainPanel terrainPanel;
 	
 	@Override
 	public void create() {
@@ -46,6 +49,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         buildingsPanelActor = new BuildingsPanelActor();
         resourcesPanel = new WarehousePanel();
+        terrainPanel = new TerrainPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
@@ -56,13 +60,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.add(buildingsPanelActor);
         tableLayout.row();
         tableLayout.add(resourcesPanel);
-        
+        tableLayout.row();
+        tableLayout.add(terrainPanel);
         stage.addActor(tableLayout);
 	}
 
-    public void initColony(Colony colony) {
+    public void initColony(Colony colony, Tile colonyTile) {
+        MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
+    	
         buildingsPanelActor.initBuildings(colony, dragAndDrop);
         resourcesPanel.initGoods(gameController.getSpecification(), colony);
+        terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile);
     }
 	
 	@Override

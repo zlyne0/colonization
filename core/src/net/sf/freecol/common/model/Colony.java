@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model;
 
-import java.util.Map.Entry;
-
 import net.sf.freecol.common.model.specification.BuildingType.Production;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -10,6 +8,7 @@ public class Colony extends Settlement {
 
     private GoodsContainer goodsContainer;
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
+    public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     
     private boolean isUndead() {
         return false;
@@ -59,6 +58,7 @@ public class Colony extends Settlement {
         public Xml() {
             addNode(GoodsContainer.class, "goodsContainer");
             addNodeForMapIdEntities("buildings", Building.class);
+            addNodeForMapIdEntities("colonyTiles", ColonyTile.class);
         }
         
         @Override

@@ -1,7 +1,11 @@
 package promitech.colonization.actors.map;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -10,34 +14,28 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-
 class ObjectsTileDrawer extends TileDrawer {
 	private static final int UNIT_IMAGE_OFFSET = 20;
-	
-	protected Player player;
 	
 	private int w = MapRenderer.TILE_WIDTH;
 	private int h = MapRenderer.TILE_HEIGHT;
 
 	private final GameResources gameResources;
 	
-	public ObjectsTileDrawer(GameResources gameResources) {
+	public ObjectsTileDrawer(MapDrawModel mapDrawModel, GameResources gameResources) {
+		super(mapDrawModel);
 		this.gameResources = gameResources;
 	}
 	
 	@Override
 	public void draw() {
-		if (player.isTileUnExplored(tile)) {
+		if (mapDrawModel.playingPlayer.isTileUnExplored(tile)) {
 			return;
 		}
 		
 		drawSettlement();
 		drawTerrainFocus();
-		if (player.hasFogOfWar(tile)) {
+		if (mapDrawModel.playingPlayer.hasFogOfWar(tile)) {
 			return;
 		}
 		
@@ -102,7 +100,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		font.setColor(tile.getSettlement().getOwner().getNation().getColor());
 		font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
 		
-		if (tile.hasSettlementOwnedBy(player) && tile.getSettlement().isColony()) {
+		if (tile.hasSettlementOwnedBy(mapDrawModel.playingPlayer) && tile.getSettlement().isColony()) {
 			Colony colony = tile.getSettlement().getColony();
 			font.setColor(Color.WHITE);
 			font.draw(batch, "" + colony.getDisplayUnitCount(), 
@@ -153,7 +151,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		batch.begin();
 		
-		String occupationKey = unit.getOccupationKey(player);
+		String occupationKey = unit.getOccupationKey(mapDrawModel.playingPlayer);
 		String text = Messages.msg(occupationKey);
 		
 		BitmapFont unitBoxFont = FontResource.getUnitBoxFont();

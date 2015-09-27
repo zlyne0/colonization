@@ -1,17 +1,16 @@
 package promitech.colonization.actors.map;
 
-import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Player;
-import net.sf.freecol.common.model.Tile;
-import promitech.colonization.GameResources;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.math.Point;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
+
+import net.sf.freecol.common.model.Tile;
+import promitech.colonization.Direction;
+import promitech.colonization.GameResources;
+import promitech.colonization.gdx.Frame;
+import promitech.colonization.math.Point;
 
 public class MapRenderer {
 	public static final int TILE_WIDTH = 128;
@@ -27,30 +26,28 @@ public class MapRenderer {
 		protected int mapx;
 		protected int mapy;
 		
-		protected Map map;
 		protected Tile tile;
 		protected TileDrawModel tileDrawModel;
-		protected MapDrawModel mapDrawModel;
+		protected final MapDrawModel mapDrawModel;
 		
-		public boolean areCoordinatesOnMap() {
-			return mapx >= 0 && mapx < map.width && mapy >= 0 && mapy < map.height;
+		public abstract void draw();
+		
+		protected TileDrawer(MapDrawModel mapDrawModel) {
+			this.mapDrawModel = mapDrawModel;
 		}
-		
-		public abstract void draw();		
 	}
 	
 	private static class TerrainBackgroundTileDrawer extends TileDrawer {
 		private final Frame unexploredFrame;
-		private final Player player;
 		
-		public TerrainBackgroundTileDrawer(GameResources gameResources, Player player) {
+		public TerrainBackgroundTileDrawer(MapDrawModel mapDrawModel, GameResources gameResources) {
+			super(mapDrawModel);
 			unexploredFrame = gameResources.unexploredTile(1, 1);
-			this.player = player;
 		}
 		
 		@Override
 		public void draw() {
-			if (player.isTileExplored(mapx, mapy)) {
+			if (mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
 				tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
 			} else {
 				batch.draw(unexploredFrame.texture, screenPoint.x, screenPoint.y);
@@ -59,23 +56,19 @@ public class MapRenderer {
 	}
 
 	private static class TerrainForegroundTileDrawer extends TileDrawer {
-		private final Player player;
-		
-		public TerrainForegroundTileDrawer(Player player) {
-			this.player = player;
+		public TerrainForegroundTileDrawer(MapDrawModel mapDrawModel) {
+			super(mapDrawModel);
 		}
 		
 		@Override
 		public void draw() {
-			if (player.isTileExplored(mapx, mapy)) {
+			if (mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
 				tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
 			}
 		}
 	}
 	
-	private final Map map; 
 	private final MapDrawModel mapDrawModel;
-	private final Player playerMap;
 	private final GameResources gameResources;
 	
     private final TerrainBackgroundTileDrawer terrainBackgroundTileDrawer;
@@ -95,35 +88,22 @@ public class MapRenderer {
 	private int y;
 	
 	
-	public MapRenderer(Player playerMap, Map map, MapDrawModel mapDrawModel, 
+	public MapRenderer(MapDrawModel mapDrawModel, 
 			GameResources gameResources, ShapeRenderer shapeRenderer ) 
 	{
-		fogOfWarDrawer = new FogOfWarDrawer(playerMap);
-		terrainForegroundTileDrawer = new TerrainForegroundTileDrawer(playerMap);
-		terrainBackgroundTileDrawer = new TerrainBackgroundTileDrawer(gameResources, playerMap);
-		roadsTileDrawer = new RoadsTileDrawer(gameResources);
-		objectsTileDrawer = new ObjectsTileDrawer(gameResources);
+		fogOfWarDrawer = new FogOfWarDrawer(mapDrawModel);
+		terrainForegroundTileDrawer = new TerrainForegroundTileDrawer(mapDrawModel);
+		terrainBackgroundTileDrawer = new TerrainBackgroundTileDrawer(mapDrawModel, gameResources);
+		roadsTileDrawer = new RoadsTileDrawer(mapDrawModel, gameResources);
+		objectsTileDrawer = new ObjectsTileDrawer(mapDrawModel, gameResources);
 		
-    	this.playerMap = playerMap;
-    	this.map = map;
     	this.mapDrawModel = mapDrawModel;
-    	this.objectsTileDrawer.mapDrawModel = mapDrawModel;
     	this.gameResources = gameResources;
     	this.shapeRenderer = shapeRenderer;
-        
-    	terrainBackgroundTileDrawer.map = map;
-    	terrainForegroundTileDrawer.map = map;
-    	roadsTileDrawer.map = map;
-    	objectsTileDrawer.map = map;
-    	fogOfWarDrawer.map = map;
     	
     	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
-    	
-    	roadsTileDrawer.renderForPlayer = playerMap;
-    	objectsTileDrawer.player = playerMap;
-    	
     }
     
     public void setMapRendererSize(int width, int height) {
@@ -137,7 +117,7 @@ public class MapRenderer {
     		for (x=screenMin.x; x<screenMax.x; x++) {
     			tileDrawer.mapx = x;
     			tileDrawer.mapy = y;
-    			tileDrawer.tile = tileDrawer.map.getTile(x, y);
+    			tileDrawer.tile = mapDrawModel.map.getTile(x, y);
     			tileDrawer.tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
     			mapToScreenCords(x, y, tileDrawer.screenPoint);
     			tileDrawer.draw();
@@ -145,7 +125,7 @@ public class MapRenderer {
     	}
     }
     
-    private void preparePartOfMapToRender(final Map map) {
+    private void preparePartOfMapToRender() {
 		// there is transformation screenY = screenHeight - screenY;
     	screenToMapCords(0-TILE_WIDTH, screenHeight + TILE_HEIGHT, screenMin);
     	screenToMapCords(screenWidth + TILE_WIDTH*2, -TILE_HEIGHT, screenMax);
@@ -156,11 +136,11 @@ public class MapRenderer {
     	if (screenMin.y < 0) {
     		screenMin.y = 0;
     	}
-    	if (screenMax.x >= map.width) {
-    		screenMax.x = map.width;
+    	if (screenMax.x >= mapDrawModel.map.width) {
+    		screenMax.x = mapDrawModel.map.width;
     	}
-    	if (screenMax.y >= map.height) {
-    		screenMax.y = map.height;
+    	if (screenMax.y >= mapDrawModel.map.height) {
+    		screenMax.y = mapDrawModel.map.height;
     	}
     }
     
@@ -171,7 +151,7 @@ public class MapRenderer {
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
     	
-    	preparePartOfMapToRender(map);
+    	preparePartOfMapToRender();
   
     	drawLayer(batch, terrainBackgroundTileDrawer);
     	drawLayer(batch, terrainForegroundTileDrawer);
@@ -205,7 +185,7 @@ public class MapRenderer {
     }
     
     private final Vector2 oneUseVector2 = new Vector2();
-	private Vector2 mapToScreenCords(int x, int y) {
+	public Vector2 mapToScreenCords(int x, int y) {
 		mapToScreenCords(x, y, oneUseVector2);
 		return oneUseVector2;
 	}
@@ -288,21 +268,32 @@ public class MapRenderer {
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
     	fogOfWarDrawer.shapeRenderer = shapeRenderer;
 		
-    	drawInfoPanelTile(terrainBackgroundTileDrawer, screenX, screenY, tile);
-    	drawInfoPanelTile(terrainForegroundTileDrawer, screenX, screenY, tile);
+    	drawSingleTile(terrainBackgroundTileDrawer, screenX, screenY, tile);
+    	drawSingleTile(terrainForegroundTileDrawer, screenX, screenY, tile);
     	
     	if (tile.hasRoad()) {
 	    	batch.end();
 	    	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
 	    	Gdx.gl20.glLineWidth(3);
-	    	drawInfoPanelTile(roadsTileDrawer, screenX, screenY, tile);
+	    	drawSingleTile(roadsTileDrawer, screenX, screenY, tile);
 	    	roadsTileDrawer.shapeRenderer.end();
 	    	Gdx.gl20.glLineWidth(1);
 	    	batch.begin();
     	}
 	}
-    
-	private void drawInfoPanelTile(TileDrawer tileDrawer, float px, float py, Tile tile) {
+
+	private void drawColonyTilesRoadLayer(Tile colonyTile, float screenX, float screenY) {
+		roadsTileDrawer.batch.end();
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
+    	roadsTileDrawer.shapeRenderer.begin(ShapeType.Line);
+    	Gdx.gl20.glLineWidth(3);
+    	drawColonyTilesLayer(colonyTile, screenX, screenY, roadsTileDrawer);
+    	roadsTileDrawer.shapeRenderer.end();
+    	Gdx.gl20.glLineWidth(1);
+    	roadsTileDrawer.batch.begin();
+	}
+	
+	private void drawSingleTile(TileDrawer tileDrawer, float px, float py, Tile tile) {
 		tileDrawer.mapx = tile.x;
 		tileDrawer.mapy = tile.y;
 		tileDrawer.tile = tile;
@@ -310,6 +301,56 @@ public class MapRenderer {
 		tileDrawer.screenPoint.x = px;
 		tileDrawer.screenPoint.y = py;
 		tileDrawer.draw();
+	}
+
+	public void drawColonyTiles(Tile colonyTile, Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
+    	terrainBackgroundTileDrawer.batch = batch;
+    	terrainForegroundTileDrawer.batch = batch;
+    	roadsTileDrawer.batch = batch;
+
+    	roadsTileDrawer.shapeRenderer = shapeRenderer;
+    	objectsTileDrawer.shapeRenderer = shapeRenderer;
+    	fogOfWarDrawer.shapeRenderer = shapeRenderer;
+
+    	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainBackgroundTileDrawer);
+    	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainForegroundTileDrawer);
+    	drawColonyTilesRoadLayer(colonyTile, screenX, screenY);
+	}
+	
+	private void drawColonyTilesLayer(Tile colonyTile, float screenX, float screenY, TileDrawer tileDrawer) {
+    	Vector2 v = mapToScreenCords(colonyTile.x, colonyTile.y);
+    	drawSingleTile(tileDrawer, screenX + v.x, screenY + v.y, colonyTile);
+    	for (Direction direction : Direction.allDirections) {
+    		Tile tile = mapDrawModel.map.getTile(colonyTile.x, colonyTile.y, direction);
+    		v = mapToScreenCords(tile.x, tile.y);
+    		drawSingleTile(tileDrawer, screenX + v.x, screenY + v.y, tile);
+    	}
+	}
+	
+	public Tile getColonyTileByScreenCords(Tile colonyTile, int screenX, int screenY) {
+		Point p = screenToMapCords(screenX, screenY);
+		if (p.equals(colonyTile.x, colonyTile.y)) {
+			return colonyTile;
+		}
+		
+		int x;
+		int y;
+		for (Direction direction : Direction.allDirections) {
+			x = direction.stepX(colonyTile.x, colonyTile.y);
+			y = direction.stepY(colonyTile.x, colonyTile.y);
+			if (p.equals(x, y)) {
+				return mapDrawModel.map.getTile(x, y);
+			}
+		}
+		return null;
+	}
+
+	public void populateColonyTiles(Tile colonyTile, java.util.Map<String,Tile> colonyTerrains) {
+		colonyTerrains.put(colonyTile.getId(), colonyTile);
+    	for (Direction direction : Direction.allDirections) {
+    		Tile tile = mapDrawModel.map.getTile(colonyTile.x, colonyTile.y, direction);
+    		colonyTerrains.put(tile.getId(), tile);
+    	}
 	}
 	
 }

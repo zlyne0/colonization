@@ -91,7 +91,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             if (settlement.isColony()) {
                 Colony colony = (Colony) settlement;
                 ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
-                colonyScreen.initColony(colony);
+                colonyScreen.initColony(colony, tile);
             }
 		}
 		

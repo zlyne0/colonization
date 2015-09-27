@@ -33,7 +33,7 @@ public class Tile implements Location, Identifiable {
 	
 	@Override
 	public String getId() {
-	    return "id";
+	    return id;
 	}
 	
 	public String toString() {

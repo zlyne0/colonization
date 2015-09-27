@@ -307,9 +307,11 @@ public class MapDrawModel {
 	public Tile selectedTile;
 	private Unit selectedUnit;
 	public Player playingPlayer;
+	public Map map;
 	public final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {
+		this.map = map;
 		this.playingPlayer = player;
 		width = map.width;
 		height = map.height;

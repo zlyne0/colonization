@@ -1,8 +1,5 @@
 package promitech.colonization.actors.map;
 
-import net.sf.freecol.common.model.Player;
-import promitech.colonization.actors.map.MapRenderer.TileDrawer;
-
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Pixmap;
 import com.badlogic.gdx.graphics.Texture;
@@ -11,15 +8,16 @@ import com.badlogic.gdx.graphics.g2d.PolygonSprite;
 import com.badlogic.gdx.graphics.g2d.PolygonSpriteBatch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 
+import promitech.colonization.actors.map.MapRenderer.TileDrawer;
+
 class FogOfWarDrawer extends TileDrawer {
 	public static final Color FOG_OF_WAR_COLOR = new Color(0f, 0f, 0f, 0.3f);
 
 	PolygonSpriteBatch polyBatch;
 	private PolygonSprite poly;
-	private final Player player;
 	
-	public FogOfWarDrawer(Player player) {
-		this.player = player;
+	public FogOfWarDrawer(MapDrawModel mapDrawModel) {
+		super(mapDrawModel);
 		int w = MapRenderer.TILE_WIDTH;
 		int h = MapRenderer.TILE_HEIGHT;
 
@@ -49,7 +47,7 @@ class FogOfWarDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (player.hasFogOfWar(mapx, mapy)) {
+		if (mapDrawModel.playingPlayer.hasFogOfWar(mapx, mapy)) {
             poly.setPosition(screenPoint.x, screenPoint.y);
             poly.draw(polyBatch);
 		}

@@ -99,7 +99,7 @@ public class GUIGameController {
 		if (tile.hasSettlement()) {
 		    if (tile.getSettlement().isColony()) {
 		        ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-		        colonyApplicationScreen.initColony((Colony)tile.getSettlement());
+		        colonyApplicationScreen.initColony((Colony)tile.getSettlement(), tile);
 		        screenManager.setScreen(ApplicationScreenType.COLONY);
 		    }
 		}

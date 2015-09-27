@@ -2,7 +2,6 @@ package promitech.colonization.actors.map;
 
 import java.util.HashMap;
 
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
@@ -27,14 +26,15 @@ class RoadsTileDrawer extends TileDrawer {
 	// paths from direction to direction
 	private Path<Vector2>[][] paths = null;
 	private Vector2 centerOfTile = new Vector2(w/2, h/2);
-	Player renderForPlayer;
 
 	private final Vector2 p1 = new Vector2();
 	private final Vector2 p2 = new Vector2();
 	private boolean tmpPointInited = false;
 	private int borderRoadCount = 0;
 	
-	public RoadsTileDrawer(GameResources gameResources) {
+	public RoadsTileDrawer(MapDrawModel mapDrawModel, GameResources gameResources) {
+		super(mapDrawModel);
+		
 		roadColor = gameResources.getColor("road.color");
 		
 		edgePoints.put(Direction.N,  new Vector2(w / 2, h));
@@ -48,7 +48,7 @@ class RoadsTileDrawer extends TileDrawer {
 		
 		initPaths();
 	}
-	
+
 	private void initPaths() {
 		paths = new Path[Direction.values().length][Direction.values().length];
 		
@@ -87,7 +87,7 @@ class RoadsTileDrawer extends TileDrawer {
 
 	@Override
 	public void draw() {
-		if (renderForPlayer.isTileUnExplored(tile) || !tile.hasRoad()) {
+		if (mapDrawModel.playingPlayer.isTileUnExplored(tile) || !tile.hasRoad()) {
 			return;
 		}
 		borderRoadCount = 0;
@@ -96,7 +96,7 @@ class RoadsTileDrawer extends TileDrawer {
 		
 		for (int iSrc = 0; iSrc < Direction.values().length; iSrc++) {
 			Direction srcDirection = Direction.values()[iSrc];
-			Tile srcTile = map.getTile(mapx, mapy, srcDirection);
+			Tile srcTile = mapDrawModel.map.getTile(mapx, mapy, srcDirection);
 			if (srcTile == null || !srcTile.hasRoad()) {
 				continue;
 			}
@@ -105,7 +105,7 @@ class RoadsTileDrawer extends TileDrawer {
 			
 			for (int iDest = iSrc + 1; iDest < Direction.values().length; iDest++) {
 				Direction destDirection = Direction.values()[iDest];
-				Tile destTile = map.getTile(mapx, mapy, destDirection);
+				Tile destTile = mapDrawModel.map.getTile(mapx, mapy, destDirection);
 				if (destTile == null) {
 					continue;
 				}

@@ -13,10 +13,11 @@ public class MapViewApplicationScreen extends ApplicationScreen {
 
     private Stage stage;
     private HudStage hudStage;
+    private MapActor mapActor;
     
     @Override
     public void create() {
-        MapActor mapActor = new MapActor(gameController, gameResources);
+        mapActor = new MapActor(gameController, gameResources);
         gameController.setMapActor(mapActor);
         
         gameController.setApplicationScreenManager(this.screenManager);
@@ -65,5 +66,9 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         hudStage.getViewport().update(width, height, true);
-    }    
+    }
+
+	public MapActor getMapActor() {
+		return mapActor;
+	}    
 }
