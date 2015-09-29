@@ -54,9 +54,22 @@ public class SaveGameParserTest {
         
         verifySettlementsGoods(game);
         verifySettlementsBuildings(game);
+        
+        verifySettlementBuildingWorker(game);
     }
+    
+    private void verifySettlementBuildingWorker(Game game) {
+    	Tile tile = game.map.getTile(28, 40);
+		Colony colony = tile.getSettlement().getColony();
+    	assertNotNull(colony);
+    	System.out.println("size = " + colony.buildings.size());
+    	Building carpenterHouse = colony.buildings.getById("building:7122");
+    	assertEquals(1, carpenterHouse.workers.size());
+    	Unit worker = carpenterHouse.workers.first();
+    	assertEquals("unit:6498", worker.getId());
+	}
 
-    private void verifySpecification(Game game) {
+	private void verifySpecification(Game game) {
         assertEquals(42, game.specification.unitTypes.size());
         assertEquals(23, game.specification.tileTypes.size());
 

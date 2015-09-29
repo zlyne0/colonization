@@ -89,7 +89,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             Tile tile = gameController.getGame().map.getTile(24, 78);
             Settlement settlement = tile.getSettlement();
             if (settlement.isColony()) {
-                Colony colony = (Colony) settlement;
+                Colony colony = settlement.getColony();
                 ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
                 colonyScreen.initColony(colony, tile);
             }

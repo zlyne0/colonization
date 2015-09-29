@@ -122,6 +122,12 @@ public class Tile implements Location, Identifiable {
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {
+			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
+				@Override
+				public void set(Tile target, CachedTile entity) {
+					entity.getPlayer().setTileAsExplored(target, game.map);
+				}
+			});
 		    addNode(TileItemContainer.class, new ObjectFromNodeSetter<Tile,TileItemContainer>() {
                 @Override
                 public void set(Tile target, TileItemContainer entity) {
@@ -169,15 +175,6 @@ public class Tile implements Location, Identifiable {
 			nodeObject = tile;
 		}
 
-		@Override
-		public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals("cachedTile")) {
-				String playerId = attr.getStrAttribute("player");
-				Player player = game.players.getById(playerId);
-				player.setTileAsExplored((Tile)nodeObject, game.map);
-			}
-		}
-		
 		@Override
 		public String getTagName() {
 			return tagName();

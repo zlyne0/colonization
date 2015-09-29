@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.specification.BuildingType.Production;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -10,12 +12,26 @@ public class Colony extends Settlement {
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     
+    private int colonyUnitsCount = -1;
+    
     private boolean isUndead() {
         return false;
     }
+
+    public int getColonyUnitsCount() {
+		return colonyUnitsCount;
+	}
     
-    public int getDisplayUnitCount() {
-        return 1;
+    private void updateColonyUnitsCount() {
+    	colonyUnitsCount = 0;
+    	for (Building building : buildings.entities()) {
+    		colonyUnitsCount += building.workers.size();
+    	}
+    	for (ColonyTile colonyTile : colonyTiles.entities()) {
+    		if (colonyTile.getWorker() != null) {
+    			colonyUnitsCount++;
+    		}
+    	}
     }
     
     private String getStockadeKey() {
@@ -31,7 +47,7 @@ public class Colony extends Settlement {
         if (isUndead()) {
             return "undead";
         }
-        int count = getDisplayUnitCount();
+        int count = getColonyUnitsCount();
         String key = (count <= 3) ? "small"
             : (count <= 7) ? "medium"
             : "large";
@@ -76,6 +92,13 @@ public class Colony extends Settlement {
             nodeObject = colony;
         }
 
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+        	if (qName.equals(tagName())) {
+        		((Colony)nodeObject).updateColonyUnitsCount();
+        	}
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

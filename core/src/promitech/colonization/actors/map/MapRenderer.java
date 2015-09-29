@@ -307,16 +307,33 @@ public class MapRenderer {
     	terrainBackgroundTileDrawer.batch = batch;
     	terrainForegroundTileDrawer.batch = batch;
     	roadsTileDrawer.batch = batch;
+    	objectsTileDrawer.batch = batch;
 
     	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
-    	fogOfWarDrawer.shapeRenderer = shapeRenderer;
 
     	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainBackgroundTileDrawer);
     	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainForegroundTileDrawer);
     	drawColonyTilesRoadLayer(colonyTile, screenX, screenY);
+    	drawColonyTilesObjects(colonyTile, screenX, screenY);
 	}
 	
+	private void drawColonyTilesObjects(Tile colonyTile, float screenX, float screenY) {
+		TileDrawModel tileDrawModel = mapDrawModel.getTileDrawModel(colonyTile.x, colonyTile.y);
+		Vector2 v = mapToScreenCords(colonyTile.x, colonyTile.y);
+		tileDrawModel.drawSettlementImage(objectsTileDrawer.batch, screenX + v.x, screenY + v.y);
+		
+		for (Direction direction : Direction.allDirections) {
+			x = direction.stepX(colonyTile.x, colonyTile.y);
+			y = direction.stepY(colonyTile.x, colonyTile.y);
+			tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
+			if (tileDrawModel.settlementImage != null) {
+				v = mapToScreenCords(x, y);
+				tileDrawModel.drawSettlementImage(objectsTileDrawer.batch, screenX + v.x, screenY + v.y);
+			}
+		}
+	}
+
 	private void drawColonyTilesLayer(Tile colonyTile, float screenX, float screenY, TileDrawer tileDrawer) {
     	Vector2 v = mapToScreenCords(colonyTile.x, colonyTile.y);
     	drawSingleTile(tileDrawer, screenX + v.x, screenY + v.y, colonyTile);
