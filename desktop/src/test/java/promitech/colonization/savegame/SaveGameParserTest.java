@@ -109,7 +109,7 @@ public class SaveGameParserTest {
         assertEquals(120, reqGoods1.amount);
         assertEquals(100, reqGoods2.amount);
         
-        assertEquals(0, fortBuildingType.productions.size());
+        assertEquals(0, fortBuildingType.productionInfo.size());
     }
 
     private void verifySettlementsGoods(Game game) {

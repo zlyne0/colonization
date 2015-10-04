@@ -1,28 +1,24 @@
 package promitech.colonization.actors.colony;
 
-import java.util.Map.Entry;
-
 import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import net.sf.freecol.common.model.Building;
-import net.sf.freecol.common.model.BuildingProductionInfo;
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
 
 class BuildingActor extends ImageButton {
 	
 	final Colony colony;
     final Building building;
-    private Frame resourceProductionImage;
-    private int resourceProductionAmount = 0;
+    private final ProductionQuantityDrawModel productionQuantityDrawModel = new ProductionQuantityDrawModel();
+    private ProductionQuantityDrawer productionQuantityDrawer;
 
     private static TextureRegionDrawable getBuildingTexture(Building building) {
     	Frame img = GameResources.instance.buildingTypeImage(building.buildingType);
@@ -38,24 +34,10 @@ class BuildingActor extends ImageButton {
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         
-        if (resourceProductionAmount > 0) {
-	        float imageDistance = (getWidth() - 40) / resourceProductionAmount;
-	        if (imageDistance > resourceProductionImage.texture.getRegionWidth()) {
-	            imageDistance = resourceProductionImage.texture.getRegionWidth();
-	        }
-
-	        float y = getY() + getHeight() - resourceProductionImage.texture.getRegionHeight();
-	        float startOffsetX = 10;
-	        for (int i=0; i<resourceProductionAmount; i++) {
-	            batch.draw(resourceProductionImage.texture, getX() + startOffsetX, y) ;
-	            startOffsetX += imageDistance;
-	        }
-	        if (resourceProductionAmount > 5) {
-	        	BitmapFont font = FontResource.getBuildingGoodsQuantityFont();
-	        	y = getY() + getHeight() - resourceProductionImage.texture.getRegionHeight()/2 + font.getCapHeight()/2;
-	        	font.draw(batch, Integer.toString(resourceProductionAmount), getX() + getWidth()/2, y);
-	        }
+        if (productionQuantityDrawer == null) {
+        	productionQuantityDrawer = new ProductionQuantityDrawer(getWidth() - 20, getHeight());
         }
+        productionQuantityDrawer.draw(batch, productionQuantityDrawModel, getX() + 10, getY());
     }
     
     void initWorkers(DragAndDrop dragAndDrop) {
@@ -69,6 +51,7 @@ class BuildingActor extends ImageButton {
             unitActor.moveBy(offsetX, 0);
             offsetX += unitActor.getWidth();
         }
+        resetProductionDesc();
     }
 
     void takeUnit(UnitActor unitActor) {
@@ -96,20 +79,8 @@ class BuildingActor extends ImageButton {
         }
     }
 
-    void resetProductionDesc() {
-        BuildingProductionInfo productionInfo = colony.productionInfo(building);
-        if (productionInfo.goods.size() == 0) {
-        	resourceProductionAmount = 0;
-        	resourceProductionImage = null;
-        } else {
-        	if (productionInfo.goods.size() == 1) {
-        		for (Entry<String, Integer> prodEntry : productionInfo.goods.entrySet()) {
-        			resourceProductionImage = GameResources.instance.getFrame(prodEntry.getKey() + ".image");
-        			resourceProductionAmount = prodEntry.getValue();
-        		}
-        	} else {
-        		throw new IllegalStateException("there is more then one production type in building " + building + ", prodInfo: " + productionInfo);
-        	}
-        }
+    private void resetProductionDesc() {
+    	ProductionSummary productionSummary = colony.productionSummaryForBuilding(building);
+    	productionQuantityDrawModel.init(productionSummary);
     }
 }

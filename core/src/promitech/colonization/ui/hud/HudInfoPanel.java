@@ -145,7 +145,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     	
     	for (TileImprovement improvement : tile.getTileImprovements()) {
     		if (improvement.isComplete()) {
-    			descKey = Messages.descriptionKey(improvement.type.id);
+    			descKey = Messages.descriptionKey(improvement.type.getId());
     			desc.append(", ");
     			desc.append(Messages.msg(descKey));
     		}

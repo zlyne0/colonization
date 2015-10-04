@@ -158,6 +158,10 @@ public class GameResources {
 		return getFrame(key, zIndex);
 	}
 
+	public Frame resource(String resourceId) {
+		return getFrame(resourceId + ".image");
+	}
+	
 	public Frame tileResource(ResourceType resourceType) {
 		String key = resourceType.getId() + ".image";
 		return getCenterAdjustFrameTexture(key);

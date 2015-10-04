@@ -1,8 +1,10 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import org.xml.sax.SAXException;
 
-import net.sf.freecol.common.model.specification.BuildingType.Production;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -62,14 +64,23 @@ public class Colony extends Settlement {
         return goodsContainer;
     }
     
-    public BuildingProductionInfo productionInfo(Building building) {
-        BuildingProductionInfo info = new BuildingProductionInfo();
-        for (Production production : building.buildingType.productions) {
-    		production.sumProductionType(info.goods, building.workers.entities());
-        }
-        return info;
+    public ProductionSummary productionSummaryForBuilding(Building building) {
+    	return building.buildingType
+    			.productionInfo
+    			.productionSummaryForWorkers(building.workers.entities());
     }
     
+	public ProductionSummary productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
+		tile.getTileImprovements();
+		List<Unit> workers = new ArrayList<Unit>();
+		if (colonyTile.getWorker() != null) {
+			workers.add(colonyTile.getWorker());
+		}
+		ProductionSummary productionSummary = colonyTile.productionInfo.productionSummaryForWorkers(workers);
+		productionSummary.applyTileImprovementsModifiers(tile);
+		return productionSummary;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(GoodsContainer.class, "goodsContainer");
@@ -108,4 +119,5 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
+
 }

@@ -1,67 +1,19 @@
 package net.sf.freecol.common.model.specification;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-
 import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
-import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Production;
+import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.UnitContainer;
 import net.sf.freecol.common.model.UnitType;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class BuildingType extends ObjectWithFeatures {
 
-    public static class Production {
-        private boolean unattended = false;
-        private Map<String,Integer> input = new HashMap<String, Integer>(2); 
-        private Map<String,Integer> output = new HashMap<String, Integer>(2); 
-        
-        public Production(boolean unattended) {
-            this.unattended = unattended;
-        }
-
-        public void addOutput(String goodsType, int amount) {
-            this.output.put(goodsType, amount);
-        }
-
-        public void addInput(String goodsType, int amount) {
-            this.input.put(goodsType, amount);
-        }
-
-		public void sumProductionType(Map<String,Integer> sum, Collection<Unit> workers) {
-			for (Entry<String, Integer> outputEntry : output.entrySet()) {
-				
-				String prodId = outputEntry.getKey();
-				Integer goodProductionInitValue = outputEntry.getValue();
-				if (0 == goodProductionInitValue) {
-					continue;
-				}
-				Integer goodsTypeSum = sum.get(prodId);
-				if (goodsTypeSum == null) {
-					goodsTypeSum = 0;
-				}
-
-				if (unattended && workers.isEmpty()) {
-					goodsTypeSum += goodProductionInitValue;
-				} 
-				if (!unattended && !workers.isEmpty()) {
-					for (Unit worker : workers) {
-						goodsTypeSum += (int)worker.unitType.applyModifier(prodId, goodProductionInitValue);
-					}
-				}
-				sum.put(prodId, goodsTypeSum);
-			}
-		}
-    }
-    
     /** The required population for an ordinary buildable. */
     private static final int DEFAULT_REQUIRED_POPULATION = 1;
 
@@ -81,16 +33,12 @@ public class BuildingType extends ObjectWithFeatures {
     private int priority = Consumer.BUILDING_PRIORITY;
     
     public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
-    public final List<Production> productions = new ArrayList<Production>();
+    public final ProductionInfo productionInfo = new ProductionInfo();
     
     public BuildingType(String id) {
         super(id);
     }
 
-    public void addProduction(Production production) {
-        this.productions.add(production);
-    }
-    
     /**
      * Gets the reason why a given unit type can not be added to a
      * building of this type.
@@ -112,6 +60,12 @@ public class BuildingType extends ObjectWithFeatures {
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
+        	addNode(Production.class, new ObjectFromNodeSetter<BuildingType, Production>() {
+				@Override
+				public void set(BuildingType target, Production entity) {
+					target.productionInfo.addProduction(entity);
+				}
+			});
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
             addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
@@ -153,35 +107,6 @@ public class BuildingType extends ObjectWithFeatures {
             
             bt.addFeatures(parent);
             nodeObject = bt;
-        }
-
-        Production production = null;
-        
-        @Override
-        public void startReadChildren(XmlNodeAttributes attr) {
-            if (attr.isQNameEquals("production")) {
-                production = new Production(attr.getBooleanAttribute("unattended", false));
-            }
-            if (attr.isQNameEquals("output")) {
-                String goodsType = attr.getStrAttribute("goods-type");
-                int amount = attr.getIntAttribute("value");
-                production.addOutput(goodsType, amount);
-            }
-            if (attr.isQNameEquals("input")) {
-                String goodsType = attr.getStrAttribute("goods-type");
-                int amount = attr.getIntAttribute("value");
-                production.addInput(goodsType, amount);
-            }
-        }
-        
-        @Override
-        public void endReadChildren(String qName) {
-            if ("production".equals(qName)) {
-                if (production != null) {
-                    ((BuildingType)nodeObject).addProduction(production);
-                }
-                production = null;
-            }
         }
         
         @Override

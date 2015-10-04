@@ -39,29 +39,16 @@ class WarehouseGoodActor extends ImageButton {
     public void draw(Batch batch, float parentAlpha) {
         super.draw(batch, parentAlpha);
         
-        BitmapFont font = FontResource.getBuildingGoodsQuantityFont();
+        BitmapFont font = FontResource.getGoodsQuantityFont();
         if (amount == 0) {
             font.setColor(Color.GRAY);
         } else {
             font.setColor(Color.WHITE);
         }
-        float quantityStrLength = quantityStrLength(font);
+        float quantityStrLength = FontResource.strIntWidth(font, amount);
         font.draw(batch, Integer.toString(amount), getX() + getWidth()/2 - quantityStrLength/2, getY());
     }
     
-    private float quantityStrLength(BitmapFont font) {
-    	String str = "5";
-    	if (amount >= 100) {
-    		str = "555";
-    	} else {
-    		if (amount < 10) {
-    			str = "5";
-    		} else {
-    			str = "55";
-    		}
-    	}
-    	return FontResource.strWidth(font, str);
-    }
 }
 
 class WarehousePanel extends Table {

@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapDrawModel;
@@ -27,8 +28,17 @@ public class TerrainPanel extends Actor {
 	private ColonyTile[] colonyTiles = new ColonyTile[9];
 	private Tile[] colonyTerrains = new Tile[9];
 	private Frame[] colonyTerrainsWorkerImages = new Frame[9];
+	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
+	
+	private final ProductionQuantityDrawer productionQuantityDrawer;
 	
 	public TerrainPanel() {
+		for (int i=0; i<9; i++) {
+			productionQuantityDrawModels[i] = new ProductionQuantityDrawModel();
+		}
+		productionQuantityDrawer = new ProductionQuantityDrawer(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
+		productionQuantityDrawer.centerToPoint(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
+		
 		addListener(new InputListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -82,6 +92,19 @@ public class TerrainPanel extends Actor {
 			}
 			i++;
 		}
+		
+		ProductionSummary productionSummary;
+		for (i=0; i<colonyTiles.length; i++) {
+			ColonyTile ct = colonyTiles[i];
+			
+			productionSummary = colony.productionSummaryForTerrain(
+					colonyTerrains[i], 
+					colonyTiles[i] 
+					);
+			System.out.println("tile " + ct.getWorkTileId() + ", " + productionSummary);
+			
+			productionQuantityDrawModels[i].init(productionSummary);
+		}
 	}
 
 	@Override
@@ -90,15 +113,22 @@ public class TerrainPanel extends Actor {
 		
 		for (int i=0; i<colonyTiles.length; i++) {
 			Tile t = colonyTerrains[i];
+			Vector2 tileScreenCords = mapRenderer.mapToScreenCords(t.x, t.y);
+			
 			Frame workerImg = colonyTerrainsWorkerImages[i];
 			if (workerImg != null) {
-				Vector2 workerScreenCords = mapRenderer.mapToScreenCords(t.x, t.y);
 				batch.draw(
 					workerImg.texture, 
-					getX() + workerScreenCords.x + MapRenderer.TILE_WIDTH/2 - workerImg.texture.getRegionWidth()/2, 
-					getY() + workerScreenCords.y + MapRenderer.TILE_HEIGHT/2 - workerImg.texture.getRegionHeight()/2
+					getX() + tileScreenCords.x + MapRenderer.TILE_WIDTH/2 - workerImg.texture.getRegionWidth()/2, 
+					getY() + tileScreenCords.y + MapRenderer.TILE_HEIGHT/2 - workerImg.texture.getRegionHeight()/2
 				);
 			}
+			
+			productionQuantityDrawer.draw(batch, productionQuantityDrawModels[i], 
+				getX() + tileScreenCords.x, 
+				getY() + tileScreenCords.y
+			);
 		}
 	}
+	
 }

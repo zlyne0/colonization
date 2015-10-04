@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -12,6 +13,7 @@ public final class TileType extends ObjectWithFeatures {
 	
 	boolean isForest;
 	private int basicMoveCost;
+	public ProductionInfo productionInfo = new ProductionInfo();
 	
 	public TileType(String id, boolean isForest) {
 		super(id);
@@ -58,6 +60,12 @@ public final class TileType extends ObjectWithFeatures {
 		public Xml() {
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(Production.class, new ObjectFromNodeSetter<TileType, Production>() {
+				@Override
+				public void set(TileType target, Production entity) {
+					target.productionInfo.addProduction(entity);
+				}
+			});
 		}
 
 		@Override

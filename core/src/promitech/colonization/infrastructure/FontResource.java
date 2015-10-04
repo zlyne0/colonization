@@ -16,7 +16,7 @@ public class FontResource {
 	private BitmapFont citySizeFont;
 	private BitmapFont unitBoxFont = new BitmapFont(false);
 	private BitmapFont infoPanelTileFont = new BitmapFont();
-	private BitmapFont buildingGoodsQuantityFont; 
+	private BitmapFont goodsQuantityFont; 
 	private BitmapFont warehouseGoodsQuantityFont; 
 	
 	private GlyphLayout glyphLayout = new GlyphLayout();
@@ -56,7 +56,7 @@ public class FontResource {
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
 		params.color = Color.WHITE;
-		buildingGoodsQuantityFont = generator.generateFont(params);
+		goodsQuantityFont = generator.generateFont(params);
 
         params = new FreeTypeFontParameter(); 
         params.size = (int)(32 * Gdx.graphics.getDensity());
@@ -92,12 +92,26 @@ public class FontResource {
 		return w;
 	}
 	
+    public static float strIntWidth(BitmapFont font, int i) {
+    	String str = "5";
+    	if (i >= 100) {
+    		str = "555";
+    	} else {
+    		if (i < 10) {
+    			str = "5";
+    		} else {
+    			str = "55";
+    		}
+    	}
+    	return strWidth(font, str);
+    }
+	
 	public static void dispose() {
 		instance.cityNamesFont.dispose();
 		instance.citySizeFont.dispose();
 		instance.unitBoxFont.dispose();
 		instance.infoPanelTileFont.dispose();
-		instance.buildingGoodsQuantityFont.dispose();
+		instance.goodsQuantityFont.dispose();
 	}
 
 	public static BitmapFont getCityNamesFont() {
@@ -116,9 +130,9 @@ public class FontResource {
 		return instance.infoPanelTileFont;
 	}
 	
-	public static BitmapFont getBuildingGoodsQuantityFont() {
-		instance.buildingGoodsQuantityFont.setColor(Color.WHITE);
-		return instance.buildingGoodsQuantityFont;
+	public static BitmapFont getGoodsQuantityFont() {
+		instance.goodsQuantityFont.setColor(Color.WHITE);
+		return instance.goodsQuantityFont;
 	}
 	
 	public static BitmapFont getWarehouseGoodsQuantityFont() {
