@@ -7,11 +7,6 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Production implements Identifiable {
-	
-	public static enum AttendedType {
-		UNATTENDED, ATTENDED, BOTH;
-	};
-	
     private boolean unattended = false;
     private java.util.Map<String,Integer> input = new HashMap<String, Integer>(2); 
     private java.util.Map<String,Integer> output = new HashMap<String, Integer>(2); 
@@ -19,6 +14,12 @@ public class Production implements Identifiable {
     public Production(boolean unattended) {
         this.unattended = unattended;
     }
+
+	public Production(Production p) {
+		this.unattended = p.unattended;
+		this.input.putAll(p.input);
+		this.output.putAll(p.output);
+	}
 
 	@Override
 	public String getId() {
@@ -57,40 +58,91 @@ public class Production implements Identifiable {
 		}
 	}
 
-	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers, AttendedType attendedType) {
+	public Production sumProductionForWorker(Unit worker) {
+		Production prod = new Production(this.unattended);
 		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
 			String goodsId = outputEntry.getKey();
+			int goodQuantity = outputEntry.getValue();
 			
-			Integer goodProductionInitValue = outputEntry.getValue();
-			if (0 == goodProductionInitValue) {
-				continue;
+			if (unattended) {
+			} else {
+				goodQuantity = (int)worker.unitType.applyModifier(goodsId, goodQuantity);
 			}
-			int goodQuantity = 0;
-			
-			if (AttendedType.ATTENDED.equals(attendedType)) {
-				if (this.unattended == false) {
-					goodQuantity += goodProductionInitValue;
-				}
+			prod.addOutput(goodsId, goodQuantity);
+		}
+		return prod;
+	}
+	
+	public void applyTileImprovementsModifiers(Tile aTile) {
+		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
+			int quantity = outputEntry.getValue();
+			String goodId = outputEntry.getKey();
+
+			for (TileImprovement ti : aTile.getTileImprovements()) {
+				quantity = (int)ti.type.applyModifier(goodId, quantity);
 			}
-			if (AttendedType.UNATTENDED.equals(attendedType)) {
-				if (this.unattended == true) {
-					goodQuantity += goodProductionInitValue;
-				}
+			for (TileResource tileResource : aTile.getTileResources()) {
+				quantity = (int)tileResource.getResourceType().applyModifier(goodId, quantity);
 			}
-			if (AttendedType.BOTH.equals(attendedType)) {
-				if (unattended && workers.isEmpty()) {
-					goodQuantity += goodProductionInitValue;
-				} 
-				if (!unattended && !workers.isEmpty()) {
-					for (Unit worker : workers) {
-						goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodProductionInitValue);
-					}
-				}
+			outputEntry.setValue(quantity);
+		}
+	}
+	
+	public boolean isProductMoreThen(Production maxProduction) {
+		int sumThis = sumProduction(output);
+		int sumArg = sumProduction(maxProduction.output);
+		
+		if (sumThis >= sumArg) {
+			return true;
+		} else {
+			return false;
+		}
+	}
+	
+	private int sumProduction(java.util.Map<String,Integer> m) {
+		int sum = 0;
+		for (java.util.Map.Entry<String, Integer> entry : m.entrySet()) {
+			sum += entry.getValue();
+		}
+		return sum;
+	}
+	
+	public String toString() {
+		String st = "";
+		if (unattended) {
+			st += "unattended ";
+		}
+		st += "input:[" + mapToString(input) + "]";
+		st += ", output:[" + mapToString(output) + "]";
+		return st;
+	}
+	
+	private String mapToString(java.util.Map<String,Integer> mm) {
+		String st = "";
+		for (java.util.Map.Entry<String, Integer> entry : mm.entrySet()) {
+			if (st.length() > 0) {
+				st += ", ";
 			}
-			if (goodQuantity != 0) {
-				summary.addGoods(goodsId, goodQuantity);
+			String goodsId = entry.getKey();
+			st += goodsId + ": " + entry.getValue();
+		}
+		return st;
+	}
+
+	public boolean isUnattended() {
+		return unattended;
+	}
+
+	public boolean outputEquals(Production prod) {
+		if (this.output.size() != prod.output.size()) {
+			return false;
+		}
+		for (java.util.Map.Entry<String, Integer> entry : output.entrySet()) {
+			if (!prod.output.containsKey(entry.getKey())) {
+				return false;
 			}
 		}
+		return true;
 	}
 	
 	public static class Xml extends XmlNodeParser {

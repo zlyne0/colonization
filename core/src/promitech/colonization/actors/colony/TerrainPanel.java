@@ -12,8 +12,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
@@ -118,11 +120,24 @@ public class TerrainPanel extends Table {
 				destColonyTile.setWorker(worker.unit);
 				addActor(worker);
 				updateWorkerScreenPosition(worker, colonyTerrains[i]);
+				
+				initMaxPossibleProdctionOnTile(worker.unit, colonyTerrains[i], colonyTiles[i]);
 				initProduction();
 				return;
 			}
 		}
 		throw new IllegalStateException("can not find colony tile by id: " + destColonyTile.getId());
+	}
+	
+	private void initMaxPossibleProdctionOnTile(Unit aUnit, Tile aTile, ColonyTile aColonyTile) {
+		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.type.productionInfo);
+		ProductionInfo maxPossibleProductionOnTile = colony.maxPossibleProductionOnTile(aUnit, aTile);
+
+		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
+		
+		maxPossibleProductionOnTile.determineMaxProductionType(aTile.type.productionInfo, aColonyTile.productionInfo);
+		
+		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
 	public void takeWorker(UnitActor unitActor) {

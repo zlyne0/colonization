@@ -81,6 +81,13 @@ public class Colony extends Settlement {
 		return productionSummary;
 	}
 	
+	public ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
+		ProductionInfo productionInfo = aTile.type.productionInfo;
+		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
+		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
+		return productionSummaryForWorker;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(GoodsContainer.class, "goodsContainer");

@@ -27,12 +27,48 @@ public class ProductionInfo {
         return summary;
 	}
 
-	public ProductionSummary productionSummaryForWorkers(Collection<Unit> workers, Production.AttendedType attendedType) {
-		ProductionSummary summary = new ProductionSummary();
-        for (Production production : productions) {
-    		production.sumProductionType(summary, workers, attendedType);
-        }
-        return summary;
+	public ProductionInfo productionSummaryForWorker(Unit worker) {
+		ProductionInfo prodInfo = new ProductionInfo();
+		for (Production production : productions) {
+			prodInfo.addProduction(production.sumProductionForWorker(worker));
+		}
+		return prodInfo;
 	}
 	
+	public String toString() {
+		String st = "";
+		for (Production p : productions) {
+			st += p + System.lineSeparator();
+		}
+		return st;
+	}
+
+	public void applyTileImprovementsModifiers(Tile aTile) {
+		for (Production p : productions) {
+			p.applyTileImprovementsModifiers(aTile);
+		}
+	}
+
+	public ProductionInfo determineMaxProductionType(ProductionInfo initTypes, ProductionInfo maxProdType) {
+		Production maxProduction = null;
+		for (Production p : productions) {
+			if (p.isUnattended()) {
+				continue;
+			}
+			if (maxProduction == null || p.isProductMoreThen(maxProduction)) {
+				maxProduction = p;
+			}
+		}
+		if (maxProduction == null) {
+			throw new IllegalStateException("can not find max produtions in " + this.toString());
+		}
+		
+		maxProdType.clear();
+		for (Production p : initTypes.productions) {
+			if (p.outputEquals(maxProduction)) {
+				maxProdType.addProduction(new Production(p)); 
+			}
+		}
+		return maxProdType;
+	}
 }
