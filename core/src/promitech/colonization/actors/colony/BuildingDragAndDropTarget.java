@@ -5,32 +5,39 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 
 import net.sf.freecol.common.model.Building;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 
 class BuildingDragAndDropTarget extends Target {
-    private final BuildingActor targetBuildingActor;
     
     public BuildingDragAndDropTarget(BuildingActor actor) {
         super(actor);
-        this.targetBuildingActor = actor;
     }
 
     @Override
-    public boolean drag(Source source, Payload payload, float x, float y, int pointer) {        
-        if (payload.getObject() instanceof Unit) {
+    public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
+    	if (source.getActor() instanceof UnitActor) {
             Unit unit = (Unit)payload.getObject();
-            Building building = targetBuildingActor.building;
-            
-            NoAddReason reason = building.getNoAddReason(unit);
-            if (NoAddReason.NONE != reason) {
-                System.out.println("can not add unit to " + building.buildingType + " because " + reason);
-            }
-            return NoAddReason.NONE == reason;
+            Building targetBuilding = ((BuildingActor)getActor()).building;
+            return canMoveUnitToBuilding(unit, targetBuilding);
+        } 
+        if (source.getActor() instanceof TerrainPanel) {
+        	ColonyTile colonyTile = (ColonyTile)payload.getObject();
+        	Building targetBuilding = ((BuildingActor)getActor()).building;
+        	return canMoveUnitToBuilding(colonyTile.getWorker(), targetBuilding);
         }
         return false;
     }
 
+    private boolean canMoveUnitToBuilding(Unit worker, Building building) {
+        NoAddReason reason = building.getNoAddReason(worker);
+        if (NoAddReason.NONE != reason) {
+            //System.out.println("can not add unit to " + building.buildingType + " because " + reason);
+        }
+        return NoAddReason.NONE == reason;
+    }
+    
     @Override
     public void drop(Source source, Payload payload, float x, float y, int pointer) {
         if (source.getActor() instanceof UnitActor) {
@@ -38,6 +45,7 @@ class BuildingDragAndDropTarget extends Target {
             if (source.getActor().getParent() instanceof BuildingActor) {
                 BuildingActor sourceBuildingActor = (BuildingActor)source.getActor().getParent();
                 
+                BuildingActor targetBuildingActor = (BuildingActor)getActor();
                 System.out.println("move unit "
                     + "[" + unitActor.unit + "] from "
                     + "[" + sourceBuildingActor.building + "] to "
@@ -45,6 +53,13 @@ class BuildingDragAndDropTarget extends Target {
                 
                 sourceBuildingActor.takeUnit(unitActor);
                 targetBuildingActor.putUnit(unitActor);
+            }
+            if (source.getActor().getParent() instanceof TerrainPanel) {
+            	TerrainPanel sourceTerrainPanel = (TerrainPanel)source.getActor().getParent();
+            	BuildingActor targetBuilding = (BuildingActor)getActor();
+            	
+            	sourceTerrainPanel.takeWorker(unitActor);
+            	targetBuilding.putUnit(unitActor);
             }
         }
     }

@@ -15,6 +15,10 @@ public class ProductionInfo {
 		return productions.size();
 	}
 
+	public void clear() {
+		productions.clear();
+	}
+	
 	public ProductionSummary productionSummaryForWorkers(Collection<Unit> workers) {
 		ProductionSummary summary = new ProductionSummary();
         for (Production production : productions) {

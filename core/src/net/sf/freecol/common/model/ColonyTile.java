@@ -18,10 +18,26 @@ public class ColonyTile extends ObjectWithId {
 		return workTileId;
 	}
 
+	public void moveWorkerTo(ColonyTile destColonyTile) {
+		Unit takenWorker = takeWorker();
+		destColonyTile.worker = takenWorker;
+	}
+    
+	public Unit takeWorker() {
+		Unit takenWorker = worker;
+		worker = null;
+		productionInfo.clear();
+		return takenWorker;
+	}
+
 	public Unit getWorker() {
 		return worker;
 	}
 	
+	public void setWorker(Unit worker) {
+		this.worker = worker;
+	}
+
     public static class Xml extends XmlNodeParser {
 
     	public Xml() {
@@ -54,5 +70,5 @@ public class ColonyTile extends ObjectWithId {
         }
 		
     }
-    
+
 }

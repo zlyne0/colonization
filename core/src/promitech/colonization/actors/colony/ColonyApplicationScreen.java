@@ -66,11 +66,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	}
 
     public void initColony(Colony colony, Tile colonyTile) {
+    	dragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
     	
         buildingsPanelActor.initBuildings(colony, dragAndDrop);
         resourcesPanel.initGoods(gameController.getSpecification(), colony);
-        terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile);
+        terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, dragAndDrop);
     }
 	
 	@Override

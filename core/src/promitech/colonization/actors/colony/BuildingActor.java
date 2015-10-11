@@ -62,6 +62,8 @@ class BuildingActor extends ImageButton {
     }
 
     void putUnit(UnitActor unitActor) {
+    	unitActor.setX(0);
+    	unitActor.setY(0);
         building.workers.add(unitActor.unit);
         
         addActor(unitActor);
