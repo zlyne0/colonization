@@ -1,6 +1,7 @@
 package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
@@ -87,6 +88,7 @@ public class MapRenderer {
 	private int x;
 	private int y;
 	
+	private boolean drawGrids = false;
 	
 	public MapRenderer(MapDrawModel mapDrawModel, 
 			GameResources gameResources, ShapeRenderer shapeRenderer ) 
@@ -316,6 +318,45 @@ public class MapRenderer {
     	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainForegroundTileDrawer);
     	drawColonyTilesRoadLayer(colonyTile, screenX, screenY);
     	drawColonyTilesObjects(colonyTile, screenX, screenY);
+    	if (drawGrids) {
+    	    drawColonyTilesGrids(colonyTile, batch, screenX, screenY);
+    	}
+	}
+	
+	private void drawColonyTilesGrids(Tile colonyTile, Batch batch, float screenX, float screenY) {
+	    batch.end();
+	    Gdx.gl20.glLineWidth(3);
+	    shapeRenderer.begin(ShapeType.Line);
+	    shapeRenderer.setColor(Color.BLACK);
+	    
+	    Vector2 v = mapToScreenCords(colonyTile.x, colonyTile.y);
+	    drawTileGrid(screenX, screenY, v);
+	    
+	    for (Direction direction : Direction.allDirections) {
+            x = direction.stepX(colonyTile.x, colonyTile.y);
+            y = direction.stepY(colonyTile.x, colonyTile.y);
+            v = mapToScreenCords(x, y);
+            drawTileGrid(screenX, screenY, v);
+        }
+	    
+	    shapeRenderer.end();
+	    Gdx.gl20.glLineWidth(1);
+	    batch.begin();
+	}
+
+	private void drawTileGrid(float screenX, float screenY, Vector2 v) {
+	    shapeRenderer.line(
+	        screenX + v.x + TILE_WIDTH/2, 
+	        screenY + v.y, 
+	        screenX + v.x, 
+	        screenY + v.y + TILE_HEIGHT/2
+        );
+	    shapeRenderer.line(
+	        screenX + v.x + TILE_WIDTH/2, 
+	        screenY + v.y, 
+	        screenX + v.x + TILE_WIDTH, 
+	        screenY + v.y + TILE_HEIGHT/2
+        );
 	}
 	
 	private void drawColonyTilesObjects(Tile colonyTile, float screenX, float screenY) {
