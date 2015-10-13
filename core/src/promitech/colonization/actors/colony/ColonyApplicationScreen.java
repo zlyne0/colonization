@@ -6,7 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
@@ -54,7 +54,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         Frame paperBackground = gameResources.getFrame("Paper");
         
         Table tableLayout = new Table(null);
-        tableLayout.setBackground(new TextureRegionDrawable(paperBackground.texture));
+        tableLayout.setBackground(new TiledDrawable(paperBackground.texture));
+        
         tableLayout.setFillParent(true);
         tableLayout.row();
         tableLayout.add(buildingsPanelActor);
