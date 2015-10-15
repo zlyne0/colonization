@@ -21,6 +21,7 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.Texture;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas;
 import com.badlogic.gdx.graphics.g2d.TextureAtlas.AtlasRegion;
+import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 
 public class GameResources {
 	public static final String RESOURCE_PROP_FILENAME = "resources.properties";
@@ -34,6 +35,8 @@ public class GameResources {
 	private Map<String,TextureAtlas> atlasByName = new HashMap<String, TextureAtlas>();	
 	private Map<String,Frame> frameByName = new HashMap<String,Frame>();
 	private Map<String,Frame> centerAdjustFrameTextureByName = new HashMap<String,Frame>();
+	
+	private Skin uiSkin;
 	
 	public int getCountForPrefix(String prefix) {
 		Integer count = countByPrefix.get(prefix);
@@ -53,6 +56,8 @@ public class GameResources {
 	public void load() throws IOException {
 		loadModule("rules/classic");
 		loadModule("base");
+		
+		uiSkin = new Skin(Gdx.files.internal("data/uiskin.json"));
 	}
 	
 	private void loadModule(String moduleLocation) throws IOException {
@@ -257,6 +262,10 @@ public class GameResources {
 		} else {
 			return new Color((Integer.parseInt(colorName) << 8) | 0xff);
 		}
+	}
+
+	public Skin getUiSkin() {
+		return uiSkin;
 	}
 
     public Frame goodsImage(GoodsType goodsType) {
