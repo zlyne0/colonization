@@ -60,13 +60,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         tableLayout.setFillParent(true);
         tableLayout.row();
+        tableLayout.add(terrainPanel);
         tableLayout.add(buildingsPanelActor);
         tableLayout.row();
-        tableLayout.add(resourcesPanel);
+        tableLayout.add(outsideUnitsPanel).colspan(2);
         tableLayout.row();
-        tableLayout.add(terrainPanel);
-        tableLayout.row();
-        tableLayout.add(outsideUnitsPanel);
+        tableLayout.add(resourcesPanel).colspan(2);
         stage.addActor(tableLayout);
 	}
 
