@@ -42,6 +42,9 @@ class BuildingDragAndDropTarget extends Target {
     public void drop(Source source, Payload payload, float x, float y, int pointer) {
         if (source.getActor() instanceof UnitActor) {
             UnitActor unitActor = (UnitActor)source.getActor();
+            
+            System.out.println("drop ActorUnit from container " + source.getActor().getParent());
+            
             if (source.getActor().getParent() instanceof BuildingActor) {
                 BuildingActor sourceBuildingActor = (BuildingActor)source.getActor().getParent();
                 
@@ -60,6 +63,13 @@ class BuildingDragAndDropTarget extends Target {
             	
             	sourceTerrainPanel.takeWorker(unitActor);
             	targetBuilding.putUnit(unitActor);
+            }
+            if (source.getActor().getParent() instanceof OutsideUnitsPanel) {
+            	OutsideUnitsPanel sourceContainer = (OutsideUnitsPanel)source.getActor().getParent();
+            	BuildingActor targetContainer = (BuildingActor)getActor();
+            	
+            	sourceContainer.takeUnit(unitActor);
+            	targetContainer.putUnit(unitActor);
             }
         }
     }

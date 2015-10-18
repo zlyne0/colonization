@@ -1,6 +1,8 @@
 package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -52,7 +54,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor();
         resourcesPanel = new WarehousePanel();
         terrainPanel = new TerrainPanel();
-        outsideUnitsPanel = new OutsideUnitsPanel();
+		outsideUnitsPanel = new OutsideUnitsPanel(this.shape);
         carrierUnitsPanel = new CarrierUnitsPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");

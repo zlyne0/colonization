@@ -104,7 +104,8 @@ class ObjectsTileDrawer extends TileDrawer {
 			Colony colony = tile.getSettlement().getColony();
 			font.setColor(Color.WHITE);
 			font.draw(batch, "" + colony.getColonyUnitsCount(), 
-					screenPoint.x + w/2, screenPoint.y + h/2 + 5
+					screenPoint.x + w/2, 
+					screenPoint.y + h/2 + 5
 			);
 		}
 	}
@@ -117,46 +118,14 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		Frame frame = gameResources.getCenterAdjustFrameTexture(unit.resourceImageKey());
 		batch.draw(frame.texture, 
-				screenPoint.x + frame.offsetX, screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
+				screenPoint.x + frame.offsetX, 
+				screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
 		);
 		
-		drawUnitChip(unit);
+		UnitDrawer.drawMapUnitChip(batch, shapeRenderer, 
+			unit, tile, mapDrawModel.playingPlayer, 
+			screenPoint.x, screenPoint.y
+		);
 	}
 	
-	private static final int BOX_WIDTH = 17;
-	
-	private void drawUnitChip(Unit unit) {
-		float cx = screenPoint.x + 35;
-		float cy = screenPoint.y + h - 5;
-		
-		batch.end();
-		shapeRenderer.begin(ShapeType.Filled);
-		shapeRenderer.setColor(unit.getOwner().getNation().getColor());
-		shapeRenderer.rect(cx, cy, BOX_WIDTH, 20);
-		shapeRenderer.end();
-
-		shapeRenderer.begin(ShapeType.Line);
-		shapeRenderer.setColor(Color.BLACK);
-		shapeRenderer.rect(cx, cy, BOX_WIDTH, 20);
-		
-		if (tile.units.size() > 1) {
-			shapeRenderer.setColor(Color.WHITE);
-			int max = tile.units.size() > 10 ? 10 : tile.units.size(); 
-			for (int i=0; i<max; i++) {
-				shapeRenderer.line(cx - 7, cy - (i*2) + 19, cx - 1, cy - (i*2) + 19);
-			}
-		}
-		
-		shapeRenderer.end();
-		
-		batch.begin();
-		
-		String occupationKey = unit.getOccupationKey(mapDrawModel.playingPlayer);
-		String text = Messages.msg(occupationKey);
-		
-		BitmapFont unitBoxFont = FontResource.getUnitBoxFont();
-		unitBoxFont.setColor(Color.BLACK);
-		float textWidth = FontResource.strWidth(unitBoxFont, text);
-		unitBoxFont.draw(batch, text, cx + BOX_WIDTH/2 - textWidth/2, cy + 20 - 2);
-	}
 }

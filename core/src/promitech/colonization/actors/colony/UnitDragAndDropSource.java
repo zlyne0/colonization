@@ -3,8 +3,6 @@ package promitech.colonization.actors.colony;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
-import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.Scaling;
 
 class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source {
     public UnitDragAndDropSource(UnitActor actor) {
@@ -15,7 +13,7 @@ class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAn
     public Payload dragStart(InputEvent event, float x, float y, int pointer) {
         UnitActor unitActor = (UnitActor)getActor();
         
-        Image dragImg = new Image(unitActor.getDrawable(), Scaling.none, Align.center);
+        Image dragImg = new Image(unitActor.getTexture());
         
         Payload payload = new Payload();
         payload.setObject(unitActor.unit);
