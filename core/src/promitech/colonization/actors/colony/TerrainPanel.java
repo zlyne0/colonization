@@ -156,6 +156,7 @@ public class TerrainPanel extends Table {
 	
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {
 		dragAndDrop.addTarget(new UnitTerrainDragAndDropTarget(this));
+		clear();
 		
 		mapRenderer = new MapRenderer(
 				mapDrawModel, 
