@@ -5,8 +5,6 @@ import java.util.HashMap;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
@@ -20,7 +18,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
 
-public class TerrainPanel extends Table {
+public class TerrainPanel extends Table implements DragAndDropSourceContainer, DragAndDropTargetContainer {
 	private static final int PREF_WIDTH = MapRenderer.TILE_WIDTH * 3 + MapRenderer.TILE_WIDTH/2;
 	private static final int PREF_HEIGHT = MapRenderer.TILE_HEIGHT * 3 + MapRenderer.TILE_HEIGHT/2;
 	
@@ -56,64 +54,17 @@ public class TerrainPanel extends Table {
 		}
 		productionQuantityDrawer = new ProductionQuantityDrawer(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
 		productionQuantityDrawer.centerToPoint(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
+	}
+	
+	@Override
+	public void putPayload(UnitActor worker, float x, float y) {
+		worker.dragAndDropSourceContainer = this;
 		
-		addListener(new InputListener() {
-			@Override
-			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				System.out.println("terrain panel touch down xy [" + x + "," + y + "]");
-				
-				Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)x, (int)y);
-				System.out.println("tile = " + tile);
-				return super.touchDown(event, x, y, pointer, button);
-			}
-		});
-	}
-	
-	public boolean canPutWorkerOnTerrain(float x, float y) {
-		ColonyTile ct = getColonyTileByScreenCords(x, y);
-		if (ct == null) {
-			return false;
+		ColonyTile destColonyTile = getColonyTileByScreenCords(x, y);
+		if (destColonyTile == null) {
+			throw new IllegalStateException("can not find dest colony tile by screen cords. Should invoke canPutpayload before");
 		}
-		if (ct.getWorkTileId().equals(colonyTile.getId())) {
-			return false;
-		}
-		return ct.getWorker() == null;
-	}
-	
-	public ColonyTile getColonyTileByScreenCords(float x, float y) {
-		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)x, (int)y);
-		if (tile == null) {
-			return null;
-		}
-		for (int i=0; i<colonyTiles.length; i++) {
-			if (tile.getId().equals(colonyTiles[i].getWorkTileId())) {
-				return colonyTiles[i];
-			}
-		}
-		return null;
-	}
-	
-	public void moveWorkerToTile(UnitActor worker, ColonyTile destColonyTile) {
-		for (int i=0; i<colonyTerrainsWorkers.length; i++) {
-			UnitActor tWorker = colonyTerrainsWorkers[i];
-			if (tWorker != null && tWorker.unit.equalsId(worker.unit)) {
-				ColonyTile sourceColonyTile = colonyTiles[i];
-				
-				System.out.println("move worker "
-						+ "[" + worker.unit + "] from "
-						+ "[" + sourceColonyTile.getId() + "] to "
-						+ "[" + destColonyTile.getId() + "]");
-				
-				sourceColonyTile.moveWorkerTo(destColonyTile);
-				colonyTerrainsWorkers[i] = null;
-				putWorkerOnTile(worker, destColonyTile);
-				return;
-			}
-		}
-		throw new IllegalStateException("can not find source colony tile by worker: " + worker.unit.getId());
-	}
-	
-	public void putWorkerOnTile(UnitActor worker, ColonyTile destColonyTile) {
+		
 		for (int i=0; i<colonyTiles.length; i++) {
 			if (colonyTiles[i].equalsId(destColonyTile)) {
 				colonyTerrainsWorkers[i] = worker;
@@ -128,6 +79,53 @@ public class TerrainPanel extends Table {
 		}
 		throw new IllegalStateException("can not find colony tile by id: " + destColonyTile.getId());
 	}
+
+	@Override
+	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
+		ColonyTile ct = getColonyTileByScreenCords(x, y);
+		if (ct == null) {
+			return false;
+		}
+		if (ct.getWorkTileId().equals(colonyTile.getId())) {
+			return false;
+		}
+		return ct.getWorker() == null;
+	}
+
+	@Override
+	public void takePayload(UnitActor unitActor, float x, float y) {
+		unitActor.dragAndDropSourceContainer = null;
+		
+		for (int i=0; i<colonyTerrainsWorkers.length; i++) {
+			UnitActor tWorker = colonyTerrainsWorkers[i];
+			if (tWorker != null && tWorker.unit.equalsId(unitActor.unit)) {
+				System.out.println("take worker "
+					+ "[" + unitActor.unit + "] from "
+					+ "[" + colonyTiles[i].getId() + "] "
+				);
+				
+				colonyTiles[i].takeWorker();
+				colonyTerrainsWorkers[i] = null;
+				removeActor(unitActor);
+				initProduction();
+				return;
+			}
+		}
+		throw new IllegalStateException("can not find colony tile by workerId: " + unitActor.unit.getId());
+	}
+	
+	private ColonyTile getColonyTileByScreenCords(float x, float y) {
+		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)x, (int)y);
+		if (tile == null) {
+			return null;
+		}
+		for (int i=0; i<colonyTiles.length; i++) {
+			if (tile.getId().equals(colonyTiles[i].getWorkTileId())) {
+				return colonyTiles[i];
+			}
+		}
+		return null;
+	}
 	
 	private void initMaxPossibleProdctionOnTile(Unit aUnit, Tile aTile, ColonyTile aColonyTile) {
 		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.type.productionInfo);
@@ -140,22 +138,8 @@ public class TerrainPanel extends Table {
 		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
-	public void takeWorker(UnitActor unitActor) {
-		for (int i=0; i<colonyTerrainsWorkers.length; i++) {
-			UnitActor tWorker = colonyTerrainsWorkers[i];
-			if (tWorker != null && tWorker.unit.equalsId(unitActor.unit)) {
-				colonyTiles[i].takeWorker();
-				colonyTerrainsWorkers[i] = null;
-				removeActor(unitActor);
-				initProduction();
-				return;
-			}
-		}
-		throw new IllegalStateException("can not find colony tile by workerId: " + unitActor.unit.getId());
-	}
-	
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {
-		dragAndDrop.addTarget(new UnitTerrainDragAndDropTarget(this));
+		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		clear();
 		
 		mapRenderer = new MapRenderer(
@@ -183,6 +167,7 @@ public class TerrainPanel extends Table {
 			
 			if (ct.getWorker() != null) {
 				UnitActor ua = new UnitActor(ct.getWorker());
+				ua.dragAndDropSourceContainer = this;
 				addActor(ua);
 				updateWorkerScreenPosition(ua, t);
 				
@@ -246,5 +231,4 @@ public class TerrainPanel extends Table {
 			);
 		}
 	}
-
 }

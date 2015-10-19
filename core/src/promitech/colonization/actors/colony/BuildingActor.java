@@ -10,10 +10,11 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 
-class BuildingActor extends ImageButton {
+class BuildingActor extends ImageButton implements DragAndDropSourceContainer, DragAndDropTargetContainer {
 	
 	final Colony colony;
     final Building building;
@@ -45,6 +46,7 @@ class BuildingActor extends ImageButton {
         for (Unit worker : building.workers.entities()) {
             UnitActor unitActor = new UnitActor(worker);
             addActor(unitActor);
+            unitActor.dragAndDropSourceContainer = this;
             
             dragAndDrop.addSource(new UnitDragAndDropSource(unitActor));
             
@@ -54,22 +56,41 @@ class BuildingActor extends ImageButton {
         resetProductionDesc();
     }
 
-    void takeUnit(UnitActor unitActor) {
-        building.workers.removeId(unitActor.unit);
-        removeActor(unitActor);
-        resetUnitActorPlacement();
-        resetProductionDesc();
-    }
+	@Override
+	public void takePayload(UnitActor unitActor, float x, float y) {
+		System.out.println("take unit [" + unitActor.unit + "] from building " + building);
+		
+		unitActor.dragAndDropSourceContainer = null;
+		
+		building.workers.removeId(unitActor.unit);
+		removeActor(unitActor);
+		resetUnitActorPlacement();
+		resetProductionDesc();
+	}
 
-    void putUnit(UnitActor unitActor) {
-    	unitActor.setX(0);
-    	unitActor.setY(0);
-        building.workers.add(unitActor.unit);
-        
-        addActor(unitActor);
-        resetUnitActorPlacement();
-        resetProductionDesc();
-    }
+	@Override
+	public void putPayload(UnitActor unitActor, float x, float y) {
+		System.out.println("put unit [" + unitActor.unit + "] to building " + building);
+
+		unitActor.dragAndDropSourceContainer = this;
+		
+		unitActor.setX(0);
+		unitActor.setY(0);
+		building.workers.add(unitActor.unit);
+		
+		addActor(unitActor);
+		resetUnitActorPlacement();
+		resetProductionDesc();
+	}
+
+	@Override
+	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
+		NoAddReason reason = building.getNoAddReason(unitActor.unit);
+//		if (NoAddReason.NONE != reason) {
+//			System.out.println("can not add unit to " + building.buildingType + " because " + reason);
+//		}
+		return NoAddReason.NONE == reason;
+	}
 
     void resetUnitActorPlacement() {
         float unitOffsetX = 0;

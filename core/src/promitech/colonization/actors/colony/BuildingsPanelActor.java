@@ -25,7 +25,7 @@ class BuildingsPanelActor extends Table {
         for (Building building : buildings) {
             BuildingActor buildingActor = new BuildingActor(colony, building);
             buildingActor.initWorkers(dragAndDrop);
-            dragAndDrop.addTarget(new BuildingDragAndDropTarget(buildingActor));
+            dragAndDrop.addTarget(new UnitDragAndDropTarget(buildingActor, buildingActor));
             
             add(buildingActor);
             i++;

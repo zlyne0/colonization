@@ -15,6 +15,8 @@ class UnitActor extends Widget {
     private ShapeRenderer shapeRenderer;
     private TextureRegion texture;
     
+    public DragAndDropSourceContainer dragAndDropSourceContainer;
+    
     private static TextureRegion getTexture(Unit unit) {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
     }

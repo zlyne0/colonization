@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 
 class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source {
+	
     public UnitDragAndDropSource(UnitActor actor) {
         super(actor);
     }
@@ -16,7 +17,7 @@ class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAn
         Image dragImg = new Image(unitActor.getTexture());
         
         Payload payload = new Payload();
-        payload.setObject(unitActor.unit);
+        payload.setObject(unitActor);
         payload.setDragActor(dragImg);
         payload.setInvalidDragActor(dragImg);
         payload.setValidDragActor(dragImg);

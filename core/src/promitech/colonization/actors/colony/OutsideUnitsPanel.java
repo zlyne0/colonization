@@ -12,7 +12,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer;
 
-class OutsideUnitsPanel extends ScrollPane {
+class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer, DragAndDropTargetContainer {
 
 	private final HorizontalGroup widgets = new HorizontalGroup();
 	private final ShapeRenderer shapeRenderer;
@@ -32,7 +32,32 @@ class OutsideUnitsPanel extends ScrollPane {
         widgets.space(15);
 	}
 
-	void putUnit(UnitActor unitActor) {
+	
+	@Override
+	public void takePayload(UnitActor unitActor, float x, float y) {
+		System.out.println("take unit [" + unitActor.unit + "] from tile " + colonyTile);
+
+		unitActor.dragAndDropSourceContainer = null;
+		unitActor.disableUnitChip();
+		
+		colonyTile.units.removeId(unitActor.unit);
+		widgets.removeActor(unitActor);
+		
+		validate();
+		setScrollPercentX(100);
+	}
+	
+	@Override
+	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
+		return true;
+	}
+	
+	@Override
+	public void putPayload(UnitActor unitActor, float x, float y) {
+		System.out.println("put unit [" + unitActor.unit + "] to tile " + colonyTile);
+		
+		unitActor.dragAndDropSourceContainer = this;
+		
 		unitActor.enableUnitChip(shapeRenderer);
 		colonyTile.units.add(unitActor.unit);
 		widgets.addActor(unitActor);
@@ -43,19 +68,9 @@ class OutsideUnitsPanel extends ScrollPane {
 		setScrollPercentX(100);
 	}
 
-	public void takeUnit(UnitActor unitActor) {
-		unitActor.disableUnitChip();
-		
-		colonyTile.units.removeId(unitActor.unit);
-		widgets.removeActor(unitActor);
-		
-		validate();
-		setScrollPercentX(100);
-	}
-
 	void initUnits(Tile colonyTile, DragAndDrop dragAndDrop) {
 		this.colonyTile = colonyTile;
-		dragAndDrop.addTarget(new OutsideUnitsDragAndDropTarget(this));
+		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		
 		widgets.clear();
 		
@@ -64,7 +79,10 @@ class OutsideUnitsPanel extends ScrollPane {
 		        continue;
 		    }
 			UnitActor unitActor = new UnitActor(unit, true, shapeRenderer);
+			
+			unitActor.dragAndDropSourceContainer = this;
 			dragAndDrop.addSource(new UnitDragAndDropSource(unitActor));
+			
 			widgets.addActor(unitActor);
 		}
 	}
