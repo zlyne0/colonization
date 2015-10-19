@@ -192,6 +192,10 @@ public class Unit extends ObjectWithFeatures implements Location {
     	return unitType != null && unitType.isNaval();
     }
     
+    public boolean isCarrier() {
+        return unitType.hasAbility(Ability.CARRY_GOODS) || hasAbility(Ability.CARRY_UNITS);
+    }
+    
     public boolean isPerson() {
         return unitType.hasAbility(Ability.PERSON)
             || unitType.hasAbility(Ability.BORN_IN_COLONY)

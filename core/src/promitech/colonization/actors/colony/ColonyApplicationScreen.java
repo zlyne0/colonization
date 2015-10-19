@@ -24,6 +24,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private WarehousePanel resourcesPanel;
 	private TerrainPanel terrainPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
+	private CarrierUnitsPanel carrierUnitsPanel;
 	
 	@Override
 	public void create() {
@@ -52,6 +53,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         resourcesPanel = new WarehousePanel();
         terrainPanel = new TerrainPanel();
         outsideUnitsPanel = new OutsideUnitsPanel();
+        carrierUnitsPanel = new CarrierUnitsPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
@@ -63,7 +65,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.add(terrainPanel);
         tableLayout.add(buildingsPanelActor);
         tableLayout.row();
-        tableLayout.add(outsideUnitsPanel).colspan(2);
+        tableLayout.add(carrierUnitsPanel);
+        tableLayout.add(outsideUnitsPanel);
         tableLayout.row();
         tableLayout.add(resourcesPanel).colspan(2);
         stage.addActor(tableLayout);
@@ -77,6 +80,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         resourcesPanel.initGoods(gameController.getSpecification(), colony);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, dragAndDrop);
         outsideUnitsPanel.initUnits(colonyTile, dragAndDrop);
+        carrierUnitsPanel.initUnits(colonyTile);
     }
 	
 	@Override

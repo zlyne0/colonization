@@ -4,31 +4,29 @@ import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer;
 
-class OutsideUnitsPanel extends ScrollPane {
+class CarrierUnitsPanel extends ScrollPane {
 
 	private final Table widgets = new Table();
 	
-	public OutsideUnitsPanel() {
+	public CarrierUnitsPanel() {
 		super(null, GameResources.instance.getUiSkin());
 		setWidget(widgets);
 		
         setForceScroll(false, false);
         setFadeScrollBars(false);
         setOverscroll(true, true);
-		
 	}
 	
-	void initUnits(Tile colonyTile, DragAndDrop dragAndDrop) {
+	void initUnits(Tile colonyTile) {
 		widgets.clear();
 		for (Unit unit : colonyTile.units.entities()) {
-		    if (unit.isCarrier()) {
+		    if (!unit.isCarrier()) {
 		        continue;
 		    }
 			TextureRegion tr = GameResources.instance.getFrame(unit.resourceImageKey()).texture;
