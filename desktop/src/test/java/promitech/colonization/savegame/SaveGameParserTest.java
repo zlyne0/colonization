@@ -5,13 +5,17 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Modifier;
+import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
+import net.sf.freecol.common.model.specification.options.IntegerOption;
+import net.sf.freecol.common.model.specification.options.OptionGroup;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -86,6 +90,32 @@ public class SaveGameParserTest {
         
         verifySpecificationBuildType(game);
         verifyShipGoods(game);
+        verifySpecificationOptionGroup(game);
+        verifySpecificationGameDifficultyOptions(game);
+    }
+
+    private void verifySpecificationGameDifficultyOptions(Game game) {
+        assertEquals(true, game.specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
+        assertEquals(true, game.specification.options.getBoolean(GameOptions.EMPTY_TRADERS));
+        
+        assertEquals(0, game.specification.options.getIntValue(GameOptions.STARTING_MONEY));
+        assertEquals("medium", game.specification.options.getStringValue(GameOptions.TILE_PRODUCTION));
+        
+    }
+
+    private void verifySpecificationOptionGroup(Game game) {
+        assertEquals(4, game.specification.optionGroupEntities.size());
+        
+        OptionGroup difficultyLevels = game.specification.optionGroupEntities.getById("difficultyLevels");
+        assertEquals(6, difficultyLevels.optionsGroup.size());
+        OptionGroup veryEasyDifficultyLevel = difficultyLevels.optionsGroup.getById("model.difficulty.veryEasy");
+        assertEquals(6, veryEasyDifficultyLevel.optionsGroup.size());
+        
+        OptionGroup other = veryEasyDifficultyLevel.optionsGroup.getById(GameOptions.DIFFICULTY_OTHER);
+        assertNotNull(other);
+        
+        assertEquals(1000, other.getIntValue(GameOptions.STARTING_MONEY));
+        assertEquals("veryHigh", other.getStringValue(GameOptions.TILE_PRODUCTION));
     }
 
     private void verifyShipGoods(Game game) {

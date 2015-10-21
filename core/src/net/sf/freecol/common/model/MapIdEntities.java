@@ -66,6 +66,10 @@ public class MapIdEntities<T extends Identifiable> {
     	entities.remove(element.getId());
     }
     
+    public void clear() {
+        entities.clear();
+    }
+    
     public static class Xml extends XmlNodeParser {
         private final String tagName;
         private final boolean withWrapperTag;
