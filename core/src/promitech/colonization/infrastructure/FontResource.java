@@ -17,7 +17,8 @@ public class FontResource {
 	private BitmapFont unitBoxFont = new BitmapFont(false);
 	private BitmapFont infoPanelTileFont = new BitmapFont();
 	private BitmapFont goodsQuantityFont; 
-	private BitmapFont warehouseGoodsQuantityFont; 
+	private BitmapFont warehouseGoodsQuantityFont;
+	private BitmapFont populationPanelFont = new BitmapFont(false);
 	
 	private GlyphLayout glyphLayout = new GlyphLayout();
 	
@@ -138,4 +139,8 @@ public class FontResource {
 	public static BitmapFont getWarehouseGoodsQuantityFont() {
 	    return instance.warehouseGoodsQuantityFont;
 	}
+	
+    public static BitmapFont getPopulationPanelFont() {
+        return instance.populationPanelFont;
+    }
 }

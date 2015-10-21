@@ -1,8 +1,6 @@
 package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -27,6 +25,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private TerrainPanel terrainPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private CarrierUnitsPanel carrierUnitsPanel;
+	private PopulationPanel populationPanel;
 	
 	@Override
 	public void create() {
@@ -56,6 +55,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         terrainPanel = new TerrainPanel();
 		outsideUnitsPanel = new OutsideUnitsPanel(this.shape);
         carrierUnitsPanel = new CarrierUnitsPanel();
+        populationPanel = new PopulationPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
@@ -66,6 +66,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(terrainPanel);
         tableLayout.add(buildingsPanelActor);
+        tableLayout.row();
+        tableLayout.add(populationPanel);
         tableLayout.row();
         tableLayout.add(carrierUnitsPanel);
         tableLayout.add(outsideUnitsPanel);
@@ -83,6 +85,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, dragAndDrop);
         outsideUnitsPanel.initUnits(colonyTile, dragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);
+        populationPanel.init(colony);
     }
 	
 	@Override
