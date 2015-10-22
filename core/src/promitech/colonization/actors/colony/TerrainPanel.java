@@ -34,6 +34,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer, D
 	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
 	
 	private final ProductionQuantityDrawer productionQuantityDrawer;
+	private final ChangeColonyStateListener changeColonyStateListener;
 	
 	@Override
 	public float getPrefWidth() {
@@ -45,7 +46,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer, D
 		return PREF_HEIGHT;
 	}
 	
-	public TerrainPanel() {
+	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener) {
+	    this.changeColonyStateListener = changeColonyStateListener;
 		setWidth(getPrefWidth());
 		setHeight(getPrefHeight());
 		
@@ -108,6 +110,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer, D
 				colonyTerrainsWorkers[i] = null;
 				removeActor(unitActor);
 				initProduction();
+				
+				changeColonyStateListener.changeUnitAllocation(colony);
 				return;
 			}
 		}

@@ -36,7 +36,7 @@ public class Colony extends Settlement {
 		return colonyUnitsCount;
 	}
     
-    private void updateColonyUnitsCount() {
+    public void updateColonyUnitsCount() {
     	colonyUnitsCount = 0;
     	for (Building building : buildings.entities()) {
     		colonyUnitsCount += building.workers.size();
@@ -90,6 +90,7 @@ public class Colony extends Settlement {
 		}
 		ProductionSummary productionSummary = colonyTile.productionInfo.productionSummaryForWorkers(workers);
 		productionSummary.applyTileImprovementsModifiers(tile);
+		productionSummary.applyModifier(((Colony)tile.getSettlement()).productionBonus());
 		return productionSummary;
 	}
 	

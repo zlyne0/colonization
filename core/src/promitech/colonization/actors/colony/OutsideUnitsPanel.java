@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
@@ -14,12 +15,15 @@ import promitech.colonization.actors.map.MapRenderer;
 
 class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer, DragAndDropTargetContainer {
 
+    private final ChangeColonyStateListener changeColonyStateListener;
 	private final HorizontalGroup widgets = new HorizontalGroup();
 	private final ShapeRenderer shapeRenderer;
 	private Tile colonyTile;
+	private Colony colony;
 	
-	public OutsideUnitsPanel(ShapeRenderer shapeRenderer) {
+	public OutsideUnitsPanel(ShapeRenderer shapeRenderer, ChangeColonyStateListener changeColonyStateListener) {
 		super(null, GameResources.instance.getUiSkin());
+		this.changeColonyStateListener = changeColonyStateListener;
 		this.shapeRenderer = shapeRenderer;
 		setWidget(widgets);
 		
@@ -45,6 +49,8 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		
 		validate();
 		setScrollPercentX(100);
+		
+		this.changeColonyStateListener.changeUnitAllocation(colony);
 	}
 	
 	@Override
@@ -70,6 +76,7 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 
 	void initUnits(Tile colonyTile, DragAndDrop dragAndDrop) {
 		this.colonyTile = colonyTile;
+		this.colony = (Colony)colonyTile.getSettlement();
 		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		
 		widgets.clear();

@@ -44,6 +44,12 @@ public class ProductionSummary {
 		}
 	}
 	
+	public void applyModifier(int productionBonus) {
+	    for (Entry<String> entry : goods.entries()) {
+            goods.getAndIncrement(entry.key, 0, productionBonus);
+	    }
+	}
+	
 	public String toString() {
 		String st = "productionSummary [";
 		for (Entry<String> entry : goods.entries()) {
@@ -52,5 +58,4 @@ public class ProductionSummary {
 		st += "]";
 		return st;
 	}
-
 }

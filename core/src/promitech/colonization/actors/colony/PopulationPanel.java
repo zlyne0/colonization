@@ -40,7 +40,7 @@ public class PopulationPanel extends HorizontalGroup {
         addActor(royalistsPercentageLabel);
     }
 
-    public void init(Colony colony) {
+    public void update(Colony colony) {
         int rebels = colony.rebels();
         int rebelsPercentage = colony.sonsOfLiberty();
         

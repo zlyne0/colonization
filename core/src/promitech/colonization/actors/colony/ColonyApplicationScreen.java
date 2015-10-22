@@ -27,6 +27,14 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	
+	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
+        @Override
+        public void changeUnitAllocation(Colony colony) {
+            colony.updateColonyUnitsCount();
+            populationPanel.update(colony);
+        }
+    };
+	
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
@@ -50,10 +58,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         });
         stage.addActor(closeButton);
         
-        buildingsPanelActor = new BuildingsPanelActor();
+        buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener);
         resourcesPanel = new WarehousePanel();
-        terrainPanel = new TerrainPanel();
-		outsideUnitsPanel = new OutsideUnitsPanel(this.shape);
+        terrainPanel = new TerrainPanel(changeColonyStateListener);
+		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
         carrierUnitsPanel = new CarrierUnitsPanel();
         populationPanel = new PopulationPanel();
         
@@ -85,7 +93,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, dragAndDrop);
         outsideUnitsPanel.initUnits(colonyTile, dragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);
-        populationPanel.init(colony);
+        populationPanel.update(colony);
     }
 	
 	@Override

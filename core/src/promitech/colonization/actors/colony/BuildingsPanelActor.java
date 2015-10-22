@@ -12,7 +12,10 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithId;
 
 class BuildingsPanelActor extends Table {
-    BuildingsPanelActor() {
+    private final ChangeColonyStateListener changeColonyStateListener;
+    
+    BuildingsPanelActor(ChangeColonyStateListener changeColonyStateListener) {
+        this.changeColonyStateListener = changeColonyStateListener;
     }
     
     void initBuildings(Colony colony, DragAndDrop dragAndDrop) {
@@ -23,7 +26,7 @@ class BuildingsPanelActor extends Table {
         
         int i = 0;
         for (Building building : buildings) {
-            BuildingActor buildingActor = new BuildingActor(colony, building);
+            BuildingActor buildingActor = new BuildingActor(colony, building, changeColonyStateListener);
             buildingActor.initWorkers(dragAndDrop);
             dragAndDrop.addTarget(new UnitDragAndDropTarget(buildingActor, buildingActor));
             

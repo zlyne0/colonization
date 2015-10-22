@@ -20,14 +20,16 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer, D
     final Building building;
     private final ProductionQuantityDrawModel productionQuantityDrawModel = new ProductionQuantityDrawModel();
     private ProductionQuantityDrawer productionQuantityDrawer;
+    private final ChangeColonyStateListener changeColonyStateListener;
 
     private static TextureRegionDrawable getBuildingTexture(Building building) {
     	Frame img = GameResources.instance.buildingTypeImage(building.buildingType);
     	return new TextureRegionDrawable(img.texture);
     }
     
-    BuildingActor(Colony colony, Building building) {
+    BuildingActor(Colony colony, Building building, ChangeColonyStateListener changeColonyStateListener) {
         super(getBuildingTexture(building));
+        this.changeColonyStateListener = changeColonyStateListener;
         this.building = building;
         this.colony = colony;
     }
@@ -66,6 +68,8 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer, D
 		removeActor(unitActor);
 		resetUnitActorPlacement();
 		resetProductionDesc();
+		
+		changeColonyStateListener.changeUnitAllocation(colony);
 	}
 
 	@Override
