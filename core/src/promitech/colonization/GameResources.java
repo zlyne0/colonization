@@ -7,6 +7,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 
+import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
@@ -270,5 +271,13 @@ public class GameResources {
 
     public Frame goodsImage(GoodsType goodsType) {
         return getFrame(goodsType.getId() + ".image");
+    }
+    
+    public Frame goodsImage(String goodsTypeId) {
+        return getFrame(goodsTypeId + ".image");
+    }
+    
+    public Frame coatOfArms(Nation nation) {
+        return getFrame(nation.getId() + ".image");
     }
 }

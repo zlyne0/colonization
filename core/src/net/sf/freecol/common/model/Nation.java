@@ -7,29 +7,48 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 import com.badlogic.gdx.graphics.Color;
 
-public class Nation implements Identifiable {
-	private final String id;
+public class Nation extends ObjectWithId {
+    
+    public static final String UNKNOWN_NATION_ID = "model.nation.unknownEnemy";
+    
 	public final NationType nationType;
 	private Color color;
+	private String refId;
+	private Nation royalNation;
+    private Nation rebelNation;
 
 	public Nation(String id, NationType nationType) {
-		this.id = id;
+	    super(id);
 		this.nationType = nationType;
-	}
-	
-	@Override
-	public String getId() {
-		return id;
 	}
 	
 	public Color getColor() {
 		return color;
 	}
 	
-	public String toString() {
-	    return id;
-	}
-	
+    public Nation getRoyalNation() {
+        return royalNation;
+    }
+
+    public Nation getRebelNation() {
+        return rebelNation;
+    }
+    
+    public void updateReferences(Specification specification) {
+        if (refId != null) {
+            royalNation = specification.nations.getById(refId);
+        }
+        for (Nation n : specification.nations.entities()) {
+            if (equalsId(n.refId)) {
+                rebelNation = n;
+            }
+        }
+    }
+    
+    public final boolean isUnknownEnemy() {
+        return UNKNOWN_NATION_ID.equals(getId());
+    }
+    
 	public static class Xml extends XmlNodeParser {
 		
 		@Override
@@ -42,6 +61,7 @@ public class Nation implements Identifiable {
 			
             Nation nation = new Nation(id, type);
 			nation.color = GameResources.colorFromValue(colorStrVal);
+			nation.refId = attr.getStrAttribute("ref");
 			
 			nodeObject = nation;
 		}

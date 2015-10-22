@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.util.Locale;
 
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
@@ -145,14 +146,36 @@ public class Unit extends ObjectWithFeatures implements Location {
         return location != null && location instanceof Unit;
     }
     
-    int getSpaceTaken() {
+    private int getSpaceTaken() {
         int space = 0;
         if (unitContainer != null) {
         	space += unitContainer.getSpaceTakenByUnits();
         }
+        if (goodsContainer != null) {
+        	space += goodsContainer.getCargoSpaceTaken();
+        }
         return space;
     }
 
+    public boolean hasSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
+    	return getSpaceTaken() + additionalCargoSlots <= unitType.getSpace();
+    }
+    
+    public boolean hasSpaceForAdditionalCargo(AbstractGoods additionalCargo) {
+        int space = 0;
+        if (unitContainer != null) {
+            space += unitContainer.getSpaceTakenByUnits();
+        }
+        if (goodsContainer != null) {
+            space += goodsContainer.takenCargoSlotsWithAdditionalCargo(additionalCargo);
+        }
+        return space <= unitType.getSpace();
+    }
+    
+    public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
+    	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
+    }
+    
 	public boolean couldMove() {
         return state == UnitState.ACTIVE
             && movesLeft > 0

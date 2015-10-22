@@ -4,69 +4,35 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
-import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.GameResources;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
 
-class WarehouseGoodActor extends ImageButton {
+class WarehousePanel extends Table implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
+    private java.util.Map<String, GoodActor> goodActorByType = new HashMap<String, GoodActor>();
     
-    private final GoodsType goodsType;
-    private int quantity = 0;
-    
-    private static TextureRegionDrawable getGoodTexture(GoodsType goodsType) {
-        Frame img = GameResources.instance.goodsImage(goodsType);
-        return new TextureRegionDrawable(img.texture);
-    }
-    
-    WarehouseGoodActor(GoodsType goodsType, int quantity) {
-        super(getGoodTexture(goodsType));
-        this.goodsType = goodsType;
-        this.quantity = quantity;
-    }
-    
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-        super.draw(batch, parentAlpha);
-        
-        BitmapFont font = FontResource.getGoodsQuantityFont();
-        if (quantity == 0) {
-            font.setColor(Color.GRAY);
-        } else {
-            font.setColor(Color.WHITE);
-        }
-        float quantityStrLength = FontResource.strIntWidth(font, quantity);
-        font.draw(batch, Integer.toString(quantity), getX() + getWidth()/2 - quantityStrLength/2, getY());
-    }
-
-    public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-    
-}
-
-class WarehousePanel extends Table {
-    private java.util.Map<GoodsType, WarehouseGoodActor> goodActorByType = new HashMap<GoodsType, WarehouseGoodActor>();
+    private Colony colony;
     
     WarehousePanel() {
     }
 
-    public void initGoods(Specification specification, Colony colony) {
+    public void initGoods(Specification specification, Colony aColony, DragAndDrop goodsDragAndDrop) {
+        this.colony = aColony;
+        
+        goodsDragAndDrop.addTarget(new GoodActor.GoodsDragAndDropTarget(this, this));
+        
         List<GoodsType> goodsTypes = new ArrayList<GoodsType>(specification.goodsTypes.entities());
         Collections.sort(goodsTypes, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
         
         defaults().space(20);
+        pad(20);
         
         for (GoodsType goodsType : goodsTypes) {
             if (!goodsType.isStorable()) {
@@ -74,18 +40,56 @@ class WarehousePanel extends Table {
             }
             System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable() + ", " + goodsType.getInsertOrder());
             
-            int goodsAmount = colony.getGoodsContainer().goodsAmount(goodsType);
+            int goodsAmount = aColony.getGoodsContainer().goodsAmount(goodsType);
             setGoodQuantity(goodsType, goodsAmount);
         }
+        updateDragAndDropSource(goodsDragAndDrop);
+    }
+    
+    private void updateDragAndDropSource(DragAndDrop goodsDragAndDrop) {
+    	for (Entry<String, GoodActor> entry : goodActorByType.entrySet()) {
+    		goodsDragAndDrop.addSource(new GoodActor.GoodsDragAndDropSource(entry.getValue()));
+    	}
     }
     
     private void setGoodQuantity(GoodsType goodsType, int goodsAmount) {
-        WarehouseGoodActor warehouseGoodActor = goodActorByType.get(goodsType);
+        GoodActor warehouseGoodActor = goodActorByType.get(goodsType.getId());
         if (warehouseGoodActor == null) {
-            warehouseGoodActor = new WarehouseGoodActor(goodsType, goodsAmount);
-            goodActorByType.put(goodsType, warehouseGoodActor);
+            warehouseGoodActor = new GoodActor(goodsType.getId(), goodsAmount);
+            warehouseGoodActor.dragAndDropSourceContainer = this;
+            goodActorByType.put(goodsType.getId(), warehouseGoodActor);
             add(warehouseGoodActor);
         }
         warehouseGoodActor.setQuantity(goodsAmount);
+    }
+
+    @Override
+    public void putPayload(AbstractGoods payload, float x, float y) {
+        System.out.println("warehousePanel: put good " + payload);
+        
+        GoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
+        if (warehouseGoodActor == null) {
+            throw new IllegalStateException("can not find warehouse good actor by goodId: " + payload.getTypeId());
+        }
+        
+        colony.getGoodsContainer().increaseGoodsQuantity(payload);
+        warehouseGoodActor.increaseQuantity(payload);
+    }
+
+    @Override
+    public boolean canPutPayload(AbstractGoods unitActor, float x, float y) {
+        return true;
+    }
+
+    @Override
+    public void takePayload(AbstractGoods payload, float x, float y) {
+        System.out.println("warehousePanel: take good " + payload);
+        
+        GoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
+        if (warehouseGoodActor == null) {
+            throw new IllegalStateException("can not find warehouse good actor by goodId: " + payload.getTypeId());
+        }
+        warehouseGoodActor.decreaseQuantity(payload);
+        colony.getGoodsContainer().decreaseGoodsQuantity(payload);
     }
 }

@@ -6,6 +6,10 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianNationType extends NationType {
 
+    public boolean isREF() {
+        return false;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNodeForMapIdEntities("settlementTypes", SettlementType.class);

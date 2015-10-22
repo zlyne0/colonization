@@ -90,7 +90,7 @@ public class Colony extends Settlement {
 		}
 		ProductionSummary productionSummary = colonyTile.productionInfo.productionSummaryForWorkers(workers);
 		productionSummary.applyTileImprovementsModifiers(tile);
-		productionSummary.applyModifier(((Colony)tile.getSettlement()).productionBonus());
+		productionSummary.applyModifier(productionBonus());
 		return productionSummary;
 	}
 	

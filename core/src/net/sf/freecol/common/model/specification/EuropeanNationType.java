@@ -7,6 +7,13 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class EuropeanNationType extends NationType {
 
+    private boolean ref;
+    
+    @Override
+    public boolean isREF() {
+        return ref;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNodeForMapIdEntities("settlementTypes", SettlementType.class);
@@ -14,9 +21,10 @@ public class EuropeanNationType extends NationType {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            NationType nationType = new EuropeanNationType();
+            EuropeanNationType nationType = new EuropeanNationType();
             nationType.european = true;
             nationType.id = attr.getStrAttribute("id");
+            nationType.ref = attr.getBooleanAttribute("ref");
             nodeObject = nationType;
         }
         

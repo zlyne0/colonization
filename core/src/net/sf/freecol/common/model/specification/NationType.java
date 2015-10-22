@@ -47,4 +47,6 @@ public abstract class NationType implements Identifiable {
     public String toString() {
     	return "nationType: " + id;
     }
+
+    public abstract boolean isREF();
 }

@@ -5,7 +5,6 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Modifier;
-import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
@@ -14,7 +13,6 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
-import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 
 import org.junit.BeforeClass;
@@ -145,7 +143,7 @@ public class SaveGameParserTest {
     private void verifySettlementsGoods(Game game) {
         Tile tile = game.map.getTile(24, 78);
         Colony colony = (Colony)tile.getSettlement();
-        assertEquals(10, colony.getGoodsContainer().getGoods().size());
+        assertEquals(10, colony.getGoodsContainer().size());
     }
     
     private void verifySettlementsBuildings(Game game) {

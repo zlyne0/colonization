@@ -13,7 +13,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer;
 
-class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer, DragAndDropTargetContainer {
+class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 
     private final ChangeColonyStateListener changeColonyStateListener;
 	private final HorizontalGroup widgets = new HorizontalGroup();
@@ -85,7 +85,8 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		    if (unit.isCarrier()) {
 		        continue;
 		    }
-			UnitActor unitActor = new UnitActor(unit, true, shapeRenderer);
+			UnitActor unitActor = new UnitActor(unit);
+			unitActor.enableUnitChip(shapeRenderer);
 			
 			unitActor.dragAndDropSourceContainer = this;
 			dragAndDrop.addSource(new UnitDragAndDropSource(unitActor));

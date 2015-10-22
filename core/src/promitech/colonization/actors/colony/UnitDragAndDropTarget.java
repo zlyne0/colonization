@@ -9,9 +9,9 @@ import promitech.colonization.Validation;
 
 class UnitDragAndDropTarget extends Target {
 
-	private DragAndDropTargetContainer targetContainer;
+	private DragAndDropTargetContainer<UnitActor> targetContainer;
 	
-	public UnitDragAndDropTarget(Actor actor, DragAndDropTargetContainer actorContainer) {
+	public UnitDragAndDropTarget(Actor actor, DragAndDropTargetContainer<UnitActor> actorContainer) {
 		super(actor);
 		this.targetContainer = actorContainer;
 	}
@@ -27,7 +27,7 @@ class UnitDragAndDropTarget extends Target {
     	Validation.instanceOf(source.getActor(), UnitActor.class);
 		
 		UnitActor actor = (UnitActor)source.getActor();
-		DragAndDropSourceContainer sourceContainer = actor.dragAndDropSourceContainer;
+		DragAndDropSourceContainer<UnitActor> sourceContainer = actor.dragAndDropSourceContainer;
 		sourceContainer.takePayload(actor, x, y);
 		targetContainer.putPayload(actor, x, y);
 	}

@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLabel;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.ChangeSelectedUnitListener;
 import promitech.colonization.actors.map.MapActor;
@@ -37,6 +38,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     private Unit selectedUnit;
     private final List<String> selectedUnitDescriptions = new ArrayList<String>(5);
 	private final UnitLabel unitLabel;
+	private List<AbstractGoods> carrierGoods;
     
     public HudInfoPanel(Specification specification, GameResources gameResources) {
     	this.gameResources = gameResources;
@@ -93,24 +95,21 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 
 	private void drawUnitContener(Batch batch, Unit unit) {
 		int containerWidth = 0;
-		if (unit.getGoodsContainer() != null) {
-			containerWidth += unit.getGoodsContainer().getGoods().size() * GOODS_IMAGE_WIDTH;
+		if (carrierGoods != null) {
+			containerWidth += carrierGoods.size() * GOODS_IMAGE_WIDTH;
 		}
 		if (unit.getUnitContainer() != null) {
 			containerWidth += unit.getUnitContainer().getUnits().size() * UNITS_IMAGE_WIDTH;
 		}
 		
 		int x = (int)getWidth() / 2 - containerWidth/2 + 40;
-		if (unit.getGoodsContainer() != null) {
+		if (carrierGoods != null) {
 			BitmapFont font = FontResource.getInfoPanelTitleFont();
 			
-			for (Entry<String, Integer> entrySet : unit.getGoodsContainer().getGoods().entrySet()) {
-				String goodsTypeId = entrySet.getKey();
-				Integer amount = entrySet.getValue();
-				
-				Frame goodsImage = gameResources.getFrame(goodsTypeId + ".image");
+			for (AbstractGoods good : carrierGoods) {
+                Frame goodsImage = gameResources.goodsImage(good.getTypeId());
 				batch.draw(goodsImage.texture, getX() + x, getY() + 30);
-				font.draw(batch, amount.toString(), getX() + x + 5, getY() + 30);
+				font.draw(batch, Integer.toString(good.getQuantity()), getX() + x + 5, getY() + 30);
 				
 				x += GOODS_IMAGE_WIDTH;
 			}
@@ -174,6 +173,11 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 		label = unitLabel.getUnitEquipment(selectedUnit);
 		if (label != null) {
 			selectedUnitDescriptions.add(label);
+		}
+		
+		carrierGoods = null;
+		if (newSelectedUnit.getGoodsContainer() != null) {
+		    carrierGoods = newSelectedUnit.getGoodsContainer().carrierGoods();
 		}
 	}
 	

@@ -18,7 +18,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
 
-public class TerrainPanel extends Table implements DragAndDropSourceContainer, DragAndDropTargetContainer {
+public class TerrainPanel extends Table implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 	private static final int PREF_WIDTH = MapRenderer.TILE_WIDTH * 3 + MapRenderer.TILE_WIDTH/2;
 	private static final int PREF_HEIGHT = MapRenderer.TILE_HEIGHT * 3 + MapRenderer.TILE_HEIGHT/2;
 	

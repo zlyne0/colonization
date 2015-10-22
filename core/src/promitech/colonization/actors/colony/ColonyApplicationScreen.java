@@ -1,24 +1,30 @@
 package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.hud.ButtonActor;
 
 public class ColonyApplicationScreen extends ApplicationScreen {
 
-    private DragAndDrop dragAndDrop;
+    private DragAndDrop unitsDragAndDrop;
+    private DragAndDrop goodsDragAndDrop;
 	private Stage stage;
 	private BuildingsPanelActor buildingsPanelActor;
 	private WarehousePanel resourcesPanel;
@@ -35,12 +41,22 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         }
     };
 	
+    private static boolean shiftPressed = false;  
+    static boolean isShiftPressed() {
+    	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
+    }
+    
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
-        dragAndDrop = new DragAndDrop();
-        dragAndDrop.setDragActorPosition(0, 0);
+        unitsDragAndDrop = new DragAndDrop();
+        unitsDragAndDrop.setDragActorPosition(0, 0);
+        unitsDragAndDrop.setTapSquareSize(3);
+        
+        goodsDragAndDrop = new DragAndDrop();
+        goodsDragAndDrop.setDragActorPosition(0, 0);
+        goodsDragAndDrop.setTapSquareSize(3);
         
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
 		
@@ -62,13 +78,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         resourcesPanel = new WarehousePanel();
         terrainPanel = new TerrainPanel(changeColonyStateListener);
 		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
-        carrierUnitsPanel = new CarrierUnitsPanel();
+        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop);
         populationPanel = new PopulationPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
         Table tableLayout = new Table(null);
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));
+        
+        HorizontalGroup rowGroup1 = new HorizontalGroup();
+        rowGroup1.addActor(carrierUnitsPanel);
+        rowGroup1.addActor(outsideUnitsPanel);
         
         tableLayout.setFillParent(true);
         tableLayout.row();
@@ -77,21 +97,46 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(populationPanel);
         tableLayout.row();
-        tableLayout.add(carrierUnitsPanel);
-        tableLayout.add(outsideUnitsPanel);
+        tableLayout.add(rowGroup1).colspan(2);
         tableLayout.row();
         tableLayout.add(resourcesPanel).colspan(2);
+        tableLayout.row();
+
+		tableLayout.add(createShiftButton()).colspan(2).fillX();
         stage.addActor(tableLayout);
 	}
 
+	private TextButton createShiftButton() {
+		TextButton textButton = new TextButton("shift", GameResources.instance.getUiSkin());
+//		textButton.setRotation(90);
+//		textButton.setTransform(true);
+		textButton.pad(10);
+		
+		textButton.addListener(new DragListener() {
+			{
+				setTapSquareSize(3);
+			}
+			@Override
+			public void dragStart(InputEvent event, float x, float y, int pointer) {
+				shiftPressed = true;
+			}
+			@Override
+			public void dragStop(InputEvent event, float x, float y, int pointer) {
+				shiftPressed = false;
+			}
+		});
+		return textButton;
+	}
+	
     public void initColony(Colony colony, Tile colonyTile) {
-    	dragAndDrop.clear();
+    	unitsDragAndDrop.clear();
+    	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
     	
-        buildingsPanelActor.initBuildings(colony, dragAndDrop);
-        resourcesPanel.initGoods(gameController.getSpecification(), colony);
-        terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, dragAndDrop);
-        outsideUnitsPanel.initUnits(colonyTile, dragAndDrop);
+        buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
+        resourcesPanel.initGoods(gameController.getSpecification(), colony, goodsDragAndDrop);
+        terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);
+        outsideUnitsPanel.initUnits(colonyTile, unitsDragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);
         populationPanel.update(colony);
     }
@@ -105,7 +150,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	public void onLeave() {
 		Gdx.input.setInputProcessor(null);
 		
-		dragAndDrop.clear();
+		unitsDragAndDrop.clear();
+		goodsDragAndDrop.clear();
 	}
 	
 	@Override

@@ -1,20 +1,36 @@
 package net.sf.freecol.common.model.specification;
 
-public class AbstractGoods {
-	private int amount;
-	private GoodsType type;
+import net.sf.freecol.common.model.GoodsContainer;
 
-	public AbstractGoods(GoodsType type, int amount) {
-	    this.amount = amount;
-	    this.type = type;
+public class AbstractGoods {
+	private int quantity;
+	private String typeId;
+
+	public AbstractGoods(String typeId, int quantity) {
+	    this.quantity = quantity;
+	    this.typeId = typeId;
+	}
+
+	public int takenCargoSlot() {
+		if (quantity <= 0) {
+			throw new IllegalStateException("should not move zero or less quantity");
+		}
+		if (quantity % GoodsContainer.CARRIER_SLOT_MAX_QUANTITY > 0) {
+			return quantity / GoodsContainer.CARRIER_SLOT_MAX_QUANTITY + 1;
+		} else {
+			return quantity / GoodsContainer.CARRIER_SLOT_MAX_QUANTITY;
+		}
 	}
 	
-	public int getAmount() {
-		return amount;
+	public int getQuantity() {
+		return quantity;
 	}
 
-	public GoodsType getType() {
-		return type;
-	}
-
+    public String getTypeId() {
+        return typeId;
+    }
+    
+    public String toString() {
+    	return "type[" + typeId + "], quantity[" + quantity + "]";
+    }
 }

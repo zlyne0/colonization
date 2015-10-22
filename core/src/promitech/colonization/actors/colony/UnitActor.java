@@ -12,10 +12,11 @@ import promitech.colonization.actors.map.UnitDrawer;
 class UnitActor extends Widget {
     final Unit unit;
     private boolean drawUnitChip;
+    private boolean drawFocus = false;
     private ShapeRenderer shapeRenderer;
     private TextureRegion texture;
     
-    public DragAndDropSourceContainer dragAndDropSourceContainer;
+    public DragAndDropSourceContainer<UnitActor> dragAndDropSourceContainer;
     
     private static TextureRegion getTexture(Unit unit) {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
@@ -28,14 +29,6 @@ class UnitActor extends Widget {
         this.unit = unit;
         
         setSize(getPrefWidth(), getPrefHeight());
-    }
-
-    UnitActor(final Unit unit, boolean drawUnitChip, ShapeRenderer shapeRenderer) {
-    	this.texture = getTexture(unit);
-    	
-        this.shapeRenderer = shapeRenderer;
-        this.drawUnitChip = drawUnitChip;
-        this.unit = unit;
     }
 
     @Override
@@ -63,11 +56,18 @@ class UnitActor extends Widget {
     }
     
 	public void draw(Batch batch, float parentAlpha) {
-		if (drawUnitChip) {
-			batch.draw(texture, getX() + UnitDrawer.BOX_WIDTH, getY());
-			
+		if (drawFocus || drawUnitChip) {
 			shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
 			shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+		}
+		
+		if (drawFocus) {
+			UnitDrawer.drawColonyUnitFocus(batch, shapeRenderer, 
+					getX(), getY(), texture.getRegionWidth(), drawUnitChip
+			);
+		}
+		if (drawUnitChip) {
+			batch.draw(texture, getX() + UnitDrawer.BOX_WIDTH, getY());
 			
 			UnitDrawer.drawColonyUnitChip(batch, shapeRenderer, 
 				unit, 
@@ -81,14 +81,25 @@ class UnitActor extends Widget {
 	public void enableUnitChip(ShapeRenderer shapeRenderer) {
 		this.drawUnitChip = true;
 		this.shapeRenderer = shapeRenderer;
+        setSize(getPrefWidth(), getPrefHeight());
 	}
 
 	public void disableUnitChip() {
 		this.drawUnitChip = false;
 		this.shapeRenderer = null;
+        setSize(getPrefWidth(), getPrefHeight());
 	}
 	
 	public TextureRegion getTexture() {
 		return texture;
 	}
+
+    public void disableFocus() {
+        drawFocus = false;
+    }
+
+    public void enableFocus(ShapeRenderer aShapeRenderer) {
+        drawFocus = true;
+        this.shapeRenderer = aShapeRenderer;
+    }
 }

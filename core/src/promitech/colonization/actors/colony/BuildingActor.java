@@ -14,7 +14,7 @@ import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 
-class BuildingActor extends ImageButton implements DragAndDropSourceContainer, DragAndDropTargetContainer {
+class BuildingActor extends ImageButton implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 	
 	final Colony colony;
     final Building building;

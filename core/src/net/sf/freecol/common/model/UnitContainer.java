@@ -97,7 +97,7 @@ public class UnitContainer {
             ? NoAddReason.OCCUPIED_BY_ENEMY
             : (units.containsId(unit))
             ? NoAddReason.ALREADY_PRESENT
-            : (unit.unitType.getSpaceTaken() + containerUnit.getSpaceTaken() > containerUnit.unitType.getSpace())
+            : (containerUnit.hasNoSpaceForAdditionalCargoSlots(unit.unitType.getSpaceTaken()))
             ? NoAddReason.CAPACITY_EXCEEDED
             : NoAddReason.NONE;
     }

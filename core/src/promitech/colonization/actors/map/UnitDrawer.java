@@ -1,5 +1,6 @@
 package promitech.colonization.actors.map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
@@ -31,11 +32,11 @@ public class UnitDrawer {
 	public static void drawColonyUnitChip(
 			Batch batch, ShapeRenderer shapeRenderer, 
 			Unit unit,
-			float screenX, float screenY, float unitImageHeight
+			float screenX, float screenY, float unitActorHeight
 	) {
 		drawChip(batch, shapeRenderer, 
 			unit, null, unit.getOwner(), 
-			screenX+1, screenY + unitImageHeight - BOX_HEIGHT
+			screenX+1, screenY + unitActorHeight - BOX_HEIGHT
 		);
 	}
 	
@@ -75,5 +76,41 @@ public class UnitDrawer {
 		unitBoxFont.draw(batch, text, cx + BOX_WIDTH/2 - textWidth/2, cy + BOX_HEIGHT - 4);
 	}
 	
+    public static void drawMapUnitFocus(Batch batch, ShapeRenderer shapeRenderer, float x, float y) {
+        drawFocus(batch, shapeRenderer, 
+            x + MapRenderer.TILE_WIDTH/4, 
+            y + MapRenderer.TILE_HEIGHT/4
+        );
+    }
+	
+    public static void drawColonyUnitFocus(
+        Batch batch, ShapeRenderer shapeRenderer, 
+        float x, float y, 
+        float unitImageWidth, boolean drawUnitChip
+    ) {
+        if (drawUnitChip) {
+            x += BOX_WIDTH;
+        }
+        x += unitImageWidth / 2 - MapRenderer.TILE_WIDTH/4; 
+        drawFocus(batch, shapeRenderer, x, y);
+    }
+    
+    private static void drawFocus(Batch batch, ShapeRenderer shapeRenderer, float x, float y) {
+        batch.end();
+        
+        Gdx.gl20.glLineWidth(3);
+        shapeRenderer.begin(ShapeType.Line);
+        shapeRenderer.setColor(Color.WHITE);
+        shapeRenderer.ellipse(
+                x, 
+                y, 
+                MapRenderer.TILE_WIDTH/2,
+                MapRenderer.TILE_HEIGHT/2
+        );
+        shapeRenderer.end();
+        Gdx.gl20.glLineWidth(1);
+        
+        batch.begin();
+    }
 	
 }

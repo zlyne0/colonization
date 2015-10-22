@@ -80,6 +80,8 @@ public class Specification implements Identifiable {
     public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
     public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
 
+    public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
+    
     private String difficultyLevel;
     
     public Specification() {
@@ -98,6 +100,29 @@ public class Specification implements Identifiable {
 			}
 		}
     	return false;
+    }
+
+    public void updateReferences() {
+        updateEuropeanNations();
+        
+        for (Nation nation : nations.entities()) {
+            nation.updateReferences(this);
+        }
+    }
+
+    private void updateEuropeanNations() {
+        europeanNations.clear();
+        for (Nation nation : nations.entities()) {
+            if (nation.nationType.isEuropean()) {
+                if (nation.isUnknownEnemy()) {
+                    continue;
+                }
+                if (nation.nationType.isREF()) {
+                    continue;
+                }
+                europeanNations.add(nation);
+            }
+        }
     }
     
 	public static class Xml extends XmlNodeParser {
@@ -128,6 +153,7 @@ public class Specification implements Identifiable {
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 		    if (qName.equals(getTagName())) {
 		        options.flattenOptionsEntriesTree(game.specification.difficultyLevel);
+		        game.specification.updateReferences();
 		    }
 		}
 		
