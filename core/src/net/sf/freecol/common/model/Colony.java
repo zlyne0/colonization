@@ -6,6 +6,7 @@ import java.util.List;
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.specification.GameOptions;
+import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -76,19 +77,39 @@ public class Colony extends Settlement {
         return goodsContainer;
     }
     
-    public ProductionSummary productionSummaryForBuilding(Building building) {
-    	return building.buildingType
+    public void production() {
+        ProductionSummary summary = new ProductionSummary();
+        ProductionSummary tmpSummary = new ProductionSummary();
+        for (ColonyTile ct : colonyTiles.entities()) {
+            tmpSummary.makeEmpty();
+            tmpSummary.addProductionFromColonyTile(ct);
+            if (tmpSummary.isNotEmpty()) {
+                tmpSummary.applyTileImprovementsModifiers(ct.tile);
+                tmpSummary.applyModifier(productionBonus());
+            }
+            summary.addGoods(tmpSummary);
+        }
+        
+        for (Building building : buildings.entities()) {
+            tmpSummary.makeEmpty();
+            productionSummaryForBuilding(tmpSummary, building);
+            System.out.println("ps = " + tmpSummary);
+        }
+        
+        System.out.println("summary ##################");
+        System.out.println("summary = " + summary);
+        System.out.println("summary ##################");
+    }
+    
+    public void productionSummaryForBuilding(ProductionSummary summary, Building building) {
+    	building.buildingType
     			.productionInfo
-    			.productionSummaryForWorkers(building.workers.entities());
+    			.addProductionToSummary(summary, building.workers.entities());
     }
     
 	public ProductionSummary productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
-		tile.getTileImprovements();
-		List<Unit> workers = new ArrayList<Unit>();
-		if (colonyTile.getWorker() != null) {
-			workers.add(colonyTile.getWorker());
-		}
-		ProductionSummary productionSummary = colonyTile.productionInfo.productionSummaryForWorkers(workers);
+	    ProductionSummary productionSummary = new ProductionSummary();
+		colonyTile.productionInfo.addProductionToSummary(productionSummary, colonyTile.getWorker());
 		productionSummary.applyTileImprovementsModifiers(tile);
 		productionSummary.applyModifier(productionBonus());
 		return productionSummary;
@@ -239,6 +260,29 @@ public class Colony extends Settlement {
             membership = 100.0f;
         }
         return (int)membership;
+    }
+    
+
+    public void initColonyTilesTile(Tile colonyTile, Map map) {
+        for (ColonyTile ct : colonyTiles.entities()) {
+            boolean foundTileForColonyTile = false; 
+            for (Direction direction : Direction.allDirections) {
+                if (ct.getWorkTileId().equals(colonyTile.getId())) {
+                    ct.tile = colonyTile;
+                    foundTileForColonyTile = true;
+                    break;
+                }
+                Tile borderTile = map.getTile(colonyTile.x, colonyTile.y, direction);
+                if (ct.getWorkTileId().equals(borderTile.getId())) {
+                    ct.tile = borderTile;
+                    foundTileForColonyTile = true;
+                    break;
+                }
+            }
+            if (foundTileForColonyTile == false) {
+                throw new IllegalStateException("can not find Tile for ColonyTile: " + ct);
+            }
+        }
     }
     
     public static class Xml extends XmlNodeParser {

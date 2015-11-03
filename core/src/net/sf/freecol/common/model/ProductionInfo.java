@@ -18,15 +18,19 @@ public class ProductionInfo {
 	public void clear() {
 		productions.clear();
 	}
-	
-	public ProductionSummary productionSummaryForWorkers(Collection<Unit> workers) {
-		ProductionSummary summary = new ProductionSummary();
-        for (Production production : productions) {
-    		production.sumProductionType(summary, workers);
-        }
-        return summary;
-	}
 
+    public void addProductionToSummary(ProductionSummary summary, Unit worker) {
+        for (Production production : productions) {
+            production.sumProductionType(summary, worker);
+        }
+    }
+	
+    public void addProductionToSummary(ProductionSummary summary, Collection<Unit> workers) {
+        for (Production production : productions) {
+            production.sumProductionType(summary, workers);
+        }
+    }
+    
 	public ProductionInfo productionSummaryForWorker(Unit worker) {
 		ProductionInfo prodInfo = new ProductionInfo();
 		for (Production production : productions) {
@@ -71,4 +75,5 @@ public class ProductionInfo {
 		}
 		return maxProdType;
 	}
+
 }

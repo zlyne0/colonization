@@ -34,6 +34,39 @@ public class Production implements Identifiable {
         this.input.put(goodsType, amount);
     }
 
+    public void sumProductionType(ProductionSummary summary, Unit worker) {
+        for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
+            String goodsId = outputEntry.getKey();
+            Integer goodProductionInitValue = outputEntry.getValue();
+            if (0 == goodProductionInitValue) {
+                continue;
+            }
+            int goodQuantity = 0;
+            if (unattended && worker == null) {
+                goodQuantity += goodProductionInitValue;
+            }
+            if (!unattended && worker != null) {
+                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodProductionInitValue);
+            }
+            if (goodQuantity != 0) {
+                summary.addGoods(goodsId, goodQuantity);
+            }
+        }
+        for (java.util.Map.Entry<String, Integer> inputEntry : input.entrySet()) {
+            String goodsId = inputEntry.getKey();
+            int goodQuantity = inputEntry.getValue();
+            if (0 == goodQuantity) {
+                continue;
+            }
+            if (worker != null) {
+                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodQuantity);
+            }
+            if (goodQuantity != 0) {
+                summary.addGoods(goodsId, goodQuantity);
+            }
+        }
+    }
+    
 	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers) {
 		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
 			String goodsId = outputEntry.getKey();
@@ -56,6 +89,20 @@ public class Production implements Identifiable {
 				summary.addGoods(goodsId, goodQuantity);
 			}
 		}
+        for (java.util.Map.Entry<String, Integer> inputEntry : input.entrySet()) {
+            String goodsId = inputEntry.getKey();
+            Integer goodConsumptionInitValue = inputEntry.getValue();
+            if (0 == goodConsumptionInitValue) {
+                continue;
+            }
+            int goodQuantity = 0;
+            for (Unit worker : workers) {
+                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodConsumptionInitValue);
+            }
+            if (goodQuantity != 0) {
+                summary.addGoods(goodsId, goodQuantity);
+            }
+        }
 	}
 
 	public Production sumProductionForWorker(Unit worker) {

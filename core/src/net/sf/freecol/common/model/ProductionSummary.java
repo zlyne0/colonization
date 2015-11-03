@@ -7,9 +7,17 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 public class ProductionSummary {
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
+	public void makeEmpty() {
+	    goods.clear();
+	}
+	
 	public boolean isEmpty() {
 		return goods.size == 0;
 	}
+	
+    public boolean isNotEmpty() {
+        return goods.size != 0;
+    }
 
 	public boolean isSingleGoods() {
 		return goods.size == 1;
@@ -27,6 +35,12 @@ public class ProductionSummary {
 		goods.getAndIncrement(goodsId, 0, goodQuantity);
 	}
 
+    public void addGoods(ProductionSummary ps) {
+        for (Entry<String> psEntry : goods.entries()) {
+            goods.getAndIncrement(psEntry.key, 0, psEntry.value);
+        }
+    }
+	
 	public Entries<String> entries() {
 		return goods.entries();
 	}
@@ -42,6 +56,15 @@ public class ProductionSummary {
 			}
 			goods.put(entry.key, quantity);
 		}
+	}
+
+	/**
+	 * 
+	 * @param ct
+	 * @return boolean - has production or consumption on tile
+	 */
+	public void addProductionFromColonyTile(ColonyTile ct) {
+	    ct.productionInfo.addProductionToSummary(this, ct.getWorker());
 	}
 	
 	public void applyModifier(int productionBonus) {

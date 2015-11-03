@@ -32,6 +32,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
+	private ProductionPanel productionPanel;
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
         @Override
@@ -80,6 +81,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
         carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop);
         populationPanel = new PopulationPanel();
+        productionPanel = new ProductionPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
@@ -91,6 +93,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         rowGroup1.addActor(outsideUnitsPanel);
         
         tableLayout.setFillParent(true);
+        tableLayout.add(productionPanel);
         tableLayout.row();
         tableLayout.add(terrainPanel);
         tableLayout.add(buildingsPanelActor);
@@ -101,8 +104,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(resourcesPanel).colspan(2);
         tableLayout.row();
-
 		tableLayout.add(createShiftButton()).colspan(2).fillX();
+		
         stage.addActor(tableLayout);
 	}
 
@@ -133,6 +136,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
     	
+        productionPanel.init(colony, colonyTile);
         buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
         resourcesPanel.initGoods(gameController.getSpecification(), colony, goodsDragAndDrop);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);

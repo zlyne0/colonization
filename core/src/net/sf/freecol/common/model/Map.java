@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import org.xml.sax.SAXException;
+
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -44,6 +46,19 @@ public class Map extends ObjectWithId {
 		tiles[y][x] = tile;
 	}
 	
+    public void afterReadMap() {
+        for (int y=0; y<height; y++) {
+            Tile row[] = tiles[y];
+            for (int x=0; x<width; x++) {
+                Tile t = row[x];
+                if (t.hasSettlement() && t.getSettlement().isColony()) {
+                    Colony colony = t.getSettlement().getColony();
+                    colony.initColonyTilesTile(t, this);
+                }
+            }
+        }
+    }
+	
 	public String toString() {
 		return "width = " + width + ", height = " + height;
 	}
@@ -71,11 +86,16 @@ public class Map extends ObjectWithId {
 		}
 
 		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+		    if (qName.equals(getTagName())) {
+		        ((Map)nodeObject).afterReadMap();
+		    }
+		}
+		
+		@Override
 		public String getTagName() {
 			return "map";
 		}
 		
 	}
-
-	
 }

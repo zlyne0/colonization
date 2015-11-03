@@ -9,6 +9,7 @@ public class ColonyTile extends ObjectWithId {
 	private Unit worker;
 	private String workTileId;
 	public final ProductionInfo productionInfo = new ProductionInfo();
+    Tile tile;
 	
 	public ColonyTile(String id) {
 		super(id);
@@ -38,6 +39,10 @@ public class ColonyTile extends ObjectWithId {
 		this.worker = worker;
 	}
 
+	public String toString() {
+	    return "ColonyTile id[" + id +"], worktileId[" + workTileId + "]";
+	}
+	
     public static class Xml extends XmlNodeParser {
 
     	public Xml() {
