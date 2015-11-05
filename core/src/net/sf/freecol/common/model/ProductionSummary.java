@@ -65,7 +65,7 @@ public class ProductionSummary {
     }
 	
     public void addGoods(ProductionSummary ps) {
-        for (Entry<String> psEntry : goods.entries()) {
+        for (Entry<String> psEntry : ps.goods.entries()) {
             goods.getAndIncrement(psEntry.key, 0, psEntry.value);
         }
     }
@@ -160,10 +160,6 @@ public class ProductionSummary {
 		}
 	}
 
-	public void addProductionFromColonyTile(ColonyTile ct) {
-	    ct.productionInfo.addProductionToSummary(this, ct.getWorker());
-	}
-	
 	public void applyModifier(int productionBonus) {
 	    for (Entry<String> entry : goods.entries()) {
             goods.getAndIncrement(entry.key, 0, productionBonus);

@@ -26,12 +26,6 @@ public class ProductionInfo {
         }
 	}
 	
-    public void addProductionToSummary(ProductionSummary summary, Unit worker) {
-        for (Production production : productions) {
-            production.sumProductionType(summary, worker);
-        }
-    }
-	
     public void addProductionToSummary(ProductionSummary summary, Collection<Unit> workers) {
         for (Production production : productions) {
             production.sumProductionType(summary, workers);

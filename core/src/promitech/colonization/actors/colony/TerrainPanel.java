@@ -10,8 +10,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.ProductionInfo;
-import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -211,11 +211,11 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 	private void initProduction() {
 		for (int i=0; i<colonyTiles.length; i++) {
-			ProductionSummary productionSummary = colony.productionSummaryForTerrain(
+			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(
 				colonyTerrains[i], 
 				colonyTiles[i] 
 			);
-			productionQuantityDrawModels[i].init(productionSummary);
+			productionQuantityDrawModels[i].init(productionConsumption.realProduction);
 		}
 	}
 	

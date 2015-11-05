@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GameResources;
@@ -107,8 +107,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     }
 
     private void resetProductionDesc() {
-    	ProductionSummary summary = new ProductionSummary();
-        colony.productionSummaryForBuilding(summary, building);
-    	productionQuantityDrawModel.init(summary);
+    	ProductionConsumption productionSummary = colony.productionSummaryForBuilding(building);
+    	productionQuantityDrawModel.init(productionSummary.baseProduction);
     }
 }

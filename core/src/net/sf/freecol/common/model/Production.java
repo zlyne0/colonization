@@ -34,26 +34,6 @@ public class Production implements Identifiable {
     private void addInput(String goodsType, int amount) {
         this.input.put(goodsType, amount);
     }
-
-    public void sumProductionType(ProductionSummary summary, Unit worker) {
-        for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
-            String goodsId = outputEntry.getKey();
-            Integer goodProductionInitValue = outputEntry.getValue();
-            if (0 == goodProductionInitValue) {
-                continue;
-            }
-            int goodQuantity = 0;
-            if (unattended && worker == null) {
-                goodQuantity += goodProductionInitValue;
-            }
-            if (!unattended && worker != null) {
-                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodProductionInitValue);
-            }
-            if (goodQuantity != 0) {
-                summary.addGoods(goodsId, goodQuantity);
-            }
-        }
-    }
     
 	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers) {
 		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
@@ -102,30 +82,18 @@ public class Production implements Identifiable {
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
                 }
             }
-//            if (unattended) {
-//                if (workers.isEmpty()) {
-//                    goodQuantity += goodInitValue;
-//                } else {
-//                    for (Unit worker : workers) {
-//                        goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-//                    }
-//                }
-//            } else {
-//                for (Unit worker : workers) {
-//                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-//                }
-//            }
             prodCons.baseProduction.addGoods(goodsId, goodQuantity);
             
             // its big simplicity because for one production product create all consume product, 
             // is it will produce another product it will not be narrowed to warehouse state
+            // it's simplicity is enough because every building consume only one good
             for (String cg : consumptionGoods) {
                 prodCons.baseConsumption.addGoods(cg, goodQuantity);
                 if (warehouse.hasNotGood(cg, goodQuantity)) {
                     int warehouseMax = warehouse.getQuantity(cg);
                     goodQuantity = warehouseMax;
                 }
-                prodCons.realConsumption.addGoods(cg, goodQuantity);
+                prodCons.realProduction.addGoods(cg, -goodQuantity);
             }
             consumptionGoods.clear();
             prodCons.realProduction.addGoods(goodsId, goodQuantity);

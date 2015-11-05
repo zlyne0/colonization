@@ -31,26 +31,6 @@ public class Building extends ObjectWithId {
 		return reason;
 	}    
     
-	public void baseProduction(ProductionSummary summary) {
-        buildingType.productionInfo.addProductionToSummary(summary, workers.entities());
-	}
-	
-//    public void realProduction(ProductionSummary warehouse) {
-//        ProductionSummary baseProd = new ProductionSummary();
-//        ProductionSummary baseConsum = new ProductionSummary();
-//        
-//        for (Production bProd : buildingType.productionInfo.productions) {
-//            bProd.sumProductionType(baseProd, workers.entities());
-//            bProd.sumProductionType(baseConsum, workers.entities());
-//        }
-//        if (warehouse.hasMoreOrEquals(baseConsum)) {
-//            // realProd = baseProd
-//            // realConsum = baseConsum
-//        } else {
-//            ProductionSummary realConsum = 
-//        }
-//    }
-	
 	public String toString() {
 	    return "id = " + getId() + ", type = " + buildingType;
 	}
