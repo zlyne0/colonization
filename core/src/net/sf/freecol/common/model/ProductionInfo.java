@@ -19,6 +19,13 @@ public class ProductionInfo {
 		productions.clear();
 	}
 
+	public void determineProductionConsumption(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
+	    // assumption that for unattended or attended production there is only one production object
+        for (Production production : productions) {
+            production.sumProductionType(prodCons, workers, warehouse);
+        }
+	}
+	
     public void addProductionToSummary(ProductionSummary summary, Unit worker) {
         for (Production production : productions) {
             production.sumProductionType(summary, worker);

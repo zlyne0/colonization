@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import org.xml.sax.SAXException;
@@ -77,34 +78,67 @@ public class Colony extends Settlement {
         return goodsContainer;
     }
     
+    
+    // sytuacja 1
+    // w warehouse            10 ore
+    // w blacksmith produkcja 12 tools
+    
+    // baseProd            12 tools
+    // baseConsum          12 ore
+    // calkowitaProd       10 tools
+    // calkowitaConsumpcja 10 ore
+    
+    // sytuacja 2
+    // w warehouse           12 ore
+    // w blacksmith prod     12
+    // baseProd              12
+    // baseConsum            12
+    
+    // calkowitaProd         12
+    // calkowitaProd         12
+    
     public void production() {
-        ProductionSummary summary = new ProductionSummary();
-        ProductionSummary tmpSummary = new ProductionSummary();
+        ProductionSummary globalBaseProduction = new ProductionSummary();
+        ProductionSummary globalConsumption = new ProductionSummary();
+        ProductionSummary abstractWarehouse = new ProductionSummary();
+        
         for (ColonyTile ct : colonyTiles.entities()) {
-            tmpSummary.makeEmpty();
-            tmpSummary.addProductionFromColonyTile(ct);
-            if (tmpSummary.isNotEmpty()) {
-                tmpSummary.applyTileImprovementsModifiers(ct.tile);
-                tmpSummary.applyModifier(productionBonus());
+            ProductionSummary prod = new ProductionSummary();
+            prod.addProductionFromColonyTile(ct);
+            if (prod.isNotEmpty()) {
+                prod.applyTileImprovementsModifiers(ct.tile);
+                prod.applyModifier(productionBonus());
             }
-            summary.addGoods(tmpSummary);
+            System.out.println("prod = " + prod);
+            globalBaseProduction.addGoods(prod);
+            abstractWarehouse.addGoods(prod);
         }
         
+        System.out.println("buildings");
         for (Building building : buildings.entities()) {
-            tmpSummary.makeEmpty();
-            productionSummaryForBuilding(tmpSummary, building);
-            System.out.println("ps = " + tmpSummary);
+            ProductionSummary baseProd = new ProductionSummary();
+            productionSummaryForBuilding(baseProd, building);
+            // czy moze to wyprodukowac
+            //globalBaseProduction.hasMoreOrEquals(baseProd, goodsContainer);
+//            produkcja
+//            konsumpcja
+//            brak produkcji
+            
+//            tmpSummary.makeEmpty();
+//            System.out.println("ps = " + tmpSummary);
         }
         
         System.out.println("summary ##################");
-        System.out.println("summary = " + summary);
+        System.out.println("summary = " + globalBaseProduction);
         System.out.println("summary ##################");
     }
     
     public void productionSummaryForBuilding(ProductionSummary summary, Building building) {
-    	building.buildingType
-    			.productionInfo
-    			.addProductionToSummary(summary, building.workers.entities());
+        ProductionConsumption prodCons = new ProductionConsumption();
+        ProductionSummary warehouse = goodsContainer.cloneGoods();
+        building.buildingType.productionInfo.determineProductionConsumption(prodCons, building.workers.entities(), warehouse);
+        System.out.println("########## production consumption " + building + prodCons);
+        building.baseProduction(summary);
     }
     
 	public ProductionSummary productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {

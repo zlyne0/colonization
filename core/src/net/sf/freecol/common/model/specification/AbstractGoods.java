@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.GoodsContainer;
+import net.sf.freecol.common.model.ProductionSummary;
 
 public class AbstractGoods {
 	private int quantity;
@@ -15,10 +15,10 @@ public class AbstractGoods {
 		if (quantity <= 0) {
 			throw new IllegalStateException("should not move zero or less quantity");
 		}
-		if (quantity % GoodsContainer.CARRIER_SLOT_MAX_QUANTITY > 0) {
-			return quantity / GoodsContainer.CARRIER_SLOT_MAX_QUANTITY + 1;
+		if (quantity % ProductionSummary.CARRIER_SLOT_MAX_QUANTITY > 0) {
+			return quantity / ProductionSummary.CARRIER_SLOT_MAX_QUANTITY + 1;
 		} else {
-			return quantity / GoodsContainer.CARRIER_SLOT_MAX_QUANTITY;
+			return quantity / ProductionSummary.CARRIER_SLOT_MAX_QUANTITY;
 		}
 	}
 	

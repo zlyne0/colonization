@@ -2,14 +2,15 @@ package net.sf.freecol.common.model;
 
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Production implements Identifiable {
     private boolean unattended = false;
-    private java.util.Map<String,Integer> input = new HashMap<String, Integer>(2); 
-    private java.util.Map<String,Integer> output = new HashMap<String, Integer>(2); 
+    private final java.util.Map<String,Integer> input = new HashMap<String, Integer>(2); 
+    private final java.util.Map<String,Integer> output = new HashMap<String, Integer>(2); 
     
     public Production(boolean unattended) {
         this.unattended = unattended;
@@ -52,19 +53,6 @@ public class Production implements Identifiable {
                 summary.addGoods(goodsId, goodQuantity);
             }
         }
-        for (java.util.Map.Entry<String, Integer> inputEntry : input.entrySet()) {
-            String goodsId = inputEntry.getKey();
-            int goodQuantity = inputEntry.getValue();
-            if (0 == goodQuantity) {
-                continue;
-            }
-            if (worker != null) {
-                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodQuantity);
-            }
-            if (goodQuantity != 0) {
-                summary.addGoods(goodsId, goodQuantity);
-            }
-        }
     }
     
 	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers) {
@@ -89,22 +77,61 @@ public class Production implements Identifiable {
 				summary.addGoods(goodsId, goodQuantity);
 			}
 		}
+	}
+
+    public void sumProductionType(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
+        HashSet<String> consumptionGoods = new HashSet<String>();
+        
         for (java.util.Map.Entry<String, Integer> inputEntry : input.entrySet()) {
             String goodsId = inputEntry.getKey();
-            Integer goodConsumptionInitValue = inputEntry.getValue();
-            if (0 == goodConsumptionInitValue) {
+            consumptionGoods.add(goodsId);
+        }
+        for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
+            String goodsId = outputEntry.getKey();
+            Integer goodInitValue = outputEntry.getValue();
+            if (0 == goodInitValue) {
                 continue;
             }
             int goodQuantity = 0;
-            for (Unit worker : workers) {
-                goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodConsumptionInitValue);
+            
+            if (unattended && workers.isEmpty()) {
+                goodQuantity += goodInitValue;
+            } 
+            if (!unattended && !workers.isEmpty()) {
+                for (Unit worker : workers) {
+                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
+                }
             }
-            if (goodQuantity != 0) {
-                summary.addGoods(goodsId, goodQuantity);
+//            if (unattended) {
+//                if (workers.isEmpty()) {
+//                    goodQuantity += goodInitValue;
+//                } else {
+//                    for (Unit worker : workers) {
+//                        goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
+//                    }
+//                }
+//            } else {
+//                for (Unit worker : workers) {
+//                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
+//                }
+//            }
+            prodCons.baseProduction.addGoods(goodsId, goodQuantity);
+            
+            // its big simplicity because for one production product create all consume product, 
+            // is it will produce another product it will not be narrowed to warehouse state
+            for (String cg : consumptionGoods) {
+                prodCons.baseConsumption.addGoods(cg, goodQuantity);
+                if (warehouse.hasNotGood(cg, goodQuantity)) {
+                    int warehouseMax = warehouse.getQuantity(cg);
+                    goodQuantity = warehouseMax;
+                }
+                prodCons.realConsumption.addGoods(cg, goodQuantity);
             }
+            consumptionGoods.clear();
+            prodCons.realProduction.addGoods(goodsId, goodQuantity);
         }
-	}
-
+    }
+	
 	public Production sumProductionForWorker(Unit worker) {
 		Production prod = new Production(this.unattended);
 		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {

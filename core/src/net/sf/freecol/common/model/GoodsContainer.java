@@ -1,9 +1,6 @@
 package net.sf.freecol.common.model;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -12,9 +9,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class GoodsContainer extends ObjectWithId {
 
-    public static final int CARRIER_SLOT_MAX_QUANTITY = 100;
-    
-    private final java.util.Map<String,Integer> goods = new HashMap<String, Integer>();
+    //private final java.util.Map<String,Integer> goods = new HashMap<String, Integer>();
+    private final ProductionSummary goods = new ProductionSummary();
     private int cargoSpaceTaken = 0;
     
     public GoodsContainer(String id) {
@@ -22,23 +18,14 @@ public class GoodsContainer extends ObjectWithId {
     }
 
     public int goodsAmount(GoodsType type) {
-        Integer amount = goods.get(type.id);
-        if (amount == null) {
-            return 0;
-        }
-        return amount;
+        return goods.getQuantity(type.id);
     }
 
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() == 0) {
             return;
         }
-        Integer actualQuantity = goods.get(anAbstractGoods.getTypeId());
-        if (actualQuantity == null) {
-            goods.put(anAbstractGoods.getTypeId(), anAbstractGoods.getQuantity());
-        } else {
-            goods.put(anAbstractGoods.getTypeId(), actualQuantity + anAbstractGoods.getQuantity());
-        }
+        goods.addGoods(anAbstractGoods);
         updateTakenCargoSlots();
     }
 
@@ -46,14 +33,7 @@ public class GoodsContainer extends ObjectWithId {
         if (anAbstractGoods.getQuantity() == 0) {
             return;
         }
-        Integer actualQuantity = goods.get(anAbstractGoods.getTypeId());
-        if (actualQuantity != null) {
-            if (actualQuantity > anAbstractGoods.getQuantity()) {
-                goods.put(anAbstractGoods.getTypeId(), actualQuantity - anAbstractGoods.getQuantity());
-            } else {
-                goods.put(anAbstractGoods.getTypeId(), 0);
-            }
-        }
+        goods.decreaseToZero(anAbstractGoods);
         updateTakenCargoSlots();
     }
     
@@ -66,57 +46,19 @@ public class GoodsContainer extends ObjectWithId {
 	}
     
     public List<AbstractGoods> carrierGoods() {
-        List<AbstractGoods> goodsList = new ArrayList<AbstractGoods>();
-        
-        for (Entry<String, Integer> entrySet : goods.entrySet()) {
-            int quantity = entrySet.getValue();
-            while (quantity > 0) {
-                if (quantity > CARRIER_SLOT_MAX_QUANTITY) {
-                    goodsList.add(new AbstractGoods(entrySet.getKey(), CARRIER_SLOT_MAX_QUANTITY));
-                    quantity -= CARRIER_SLOT_MAX_QUANTITY;
-                } else {
-                    goodsList.add(new AbstractGoods(entrySet.getKey(), quantity));
-                    quantity -= quantity;
-                }
-            }
-        }
-        return goodsList;
+        return goods.slotedGoods();
     }
 
     private void updateTakenCargoSlots() {
-    	cargoSpaceTaken = 0;
-        for (Entry<String, Integer> entrySet : goods.entrySet()) {
-            cargoSpaceTaken += slotsForQuantity(entrySet.getValue());
-        }
-    }
-
-    private int slotsForQuantity(int quantity) {
-        if (quantity <= 0) {
-            return 0;
-        }
-        if (quantity % CARRIER_SLOT_MAX_QUANTITY > 0) {
-            return (quantity / CARRIER_SLOT_MAX_QUANTITY) + 1; 
-        } else {
-            return (quantity / CARRIER_SLOT_MAX_QUANTITY); 
-        }
+    	cargoSpaceTaken = goods.allCargoSlots();
     }
     
     public int takenCargoSlotsWithAdditionalCargo(AbstractGoods additionalCargo) {
-        int slots = 0;
-        int goodQuantity;
-        boolean foundAdditionalCargoInContainer = false;
-        for (Entry<String, Integer> entrySet : goods.entrySet()) {
-            goodQuantity = entrySet.getValue();
-            if (additionalCargo.getTypeId().equals(entrySet.getKey())) {
-                foundAdditionalCargoInContainer = true;
-                goodQuantity += additionalCargo.getQuantity();
-            }
-            slots += slotsForQuantity(goodQuantity);
-        }
-        if (!foundAdditionalCargoInContainer) {
-            slots += additionalCargo.takenCargoSlot();
-        }
-        return slots;
+        return goods.allCargoSlotsWithAdditionalCargo(additionalCargo);
+    }
+
+    public ProductionSummary cloneGoods() {
+        return goods.cloneGoods();
     }
     
     public static class Xml extends XmlNodeParser {
@@ -134,7 +76,7 @@ public class GoodsContainer extends ObjectWithId {
                 String typeStr = attr.getStrAttribute("type");
                 int amount = attr.getIntAttribute("amount", 0);
                 
-                ((GoodsContainer)nodeObject).goods.put(typeStr, amount);
+                ((GoodsContainer)nodeObject).goods.addGoods(typeStr, amount);
                 ((GoodsContainer)nodeObject).updateTakenCargoSlots();
             }
         }
