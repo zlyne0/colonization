@@ -20,6 +20,7 @@ public class Colony extends Settlement {
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     
+    private final List<Unit> colonyWorkers = new ArrayList<Unit>();
     private int colonyUnitsCount = -1;
     private int sonsOfLiberty = 0;
     private int tories = 0;
@@ -42,11 +43,14 @@ public class Colony extends Settlement {
     
     public void updateColonyUnitsCount() {
     	colonyUnitsCount = 0;
+    	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
+    		colonyWorkers.addAll(building.workers.entities());
     		colonyUnitsCount += building.workers.size();
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.getWorker() != null) {
+    			colonyWorkers.add(colonyTile.getWorker());
     			colonyUnitsCount++;
     		}
     	}
@@ -80,23 +84,50 @@ public class Colony extends Settlement {
         return goodsContainer;
     }
     
+    public int getWarehouseCapacity() {
+        ObjectWithFeatures features = new ObjectWithFeatures("zaza");
+        for (Building building : buildings.entities()) {
+        	features.addFeatures(building.buildingType);
+        }
+    	return (int)features.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+    }
+    
     public void production() {
     	ProductionSummary abstractWarehouse = goodsContainer.cloneGoods();
     	
     	ProductionConsumption prodCons = new ProductionConsumption();
-        
+
+        ObjectWithFeatures features = new ObjectWithFeatures("zaza");
+        for (Building building : buildings.entities()) {
+        	features.addFeatures(building.buildingType);
+        }
+    	
+        int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
+        int amount = Math.min(unitsThatUseNoBells, getColonyUnitsCount());
+    	prodCons.realProduction.addGoods("model.goods.bells", amount);
+    	
         for (ColonyTile ct : colonyTiles.entities()) {
         	ProductionConsumption ps = productionSummaryForTerrain(ct.tile, ct, abstractWarehouse);
             prodCons.add(ps);
             abstractWarehouse.addGoods(ps.realProduction);
         }
         
+        for (Unit worker : colonyWorkers) {
+        	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
+        		prodCons.baseConsumption.addGoods(uc.getId(), uc.getQuantity());
+        		prodCons.realProduction.addGoods(uc.getId(), -uc.getQuantity());
+        	}
+        }
+
+        // TODO: przemienienie wszystkich goods na ich odpowiedniki storedAs 
+        
         for (Building building : buildings.entities()) {
-        	ProductionConsumption ps = productionSummaryForBuilding(building, abstractWarehouse);
+        	ProductionConsumption ps = productionSummaryForBuilding(building, abstractWarehouse, prodCons);
+
             prodCons.add(ps);
             abstractWarehouse.addGoods(ps.realProduction);
         }
-
+        
         System.out.println("warehouse = " + goodsContainer.cloneGoods());
         System.out.println("warehouse = " + abstractWarehouse);
         System.out.println("productionConsumption ##################");
@@ -106,12 +137,22 @@ public class Colony extends Settlement {
     
     public ProductionConsumption productionSummaryForBuilding(Building building) {
     	ProductionSummary warehouse = goodsContainer.cloneGoods();
-    	return productionSummaryForBuilding(building, warehouse);
+    	return productionSummaryForBuilding(building, warehouse, new ProductionConsumption());
     }
     
-    public ProductionConsumption productionSummaryForBuilding(Building building, ProductionSummary warehouse) {
-    	ProductionConsumption prodCons = new ProductionConsumption();
-    	building.buildingType.productionInfo.determineProductionConsumption(prodCons, building.workers.entities(), warehouse);
+    public ProductionConsumption productionSummaryForBuilding(Building building, ProductionSummary warehouse, ProductionConsumption globalProdCons) {
+    	// to sa cechy koloni, docelowo cechy koloni uzupelniane przy zmianie lub cech budynkow 
+    	ObjectWithFeatures colonyFeatures = new ObjectWithFeatures("zaza");
+    	for (Building b : buildings.entities()) {
+    		colonyFeatures.addFeatures(b.buildingType);
+    	}
+    	int warehouseCapacity = (int)colonyFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+    	System.out.println("warehouseCapacity = " + warehouseCapacity);
+    	
+    	ProductionConsumption prodCons = building.determineProductionConsumption(warehouse, warehouseCapacity, globalProdCons);
+
+        prodCons.realProduction.applyModifiers(colonyFeatures);
+        prodCons.baseProduction.applyModifiers(colonyFeatures);
     	return prodCons;
     }
 

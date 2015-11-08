@@ -4,8 +4,9 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+// TODO: rozbicie na dwie listy, unattenden productions i attendedn production, latwiej bedzie pozniej przetwarzac
 public class ProductionInfo {
-	private final List<Production> productions = new ArrayList<Production>();
+	final List<Production> productions = new ArrayList<Production>();
 	
     public void addProduction(Production production) {
         this.productions.add(production);
@@ -19,6 +20,8 @@ public class ProductionInfo {
 		productions.clear();
 	}
 
+	// TODO: do usuniecia
+	@Deprecated
 	public void determineProductionConsumption(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
 	    // assumption that for unattended or attended production there is only one production object
         for (Production production : productions) {

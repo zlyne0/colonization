@@ -3,6 +3,8 @@ package net.sf.freecol.common.model;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -27,6 +29,14 @@ public class Production implements Identifiable {
 		throw new IllegalStateException("production has no id");
 	}
     
+	public Set<Entry<String, Integer>> inputEntries() {
+		return input.entrySet();
+	}
+
+	public Set<Entry<String, Integer>> outputEntries() {
+		return output.entrySet();
+	}
+	
     private void addOutput(String goodsType, int amount) {
         this.output.put(goodsType, amount);
     }
@@ -35,6 +45,8 @@ public class Production implements Identifiable {
         this.input.put(goodsType, amount);
     }
     
+	// TODO: metoda do usuniecia
+	@Deprecated
 	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers) {
 		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
 			String goodsId = outputEntry.getKey();
@@ -59,6 +71,8 @@ public class Production implements Identifiable {
 		}
 	}
 
+	// TODO: metoda do usuniecia
+	@Deprecated
     public void sumProductionType(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
         HashSet<String> consumptionGoods = new HashSet<String>();
         

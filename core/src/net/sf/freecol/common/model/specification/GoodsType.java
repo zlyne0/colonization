@@ -13,6 +13,7 @@ public class GoodsType extends ObjectWithId {
     boolean newWorldGoods;
     boolean tradeGoods;
     boolean storable;
+    String storedAs;
 
     public boolean isStorable() {
         return storable;
@@ -35,6 +36,7 @@ public class GoodsType extends ObjectWithId {
             gt.newWorldGoods = attr.getBooleanAttribute("new-world-goods", false);
             gt.tradeGoods = attr.getBooleanAttribute("trade-goods", false);
             gt.storable = attr.getBooleanAttribute("storable", true);
+            gt.storedAs = attr.getStrAttribute("stored-as");
             
             nodeObject = gt;
         }

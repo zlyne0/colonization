@@ -160,6 +160,14 @@ public class ProductionSummary {
 		}
 	}
 
+	public void applyModifiers(ObjectWithFeatures modifiers) {
+		for (Entry<String> entry : goods.entries()) {
+			int quantity = entry.value;
+			quantity = (int)modifiers.applyModifier(entry.key, quantity);
+			goods.put(entry.key, quantity);
+		}
+	}
+	
 	public void applyModifier(int productionBonus) {
 	    for (Entry<String> entry : goods.entries()) {
             goods.getAndIncrement(entry.key, 0, productionBonus);

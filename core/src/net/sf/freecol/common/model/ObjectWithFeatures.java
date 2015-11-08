@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 public class ObjectWithFeatures extends ObjectWithId {
 
+	// TODO: te cechy nie moge byc mapy, ewentualnie moga byc mapa list, zle sie liczy warehouse capacity
     public final MapIdEntities<Modifier> modifiers = new MapIdEntities<Modifier>();
     public final MapIdEntities<Ability> abilities = new MapIdEntities<Ability>();
 	

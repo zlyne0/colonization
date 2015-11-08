@@ -15,6 +15,7 @@ public class UnitType extends ObjectWithFeatures {
     public static final int DEFAULT_DEFENCE = 1;
 
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
+    public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     
     /**
      * The offence of this UnitType. Only Units with an offence value
@@ -147,6 +148,7 @@ public class UnitType extends ObjectWithFeatures {
             addNodeForMapIdEntities("modifiers", Modifier.class);
             addNodeForMapIdEntities("abilities", Ability.class);
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
+            addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
         }
 
         @Override
