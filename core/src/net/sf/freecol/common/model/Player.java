@@ -205,8 +205,8 @@ public class Player extends ObjectWithFeatures {
 	
     public static class Xml extends XmlNodeParser {
         public Xml() {
-            addNodeForMapIdEntities("modifiers", Modifier.class);
-            addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
+            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Europe.class, "europe");
         }
 

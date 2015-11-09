@@ -66,8 +66,8 @@ public class BuildingType extends ObjectWithFeatures {
 					target.productionInfo.addProduction(entity);
 				}
 			});
-            addNodeForMapIdEntities("modifiers", Modifier.class);
-            addNodeForMapIdEntities("abilities", Ability.class);
+            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
+            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
         
@@ -105,7 +105,7 @@ public class BuildingType extends ObjectWithFeatures {
                 }
             }
             
-            bt.addFeatures(parent);
+            bt.addFeaturesAndOverwriteExisted(parent);
             nodeObject = bt;
         }
         

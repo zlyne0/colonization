@@ -19103,7 +19103,6 @@
               <goods type="model.goods.tools" amount="100"/>
             </storedGoods>
             <oldStoredGoods>
-              <goods type="model.goods.tools" amount="100"/>
               <goods type="model.goods.tradeGoods" amount="100"/>
             </oldStoredGoods>
           </goodsContainer>

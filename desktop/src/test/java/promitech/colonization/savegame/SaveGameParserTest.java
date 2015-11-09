@@ -4,7 +4,6 @@ import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
@@ -129,8 +128,10 @@ public class SaveGameParserTest {
         assertEquals(41, game.specification.buildingTypes.size());
         
         BuildingType fortBuildingType = game.specification.buildingTypes.getById("model.building.fort");
-        Modifier fortModifier = fortBuildingType.modifiers.getById("model.modifier.defence");
-        assertEquals(250f, fortModifier.apply(100), 0.01);
+        
+        float baseDefence = 100;
+        float fortDefence = fortBuildingType.applyModifier("model.modifier.defence", baseDefence);
+        assertEquals(250f, fortDefence, 0.01);
         
         RequiredGoods reqGoods1 = fortBuildingType.requiredGoods.getById("model.goods.hammers");
         RequiredGoods reqGoods2 = fortBuildingType.requiredGoods.getById("model.goods.tools");
