@@ -1,9 +1,11 @@
 package net.sf.freecol.common.model;
 
 import java.util.HashSet;
+import java.util.List;
 
 import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -34,56 +36,63 @@ public class Building extends ObjectWithId {
 	}    
     
 	public ProductionConsumption determineProductionConsumption(ProductionSummary warehouse, int warehouseCapacity, ProductionConsumption globalProdCons) {
+	    boolean unattendedProduction = false;
+	    List<Production> productions;
+	    if (workers.isEmpty()) {
+	        productions = buildingType.productionInfo.getUnattendedProductions();
+	        unattendedProduction = true;
+	    } else {
+	        productions = buildingType.productionInfo.getAttendedProductions();
+	        unattendedProduction = false;
+	    }
+	    
 		ProductionConsumption prodCons = new ProductionConsumption();
-        for (Production production : buildingType.productionInfo.productions) {
-        	productionConsumption(prodCons, production, warehouse, warehouseCapacity, globalProdCons);
+        for (Production production : productions) {
+        	productionConsumption(prodCons, production, warehouse, warehouseCapacity, globalProdCons, unattendedProduction);
         }
 		return prodCons;
 	}
 	
-	private void productionConsumption(ProductionConsumption prodCons, Production production, ProductionSummary warehouse, int warehouseCapacity, ProductionConsumption globalProdCons) {
-		boolean avoidExcessProduction = buildingType.hasAbility(Ability.AVOID_EXCESS_PRODUCTION);
-		boolean consumeOnlySurplusProduction = buildingType.hasModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION);
-//		consumeOnlySurplusProduction = false;
-//		avoidExcessProduction = false;
+	private void productionConsumption(
+	    ProductionConsumption prodCons, Production production, 
+	    ProductionSummary warehouse, int warehouseCapacity, 
+	    ProductionConsumption globalProdCons,
+	    boolean unattendedProduction
+	) {
+		final boolean avoidExcessProduction = buildingType.hasAbility(Ability.AVOID_EXCESS_PRODUCTION);
+		final boolean consumeOnlySurplusProduction = buildingType.hasModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION);
+		final boolean canAutoProduce = canAutoProduce();
 		
         HashSet<String> consumptionGoods = new HashSet<String>();
         
-        for (java.util.Map.Entry<String, Integer> inputEntry : production.inputEntries()) {
-            String goodsId = inputEntry.getKey();
+        for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+            String goodsId = inputEntry.getKey().getId();
             consumptionGoods.add(goodsId);
         }
-        for (java.util.Map.Entry<String, Integer> outputEntry : production.outputEntries()) {
-            String goodsId = outputEntry.getKey();
+        for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+            String goodsId = outputEntry.getKey().getId();
             Integer goodInitValue = outputEntry.getValue();
             if (0 == goodInitValue) {
                 continue;
             }
             int goodQuantity = 0;
             
-            if (production.isUnattended() && workers.isEmpty()) {
+            if (unattendedProduction) {
                 goodQuantity += goodInitValue;
-            } 
-            if (!production.isUnattended() && !workers.isEmpty()) {
+            } else {
                 for (Unit worker : workers.entities()) {
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
                 }
             }
-            if (goodsId.equals("model.goods.horses")) {
-            	System.out.println("model.goods.horses = " + goodQuantity);
-            }
-            // TODO: canAutoProduce do usuniecia oparcie sie w calosci na attended lub unattended
-            if (canAutoProduce()) {
+            if (canAutoProduce) {
             	int available = warehouse.getQuantity(goodsId);
-            	// TODO: goodsType.getBreedingNumber()
-            	if (available <= 2) {
+            	if (available <= outputEntry.getKey().getBreedingNumber()) {
             		goodQuantity = 0;
             	} else {
             		int divisor = (int)buildingType.applyModifier(Modifier.BREEDING_DIVISOR, 0);
             		int factor = (int)buildingType.applyModifier(Modifier.BREEDING_FACTOR, 0);
             		goodQuantity = ((available - 1) / divisor + 1) * factor;
             	}
-            } else {
             }    
             prodCons.baseProduction.addGoods(goodsId, goodQuantity);
             

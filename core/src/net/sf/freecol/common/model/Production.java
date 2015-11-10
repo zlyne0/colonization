@@ -6,13 +6,14 @@ import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Production implements Identifiable {
     private boolean unattended = false;
-    private final java.util.Map<String,Integer> input = new HashMap<String, Integer>(2); 
-    private final java.util.Map<String,Integer> output = new HashMap<String, Integer>(2); 
+    private final java.util.Map<GoodsType,Integer> input = new HashMap<GoodsType, Integer>(2); 
+    private final java.util.Map<GoodsType,Integer> output = new HashMap<GoodsType, Integer>(2); 
     
     public Production(boolean unattended) {
         this.unattended = unattended;
@@ -29,59 +30,33 @@ public class Production implements Identifiable {
 		throw new IllegalStateException("production has no id");
 	}
     
-	public Set<Entry<String, Integer>> inputEntries() {
+	public Set<Entry<GoodsType, Integer>> inputEntries() {
 		return input.entrySet();
 	}
 
-	public Set<Entry<String, Integer>> outputEntries() {
+	public Set<Entry<GoodsType, Integer>> outputEntries() {
 		return output.entrySet();
 	}
 	
-    private void addOutput(String goodsType, int amount) {
+    private void addOutput(GoodsType goodsType, int amount) {
         this.output.put(goodsType, amount);
     }
 
-    private void addInput(String goodsType, int amount) {
+    private void addInput(GoodsType goodsType, int amount) {
         this.input.put(goodsType, amount);
     }
-    
-	// TODO: metoda do usuniecia
-	@Deprecated
-	public void sumProductionType(ProductionSummary summary, Collection<Unit> workers) {
-		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
-			String goodsId = outputEntry.getKey();
-			
-			Integer goodProductionInitValue = outputEntry.getValue();
-			if (0 == goodProductionInitValue) {
-				continue;
-			}
-			int goodQuantity = 0;
-			
-			if (unattended && workers.isEmpty()) {
-				goodQuantity += goodProductionInitValue;
-			} 
-			if (!unattended && !workers.isEmpty()) {
-				for (Unit worker : workers) {
-					goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodProductionInitValue);
-				}
-			}
-			if (goodQuantity != 0) {
-				summary.addGoods(goodsId, goodQuantity);
-			}
-		}
-	}
 
 	// TODO: metoda do usuniecia
 	@Deprecated
     public void sumProductionType(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
         HashSet<String> consumptionGoods = new HashSet<String>();
         
-        for (java.util.Map.Entry<String, Integer> inputEntry : input.entrySet()) {
-            String goodsId = inputEntry.getKey();
+        for (java.util.Map.Entry<GoodsType, Integer> inputEntry : input.entrySet()) {
+            String goodsId = inputEntry.getKey().getId();
             consumptionGoods.add(goodsId);
         }
-        for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
-            String goodsId = outputEntry.getKey();
+        for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
+            String goodsId = outputEntry.getKey().getId();
             Integer goodInitValue = outputEntry.getValue();
             if (0 == goodInitValue) {
                 continue;
@@ -116,23 +91,23 @@ public class Production implements Identifiable {
 	
 	public Production sumProductionForWorker(Unit worker) {
 		Production prod = new Production(this.unattended);
-		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
-			String goodsId = outputEntry.getKey();
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
+			String goodsId = outputEntry.getKey().getId();
 			int goodQuantity = outputEntry.getValue();
 			
 			if (unattended) {
 			} else {
 				goodQuantity = (int)worker.unitType.applyModifier(goodsId, goodQuantity);
 			}
-			prod.addOutput(goodsId, goodQuantity);
+			prod.addOutput(outputEntry.getKey(), goodQuantity);
 		}
 		return prod;
 	}
 	
 	public void applyTileImprovementsModifiers(Tile aTile) {
-		for (java.util.Map.Entry<String, Integer> outputEntry : output.entrySet()) {
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
 			int quantity = outputEntry.getValue();
-			String goodId = outputEntry.getKey();
+			String goodId = outputEntry.getKey().getId();
 
 			for (TileImprovement ti : aTile.getTileImprovements()) {
 				quantity = (int)ti.type.applyModifier(goodId, quantity);
@@ -155,9 +130,9 @@ public class Production implements Identifiable {
 		}
 	}
 	
-	private int sumProduction(java.util.Map<String,Integer> m) {
+	private int sumProduction(java.util.Map<GoodsType,Integer> m) {
 		int sum = 0;
-		for (java.util.Map.Entry<String, Integer> entry : m.entrySet()) {
+		for (java.util.Map.Entry<GoodsType, Integer> entry : m.entrySet()) {
 			sum += entry.getValue();
 		}
 		return sum;
@@ -173,13 +148,13 @@ public class Production implements Identifiable {
 		return st;
 	}
 	
-	private String mapToString(java.util.Map<String,Integer> mm) {
+	private String mapToString(java.util.Map<GoodsType,Integer> mm) {
 		String st = "";
-		for (java.util.Map.Entry<String, Integer> entry : mm.entrySet()) {
+		for (java.util.Map.Entry<GoodsType, Integer> entry : mm.entrySet()) {
 			if (st.length() > 0) {
 				st += ", ";
 			}
-			String goodsId = entry.getKey();
+			String goodsId = entry.getKey().getId();
 			st += goodsId + ": " + entry.getValue();
 		}
 		return st;
@@ -193,7 +168,7 @@ public class Production implements Identifiable {
 		if (this.output.size() != prod.output.size()) {
 			return false;
 		}
-		for (java.util.Map.Entry<String, Integer> entry : output.entrySet()) {
+		for (java.util.Map.Entry<GoodsType, Integer> entry : output.entrySet()) {
 			if (!prod.output.containsKey(entry.getKey())) {
 				return false;
 			}
@@ -212,14 +187,18 @@ public class Production implements Identifiable {
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
             if (attr.isQNameEquals("output")) {
-                String goodsType = attr.getStrAttribute("goods-type");
+                String goodsTypeId = attr.getStrAttribute("goods-type");
+                GoodsType goodType = game.specification.goodsTypes.getById(goodsTypeId);
+                
                 int amount = attr.getIntAttribute("value");
-                ((Production)nodeObject).addOutput(goodsType, amount);
+                ((Production)nodeObject).addOutput(goodType, amount);
             }
             if (attr.isQNameEquals("input")) {
-                String goodsType = attr.getStrAttribute("goods-type");
+                String goodsTypeId = attr.getStrAttribute("goods-type");
+                GoodsType goodType = game.specification.goodsTypes.getById(goodsTypeId);
+                
                 int amount = attr.getIntAttribute("value");
-                ((Production)nodeObject).addInput(goodsType, amount);
+                ((Production)nodeObject).addInput(goodType, amount);
             }
         }
 		

@@ -4,12 +4,18 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-// TODO: rozbicie na dwie listy, unattenden productions i attendedn production, latwiej bedzie pozniej przetwarzac
 public class ProductionInfo {
-	final List<Production> productions = new ArrayList<Production>();
+	private final List<Production> productions = new ArrayList<Production>();
+    private final List<Production> unattendedProductions = new ArrayList<Production>();
+    private final List<Production> attendedProductions = new ArrayList<Production>();
 	
     public void addProduction(Production production) {
         this.productions.add(production);
+        if (production.isUnattended()) {
+            this.unattendedProductions.add(production);
+        } else {
+            this.attendedProductions.add(production);
+        }
     }
 
 	public int size() {
@@ -18,6 +24,8 @@ public class ProductionInfo {
 
 	public void clear() {
 		productions.clear();
+		unattendedProductions.clear();
+		attendedProductions.clear();
 	}
 
 	// TODO: do usuniecia
@@ -28,12 +36,6 @@ public class ProductionInfo {
             production.sumProductionType(prodCons, workers, warehouse);
         }
 	}
-	
-    public void addProductionToSummary(ProductionSummary summary, Collection<Unit> workers) {
-        for (Production production : productions) {
-            production.sumProductionType(summary, workers);
-        }
-    }
     
 	public ProductionInfo productionSummaryForWorker(Unit worker) {
 		ProductionInfo prodInfo = new ProductionInfo();
@@ -79,5 +81,13 @@ public class ProductionInfo {
 		}
 		return maxProdType;
 	}
+
+    public List<Production> getUnattendedProductions() {
+        return unattendedProductions;
+    }
+
+    public List<Production> getAttendedProductions() {
+        return attendedProductions;
+    }
 
 }

@@ -13,7 +13,8 @@ public class GoodsType extends ObjectWithId {
     boolean newWorldGoods;
     boolean tradeGoods;
     boolean storable;
-    String storedAs;
+    private String storedAs;
+    private int breedingNumber;
 
     public boolean isStorable() {
         return storable;
@@ -23,6 +24,29 @@ public class GoodsType extends ObjectWithId {
 		super(id);
 	}
 
+    public String getStoredAs() {
+        if (storedAs != null) {
+            return storedAs;
+        } else {
+            return id;
+        }
+    }
+	
+    public int getBreedingNumber() {
+        return breedingNumber;
+    }
+    
+	@Override
+	public boolean equals(Object obj) {
+	    GoodsType gObj = (GoodsType)obj;
+	    return id.equals(gObj.id);
+	}
+	
+	@Override
+	public int hashCode() {
+	    return id.hashCode();
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
         @Override
@@ -37,6 +61,7 @@ public class GoodsType extends ObjectWithId {
             gt.tradeGoods = attr.getBooleanAttribute("trade-goods", false);
             gt.storable = attr.getBooleanAttribute("storable", true);
             gt.storedAs = attr.getStrAttribute("stored-as");
+            gt.breedingNumber = attr.getIntAttribute("breeding-number", 0);
             
             nodeObject = gt;
         }
@@ -50,5 +75,4 @@ public class GoodsType extends ObjectWithId {
             return "goods-type";
         }
 	}
-	
 }
