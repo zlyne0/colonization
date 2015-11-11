@@ -29,7 +29,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	private MapRenderer mapRenderer;
 	
 	private ColonyTile[] colonyTiles = new ColonyTile[9];
-	private Tile[] colonyTerrains = new Tile[9];
 	private UnitActor[] colonyTerrainsWorkers = new UnitActor[9];
 	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
 	
@@ -68,13 +67,15 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		}
 		
 		for (int i=0; i<colonyTiles.length; i++) {
-			if (colonyTiles[i].equalsId(destColonyTile)) {
+			ColonyTile ct = colonyTiles[i];
+			if (ct.equalsId(destColonyTile)) {
+				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 				colonyTerrainsWorkers[i] = worker;
 				destColonyTile.setWorker(worker.unit);
 				addActor(worker);
-				updateWorkerScreenPosition(worker, colonyTerrains[i]);
+				updateWorkerScreenPosition(worker, ct);
 				
-				initMaxPossibleProdctionOnTile(worker.unit, colonyTerrains[i], colonyTiles[i]);
+				initMaxPossibleProdctionOnTile(worker.unit, ct.tile, ct);
 				initProduction();
 				return;
 			}
@@ -106,6 +107,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 					+ "[" + colonyTiles[i].getId() + "] "
 				);
 				
+				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 				colonyTiles[i].takeWorker();
 				colonyTerrainsWorkers[i] = null;
 				removeActor(unitActor);
@@ -166,14 +168,13 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		for (int i=0; i<colonyTiles.length; i++) {
 			colonyTerrainsWorkers[i] = null;
 			ColonyTile ct = colonyTiles[i];
-			Tile t = colonyTerrains[i];
 			
 			
 			if (ct.getWorker() != null) {
 				UnitActor ua = new UnitActor(ct.getWorker());
 				ua.dragAndDropSourceContainer = this;
 				addActor(ua);
-				updateWorkerScreenPosition(ua, t);
+				updateWorkerScreenPosition(ua, ct);
 				
 				dragAndDrop.addSource(new UnitDragAndDropSource(ua));
 				colonyTerrainsWorkers[i] = ua;
@@ -181,8 +182,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		}
 	}
 
-	private void updateWorkerScreenPosition(UnitActor ua, Tile t) {
-		Vector2 tileScreenCords = mapRenderer.mapToScreenCords(t.x, t.y);
+	private void updateWorkerScreenPosition(UnitActor ua, ColonyTile ct) {
+		Vector2 tileScreenCords = mapRenderer.mapToScreenCords(ct.tile.x, ct.tile.y);
 		ua.setPosition(0, 0);
 		ua.moveBy(
 			tileScreenCords.x + MapRenderer.TILE_WIDTH/2 - ua.getWidth()/2, 
@@ -193,7 +194,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	private void initTerrainsDrawModel() {
 		for (int i=0; i<colonyTiles.length; i++) {
 			colonyTiles[i] = null;
-			colonyTerrains[i] = null;
 		}
 		java.util.Map<String,Tile> colonyTileById = new HashMap<String, Tile>(); 
 		mapRenderer.populateColonyTiles(colonyTile, colonyTileById);
@@ -201,20 +201,13 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		int i = 0;
 		for (ColonyTile ct : colony.colonyTiles.entities()) {
 			colonyTiles[i] = ct;
-			colonyTerrains[i] = colonyTileById.get(ct.getWorkTileId());
-			if (colonyTerrains[i] == null) {
-				throw new IllegalStateException("can not find colony terrain by colony tile work id: " + ct.getWorkTileId());
-			}
 			i++;
 		}
 	}
 
 	private void initProduction() {
 		for (int i=0; i<colonyTiles.length; i++) {
-			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(
-				colonyTerrains[i], 
-				colonyTiles[i] 
-			);
+			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(colonyTiles[i]);
 			productionQuantityDrawModels[i].init(productionConsumption.realProduction);
 		}
 	}
@@ -226,8 +219,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		super.draw(batch, parentAlpha);
 		
 		for (int i=0; i<colonyTiles.length; i++) {
-			Tile t = colonyTerrains[i];
-			Vector2 tileScreenCords = mapRenderer.mapToScreenCords(t.x, t.y);
+			ColonyTile ct = colonyTiles[i];
+			Vector2 tileScreenCords = mapRenderer.mapToScreenCords(ct.tile.x, ct.tile.y);
 			
 			productionQuantityDrawer.draw(batch, productionQuantityDrawModels[i], 
 				getX() + tileScreenCords.x, 

@@ -35,7 +35,11 @@ public class Building extends ObjectWithId {
 		return reason;
 	}    
     
-	public ProductionConsumption determineProductionConsumption(ProductionSummary warehouse, int warehouseCapacity, ProductionConsumption globalProdCons) {
+	public ProductionConsumption determineProductionConsumption(
+			ProductionSummary warehouse, 
+			int warehouseCapacity, 
+			ProductionConsumption globalProdCons
+	) {
 	    boolean unattendedProduction = false;
 	    List<Production> productions;
 	    if (workers.isEmpty()) {

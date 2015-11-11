@@ -1,9 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 
 import org.xml.sax.SAXException;
@@ -16,11 +13,15 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class Colony extends Settlement {
     public static final int LIBERTY_PER_REBEL = 200;
 
-    private GoodsContainer goodsContainer;
+    GoodsContainer goodsContainer;
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     
-    private final List<Unit> colonyWorkers = new ArrayList<Unit>();
+    final ObjectWithFeatures colonyBuildingsFeatures;
+    
+    private final ColonyProduction colonyProduction;
+    final List<Unit> colonyWorkers = new ArrayList<Unit>();
+    // TODO: zrezygnowanie z int jako count a oparcie sie na colonyWorkers
     private int colonyUnitsCount = -1;
     private int sonsOfLiberty = 0;
     private int tories = 0;
@@ -33,13 +34,19 @@ public class Colony extends Settlement {
      */
     private int liberty = 0;
     
-    private boolean isUndead() {
-        return false;
+    public Colony(String id) {
+    	this.id = id;
+    	colonyBuildingsFeatures = new ObjectWithFeatures("tmp" + id);
+    	colonyProduction = new ColonyProduction(this);
     }
-
+    
     public int getColonyUnitsCount() {
 		return colonyUnitsCount;
 	}
+
+    public void updateModelOnWorkerAllocationOrGoodsTransfer() {
+    	colonyProduction.setAsNeedUpdate();
+    }
     
     public void updateColonyUnitsCount() {
     	colonyUnitsCount = 0;
@@ -56,6 +63,13 @@ public class Colony extends Settlement {
     	}
     }
     
+    private void updateColonyFeatures() {
+    	colonyBuildingsFeatures.clear();
+    	for (Building b : buildings.entities()) {
+    		colonyBuildingsFeatures.addFeatures(b.buildingType);
+    	}
+    }
+    
     private String getStockadeKey() {
         return null;
     }
@@ -66,9 +80,6 @@ public class Colony extends Settlement {
 	}
     
     public String getImageKey() {
-        if (isUndead()) {
-            return "undead";
-        }
         int count = getColonyUnitsCount();
         String key = (count <= 3) ? "small"
             : (count <= 7) ? "medium"
@@ -84,111 +95,28 @@ public class Colony extends Settlement {
         return goodsContainer;
     }
     
-    public int getWarehouseCapacity() {
-        ObjectWithFeatures features = new ObjectWithFeatures("zaza");
-        for (Building building : buildings.entities()) {
-        	features.addFeatures(building.buildingType);
-        }
-    	return (int)features.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+    public ProductionConsumption productionSummary(Building building) {
+    	return colonyProduction.productionConsumptionForObject(building.getId());
     }
     
-    public void production() {
-    	ProductionSummary abstractWarehouse = goodsContainer.cloneGoods();
-    	
-    	ProductionConsumption prodCons = new ProductionConsumption();
-
-        ObjectWithFeatures features = new ObjectWithFeatures("zaza");
-        for (Building building : buildings.entities()) {
-        	features.addFeatures(building.buildingType);
-        }
-    	
-        int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
-        int amount = Math.min(unitsThatUseNoBells, getColonyUnitsCount());
-    	prodCons.realProduction.addGoods("model.goods.bells", amount);
-    	
-        for (ColonyTile ct : colonyTiles.entities()) {
-        	ProductionConsumption ps = productionSummaryForTerrain(ct.tile, ct, abstractWarehouse);
-            prodCons.add(ps);
-            abstractWarehouse.addGoods(ps.realProduction);
-        }
-        
-        for (Unit worker : colonyWorkers) {
-        	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
-        		prodCons.baseConsumption.addGoods(uc.getId(), uc.getQuantity());
-        		prodCons.realProduction.addGoods(uc.getId(), -uc.getQuantity());
-        	}
-        }
-
-        // TODO: przemienienie wszystkich goods na ich odpowiedniki storedAs 
-        
-        for (Building building : buildings.entities()) {
-        	ProductionConsumption ps = productionSummaryForBuilding(building, abstractWarehouse, prodCons);
-
-            prodCons.add(ps);
-            abstractWarehouse.addGoods(ps.realProduction);
-        }
-        
-        System.out.println("warehouse = " + goodsContainer.cloneGoods());
-        System.out.println("warehouse = " + abstractWarehouse);
-        System.out.println("productionConsumption ##################");
-        System.out.println("productionConsumption = " + prodCons);
-        System.out.println("productionConsumption ##################");
+    public ProductionConsumption productionSummary() {
+    	return colonyProduction.globalProductionConsumption();
     }
     
-    public ProductionConsumption productionSummaryForBuilding(Building building) {
-    	ProductionSummary warehouse = goodsContainer.cloneGoods();
-    	return productionSummaryForBuilding(building, warehouse, new ProductionConsumption());
+    public ProductionConsumption productionSummaryForTerrain(ColonyTile colonyTile) {
+    	return colonyProduction.productionConsumptionForObject(colonyTile.getId());
     }
     
-    public ProductionConsumption productionSummaryForBuilding(Building building, ProductionSummary warehouse, ProductionConsumption globalProdCons) {
-    	// to sa cechy koloni, docelowo cechy koloni uzupelniane przy zmianie lub cech budynkow 
-    	ObjectWithFeatures colonyFeatures = new ObjectWithFeatures("zaza");
-    	for (Building b : buildings.entities()) {
-    		colonyFeatures.addFeatures(b.buildingType);
-    	}
-    	int warehouseCapacity = (int)colonyFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
-    	System.out.println("warehouseCapacity = " + warehouseCapacity);
-    	
-    	ProductionConsumption prodCons = building.determineProductionConsumption(warehouse, warehouseCapacity, globalProdCons);
-
-        prodCons.realProduction.applyModifiers(colonyFeatures);
-        prodCons.baseProduction.applyModifiers(colonyFeatures);
-    	return prodCons;
-    }
-
-	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
-		ProductionSummary abstractWarehouse = goodsContainer.cloneGoods();
-		return productionSummaryForTerrain(tile, colonyTile, abstractWarehouse);
-	}
-    
-	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile, ProductionSummary abstractWarehouse) {
-		ProductionConsumption prodCons = new ProductionConsumption();
-		
-		List<Unit> workers = null;
-		if (colonyTile.getWorker() != null) {
-			workers = Arrays.asList(colonyTile.getWorker());
-		} else {
-			workers = Collections.emptyList();
-		}
-		colonyTile.productionInfo.determineProductionConsumption(prodCons, workers, abstractWarehouse);
-		
-		if (prodCons.baseProduction.isNotEmpty()) {
-			prodCons.baseProduction.applyTileImprovementsModifiers(tile);
-			prodCons.baseProduction.applyModifier(productionBonus());
-		}
-		if (prodCons.realProduction.isNotEmpty()) {
-			prodCons.realProduction.applyTileImprovementsModifiers(tile);
-			prodCons.realProduction.applyModifier(productionBonus());
-		}
-		return prodCons; 
-	}
-	
 	public ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
 		ProductionInfo productionInfo = aTile.type.productionInfo;
 		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
 		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
 		return productionSummaryForWorker;
 	}
+
+    public int getWarehouseCapacity() {
+    	return (int)colonyBuildingsFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+    }
 
     public int sonsOfLiberty() {
         return sonsOfLiberty;
@@ -365,8 +293,7 @@ public class Colony extends Settlement {
             String strAttribute = attr.getStrAttribute("settlementType");
             Player owner = game.players.getById(attr.getStrAttribute("owner"));
             
-            Colony colony = new Colony();
-            colony.id = attr.getStrAttribute("id");
+            Colony colony = new Colony(attr.getStrAttribute("id"));
             colony.name = attr.getStrAttribute("name");
             colony.sonsOfLiberty = attr.getIntAttribute("sonsOfLiberty", 0);
             colony.tories = attr.getIntAttribute("tories", 0);
@@ -383,6 +310,7 @@ public class Colony extends Settlement {
         public void endElement(String uri, String localName, String qName) throws SAXException {
         	if (qName.equals(tagName())) {
         		((Colony)nodeObject).updateColonyUnitsCount();
+        		((Colony)nodeObject).updateColonyFeatures();
         	}
         }
         

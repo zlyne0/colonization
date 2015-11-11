@@ -403,6 +403,7 @@ public class MapRenderer {
 		return null;
 	}
 
+	// TODO: chyba do usuniecia
 	public void populateColonyTiles(Tile colonyTile, java.util.Map<String,Tile> colonyTerrains) {
 		colonyTerrains.put(colonyTile.getId(), colonyTile);
     	for (Direction direction : Direction.allDirections) {

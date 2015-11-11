@@ -107,7 +107,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     }
 
     private void resetProductionDesc() {
-    	ProductionConsumption productionSummary = colony.productionSummaryForBuilding(building);
+    	ProductionConsumption productionSummary = colony.productionSummary(building);
     	productionQuantityDrawModel.init(productionSummary.baseProduction);
     }
 }

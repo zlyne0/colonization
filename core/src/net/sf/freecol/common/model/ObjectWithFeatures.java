@@ -99,4 +99,14 @@ public class ObjectWithFeatures extends ObjectWithId {
         }
     }
     
+    public void clear() {
+    	for (Entry<String, List<Ability>> entrySet : abilities.entrySet()) {
+    		entrySet.getValue().clear();
+    	}
+        for (Entry<String, List<Modifier>> entrySet : modifiers.entrySet()) {
+        	entrySet.getValue().clear();
+        }
+        abilities.clear();
+        modifiers.clear();
+    }
 }

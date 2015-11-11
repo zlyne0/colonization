@@ -93,7 +93,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         rowGroup1.addActor(outsideUnitsPanel);
         
         tableLayout.setFillParent(true);
-        tableLayout.add(productionPanel);
+        tableLayout.add(productionPanel).colspan(2).fillX();
         tableLayout.row();
         tableLayout.add(terrainPanel);
         tableLayout.add(buildingsPanelActor);
@@ -107,6 +107,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		tableLayout.add(createShiftButton()).colspan(2).fillX();
 		
         stage.addActor(tableLayout);
+        stage.setDebugAll(true);
 	}
 
 	private TextButton createShiftButton() {

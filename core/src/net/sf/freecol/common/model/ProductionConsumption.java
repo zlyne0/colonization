@@ -20,4 +20,10 @@ public class ProductionConsumption {
 		realProduction.addGoods(ps.realProduction);
 		//realConsumption.addGoods(ps.realConsumption);
 	}
+	
+	public void clean() {
+		baseProduction.makeEmpty();
+		baseConsumption.makeEmpty();
+		realProduction.makeEmpty();
+	}
 }

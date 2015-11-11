@@ -94,17 +94,21 @@ public class FontResource {
 	}
 	
     public static float strIntWidth(BitmapFont font, int i) {
-    	String str = "5";
+    	StringBuilder str = new StringBuilder();
+		if (i < 0) {
+    		str.append("-");
+    	}
+    	i = Math.abs(i);
     	if (i >= 100) {
-    		str = "555";
+    		str.append("555");
     	} else {
     		if (i < 10) {
-    			str = "5";
+    			str.append("5");
     		} else {
-    			str = "55";
+    			str.append("55");
     		}
     	}
-    	return strWidth(font, str);
+    	return strWidth(font, str.toString());
     }
 	
 	public static void dispose() {

@@ -9,7 +9,7 @@ public class ColonyTile extends ObjectWithId {
 	private Unit worker;
 	private String workTileId;
 	public final ProductionInfo productionInfo = new ProductionInfo();
-    Tile tile;
+    public Tile tile;
 	
 	public ColonyTile(String id) {
 		super(id);
