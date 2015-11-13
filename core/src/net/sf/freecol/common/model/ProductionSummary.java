@@ -14,10 +14,6 @@ public class ProductionSummary {
     
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
-    public boolean hasNotGood(String goodsId, int goodQuantity) {
-        return goods.get(goodsId, 0) < goodQuantity;
-    }
-
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
     }

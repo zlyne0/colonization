@@ -1,8 +1,6 @@
 package net.sf.freecol.common.model;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -46,49 +44,6 @@ public class Production implements Identifiable {
         this.input.put(goodsType, amount);
     }
 
-	// TODO: metoda do usuniecia
-	@Deprecated
-    public void sumProductionType(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
-        HashSet<String> consumptionGoods = new HashSet<String>();
-        
-        for (java.util.Map.Entry<GoodsType, Integer> inputEntry : input.entrySet()) {
-            String goodsId = inputEntry.getKey().getId();
-            consumptionGoods.add(goodsId);
-        }
-        for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
-            String goodsId = outputEntry.getKey().getId();
-            Integer goodInitValue = outputEntry.getValue();
-            if (0 == goodInitValue) {
-                continue;
-            }
-            int goodQuantity = 0;
-            
-            if (unattended && workers.isEmpty()) {
-                goodQuantity += goodInitValue;
-            } 
-            if (!unattended && !workers.isEmpty()) {
-                for (Unit worker : workers) {
-                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-                }
-            }
-            prodCons.baseProduction.addGoods(goodsId, goodQuantity);
-            
-            // its big simplicity because for one production product create all consume product, 
-            // is it will produce another product it will not be narrowed to warehouse state
-            // it's simplicity is enough because every building consume only one good
-            for (String cg : consumptionGoods) {
-                prodCons.baseConsumption.addGoods(cg, goodQuantity);
-                if (warehouse.hasNotGood(cg, goodQuantity)) {
-                    int warehouseMax = warehouse.getQuantity(cg);
-                    goodQuantity = warehouseMax;
-                }
-                prodCons.realProduction.addGoods(cg, -goodQuantity);
-            }
-            consumptionGoods.clear();
-            prodCons.realProduction.addGoods(goodsId, goodQuantity);
-        }
-    }
-	
 	public Production sumProductionForWorker(Unit worker) {
 		Production prod = new Production(this.unattended);
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {

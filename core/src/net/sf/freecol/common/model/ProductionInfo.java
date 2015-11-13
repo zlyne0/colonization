@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 public class ProductionInfo {
@@ -28,15 +27,6 @@ public class ProductionInfo {
 		attendedProductions.clear();
 	}
 
-	// TODO: do usuniecia
-	@Deprecated
-	public void determineProductionConsumption(ProductionConsumption prodCons, Collection<Unit> workers, ProductionSummary warehouse) {
-	    // assumption that for unattended or attended production there is only one production object
-        for (Production production : productions) {
-            production.sumProductionType(prodCons, workers, warehouse);
-        }
-	}
-    
 	public ProductionInfo productionSummaryForWorker(Unit worker) {
 		ProductionInfo prodInfo = new ProductionInfo();
 		for (Production production : productions) {

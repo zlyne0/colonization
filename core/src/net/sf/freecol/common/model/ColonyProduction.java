@@ -1,11 +1,10 @@
 package net.sf.freecol.common.model;
 
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;
 
 class ColonyProduction {
@@ -13,7 +12,7 @@ class ColonyProduction {
 	private boolean needUpdate = true;
 	private final Colony colony;
 	private final java.util.Map<String,ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();
-	private final ProductionConsumption globalProductionConsumption = new ProductionConsumption();
+	private final ProductionSummary globalProductionConsumption = new ProductionSummary();
 	
 	ColonyProduction(Colony colony) {
 		this.colony = colony;
@@ -35,20 +34,18 @@ class ColonyProduction {
     	
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
         int amount = Math.min(unitsThatUseNoBells, colony.getColonyUnitsCount());
-        globalProductionConsumption.realProduction.addGoods("model.goods.bells", amount);
+        globalProductionConsumption.addGoods("model.goods.bells", amount);
     	
         for (ColonyTile ct : colony.colonyTiles.entities()) {
-        	ProductionConsumption ps = productionSummaryForTerrain(ct.tile, ct, abstractWarehouse);
+        	ProductionConsumption ps = productionSummaryForTerrain(ct.tile, ct);
         	prodConsByProducer.put(ct.getId(), ps);
         	
-        	globalProductionConsumption.add(ps);
-            abstractWarehouse.addGoods(ps.realProduction);
+        	globalProductionConsumption.addGoods(ps.realProduction);
         }
         
         for (Unit worker : colony.colonyWorkers) {
         	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
-        		globalProductionConsumption.baseConsumption.addGoods(uc.getId(), uc.getQuantity());
-        		globalProductionConsumption.realProduction.addGoods(uc.getId(), -uc.getQuantity());
+        		globalProductionConsumption.addGoods(uc.getId(), -uc.getQuantity());
         	}
         }
 
@@ -56,16 +53,14 @@ class ColonyProduction {
         
         for (Building building : colony.buildings.entities()) {
         	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption);
-            pc.realProduction.applyModifiers(colony.colonyBuildingsFeatures);
             pc.baseProduction.applyModifiers(colony.colonyBuildingsFeatures);
+            pc.realProduction.applyModifiers(colony.colonyBuildingsFeatures);
         	
         	prodConsByProducer.put(building.getId(), pc);
         	
-        	globalProductionConsumption.add(pc);
-            abstractWarehouse.addGoods(pc.realProduction);
+        	globalProductionConsumption.addGoods(pc.realProduction);
         }
         
-        System.out.println("warehouse = " + colony.goodsContainer.cloneGoods());
         System.out.println("warehouse = " + abstractWarehouse);
         System.out.println("productionConsumption ##################");
         System.out.println("productionConsumption = " + globalProductionConsumption);
@@ -73,16 +68,34 @@ class ColonyProduction {
         needUpdate = false;
     }
 	
-	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile, ProductionSummary abstractWarehouse) {
+	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
-		List<Unit> workers = null;
+		List<Production> productions; 
 		if (colonyTile.getWorker() != null) {
-			workers = Arrays.asList(colonyTile.getWorker());
+		    productions = colonyTile.productionInfo.getAttendedProductions();
 		} else {
-			workers = Collections.emptyList();
+            productions = colonyTile.productionInfo.getUnattendedProductions();
 		}
-		colonyTile.productionInfo.determineProductionConsumption(prodCons, workers, abstractWarehouse);
+		
+		for (Production production : productions) {
+		    for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+	            String goodsId = outputEntry.getKey().getId();
+	            Integer goodInitValue = outputEntry.getValue();
+	            if (0 == goodInitValue) {
+	                continue;
+	            }
+	            int goodQuantity = 0;
+		        if (colonyTile.getWorker() != null) {
+		            goodQuantity += (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
+		        } else {
+		            goodQuantity += goodInitValue;
+		        }
+		        
+		        prodCons.realProduction.addGoods(goodsId, goodQuantity);
+                prodCons.baseProduction.addGoods(goodsId, goodQuantity);
+		    }
+		}
 		
 		if (prodCons.baseProduction.isNotEmpty()) {
 			prodCons.baseProduction.applyTileImprovementsModifiers(tile);
@@ -106,7 +119,7 @@ class ColonyProduction {
 		return productionConsumption;
 	}
 
-	public ProductionConsumption globalProductionConsumption() {
+	public ProductionSummary globalProductionConsumption() {
 		update();
 		return globalProductionConsumption;
 	}
