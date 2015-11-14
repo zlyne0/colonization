@@ -38,7 +38,7 @@ public class Building extends ObjectWithId {
 	public ProductionConsumption determineProductionConsumption(
 			ProductionSummary warehouse, 
 			int warehouseCapacity, 
-			ProductionConsumption globalProdCons
+			ProductionSummary globalProdCons
 	) {
 	    boolean unattendedProduction = false;
 	    List<Production> productions;
@@ -60,7 +60,7 @@ public class Building extends ObjectWithId {
 	private void productionConsumption(
 	    ProductionConsumption prodCons, Production production, 
 	    ProductionSummary warehouse, int warehouseCapacity, 
-	    ProductionConsumption globalProdCons,
+	    ProductionSummary globalProdCons,
 	    boolean unattendedProduction
 	) {
 		final boolean avoidExcessProduction = buildingType.hasAbility(Ability.AVOID_EXCESS_PRODUCTION);
@@ -114,10 +114,10 @@ public class Building extends ObjectWithId {
             // is it will produce another product it will not be narrowed to warehouse state
             // it's simplicity is enough because every building consume only one good
             for (String cg : consumptionGoods) {
-                prodCons.baseConsumption.addGoods(cg, goodQuantity);
+                prodCons.baseProduction.addGoods(cg, goodQuantity);
                 
                 if (consumeOnlySurplusProduction) {
-                	int realCgProd = globalProdCons.realProduction.getQuantity(cg);
+                	int realCgProd = globalProdCons.getQuantity(cg);
                 	int maxCGConsumption = (int)buildingType.applyModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION, realCgProd);
                 	if (goodQuantity > maxCGConsumption) {
                 		goodQuantity = maxCGConsumption;
@@ -126,12 +126,12 @@ public class Building extends ObjectWithId {
                 		}
                 	}
                 } else {
-	                if (warehouse.hasNotGood(cg, goodQuantity)) {
-	                	int warehouseMax = warehouse.getQuantity(cg);
-	                    goodQuantity = warehouseMax;
+                    int available = globalProdCons.getQuantity(cg) + warehouse.getQuantity(cg);
+	                if (available < goodQuantity) {
+	                    goodQuantity = available;
 	                }
                 }
-                prodCons.realProduction.addGoods(cg, -goodQuantity);
+                prodCons.realConsumption.addGoods(cg, -goodQuantity);
             }
             consumptionGoods.clear();
             prodCons.realProduction.addGoods(goodsId, goodQuantity);

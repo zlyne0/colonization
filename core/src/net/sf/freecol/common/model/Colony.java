@@ -21,8 +21,6 @@ public class Colony extends Settlement {
     
     private final ColonyProduction colonyProduction;
     final List<Unit> colonyWorkers = new ArrayList<Unit>();
-    // TODO: zrezygnowanie z int jako count a oparcie sie na colonyWorkers
-    private int colonyUnitsCount = -1;
     private int sonsOfLiberty = 0;
     private int tories = 0;
     private int productionBonus = 0;
@@ -41,7 +39,7 @@ public class Colony extends Settlement {
     }
     
     public int getColonyUnitsCount() {
-		return colonyUnitsCount;
+		return colonyWorkers.size();
 	}
 
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
@@ -49,16 +47,13 @@ public class Colony extends Settlement {
     }
     
     public void updateColonyUnitsCount() {
-    	colonyUnitsCount = 0;
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
     		colonyWorkers.addAll(building.workers.entities());
-    		colonyUnitsCount += building.workers.size();
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.getWorker() != null) {
     			colonyWorkers.add(colonyTile.getWorker());
-    			colonyUnitsCount++;
     		}
     	}
     }
@@ -99,7 +94,7 @@ public class Colony extends Settlement {
     	return colonyProduction.productionConsumptionForObject(building.getId());
     }
     
-    public ProductionConsumption productionSummary() {
+    public ProductionSummary productionSummary() {
     	return colonyProduction.globalProductionConsumption();
     }
     

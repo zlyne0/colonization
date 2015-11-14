@@ -1,7 +1,5 @@
 package promitech.colonization.actors.colony;
 
-import java.util.HashMap;
-
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
@@ -195,9 +193,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		for (int i=0; i<colonyTiles.length; i++) {
 			colonyTiles[i] = null;
 		}
-		java.util.Map<String,Tile> colonyTileById = new HashMap<String, Tile>(); 
-		mapRenderer.populateColonyTiles(colonyTile, colonyTileById);
-		
 		int i = 0;
 		for (ColonyTile ct : colony.colonyTiles.entities()) {
 			colonyTiles[i] = ct;

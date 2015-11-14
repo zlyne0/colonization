@@ -80,6 +80,21 @@ public class ProductionSummary {
         }
     }
     
+    public boolean decreaseIfHas(String goodsId, int quantity) {
+    	int q = goods.get(goodsId, 0);
+    	if (q < quantity) {
+    		return false;
+    	}
+    	goods.getAndIncrement(goodsId, 0, -quantity);
+    	return true;
+    }
+
+	public void decrease(String goodsId, int quantity) {
+	    if (quantity != 0) {
+	        goods.getAndIncrement(goodsId, 0, -quantity);
+	    }
+	}
+    
     public List<AbstractGoods> slotedGoods() {
         List<AbstractGoods> goodsList = new ArrayList<AbstractGoods>();
         for (Entry<String> gsEntry : goods.entries()) {
