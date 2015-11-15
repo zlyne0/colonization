@@ -20,10 +20,12 @@ public class MapIdEntities<T extends Identifiable> {
             ((ObjectWithId)entity).setInsertOrder(entities.size());
         }
         entities.put(entity.getId(), entity);
+        sortedEntities = null;
     }
 
     public void addAll(MapIdEntities<T> parentEntities) {
         entities.putAll(parentEntities.entities);
+        sortedEntities = null;
     }
     
     public T getById(String id) {
@@ -76,6 +78,7 @@ public class MapIdEntities<T extends Identifiable> {
     
     public void removeId(Identifiable element) {
     	entities.remove(element.getId());
+    	sortedEntities = null;
     }
     
     public void clear() {

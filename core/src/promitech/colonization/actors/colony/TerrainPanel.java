@@ -75,6 +75,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 				
 				initMaxPossibleProdctionOnTile(worker.unit, ct.tile, ct);
 				initProduction();
+				
+				changeColonyStateListener.changeUnitAllocation(colony);
 				return;
 			}
 		}

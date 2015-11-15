@@ -50,7 +50,7 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		validate();
 		setScrollPercentX(100);
 		
-		this.changeColonyStateListener.changeUnitAllocation(colony);
+		changeColonyStateListener.changeUnitAllocation(colony);
 	}
 	
 	@Override
@@ -69,9 +69,10 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		widgets.addActor(unitActor);
 		
 		unitActor.unit.setState(UnitState.ACTIVE);
-		
 		validate();
 		setScrollPercentX(100);
+		
+		changeColonyStateListener.changeUnitAllocation(colony);
 	}
 
 	void initUnits(Tile colonyTile, DragAndDrop dragAndDrop) {

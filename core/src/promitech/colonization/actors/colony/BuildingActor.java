@@ -67,6 +67,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		building.workers.removeId(unitActor.unit);
 		removeActor(unitActor);
 		resetUnitActorPlacement();
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		resetProductionDesc();
 		
 		changeColonyStateListener.changeUnitAllocation(colony);
@@ -84,7 +85,10 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		
 		addActor(unitActor);
 		resetUnitActorPlacement();
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		resetProductionDesc();
+		
+		changeColonyStateListener.changeUnitAllocation(colony);
 	}
 
 	@Override

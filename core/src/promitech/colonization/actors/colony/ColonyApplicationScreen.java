@@ -38,7 +38,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         @Override
         public void changeUnitAllocation(Colony colony) {
             colony.updateColonyUnitsCount();
+            colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             populationPanel.update(colony);
+            productionPanel.init(colony, colonyTile, gameController.getSpecification());
         }
     };
 	
@@ -46,6 +48,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     static boolean isShiftPressed() {
     	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
     }
+    
+    private Colony colony;
+    private Tile colonyTile;
     
 	@Override
 	public void create() {
@@ -133,6 +138,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	}
 	
     public void initColony(Colony colony, Tile colonyTile) {
+    	this.colony = colony;
+    	this.colonyTile = colonyTile;
     	unitsDragAndDrop.clear();
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
@@ -157,6 +164,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		
 		unitsDragAndDrop.clear();
 		goodsDragAndDrop.clear();
+		this.colony = null;
+		this.colonyTile = null;
 	}
 	
 	@Override
