@@ -1,7 +1,10 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 
 import promitech.colonization.savegame.MapIdEntitySetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -10,6 +13,7 @@ import promitech.colonization.savegame.XmlTagMetaData;
 
 public class MapIdEntities<T extends Identifiable> {
     private java.util.Map<String,T> entities = new HashMap<String,T>();
+    private List<T> sortedEntities; 
     
     public void add(T entity) {
         if (entity instanceof ObjectWithId) {
@@ -28,6 +32,14 @@ public class MapIdEntities<T extends Identifiable> {
             throw new IllegalArgumentException("can not find entity by id: " + id);
         }
         return en;
+    }
+    
+    public List<T> sortedEntities() {
+    	if (sortedEntities == null) {
+	    	sortedEntities = new ArrayList<T>(entities.values());
+	    	Collections.sort((List<ObjectWithId>)sortedEntities, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+    	}
+    	return sortedEntities;
     }
     
     public T first() {
@@ -68,6 +80,7 @@ public class MapIdEntities<T extends Identifiable> {
     
     public void clear() {
         entities.clear();
+        sortedEntities = null;
     }
     
     public static class Xml extends XmlNodeParser {

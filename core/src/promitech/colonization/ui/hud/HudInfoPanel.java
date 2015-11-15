@@ -40,10 +40,10 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 	private final UnitLabel unitLabel;
 	private List<AbstractGoods> carrierGoods;
     
-    public HudInfoPanel(Specification specification, GameResources gameResources) {
+    public HudInfoPanel(GameResources gameResources) {
     	this.gameResources = gameResources;
         infoPanelSkin = gameResources.getFrame("InfoPanel.skin");
-        unitLabel = new UnitLabel(specification);
+        unitLabel = new UnitLabel();
         
         addListener(new InputListener() {
         	@Override

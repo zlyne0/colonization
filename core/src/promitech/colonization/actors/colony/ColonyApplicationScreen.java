@@ -137,7 +137,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
     	
-        productionPanel.init(colony, colonyTile);
+        productionPanel.init(colony, colonyTile, gameController.getSpecification());
         buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
         resourcesPanel.initGoods(gameController.getSpecification(), colony, goodsDragAndDrop);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);

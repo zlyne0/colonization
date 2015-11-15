@@ -5,6 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 
 public class ProductionPanel extends HorizontalGroup {
@@ -21,9 +22,9 @@ public class ProductionPanel extends HorizontalGroup {
 		return 40;
 	}
 	
-    public void init(Colony colony, Tile colonyTile) {
+    public void init(Colony colony, Tile colonyTile, Specification specification) {
         ProductionSummary productionSummary = colony.productionSummary();
-        drawModel.init(productionSummary);
+        drawModel.init(productionSummary, specification);
     }
 
     @Override

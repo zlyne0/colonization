@@ -51,7 +51,7 @@ public class HudStage extends Stage {
             }
         }
 
-        hudInfoPanel = new HudInfoPanel(gameController.getSpecification(), gameResources);
+        hudInfoPanel = new HudInfoPanel(gameResources);
         addActor(hudInfoPanel);
         
         createNextUnitButton(bw);

@@ -6,10 +6,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class UnitLabel {
 
-	private final Specification specification;
-	
-	public UnitLabel(Specification specification) {
-		this.specification = specification;
+	public UnitLabel() {
 	}
 	
 	public String getName(Unit unit) {

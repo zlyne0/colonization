@@ -1,7 +1,5 @@
 package promitech.colonization.actors.colony;
 
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -10,7 +8,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -28,8 +25,7 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         
         goodsDragAndDrop.addTarget(new GoodActor.GoodsDragAndDropTarget(this, this));
         
-        List<GoodsType> goodsTypes = new ArrayList<GoodsType>(specification.goodsTypes.entities());
-        Collections.sort(goodsTypes, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+        List<GoodsType> goodsTypes = specification.goodsTypes.sortedEntities();
         
         defaults().space(20);
         pad(20);
