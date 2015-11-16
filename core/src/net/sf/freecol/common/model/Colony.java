@@ -46,7 +46,9 @@ public class Colony extends Settlement {
     	colonyProduction.setAsNeedUpdate();
     }
     
-    public void updateColonyUnitsCount() {
+    public void updateColonyPopulation() {
+        updateSonOfLiberty();
+        updateProductionBonus();
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
     		colonyWorkers.addAll(building.workers.entities());
@@ -149,6 +151,12 @@ public class Colony extends Settlement {
             return true;
         }
         return false;
+    }
+    
+    private void updateSonOfLiberty() {
+        int uc = getColonyUnitsCount();
+        sonsOfLiberty = calculateSoLPercentage(uc, liberty);
+        tories = uc - rebels();
     }
     
     /**
@@ -304,7 +312,7 @@ public class Colony extends Settlement {
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
         	if (qName.equals(tagName())) {
-        		((Colony)nodeObject).updateColonyUnitsCount();
+        		((Colony)nodeObject).updateColonyPopulation();
         		((Colony)nodeObject).updateColonyFeatures();
         	}
         }

@@ -2,6 +2,7 @@ package promitech.colonization.actors.colony;
 
 import java.util.List;
 
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
@@ -30,6 +31,15 @@ class BuildingsPanelActor extends Table {
             i++;
             if (i % 4 == 0) {
                 row();
+            }
+        }
+    }
+    
+    void updateProductionDesc() {
+        for (Actor child : getChildren()) {
+            if (child instanceof BuildingActor) {
+                BuildingActor ba = (BuildingActor)child;
+                ba.updateProductionDesc();
             }
         }
     }

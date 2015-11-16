@@ -37,10 +37,18 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
         @Override
         public void changeUnitAllocation(Colony colony) {
-            colony.updateColonyUnitsCount();
+            colony.updateColonyPopulation();
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             populationPanel.update(colony);
             productionPanel.init(colony, colonyTile, gameController.getSpecification());
+            buildingsPanelActor.updateProductionDesc();
+        }
+
+        @Override
+        public void transfereGoods() {
+            colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+            productionPanel.init(colony, colonyTile, gameController.getSpecification());
+            buildingsPanelActor.updateProductionDesc();
         }
     };
 	
@@ -81,10 +89,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         stage.addActor(closeButton);
         
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener);
-        resourcesPanel = new WarehousePanel();
+        resourcesPanel = new WarehousePanel(changeColonyStateListener);
         terrainPanel = new TerrainPanel(changeColonyStateListener);
 		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
-        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop);
+        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener);
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
         

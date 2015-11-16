@@ -130,6 +130,7 @@ class CarrierUnitsPanel extends HorizontalGroup {
             
             unitActor.unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
             updateCargoPanelData();
+            changeColonyStateListener.transfereGoods();
         }
 
         @Override
@@ -143,6 +144,7 @@ class CarrierUnitsPanel extends HorizontalGroup {
             
             unitActor.unit.getGoodsContainer().decreaseGoodsQuantity(anAbstractGood);
             updateCargoPanelData();
+            changeColonyStateListener.transfereGoods();
         }
     }
 
@@ -151,8 +153,11 @@ class CarrierUnitsPanel extends HorizontalGroup {
 	
 	private final UnitsPanel carrierUnitsPanel;
 	private final CargoPanel cargoPanel;
+	
+	private final ChangeColonyStateListener changeColonyStateListener;
     
-	public CarrierUnitsPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop) {
+	public CarrierUnitsPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener) {
+	    this.changeColonyStateListener = changeColonyStateListener;
 		this.shapeRenderer = shapeRenderer;
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		

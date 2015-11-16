@@ -16,8 +16,10 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
     private java.util.Map<String, GoodActor> goodActorByType = new HashMap<String, GoodActor>();
     
     private Colony colony;
+    private final ChangeColonyStateListener changeColonyStateListener;
     
-    WarehousePanel() {
+    WarehousePanel(ChangeColonyStateListener changeColonyStateListener) {
+        this.changeColonyStateListener = changeColonyStateListener;
     }
 
     public void initGoods(Specification specification, Colony aColony, DragAndDrop goodsDragAndDrop) {
@@ -70,6 +72,7 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         
         colony.getGoodsContainer().increaseGoodsQuantity(payload);
         warehouseGoodActor.increaseQuantity(payload);
+        changeColonyStateListener.transfereGoods();
     }
 
     @Override
@@ -87,5 +90,6 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         }
         warehouseGoodActor.decreaseQuantity(payload);
         colony.getGoodsContainer().decreaseGoodsQuantity(payload);
+        changeColonyStateListener.transfereGoods();
     }
 }

@@ -55,7 +55,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
             unitActor.moveBy(offsetX, 0);
             offsetX += unitActor.getWidth();
         }
-        resetProductionDesc();
+        updateProductionDesc();
     }
 
 	@Override
@@ -68,7 +68,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		removeActor(unitActor);
 		resetUnitActorPlacement();
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-		resetProductionDesc();
+		updateProductionDesc();
 		
 		changeColonyStateListener.changeUnitAllocation(colony);
 	}
@@ -86,7 +86,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		addActor(unitActor);
 		resetUnitActorPlacement();
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-		resetProductionDesc();
+		updateProductionDesc();
 		
 		changeColonyStateListener.changeUnitAllocation(colony);
 	}
@@ -110,7 +110,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
         }
     }
 
-    private void resetProductionDesc() {
+    void updateProductionDesc() {
     	ProductionConsumption productionSummary = colony.productionSummary(building);
     	productionQuantityDrawModel.init(productionSummary.realProduction);
     }

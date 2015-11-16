@@ -6,6 +6,10 @@ import net.sf.freecol.common.model.ObjectWithId;
 
 public class GoodsType extends ObjectWithId {
 
+    public static final String FISH = "model.goods.fish";
+    public static final String FOOD = "model.goods.food";
+    public static final String GRAIN = "model.goods.grain";
+    
     boolean farmed;
     boolean food;
     boolean military;

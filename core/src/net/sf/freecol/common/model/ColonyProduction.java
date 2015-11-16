@@ -1,7 +1,12 @@
 package net.sf.freecol.common.model;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+
+import com.badlogic.gdx.utils.ObjectIntMap.Entries;
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -46,12 +51,12 @@ class ColonyProduction {
         
         for (Unit worker : colony.colonyWorkers) {
         	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
-        		if (uc.getId().equals("model.goods.food")) {
-        			if (globalProductionConsumption.decreaseIfHas("model.goods.fish", uc.getQuantity())) {
+        		if (uc.getId().equals(GoodsType.FOOD)) {
+        			if (globalProductionConsumption.decreaseIfHas(GoodsType.FISH, uc.getQuantity())) {
         				// can decrease
         			} else {
         				// can not decrease
-        				globalProductionConsumption.decrease("model.goods.grain", uc.getQuantity());
+        				globalProductionConsumption.decrease(GoodsType.GRAIN, uc.getQuantity());
         			}
         		} else {
 	        		globalProductionConsumption.decrease(uc.getId(), uc.getQuantity());
@@ -70,13 +75,27 @@ class ColonyProduction {
         	globalProductionConsumption.addGoods(pc.realProduction);
         }
         
-        System.out.println("warehouse = " + abstractWarehouse);
-        System.out.println("productionConsumption ##################");
-        System.out.println("productionConsumption = " + globalProductionConsumption);
-        System.out.println("productionConsumption ##################");
+        consolidateFoods();
+        
+        System.out.println("global production consumption " + globalProductionConsumption);
         needUpdate = false;
     }
 	
+    private static final Set<String> FOOD_GOODS = new HashSet<String>();
+    static {
+        FOOD_GOODS.add(GoodsType.FISH);
+        FOOD_GOODS.add(GoodsType.GRAIN);
+    }
+    private void consolidateFoods() {
+        for (Entry<String> entry : globalProductionConsumption.entries()) {
+            if (FOOD_GOODS.contains(entry.key)) {
+                int q = entry.value;
+                globalProductionConsumption.decrease(entry.key, q);
+                globalProductionConsumption.addGoods(GoodsType.FOOD, q);
+            }
+        }
+    }
+    
 	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
