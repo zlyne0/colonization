@@ -42,6 +42,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             populationPanel.update(colony);
             productionPanel.init(colony, colonyTile, gameController.getSpecification());
             buildingsPanelActor.updateProductionDesc();
+            terrainPanel.updateProduction();
         }
 
         @Override

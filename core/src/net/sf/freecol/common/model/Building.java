@@ -38,7 +38,8 @@ public class Building extends ObjectWithId {
 	public ProductionConsumption determineProductionConsumption(
 			ProductionSummary warehouse, 
 			int warehouseCapacity, 
-			ProductionSummary globalProdCons
+			ProductionSummary globalProdCons, 
+			int colonyProductionBonus
 	) {
 	    boolean unattendedProduction = false;
 	    List<Production> productions;
@@ -52,7 +53,7 @@ public class Building extends ObjectWithId {
 	    
 		ProductionConsumption prodCons = new ProductionConsumption();
         for (Production production : productions) {
-        	productionConsumption(prodCons, production, warehouse, warehouseCapacity, globalProdCons, unattendedProduction);
+        	productionConsumption(prodCons, production, warehouse, warehouseCapacity, globalProdCons, unattendedProduction, colonyProductionBonus);
         }
 		return prodCons;
 	}
@@ -61,7 +62,8 @@ public class Building extends ObjectWithId {
 	    ProductionConsumption prodCons, Production production, 
 	    ProductionSummary warehouse, int warehouseCapacity, 
 	    ProductionSummary globalProdCons,
-	    boolean unattendedProduction
+	    boolean unattendedProduction, 
+	    int colonyProductionBonus
 	) {
 		final boolean avoidExcessProduction = buildingType.hasAbility(Ability.AVOID_EXCESS_PRODUCTION);
 		final boolean consumeOnlySurplusProduction = buildingType.hasModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION);
@@ -83,9 +85,11 @@ public class Building extends ObjectWithId {
             
             if (unattendedProduction) {
                 goodQuantity += goodInitValue;
+                goodQuantity += colonyProductionBonus;
             } else {
                 for (Unit worker : workers.entities()) {
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
+                    goodQuantity += colonyProductionBonus;
                 }
             }
             if (canAutoProduce) {

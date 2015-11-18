@@ -50,7 +50,6 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		validate();
 		setScrollPercentX(100);
 		
-		changeColonyStateListener.changeUnitAllocation(colony);
 	}
 	
 	@Override

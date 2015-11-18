@@ -74,7 +74,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 				updateWorkerScreenPosition(worker, ct);
 				
 				initMaxPossibleProdctionOnTile(worker.unit, ct.tile, ct);
-				initProduction();
 				
 				changeColonyStateListener.changeUnitAllocation(colony);
 				return;
@@ -111,7 +110,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 				colonyTiles[i].takeWorker();
 				colonyTerrainsWorkers[i] = null;
 				removeActor(unitActor);
-				initProduction();
 				
 				changeColonyStateListener.changeUnitAllocation(colony);
 				return;
@@ -161,7 +159,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 		initTerrainsDrawModel();
 		initWorkersActors(dragAndDrop);
-		initProduction();
+		updateProduction();
 	}
 
 	private void initWorkersActors(DragAndDrop dragAndDrop) {
@@ -202,7 +200,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		}
 	}
 
-	private void initProduction() {
+	void updateProduction() {
 		for (int i=0; i<colonyTiles.length; i++) {
 			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(colonyTiles[i]);
 			productionQuantityDrawModels[i].init(productionConsumption.realProduction);

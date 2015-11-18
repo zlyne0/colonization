@@ -5,7 +5,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -65,7 +64,7 @@ class ColonyProduction {
         }
 
         for (Building building : colony.buildings.entities()) {
-        	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption);
+        	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus());
             pc.baseProduction.applyModifiers(colony.colonyBuildingsFeatures);
             pc.realProduction.applyModifiers(colony.colonyBuildingsFeatures);
         	
@@ -119,6 +118,7 @@ class ColonyProduction {
 		        } else {
 		            goodQuantity += goodInitValue;
 		        }
+                goodQuantity += colony.productionBonus();
 		        
 		        prodCons.realProduction.addGoods(goodsId, goodQuantity);
                 prodCons.baseProduction.addGoods(goodsId, goodQuantity);

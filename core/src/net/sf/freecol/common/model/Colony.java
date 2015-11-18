@@ -47,8 +47,6 @@ public class Colony extends Settlement {
     }
     
     public void updateColonyPopulation() {
-        updateSonOfLiberty();
-        updateProductionBonus();
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
     		colonyWorkers.addAll(building.workers.entities());
@@ -58,6 +56,8 @@ public class Colony extends Settlement {
     			colonyWorkers.add(colonyTile.getWorker());
     		}
     	}
+    	updateSonOfLiberty();
+    	updateProductionBonus();
     }
     
     private void updateColonyFeatures() {
