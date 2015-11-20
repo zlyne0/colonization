@@ -30,6 +30,14 @@ public class ObjectWithFeatures extends ObjectWithId {
 		super(id);
 	}
 	
+	public int modifiersAmount() {
+	    return modifiers.size();
+	}
+	
+	public int abilitiesAmount() {
+	    return abilities.size();
+	}
+	
 	public void addAbility(Ability ability) {
 	    addToMapList(abilities, ability.getId(), ability);
 	}

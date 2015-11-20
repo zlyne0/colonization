@@ -18,7 +18,8 @@ public class UnitRole extends ObjectWithFeatures {
 	
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
-	protected MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
+	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
+	public final MapIdEntities<Ability> requiredAbility = new MapIdEntities<Ability>();
 	
 	public UnitRole(String id) {
 		super(id);
@@ -61,6 +62,10 @@ public class UnitRole extends ObjectWithFeatures {
 			if (attr.isQNameEquals("required-goods")) {
 				Goods goods = new Goods(attr.getStrAttribute("id"), attr.getIntAttribute("value"));
 				((UnitRole)nodeObject).requiredGoods.add(goods);
+			}
+			if (attr.isQNameEquals("required-ability")) {
+			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
+			    ((UnitRole)nodeObject).requiredAbility.add(a);
 			}
 		}
 		

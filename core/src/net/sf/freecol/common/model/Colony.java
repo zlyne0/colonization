@@ -88,6 +88,15 @@ public class Colony extends Settlement {
         return "model.settlement." + key + ".image";
     }
 
+    public void addWorkerToBuilding(Building building, Unit unit) {
+        UnitRole defaultUnitRole = null;
+        building.workers.add(unit);
+    }
+    
+    public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
+        destColonyTile.setWorker(unit);
+    }
+    
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }

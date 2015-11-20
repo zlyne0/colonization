@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
@@ -89,6 +90,19 @@ public class SaveGameParserTest {
         verifyShipGoods(game);
         verifySpecificationOptionGroup(game);
         verifySpecificationGameDifficultyOptions(game);
+        verifySpecificationUnitRoles(game);
+    }
+
+    private void verifySpecificationUnitRoles(Game game) {
+        UnitRole dragoonUnitRole = game.specification.unitRoles.getById("model.role.dragoon");
+        
+        assertEquals(5, dragoonUnitRole.abilitiesAmount());
+        assertEquals(3, dragoonUnitRole.modifiersAmount());
+        
+        assertEquals(3, dragoonUnitRole.requiredAbility.size());
+        assertEquals(2, dragoonUnitRole.requiredGoods.size());
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
     }
 
     private void verifySpecificationGameDifficultyOptions(Game game) {

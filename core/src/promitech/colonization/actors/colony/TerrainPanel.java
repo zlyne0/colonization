@@ -69,7 +69,8 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 			if (ct.equalsId(destColonyTile)) {
 				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 				colonyTerrainsWorkers[i] = worker;
-				destColonyTile.setWorker(worker.unit);
+				colony.addWorkerToTerrain(destColonyTile, worker.unit);
+				
 				addActor(worker);
 				updateWorkerScreenPosition(worker, ct);
 				
