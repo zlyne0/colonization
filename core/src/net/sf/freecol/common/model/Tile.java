@@ -167,7 +167,7 @@ public class Tile implements Location, Identifiable {
 			int tileStyle = attr.getIntAttribute("style");
 			String idStr = attr.getStrAttribute("id");
 			
-			TileType tileType = game.specification.tileTypes.getById(tileTypeStr);
+			TileType tileType = Specification.instance.tileTypes.getById(tileTypeStr);
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
 			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);

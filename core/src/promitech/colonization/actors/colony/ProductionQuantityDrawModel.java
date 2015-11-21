@@ -16,14 +16,14 @@ class ProductionQuantityDrawModel {
 	int quantities[];
 	float yRange;
 
-	void init(ProductionSummary summary, Specification specification) {
+	void initList(ProductionSummary summary) {
 		if (summary.size() == 0) {
 			quantities = null;
 			images = null;
 			return;
 		}
 		
-		List<GoodsType> goodsTypes = specification.goodsTypes.sortedEntities();
+		List<GoodsType> goodsTypes = Specification.instance.goodsTypes.sortedEntities();
 		if (quantities == null || quantities.length != goodsTypes.size()) {
 			images = new TextureRegion[goodsTypes.size()];
 			quantities = new int[goodsTypes.size()];

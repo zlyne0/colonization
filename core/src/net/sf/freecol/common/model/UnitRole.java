@@ -19,7 +19,8 @@ public class UnitRole extends ObjectWithFeatures {
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
 	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
-	public final MapIdEntities<Ability> requiredAbility = new MapIdEntities<Ability>();
+	public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+	private String downgradeRoleId;
 	
 	public UnitRole(String id) {
 		super(id);
@@ -43,6 +44,28 @@ public class UnitRole extends ObjectWithFeatures {
         return hasModifier(Modifier.OFFENCE);
     }
 	
+    public boolean isAvailableTo(UnitRole role) {
+    	if (requiredAbilities != null) {
+    		for (Ability aa : requiredAbilities.entities()) {
+    			if (role.hasAbility(aa.getId())) {
+    				if (!aa.isValue()) {
+    					return false;
+    				}
+    			}
+    		}
+    	}
+    	return true;
+    }
+
+	public boolean isCompatibleWith(UnitRole role) {
+		if (role == null) {
+			return false;
+		}
+		return this.getId().equals(role.getId()) 
+				|| role.getId().equals(this.downgradeRoleId) 
+				|| this.getId().equals(role.downgradeRoleId);
+	}
+    
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -54,6 +77,7 @@ public class UnitRole extends ObjectWithFeatures {
 			String idStr = attr.getStrAttribute("id");
 			UnitRole ur = new UnitRole(idStr);
 			ur.expertUnitTypeId = attr.getStrAttribute("expertUnit");
+			ur.downgradeRoleId = attr.getStrAttribute("downgrade");
 			nodeObject = ur;
 		}
 
@@ -65,7 +89,7 @@ public class UnitRole extends ObjectWithFeatures {
 			}
 			if (attr.isQNameEquals("required-ability")) {
 			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
-			    ((UnitRole)nodeObject).requiredAbility.add(a);
+			    ((UnitRole)nodeObject).requiredAbilities.add(a);
 			}
 		}
 		

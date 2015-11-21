@@ -217,9 +217,9 @@ public class Player extends ObjectWithFeatures {
             String nationTypeStr = attr.getStrAttribute("nationType");
             
             Player player = new Player(idStr);
-            player.nation = game.specification.nations.getById(nationIdStr);
+            player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
-                player.nationType = game.specification.nationTypes.getById(nationTypeStr);
+                player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
             }
             
             player.changePlayerType(attr.getEnumAttribute(PlayerType.class, "playerType"));

@@ -22,31 +22,34 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         this.changeColonyStateListener = changeColonyStateListener;
     }
 
-    public void initGoods(Specification specification, Colony aColony, DragAndDrop goodsDragAndDrop) {
+    public void initGoods(Colony aColony, DragAndDrop goodsDragAndDrop) {
         this.colony = aColony;
         
         goodsDragAndDrop.addTarget(new GoodActor.GoodsDragAndDropTarget(this, this));
         
-        List<GoodsType> goodsTypes = specification.goodsTypes.sortedEntities();
-        
         defaults().space(20);
         pad(20);
         
-        for (GoodsType goodsType : goodsTypes) {
-            if (!goodsType.isStorable()) {
-                continue;
-            }
-            System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable() + ", " + goodsType.getInsertOrder());
-            
-            int goodsAmount = aColony.getGoodsContainer().goodsAmount(goodsType);
-            setGoodQuantity(goodsType, goodsAmount);
-        }
+        updateGoodsQuantity(aColony);
         updateDragAndDropSource(goodsDragAndDrop);
     }
     
     private void updateDragAndDropSource(DragAndDrop goodsDragAndDrop) {
     	for (Entry<String, GoodActor> entry : goodActorByType.entrySet()) {
     		goodsDragAndDrop.addSource(new GoodActor.GoodsDragAndDropSource(entry.getValue()));
+    	}
+    }
+    
+    void updateGoodsQuantity(Colony aColony) {
+    	List<GoodsType> goodsTypes = Specification.instance.goodsTypes.sortedEntities();
+    	for (GoodsType goodsType : goodsTypes) {
+    		if (!goodsType.isStorable()) {
+    			continue;
+    		}
+    		System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable() + ", " + goodsType.getInsertOrder());
+    		
+    		int goodsAmount = aColony.getGoodsContainer().goodsAmount(goodsType);
+    		setGoodQuantity(goodsType, goodsAmount);
     	}
     }
     

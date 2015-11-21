@@ -10,11 +10,10 @@ public class Game implements Identifiable {
     
 	public Map map;
 	public Player playingPlayer;
-	public Specification specification;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
 	
 	public String toString() {
-		return "map[" + map + "], specification = " + specification;
+		return "map[" + map + "]";
 	}
 
     @Override
@@ -25,12 +24,10 @@ public class Game implements Identifiable {
 	public static class Xml extends XmlNodeParser {
 		public Game game = new Game();
 		
-		public Xml(Specification defaultSpecification) {
+		public Xml() {
 			addNode(new Specification.Xml());
 			addNode(new Map.Xml());
 			addNodeForMapIdEntities("players", Player.class);
-			
-			game.specification = defaultSpecification;
 			XmlNodeParser.game = game;
 			this.nodeObject = game;
 		}

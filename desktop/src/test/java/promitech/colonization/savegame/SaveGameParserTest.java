@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
@@ -72,52 +73,53 @@ public class SaveGameParserTest {
 	}
 
 	private void verifySpecification(Game game) {
-        assertEquals(42, game.specification.unitTypes.size());
-        assertEquals(23, game.specification.tileTypes.size());
+		Specification specification = Specification.instance;
+        assertEquals(42, Specification.instance.unitTypes.size());
+        assertEquals(23, specification.tileTypes.size());
 
-        assertEquals(12, game.specification.resourceTypes.size());
-        assertEquals( 6, game.specification.tileImprovementTypes.size());
-        assertEquals(11, game.specification.unitRoles.size());
-        assertEquals(18, game.specification.nationTypes.size());
-        assertEquals(25, game.specification.nations.size());
-        assertEquals(21, game.specification.goodsTypes.size());
+        assertEquals(12, specification.resourceTypes.size());
+        assertEquals( 6, specification.tileImprovementTypes.size());
+        assertEquals(11, specification.unitRoles.size());
+        assertEquals(18, specification.nationTypes.size());
+        assertEquals(25, specification.nations.size());
+        assertEquals(21, specification.goodsTypes.size());
         
-        NationType arawakNationType = game.specification.nationTypes.getById("model.nationType.arawak");
+        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
         assertNotNull(settlementType);
         
-        verifySpecificationBuildType(game);
-        verifyShipGoods(game);
-        verifySpecificationOptionGroup(game);
-        verifySpecificationGameDifficultyOptions(game);
-        verifySpecificationUnitRoles(game);
+        verifySpecificationBuildType(specification);
+        verifyShipGoods(game, specification);
+        verifySpecificationOptionGroup(specification);
+        verifySpecificationGameDifficultyOptions(specification);
+        verifySpecificationUnitRoles(specification);
     }
 
-    private void verifySpecificationUnitRoles(Game game) {
-        UnitRole dragoonUnitRole = game.specification.unitRoles.getById("model.role.dragoon");
+    private void verifySpecificationUnitRoles(Specification specification) {
+        UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
         assertEquals(3, dragoonUnitRole.modifiersAmount());
         
-        assertEquals(3, dragoonUnitRole.requiredAbility.size());
+        assertEquals(3, dragoonUnitRole.requiredAbilities.size());
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
     }
 
-    private void verifySpecificationGameDifficultyOptions(Game game) {
-        assertEquals(true, game.specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
-        assertEquals(true, game.specification.options.getBoolean(GameOptions.EMPTY_TRADERS));
+    private void verifySpecificationGameDifficultyOptions(Specification specification) {
+        assertEquals(true, specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
+        assertEquals(true, specification.options.getBoolean(GameOptions.EMPTY_TRADERS));
         
-        assertEquals(0, game.specification.options.getIntValue(GameOptions.STARTING_MONEY));
-        assertEquals("medium", game.specification.options.getStringValue(GameOptions.TILE_PRODUCTION));
+        assertEquals(0, specification.options.getIntValue(GameOptions.STARTING_MONEY));
+        assertEquals("medium", specification.options.getStringValue(GameOptions.TILE_PRODUCTION));
         
     }
 
-    private void verifySpecificationOptionGroup(Game game) {
-        assertEquals(4, game.specification.optionGroupEntities.size());
+    private void verifySpecificationOptionGroup(Specification specification) {
+        assertEquals(4, specification.optionGroupEntities.size());
         
-        OptionGroup difficultyLevels = game.specification.optionGroupEntities.getById("difficultyLevels");
+        OptionGroup difficultyLevels = specification.optionGroupEntities.getById("difficultyLevels");
         assertEquals(6, difficultyLevels.optionsGroup.size());
         OptionGroup veryEasyDifficultyLevel = difficultyLevels.optionsGroup.getById("model.difficulty.veryEasy");
         assertEquals(6, veryEasyDifficultyLevel.optionsGroup.size());
@@ -129,19 +131,19 @@ public class SaveGameParserTest {
         assertEquals("veryHigh", other.getStringValue(GameOptions.TILE_PRODUCTION));
     }
 
-    private void verifyShipGoods(Game game) {
+    private void verifyShipGoods(Game game, Specification specification) {
         Player player = game.players.getById("player:1");
         Unit privateerUnit = player.units.getById("unit:6900");
-        int goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(game.specification.goodsTypes.getById("model.goods.tools"));
+        int goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(specification.goodsTypes.getById("model.goods.tools"));
         assertEquals(100, goodsAmount);
-        goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(game.specification.goodsTypes.getById("model.goods.tradeGoods"));
+        goodsAmount = privateerUnit.getGoodsContainer().goodsAmount(specification.goodsTypes.getById("model.goods.tradeGoods"));
         assertEquals(100, goodsAmount);
     }
 
-    private void verifySpecificationBuildType(Game game) {
-        assertEquals(41, game.specification.buildingTypes.size());
+    private void verifySpecificationBuildType(Specification specification) {
+        assertEquals(41, specification.buildingTypes.size());
         
-        BuildingType fortBuildingType = game.specification.buildingTypes.getById("model.building.fort");
+        BuildingType fortBuildingType = specification.buildingTypes.getById("model.building.fort");
         
         float baseDefence = 100;
         float fortDefence = fortBuildingType.applyModifier("model.modifier.defence", baseDefence);

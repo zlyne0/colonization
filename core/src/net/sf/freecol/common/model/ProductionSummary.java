@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -8,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.Goods;
 
 public class ProductionSummary {
     public static final int CARRIER_SLOT_MAX_QUANTITY = 100;
@@ -65,7 +67,25 @@ public class ProductionSummary {
             goods.getAndIncrement(psEntry.key, 0, psEntry.value);
         }
     }
+    
+	public void addGoods(Collection<Goods> goodsCollection) {
+		for (Goods g : goodsCollection) {
+			goods.getAndIncrement(g.getId(), 0, g.getAmount());
+		}
+	}
 
+	public void decreaseGoods(Collection<Goods> goodsCollection) {
+		for (Goods g : goodsCollection) {
+			goods.getAndIncrement(g.getId(), 0, -g.getAmount());
+		}
+	}
+	
+	public void decreaseGoods(ProductionSummary goodsCollection) {
+		for (Entry<String> g : goodsCollection.goods.entries()) {
+			goods.getAndIncrement(g.key, 0, -g.value);
+		}
+	}
+	
     public void decreaseToZero(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() != 0) {
             int i = goods.get(anAbstractGoods.getTypeId(), 0) - anAbstractGoods.getQuantity();

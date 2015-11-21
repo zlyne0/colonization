@@ -2,10 +2,10 @@ package promitech.colonization.savegame;
 
 import java.util.HashMap;
 
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
-
-import org.xml.sax.SAXException;
 
 public abstract class XmlNodeParser {
     public static final int INFINITY = Integer.MAX_VALUE;
@@ -18,7 +18,6 @@ public abstract class XmlNodeParser {
 	public Identifiable nodeObject;
 	
 	// unique entities
-	//protected static Specification specification;
 	protected static Game game;
 	
 	public XmlNodeParser() {

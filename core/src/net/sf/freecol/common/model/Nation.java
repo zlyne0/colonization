@@ -34,11 +34,11 @@ public class Nation extends ObjectWithId {
         return rebelNation;
     }
     
-    public void updateReferences(Specification specification) {
+    public void updateReferences() {
         if (refId != null) {
-            royalNation = specification.nations.getById(refId);
+            royalNation = Specification.instance.nations.getById(refId);
         }
-        for (Nation n : specification.nations.entities()) {
+        for (Nation n : Specification.instance.nations.entities()) {
             if (equalsId(n.refId)) {
                 rebelNation = n;
             }
@@ -55,7 +55,7 @@ public class Nation extends ObjectWithId {
         public void startElement(XmlNodeAttributes attr) {
 			String nationTypeStr = attr.getStrAttribute("nation-type");
 			String id = attr.getStrAttribute("id");
-			NationType type = game.specification.nationTypes.getById(nationTypeStr);
+			NationType type = Specification.instance.nationTypes.getById(nationTypeStr);
 			
 			String colorStrVal = attr.getStrAttribute("color");
 			

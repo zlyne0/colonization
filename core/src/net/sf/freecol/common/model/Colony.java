@@ -89,12 +89,31 @@ public class Colony extends Settlement {
     }
 
     public void addWorkerToBuilding(Building building, Unit unit) {
-        UnitRole defaultUnitRole = null;
+    	changeUnitRoleOnReallocation(unit);
         building.workers.add(unit);
     }
     
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
+    	changeUnitRoleOnReallocation(unit);
         destColonyTile.setWorker(unit);
+    }
+    
+    private void changeUnitRoleOnReallocation(Unit unit) {
+    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+    	
+    	if (!unit.unitRole.isAvailableTo(defaultUnitRole)) {
+    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + defaultUnitRole);
+    	}
+    	
+    	ProductionSummary required = new ProductionSummary();
+    	required.addGoods(defaultUnitRole.requiredGoods.entities());
+    	required.decreaseGoods(unit.unitRole.requiredGoods.entities());
+    	
+    	if (!goodsContainer.hasGoodsQuantity(required)) {
+    		throw new IllegalStateException("warehouse do not have enough goods " + required);
+    	}
+    	unit.changeRole(defaultUnitRole);
+    	goodsContainer.decreaseGoodsQuantity(required);
     }
     
     public GoodsContainer getGoodsContainer() {

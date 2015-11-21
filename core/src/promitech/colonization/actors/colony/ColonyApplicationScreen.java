@@ -27,7 +27,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private DragAndDrop goodsDragAndDrop;
 	private Stage stage;
 	private BuildingsPanelActor buildingsPanelActor;
-	private WarehousePanel resourcesPanel;
+	private WarehousePanel warehousePanel;
 	private TerrainPanel terrainPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private CarrierUnitsPanel carrierUnitsPanel;
@@ -40,15 +40,16 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             colony.updateColonyPopulation();
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             populationPanel.update(colony);
-            productionPanel.init(colony, colonyTile, gameController.getSpecification());
+            productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
             terrainPanel.updateProduction();
+            warehousePanel.updateGoodsQuantity(colony);
         }
 
         @Override
         public void transfereGoods() {
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-            productionPanel.init(colony, colonyTile, gameController.getSpecification());
+            productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
         }
     };
@@ -90,7 +91,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         stage.addActor(closeButton);
         
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener);
-        resourcesPanel = new WarehousePanel(changeColonyStateListener);
+        warehousePanel = new WarehousePanel(changeColonyStateListener);
         terrainPanel = new TerrainPanel(changeColonyStateListener);
 		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
         carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener);
@@ -116,7 +117,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(rowGroup1).colspan(2);
         tableLayout.row();
-        tableLayout.add(resourcesPanel).colspan(2);
+        tableLayout.add(warehousePanel).colspan(2);
         tableLayout.row();
 		tableLayout.add(createShiftButton()).colspan(2).fillX();
 		
@@ -153,9 +154,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
     	
-        productionPanel.init(colony, colonyTile, gameController.getSpecification());
+        productionPanel.init(colony, colonyTile);
         buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
-        resourcesPanel.initGoods(gameController.getSpecification(), colony, goodsDragAndDrop);
+        warehousePanel.initGoods(colony, goodsDragAndDrop);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);
         outsideUnitsPanel.initUnits(colonyTile, unitsDragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);

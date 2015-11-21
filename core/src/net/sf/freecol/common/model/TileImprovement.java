@@ -95,7 +95,7 @@ public class TileImprovement implements Identifiable {
         public void startElement(XmlNodeAttributes attr) {
 			String typeStr = attr.getStrAttribute("type");
 			String style = attr.getStrAttribute("style");
-			TileImprovementType type = game.specification.tileImprovementTypes.getById(typeStr);
+			TileImprovementType type = Specification.instance.tileImprovementTypes.getById(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(type, style);
 			tileImprovement.magnitude = attr.getIntAttribute("magnitude", 0);
 			tileImprovement.turns = attr.getIntAttribute("turns");

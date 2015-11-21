@@ -143,14 +143,14 @@ public class Production implements Identifiable {
         public void startReadChildren(XmlNodeAttributes attr) {
             if (attr.isQNameEquals("output")) {
                 String goodsTypeId = attr.getStrAttribute("goods-type");
-                GoodsType goodType = game.specification.goodsTypes.getById(goodsTypeId);
+                GoodsType goodType = Specification.instance.goodsTypes.getById(goodsTypeId);
                 
                 int amount = attr.getIntAttribute("value");
                 ((Production)nodeObject).addOutput(goodType, amount);
             }
             if (attr.isQNameEquals("input")) {
                 String goodsTypeId = attr.getStrAttribute("goods-type");
-                GoodsType goodType = game.specification.goodsTypes.getById(goodsTypeId);
+                GoodsType goodType = Specification.instance.goodsTypes.getById(goodsTypeId);
                 
                 int amount = attr.getIntAttribute("value");
                 ((Production)nodeObject).addInput(goodType, amount);

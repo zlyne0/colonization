@@ -80,6 +80,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		unitActor.setY(0);
 		
 		colony.addWorkerToBuilding(building, unitActor.unit);
+		unitActor.updateTexture();
 		
 		addActor(unitActor);
 		resetUnitActorPlacement();

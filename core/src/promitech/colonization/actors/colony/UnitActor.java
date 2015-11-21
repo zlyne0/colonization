@@ -31,6 +31,12 @@ class UnitActor extends Widget {
         setSize(getPrefWidth(), getPrefHeight());
     }
 
+    void updateTexture() {
+    	this.texture = getTexture(unit);
+    	invalidate();
+    	pack();
+    }
+    
     @Override
     public float getPrefWidth() {
     	if (drawUnitChip) {

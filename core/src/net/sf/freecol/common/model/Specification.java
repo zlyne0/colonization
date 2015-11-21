@@ -84,7 +84,9 @@ public class Specification implements Identifiable {
     
     private String difficultyLevel;
     
-    public Specification() {
+    public static final Specification instance = new Specification();
+    
+    private Specification() {
         options.clear();
     }
     
@@ -106,7 +108,7 @@ public class Specification implements Identifiable {
         updateEuropeanNations();
         
         for (Nation nation : nations.entities()) {
-            nation.updateReferences(this);
+            nation.updateReferences();
         }
     }
 
@@ -123,6 +125,19 @@ public class Specification implements Identifiable {
                 europeanNations.add(nation);
             }
         }
+    }
+    
+    private void clear() {
+    	tileTypes.clear();
+    	tileImprovementTypes.clear();
+    	unitTypes.clear();
+    	unitRoles.clear();
+    	resourceTypes.clear();
+        nationTypes.clear();
+        nations.clear();
+        goodsTypes.clear();
+        buildingTypes.clear();
+        europeanNations.clear();
     }
     
 	public static class Xml extends XmlNodeParser {
@@ -142,18 +157,17 @@ public class Specification implements Identifiable {
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-		    Specification specification = new Specification();
+		    Specification specification = Specification.instance;
 		    specification.difficultyLevel = attr.getStrAttribute("difficultyLevel");
+		    specification.clear();
 		    nodeObject = specification;
-		    
-		    game.specification = specification;
 		}
 
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 		    if (qName.equals(getTagName())) {
-		        options.flattenOptionsEntriesTree(game.specification.difficultyLevel);
-		        game.specification.updateReferences();
+		        options.flattenOptionsEntriesTree(Specification.instance.difficultyLevel);
+		        Specification.instance.updateReferences();
 		    }
 		}
 		

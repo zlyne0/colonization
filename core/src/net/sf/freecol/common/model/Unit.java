@@ -43,6 +43,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     private int visibleGoodsCount = -1;
     protected int treasureAmount;
     private boolean expert = false;
+    private int experience;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -566,6 +567,13 @@ public class Unit extends ObjectWithFeatures implements Location {
 		return expert;
 	}
 	
+	public void changeRole(UnitRole newUnitRole) {
+		if (!newUnitRole.isCompatibleWith(unitRole)) {
+			experience = 0;
+		}
+		unitRole = newUnitRole;
+	}
+	
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -589,9 +597,9 @@ public class Unit extends ObjectWithFeatures implements Location {
             String unitTypeStr = attr.getStrAttribute("unitType");
             String unitRoleStr = attr.getStrAttribute("role");
             
-            UnitType unitType = game.specification.unitTypes.getById(unitTypeStr);
+            UnitType unitType = Specification.instance.unitTypes.getById(unitTypeStr);
             Unit unit = new Unit(attr.getStrAttribute("id"));
-            unit.unitRole = game.specification.unitRoles.getById(unitRoleStr);
+            unit.unitRole = Specification.instance.unitRoles.getById(unitRoleStr);
             unit.unitType = unitType;
             unit.state = attr.getEnumAttribute(UnitState.class, "state");
             unit.movesLeft = attr.getIntAttribute("movesLeft");
@@ -600,8 +608,9 @@ public class Unit extends ObjectWithFeatures implements Location {
             unit.treasureAmount = attr.getIntAttribute("treasureAmount", 0);
             unit.roleCount = attr.getIntAttribute("roleCount", -1);
             unit.name = attr.getStrAttribute("name");
+            unit.experience = attr.getIntAttribute("experience", 0);
             
-            unit.expert = game.specification.isUnitTypeExpert(unitType);
+            unit.expert = Specification.instance.isUnitTypeExpert(unitType);
 
             if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
                 unit.unitContainer = new UnitContainer(unit);

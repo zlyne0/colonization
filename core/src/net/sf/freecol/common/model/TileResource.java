@@ -30,7 +30,7 @@ public class TileResource implements Identifiable {
         public void startElement(XmlNodeAttributes attr) {
 			String resourceTypeStr = attr.getStrAttribute("type");
 			int quantity = attr.getIntAttribute("quantity");
-			ResourceType resourceType = game.specification.resourceTypes.getById(resourceTypeStr);
+			ResourceType resourceType = Specification.instance.resourceTypes.getById(resourceTypeStr);
 
 			TileResource tileResource = new TileResource(resourceType);
 			tileResource.quantity = quantity;

@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitContainer;
 import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -78,14 +79,14 @@ public class BuildingType extends ObjectWithFeatures {
             String parentIdStr = attr.getStrAttribute("extends");
             BuildingType parent = null;
             if (parentIdStr != null) {
-                parent = game.specification.buildingTypes.getByIdOrNull(parentIdStr);
+                parent = Specification.instance.buildingTypes.getByIdOrNull(parentIdStr);
             }
             if (parent == null) {
                 parent = bt;
             }
             
             String upgradesFromStr = attr.getStrAttribute("upgradesFrom");
-            BuildingType upgradesFrom = game.specification.buildingTypes.getByIdOrNull(upgradesFromStr);
+            BuildingType upgradesFrom = Specification.instance.buildingTypes.getByIdOrNull(upgradesFromStr);
             if (upgradesFrom == null) {
                 bt.level = 1;
             } else {

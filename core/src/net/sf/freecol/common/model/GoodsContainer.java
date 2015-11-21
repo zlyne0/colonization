@@ -9,7 +9,6 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class GoodsContainer extends ObjectWithId {
 
-    //private final java.util.Map<String,Integer> goods = new HashMap<String, Integer>();
     private final ProductionSummary goods = new ProductionSummary();
     private int cargoSpaceTaken = 0;
     
@@ -21,6 +20,10 @@ public class GoodsContainer extends ObjectWithId {
         return goods.getQuantity(type.id);
     }
 
+    public boolean hasGoodsQuantity(ProductionSummary g) {
+    	return goods.hasMoreOrEquals(g);
+    }
+    
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() == 0) {
             return;
@@ -36,7 +39,12 @@ public class GoodsContainer extends ObjectWithId {
         goods.decreaseToZero(anAbstractGoods);
         updateTakenCargoSlots();
     }
-    
+
+	public void decreaseGoodsQuantity(ProductionSummary required) {
+		goods.decreaseGoods(required);
+        updateTakenCargoSlots();
+	}
+	
     public int size() {
         return goods.size();
     }

@@ -165,7 +165,7 @@ public class Building extends ObjectWithId {
             if (buildingTypeId == null) {
                 throw new IllegalStateException("can not find buildingType for building " + id);
             }
-            BuildingType buildingType = game.specification.buildingTypes.getById(buildingTypeId);
+            BuildingType buildingType = Specification.instance.buildingTypes.getById(buildingTypeId);
             b.buildingType = buildingType;
             
             nodeObject = b;
