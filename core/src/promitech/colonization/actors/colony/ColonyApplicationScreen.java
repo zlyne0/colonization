@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -20,6 +21,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.hud.ButtonActor;
+import promitech.colonization.ui.resources.Messages;
 
 public class ColonyApplicationScreen extends ApplicationScreen {
 
@@ -119,12 +121,25 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(warehousePanel).colspan(2);
         tableLayout.row();
-		tableLayout.add(createShiftButton()).colspan(2).fillX();
+		tableLayout.add(createShiftButton()).colspan(2).fillX().row();
+		tableLayout.add(createBuildQueueButton()).colspan(2).fillX();
 		
         stage.addActor(tableLayout);
         stage.setDebugAll(true);
 	}
 
+	private TextButton createBuildQueueButton() {
+		String msg = Messages.msg("colonyPanel.buildQueue");
+		TextButton textButton = new TextButton(msg, GameResources.instance.getUiSkin());
+		textButton.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				System.out.println("touchUp");
+			}
+		});
+		return textButton;
+	}
+	
 	private TextButton createShiftButton() {
 		TextButton textButton = new TextButton("shift", GameResources.instance.getUiSkin());
 //		textButton.setRotation(90);
