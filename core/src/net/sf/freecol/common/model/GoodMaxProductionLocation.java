@@ -7,6 +7,12 @@ public class GoodMaxProductionLocation {
     int production;
     ColonyTile colonyTile;
     Building building;
+
+    GoodMaxProductionLocation(GoodsType goodsType, int goodQuantity, Building building) {
+        this.goodsType = goodsType;
+        this.production = goodQuantity;
+        setLocation(building);
+    }
     
     GoodMaxProductionLocation(GoodsType goodsType, int goodQuantity, ColonyTile colonyTile) {
         this.goodsType = goodsType;

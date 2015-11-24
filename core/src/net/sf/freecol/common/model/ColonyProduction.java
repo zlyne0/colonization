@@ -146,7 +146,7 @@ class ColonyProduction {
         List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
         
         ProductionSummary prodCons = globalProductionConsumption();
-        colony.goodsContainer.cloneGoods();
+        ProductionSummary warehouseGoods = colony.goodsContainer.cloneGoods();
         
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             if (gt.isFarmed()) {
@@ -155,7 +155,7 @@ class ColonyProduction {
                     goodsProduction.add(maxProd);
                 }
             } else {
-                GoodMaxProductionLocation maxProd = maxProductionFromBuilding(gt, worker);
+                GoodMaxProductionLocation maxProd = maxProductionFromBuilding(gt, worker, prodCons, warehouseGoods);
                 if (maxProd != null) {
                     goodsProduction.add(maxProd);
                 }
@@ -164,7 +164,10 @@ class ColonyProduction {
         return goodsProduction;
     }
 	
-	private GoodMaxProductionLocation maxProductionFromBuilding(final GoodsType goodsType, Unit worker) {
+	private GoodMaxProductionLocation maxProductionFromBuilding(
+			final GoodsType goodsType, Unit worker, 
+			ProductionSummary prodCons, ProductionSummary warehouseGoods
+	) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (Building building : colony.buildings.entities()) {
@@ -195,16 +198,25 @@ class ColonyProduction {
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
                     goodQuantity += colony.productionBonus();
 	         
-                    globalProductionConsumption.
-                    
-                    // TODO:
-//	                sprawdzenie czy w warehouse sa materialy na produkcjie
-//	                moze by jakos skorzystac z warehouse i aktualnej produkcji
+                    for (String cg : consumptionGoods) {
+                        int available = prodCons.getQuantity(cg) + warehouseGoods.getQuantity(cg);
+    	                if (available < goodQuantity) {
+    	                    goodQuantity = available;
+    	                }
+                    }
+                    if (goodQuantity > 0) {
+	                    if (maxProd == null) {
+	                        maxProd = new GoodMaxProductionLocation(goodsType, goodQuantity, building);
+	                    } else {
+	                        if (maxProd.hasLessProduction(goodQuantity)) {
+	                            maxProd.setProduction(goodQuantity, building);
+	                        }
+	                    }
+                    }
 	            }
-	            
 	        }
 	    }
-        return null;
+        return maxProd;
     }
 
     private GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker, final String tileForColonyId) {
