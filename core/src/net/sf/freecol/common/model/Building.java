@@ -35,6 +35,14 @@ public class Building extends ObjectWithId {
 		return reason;
 	}    
     
+    public boolean canAddWorker(Unit unit) {
+        NoAddReason reason = getNoAddReason(unit);
+//        if (NoAddReason.NONE != reason) {
+//            System.out.println("can not add unit to " + buildingType + " because " + reason);
+//        }
+        return NoAddReason.NONE == reason;
+    }
+	
 	public ProductionConsumption determineProductionConsumption(
 			ProductionSummary warehouse, 
 			int warehouseCapacity, 

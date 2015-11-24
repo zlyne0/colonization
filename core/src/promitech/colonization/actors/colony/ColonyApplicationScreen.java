@@ -1,5 +1,7 @@
 package promitech.colonization.actors.colony;
 
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -14,12 +16,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.resources.Messages;
 
@@ -55,7 +60,14 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             buildingsPanelActor.updateProductionDesc();
         }
     };
-	
+
+    private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
+        public void doubleClicked(InputEvent event, float x, float y) {
+            UnitActor unitActor = (UnitActor)event.getListenerActor();
+            showUnitOrders(unitActor.unit);
+        }
+    };
+
     private static boolean shiftPressed = false;  
     static boolean isShiftPressed() {
     	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
@@ -92,11 +104,11 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         });
         stage.addActor(closeButton);
         
-        buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener);
+        buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
-        terrainPanel = new TerrainPanel(changeColonyStateListener);
-		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener);
-        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener);
+        terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
+		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener, unitActorDoubleClickListener);
+        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
         
@@ -178,6 +190,14 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         populationPanel.update(colony);
     }
 	
+    private void showUnitOrders(Unit unit) {
+        List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
+        System.out.println("maxProductionForGoods.size = " + maxProductionForGoods.size());
+        for (GoodMaxProductionLocation g : maxProductionForGoods) {
+            System.out.println("max prod = " + g);
+        }
+    }
+    
 	@Override
 	public void onShow() {
 		Gdx.input.setInputProcessor(stage);

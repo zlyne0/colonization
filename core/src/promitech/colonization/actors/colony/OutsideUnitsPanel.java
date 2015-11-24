@@ -12,18 +12,21 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer;
+import promitech.colonization.ui.DoubleClickedListener;
 
 class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 
     private final ChangeColonyStateListener changeColonyStateListener;
+    private final DoubleClickedListener unitActorDoubleClickListener;
 	private final HorizontalGroup widgets = new HorizontalGroup();
 	private final ShapeRenderer shapeRenderer;
 	private Tile colonyTile;
 	private Colony colony;
 	
-	public OutsideUnitsPanel(ShapeRenderer shapeRenderer, ChangeColonyStateListener changeColonyStateListener) {
+	public OutsideUnitsPanel(ShapeRenderer shapeRenderer, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 		super(null, GameResources.instance.getUiSkin());
 		this.changeColonyStateListener = changeColonyStateListener;
+		this.unitActorDoubleClickListener = unitActorDoubleClickListener;
 		this.shapeRenderer = shapeRenderer;
 		setWidget(widgets);
 		
@@ -85,7 +88,7 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		    if (unit.isCarrier()) {
 		        continue;
 		    }
-			UnitActor unitActor = new UnitActor(unit);
+			UnitActor unitActor = new UnitActor(unit, unitActorDoubleClickListener);
 			unitActor.enableUnitChip(shapeRenderer);
 			
 			unitActor.dragAndDropSourceContainer = this;

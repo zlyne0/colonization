@@ -50,6 +50,10 @@ public class GoodsType extends ObjectWithId {
 	public int hashCode() {
 	    return id.hashCode();
 	}
+
+    public boolean isFarmed() {
+        return farmed;
+    }
 	
 	public static class Xml extends XmlNodeParser {
 

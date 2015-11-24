@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer;
+import promitech.colonization.ui.DoubleClickedListener;
 
 class CarrierUnitsPanel extends HorizontalGroup {
     class UnitsPanel extends ScrollPane {
@@ -155,9 +156,13 @@ class CarrierUnitsPanel extends HorizontalGroup {
 	private final CargoPanel cargoPanel;
 	
 	private final ChangeColonyStateListener changeColonyStateListener;
+	private final DoubleClickedListener unitActorDoubleClickListener;
     
-	public CarrierUnitsPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener) {
+	public CarrierUnitsPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, 
+	    ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener
+	) {
 	    this.changeColonyStateListener = changeColonyStateListener;
+	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
 		this.shapeRenderer = shapeRenderer;
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		
@@ -189,7 +194,7 @@ class CarrierUnitsPanel extends HorizontalGroup {
 		    if (!unit.isCarrier()) {
 		        continue;
 		    }
-		    UnitActor unitActor = new UnitActor(unit);
+		    UnitActor unitActor = new UnitActor(unit, unitActorDoubleClickListener);
 		    unitActor.enableUnitChip(shapeRenderer);
 		    if (firstUnit) {
 		        firstUnit = false;

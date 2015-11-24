@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
+import promitech.colonization.ui.DoubleClickedListener;
 
 public class TerrainPanel extends Table implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 	private static final int PREF_WIDTH = MapRenderer.TILE_WIDTH * 3 + MapRenderer.TILE_WIDTH/2;
@@ -32,6 +33,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	
 	private final ProductionQuantityDrawer productionQuantityDrawer;
 	private final ChangeColonyStateListener changeColonyStateListener;
+	private final DoubleClickedListener unitActorDoubleClickListener;
 	
 	@Override
 	public float getPrefWidth() {
@@ -43,8 +45,9 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		return PREF_HEIGHT;
 	}
 	
-	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener) {
+	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 	    this.changeColonyStateListener = changeColonyStateListener;
+	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
 		setWidth(getPrefWidth());
 		setHeight(getPrefHeight());
 		
@@ -171,7 +174,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 			
 			
 			if (ct.getWorker() != null) {
-				UnitActor ua = new UnitActor(ct.getWorker());
+				UnitActor ua = new UnitActor(ct.getWorker(), unitActorDoubleClickListener);
 				ua.dragAndDropSourceContainer = this;
 				addActor(ua);
 				updateWorkerScreenPosition(ua, ct);

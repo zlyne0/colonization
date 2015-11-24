@@ -3,31 +3,12 @@ package promitech.colonization.actors.colony;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
-import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.UnitDrawer;
-
-class DoubleClickedListener extends ClickListener {
-	private long clickedDelay = 500;
-	private long lastClicked = 0;
-	
-	@Override
-	public void clicked(InputEvent event, float x, float y) {
-		if (System.currentTimeMillis() - lastClicked <= clickedDelay) {
-			doubleClicked();
-		} 
-		lastClicked = System.currentTimeMillis();
-	}
-	
-	public void doubleClicked() {
-	}
-}
+import promitech.colonization.ui.DoubleClickedListener;
 
 class UnitActor extends Widget {
     final Unit unit;
@@ -42,23 +23,12 @@ class UnitActor extends Widget {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
     }
     
-    UnitActor(final Unit unit) {
+    UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
     	this.texture = getTexture(unit);
-    	
         this.drawUnitChip = false;
         this.unit = unit;
-        
-        addListener(new DoubleClickedListener() {
-        	@Override
-        	public void doubleClicked() {
-        		for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
-        			System.out.println("gt " + gt.getId());
-        		}
-        	}
-        });
-        
-        
         setSize(getPrefWidth(), getPrefHeight());
+        addListener(unitActorDoubleClickListener);
     }
 
     void updateTexture() {

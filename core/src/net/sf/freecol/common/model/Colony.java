@@ -1,10 +1,12 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -31,6 +33,7 @@ public class Colony extends Settlement {
      * identical to bells, and subject to further modification.
      */
     private int liberty = 0;
+    String tileId;
     
     public Colony(String id) {
     	this.id = id;
@@ -96,6 +99,14 @@ public class Colony extends Settlement {
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
     	changeUnitRoleOnReallocation(unit);
         destColonyTile.setWorker(unit);
+    }
+    
+    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit) {
+        if (!unit.isPerson()) {
+            return Collections.emptyList();
+        }
+        List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction = colonyProduction.determinePotentialMaxGoodsProduction(unit);
+        return determinePotentialMaxGoodsProduction;
     }
     
     private void changeUnitRoleOnReallocation(Unit unit) {
@@ -330,6 +341,7 @@ public class Colony extends Settlement {
             colony.tories = attr.getIntAttribute("tories", 0);
             colony.productionBonus = attr.getIntAttribute("productionBonus", 0);
             colony.liberty = attr.getIntAttribute("liberty", 0);
+            colony.tileId = attr.getStrAttribute("tile");
             colony.owner = owner;
             colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);

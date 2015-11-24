@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.ui.DoubleClickedListener;
 
 class BuildingActor extends ImageButton implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 	
@@ -21,15 +22,17 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     private final ProductionQuantityDrawModel productionQuantityDrawModel = new ProductionQuantityDrawModel();
     private ProductionQuantityDrawer productionQuantityDrawer;
     private final ChangeColonyStateListener changeColonyStateListener;
+    private final DoubleClickedListener unitActorDoubleClickListener;
 
     private static TextureRegionDrawable getBuildingTexture(Building building) {
     	Frame img = GameResources.instance.buildingTypeImage(building.buildingType);
     	return new TextureRegionDrawable(img.texture);
     }
     
-    BuildingActor(Colony colony, Building building, ChangeColonyStateListener changeColonyStateListener) {
+    BuildingActor(Colony colony, Building building, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
         super(getBuildingTexture(building));
         this.changeColonyStateListener = changeColonyStateListener;
+        this.unitActorDoubleClickListener = unitActorDoubleClickListener;
         this.building = building;
         this.colony = colony;
     }
@@ -46,7 +49,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     void initWorkers(DragAndDrop dragAndDrop) {
         int offsetX = 0; 
         for (Unit worker : building.workers.entities()) {
-            UnitActor unitActor = new UnitActor(worker);
+            UnitActor unitActor = new UnitActor(worker, unitActorDoubleClickListener);
             addActor(unitActor);
             unitActor.dragAndDropSourceContainer = this;
             
@@ -92,11 +95,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 
 	@Override
 	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
-		NoAddReason reason = building.getNoAddReason(unitActor.unit);
-//		if (NoAddReason.NONE != reason) {
-//			System.out.println("can not add unit to " + building.buildingType + " because " + reason);
-//		}
-		return NoAddReason.NONE == reason;
+		return building.canAddWorker(unitActor.unit);
 	}
 
     void resetUnitActorPlacement() {
