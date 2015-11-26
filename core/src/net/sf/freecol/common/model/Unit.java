@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -572,6 +574,32 @@ public class Unit extends ObjectWithFeatures implements Location {
 			experience = 0;
 		}
 		unitRole = newUnitRole;
+	}
+	
+	public List<UnitRole> avaliableRoles() {
+	    List<UnitRole> a = new ArrayList<UnitRole>();
+        for (UnitRole role : Specification.instance.unitRoles.entities()) {
+            if (role.isAvailableTo(unitRole)) {
+                a.add(role);
+            }
+        }
+        return a;
+	}
+	
+	public boolean hasAbility(String code) {
+	    if (super.hasAbility(code)) {
+	        return true;
+	    }
+	    if (unitType.hasAbility(code)) {
+	        return true;
+	    }
+	    if (unitRole.hasAbility(code)) {
+	        return true;
+	    }
+	    if (owner.hasAbility(code)) {
+	        return true;
+	    }
+	    return false;
 	}
 	
     public static class Xml extends XmlNodeParser {

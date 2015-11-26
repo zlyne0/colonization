@@ -1,7 +1,5 @@
 package promitech.colonization.actors.colony;
 
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -16,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.ApplicationScreen;
@@ -191,11 +188,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     }
 	
     private void showUnitOrders(Unit unit) {
-        List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
-        System.out.println("maxProductionForGoods.size = " + maxProductionForGoods.size());
-        for (GoodMaxProductionLocation g : maxProductionForGoods) {
-            System.out.println("max prod = " + g);
-        }
+        UnitActionOrdersDialog unitActionOrdersDialog = new UnitActionOrdersDialog(colony, unit);
+        unitActionOrdersDialog.show(stage);
     }
     
 	@Override

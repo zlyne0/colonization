@@ -149,16 +149,14 @@ class ColonyProduction {
         ProductionSummary warehouseGoods = colony.goodsContainer.cloneGoods();
         
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+            GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
-                GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, worker, colony.tileId);
-                if (maxProd != null) {
-                    goodsProduction.add(maxProd);
-                }
+                maxProd = maxProductionFromTile(gt, worker);
             } else {
-                GoodMaxProductionLocation maxProd = maxProductionFromBuilding(gt, worker, prodCons, warehouseGoods);
-                if (maxProd != null) {
-                    goodsProduction.add(maxProd);
-                }
+                maxProd = maxProductionFromBuilding(gt, worker, prodCons, warehouseGoods);
+            }
+            if (maxProd != null) {
+                goodsProduction.add(maxProd);
             }
         }
         return goodsProduction;
@@ -196,6 +194,7 @@ class ColonyProduction {
 	                int goodQuantity = 0;
 	                
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
+                    goodQuantity = (int)colony.colonyBuildingsFeatures.applyModifier(goodsId, goodQuantity);
                     goodQuantity += colony.productionBonus();
 	         
                     for (String cg : consumptionGoods) {
@@ -219,17 +218,16 @@ class ColonyProduction {
         return maxProd;
     }
 
-    private GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker, final String tileForColonyId) {
+    private GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
 	        if (colonyTile.getWorker() != null) {
 	            continue;
 	        }
-	        if (colonyTile.tile.getId().equals(tileForColonyId)) {
+	        if (colonyTile.tile.getId().equals(colony.tileId)) {
 	            continue;
 	        }
-	        
 	        
 	        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
@@ -237,17 +235,16 @@ class ColonyProduction {
 	                if (goodsType.equalsId(outputEntry.getKey())) {
 	                    Integer goodInitValue = outputEntry.getValue();
 	                    
-	                    int goodQuantity = (int)worker.unitType.applyModifier(goodsType.getId(), goodInitValue);
-	                    goodQuantity += colony.productionBonus();
-	                    // TODO: tile improvment modifier
-	                    // TODO: chyba production bonus powinien byc uwzlednianiny tylko wtedy gdy jest jakakolwiek produkcja 
+	                    int goodsQuantity = (int)worker.unitType.applyModifier(goodsType.getId(), goodInitValue);
+	                    goodsQuantity = colonyTile.tile.applyTileProductionModifier(goodsType.getId(), goodsQuantity);
+	                    goodsQuantity += colony.productionBonus();
 	                    
-	                    if (goodQuantity > 0) {
+	                    if (goodsQuantity > 0) {
     	                    if (maxProd == null) {
-    	                        maxProd = new GoodMaxProductionLocation(goodsType, goodQuantity, colonyTile);
+    	                        maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, colonyTile);
     	                    } else {
-    	                        if (maxProd.hasLessProduction(goodQuantity)) {
-    	                            maxProd.setProduction(goodQuantity, colonyTile);
+    	                        if (maxProd.hasLessProduction(goodsQuantity)) {
+    	                            maxProd.setProduction(goodsQuantity, colonyTile);
     	                        }
     	                    }
 	                    }

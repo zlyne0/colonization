@@ -180,17 +180,13 @@ public class ProductionSummary {
 	
 	public void applyTileImprovementsModifiers(Tile tile) {
 		for (Entry<String> entry : goods.entries()) {
+		    String goodsId = entry.key;
 			int quantity = entry.value;
-			for (TileImprovement ti : tile.getTileImprovements()) {
-				quantity = (int)ti.type.applyModifier(entry.key, quantity);
-			}
-			for (TileResource tileResource : tile.getTileResources()) {
-				quantity = (int)tileResource.getResourceType().applyModifier(entry.key, quantity);
-			}
-			goods.put(entry.key, quantity);
+			quantity = tile.applyTileProductionModifier(goodsId, quantity);
+			goods.put(goodsId, quantity);
 		}
 	}
-
+	
 	public void applyModifiers(ObjectWithFeatures modifiers) {
 		for (Entry<String> entry : goods.entries()) {
 			int quantity = entry.value;

@@ -119,6 +119,16 @@ public class Tile implements Location, Identifiable {
     	return tileItemContainer.getMoveCost(moveDirection, basicMoveCost);
     }
     
+    public int applyTileProductionModifier(final String goodsId, int quantity) {
+        for (TileImprovement ti : getTileImprovements()) {
+            quantity = (int)ti.type.applyModifier(goodsId, quantity);
+        }
+        for (TileResource tileResource : getTileResources()) {
+            quantity = (int)tileResource.getResourceType().applyModifier(goodsId, quantity);
+        }
+        return quantity;
+    }
+    
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {

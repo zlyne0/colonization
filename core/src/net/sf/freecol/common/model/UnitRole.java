@@ -47,11 +47,10 @@ public class UnitRole extends ObjectWithFeatures {
     public boolean isAvailableTo(UnitRole role) {
     	if (requiredAbilities != null) {
     		for (Ability aa : requiredAbilities.entities()) {
-    			if (role.hasAbility(aa.getId())) {
-    				if (!aa.isValue()) {
-    					return false;
-    				}
-    			}
+    		    boolean found = role.hasAbility(aa.getId());
+    		    if (aa.isValue() != found) {
+    		        return false;
+    		    }
     		}
     	}
     	return true;

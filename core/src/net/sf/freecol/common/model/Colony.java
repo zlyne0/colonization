@@ -45,6 +45,11 @@ public class Colony extends Settlement {
 		return colonyWorkers.size();
 	}
 
+    public boolean canReducePopulation() {
+        // TODO: sprawdzenie ilosci ludzi i 
+        return true;
+    }
+    
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
     	colonyProduction.setAsNeedUpdate();
     }

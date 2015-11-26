@@ -3,8 +3,8 @@ package net.sf.freecol.common.model;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class GoodMaxProductionLocation {
-    final GoodsType goodsType;
-    int production;
+    private final GoodsType goodsType;
+    private int production;
     ColonyTile colonyTile;
     Building building;
 
@@ -53,5 +53,13 @@ public class GoodMaxProductionLocation {
             st += " building " + this.building.getId();
         }
         return st;
+    }
+
+    public GoodsType getGoodsType() {
+        return goodsType;
+    }
+
+    public int getProduction() {
+        return production;
     }
 }
