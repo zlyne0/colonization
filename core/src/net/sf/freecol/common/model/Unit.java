@@ -68,10 +68,15 @@ public class Unit extends ObjectWithFeatures implements Location {
     public String resourceImageKey() {
     	if (!owner.nationType.isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
-    			return unitType.getId() + unitRole.getRoleSuffix() + ".native.image";
+    			return unitType.getId() + "." + unitRole.getRoleSuffix() + ".native.image";
     		}
     	}
-    	return unitType.getId() + unitRole.getRoleSuffix() + ".image"; 
+    	
+    	if (unitRole.isDefaultRole()) {
+    	    return unitType.getId() + unitRole.getRoleSuffix() + ".image";
+    	} else {
+            return unitType.getId() + "." + unitRole.getRoleSuffix() + ".image"; 
+    	}
     }
 
 	public Tile getTile() {
@@ -579,12 +584,16 @@ public class Unit extends ObjectWithFeatures implements Location {
 	public List<UnitRole> avaliableRoles() {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(unitRole)) {
+            if (role.isAvailableTo(this)) {
                 a.add(role);
             }
         }
         return a;
 	}
+
+    public UnitRole getUnitRole() {
+        return unitRole;
+    }
 	
 	public boolean hasAbility(String code) {
 	    if (super.hasAbility(code)) {

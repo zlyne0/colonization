@@ -1,7 +1,6 @@
 package promitech.colonization.actors.colony;
 
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 
 import com.badlogic.gdx.Input.Keys;
@@ -12,18 +11,19 @@ import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ObjectWithId;
-import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import promitech.colonization.GameResources;
@@ -38,44 +38,84 @@ class UnitActionOrdersDialog extends Dialog {
         public UnitActionOrderItem(GoodMaxProductionLocation g) {
             pad(5);
             
-            Frame resGoodsImage = GameResources.instance.goodsImage(g.getGoodsType());
-            Image image = new Image(resGoodsImage.texture);
+            Image image = goodsImage(g.getGoodsType().getId());
             
             StringTemplate t = StringTemplate.template(g.getGoodsType().getId() + ".workAs")
                     .addAmount("%amount%", g.getProduction())
                     .addName("%claim%", "");            
             String msg = Messages.message(t);
             
-            LabelStyle labelStyle = GameResources.instance.getUiSkin().get(LabelStyle.class);
-            labelStyle.font = FontResource.getGoodsQuantityFont();
-            Label label = new Label(msg, labelStyle);
+            Label label = new Label(msg, labelStyle());
             
             this.addActor(image);
             this.addActor(label);
         }
+        
+        public UnitActionOrderItem(Unit unit, UnitRole toRole, ProductionSummary required) {
+            pad(5);
+            
+            for (Entry<String> goodEntry : required.entries()) {
+                if (goodEntry.value <= 0) {
+                    continue;
+                }
+                Image image = goodsImage(goodEntry.key);
+                this.addActor(image);
+            }
+            UnitRole fromRole = unit.getUnitRole();
+            
+            String msgKey = "model.role.change." + toRole.getRoleSuffixWithDefault();
+            if (!Messages.containsKey(msgKey)) {
+                // Fall back to the full "from"."to" key
+                msgKey = "model.role.change." + fromRole.getRoleSuffixWithDefault() + "." + toRole.getRoleSuffixWithDefault();
+            }
+            String msg = Messages.msg(msgKey);
+            
+            Label label = new Label(msg, labelStyle());
+            this.addActor(label);
+        }
+        
+        public UnitActionOrderItem(String labelKey) {
+            String msg = Messages.msg(labelKey);
+            Label label = new Label(msg, labelStyle());
+            this.addActor(label);
+        }
+        
+        private Image goodsImage(String goodsTypeId) {
+            Frame resGoodsImage = GameResources.instance.goodsImage(goodsTypeId);
+            Image image = new Image(resGoodsImage.texture);
+            return image;
+        }
+        
+        private LabelStyle labelStyle() {
+            LabelStyle labelStyle = GameResources.instance.getUiSkin().get(LabelStyle.class);
+            labelStyle.font = FontResource.getGoodsQuantityFont();
+            return labelStyle;
+        }
     }
+    
+    private VerticalGroup verticalList;
     
     UnitActionOrdersDialog(Colony colony, Unit unit) {
         super("", GameResources.instance.getUiSkin());
+
+        createComponents();
+
+        addGoodProductionOrders(colony, unit);
         
-        java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
-        Collections.sort(maxProductionForGoods, new Comparator<GoodMaxProductionLocation>() {
-            @Override
-            public int compare(GoodMaxProductionLocation o1, GoodMaxProductionLocation o2) {
-                return ObjectWithId.INSERT_ORDER_ASC_COMPARATOR.compare(o1.getGoodsType(), o2.getGoodsType());
+        if (colony.isUnitInColony(unit)) {
+            if (colony.canReducePopulation()) {
+                verticalList.addActor(new UnitActionOrderItem("leaveTown"));
+                addEquippedRoles(colony, unit);
             }
-        });
-        
-        System.out.println("maxProductionForGoods.size = " + maxProductionForGoods.size());
-        for (GoodMaxProductionLocation g : maxProductionForGoods) {
-            System.out.println("max prod = " + g);
+        } else {
+            addEquippedRoles(colony, unit);
+            addCommands();
         }
-        
-        VerticalGroup verticalList = new VerticalGroup();
+    }
+    
+    private void createComponents() {
+        verticalList = new VerticalGroup();
         verticalList.align(Align.left);
-        for (GoodMaxProductionLocation g : maxProductionForGoods) {
-            verticalList.addActor(new UnitActionOrderItem(g));
-        }
         
         ScrollPane verticalListScrollPane = new ScrollPane(verticalList, GameResources.instance.getUiSkin());
         verticalListScrollPane.setFlickScroll(false);
@@ -89,15 +129,6 @@ class UnitActionOrdersDialog extends Dialog {
             }
         });
         getButtonTable().add(cancelButton);
-
-        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
-            List<UnitRole> avaliableRoles = unit.avaliableRoles();
-            System.out.println("avaliable roles size " + avaliableRoles.size());
-            for (UnitRole ur : avaliableRoles) {
-                System.out.println("ur " + ur);
-            }
-        }
-        
         addListener(new InputListener() {
             public boolean keyDown (InputEvent event, int keycode2) {
                 if (Keys.ENTER == keycode2) {
@@ -109,5 +140,48 @@ class UnitActionOrdersDialog extends Dialog {
                 return false;
             }
         });
+    }
+
+    private void addCommands() {
+        verticalList.addActor(new UnitActionOrderItem("activateUnit"));
+        verticalList.addActor(new UnitActionOrderItem("fortifyUnit"));
+        verticalList.addActor(new UnitActionOrderItem("clearUnitOrders"));
+        verticalList.addActor(new UnitActionOrderItem("sentryUnit"));
+    }
+    
+    private void addEquippedRoles(Colony colony, Unit unit) {
+        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+            List<UnitRole> avaliableRoles = unit.avaliableRoles();
+            Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+            
+            for (UnitRole aRole : avaliableRoles) {
+                if (unit.getUnitRole().equalsId(aRole)) {
+                    continue;
+                }
+                ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
+                if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
+                    verticalList.addActor(new UnitActionOrderItem(unit, aRole, required));
+                }
+            }
+            
+            System.out.println("avaliable roles size " + avaliableRoles.size());
+            for (UnitRole ur : avaliableRoles) {
+                System.out.println("ur " + ur);
+            }
+        }
+        
+    }
+    
+    private void addGoodProductionOrders(Colony colony, Unit unit) {
+        java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
+        Collections.sort(maxProductionForGoods, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
+        
+        System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
+        for (GoodMaxProductionLocation g : maxProductionForGoods) {
+            System.out.println("max: " + g);
+        }
+        for (GoodMaxProductionLocation g : maxProductionForGoods) {
+            verticalList.addActor(new UnitActionOrderItem(g));
+        }
     }
 }

@@ -6,7 +6,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitRole extends ObjectWithFeatures {
-	public static final String DEFAULT_ROLE_ID = "model.role.default";	
+	public static final String DEFAULT_ROLE_ID = "model.role.default";
 	
     public static String getRoleSuffix(String roleId) {
         return StringUtils.lastPart(roleId, ".");
@@ -28,7 +28,7 @@ public class UnitRole extends ObjectWithFeatures {
 		if (isDefaultRoleId(id)) {
 			this.roleSuffix = ""; 
 		} else {
-			this.roleSuffix = "." + StringUtils.lastPart(id, ".");
+			this.roleSuffix = getRoleSuffix(id);
 		}
 	}
 	
@@ -40,14 +40,21 @@ public class UnitRole extends ObjectWithFeatures {
 		return roleSuffix;
 	}
 	
+	public String getRoleSuffixWithDefault() {
+	    if (isDefaultRole()) {
+	        return "default";
+	    }
+	    return roleSuffix;
+	}
+	
     public boolean isOffensive() {
         return hasModifier(Modifier.OFFENCE);
     }
 	
-    public boolean isAvailableTo(UnitRole role) {
+    public boolean isAvailableTo(ObjectWithFeatures features) {
     	if (requiredAbilities != null) {
     		for (Ability aa : requiredAbilities.entities()) {
-    		    boolean found = role.hasAbility(aa.getId());
+    		    boolean found = features.hasAbility(aa.getId());
     		    if (aa.isValue() != found) {
     		        return false;
     		    }
@@ -65,6 +72,13 @@ public class UnitRole extends ObjectWithFeatures {
 				|| this.getId().equals(role.downgradeRoleId);
 	}
     
+	public ProductionSummary requiredGoodsToChangeRoleTo(UnitRole newRole) {
+        ProductionSummary required = new ProductionSummary();
+        required.addGoods(newRole.requiredGoods.entities());
+        required.decreaseGoods(requiredGoods.entities());
+	    return required;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

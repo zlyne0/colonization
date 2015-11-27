@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,6 +53,20 @@ public class Colony extends Settlement {
     
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
     	colonyProduction.setAsNeedUpdate();
+    }
+
+    public boolean isUnitInColony(Unit unit) {
+        for (Building building : buildings.entities()) {
+            if (building.workers.containsId(unit)) {
+                return true;
+            }
+        }
+        for (ColonyTile colonyTile : colonyTiles.entities()) {
+            if (colonyTile.getWorker() != null && unit.equalsId(colonyTile.getWorker())) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void updateColonyPopulation() {
@@ -117,13 +132,10 @@ public class Colony extends Settlement {
     private void changeUnitRoleOnReallocation(Unit unit) {
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	
-    	if (!unit.unitRole.isAvailableTo(defaultUnitRole)) {
+    	if (!defaultUnitRole.isAvailableTo(unit.unitRole)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + defaultUnitRole);
     	}
-    	
-    	ProductionSummary required = new ProductionSummary();
-    	required.addGoods(defaultUnitRole.requiredGoods.entities());
-    	required.decreaseGoods(unit.unitRole.requiredGoods.entities());
+    	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(defaultUnitRole);
     	
     	if (!goodsContainer.hasGoodsQuantity(required)) {
     		throw new IllegalStateException("warehouse do not have enough goods " + required);
