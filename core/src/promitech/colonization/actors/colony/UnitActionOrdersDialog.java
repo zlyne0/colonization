@@ -4,6 +4,10 @@ import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -13,10 +17,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
-import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
-import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Ability;
@@ -29,14 +32,21 @@ import net.sf.freecol.common.model.UnitRole;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 class UnitActionOrdersDialog extends Dialog {
-
+	
     public class UnitActionOrderItem extends HorizontalGroup {
-        public UnitActionOrderItem(GoodMaxProductionLocation g) {
+        private boolean selected = false;
+
+        private UnitActionOrderItem() {
             pad(5);
+        }
+        
+		public UnitActionOrderItem(GoodMaxProductionLocation g) {
+            this();
             
             Image image = goodsImage(g.getGoodsType().getId());
             
@@ -46,13 +56,13 @@ class UnitActionOrdersDialog extends Dialog {
             String msg = Messages.message(t);
             
             Label label = new Label(msg, labelStyle());
-            
+            label.setFillParent(true);
             this.addActor(image);
             this.addActor(label);
         }
         
         public UnitActionOrderItem(Unit unit, UnitRole toRole, ProductionSummary required) {
-            pad(5);
+            this();
             
             for (Entry<String> goodEntry : required.entries()) {
                 if (goodEntry.value <= 0) {
@@ -71,12 +81,16 @@ class UnitActionOrdersDialog extends Dialog {
             String msg = Messages.msg(msgKey);
             
             Label label = new Label(msg, labelStyle());
+            label.setFillParent(true);
             this.addActor(label);
         }
         
         public UnitActionOrderItem(String labelKey) {
+            this();
+        	
             String msg = Messages.msg(labelKey);
             Label label = new Label(msg, labelStyle());
+            label.setFillParent(true);
             this.addActor(label);
         }
         
@@ -91,9 +105,58 @@ class UnitActionOrdersDialog extends Dialog {
             labelStyle.font = FontResource.getGoodsQuantityFont();
             return labelStyle;
         }
+
+        private ShapeRenderer shape;
+        
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+        	if (selected) {
+        		
+        		if (shape == null) {
+        			shape = new ShapeRenderer();
+        			shape.setProjectionMatrix(batch.getProjectionMatrix());
+        			shape.setTransformMatrix(batch.getTransformMatrix());
+        		}
+        		batch.end();
+        		
+        		shape.begin(ShapeType.Filled);
+        		shape.setColor(Color.YELLOW);
+        		shape.rect(getX(), getY(), getWidth(), getHeight());
+        		shape.end();
+        		
+        		batch.begin();
+        	}
+        	super.draw(batch, parentAlpha);
+        }
+        
+		public void setUnselected() {
+			selected = false;
+		}
+
+		public void setSelected() {
+			selected = true;
+		}
     }
     
-    private VerticalGroup verticalList;
+    private Table tableLayout;
+    private ScrollPane verticalListScrollPane;
+    
+    private DoubleClickedListener unitActionOrderItemClickedListener = new DoubleClickedListener() {
+    	public void clicked(InputEvent event, float x, float y) {
+    		super.clicked(event, x, y);
+    		
+    		for (Actor a : tableLayout.getChildren()) {
+    			UnitActionOrderItem item = (UnitActionOrderItem)a;
+    			item.setUnselected();
+    		}
+    		
+    		UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
+    		item.setSelected();
+    	};
+    	
+    	public void doubleClicked(InputEvent event, float x, float y) {
+    	};
+    };
     
     UnitActionOrdersDialog(Colony colony, Unit unit) {
         super("", GameResources.instance.getUiSkin());
@@ -104,22 +167,30 @@ class UnitActionOrdersDialog extends Dialog {
         
         if (colony.isUnitInColony(unit)) {
             if (colony.canReducePopulation()) {
-                verticalList.addActor(new UnitActionOrderItem("leaveTown"));
+            	addCommandItem(new UnitActionOrderItem("leaveTown"));
                 addEquippedRoles(colony, unit);
             }
         } else {
             addEquippedRoles(colony, unit);
             addCommands();
         }
+        verticalListScrollPane.setScrollPercentY(100);
     }
     
     private void createComponents() {
-        verticalList = new VerticalGroup();
-        verticalList.align(Align.left);
-        
-        ScrollPane verticalListScrollPane = new ScrollPane(verticalList, GameResources.instance.getUiSkin());
+    	tableLayout = new Table();
+    	tableLayout.setFillParent(true);
+    	
+        verticalListScrollPane = new ScrollPane(tableLayout, GameResources.instance.getUiSkin());
         verticalListScrollPane.setFlickScroll(false);
-        getContentTable().add(verticalListScrollPane);
+        
+        verticalListScrollPane.setScrollingDisabled(true, false);
+        verticalListScrollPane.setForceScroll(false, false);
+        verticalListScrollPane.setFadeScrollBars(false);
+        verticalListScrollPane.setOverscroll(true, true);
+        verticalListScrollPane.setScrollBarPositions(false, true);
+
+        getContentTable().add(verticalListScrollPane).maxHeight(500);
         
         TextButton cancelButton = new TextButton(Messages.msg("cancel"), GameResources.instance.getUiSkin());
         cancelButton.addListener(new ChangeListener() {
@@ -143,10 +214,10 @@ class UnitActionOrdersDialog extends Dialog {
     }
 
     private void addCommands() {
-        verticalList.addActor(new UnitActionOrderItem("activateUnit"));
-        verticalList.addActor(new UnitActionOrderItem("fortifyUnit"));
-        verticalList.addActor(new UnitActionOrderItem("clearUnitOrders"));
-        verticalList.addActor(new UnitActionOrderItem("sentryUnit"));
+        addCommandItem(new UnitActionOrderItem("activateUnit"));
+		addCommandItem(new UnitActionOrderItem("fortifyUnit"));
+		addCommandItem(new UnitActionOrderItem("clearUnitOrders"));
+		addCommandItem(new UnitActionOrderItem("sentryUnit"));
     }
     
     private void addEquippedRoles(Colony colony, Unit unit) {
@@ -160,7 +231,7 @@ class UnitActionOrdersDialog extends Dialog {
                 }
                 ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
                 if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
-                    verticalList.addActor(new UnitActionOrderItem(unit, aRole, required));
+                	addCommandItem(new UnitActionOrderItem(unit, aRole, required));
                 }
             }
             
@@ -169,7 +240,6 @@ class UnitActionOrdersDialog extends Dialog {
                 System.out.println("ur " + ur);
             }
         }
-        
     }
     
     private void addGoodProductionOrders(Colony colony, Unit unit) {
@@ -181,7 +251,12 @@ class UnitActionOrdersDialog extends Dialog {
             System.out.println("max: " + g);
         }
         for (GoodMaxProductionLocation g : maxProductionForGoods) {
-            verticalList.addActor(new UnitActionOrderItem(g));
+        	addCommandItem(new UnitActionOrderItem(g));
         }
+    }
+    
+    private void addCommandItem(UnitActionOrderItem item) {
+    	item.addListener(unitActionOrderItemClickedListener);
+    	tableLayout.add(item).fillX().spaceTop(5).row();
     }
 }
