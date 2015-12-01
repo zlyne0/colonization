@@ -38,15 +38,69 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 class UnitActionOrdersDialog extends Dialog {
 	
-    public class UnitActionOrderItem extends HorizontalGroup {
-        private boolean selected = false;
-
-        private UnitActionOrderItem() {
-            pad(5);
+    enum ActionTypes {
+        SHOW_ONLY_PRODUCTIONS,
+        LIST_PRODUCTIONS,
+        ASSIGN_TO_PRODUCTION,
+        LEAVE_TOWN,
+        EQUIPPED,
+        ACTIVATE,
+        FORTIFY,
+        CLEAR_ORDERS,
+        SENTRY
+    }
+    
+    class ActionMenuItem extends HorizontalGroup {
+        protected boolean selected = false;
+        private ShapeRenderer shape;
+        
+        @Override
+        public void draw(Batch batch, float parentAlpha) {
+            if (selected) {
+                
+                if (shape == null) {
+                    shape = new ShapeRenderer();
+                    shape.setProjectionMatrix(batch.getProjectionMatrix());
+                    shape.setTransformMatrix(batch.getTransformMatrix());
+                }
+                batch.end();
+                
+                shape.begin(ShapeType.Filled);
+                shape.setColor(Color.YELLOW);
+                shape.rect(getX(), getY(), getWidth(), getHeight());
+                shape.end();
+                
+                batch.begin();
+            }
+            super.draw(batch, parentAlpha);
         }
         
-		public UnitActionOrderItem(GoodMaxProductionLocation g) {
-            this();
+        public void setUnselected() {
+            selected = false;
+        }
+
+        public void setSelected() {
+            selected = true;
+        }
+    }
+    
+    class SeparatorMenuItem extends HorizontalGroup {
+        @Override
+        public float getPrefHeight() {
+            return 20f;
+        }
+    }
+    
+    class UnitActionOrderItem extends ActionMenuItem {
+        final ActionTypes actionType;
+
+        private UnitActionOrderItem(ActionTypes actionType) {
+            pad(5);
+            this.actionType = actionType;
+        }
+        
+		public UnitActionOrderItem(GoodMaxProductionLocation g, ActionTypes actionType) {
+            this(actionType);
             
             Image image = goodsImage(g.getGoodsType().getId());
             
@@ -61,8 +115,8 @@ class UnitActionOrdersDialog extends Dialog {
             this.addActor(label);
         }
         
-        public UnitActionOrderItem(Unit unit, UnitRole toRole, ProductionSummary required) {
-            this();
+        public UnitActionOrderItem(Unit unit, UnitRole toRole, ProductionSummary required, ActionTypes actionType) {
+            this(actionType);
             
             for (Entry<String> goodEntry : required.entries()) {
                 if (goodEntry.value <= 0) {
@@ -85,8 +139,8 @@ class UnitActionOrdersDialog extends Dialog {
             this.addActor(label);
         }
         
-        public UnitActionOrderItem(String labelKey) {
-            this();
+        public UnitActionOrderItem(String labelKey, ActionTypes actionType) {
+            this(actionType);
         	
             String msg = Messages.msg(labelKey);
             Label label = new Label(msg, labelStyle());
@@ -105,37 +159,6 @@ class UnitActionOrdersDialog extends Dialog {
             labelStyle.font = FontResource.getGoodsQuantityFont();
             return labelStyle;
         }
-
-        private ShapeRenderer shape;
-        
-        @Override
-        public void draw(Batch batch, float parentAlpha) {
-        	if (selected) {
-        		
-        		if (shape == null) {
-        			shape = new ShapeRenderer();
-        			shape.setProjectionMatrix(batch.getProjectionMatrix());
-        			shape.setTransformMatrix(batch.getTransformMatrix());
-        		}
-        		batch.end();
-        		
-        		shape.begin(ShapeType.Filled);
-        		shape.setColor(Color.YELLOW);
-        		shape.rect(getX(), getY(), getWidth(), getHeight());
-        		shape.end();
-        		
-        		batch.begin();
-        	}
-        	super.draw(batch, parentAlpha);
-        }
-        
-		public void setUnselected() {
-			selected = false;
-		}
-
-		public void setSelected() {
-			selected = true;
-		}
     }
     
     private Table tableLayout;
@@ -146,8 +169,10 @@ class UnitActionOrdersDialog extends Dialog {
     		super.clicked(event, x, y);
     		
     		for (Actor a : tableLayout.getChildren()) {
-    			UnitActionOrderItem item = (UnitActionOrderItem)a;
-    			item.setUnselected();
+    		    if (a instanceof ActionMenuItem) {
+    		        ActionMenuItem item = (ActionMenuItem)a;
+    		        item.setUnselected();
+    		    }
     		}
     		
     		UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
@@ -155,6 +180,10 @@ class UnitActionOrdersDialog extends Dialog {
     	};
     	
     	public void doubleClicked(InputEvent event, float x, float y) {
+    	    UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
+    	    
+    	    System.out.println("action type = " + item.actionType);
+    	    
     	};
     };
     
@@ -163,15 +192,19 @@ class UnitActionOrdersDialog extends Dialog {
 
         createComponents();
 
-        addGoodProductionOrders(colony, unit);
+        addCommandItem(new UnitActionOrderItem("model.unit.changeWork", ActionTypes.LIST_PRODUCTIONS));
+        addSeparator();
+        addCommandItem(new UnitActionOrderItem("leaveTown", ActionTypes.LEAVE_TOWN));
         
         if (colony.isUnitInColony(unit)) {
             if (colony.canReducePopulation()) {
-            	addCommandItem(new UnitActionOrderItem("leaveTown"));
                 addEquippedRoles(colony, unit);
+                addSeparator();
+            	addCommandItem(new UnitActionOrderItem("leaveTown", ActionTypes.LEAVE_TOWN));
             }
         } else {
             addEquippedRoles(colony, unit);
+            addSeparator();
             addCommands();
         }
         verticalListScrollPane.setScrollPercentY(100);
@@ -214,10 +247,10 @@ class UnitActionOrdersDialog extends Dialog {
     }
 
     private void addCommands() {
-        addCommandItem(new UnitActionOrderItem("activateUnit"));
-		addCommandItem(new UnitActionOrderItem("fortifyUnit"));
-		addCommandItem(new UnitActionOrderItem("clearUnitOrders"));
-		addCommandItem(new UnitActionOrderItem("sentryUnit"));
+        addCommandItem(new UnitActionOrderItem("activateUnit", ActionTypes.ACTIVATE));
+		addCommandItem(new UnitActionOrderItem("fortifyUnit", ActionTypes.FORTIFY));
+		addCommandItem(new UnitActionOrderItem("clearUnitOrders", ActionTypes.CLEAR_ORDERS));
+		addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
     }
     
     private void addEquippedRoles(Colony colony, Unit unit) {
@@ -231,7 +264,7 @@ class UnitActionOrdersDialog extends Dialog {
                 }
                 ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
                 if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
-                	addCommandItem(new UnitActionOrderItem(unit, aRole, required));
+                	addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
                 }
             }
             
@@ -251,8 +284,12 @@ class UnitActionOrdersDialog extends Dialog {
             System.out.println("max: " + g);
         }
         for (GoodMaxProductionLocation g : maxProductionForGoods) {
-        	addCommandItem(new UnitActionOrderItem(g));
+        	addCommandItem(new UnitActionOrderItem(g, ActionTypes.ASSIGN_TO_PRODUCTION));
         }
+    }
+    
+    private void addSeparator() {
+        tableLayout.add(new SeparatorMenuItem()).fillX().spaceTop(5).row();
     }
     
     private void addCommandItem(UnitActionOrderItem item) {
