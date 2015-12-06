@@ -41,7 +41,9 @@ class UnitActionOrdersDialog extends Dialog {
     enum ActionTypes {
         SHOW_ONLY_PRODUCTIONS,
         LIST_PRODUCTIONS,
+        LIST_CHANGE_PRODUCTIONS,
         ASSIGN_TO_PRODUCTION,
+        CHANGE_TERRAIN_PRODUCTION,
         LEAVE_TOWN,
         EQUIPPED,
         ACTIVATE,
@@ -57,12 +59,11 @@ class UnitActionOrdersDialog extends Dialog {
         @Override
         public void draw(Batch batch, float parentAlpha) {
             if (selected) {
-                
                 if (shape == null) {
                     shape = new ShapeRenderer();
-                    shape.setProjectionMatrix(batch.getProjectionMatrix());
-                    shape.setTransformMatrix(batch.getTransformMatrix());
                 }
+                shape.setProjectionMatrix(batch.getProjectionMatrix());
+                shape.setTransformMatrix(batch.getTransformMatrix());
                 batch.end();
                 
                 shape.begin(ShapeType.Filled);
@@ -93,6 +94,8 @@ class UnitActionOrdersDialog extends Dialog {
     
     class UnitActionOrderItem extends ActionMenuItem {
         final ActionTypes actionType;
+        
+        UnitRole newRole; 
 
         private UnitActionOrderItem(ActionTypes actionType) {
             pad(5);
@@ -117,6 +120,7 @@ class UnitActionOrdersDialog extends Dialog {
         
         public UnitActionOrderItem(Unit unit, UnitRole toRole, ProductionSummary required, ActionTypes actionType) {
             this(actionType);
+            newRole = toRole;
             
             for (Entry<String> goodEntry : required.entries()) {
                 if (goodEntry.value <= 0) {
@@ -163,6 +167,10 @@ class UnitActionOrdersDialog extends Dialog {
     
     private Table tableLayout;
     private ScrollPane verticalListScrollPane;
+    private final Colony colony;
+    private final Unit unit;
+    private final UnitActor unitActor;
+    private final OutsideUnitsPanel outsideUnitsPanel;
     
     private DoubleClickedListener unitActionOrderItemClickedListener = new DoubleClickedListener() {
     	public void clicked(InputEvent event, float x, float y) {
@@ -174,45 +182,90 @@ class UnitActionOrdersDialog extends Dialog {
     		        item.setUnselected();
     		    }
     		}
-    		
-    		UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
-    		item.setSelected();
+    		if (event.getListenerActor() instanceof ActionMenuItem) {
+    			ActionMenuItem item = (ActionMenuItem)event.getListenerActor();
+	    		item.setSelected();
+    		}
     	};
     	
     	public void doubleClicked(InputEvent event, float x, float y) {
     	    UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
-    	    
-    	    System.out.println("action type = " + item.actionType);
-    	    
+    	    executeCommand(item);
     	};
     };
     
-    UnitActionOrdersDialog(Colony colony, Unit unit) {
+    UnitActionOrdersDialog(Colony colony, UnitActor unitActor, OutsideUnitsPanel outsideUnitsPanel) {
         super("", GameResources.instance.getUiSkin());
-
+        this.colony = colony;
+        this.unit = unitActor.unit;
+        this.unitActor = unitActor;
+        
+        this.outsideUnitsPanel = outsideUnitsPanel;
+        
         createComponents();
 
-        addCommandItem(new UnitActionOrderItem("model.unit.changeWork", ActionTypes.LIST_PRODUCTIONS));
-        addSeparator();
-        addCommandItem(new UnitActionOrderItem("leaveTown", ActionTypes.LEAVE_TOWN));
+        addCommandItem(new UnitActionOrderItem("model.unit.workingAs", ActionTypes.LIST_PRODUCTIONS));
         
         if (colony.isUnitInColony(unit)) {
+        	if (colony.isUnitOnTerrain(unit)) {
+        		addCommandItem(new UnitActionOrderItem("model.unit.changeWork", ActionTypes.LIST_CHANGE_PRODUCTIONS));
+        	}
             if (colony.canReducePopulation()) {
-                addEquippedRoles(colony, unit);
+            	addSeparator();
+                addEquippedRoles();
                 addSeparator();
             	addCommandItem(new UnitActionOrderItem("leaveTown", ActionTypes.LEAVE_TOWN));
             }
         } else {
-            addEquippedRoles(colony, unit);
+        	addSeparator();
+            addEquippedRoles();
             addSeparator();
             addCommands();
         }
         verticalListScrollPane.setScrollPercentY(100);
     }
+
+    @Override
+    public float getMaxHeight() {
+    	return 500;
+    }
     
-    private void createComponents() {
+    protected void executeCommand(UnitActionOrderItem item) {
+    	System.out.println("execute action type: " + item.actionType);
+    	if (ActionTypes.LIST_PRODUCTIONS.equals(item.actionType)) {
+    		tableLayout.clear();
+    		productionOrders();
+    		this.invalidateHierarchy();
+    		this.pack();
+    		
+    		return;
+    	}
+    	if (ActionTypes.LIST_CHANGE_PRODUCTIONS.equals(item.actionType)) {
+    		tableLayout.clear();
+    		terrainProductionOrders();
+    		this.invalidateHierarchy();
+    		this.pack();
+    		
+    		return;
+    	}
+		
+    	if (ActionTypes.LEAVE_TOWN.equals(item.actionType)) {
+    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+    		source.takePayload(unitActor, -1, -1);
+    		outsideUnitsPanel.putPayload(unitActor, -1, -1);
+    	}
+    	if (ActionTypes.EQUIPPED.equals(item.actionType)) {
+    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+    		source.takePayload(unitActor, -1, -1);
+    		colony.changeUnitRole(unit, item.newRole);
+    		unitActor.updateTexture();
+    		outsideUnitsPanel.putPayload(unitActor, -1, -1);
+    	}
+    	hide();
+	}
+    
+	private void createComponents() {
     	tableLayout = new Table();
-    	tableLayout.setFillParent(true);
     	
         verticalListScrollPane = new ScrollPane(tableLayout, GameResources.instance.getUiSkin());
         verticalListScrollPane.setFlickScroll(false);
@@ -223,7 +276,7 @@ class UnitActionOrdersDialog extends Dialog {
         verticalListScrollPane.setOverscroll(true, true);
         verticalListScrollPane.setScrollBarPositions(false, true);
 
-        getContentTable().add(verticalListScrollPane).maxHeight(500);
+        getContentTable().add(verticalListScrollPane);
         
         TextButton cancelButton = new TextButton(Messages.msg("cancel"), GameResources.instance.getUiSkin());
         cancelButton.addListener(new ChangeListener() {
@@ -253,7 +306,7 @@ class UnitActionOrdersDialog extends Dialog {
 		addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
     }
     
-    private void addEquippedRoles(Colony colony, Unit unit) {
+    private void addEquippedRoles() {
         if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
             List<UnitRole> avaliableRoles = unit.avaliableRoles();
             Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
@@ -275,7 +328,20 @@ class UnitActionOrdersDialog extends Dialog {
         }
     }
     
-    private void addGoodProductionOrders(Colony colony, Unit unit) {
+    private void terrainProductionOrders() {
+    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
+    	Collections.sort(potentialTerrainProductions, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
+    	
+    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
+        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
+            System.out.println("prod: " + g);
+        }
+        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
+        	addCommandItem(new UnitActionOrderItem(g, ActionTypes.CHANGE_TERRAIN_PRODUCTION));
+        }
+    }
+    
+    private void productionOrders() {
         java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
         Collections.sort(maxProductionForGoods, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
         

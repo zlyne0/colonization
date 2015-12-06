@@ -15,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
@@ -61,7 +60,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
         public void doubleClicked(InputEvent event, float x, float y) {
             UnitActor unitActor = (UnitActor)event.getListenerActor();
-            showUnitOrders(unitActor.unit);
+            showUnitOrders(unitActor);
         }
     };
 
@@ -134,7 +133,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		tableLayout.add(createBuildQueueButton()).colspan(2).fillX();
 		
         stage.addActor(tableLayout);
-        stage.setDebugAll(true);
+        //stage.setDebugAll(true);
 	}
 
 	private TextButton createBuildQueueButton() {
@@ -187,8 +186,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         populationPanel.update(colony);
     }
 	
-    private void showUnitOrders(Unit unit) {
-        UnitActionOrdersDialog unitActionOrdersDialog = new UnitActionOrdersDialog(colony, unit);
+    private void showUnitOrders(UnitActor unitActor) {
+        UnitActionOrdersDialog unitActionOrdersDialog = new UnitActionOrdersDialog(colony, unitActor, outsideUnitsPanel);
         unitActionOrdersDialog.show(stage);
     }
     

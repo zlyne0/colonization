@@ -1,13 +1,11 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.SAXException;
 
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -61,14 +59,25 @@ public class Colony extends Settlement {
                 return true;
             }
         }
-        for (ColonyTile colonyTile : colonyTiles.entities()) {
-            if (colonyTile.getWorker() != null && unit.equalsId(colonyTile.getWorker())) {
-                return true;
-            }
+        if (isUnitOnTerrain(unit)) {
+        	return true;
         }
         return false;
     }
     
+	public boolean isUnitOnTerrain(Unit unit) {
+		return unitWorkingTerrain(unit) != null;
+	}
+
+	public ColonyTile unitWorkingTerrain(Unit unit) {
+        for (ColonyTile colonyTile : colonyTiles.entities()) {
+            if (colonyTile.getWorker() != null && unit.equalsId(colonyTile.getWorker())) {
+            	return colonyTile;
+            }
+        }
+        return null;
+	}
+	
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
@@ -112,13 +121,26 @@ public class Colony extends Settlement {
     }
 
     public void addWorkerToBuilding(Building building, Unit unit) {
-    	changeUnitRoleOnReallocation(unit);
+    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+    	changeUnitRole(unit, defaultUnitRole);
         building.workers.add(unit);
     }
     
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
-    	changeUnitRoleOnReallocation(unit);
+    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+    	changeUnitRole(unit, defaultUnitRole);
         destColonyTile.setWorker(unit);
+    }
+    
+    public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
+        if (!unit.isPerson()) {
+            return Collections.emptyList();
+        }
+        ColonyTile terrain = unitWorkingTerrain(unit);
+        if (terrain == null) {
+        	return Collections.emptyList();
+        }
+    	return colonyProduction.determinePotentialTerrainProductions(terrain, unit);
     }
     
     public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit) {
@@ -128,19 +150,17 @@ public class Colony extends Settlement {
         List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction = colonyProduction.determinePotentialMaxGoodsProduction(unit);
         return determinePotentialMaxGoodsProduction;
     }
-    
-    private void changeUnitRoleOnReallocation(Unit unit) {
-    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-    	
-    	if (!defaultUnitRole.isAvailableTo(unit.unitRole)) {
-    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + defaultUnitRole);
+
+    public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
+    	if (!newUnitRole.isAvailableTo(unit)) {
+    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
-    	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(defaultUnitRole);
+    	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);
     	
     	if (!goodsContainer.hasGoodsQuantity(required)) {
     		throw new IllegalStateException("warehouse do not have enough goods " + required);
     	}
-    	unit.changeRole(defaultUnitRole);
+    	unit.changeRole(newUnitRole);
     	goodsContainer.decreaseGoodsQuantity(required);
     }
     
@@ -383,4 +403,5 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
+
 }

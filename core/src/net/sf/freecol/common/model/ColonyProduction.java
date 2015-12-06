@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -161,7 +160,7 @@ class ColonyProduction {
         }
         return goodsProduction;
     }
-	
+
 	private GoodMaxProductionLocation maxProductionFromBuilding(
 			final GoodsType goodsType, Unit worker, 
 			ProductionSummary prodCons, ProductionSummary warehouseGoods
@@ -233,28 +232,52 @@ class ColonyProduction {
 	        for (Production production : productions) {
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                if (goodsType.equalsId(outputEntry.getKey())) {
-	                    Integer goodInitValue = outputEntry.getValue();
-	                    
-	                    int goodsQuantity = (int)worker.unitType.applyModifier(goodsType.getId(), goodInitValue);
-	                    goodsQuantity = colonyTile.tile.applyTileProductionModifier(goodsType.getId(), goodsQuantity);
-	                    goodsQuantity += colony.productionBonus();
-	                    
-	                    if (goodsQuantity > 0) {
-    	                    if (maxProd == null) {
-    	                        maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, colonyTile);
-    	                    } else {
-    	                        if (maxProd.hasLessProduction(goodsQuantity)) {
-    	                            maxProd.setProduction(goodsQuantity, colonyTile);
-    	                        }
-    	                    }
-	                    }
+	                	maxProd = maxGoodProduction(outputEntry, worker, colonyTile, maxProd);
 	                }
 	            }
 	        }
 	    }
 	    return maxProd;
 	}
-	
+
+    private GoodMaxProductionLocation maxGoodProduction(
+    		final java.util.Map.Entry<GoodsType, Integer> outputEntry, 
+    		final Unit worker, final ColonyTile colonyTile, 
+    		GoodMaxProductionLocation maxProd
+    ) {
+    	Integer goodInitValue = outputEntry.getValue();
+    	GoodsType prodGoodsType = outputEntry.getKey();
+    	
+    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
+    	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
+    	goodsQuantity += colony.productionBonus();
+    	
+    	if (goodsQuantity > 0) {
+    		if (maxProd == null) {
+    			maxProd = new GoodMaxProductionLocation(prodGoodsType, goodsQuantity, colonyTile);
+    		} else {
+    			if (maxProd.hasLessProduction(goodsQuantity)) {
+    				maxProd.setProduction(goodsQuantity, colonyTile);
+    			}
+    		}
+    	}
+    	return maxProd;
+    }
+    
+	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {
+		List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
+		
+        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
+        for (Production production : productions) {
+            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+            	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, worker, colonyTile, null);
+            	goodsProduction.add(prod);
+            }
+        }
+		
+		return goodsProduction;
+	}
+    
 	public ProductionConsumption productionConsumptionForObject(String id) {
     	update();
     	ProductionConsumption productionConsumption = prodConsByProducer.get(id);
