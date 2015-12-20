@@ -505,7 +505,7 @@ public class Unit extends ObjectWithFeatures implements Location {
         if (state == s) {
             // No need to do anything when the state is unchanged
             return;
-        } else if (!checkSetState(s)) {
+        } else if (!canChangeState(s)) {
             throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + s);
         } else {
             this.state = s;
@@ -520,7 +520,7 @@ public class Unit extends ObjectWithFeatures implements Location {
      * @return True if the <code>Unit</code> state can be changed to
      *     the new value.
      */
-    private boolean checkSetState(UnitState s) {
+    public boolean canChangeState(UnitState s) {
         if (getState() == s) return false;
         switch (s) {
         case ACTIVE:
@@ -528,11 +528,11 @@ public class Unit extends ObjectWithFeatures implements Location {
         case FORTIFIED:
             return getState() == UnitState.FORTIFYING;
         case FORTIFYING:
-            return getMovesLeft() > 0;
+            return getMovesLeft() > 0 && getState() != UnitState.FORTIFIED;
         case IN_COLONY:
             return !isNaval();
         case SENTRY:
-            return true;
+            return getState() != UnitState.SENTRY;
         case SKIPPED:
             return getState() == UnitState.ACTIVE;
         default:

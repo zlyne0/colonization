@@ -310,10 +310,6 @@ public class GameOptions {
     public static final String NATIVE_DEMANDS
         = "model.option.nativeDemands";
 
-    /** Rumour difficulty factor. [FIXME: should go away] */
-    public static final String RUMOUR_DIFFICULTY
-        = "model.option.rumourDifficulty";
-
     /** The penalty applied to trading with the natives from a ship. */
     public static final String SHIP_TRADE_PENALTY
         = "model.option.shipTradePenalty";

@@ -6,6 +6,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -53,8 +54,7 @@ public class GUIGameController {
 		}
 		
 		if (unitIterator.hasNext()) {
-			activeUnit = unitIterator.next();
-			mapActor.mapDrawModel().setSelectedUnit(activeUnit);
+			changeActiveUnit(unitIterator.next());
 			if (activeUnit != null) {
 				mapActor.centerCameraOnTile(activeUnit.getTile());
 			} 
@@ -122,8 +122,7 @@ public class GUIGameController {
 			if (!tile.hasSettlement()) {
 				Unit newSelectedUnit = tile.units.first();
 				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
-					mapDrawModel.setSelectedUnit(newSelectedUnit);
-					activeUnit = newSelectedUnit;
+					changeActiveUnit(newSelectedUnit);
 				}
 			}
 		}
@@ -240,6 +239,26 @@ public class GUIGameController {
 		}
 	};
 	
+	public void closeColonyView(Colony colony) {
+		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
+		if (activeUnit != null) {
+			if (colony.isUnitInColony(activeUnit)) {
+				changeActiveUnit(null);
+			}
+		}
+	}
+
+	public void closeColonyViewAndActiveUnit(Colony colony, Unit unit) {
+		closeColonyView(colony);
+		unit.setState(UnitState.ACTIVE);
+		changeActiveUnit(unit);
+	}
+	
+	void changeActiveUnit(Unit unit) {
+		this.activeUnit = unit;
+		mapActor.mapDrawModel().setSelectedUnit(unit);
+	}
+	
     public Game getGame() {
         return game;
     }
@@ -247,5 +266,4 @@ public class GUIGameController {
 	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
 		this.screenManager = screenManager;
 	}
-
 }

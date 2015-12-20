@@ -8,6 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Tile;
@@ -28,7 +29,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	private MapRenderer mapRenderer;
 	
 	private ColonyTile[] colonyTiles = new ColonyTile[9];
-	private UnitActor[] colonyTerrainsWorkers = new UnitActor[9];
 	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
 	
 	private final ProductionQuantityDrawer productionQuantityDrawer;
@@ -57,34 +57,37 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		productionQuantityDrawer = new ProductionQuantityDrawer(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
 		productionQuantityDrawer.centerToPoint(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
 	}
+
+	void changeWorkerProduction(UnitActor unitActor, GoodMaxProductionLocation prodLocation) {
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+		ColonyTile aColonyTile = prodLocation.getColonyTile();
+		aColonyTile.productionInfo.clear();
+		aColonyTile.productionInfo.addProduction(prodLocation.tileTypeInitProduction);
+		changeColonyStateListener.changeUnitAllocation(colony);
+	}
+	
+	void putWorkerOnTerrain(UnitActor worker, ColonyTile aColonyTile) {
+		worker.dragAndDropSourceContainer = this;
+		
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+		colony.addWorkerToTerrain(aColonyTile, worker.unit);
+		worker.updateTexture();
+
+		addActor(worker);
+		updateWorkerScreenPosition(worker, aColonyTile);
+
+		initMaxPossibleProdctionOnTile(worker.unit, aColonyTile.tile, aColonyTile);
+		
+		changeColonyStateListener.changeUnitAllocation(colony);
+	}
 	
 	@Override
 	public void putPayload(UnitActor worker, float x, float y) {
-		worker.dragAndDropSourceContainer = this;
-		
 		ColonyTile destColonyTile = getColonyTileByScreenCords(x, y);
 		if (destColonyTile == null) {
 			throw new IllegalStateException("can not find dest colony tile by screen cords. Should invoke canPutpayload before");
 		}
-		
-		for (int i=0; i<colonyTiles.length; i++) {
-			ColonyTile ct = colonyTiles[i];
-			if (ct.equalsId(destColonyTile)) {
-				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-				colonyTerrainsWorkers[i] = worker;
-				colony.addWorkerToTerrain(destColonyTile, worker.unit);
-				worker.updateTexture();
-				
-				addActor(worker);
-				updateWorkerScreenPosition(worker, ct);
-				
-				initMaxPossibleProdctionOnTile(worker.unit, ct.tile, ct);
-				
-				changeColonyStateListener.changeUnitAllocation(colony);
-				return;
-			}
-		}
-		throw new IllegalStateException("can not find colony tile by id: " + destColonyTile.getId());
+		putWorkerOnTerrain(worker, destColonyTile);
 	}
 
 	@Override
@@ -103,17 +106,15 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	public void takePayload(UnitActor unitActor, float x, float y) {
 		unitActor.dragAndDropSourceContainer = null;
 		
-		for (int i=0; i<colonyTerrainsWorkers.length; i++) {
-			UnitActor tWorker = colonyTerrainsWorkers[i];
-			if (tWorker != null && tWorker.unit.equalsId(unitActor.unit)) {
+		for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
+			Unit tWorker = colonyTile.getWorker();
+			if (tWorker != null && tWorker.equalsId(unitActor.unit)) {
 				System.out.println("take worker "
-					+ "[" + unitActor.unit + "] from "
-					+ "[" + colonyTiles[i].getId() + "] "
-				);
-				
+						+ "[" + unitActor.unit + "] from "
+						+ "[" + colonyTile.getId() + "] "
+					);
 				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-				colonyTiles[i].takeWorker();
-				colonyTerrainsWorkers[i] = null;
+				colonyTile.takeWorker();
 				removeActor(unitActor);
 				
 				changeColonyStateListener.changeUnitAllocation(colony);
@@ -168,19 +169,15 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	}
 
 	private void initWorkersActors(DragAndDrop dragAndDrop) {
-		for (int i=0; i<colonyTiles.length; i++) {
-			colonyTerrainsWorkers[i] = null;
-			ColonyTile ct = colonyTiles[i];
-			
-			
+		for (ColonyTile ct : colony.colonyTiles.entities()) {
 			if (ct.getWorker() != null) {
+				
 				UnitActor ua = new UnitActor(ct.getWorker(), unitActorDoubleClickListener);
 				ua.dragAndDropSourceContainer = this;
 				addActor(ua);
 				updateWorkerScreenPosition(ua, ct);
 				
 				dragAndDrop.addSource(new UnitDragAndDropSource(ua));
-				colonyTerrainsWorkers[i] = ua;
 			}
 		}
 	}

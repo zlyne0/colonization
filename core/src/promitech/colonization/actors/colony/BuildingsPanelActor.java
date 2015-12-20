@@ -46,5 +46,17 @@ class BuildingsPanelActor extends Table {
             }
         }
     }
+
+	void putWorkerOnBuilding(UnitActor unitActor, Building building) {
+        for (Actor child : getChildren()) {
+            if (child instanceof BuildingActor) {
+            	BuildingActor ba = (BuildingActor)child;
+            	if (ba.building.equalsId(building)) {
+            		ba.putPayload(unitActor, -1, -1);
+            		break;
+            	}
+            }
+        }
+	}
     
 }

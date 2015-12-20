@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -45,8 +46,7 @@ public class Colony extends Settlement {
 	}
 
     public boolean canReducePopulation() {
-        // TODO: sprawdzenie ilosci ludzi i 
-        return true;
+    	return getColonyUnitsCount() > colonyBuildingsFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 
     }
     
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
@@ -121,12 +121,14 @@ public class Colony extends Settlement {
     }
 
     public void addWorkerToBuilding(Building building, Unit unit) {
+    	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
         building.workers.add(unit);
     }
     
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
+    	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
         destColonyTile.setWorker(unit);

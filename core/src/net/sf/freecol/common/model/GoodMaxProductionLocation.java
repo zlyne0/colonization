@@ -14,6 +14,7 @@ public class GoodMaxProductionLocation {
     
     private final GoodsType goodsType;
     private int production;
+    public Production tileTypeInitProduction;
     ColonyTile colonyTile;
     Building building;
 
@@ -71,4 +72,12 @@ public class GoodMaxProductionLocation {
     public int getProduction() {
         return production;
     }
+
+	public Building getBuilding() {
+		return building;
+	}
+
+	public ColonyTile getColonyTile() {
+		return colonyTile;
+	}
 }

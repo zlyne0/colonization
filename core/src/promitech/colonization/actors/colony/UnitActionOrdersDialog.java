@@ -9,6 +9,7 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
@@ -28,7 +29,9 @@ import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
@@ -38,8 +41,9 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 class UnitActionOrdersDialog extends Dialog {
 	
+	private static final long CREATE_CLOSE_TIMEOUT = 1000;
+	
     enum ActionTypes {
-        SHOW_ONLY_PRODUCTIONS,
         LIST_PRODUCTIONS,
         LIST_CHANGE_PRODUCTIONS,
         ASSIGN_TO_PRODUCTION,
@@ -54,14 +58,10 @@ class UnitActionOrdersDialog extends Dialog {
     
     class ActionMenuItem extends HorizontalGroup {
         protected boolean selected = false;
-        private ShapeRenderer shape;
         
         @Override
         public void draw(Batch batch, float parentAlpha) {
             if (selected) {
-                if (shape == null) {
-                    shape = new ShapeRenderer();
-                }
                 shape.setProjectionMatrix(batch.getProjectionMatrix());
                 shape.setTransformMatrix(batch.getTransformMatrix());
                 batch.end();
@@ -96,19 +96,21 @@ class UnitActionOrdersDialog extends Dialog {
         final ActionTypes actionType;
         
         UnitRole newRole; 
+        GoodMaxProductionLocation prodLocation;
 
         private UnitActionOrderItem(ActionTypes actionType) {
             pad(5);
             this.actionType = actionType;
         }
         
-		public UnitActionOrderItem(GoodMaxProductionLocation g, ActionTypes actionType) {
+		public UnitActionOrderItem(GoodMaxProductionLocation prodLocation, ActionTypes actionType) {
             this(actionType);
+            this.prodLocation = prodLocation;
             
-            Image image = goodsImage(g.getGoodsType().getId());
+            Image image = goodsImage(prodLocation.getGoodsType().getId());
             
-            StringTemplate t = StringTemplate.template(g.getGoodsType().getId() + ".workAs")
-                    .addAmount("%amount%", g.getProduction())
+            StringTemplate t = StringTemplate.template(prodLocation.getGoodsType().getId() + ".workAs")
+                    .addAmount("%amount%", prodLocation.getProduction())
                     .addName("%claim%", "");            
             String msg = Messages.message(t);
             
@@ -165,12 +167,19 @@ class UnitActionOrdersDialog extends Dialog {
         }
     }
     
+    private final long createTime;
+    private final GUIGameController gameController;
+    private final ShapeRenderer shape;
     private Table tableLayout;
     private ScrollPane verticalListScrollPane;
     private final Colony colony;
     private final Unit unit;
     private final UnitActor unitActor;
     private final OutsideUnitsPanel outsideUnitsPanel;
+	private final TerrainPanel terrainPanel;
+	private final BuildingsPanelActor buildingsPanelActor; 
+	
+	private EventListener unitActionOrdersDialogOnCloseListener;
     
     private DoubleClickedListener unitActionOrderItemClickedListener = new DoubleClickedListener() {
     	public void clicked(InputEvent event, float x, float y) {
@@ -190,22 +199,35 @@ class UnitActionOrdersDialog extends Dialog {
     	
     	public void doubleClicked(InputEvent event, float x, float y) {
     	    UnitActionOrderItem item = (UnitActionOrderItem)event.getListenerActor();
+    	    item.setUnselected();
     	    executeCommand(item);
     	};
     };
     
-    UnitActionOrdersDialog(Colony colony, UnitActor unitActor, OutsideUnitsPanel outsideUnitsPanel) {
+    UnitActionOrdersDialog(
+    		ShapeRenderer shape, Colony colony, UnitActor unitActor, 
+    		OutsideUnitsPanel outsideUnitsPanel, 
+    		TerrainPanel terrainPanel, 
+    		BuildingsPanelActor buildingsPanelActor, 
+    		GUIGameController gameController
+    ) {
         super("", GameResources.instance.getUiSkin());
+        this.createTime = System.currentTimeMillis();
+        this.gameController = gameController;
         this.colony = colony;
         this.unit = unitActor.unit;
         this.unitActor = unitActor;
+        this.terrainPanel = terrainPanel;
+        this.buildingsPanelActor = buildingsPanelActor;
         
+        this.shape = shape;
         this.outsideUnitsPanel = outsideUnitsPanel;
         
         createComponents();
 
-        addCommandItem(new UnitActionOrderItem("model.unit.workingAs", ActionTypes.LIST_PRODUCTIONS));
-        
+        if (unit.isPerson()) {
+        	addCommandItem(new UnitActionOrderItem("model.unit.workingAs", ActionTypes.LIST_PRODUCTIONS));
+        }
         if (colony.isUnitInColony(unit)) {
         	if (colony.isUnitOnTerrain(unit)) {
         		addCommandItem(new UnitActionOrderItem("model.unit.changeWork", ActionTypes.LIST_CHANGE_PRODUCTIONS));
@@ -237,7 +259,6 @@ class UnitActionOrdersDialog extends Dialog {
     		productionOrders();
     		this.invalidateHierarchy();
     		this.pack();
-    		
     		return;
     	}
     	if (ActionTypes.LIST_CHANGE_PRODUCTIONS.equals(item.actionType)) {
@@ -245,7 +266,6 @@ class UnitActionOrdersDialog extends Dialog {
     		terrainProductionOrders();
     		this.invalidateHierarchy();
     		this.pack();
-    		
     		return;
     	}
 		
@@ -261,7 +281,35 @@ class UnitActionOrdersDialog extends Dialog {
     		unitActor.updateTexture();
     		outsideUnitsPanel.putPayload(unitActor, -1, -1);
     	}
-    	hide();
+    	if (ActionTypes.FORTIFY.equals(item.actionType)) {
+    		unit.setState(UnitState.FORTIFYING);
+    	}
+    	if (ActionTypes.CLEAR_ORDERS.equals(item.actionType)) {
+    		unit.setState(UnitState.ACTIVE);
+    	}
+    	if (ActionTypes.SENTRY.equals(item.actionType)) {
+    		unit.setState(UnitState.SENTRY);
+    	}
+    	if (ActionTypes.ACTIVATE.equals(item.actionType)) {
+    		gameController.closeColonyViewAndActiveUnit(colony, unit);
+    	}
+    	if (ActionTypes.ASSIGN_TO_PRODUCTION.equals(item.actionType)) {
+    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+    		source.takePayload(unitActor, -1, -1);
+    		
+    		// from any location to building
+    		if (item.prodLocation.getBuilding() != null) {
+    			buildingsPanelActor.putWorkerOnBuilding(unitActor, item.prodLocation.getBuilding());
+    		}
+    		if (item.prodLocation.getColonyTile() != null) {
+    			terrainPanel.putWorkerOnTerrain(unitActor, item.prodLocation.getColonyTile());
+    		}
+    	}
+    	if (ActionTypes.CHANGE_TERRAIN_PRODUCTION.equals(item.actionType)) {
+    		// from terrain location to terrain location but diffrent goods type
+    		terrainPanel.changeWorkerProduction(unitActor, item.prodLocation);
+    	}
+    	hideWithoutFade();
 	}
     
 	private void createComponents() {
@@ -282,17 +330,17 @@ class UnitActionOrdersDialog extends Dialog {
         cancelButton.addListener(new ChangeListener() {
             @Override
             public void changed(ChangeEvent event, Actor actor) {
-                hide();
+                hideWithFade();
             }
         });
         getButtonTable().add(cancelButton);
         addListener(new InputListener() {
             public boolean keyDown (InputEvent event, int keycode2) {
                 if (Keys.ENTER == keycode2) {
-                    hide();
+                	hideWithFade();
                 }
                 if (Keys.ESCAPE == keycode2) {
-                    hide();
+                	hideWithFade();
                 }
                 return false;
             }
@@ -301,9 +349,14 @@ class UnitActionOrdersDialog extends Dialog {
 
     private void addCommands() {
         addCommandItem(new UnitActionOrderItem("activateUnit", ActionTypes.ACTIVATE));
-		addCommandItem(new UnitActionOrderItem("fortifyUnit", ActionTypes.FORTIFY));
+        if (unit.canChangeState(UnitState.FORTIFYING)) {
+        	addCommandItem(new UnitActionOrderItem("fortifyUnit", ActionTypes.FORTIFY));
+        }
 		addCommandItem(new UnitActionOrderItem("clearUnitOrders", ActionTypes.CLEAR_ORDERS));
-		addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
+		
+		if (unit.canChangeState(UnitState.SENTRY)) {
+			addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
+		}
     }
     
     private void addEquippedRoles() {
@@ -362,4 +415,38 @@ class UnitActionOrdersDialog extends Dialog {
     	item.addListener(unitActionOrderItemClickedListener);
     	tableLayout.add(item).fillX().spaceTop(5).row();
     }
+
+    void hideWithFade() {
+    	hide();
+    	if (unitActionOrdersDialogOnCloseListener != null) {
+    		unitActionOrdersDialogOnCloseListener.handle(null);
+    	}
+    }
+    
+    void hideWithoutFade() {
+    	hide(null);
+    	if (unitActionOrdersDialogOnCloseListener != null) {
+    		unitActionOrdersDialogOnCloseListener.handle(null);
+    	}
+    }
+    
+	public void addOnCloseEvent(EventListener unitActionOrdersDialogOnCloseListener) {
+		this.unitActionOrdersDialogOnCloseListener = unitActionOrdersDialogOnCloseListener;
+	}
+	
+	public boolean containsCords(float x, float y) {
+		return 
+				getX() <= x && 
+				getY() <= y && 
+				x <= getX() + getWidth() && 
+				y <= getY() + getHeight();
+	}
+
+	public void clickOnDialogStage(InputEvent event, float x, float y) {
+		if (!containsCords(x, y)) {
+			if (System.currentTimeMillis() - createTime > CREATE_CLOSE_TIMEOUT) {
+				hideWithFade();
+			}
+		}
+	}
 }

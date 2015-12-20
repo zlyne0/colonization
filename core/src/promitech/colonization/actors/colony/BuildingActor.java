@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;

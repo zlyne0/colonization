@@ -2,6 +2,8 @@ package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -36,6 +38,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
+	private UnitActionOrdersDialog unitActionOrdersDialog;
+
+    private Colony colony;
+    private Tile colonyTile;
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
         @Override
@@ -68,14 +74,29 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     static boolean isShiftPressed() {
     	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
     }
+
+    private ClickListener stageClickListener = new ClickListener() {
+    	public void clicked(InputEvent event, float x, float y) {
+    		if (unitActionOrdersDialog != null) {
+    			unitActionOrdersDialog.clickOnDialogStage(event, x, y);
+    		}
+    	}
+    };
     
-    private Colony colony;
-    private Tile colonyTile;
+    private EventListener unitActionOrdersDialogOnCloseListener = new EventListener() {
+		@Override
+		public boolean handle(Event event) {
+			unitActionOrdersDialog = null;
+			return true;
+		}
+	}; 
     
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
+    	stage.addListener(stageClickListener);
+        
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
         unitsDragAndDrop.setTapSquareSize(3);
@@ -94,7 +115,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		closeButton.addListener(new InputListener() {
         	@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-        		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
+        		gameController.closeColonyView(colony);
         		return true;
         	}
         });
@@ -187,8 +208,13 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
-        UnitActionOrdersDialog unitActionOrdersDialog = new UnitActionOrdersDialog(colony, unitActor, outsideUnitsPanel);
+        unitActionOrdersDialog = new UnitActionOrdersDialog(
+        		shape, colony, unitActor, 
+        		outsideUnitsPanel, terrainPanel, buildingsPanelActor,
+        		gameController
+        );
         unitActionOrdersDialog.show(stage);
+        unitActionOrdersDialog.addOnCloseEvent(unitActionOrdersDialogOnCloseListener);
     }
     
 	@Override
