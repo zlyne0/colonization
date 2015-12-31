@@ -32,7 +32,7 @@ public class SaveGameParserTest {
     @Test
     public void canLoadSaveGame() throws Exception {
         // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
+        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
         
         // when
         Game game = saveGameParser.parse();
@@ -155,6 +155,13 @@ public class SaveGameParserTest {
         assertEquals(100, reqGoods2.amount);
         
         assertEquals(0, fortBuildingType.productionInfo.size());
+        
+        
+        {
+        	BuildingType furFactory = specification.buildingTypes.getById("model.building.furFactory");
+        	assertEquals(1, furFactory.requiredAbilities.size());
+        	assertTrue(furFactory.hasRequiredAbility("model.ability.buildFactory", true));
+        }
     }
 
     private void verifySettlementsGoods(Game game) {
