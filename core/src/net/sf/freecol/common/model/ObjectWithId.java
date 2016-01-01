@@ -29,7 +29,7 @@ public abstract class ObjectWithId implements Identifiable {
 	}
 	
 	public boolean equalsId(ObjectWithId obj) {
-		return id.equals(obj.id);
+		return obj != null && id.equals(obj.id);
 	}
 
     public boolean notEqualsId(ObjectWithId obj) {

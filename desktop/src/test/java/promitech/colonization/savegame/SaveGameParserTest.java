@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
@@ -93,9 +94,15 @@ public class SaveGameParserTest {
         verifySpecificationOptionGroup(specification);
         verifySpecificationGameDifficultyOptions(specification);
         verifySpecificationUnitRoles(specification);
+        verifySpecificationUnitTypes(specification);
     }
 
-    private void verifySpecificationUnitRoles(Specification specification) {
+    private void verifySpecificationUnitTypes(Specification specification) {
+    	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
+    	assertEquals(1, unitType.requiredAbilities.size());
+	}
+
+	private void verifySpecificationUnitRoles(Specification specification) {
         UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());

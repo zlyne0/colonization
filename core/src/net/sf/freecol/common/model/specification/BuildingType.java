@@ -26,8 +26,10 @@ public class BuildingType extends ObjectWithFeatures {
     
     int level = 1;
     int workplaces = 3;
-    String upgradesFromId;
-    String upgradesToId;
+    private String upgradesFromId;
+    private String upgradesToId;
+    private BuildingType upgradesFrom;
+    
     int minSkill = UNDEFINED;
     int maxSkill = INFINITY;
     private int upkeep = 0;
@@ -55,10 +57,36 @@ public class BuildingType extends ObjectWithFeatures {
             : UnitContainer.NoAddReason.NONE;
     }
 
+    public boolean isTheSameRoot(BuildingType bt) {
+    	BuildingType thisRoot = this.rootType();
+    	BuildingType btRoot = bt.rootType();
+    	return thisRoot.equalsId(btRoot);
+    }
+    
+    public BuildingType rootType() {
+    	BuildingType root = this;
+    	while (root.upgradesFrom != null) {
+    		root = root.upgradesFrom;
+    	}
+    	return root;
+    }
+
+	public boolean isRoot() {
+		return upgradesFrom == null;
+	}
+    
+	public boolean canUpgradeTo(BuildingType buildingType) {
+		return this.equalsId(buildingType.upgradesFrom); 
+	}
+    
 	public int getWorkplaces() {
 		return workplaces;
 	}
-    
+
+	public int getRequiredPopulation() {
+		return requiredPopulation;
+	}
+
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	addNode(Production.class, new ObjectFromNodeSetter<BuildingType, Production>() {
@@ -91,6 +119,7 @@ public class BuildingType extends ObjectWithFeatures {
                 bt.level = 1;
             } else {
                 upgradesFrom.upgradesToId = bt.id;
+                bt.upgradesFrom = upgradesFrom;
                 bt.level = upgradesFrom.level + 1;
             }
             
@@ -111,6 +140,14 @@ public class BuildingType extends ObjectWithFeatures {
         }
         
         @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+			if (attr.isQNameEquals("required-ability")) {
+			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
+			    ((BuildingType)nodeObject).requiredAbilities.add(a);
+			}
+        }
+        
+        @Override
         public String getTagName() {
             return tagName();
         }
@@ -119,5 +156,4 @@ public class BuildingType extends ObjectWithFeatures {
             return "building-type";
         }
     }
-
 }

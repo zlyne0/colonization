@@ -76,6 +76,11 @@ public class MapIdEntities<T extends Identifiable> {
     	return entities.values();
     }
     
+    public void removeId(String id) {
+    	entities.remove(id);
+    	sortedEntities = null;
+    }
+    
     public void removeId(Identifiable element) {
     	entities.remove(element.getId());
     	sortedEntities = null;

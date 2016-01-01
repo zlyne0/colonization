@@ -8,6 +8,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class UnitType extends ObjectWithFeatures {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
+	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -172,6 +173,14 @@ public class UnitType extends ObjectWithFeatures {
             nodeObject = ut;
         }
 
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+			if (attr.isQNameEquals("required-ability")) {
+			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
+			    ((UnitType)nodeObject).requiredAbilities.add(a);
+			}
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

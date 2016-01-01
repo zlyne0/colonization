@@ -163,7 +163,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		textButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("touchUp");
+				BuildingQueueWindow buildingQueueWindow = new BuildingQueueWindow(colony);
+				buildingQueueWindow.show(stage);
 			}
 		});
 		return textButton;

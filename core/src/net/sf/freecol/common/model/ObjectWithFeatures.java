@@ -25,6 +25,7 @@ public class ObjectWithFeatures extends ObjectWithId {
     
     private java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
     private java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
+	public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
     
 	public ObjectWithFeatures(String id) {
 		super(id);
@@ -60,19 +61,69 @@ public class ObjectWithFeatures extends ObjectWithId {
 	    list.add(obj);
 	}
 	
-    public boolean hasAbility(String code) {
-        List<Ability> list = abilities.get(code);
+    public boolean hasAbility(String abilityCode) {
+    	return hasAbility(abilityCode, true);
+    }
+
+	public boolean hasAbility(String abilityCode, boolean value) {
+        List<Ability> list = abilities.get(abilityCode);
         if (list == null || list.isEmpty()) {
             return false;
         }
-        for (Ability a : list) {
-            if (a.isValue()) {
-                return true;
-            }
+        for (int i=0; i<list.size(); i++) {
+        	Ability a = list.get(i);
+        	if (a.isValueEquals(value)) {
+        		return true;
+        	}
         }
         return false;
-    }
+	}
     
+	public boolean hasAbility(Ability ability) {
+		List<Ability> list = abilities.get(ability.getId());
+        if (list == null || list.isEmpty()) {
+            return false;
+        }
+        for (int i=0; i<list.size(); i++) {
+        	Ability a = list.get(i);
+        	if (a.isValueEquals(ability)) {
+        		return true;
+        	}
+        }
+        return false;
+	}
+	
+	public boolean canApplyAbilityToObject(String abilityCode, ObjectWithFeatures obj) {
+        List<Ability> list = abilities.get(abilityCode);
+        if (list == null || list.isEmpty()) {
+            return false;
+        }
+        for (int i=0; i<list.size(); i++) {
+        	Ability a = list.get(i);
+        	if (a.canApplyTo(obj)) {
+        		return true;
+        	}
+        }
+        return false;
+	}
+	
+	public boolean hasRequiredAbility(String reqAbilityCode, boolean reqValue) {
+		Ability ability = requiredAbilities.getByIdOrNull(reqAbilityCode);
+		if (ability == null) {
+			return false;
+		}
+		return ability.isValueEquals(reqValue);
+	}
+
+	public boolean hasAbilitiesRequiredFrom(ObjectWithFeatures requiredAbilities) {
+		for (Ability reqAbility : requiredAbilities.requiredAbilities.entities()) {
+			if (!hasAbility(reqAbility)) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
     public boolean hasModifier(String code) {
         List<Modifier> list = modifiers.get(code);
         return list != null && !list.isEmpty();
@@ -83,8 +134,9 @@ public class ObjectWithFeatures extends ObjectWithId {
         if (list == null || list.isEmpty()) {
             return base;
         }
-        for (Modifier m : list) {
-            base = m.apply(base);
+        for (int i=0; i<list.size(); i++) {
+        	Modifier m = list.get(i);
+        	base = m.apply(base);
         }
 		return base;
     }

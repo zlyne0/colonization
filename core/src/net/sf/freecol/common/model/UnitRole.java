@@ -19,7 +19,6 @@ public class UnitRole extends ObjectWithFeatures {
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
 	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
-	public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
 	private String downgradeRoleId;
 	
 	public UnitRole(String id) {
@@ -55,7 +54,7 @@ public class UnitRole extends ObjectWithFeatures {
     	if (requiredAbilities != null) {
     		for (Ability aa : requiredAbilities.entities()) {
     		    boolean found = features.hasAbility(aa.getId());
-    		    if (aa.isValue() != found) {
+    		    if (aa.isValueNotEquals(found)) {
     		        return false;
     		    }
     		}

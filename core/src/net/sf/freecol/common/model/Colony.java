@@ -1,14 +1,17 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -18,8 +21,9 @@ public class Colony extends Settlement {
     GoodsContainer goodsContainer;
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
+    public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
     
-    final ObjectWithFeatures colonyBuildingsFeatures;
+    final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
     final List<Unit> colonyWorkers = new ArrayList<Unit>();
@@ -37,7 +41,7 @@ public class Colony extends Settlement {
     
     public Colony(String id) {
     	this.id = id;
-    	colonyBuildingsFeatures = new ObjectWithFeatures("tmp" + id);
+    	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
     }
     
@@ -46,7 +50,7 @@ public class Colony extends Settlement {
 	}
 
     public boolean canReducePopulation() {
-    	return getColonyUnitsCount() > colonyBuildingsFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 
+    	return getColonyUnitsCount() > colonyUpdatableFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 
     }
     
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
@@ -92,10 +96,10 @@ public class Colony extends Settlement {
     	updateProductionBonus();
     }
     
-    private void updateColonyFeatures() {
-    	colonyBuildingsFeatures.clear();
+    public void updateColonyFeatures() {
+    	colonyUpdatableFeatures.clear();
     	for (Building b : buildings.entities()) {
-    		colonyBuildingsFeatures.addFeatures(b.buildingType);
+    		colonyUpdatableFeatures.addFeatures(b.buildingType);
     	}
     }
     
@@ -154,7 +158,7 @@ public class Colony extends Settlement {
     }
 
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
-    	if (!newUnitRole.isAvailableTo(unit)) {
+    	if (!newUnitRole.isAvailableTo(unit.unitType)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
     	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);
@@ -190,7 +194,7 @@ public class Colony extends Settlement {
 	}
 
     public int getWarehouseCapacity() {
-    	return (int)colonyBuildingsFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+    	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
 
     public int sonsOfLiberty() {
@@ -359,11 +363,116 @@ public class Colony extends Settlement {
             if (foundTileForColonyTile == false) {
                 throw new IllegalStateException("can not find Tile for ColonyTile: " + ct);
             }
+            
+        	if (ct.tile.type.isWater()) {
+        		coastland = true;
+        	}
         }
+    }
+    
+    public List<BuildingType> buildableBuildings() {
+    	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
+    	
+    	System.out.println("Building queue generation");
+    	
+    	List<BuildingType> buildable = new ArrayList<BuildingType>();
+    	
+    	for (BuildingType bt : buildingsTypes) {
+    		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(bt)) {
+    			System.out.println("" + bt + ": colony do not have required ability");
+    			continue;
+    		}
+    		if (isOnBuildingQueue(bt)) {
+    			System.out.println("" + bt + " already on building queue list");
+    			continue;
+    		}
+    		if (isBuildingAlreadyBuilt(bt)) {
+    			System.out.println("" + bt + " has already built");
+    			continue;
+    		}
+    		if (!isBuildingCanBeBuiltBecauseOfLevel(bt)) {
+    			System.out.println("" + bt + " build level not accessible");
+    			continue;
+    		}
+    		if (bt.hasAbility(Ability.COASTAL_ONLY) && !isCoastland()) {
+    			System.out.println("" + bt + " can be built only on coastland");
+    			continue;
+    		}
+    		if (bt.getRequiredPopulation() > getColonyUnitsCount()) {
+    			System.out.println("" + bt + " required more colony units");
+    			continue;
+    		}
+    		buildable.add(bt);
+    	}
+    	
+    	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
+    	List<UnitType> buildableUnits = new ArrayList<UnitType>();
+    	for (UnitType unitType : unitTypes) {
+    		if (unitType.getId().equals("model.unit.flyingDutchman")) {
+    			System.getProperties();
+    		}
+    		if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, unitType)) {
+    			System.out.println("" + unitType + " can not be built because of buildable ability");
+    			continue;
+    		}
+    		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(unitType)) {
+    			System.out.println("" + unitType + " can not be built because of required abilities");
+    			continue;
+    		}
+    		if (UnitType.WAGON_TRAIN.equals(unitType.getId())) {
+    			if (owner.unitTypeCount(unitType) >= owner.settlements.size()) {
+    				continue;
+    			}
+    		}
+    		buildableUnits.add(unitType);
+    	}
+    	
+    	for (UnitType unitType : buildableUnits) {
+    		System.out.println("can build unit : " + unitType);
+    	}
+    	return buildable;
+    }
+    
+    public boolean isBuildingCanBeBuiltBecauseOfLevel(BuildingType buildingType) {
+    	for (Building building : buildings.entities()) {
+    		if (building.buildingType.isTheSameRoot(buildingType)) {
+    			if (building.buildingType.canUpgradeTo(buildingType)) {
+    				return true;
+    			} else {
+    				return false;
+    			}
+    		}
+    	}
+    	// does not find building
+    	return buildingType.isRoot();
+    }
+    
+    public boolean isBuildingAlreadyBuilt(BuildingType buildingType) {
+    	for (Building building : buildings.entities()) {
+    		if (building.buildingType.equalsId(buildingType)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    private boolean isOnBuildingQueue(BuildingType buildingType) {
+    	for (ColonyBuildingQueueItem item : buildingQueue) {
+    		if (buildingType.equalsId(item.getId())) {
+    			return true;
+    		}
+    	}
+    	return false;
     }
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
+        	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
+				@Override
+				public void set(Colony target, ColonyBuildingQueueItem entity) {
+					target.buildingQueue.add(entity);
+				}
+			});
             addNode(GoodsContainer.class, "goodsContainer");
             addNodeForMapIdEntities("buildings", Building.class);
             addNodeForMapIdEntities("colonyTiles", ColonyTile.class);

@@ -71,8 +71,8 @@ class ColonyProduction {
 
         for (Building building : colony.buildings.entities()) {
         	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus());
-            pc.baseProduction.applyModifiers(colony.colonyBuildingsFeatures);
-            pc.realProduction.applyModifiers(colony.colonyBuildingsFeatures);
+            pc.baseProduction.applyModifiers(colony.colonyUpdatableFeatures);
+            pc.realProduction.applyModifiers(colony.colonyUpdatableFeatures);
         	
         	prodConsByProducer.put(building.getId(), pc);
         	
@@ -193,7 +193,7 @@ class ColonyProduction {
 	                int goodQuantity = 0;
 	                
                     goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-                    goodQuantity = (int)colony.colonyBuildingsFeatures.applyModifier(goodsId, goodQuantity);
+                    goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
                     goodQuantity += colony.productionBonus();
 	         
                     for (String cg : consumptionGoods) {

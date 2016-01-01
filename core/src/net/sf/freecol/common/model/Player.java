@@ -203,6 +203,16 @@ public class Player extends ObjectWithFeatures {
         return europe;
     }
 	
+    public int unitTypeCount(UnitType unitType) {
+    	int counter = 0;
+    	for (Unit unit : units.entities()) {
+    		if (unit.unitType.equalsId(unitType)) {
+    			counter++;
+    		}
+    	}
+    	return counter;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

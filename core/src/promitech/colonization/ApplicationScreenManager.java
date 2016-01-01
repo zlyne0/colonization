@@ -15,8 +15,10 @@ import com.badlogic.gdx.graphics.g2d.SpriteBatch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.BufferUtils;
 
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
@@ -90,6 +92,28 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             Settlement settlement = tile.getSettlement();
             if (settlement.isColony()) {
                 Colony colony = settlement.getColony();
+
+                // start additional building
+                {
+                	Building building = new Building("building:-2");
+                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.shipyard");
+                	colony.buildings.add(building);
+                }
+//                {
+//                	Building building = new Building("building:-" + colony.buildings.size());
+//                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.armory");
+//                	colony.buildings.add(building);
+//                }
+                {
+                	Building building = new Building("building:-1");
+                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.tobacconistShop");
+                	colony.buildings.add(building);
+                	colony.buildings.removeId("building:6542");
+                }
+                
+                colony.updateColonyFeatures();
+                // end additional building
+                
                 ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
                 colonyScreen.initColony(colony, tile);
             }

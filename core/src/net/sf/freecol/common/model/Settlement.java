@@ -6,6 +6,7 @@ public abstract class Settlement implements Identifiable {
     public SettlementType settlementType;
     protected Player owner;
     public Tile tile;
+    protected boolean coastland = false;
     
     protected MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
     
@@ -23,6 +24,10 @@ public abstract class Settlement implements Identifiable {
 		return owner;
 	}
 
+    public boolean isCoastland() {
+    	return coastland;
+    }
+	
 	public abstract boolean isColony();
 
 	public Colony getColony() {
