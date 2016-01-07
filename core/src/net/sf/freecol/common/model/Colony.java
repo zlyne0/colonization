@@ -370,13 +370,17 @@ public class Colony extends Settlement {
         }
     }
     
-    public List<BuildingType> buildableBuildings() {
+    public void addItemToBuildingQueue(ColonyBuildingQueueItem item) {
+    	buildingQueue.add(item);
+    }
+    
+	public void initBuildingQueue(List<ColonyBuildingQueueItem> items) {
+		buildingQueue.clear();
+		buildingQueue.addAll(items);
+	}
+
+    public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
-    	
-    	System.out.println("Building queue generation");
-    	
-    	List<BuildingType> buildable = new ArrayList<BuildingType>();
-    	
     	for (BuildingType bt : buildingsTypes) {
     		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(bt)) {
     			System.out.println("" + bt + ": colony do not have required ability");
@@ -402,11 +406,12 @@ public class Colony extends Settlement {
     			System.out.println("" + bt + " required more colony units");
     			continue;
     		}
-    		buildable.add(bt);
+    		items.add(new ColonyBuildingQueueItem(bt));
     	}
-    	
+    }
+    
+    public void buildableUnits(List<ColonyBuildingQueueItem> items) {
     	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
-    	List<UnitType> buildableUnits = new ArrayList<UnitType>();
     	for (UnitType unitType : unitTypes) {
     		if (unitType.getId().equals("model.unit.flyingDutchman")) {
     			System.getProperties();
@@ -424,13 +429,8 @@ public class Colony extends Settlement {
     				continue;
     			}
     		}
-    		buildableUnits.add(unitType);
+    		items.add(new ColonyBuildingQueueItem(unitType));
     	}
-    	
-    	for (UnitType unitType : buildableUnits) {
-    		System.out.println("can build unit : " + unitType);
-    	}
-    	return buildable;
     }
     
     public boolean isBuildingCanBeBuiltBecauseOfLevel(BuildingType buildingType) {

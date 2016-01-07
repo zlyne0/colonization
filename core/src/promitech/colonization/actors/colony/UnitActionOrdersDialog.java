@@ -35,13 +35,13 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.ClosableDialogAdapter;
+import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class UnitActionOrdersDialog extends Dialog {
-	
-	private static final long CREATE_CLOSE_TIMEOUT = 1000;
+class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
 	
     enum ActionTypes {
         LIST_PRODUCTIONS,
@@ -167,7 +167,7 @@ class UnitActionOrdersDialog extends Dialog {
         }
     }
     
-    private final long createTime;
+	private final ClosableDialogAdapter closableDialogAdapter = new ClosableDialogAdapter();
     private final GUIGameController gameController;
     private final ShapeRenderer shape;
     private Table tableLayout;
@@ -179,8 +179,6 @@ class UnitActionOrdersDialog extends Dialog {
 	private final TerrainPanel terrainPanel;
 	private final BuildingsPanelActor buildingsPanelActor; 
 	
-	private EventListener unitActionOrdersDialogOnCloseListener;
-    
     private DoubleClickedListener unitActionOrderItemClickedListener = new DoubleClickedListener() {
     	public void clicked(InputEvent event, float x, float y) {
     		super.clicked(event, x, y);
@@ -212,7 +210,6 @@ class UnitActionOrdersDialog extends Dialog {
     		GUIGameController gameController
     ) {
         super("", GameResources.instance.getUiSkin());
-        this.createTime = System.currentTimeMillis();
         this.gameController = gameController;
         this.colony = colony;
         this.unit = unitActor.unit;
@@ -418,35 +415,21 @@ class UnitActionOrdersDialog extends Dialog {
 
     void hideWithFade() {
     	hide();
-    	if (unitActionOrdersDialogOnCloseListener != null) {
-    		unitActionOrdersDialogOnCloseListener.handle(null);
-    	}
+    	closableDialogAdapter.executeCloseListener();
     }
     
     void hideWithoutFade() {
     	hide(null);
-    	if (unitActionOrdersDialogOnCloseListener != null) {
-    		unitActionOrdersDialogOnCloseListener.handle(null);
-    	}
+    	closableDialogAdapter.executeCloseListener();
     }
     
-	public void addOnCloseEvent(EventListener unitActionOrdersDialogOnCloseListener) {
-		this.unitActionOrdersDialogOnCloseListener = unitActionOrdersDialogOnCloseListener;
-	}
-	
-	public boolean containsCords(float x, float y) {
-		return 
-				getX() <= x && 
-				getY() <= y && 
-				x <= getX() + getWidth() && 
-				y <= getY() + getHeight();
+	public void addOnCloseEvent(EventListener closeListener) {
+		closableDialogAdapter.addCloseListener(closeListener);
 	}
 
 	public void clickOnDialogStage(InputEvent event, float x, float y) {
-		if (!containsCords(x, y)) {
-			if (System.currentTimeMillis() - createTime > CREATE_CLOSE_TIMEOUT) {
-				hideWithFade();
-			}
+		if (closableDialogAdapter.canCloseBecauseClickOutsideDialog(this, x, y)) {
+			hideWithFade();
 		}
 	}
 }

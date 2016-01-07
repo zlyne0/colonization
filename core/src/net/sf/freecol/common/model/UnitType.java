@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -15,6 +16,7 @@ public class UnitType extends ObjectWithFeatures {
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
+    public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     
@@ -150,6 +152,7 @@ public class UnitType extends ObjectWithFeatures {
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
             addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
+            addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
 
         @Override

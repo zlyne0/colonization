@@ -22,6 +22,7 @@ import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.resources.Messages;
@@ -38,7 +39,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
-	private UnitActionOrdersDialog unitActionOrdersDialog;
+	private CloseableDialog closableDialog;
 
     private Colony colony;
     private Tile colonyTile;
@@ -77,16 +78,16 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 
     private ClickListener stageClickListener = new ClickListener() {
     	public void clicked(InputEvent event, float x, float y) {
-    		if (unitActionOrdersDialog != null) {
-    			unitActionOrdersDialog.clickOnDialogStage(event, x, y);
+    		if (closableDialog != null) {
+    			closableDialog.clickOnDialogStage(event, x, y);
     		}
     	}
     };
     
-    private EventListener unitActionOrdersDialogOnCloseListener = new EventListener() {
+    private EventListener onCloseDialogListener = new EventListener() {
 		@Override
 		public boolean handle(Event event) {
-			unitActionOrdersDialog = null;
+			closableDialog = null;
 			return true;
 		}
 	}; 
@@ -163,8 +164,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		textButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				BuildingQueueWindow buildingQueueWindow = new BuildingQueueWindow(colony);
-				buildingQueueWindow.show(stage);
+				closableDialog = new BuildingQueueDialog(shape, colony);
+				closableDialog.addOnCloseEvent(onCloseDialogListener);
+				closableDialog.show(stage);
 			}
 		});
 		return textButton;
@@ -209,13 +211,13 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
-        unitActionOrdersDialog = new UnitActionOrdersDialog(
+    	closableDialog = new UnitActionOrdersDialog(
         		shape, colony, unitActor, 
         		outsideUnitsPanel, terrainPanel, buildingsPanelActor,
         		gameController
         );
-        unitActionOrdersDialog.show(stage);
-        unitActionOrdersDialog.addOnCloseEvent(unitActionOrdersDialogOnCloseListener);
+    	closableDialog.addOnCloseEvent(onCloseDialogListener);
+    	closableDialog.show(stage);
     }
     
 	@Override
