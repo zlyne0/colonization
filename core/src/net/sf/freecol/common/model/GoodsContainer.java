@@ -16,6 +16,10 @@ public class GoodsContainer extends ObjectWithId {
         super(id);
     }
 
+	public int goodsAmount(String id) {
+        return goods.getQuantity(id);
+	}
+    
     public int goodsAmount(GoodsType type) {
         return goods.getQuantity(type.id);
     }

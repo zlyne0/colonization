@@ -379,6 +379,13 @@ public class Colony extends Settlement {
 		buildingQueue.addAll(items);
 	}
 
+	public ColonyBuildingQueueItem getFirstBuildableItem() {
+		if (buildingQueue.isEmpty()) {
+			return null;
+		}
+		return buildingQueue.get(0);
+	}
+
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
