@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.player.Player;
+
 public abstract class Settlement implements Identifiable {
 	protected String id;
     protected String name;

@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -9,7 +10,7 @@ public class IndianSettlement extends Settlement {
     protected Unit missionary = null;
     
     public String getImageKey() {
-    	String st = owner.getNation().getId();
+    	String st = owner.nation().getId();
     	
     	if (settlementType.isCapital()) {
     		st += ".capital";
@@ -43,7 +44,7 @@ public class IndianSettlement extends Settlement {
             is.name = attr.getStrAttribute("name");
             Player owner = game.players.getById(attr.getStrAttribute("owner"));
             is.owner = owner;
-            is.settlementType = owner.nationType.settlementTypes.getById(attr.getStrAttribute("settlementType"));
+            is.settlementType = owner.nationType().settlementTypes.getById(attr.getStrAttribute("settlementType"));
             
             owner.settlements.add(is);
             

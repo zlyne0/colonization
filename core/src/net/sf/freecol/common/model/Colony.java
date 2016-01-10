@@ -8,6 +8,7 @@ import java.util.List;
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
@@ -498,7 +499,7 @@ public class Colony extends Settlement {
             colony.liberty = attr.getIntAttribute("liberty", 0);
             colony.tileId = attr.getStrAttribute("tile");
             colony.owner = owner;
-            colony.settlementType = owner.nationType.settlementTypes.getById(strAttribute);
+            colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);
             
             nodeObject = colony;

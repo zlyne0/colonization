@@ -6,13 +6,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.SpiralIterator;

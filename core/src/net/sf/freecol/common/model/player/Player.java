@@ -1,7 +1,20 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.player;
 
 import java.util.HashMap;
 
+import net.sf.freecol.common.model.Ability;
+import net.sf.freecol.common.model.Europe;
+import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Modifier;
+import net.sf.freecol.common.model.Nation;
+import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Stance;
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -61,12 +74,12 @@ public class Player extends ObjectWithFeatures {
         NATIVE, COLONIAL, REBEL, INDEPENDENT, ROYAL, UNDEAD, RETIRED
     }
 	
-    Nation nation;
-    NationType nationType;
+    private Nation nation;
+    private NationType nationType;
     private PlayerType playerType;
     private Europe europe;
-    public MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    public MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+    public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     
     private BooleanMap fogOfWar;
     private BooleanMap exploredTiles;
@@ -77,9 +90,13 @@ public class Player extends ObjectWithFeatures {
     	super(id);
     }
     
-    public Nation getNation() {
+    public Nation nation() {
     	return nation;
     }
+    
+	public NationType nationType() {
+		return nationType;
+	}
     
     public String toString() {
         return "id = " + id + ", nation = " + nation;

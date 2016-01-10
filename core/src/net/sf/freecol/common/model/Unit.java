@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
@@ -66,7 +67,7 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     public String resourceImageKey() {
-    	if (!owner.nationType.isEuropean()) {
+    	if (!owner.nationType().isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
     			return unitType.getId() + "." + unitRole.getRoleSuffix() + ".native.image";
     		}
@@ -196,7 +197,7 @@ public class Unit extends ObjectWithId implements Location {
     }
 
     public boolean isTradingUnit() {
-        return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType.isEuropean();
+        return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType().isEuropean();
     }
     
     public final Object getTradeRoute() {
@@ -319,7 +320,7 @@ public class Unit extends ObjectWithId implements Location {
                     } else {
                         return (allowMoveFrom(from)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_MARINE;
                     }
-                } else if (target.hasLostCityRumour() && owner.nationType.isEuropean()) {
+                } else if (target.hasLostCityRumour() && owner.nationType().isEuropean()) {
                     // Natives do not explore rumours, see:
                     // server/control/InGameInputHandler.java:move()
                     return MoveType.EXPLORE_LOST_CITY_RUMOUR;

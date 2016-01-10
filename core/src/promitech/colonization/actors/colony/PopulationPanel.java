@@ -87,7 +87,7 @@ public class PopulationPanel extends HorizontalGroup {
         royalistsLabel.setText(Messages.message(t));
         royalistsPercentageLabel.setText(Integer.toString(royalistsPercenage) + "%");
         
-        Nation nation = colony.getOwner().getNation();
+        Nation nation = colony.getOwner().nation();
         setCoatOfArmsActor(nationImage, nation);
         
         Nation otherNation = null;

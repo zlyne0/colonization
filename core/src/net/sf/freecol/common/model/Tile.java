@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import java.util.Collection;
 import java.util.Collections;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
