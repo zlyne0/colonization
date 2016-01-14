@@ -8,9 +8,11 @@ import java.util.List;
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -473,6 +475,22 @@ public class Colony extends Settlement {
     	return false;
     }
     
+	public int getPriceForBuilding(ColonyBuildingQueueItem firstBuildableItem) {
+		List<RequiredGoods> requiredGoods = firstBuildableItem.requiredGoods();
+		
+		Market market = owner.market();
+		
+		int sum = 0;
+		for (RequiredGoods rg : requiredGoods) {
+			int warehouseGoodsAmount = goodsContainer.goodsAmount(rg.getId());
+			if (rg.amount > warehouseGoodsAmount) {
+				int requireGoods = rg.amount - warehouseGoodsAmount;
+				sum += market.buildingGoodsPrice(rg.goodsType, requireGoods);
+			}
+		}
+		return sum;
+	}
+
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {

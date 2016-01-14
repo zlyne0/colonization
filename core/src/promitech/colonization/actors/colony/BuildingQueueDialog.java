@@ -109,7 +109,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 	
 	private SelectableRowTable buildableItemsLayout;
 	private SelectableRowTable buildQueueLayout;
-	private ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
+	private final ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
 	private final Table dialogLayout = new Table();
 	
 	BuildingQueueDialog(ShapeRenderer shape, Colony colony) {
@@ -261,6 +261,11 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 
 	private void buyItem() {
 		System.out.println("buy building");
+		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+		if (firstBuildableItem != null) {
+			System.out.println("buy = " + firstBuildableItem);
+			System.out.println("price = " + colony.getPriceForBuilding(firstBuildableItem));
+		}
 	}
 	
 	private void updateBuildableItems() {

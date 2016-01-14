@@ -78,6 +78,7 @@ public class Player extends ObjectWithFeatures {
     private NationType nationType;
     private PlayerType playerType;
     private Europe europe;
+    private Market market;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     
@@ -98,6 +99,10 @@ public class Player extends ObjectWithFeatures {
 		return nationType;
 	}
     
+	public Market market() {
+		return market;
+	}
+	
     public String toString() {
         return "id = " + id + ", nation = " + nation;
     }
@@ -235,6 +240,7 @@ public class Player extends ObjectWithFeatures {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Europe.class, "europe");
+            addNode(Market.class, "market");
         }
 
         @Override

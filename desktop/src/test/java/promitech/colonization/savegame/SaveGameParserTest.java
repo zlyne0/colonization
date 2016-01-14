@@ -51,16 +51,22 @@ public class SaveGameParserTest {
         assertNotNull(unit);
         assertEquals("unit:7049", unit.getId());
         
-        Player player = game.players.getById("player:1");
-        assertNotNull(player.getEurope());
-        assertEquals("europe:2", player.getEurope().getId());
-        
-        
+        verifyPlayer(game);
         verifySettlementsGoods(game);
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
     }
+
+	private void verifyPlayer(Game game) {
+		Player player = game.players.getById("player:1");
+        assertNotNull(player.getEurope());
+        assertEquals("europe:2", player.getEurope().getId());
+        
+        assertEquals(16, player.market().marketGoods.size());
+        Object food = player.market().marketGoods.getById("model.goods.food");
+        assertNotNull(food);
+	}
     
     private void verifySettlementBuildingWorker(Game game) {
     	Tile tile = game.map.getTile(28, 40);
