@@ -61,6 +61,18 @@ public class ObjectWithFeatures extends ObjectWithId {
 	    list.add(obj);
 	}
 	
+    public boolean isAvailableTo(ObjectWithFeatures features) {
+        if (requiredAbilities != null) {
+            for (Ability aa : requiredAbilities.entities()) {
+                boolean found = features.hasAbility(aa.getId());
+                if (aa.isValueNotEquals(found)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+	
     public boolean hasAbility(String abilityCode) {
     	return hasAbility(abilityCode, true);
     }
