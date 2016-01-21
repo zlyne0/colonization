@@ -82,6 +82,7 @@ public class UnitRole extends ObjectWithFeatures {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
 		}
 
 		@Override
@@ -98,10 +99,6 @@ public class UnitRole extends ObjectWithFeatures {
 			if (attr.isQNameEquals("required-goods")) {
 				Goods goods = new Goods(attr.getStrAttribute("id"), attr.getIntAttribute("value"));
 				((UnitRole)nodeObject).requiredGoods.add(goods);
-			}
-			if (attr.isQNameEquals("required-ability")) {
-			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
-			    ((UnitRole)nodeObject).requiredAbilities.add(a);
 			}
 		}
 		

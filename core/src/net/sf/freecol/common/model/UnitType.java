@@ -150,6 +150,7 @@ public class UnitType extends ObjectWithFeatures {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
             addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
             addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
@@ -174,14 +175,6 @@ public class UnitType extends ObjectWithFeatures {
             ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
             
             nodeObject = ut;
-        }
-
-        @Override
-        public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals("required-ability")) {
-			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
-			    ((UnitType)nodeObject).requiredAbilities.add(a);
-			}
         }
         
         @Override

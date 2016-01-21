@@ -127,7 +127,6 @@ public class MapIdEntities<T extends Identifiable> {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            entitySetter.reset();
             if (!withWrapperTag) {
                 entityXmlParser.startElement(attr);
             }

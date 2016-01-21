@@ -97,6 +97,7 @@ public class BuildingType extends ObjectWithFeatures {
 			});
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
             addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
         
@@ -137,14 +138,6 @@ public class BuildingType extends ObjectWithFeatures {
             
             bt.addFeaturesAndOverwriteExisted(parent);
             nodeObject = bt;
-        }
-        
-        @Override
-        public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals("required-ability")) {
-			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
-			    ((BuildingType)nodeObject).requiredAbilities.add(a);
-			}
         }
         
         @Override
