@@ -132,6 +132,11 @@ public class MapIdEntities<T extends Identifiable> {
             }
         }
 
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+            entityXmlParser.startReadChildren(attr);
+        }
+        
         public void setMap(XmlNodeParser parentXmlParser) {
             if (withWrapperTag) {
                 nodeObject = parentXmlParser.nodeObject;

@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -81,6 +82,7 @@ public class Player extends ObjectWithFeatures {
     private Market market;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     
     private BooleanMap fogOfWar;
     private BooleanMap exploredTiles;
@@ -265,6 +267,14 @@ public class Player extends ObjectWithFeatures {
         		String playerId = attr.getStrAttribute("player");
         		Stance stance = Stance.valueOf(attr.getStrAttribute("value").toUpperCase());
         		((Player)nodeObject).stance.put(playerId, stance);
+        	}
+        	if (attr.isQNameEquals("foundingFathers")) {
+        	    int count = attr.getIntAttribute("xLength", 0);
+        	    for (int i=0; i<count; i++) {
+        	        String fatherId = attr.getStrAttributeNotNull("x" + i);
+        	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
+        	        ((Player)nodeObject).foundingFathers.add(father);
+        	    }
         	}
         }
         

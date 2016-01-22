@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.Direction;
@@ -103,6 +104,9 @@ public class Colony extends Settlement {
     	colonyUpdatableFeatures.clear();
     	for (Building b : buildings.entities()) {
     		colonyUpdatableFeatures.addFeatures(b.buildingType);
+    	}
+    	for (FoundingFather ff : owner.foundingFathers.entities()) {
+    	    colonyUpdatableFeatures.addFeatures(ff);
     	}
     }
     

@@ -6,12 +6,15 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
@@ -60,12 +63,19 @@ public class SaveGameParserTest {
 
 	private void verifyPlayer(Game game) {
 		Player player = game.players.getById("player:1");
+
+        assertEquals(Stance.WAR, player.getStance(game.players.getById("player:133")));
+		
         assertNotNull(player.getEurope());
         assertEquals("europe:2", player.getEurope().getId());
         
         assertEquals(16, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");
         assertNotNull(food);
+        
+        assertEquals(2, player.foundingFathers.size());
+        assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
+        assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
 	}
     
     private void verifySettlementBuildingWorker(Game game) {
@@ -101,6 +111,24 @@ public class SaveGameParserTest {
         verifySpecificationGameDifficultyOptions(specification);
         verifySpecificationUnitRoles(specification);
         verifySpecificationUnitTypes(specification);
+        verifySpecificationFoundingFathers(specification);
+    }
+
+    private void verifySpecificationFoundingFathers(Specification specification) {
+        assertEquals(25, specification.foundingFathers.size());
+        
+        FoundingFather henryHudson = specification.foundingFathers.getById("model.foundingFather.henryHudson");
+        assertEquals(FoundingFatherType.EXPLORATION, henryHudson.getType());
+        assertTrue(henryHudson.hasModifier("model.goods.furs"));
+
+        FoundingFather adamSmith = specification.foundingFathers.getById("model.foundingFather.adamSmith");
+        assertEquals(FoundingFatherType.TRADE, adamSmith.getType());
+        assertTrue(adamSmith.hasAbility("model.ability.buildFactory"));
+
+        FoundingFather pocahontas = specification.foundingFathers.getById("model.foundingFather.pocahontas");
+        assertEquals(FoundingFatherType.POLITICAL, pocahontas.getType());
+        assertNotNull(pocahontas.events.getById("model.event.resetNativeAlarm"));
+        assertNotNull(pocahontas.events.getById("model.event.resetBannedMissions"));
     }
 
     private void verifySpecificationUnitTypes(Specification specification) {
