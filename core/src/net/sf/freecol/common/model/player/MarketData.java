@@ -14,6 +14,11 @@ class MarketData extends ObjectWithId {
     /** Inclusive upper bound on goods price. */
     public static final int MAXIMUM_PRICE = 19;
 	
+    /**
+     * European markets are bottomless.  Goods present never decrease
+     * below this threshold.
+     */
+    public static final int MINIMUM_AMOUNT = 100;
 	
 	private GoodsType goodsType;
     /** Amount of this goods in the market. */
@@ -61,7 +66,17 @@ class MarketData extends ObjectWithId {
         costToBuy = -1; // Disable price change clamping
         price();
     }
-	
+
+    /**
+     * Adjust the prices.
+     *
+     * Sets the costToBuy and paidForSale fields from the amount in
+     * the market, initial price and goods-type specific information.
+     * Ensures that prices change incrementally with a clamping
+     * mechanism.
+     *
+     * @return True if the price changes.
+     */
     public boolean price() {
         if (!goodsType.isStorable()) {
         	return false;
@@ -123,6 +138,49 @@ class MarketData extends ObjectWithId {
         return costToBuy;
     }
 	
+    public final int getCostToBuy(int amount) {
+    	return costToBuy * amount;
+    }
+    
+	void modifySales(int goodsAmount) {
+		if (goodsAmount != 0) {
+			traded = true;
+			sales += goodsAmount;
+		}
+	}
+
+	void modifyIncomeBeforeTaxes(int price) {
+		incomeBeforeTaxes += price;
+	}
+
+	void modifyIncomeAfterTaxes(int price) {
+		incomeAfterTaxes += price;
+	}
+
+	void modifyAmountInMarket(int goodsAmount) {
+		amountInMarket = Math.max(MINIMUM_AMOUNT, amountInMarket + goodsAmount);
+		traded = true;
+	}
+
+	/**
+	 * 
+	 * @param goodsAmount
+	 * @param price
+	 * @param playerModifiedMarketAmount
+	 * @return True if the price changes as a result of this addition.
+	 */
+	boolean modifyOnBuyGoods(int goodsAmount, int price, int playerModifiedMarketAmount) {
+		if (goodsAmount == 0) {
+			return false;
+		}
+		
+		modifySales(-goodsAmount);
+		modifyIncomeBeforeTaxes(-price);
+		modifyIncomeAfterTaxes(-price);
+		modifyAmountInMarket(-playerModifiedMarketAmount);
+		return price();
+	}
+
 	public static class Xml extends XmlNodeParser {
 
 		@Override
@@ -155,5 +213,4 @@ class MarketData extends ObjectWithId {
 		}
 		
 	}
-	
 }

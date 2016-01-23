@@ -20,5 +20,9 @@ public final class Randomizer {
 	public int randomInt(int max) {
 		return Math.abs(rand.nextInt()) % max;
 	}
+
+	public int randomInt(int min, int max) {
+		return rand.nextInt(max - min) + min;
+	}
 	
 }

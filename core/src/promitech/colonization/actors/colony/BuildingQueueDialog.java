@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -23,6 +24,9 @@ import com.badlogic.gdx.utils.Scaling;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyBuildingQueueItem;
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
@@ -32,6 +36,7 @@ import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.SelectableRowTable;
 import promitech.colonization.ui.SelectableTableItem;
+import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -104,24 +109,32 @@ class BuildItemActor extends SelectableTableItem<ColonyBuildingQueueItem> {
 class BuildingQueueDialog extends Dialog implements CloseableDialog {
 
 	private final ClosableDialogAdapter closeableDialogAdapter = new ClosableDialogAdapter();
+	private CloseableDialog closableDialog;
+	
 	private ShapeRenderer shape;
 	private final Colony colony;
+	private final Game game;
+	private final ChangeColonyStateListener changeColonyStateListener;
 	
 	private SelectableRowTable buildableItemsLayout;
 	private SelectableRowTable buildQueueLayout;
 	private final ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
 	private final Table dialogLayout = new Table();
+	private TextButton buyButton;
 	
-	BuildingQueueDialog(ShapeRenderer shape, Colony colony) {
+	BuildingQueueDialog(ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
 		super("", GameResources.instance.getUiSkin());
+		this.game = game;
 		this.colony = colony;
 		this.shape = shape;
+		this.changeColonyStateListener = changeColonyStateListener;
 		
 		createComponents();
         
 		updateBuildingQueueItems();
         updateBuildableItems();
         actualBuildableItemActor.updateBuildItem(colony);
+		updateBuyButtonAvailability();
 	}
 
 	private void createComponents() {
@@ -204,7 +217,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 	private Actor buttonsPanel() {
 		String buyMsg = Messages.msg("colonyPanel.buyBuilding");
 		TextButton okButton = new TextButton("OK", GameResources.instance.getUiSkin());
-		TextButton buyButton = new TextButton(buyMsg, GameResources.instance.getUiSkin());
+		buyButton = new TextButton(buyMsg, GameResources.instance.getUiSkin());
 		
 		okButton.align(Align.right);
 		buyButton.align(Align.left);
@@ -218,7 +231,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		buyButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
-				buyItem();
+				buyItemButtonAction();
 			}
 		});
 		
@@ -249,6 +262,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		updateBuildableItems();
 		
 		actualBuildableItemActor.updateBuildItem(colony);
+		updateBuyButtonAvailability();
 	}
 	
 	private void addToBuildingQueue(ColonyBuildingQueueItem queueItem) {
@@ -257,15 +271,57 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		addBuildableItemToTableLayout(queueItem, buildQueueLayout);
 		
 		actualBuildableItemActor.updateBuildItem(colony);
+		updateBuyButtonAvailability();
 	}
 
-	private void buyItem() {
-		System.out.println("buy building");
+	private void buyItemButtonAction() {
+		System.out.println("buy building button action");
 		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
-		if (firstBuildableItem != null) {
-			System.out.println("buy = " + firstBuildableItem);
-			System.out.println("price = " + colony.getPriceForBuilding(firstBuildableItem));
+		
+		if (firstBuildableItem == null) {
+			System.out.println("Nothing to buy");
+			return;
 		}
+		int price = colony.getPriceForBuilding(firstBuildableItem);
+		
+		System.out.println("buy " + firstBuildableItem + " for price " + price);
+		
+		StringTemplate st = StringTemplate.template("payForBuilding.text")
+				.addAmount("%amount%", price);
+		
+		final SimpleMessageDialog confirmationDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
+		closableDialog = confirmationDialog;
+		confirmationDialog.addOnCloseEvent(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				closableDialog = null;
+				return true;
+			}
+		});
+		confirmationDialog.withContant(st)
+			.withButton("payForBuilding.no")
+			.withButton("payForBuilding.yes", new ChangeListener() {
+				@Override
+				public void changed(ChangeEvent event, Actor actor) {
+					buyItem();
+					confirmationDialog.hide();
+				}
+			});
+		confirmationDialog.show(getStage());
+	}
+	
+	private void buyItem() {
+		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+		if (firstBuildableItem == null) {
+			throw new IllegalArgumentException("there is not item to build");
+		}
+		System.out.println("confirmed buy building " + firstBuildableItem);
+		colony.payForBuilding(firstBuildableItem, game);
+		
+		actualBuildableItemActor.updateBuildItem(colony);
+		updateBuyButtonAvailability();
+		
+		changeColonyStateListener.transfereGoods();
 	}
 	
 	private void updateBuildableItems() {
@@ -288,6 +344,24 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		}
 	}
 
+	private void updateBuyButtonAvailability() {
+		if (!Specification.options.getBoolean(GameOptions.PAY_FOR_BUILDING)) {
+			buyButton.setDisabled(true);
+			return;
+		}
+		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+		if (firstBuildableItem == null) {
+			buyButton.setDisabled(true);
+			return;
+		}
+		int price = colony.getPriceForBuilding(firstBuildableItem);
+		if (price == 0 || colony.getOwner().hasNotGold(price)) {
+			buyButton.setDisabled(true);
+		} else {
+			buyButton.setDisabled(false);
+		}
+	}
+	
 	@Override
 	public float getMaxHeight() {
 		return 500;// this.getStage().getHeight() * 0.75f;
@@ -305,8 +379,11 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 
 	@Override
 	public void clickOnDialogStage(InputEvent event, float x, float y) {
-		if (closeableDialogAdapter.canCloseBecauseClickOutsideDialog(this, x, y)) {
+		if (closableDialog == null && closeableDialogAdapter.canCloseBecauseClickOutsideDialog(this, x, y)) {
 			hideWithFade();
+		}
+		if (closableDialog != null) {
+			closableDialog.clickOnDialogStage(event, x, y);
 		}
 	}
 

@@ -79,6 +79,9 @@ public class Player extends ObjectWithFeatures {
     private PlayerType playerType;
     private Europe europe;
     private Market market;
+    private boolean dead = false;
+    private int tax;
+    private int gold;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     
@@ -235,6 +238,37 @@ public class Player extends ObjectWithFeatures {
     	return counter;
     }
     
+    public void addGold(int gold) {
+    	this.gold += gold;
+    }
+    
+    public void subtractGold(int gold) {
+    	this.gold -= gold;
+    }
+    
+    public boolean hasNotGold(int gold) {
+    	return this.gold < gold;
+    }
+    
+    public boolean hasGold(int gold) {
+    	return this.gold >= gold;
+    }
+    
+    public boolean isEuropean() {
+        return playerType == PlayerType.COLONIAL
+            || playerType == PlayerType.REBEL
+            || playerType == PlayerType.INDEPENDENT
+            || playerType == PlayerType.ROYAL;
+    }
+    
+	public boolean isNotLiveEuropeanPlayer() {
+		return nation.isUnknownEnemy() || isDead() || !isEuropean(); 
+	}
+    
+	public boolean isDead() {
+		return dead;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -250,6 +284,9 @@ public class Player extends ObjectWithFeatures {
             String nationTypeStr = attr.getStrAttribute("nationType");
             
             Player player = new Player(idStr);
+            player.dead = attr.getBooleanAttribute("dead");
+            player.tax = attr.getIntAttribute("tax", 0);
+            player.gold = attr.getIntAttribute("gold", 0);
             player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);

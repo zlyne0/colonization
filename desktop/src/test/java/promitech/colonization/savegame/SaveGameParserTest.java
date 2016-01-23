@@ -87,14 +87,10 @@ public class SaveGameParserTest {
         assertEquals(12, specification.resourceTypes.size());
         assertEquals( 6, specification.tileImprovementTypes.size());
         assertEquals(11, specification.unitRoles.size());
-        assertEquals(18, specification.nationTypes.size());
         assertEquals(25, specification.nations.size());
         assertEquals(21, specification.goodsTypes.size());
         
-        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
-        SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
-        assertNotNull(settlementType);
-        
+        verifyNationTypes(specification);
         verifySpecificationBuildType(specification);
         verifyShipGoods(game, specification);
         verifySpecificationOptionGroup(specification);
@@ -102,6 +98,17 @@ public class SaveGameParserTest {
         verifySpecificationUnitRoles(specification);
         verifySpecificationUnitTypes(specification);
     }
+
+	private void verifyNationTypes(Specification specification) {
+		assertEquals(18, specification.nationTypes.size());
+        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
+        SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
+        assertNotNull(settlementType);
+        
+        NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
+        assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
+        assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+	}
 
     private void verifySpecificationUnitTypes(Specification specification) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");

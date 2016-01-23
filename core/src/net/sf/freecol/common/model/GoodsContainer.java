@@ -28,6 +28,11 @@ public class GoodsContainer extends ObjectWithId {
     	return goods.hasMoreOrEquals(g);
     }
     
+    public void increaseGoodsQuantity(GoodsType goodsType, int quantity) {
+    	goods.addGoods(goodsType.getId(), quantity);
+    	updateTakenCargoSlots();
+    }
+    
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() == 0) {
             return;

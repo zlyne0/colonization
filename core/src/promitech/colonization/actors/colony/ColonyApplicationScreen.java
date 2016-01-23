@@ -61,6 +61,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
+            warehousePanel.updateGoodsQuantity(colony);
         }
     };
 
@@ -164,7 +165,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		textButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				closableDialog = new BuildingQueueDialog(shape, colony);
+				closableDialog = new BuildingQueueDialog(shape, gameController.getGame(), colony, changeColonyStateListener);
 				closableDialog.addOnCloseEvent(onCloseDialogListener);
 				closableDialog.show(stage);
 			}

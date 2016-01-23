@@ -10,6 +10,7 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
@@ -475,8 +476,8 @@ public class Colony extends Settlement {
     	return false;
     }
     
-	public int getPriceForBuilding(ColonyBuildingQueueItem firstBuildableItem) {
-		List<RequiredGoods> requiredGoods = firstBuildableItem.requiredGoods();
+	public int getPriceForBuilding(ColonyBuildingQueueItem currentBuildableItem) {
+		List<RequiredGoods> requiredGoods = currentBuildableItem.requiredGoods();
 		
 		Market market = owner.market();
 		
@@ -491,6 +492,26 @@ public class Colony extends Settlement {
 		return sum;
 	}
 
+	public void payForBuilding(ColonyBuildingQueueItem currentBuildableItem, Game game) {
+		if (!Specification.options.getBoolean(GameOptions.PAY_FOR_BUILDING)) {
+			throw new IllegalStateException("Pay for building is disabled");
+		}
+		
+		Market ownerMarket = owner.market();
+		for (RequiredGoods requiredGood : currentBuildableItem.requiredGoods()) {
+			int reqDiffAmount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.goodsType);
+			if (reqDiffAmount <= 0) {
+				continue;
+			}
+			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoods(owner, requiredGood.goodsType, reqDiffAmount, goodsContainer);
+			
+			game.propagateBuyToEuropeanMarkets(owner, requiredGood.goodsType, effectOnMarket.goodsModifiedMarket);
+			if (effectOnMarket.priceChanged()) {
+			}
+		}
+		updateModelOnWorkerAllocationOrGoodsTransfer();
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
