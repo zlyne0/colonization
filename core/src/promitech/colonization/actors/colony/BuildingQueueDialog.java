@@ -263,6 +263,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		
 		actualBuildableItemActor.updateBuildItem(colony);
 		updateBuyButtonAvailability();
+		changeColonyStateListener.changeBuildingQueue();
 	}
 	
 	private void addToBuildingQueue(ColonyBuildingQueueItem queueItem) {
@@ -272,6 +273,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		
 		actualBuildableItemActor.updateBuildItem(colony);
 		updateBuyButtonAvailability();
+		changeColonyStateListener.changeBuildingQueue();
 	}
 
 	private void buyItemButtonAction() {

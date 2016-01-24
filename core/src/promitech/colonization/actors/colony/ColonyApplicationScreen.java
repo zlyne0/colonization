@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
@@ -35,6 +36,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private BuildingsPanelActor buildingsPanelActor;
 	private WarehousePanel warehousePanel;
 	private TerrainPanel terrainPanel;
+	private ActualBuildableItemActor actualBuildableItemActor; 
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
@@ -62,7 +64,13 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
             warehousePanel.updateGoodsQuantity(colony);
+			actualBuildableItemActor.updateBuildItem(colony);
         }
+
+		@Override
+		public void changeBuildingQueue() {
+			actualBuildableItemActor.updateBuildItem(colony);
+		}
     };
 
     private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
@@ -130,11 +138,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
+        actualBuildableItemActor = new ActualBuildableItemActor();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
         Table tableLayout = new Table(null);
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));
+        
+        VerticalGroup colGroup1 = new VerticalGroup();
+        colGroup1.addActor(terrainPanel);
+        colGroup1.addActor(populationPanel);
+        colGroup1.addActor(actualBuildableItemActor);
         
         HorizontalGroup rowGroup1 = new HorizontalGroup();
         rowGroup1.addActor(carrierUnitsPanel);
@@ -143,10 +157,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.setFillParent(true);
         tableLayout.add(productionPanel).colspan(2).fillX();
         tableLayout.row();
-        tableLayout.add(terrainPanel);
+        tableLayout.add(colGroup1);
         tableLayout.add(buildingsPanelActor);
-        tableLayout.row();
-        tableLayout.add(populationPanel);
         tableLayout.row();
         tableLayout.add(rowGroup1).colspan(2);
         tableLayout.row();
@@ -209,6 +221,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         outsideUnitsPanel.initUnits(colonyTile, unitsDragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);
         populationPanel.update(colony);
+        actualBuildableItemActor.updateBuildItem(colony);
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
