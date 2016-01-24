@@ -5,8 +5,10 @@ import java.util.List;
 import java.util.Locale;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;

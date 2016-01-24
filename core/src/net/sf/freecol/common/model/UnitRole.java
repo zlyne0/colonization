@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;

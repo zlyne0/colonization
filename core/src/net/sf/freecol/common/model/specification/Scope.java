@@ -4,7 +4,7 @@ import net.sf.freecol.common.model.Identifiable;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Scope implements Identifiable {
+class Scope implements Identifiable {
 
 	boolean matchNegated = false;
 	boolean matchesNull = true;

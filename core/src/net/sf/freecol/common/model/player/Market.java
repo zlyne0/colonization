@@ -2,9 +2,9 @@ package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;

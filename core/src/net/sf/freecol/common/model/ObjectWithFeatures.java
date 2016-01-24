@@ -5,6 +5,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 
 public class ObjectWithFeatures extends ObjectWithId {

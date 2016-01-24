@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.specification.Ability;
 
 public class UnitContainer {
 	public static enum NoAddReason {

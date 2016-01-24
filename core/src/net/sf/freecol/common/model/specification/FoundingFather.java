@@ -1,8 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Turn;
 import promitech.colonization.savegame.XmlNodeAttributes;

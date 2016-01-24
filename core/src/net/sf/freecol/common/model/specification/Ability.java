@@ -17,12 +17,13 @@
  *  along with FreeCol.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.specification;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import net.sf.freecol.common.model.specification.Scope;
+import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.ObjectWithFeatures;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
