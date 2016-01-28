@@ -7,11 +7,19 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Cell;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.IntSet;
 
 public class SelectableRowTable extends Table {
 
+    private static HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
+        @Override
+        public float getPrefHeight() {
+            return 20f;
+        }
+    };
+    
 	private DoubleClickedListener doubleClickedListener;
 	private final ShapeRenderer shape;
 	private int rowIndexCounter = 0;
@@ -81,6 +89,10 @@ public class SelectableRowTable extends Table {
 		for (Actor a : toRemove) {
 			removeActor(a);
 		}
+	}
+
+	public void addSeparator() {
+	    super.add(SEPARATOR_ROW).fillX().row();
 	}
 	
 	public void setDoubleClickedListener(DoubleClickedListener doubleClickedListener) {
