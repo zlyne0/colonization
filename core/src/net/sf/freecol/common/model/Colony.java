@@ -513,6 +513,7 @@ public class Colony extends Settlement {
 			
 			game.propagateBuyToEuropeanMarkets(owner, requiredGood.goodsType, effectOnMarket.goodsModifiedMarket);
 			if (effectOnMarket.priceChanged()) {
+				owner.eventsNotifications.addPriceChangeNotification(requiredGood.goodsType, effectOnMarket.beforePrice, effectOnMarket.afterPrice);
 			}
 		}
 		updateModelOnWorkerAllocationOrGoodsTransfer();

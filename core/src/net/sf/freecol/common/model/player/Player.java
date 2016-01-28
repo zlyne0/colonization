@@ -87,6 +87,8 @@ public class Player extends ObjectWithFeatures {
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     
+    public EventsNotifications eventsNotifications = new EventsNotifications();
+    
     private BooleanMap fogOfWar;
     private BooleanMap exploredTiles;
     
@@ -277,6 +279,7 @@ public class Player extends ObjectWithFeatures {
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Europe.class, "europe");
             addNode(Market.class, "market");
+            addNode(EventsNotifications.class, "eventsNotifications");
         }
 
         @Override
