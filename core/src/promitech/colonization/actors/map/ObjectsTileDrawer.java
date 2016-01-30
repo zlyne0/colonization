@@ -97,7 +97,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		BitmapFont font = FontResource.getCityNamesFont();
 		
 		float strWidth = FontResource.strWidth(font, tile.getSettlement().getName());
-		font.setColor(tile.getSettlement().getOwner().getNation().getColor());
+		font.setColor(tile.getSettlement().getOwner().nation().getColor());
 		font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
 		
 		if (tile.hasSettlementOwnedBy(mapDrawModel.playingPlayer) && tile.getSettlement().isColony()) {

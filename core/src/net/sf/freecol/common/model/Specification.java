@@ -4,6 +4,7 @@ import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
+import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.NationType;
@@ -79,6 +80,7 @@ public class Specification implements Identifiable {
     public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
     public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
     public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
+    public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     
@@ -152,6 +154,7 @@ public class Specification implements Identifiable {
             addNodeForMapIdEntities("nations", "nations", Nation.class);
             addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
             addNodeForMapIdEntities("building-types", "buildingTypes", BuildingType.class);
+            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
             addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
 		}
 

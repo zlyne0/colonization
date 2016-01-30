@@ -2,14 +2,13 @@ package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
+import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
@@ -34,11 +33,11 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private BuildingsPanelActor buildingsPanelActor;
 	private WarehousePanel warehousePanel;
 	private TerrainPanel terrainPanel;
+	private ActualBuildableItemActor actualBuildableItemActor; 
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
-	private UnitActionOrdersDialog unitActionOrdersDialog;
 
     private Colony colony;
     private Tile colonyTile;
@@ -60,7 +59,14 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
+            warehousePanel.updateGoodsQuantity(colony);
+			actualBuildableItemActor.updateBuildItem(colony);
         }
+
+		@Override
+		public void changeBuildingQueue() {
+			actualBuildableItemActor.updateBuildItem(colony);
+		}
     };
 
     private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
@@ -75,27 +81,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
     }
 
-    private ClickListener stageClickListener = new ClickListener() {
-    	public void clicked(InputEvent event, float x, float y) {
-    		if (unitActionOrdersDialog != null) {
-    			unitActionOrdersDialog.clickOnDialogStage(event, x, y);
-    		}
-    	}
-    };
-    
-    private EventListener unitActionOrdersDialogOnCloseListener = new EventListener() {
-		@Override
-		public boolean handle(Event event) {
-			unitActionOrdersDialog = null;
-			return true;
-		}
-	}; 
-    
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
-    	stage.addListener(stageClickListener);
         
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
@@ -128,11 +117,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
+        actualBuildableItemActor = new ActualBuildableItemActor();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
         Table tableLayout = new Table(null);
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));
+        
+        VerticalGroup colGroup1 = new VerticalGroup();
+        colGroup1.addActor(terrainPanel);
+        colGroup1.addActor(populationPanel);
+        colGroup1.addActor(actualBuildableItemActor);
         
         HorizontalGroup rowGroup1 = new HorizontalGroup();
         rowGroup1.addActor(carrierUnitsPanel);
@@ -141,10 +136,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.setFillParent(true);
         tableLayout.add(productionPanel).colspan(2).fillX();
         tableLayout.row();
-        tableLayout.add(terrainPanel);
+        tableLayout.add(colGroup1);
         tableLayout.add(buildingsPanelActor);
-        tableLayout.row();
-        tableLayout.add(populationPanel);
         tableLayout.row();
         tableLayout.add(rowGroup1).colspan(2);
         tableLayout.row();
@@ -163,7 +156,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		textButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("touchUp");
+				BuildingQueueDialog dialog = new BuildingQueueDialog(
+						stage.getHeight() * 0.75f,
+						shape, gameController.getGame(), 
+						colony, changeColonyStateListener
+				);
+				dialog.show(stage);
 			}
 		});
 		return textButton;
@@ -205,16 +203,16 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         outsideUnitsPanel.initUnits(colonyTile, unitsDragAndDrop);
         carrierUnitsPanel.initUnits(colonyTile);
         populationPanel.update(colony);
+        actualBuildableItemActor.updateBuildItem(colony);
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
-        unitActionOrdersDialog = new UnitActionOrdersDialog(
+    	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(
         		shape, colony, unitActor, 
         		outsideUnitsPanel, terrainPanel, buildingsPanelActor,
         		gameController
         );
-        unitActionOrdersDialog.show(stage);
-        unitActionOrdersDialog.addOnCloseEvent(unitActionOrdersDialogOnCloseListener);
+    	dialog.show(stage);
     }
     
 	@Override

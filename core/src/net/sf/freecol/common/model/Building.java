@@ -4,8 +4,10 @@ import java.util.HashSet;
 import java.util.List;
 
 import net.sf.freecol.common.model.UnitContainer.NoAddReason;
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 

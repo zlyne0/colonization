@@ -2228,7 +2228,7 @@
     </founding-father>
     <founding-father id="model.foundingFather.johnPaulJones" type="military"
                      weight1="0" weight2="6" weight3="7">
-      <unit id="model.unit.frigate"/>
+      <event id="model.event.unit.model.unit.frigate" />
     </founding-father>
     <founding-father id="model.foundingFather.thomasJefferson" type="political"
                      weight1="4" weight2="5" weight3="6">
@@ -2294,7 +2294,7 @@
     </founding-father>
     <founding-father id="model.foundingFather.bartolomeDeLasCasas" type="religious"
                      weight1="0" weight2="5" weight3="10">
-      <upgrade from-id="model.unit.indianConvert" to-id="model.unit.freeColonist"/>
+      <event id="model.event.convertIndianToFreeColonist"/>               
     </founding-father>
   </founding-fathers>
 

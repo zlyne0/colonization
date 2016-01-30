@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.specification.Ability;
 
 public class UnitContainer {
 	public static enum NoAddReason {
@@ -79,6 +80,9 @@ public class UnitContainer {
     }
 	
     public void addUnit(Unit unit) {
+        if (!containerUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
+            throw new IllegalStateException("unit[" + containerUnit + "] has not ability carry unit but try add unit to it");
+        }
         this.units.add(unit);
     }
     

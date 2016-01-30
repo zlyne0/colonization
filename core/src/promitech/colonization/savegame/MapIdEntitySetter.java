@@ -6,7 +6,6 @@ import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 
 public class MapIdEntitySetter implements ObjectFromNodeSetter {
-    private MapIdEntities<? extends Identifiable> targetMap;
     private final String targetFieldName;
     
     public MapIdEntitySetter(String targetFieldName) {
@@ -20,16 +19,12 @@ public class MapIdEntitySetter implements ObjectFromNodeSetter {
     }
     
     private MapIdEntities<? extends Identifiable> getTargetMap(Identifiable targetObject) {
-        if (targetMap != null) {
-            return targetMap;
-        }
         if (targetObject == null) {
             throw new IllegalArgumentException("can not get MapIdEntities from field " + targetFieldName + " because target object is null");
         }
         try {
             Field field = targetObject.getClass().getField(targetFieldName);
-            targetMap = (MapIdEntities)field.get(targetObject);
-            return targetMap;
+            return (MapIdEntities)field.get(targetObject);
         } catch (NoSuchFieldException e) {
             System.out.println("can not find field " + targetFieldName + ", on class " + targetObject.getClass());
             throw new IllegalArgumentException(e);
@@ -38,7 +33,7 @@ public class MapIdEntitySetter implements ObjectFromNodeSetter {
         }
     }
     
-    public void reset() {
-        targetMap = null;
+    public String toString() {
+        return "MapIdEntitySetter.targetFieldName = " + targetFieldName;
     }
 }

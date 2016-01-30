@@ -81,7 +81,7 @@ public class UnitLabel {
 	public String getUnitType(Unit unit) {
 		StringTemplate label = getUnitType(
 				unit.unitType.getId(), 1, 
-				unit.getOwner().nation.getId(), 
+				unit.getOwner().nation().getId(), 
 				unit.unitRole.id
 		);
 		return Messages.message(label);

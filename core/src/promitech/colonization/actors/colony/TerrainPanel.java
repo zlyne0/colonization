@@ -211,6 +211,9 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
+		shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+		shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+		
 		mapRenderer.drawColonyTiles(colonyTile, batch, shapeRenderer, getX(), getY());
 		
 		super.draw(batch, parentAlpha);

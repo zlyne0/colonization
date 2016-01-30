@@ -19174,7 +19174,6 @@
               <goods type="model.goods.crosses" amount="50"/>
               <goods type="model.goods.food" amount="40"/>
               <goods type="model.goods.furs" amount="8"/>
-              <goods type="model.goods.hammers" amount="12"/>
               <goods type="model.goods.horses" amount="32"/>
               <goods type="model.goods.lumber" amount="44"/>
               <goods type="model.goods.ore" amount="36"/>

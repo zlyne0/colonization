@@ -19,33 +19,31 @@
 
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.SettlementType;
 
 /**
  * Represents the type of one of the nations present in the game.
  */
-public abstract class NationType implements Identifiable {
+public abstract class NationType extends ObjectWithFeatures {
 
-    public static enum SettlementNumber { LOW, AVERAGE, HIGH }
+	public static enum SettlementNumber { LOW, AVERAGE, HIGH }
     public static enum AggressionLevel { LOW, AVERAGE, HIGH }
 
     protected boolean european = false;
-    protected String id;
     public final MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
 
-    @Override
-    public String getId() {
-        return id;
-    }
+    public NationType(String id) {
+		super(id);
+	}
 
     public boolean isEuropean() {
     	return european;
     }
     
     public String toString() {
-    	return "nationType: " + id;
+    	return "nationType: " + getId();
     }
 
     public abstract boolean isREF();

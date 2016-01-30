@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -19,7 +21,6 @@ public class UnitRole extends ObjectWithFeatures {
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
 	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
-	public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
 	private String downgradeRoleId;
 	
 	public UnitRole(String id) {
@@ -51,18 +52,6 @@ public class UnitRole extends ObjectWithFeatures {
         return hasModifier(Modifier.OFFENCE);
     }
 	
-    public boolean isAvailableTo(ObjectWithFeatures features) {
-    	if (requiredAbilities != null) {
-    		for (Ability aa : requiredAbilities.entities()) {
-    		    boolean found = features.hasAbility(aa.getId());
-    		    if (aa.isValue() != found) {
-    		        return false;
-    		    }
-    		}
-    	}
-    	return true;
-    }
-
 	public boolean isCompatibleWith(UnitRole role) {
 		if (role == null) {
 			return false;
@@ -83,6 +72,7 @@ public class UnitRole extends ObjectWithFeatures {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
 		}
 
 		@Override
@@ -99,10 +89,6 @@ public class UnitRole extends ObjectWithFeatures {
 			if (attr.isQNameEquals("required-goods")) {
 				Goods goods = new Goods(attr.getStrAttribute("id"), attr.getIntAttribute("value"));
 				((UnitRole)nodeObject).requiredGoods.add(goods);
-			}
-			if (attr.isQNameEquals("required-ability")) {
-			    Ability a = new Ability(attr.getStrAttribute("id"), attr.getBooleanAttribute("value"));
-			    ((UnitRole)nodeObject).requiredAbilities.add(a);
 			}
 		}
 		

@@ -4,8 +4,11 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
@@ -13,7 +16,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit extends ObjectWithFeatures implements Location {
+public class Unit extends ObjectWithId implements Location {
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -66,7 +69,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
     
     public String resourceImageKey() {
-    	if (!owner.nationType.isEuropean()) {
+    	if (!owner.nationType().isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
     			return unitType.getId() + "." + unitRole.getRoleSuffix() + ".native.image";
     		}
@@ -196,7 +199,7 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 
     public boolean isTradingUnit() {
-        return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType.isEuropean();
+        return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType().isEuropean();
     }
     
     public final Object getTradeRoute() {
@@ -319,7 +322,7 @@ public class Unit extends ObjectWithFeatures implements Location {
                     } else {
                         return (allowMoveFrom(from)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_MARINE;
                     }
-                } else if (target.hasLostCityRumour() && owner.nationType.isEuropean()) {
+                } else if (target.hasLostCityRumour() && owner.nationType().isEuropean()) {
                     // Natives do not explore rumours, see:
                     // server/control/InGameInputHandler.java:move()
                     return MoveType.EXPLORE_LOST_CITY_RUMOUR;
@@ -584,7 +587,7 @@ public class Unit extends ObjectWithFeatures implements Location {
 	public List<UnitRole> avaliableRoles() {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(this)) {
+            if (role.isAvailableTo(unitType)) {
                 a.add(role);
             }
         }
@@ -596,9 +599,6 @@ public class Unit extends ObjectWithFeatures implements Location {
     }
 	
 	public boolean hasAbility(String code) {
-	    if (super.hasAbility(code)) {
-	        return true;
-	    }
 	    if (unitType.hasAbility(code)) {
 	        return true;
 	    }
@@ -617,15 +617,10 @@ public class Unit extends ObjectWithFeatures implements Location {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                	newUnit.setLocation(actualUnit);
-                    if (!actualUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
-                        throw new IllegalStateException("unit has not ability carry unit but try add unit to it");
-                    }
                     actualUnit.unitContainer.addUnit(newUnit);
+                    newUnit.setLocation(actualUnit);
                 }
             });
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(GoodsContainer.class, "goodsContainer");
         }
 

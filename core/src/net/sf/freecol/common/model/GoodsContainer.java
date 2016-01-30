@@ -16,12 +16,21 @@ public class GoodsContainer extends ObjectWithId {
         super(id);
     }
 
+	public int goodsAmount(String id) {
+        return goods.getQuantity(id);
+	}
+    
     public int goodsAmount(GoodsType type) {
         return goods.getQuantity(type.id);
     }
 
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
+    }
+    
+    public void increaseGoodsQuantity(GoodsType goodsType, int quantity) {
+    	goods.addGoods(goodsType.getId(), quantity);
+    	updateTakenCargoSlots();
     }
     
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {

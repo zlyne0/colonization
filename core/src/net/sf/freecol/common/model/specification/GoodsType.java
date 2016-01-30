@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.specification;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.Specification;
 
 public class GoodsType extends ObjectWithId {
 
@@ -19,7 +20,16 @@ public class GoodsType extends ObjectWithId {
     boolean storable;
     private String storedAs;
     private int breedingNumber;
+    private int price;
+    private GoodsType madeFrom;
 
+    /** The initial market price difference for this type of goods. */
+    private int priceDiff = 1;
+    /** The initial amount of this goods type in a market. */
+    private int initialAmount = 0;
+    /** The initial <em>minimum</em> sales price for this type of goods. */
+    private int initialPrice = 1;
+    
     public boolean isStorable() {
         return storable;
     }
@@ -55,8 +65,68 @@ public class GoodsType extends ObjectWithId {
         return farmed;
     }
 	
-	public static class Xml extends XmlNodeParser {
+	public int getPrice() {
+		return price;
+	}
 
+    /**
+     * The default initial price difference (between purchase and sale price)
+     * for this type of goods.
+     *
+     * @return The default initial price difference.
+     */
+    public int getPriceDifference() {
+        return priceDiff;
+    }
+	
+    public int getInitialAmount() {
+        return initialAmount;
+    }
+    
+    /**
+     * The default initial purchase price for this goods type.
+     *
+     * @return The default initial purchase price.
+     */
+    public int getInitialBuyPrice() {
+        return initialPrice + priceDiff;
+    }
+    
+    /**
+     * Get the initial <em>minimum</em> sales price for this type
+     * of goods.  The actual initial sales price in a particular
+     * Market may be higher.  This method is only used for initializing
+     * Markets.
+     *
+     * @return The initial sell price.
+     * @see Market
+     */
+    public int getInitialSellPrice() {
+        return initialPrice;
+    }
+    
+    /**
+     * Is this a goods type native to the New World?
+     *
+     * @return True if this goods type is native to the New World.
+     */
+    public boolean isNewWorldGoodsType() {
+        return newWorldGoods;
+    }
+    
+    public boolean isNewWorldOrigin() {
+    	return isNewWorldGoodsType() || getMadeFrom() != null && getMadeFrom().isNewWorldGoodsType();
+    }
+    
+    public GoodsType getMadeFrom() {
+        return madeFrom;
+    }
+    
+	public static class Xml extends XmlNodeParser {
+		private static final String PRICE_DIFFERENCE_TAG = "price-difference";
+		private static final String INITIAL_AMOUNT_TAG = "initial-amount";
+		private static final String INITIAL_PRICE_TAG = "initial-price";
+		
         @Override
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute("id");
@@ -70,10 +140,26 @@ public class GoodsType extends ObjectWithId {
             gt.storable = attr.getBooleanAttribute("storable", true);
             gt.storedAs = attr.getStrAttribute("stored-as");
             gt.breedingNumber = attr.getIntAttribute("breeding-number", 0);
+            gt.price = attr.getIntAttribute("price", 0);
+            
+            String madeFromStr = attr.getStrAttribute("made-from");
+            if (madeFromStr != null) {
+            	gt.madeFrom = Specification.instance.goodsTypes.getById(madeFromStr);
+            }
             
             nodeObject = gt;
         }
 
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+        	if (attr.isQNameEquals("market")) {
+                GoodsType gt = (GoodsType)nodeObject;
+                gt.initialAmount = attr.getIntAttribute(INITIAL_AMOUNT_TAG, 0);
+                gt.initialPrice = attr.getIntAttribute(INITIAL_PRICE_TAG, 1);
+                gt.priceDiff = attr.getIntAttribute(PRICE_DIFFERENCE_TAG, 1);
+        	}
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

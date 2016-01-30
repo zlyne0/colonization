@@ -38,6 +38,14 @@ public class XmlNodeAttributes {
         return attributes.getValue(name);
     }
 
+    public String getStrAttributeNotNull(String name) {
+        String st = attributes.getValue(name);
+        if (st == null) {
+        	throw new IllegalStateException("null attribute while reading '" + name + "'");
+        }
+        return st;
+    }
+    
     public boolean getBooleanAttribute(String name) {
         String val = attributes.getValue(name);
         return val != null && "true".equals(val.toLowerCase());

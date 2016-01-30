@@ -8,6 +8,7 @@ public class XmlTagMetaData {
     protected String tagName;
     protected ObjectFromNodeSetter setter;
     protected Class<? extends Identifiable> entityClass;
+    protected String targetFieldName;
     
     protected XmlTagMetaData() {
     }
@@ -19,13 +20,20 @@ public class XmlTagMetaData {
         this.setter = setter;
     }
 
+    public XmlTagMetaData(String tagName, Class<? extends Identifiable> entityClass, String targetFieldName) {
+        this.tagName = tagName;
+        this.entityClass = entityClass;
+        this.targetFieldName = targetFieldName;
+    }
+
     public XmlNodeParser createXmlParser() {
         XmlNodeParser entityXmlParser = entityXmlParser(entityClass);
+        entityXmlParser.xmlNodeMetaData = this;
         entityXmlParser.addSetter(setter);
         return entityXmlParser;
     }
     
-    protected XmlNodeParser entityXmlParser(Class<? extends Identifiable> entityClass) {
+    private XmlNodeParser entityXmlParser(Class<? extends Identifiable> entityClass) {
         Class<XmlNodeParser> xmlClass = getXmlClassFromEntityClass(entityClass);
         try {
             XmlNodeParser entityXmlParser = xmlClass.getDeclaredConstructor().newInstance();

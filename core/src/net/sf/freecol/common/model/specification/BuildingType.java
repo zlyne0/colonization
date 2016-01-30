@@ -1,8 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.Ability;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Modifier;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
@@ -26,8 +24,10 @@ public class BuildingType extends ObjectWithFeatures {
     
     int level = 1;
     int workplaces = 3;
-    String upgradesFromId;
-    String upgradesToId;
+    private String upgradesFromId;
+    private String upgradesToId;
+    private BuildingType upgradesFrom;
+    
     int minSkill = UNDEFINED;
     int maxSkill = INFINITY;
     private int upkeep = 0;
@@ -55,10 +55,36 @@ public class BuildingType extends ObjectWithFeatures {
             : UnitContainer.NoAddReason.NONE;
     }
 
+    public boolean isTheSameRoot(BuildingType bt) {
+    	BuildingType thisRoot = this.rootType();
+    	BuildingType btRoot = bt.rootType();
+    	return thisRoot.equalsId(btRoot);
+    }
+    
+    public BuildingType rootType() {
+    	BuildingType root = this;
+    	while (root.upgradesFrom != null) {
+    		root = root.upgradesFrom;
+    	}
+    	return root;
+    }
+
+	public boolean isRoot() {
+		return upgradesFrom == null;
+	}
+    
+	public boolean canUpgradeTo(BuildingType buildingType) {
+		return this.equalsId(buildingType.upgradesFrom); 
+	}
+    
 	public int getWorkplaces() {
 		return workplaces;
 	}
-    
+
+	public int getRequiredPopulation() {
+		return requiredPopulation;
+	}
+
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	addNode(Production.class, new ObjectFromNodeSetter<BuildingType, Production>() {
@@ -69,6 +95,7 @@ public class BuildingType extends ObjectWithFeatures {
 			});
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
             addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
         
@@ -91,6 +118,7 @@ public class BuildingType extends ObjectWithFeatures {
                 bt.level = 1;
             } else {
                 upgradesFrom.upgradesToId = bt.id;
+                bt.upgradesFrom = upgradesFrom;
                 bt.level = upgradesFrom.level + 1;
             }
             
@@ -119,5 +147,4 @@ public class BuildingType extends ObjectWithFeatures {
             return "building-type";
         }
     }
-
 }

@@ -6,8 +6,8 @@ import java.util.Iterator;
 import java.util.List;
 
 import promitech.colonization.GameLogic;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Player;
 
 /**
  * An <code>Iterator</code> of {@link Unit}s that can be made active.

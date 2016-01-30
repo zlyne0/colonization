@@ -11,9 +11,9 @@ public abstract class XmlNodeParser {
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
     
-    
+    protected XmlTagMetaData xmlNodeMetaData;
     private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();
-	private final java.util.Map<String,XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
+    private final java.util.Map<String, XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
 	public Identifiable nodeObject;
 	
@@ -31,6 +31,11 @@ public abstract class XmlNodeParser {
 	    XmlTagFieldMetaData xmlTagFieldMetaData = new XmlTagFieldMetaData(entityClass, fieldName);
 	    nodeMetaData.put(xmlTagFieldMetaData.getTagName(), xmlTagFieldMetaData);
 	}
+	
+    public void addNode(String entityOverrideTagName, Class<? extends Identifiable> entityClass, String targetFieldName) {
+        XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityOverrideTagName, entityClass, targetFieldName);
+        nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
+    }
 	
 	public void addNode(Class<? extends Identifiable> entityClass, ObjectFromNodeSetter<?,?> setter) {
 	    XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, setter);
@@ -80,8 +85,12 @@ public abstract class XmlNodeParser {
 	}
 	
 	public void addToParent(XmlNodeParser parentXmlParser) {
-	    if (setter != null) {
-	        setter.set(parentXmlParser.nodeObject, nodeObject);
+	    if (xmlNodeMetaData != null && xmlNodeMetaData.targetFieldName != null) {
+	        UniversalEntitySetter.set(parentXmlParser.nodeObject, xmlNodeMetaData.targetFieldName, nodeObject);
+	    } else {
+            if (setter != null) {
+                setter.set(parentXmlParser.nodeObject, nodeObject);
+            }
 	    }
 	}
 	

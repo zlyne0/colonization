@@ -7,9 +7,9 @@ import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 
@@ -47,7 +47,7 @@ public class UnitDrawer {
 	) {
 		batch.end();
 		shapeRenderer.begin(ShapeType.Filled);
-		shapeRenderer.setColor(unit.getOwner().getNation().getColor());
+		shapeRenderer.setColor(unit.getOwner().nation().getColor());
 		shapeRenderer.rect(cx, cy, BOX_WIDTH, BOX_HEIGHT);
 		shapeRenderer.end();
 

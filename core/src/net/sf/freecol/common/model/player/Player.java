@@ -1,7 +1,21 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.player;
 
 import java.util.HashMap;
 
+import net.sf.freecol.common.model.Europe;
+import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Nation;
+import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Stance;
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -61,12 +75,19 @@ public class Player extends ObjectWithFeatures {
         NATIVE, COLONIAL, REBEL, INDEPENDENT, ROYAL, UNDEAD, RETIRED
     }
 	
-    Nation nation;
-    NationType nationType;
+    private Nation nation;
+    private NationType nationType;
     private PlayerType playerType;
     private Europe europe;
-    public MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    public MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    private Market market;
+    private boolean dead = false;
+    private int tax;
+    private int gold;
+    public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+    public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    
+    public EventsNotifications eventsNotifications = new EventsNotifications();
     
     private BooleanMap fogOfWar;
     private BooleanMap exploredTiles;
@@ -77,10 +98,18 @@ public class Player extends ObjectWithFeatures {
     	super(id);
     }
     
-    public Nation getNation() {
+    public Nation nation() {
     	return nation;
     }
     
+	public NationType nationType() {
+		return nationType;
+	}
+    
+	public Market market() {
+		return market;
+	}
+	
     public String toString() {
         return "id = " + id + ", nation = " + nation;
     }
@@ -203,11 +232,54 @@ public class Player extends ObjectWithFeatures {
         return europe;
     }
 	
+    public int unitTypeCount(UnitType unitType) {
+    	int counter = 0;
+    	for (Unit unit : units.entities()) {
+    		if (unit.unitType.equalsId(unitType)) {
+    			counter++;
+    		}
+    	}
+    	return counter;
+    }
+    
+    public void addGold(int gold) {
+    	this.gold += gold;
+    }
+    
+    public void subtractGold(int gold) {
+    	this.gold -= gold;
+    }
+    
+    public boolean hasNotGold(int gold) {
+    	return this.gold < gold;
+    }
+    
+    public boolean hasGold(int gold) {
+    	return this.gold >= gold;
+    }
+    
+    public boolean isEuropean() {
+        return playerType == PlayerType.COLONIAL
+            || playerType == PlayerType.REBEL
+            || playerType == PlayerType.INDEPENDENT
+            || playerType == PlayerType.ROYAL;
+    }
+    
+	public boolean isNotLiveEuropeanPlayer() {
+		return nation.isUnknownEnemy() || isDead() || !isEuropean(); 
+	}
+    
+	public boolean isDead() {
+		return dead;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Europe.class, "europe");
+            addNode(Market.class, "market");
+            addNode(EventsNotifications.class, "eventsNotifications");
         }
 
         @Override
@@ -217,6 +289,9 @@ public class Player extends ObjectWithFeatures {
             String nationTypeStr = attr.getStrAttribute("nationType");
             
             Player player = new Player(idStr);
+            player.dead = attr.getBooleanAttribute("dead");
+            player.tax = attr.getIntAttribute("tax", 0);
+            player.gold = attr.getIntAttribute("gold", 0);
             player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
@@ -232,6 +307,14 @@ public class Player extends ObjectWithFeatures {
         		String playerId = attr.getStrAttribute("player");
         		Stance stance = Stance.valueOf(attr.getStrAttribute("value").toUpperCase());
         		((Player)nodeObject).stance.put(playerId, stance);
+        	}
+        	if (attr.isQNameEquals("foundingFathers")) {
+        	    int count = attr.getIntAttribute("xLength", 0);
+        	    for (int i=0; i<count; i++) {
+        	        String fatherId = attr.getStrAttributeNotNull("x" + i);
+        	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
+        	        ((Player)nodeObject).foundingFathers.add(father);
+        	    }
         	}
         }
         

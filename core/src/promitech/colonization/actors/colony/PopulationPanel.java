@@ -1,7 +1,6 @@
 package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -17,7 +16,7 @@ import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class PopulationPanel extends HorizontalGroup {
+public class PopulationPanel extends Table {
 
     private Label rebelsLabel;
     private Label rebelsPercentageLabel;
@@ -54,10 +53,9 @@ public class PopulationPanel extends HorizontalGroup {
         tableLayout.add(prodBonusLabel);
         tableLayout.add(royalistsPercentageLabel).align(Align.right).row();
         
-        align(Align.top);
-        addActor(nationImage);
-        addActor(tableLayout);
-        addActor(otherNationImage);
+        add(nationImage).bottom();
+        add(tableLayout).top();
+        add(otherNationImage).bottom();
     }
 
     public void update(Colony colony) {
@@ -87,7 +85,7 @@ public class PopulationPanel extends HorizontalGroup {
         royalistsLabel.setText(Messages.message(t));
         royalistsPercentageLabel.setText(Integer.toString(royalistsPercenage) + "%");
         
-        Nation nation = colony.getOwner().getNation();
+        Nation nation = colony.getOwner().nation();
         setCoatOfArmsActor(nationImage, nation);
         
         Nation otherNation = null;

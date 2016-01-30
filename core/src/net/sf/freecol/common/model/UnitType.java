@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -8,12 +11,14 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class UnitType extends ObjectWithFeatures {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
+	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
+    public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     
@@ -147,8 +152,10 @@ public class UnitType extends ObjectWithFeatures {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNode("required-ability", Ability.class, "requiredAbilities");
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
             addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
+            addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
 
         @Override
@@ -171,7 +178,7 @@ public class UnitType extends ObjectWithFeatures {
             
             nodeObject = ut;
         }
-
+        
         @Override
         public String getTagName() {
             return tagName();

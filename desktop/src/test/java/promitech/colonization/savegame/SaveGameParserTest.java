@@ -4,13 +4,17 @@ import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Player;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
@@ -50,16 +54,31 @@ public class SaveGameParserTest {
         assertNotNull(unit);
         assertEquals("unit:7049", unit.getId());
         
-        Player player = game.players.getById("player:1");
-        assertNotNull(player.getEurope());
-        assertEquals("europe:2", player.getEurope().getId());
-        
-        
+        verifyPlayer(game);
         verifySettlementsGoods(game);
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
     }
+
+	private void verifyPlayer(Game game) {
+		Player player = game.players.getById("player:1");
+
+        assertEquals(Stance.WAR, player.getStance(game.players.getById("player:133")));
+		
+        assertNotNull(player.getEurope());
+        assertEquals("europe:2", player.getEurope().getId());
+        
+        assertEquals(16, player.market().marketGoods.size());
+        Object food = player.market().marketGoods.getById("model.goods.food");
+        assertNotNull(food);
+        
+        assertEquals(2, player.foundingFathers.size());
+        assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
+        assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
+        
+        assertEquals(1, player.eventsNotifications.notifications.size());
+	}
     
     private void verifySettlementBuildingWorker(Game game) {
     	Tile tile = game.map.getTile(28, 40);
@@ -80,22 +99,53 @@ public class SaveGameParserTest {
         assertEquals(12, specification.resourceTypes.size());
         assertEquals( 6, specification.tileImprovementTypes.size());
         assertEquals(11, specification.unitRoles.size());
-        assertEquals(18, specification.nationTypes.size());
         assertEquals(25, specification.nations.size());
         assertEquals(21, specification.goodsTypes.size());
         
-        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
-        SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
-        assertNotNull(settlementType);
-        
+        verifyNationTypes(specification);
         verifySpecificationBuildType(specification);
         verifyShipGoods(game, specification);
         verifySpecificationOptionGroup(specification);
         verifySpecificationGameDifficultyOptions(specification);
         verifySpecificationUnitRoles(specification);
+        verifySpecificationUnitTypes(specification);
+        verifySpecificationFoundingFathers(specification);
     }
 
-    private void verifySpecificationUnitRoles(Specification specification) {
+    private void verifySpecificationFoundingFathers(Specification specification) {
+        assertEquals(25, specification.foundingFathers.size());
+        
+        FoundingFather henryHudson = specification.foundingFathers.getById("model.foundingFather.henryHudson");
+        assertEquals(FoundingFatherType.EXPLORATION, henryHudson.getType());
+        assertTrue(henryHudson.hasModifier("model.goods.furs"));
+
+        FoundingFather adamSmith = specification.foundingFathers.getById("model.foundingFather.adamSmith");
+        assertEquals(FoundingFatherType.TRADE, adamSmith.getType());
+        assertTrue(adamSmith.hasAbility("model.ability.buildFactory"));
+
+        FoundingFather pocahontas = specification.foundingFathers.getById("model.foundingFather.pocahontas");
+        assertEquals(FoundingFatherType.POLITICAL, pocahontas.getType());
+        assertNotNull(pocahontas.events.getById("model.event.resetNativeAlarm"));
+        assertNotNull(pocahontas.events.getById("model.event.resetBannedMissions"));
+    }
+
+	private void verifyNationTypes(Specification specification) {
+		assertEquals(18, specification.nationTypes.size());
+        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
+        SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
+        assertNotNull(settlementType);
+        
+        NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
+        assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
+        assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+	}
+
+    private void verifySpecificationUnitTypes(Specification specification) {
+    	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
+    	assertEquals(1, unitType.requiredAbilities.size());
+	}
+
+	private void verifySpecificationUnitRoles(Specification specification) {
         UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());

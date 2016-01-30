@@ -6,5 +6,7 @@ interface ChangeColonyStateListener {
     void changeUnitAllocation(Colony colony);
     
     void transfereGoods();
+    
+    void changeBuildingQueue();
 }
 

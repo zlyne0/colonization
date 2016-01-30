@@ -76,6 +76,11 @@ public class MapIdEntities<T extends Identifiable> {
     	return entities.values();
     }
     
+    public void removeId(String id) {
+    	entities.remove(id);
+    	sortedEntities = null;
+    }
+    
     public void removeId(Identifiable element) {
     	entities.remove(element.getId());
     	sortedEntities = null;
@@ -122,12 +127,16 @@ public class MapIdEntities<T extends Identifiable> {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            entitySetter.reset();
             if (!withWrapperTag) {
                 entityXmlParser.startElement(attr);
             }
         }
 
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+            entityXmlParser.startReadChildren(attr);
+        }
+        
         public void setMap(XmlNodeParser parentXmlParser) {
             if (withWrapperTag) {
                 nodeObject = parentXmlParser.nodeObject;

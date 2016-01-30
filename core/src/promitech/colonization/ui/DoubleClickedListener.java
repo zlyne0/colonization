@@ -4,7 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 public class DoubleClickedListener extends ClickListener {
-    private long clickedDelay = 500;
+    private long clickedDelay = 250;
     private long lastClicked = 0;
     
     @Override

@@ -17,8 +17,14 @@
  *  along with FreeCol.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.specification;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.ObjectWithFeatures;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -404,6 +410,7 @@ public final class Ability implements Identifiable {
     private boolean value = true;
     private String source;
     private String id;
+    private List<Scope> scopes = new ArrayList<Scope>();
     
     public Ability(String id) {
     	this.id = id;
@@ -418,10 +425,36 @@ public final class Ability implements Identifiable {
     	return id;
     }
 
-    public boolean isValue() {
-		return value;
+    public boolean canApplyTo(ObjectWithFeatures obj) {
+    	if (scopes.isEmpty()) {
+    		return false;
+    	}
+    	for (int i=0; i<scopes.size(); i++) {
+    		Scope s = scopes.get(i);
+    		if (s.type != null) {
+    			if (obj.getId().equals(s.type)) {
+    				return true;
+    			}
+    		}
+    		if (obj.hasAbility(s.abilityId, s.abilityValue)) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
+    public boolean isValueEquals(boolean v) {
+		return value == v;
 	}
 
+	public boolean isValueEquals(Ability ability) {
+		return value == ability.value;
+	}
+    
+    public boolean isValueNotEquals(boolean v) {
+		return value != v;
+	}
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(32);
@@ -435,6 +468,15 @@ public final class Ability implements Identifiable {
 
     public static class Xml extends XmlNodeParser {
         
+    	public Xml() {
+    		addNode(Scope.class, new ObjectFromNodeSetter<Ability, Scope>() {
+				@Override
+				public void set(Ability target, Scope entity) {
+					target.scopes.add(entity);
+				}
+			});
+		}
+    	
         @Override
         public void startElement(XmlNodeAttributes attr) {
         	Ability a = new Ability(attr.getStrAttribute("id"));
