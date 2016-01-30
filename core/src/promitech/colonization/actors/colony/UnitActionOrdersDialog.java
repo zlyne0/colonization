@@ -3,13 +3,9 @@ package promitech.colonization.actors.colony;
 import java.util.Collections;
 import java.util.List;
 
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
@@ -34,15 +30,14 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
-import promitech.colonization.ui.ClosableDialogAdapter;
-import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.SelectableRowTable;
 import promitech.colonization.ui.SelectableTableItem;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
+class UnitActionOrdersDialog extends ClosableDialog {
 	
     enum ActionTypes {
         LIST_PRODUCTIONS,
@@ -136,7 +131,6 @@ class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
         }
     }
     
-	private final ClosableDialogAdapter closableDialogAdapter = new ClosableDialogAdapter();
     private final GUIGameController gameController;
     private final ShapeRenderer shape;
     private SelectableRowTable actionsTable;
@@ -200,25 +194,20 @@ class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
         verticalListScrollPane.setScrollPercentY(100);
     }
 
-    @Override
-    public float getMaxHeight() {
-    	return 500;
-    }
-    
     protected void executeCommand(UnitActionOrderItem item) {
     	System.out.println("execute action type: " + item.actionType);
     	if (ActionTypes.LIST_PRODUCTIONS.equals(item.actionType)) {
     	    actionsTable.clear();
     		productionOrders();
-    		this.invalidateHierarchy();
     		this.pack();
+    		this.resetPositionToCenter();
     		return;
     	}
     	if (ActionTypes.LIST_CHANGE_PRODUCTIONS.equals(item.actionType)) {
     	    actionsTable.clear();
     		terrainProductionOrders();
-    		this.invalidateHierarchy();
     		this.pack();
+    		this.resetPositionToCenter();
     		return;
     	}
 		
@@ -288,17 +277,7 @@ class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
             }
         });
         getButtonTable().add(cancelButton);
-        addListener(new InputListener() {
-            public boolean keyDown (InputEvent event, int keycode2) {
-                if (Keys.ENTER == keycode2) {
-                	hideWithFade();
-                }
-                if (Keys.ESCAPE == keycode2) {
-                	hideWithFade();
-                }
-                return false;
-            }
-        });
+        withHidingOnEsc();
     }
 
     private void addCommands() {
@@ -369,24 +348,4 @@ class UnitActionOrdersDialog extends Dialog implements CloseableDialog {
             .spaceTop(5);
         actionsTable.nextRow();
     }
-
-    void hideWithFade() {
-    	hide();
-    	closableDialogAdapter.executeCloseListener();
-    }
-    
-    void hideWithoutFade() {
-    	hide(null);
-    	closableDialogAdapter.executeCloseListener();
-    }
-    
-	public void addOnCloseEvent(EventListener closeListener) {
-		closableDialogAdapter.addCloseListener(closeListener);
-	}
-
-	public void clickOnDialogStage(InputEvent event, float x, float y) {
-		if (closableDialogAdapter.canCloseBecauseClickOutsideDialog(this, x, y)) {
-			hideWithFade();
-		}
-	}
 }

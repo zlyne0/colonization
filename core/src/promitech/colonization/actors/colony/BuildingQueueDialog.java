@@ -3,14 +3,9 @@ package promitech.colonization.actors.colony;
 import java.util.LinkedList;
 import java.util.List;
 
-import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
-import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -31,9 +26,8 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
-import promitech.colonization.ui.ClosableDialogAdapter;
-import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.SelectableRowTable;
 import promitech.colonization.ui.SelectableTableItem;
 import promitech.colonization.ui.SimpleMessageDialog;
@@ -106,11 +100,8 @@ class BuildItemActor extends SelectableTableItem<ColonyBuildingQueueItem> {
     }
 }
 
-class BuildingQueueDialog extends Dialog implements CloseableDialog {
+class BuildingQueueDialog extends ClosableDialog {
 
-	private final ClosableDialogAdapter closeableDialogAdapter = new ClosableDialogAdapter();
-	private CloseableDialog closableDialog;
-	
 	private ShapeRenderer shape;
 	private final Colony colony;
 	private final Game game;
@@ -122,8 +113,8 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 	private final Table dialogLayout = new Table();
 	private TextButton buyButton;
 	
-	BuildingQueueDialog(ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
-		super("", GameResources.instance.getUiSkin());
+	BuildingQueueDialog(float maxHeight, ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
+		super("", GameResources.instance.getUiSkin(), maxHeight);
 		this.game = game;
 		this.colony = colony;
 		this.shape = shape;
@@ -148,12 +139,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 				}
 			}
 		});
-		ScrollPane buildableItemsScrollPane = new ScrollPane(buildableItemsLayout, GameResources.instance.getUiSkin()) {
-			@Override
-			public float getMaxHeight() {
-				return 500;
-			}
-		};
+		ScrollPane buildableItemsScrollPane = new ScrollPane(buildableItemsLayout, GameResources.instance.getUiSkin());
 		buildableItemsScrollPane.setFlickScroll(false);
 		buildableItemsScrollPane.setScrollingDisabled(true, false);
 		buildableItemsScrollPane.setForceScroll(false, false);
@@ -172,17 +158,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 				}
 			}
 		});
-		ScrollPane buildQueueScrollPane = new ScrollPane(buildQueueLayout, GameResources.instance.getUiSkin()) {
-			@Override
-			public float getMaxHeight() {
-				return 500;
-			}
-			
-			@Override
-			public float getMinWidth() {
-				return 300;
-			}
-		};
+		ScrollPane buildQueueScrollPane = new ScrollPane(buildQueueLayout, GameResources.instance.getUiSkin());
 		buildQueueScrollPane.setFlickScroll(false);
 		buildQueueScrollPane.setScrollingDisabled(true, false);
 		buildQueueScrollPane.setForceScroll(false, false);
@@ -201,17 +177,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		getContentTable().add(dialogLayout);
 		getButtonTable().add(buttonsPanel()).expandX();
         
-        addListener(new InputListener() {
-            public boolean keyDown (InputEvent event, int keycode2) {
-                if (Keys.ENTER == keycode2) {
-                	hideWithFade();
-                }
-                if (Keys.ESCAPE == keycode2) {
-                	hideWithFade();
-                }
-                return false;
-            }
-        });
+		withHidingOnEsc();
 	}
 	
 	private Actor buttonsPanel() {
@@ -292,14 +258,7 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 				.addAmount("%amount%", price);
 		
 		final SimpleMessageDialog confirmationDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
-		closableDialog = confirmationDialog;
-		confirmationDialog.addOnCloseEvent(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				closableDialog = null;
-				return true;
-			}
-		});
+		this.addChildDialog(confirmationDialog);
 		confirmationDialog.withContant(st)
 			.withButton("payForBuilding.no")
 			.withButton("payForBuilding.yes", new ChangeListener() {
@@ -362,35 +321,5 @@ class BuildingQueueDialog extends Dialog implements CloseableDialog {
 		} else {
 			buyButton.setDisabled(false);
 		}
-	}
-	
-	@Override
-	public float getMaxHeight() {
-		return 500;// this.getStage().getHeight() * 0.75f;
-	}
-	
-    void hideWithFade() {
-    	hide();
-    	closeableDialogAdapter.executeCloseListener();
-    }
-    
-    void hideWithoutFade() {
-    	hide(null);
-    	closeableDialogAdapter.executeCloseListener();
-    }
-
-	@Override
-	public void clickOnDialogStage(InputEvent event, float x, float y) {
-		if (closableDialog == null && closeableDialogAdapter.canCloseBecauseClickOutsideDialog(this, x, y)) {
-			hideWithFade();
-		}
-		if (closableDialog != null) {
-			closableDialog.clickOnDialogStage(event, x, y);
-		}
-	}
-
-	@Override
-	public void addOnCloseEvent(EventListener dialogOnCloseListener) {
-		closeableDialogAdapter.addCloseListener(dialogOnCloseListener);
 	}
 }

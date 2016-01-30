@@ -2,8 +2,6 @@ package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -23,7 +21,6 @@ import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
-import promitech.colonization.ui.CloseableDialog;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.resources.Messages;
@@ -41,7 +38,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
-	private CloseableDialog closableDialog;
 
     private Colony colony;
     private Tile colonyTile;
@@ -85,27 +81,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
     }
 
-    private ClickListener stageClickListener = new ClickListener() {
-    	public void clicked(InputEvent event, float x, float y) {
-    		if (closableDialog != null) {
-    			closableDialog.clickOnDialogStage(event, x, y);
-    		}
-    	}
-    };
-    
-    private EventListener onCloseDialogListener = new EventListener() {
-		@Override
-		public boolean handle(Event event) {
-			closableDialog = null;
-			return true;
-		}
-	}; 
-    
 	@Override
 	public void create() {
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
-    	stage.addListener(stageClickListener);
         
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
@@ -177,9 +156,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		textButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				closableDialog = new BuildingQueueDialog(shape, gameController.getGame(), colony, changeColonyStateListener);
-				closableDialog.addOnCloseEvent(onCloseDialogListener);
-				closableDialog.show(stage);
+				BuildingQueueDialog dialog = new BuildingQueueDialog(
+						stage.getHeight() * 0.75f,
+						shape, gameController.getGame(), 
+						colony, changeColonyStateListener
+				);
+				dialog.show(stage);
 			}
 		});
 		return textButton;
@@ -225,13 +207,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
-    	closableDialog = new UnitActionOrdersDialog(
+    	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(
         		shape, colony, unitActor, 
         		outsideUnitsPanel, terrainPanel, buildingsPanelActor,
         		gameController
         );
-    	closableDialog.addOnCloseEvent(onCloseDialogListener);
-    	closableDialog.show(stage);
+    	dialog.show(stage);
     }
     
 	@Override
