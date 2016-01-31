@@ -278,8 +278,10 @@ class ColonyProduction {
         for (Production production : productions) {
             for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
             	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, worker, colonyTile, null);
-            	prod.tileTypeInitProduction = production;
-            	goodsProduction.add(prod);
+            	if (prod != null) {
+	            	prod.tileTypeInitProduction = production;
+	            	goodsProduction.add(prod);
+            	}
             }
         }
 		
