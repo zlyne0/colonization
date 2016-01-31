@@ -199,6 +199,7 @@ public class Colony extends Settlement {
 	public ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
 		ProductionInfo productionInfo = aTile.type.productionInfo;
 		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
+		productionSummaryForWorker.applyModifiers(owner.foundingFathers.entities());
 		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
 		return productionSummaryForWorker;
 	}

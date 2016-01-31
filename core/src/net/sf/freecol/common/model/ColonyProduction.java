@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;
@@ -116,6 +117,9 @@ class ColonyProduction {
 	            int goodQuantity = 0;
 		        if (colonyTile.getWorker() != null) {
 		            goodQuantity += (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
+		            for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
+		            	goodQuantity = (int)ff.applyModifier(goodsId, goodQuantity);
+		            }
 		        } else {
 		            goodQuantity += goodInitValue;
 		        }
@@ -249,6 +253,9 @@ class ColonyProduction {
     	GoodsType prodGoodsType = outputEntry.getKey();
     	
     	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
+    	for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
+    		goodsQuantity = (int)ff.applyModifier(prodGoodsType.id, goodsQuantity);
+    	}
     	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity += colony.productionBonus();
     	

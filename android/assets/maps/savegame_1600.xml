@@ -4903,7 +4903,7 @@
         <destination id="europe:2"/>
         <destination id="map:247"/>
       </highSeas>
-      <foundingFathers xLength="2" x0="model.foundingFather.peterMinuit" x1="model.foundingFather.williamBrewster"/>
+      <foundingFathers xLength="3" x0="model.foundingFather.peterMinuit" x1="model.foundingFather.williamBrewster" x2="model.foundingFather.henryHudson" />
       <offeredFathers xLength="0"/>
       <europe id="europe:2" recruitPrice="710" recruitLowerCap="80" owner="player:1">
         <unit id="unit:7095" unitType="model.unit.freeColonist" movesLeft="12" state="sentry" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>

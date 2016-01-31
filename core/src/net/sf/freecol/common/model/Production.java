@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -69,6 +70,18 @@ public class Production implements Identifiable {
 			}
 			for (TileResource tileResource : aTile.getTileResources()) {
 				quantity = (int)tileResource.getResourceType().applyModifier(goodId, quantity);
+			}
+			outputEntry.setValue(quantity);
+		}
+	}
+	
+	public void applyModifiers(Collection<? extends ObjectWithFeatures> features) {
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
+			int quantity = outputEntry.getValue();
+			String goodId = outputEntry.getKey().getId();
+			
+			for (ObjectWithFeatures ff : features) {
+				quantity = (int)ff.applyModifier(goodId, quantity);
 			}
 			outputEntry.setValue(quantity);
 		}

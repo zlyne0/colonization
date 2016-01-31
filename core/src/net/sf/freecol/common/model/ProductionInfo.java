@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 public class ProductionInfo {
@@ -43,6 +44,12 @@ public class ProductionInfo {
 		return st;
 	}
 
+	public void applyModifiers(Collection<? extends ObjectWithFeatures> features) {
+		for (Production p : productions) {
+			p.applyModifiers(features);
+		}
+	}
+	
 	public void applyTileImprovementsModifiers(Tile aTile) {
 		for (Production p : productions) {
 			p.applyTileImprovementsModifiers(aTile);
@@ -79,5 +86,4 @@ public class ProductionInfo {
     public List<Production> getAttendedProductions() {
         return attendedProductions;
     }
-
 }
