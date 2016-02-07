@@ -451,6 +451,10 @@ public class Unit extends ObjectWithId implements Location {
             return MoveType.MOVE_ILLEGAL; // should not happen
         }
     }
+
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
+    	return getMoveCost(from, target, moveDirection, movesLeft);
+    }
     
     /**
      * Gets the cost of moving this <code>Unit</code> from the given
@@ -466,7 +470,7 @@ public class Unit extends ObjectWithId implements Location {
      * @param movesLeft The amount of moves this Unit has left.
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
-    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
         // Remember to also change map.findPath(...) if you change anything
         // here.
 
@@ -477,14 +481,14 @@ public class Unit extends ObjectWithId implements Location {
 
         if (isBeached(from)) {
             // Ship on land due to it was in a colony which was abandoned
-            cost = movesLeft;
-        } else if (cost > movesLeft) {
+            cost = _movesLeft;
+        } else if (cost > _movesLeft) {
             // Using +2 in order to make 1/3 and 2/3 move count as
             // 3/3, only when getMovesLeft > 0
-            if ((movesLeft + 2 >= getInitialMovesLeft() 
-            		|| cost <= movesLeft + 2
-            		|| target.hasSettlement()) && movesLeft != 0) {
-                cost = movesLeft;
+            if ((_movesLeft + 2 >= getInitialMovesLeft() 
+            		|| cost <= _movesLeft + 2
+            		|| target.hasSettlement()) && _movesLeft != 0) {
+                cost = _movesLeft;
             }
         }
         return cost;

@@ -86,40 +86,40 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 			screen.create();
 		}
 		
-		{
-		    // TODO: for tests only
-            Tile tile = gameController.getGame().map.getTile(24, 78);
-            Settlement settlement = tile.getSettlement();
-            if (settlement.isColony()) {
-                Colony colony = settlement.getColony();
-
-                // start additional building
-                {
-                	Building building = new Building("building:-2");
-                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.shipyard");
-                	colony.buildings.add(building);
-                }
+//		{
+//		    // TODO: for tests only
+//            Tile tile = gameController.getGame().map.getTile(24, 78);
+//            Settlement settlement = tile.getSettlement();
+//            if (settlement.isColony()) {
+//                Colony colony = settlement.getColony();
+//
+//                // start additional building
 //                {
-//                	Building building = new Building("building:-" + colony.buildings.size());
-//                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.armory");
+//                	Building building = new Building("building:-2");
+//                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.shipyard");
 //                	colony.buildings.add(building);
 //                }
-                {
-                	Building building = new Building("building:-1");
-                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.tobacconistShop");
-                	colony.buildings.add(building);
-                	colony.buildings.removeId("building:6542");
-                }
-                
-                colony.updateColonyFeatures();
-                // end additional building
-                
-                ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
-                colonyScreen.initColony(colony, tile);
-            }
-		}
+////                {
+////                	Building building = new Building("building:-" + colony.buildings.size());
+////                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.armory");
+////                	colony.buildings.add(building);
+////                }
+//                {
+//                	Building building = new Building("building:-1");
+//                	building.buildingType = Specification.instance.buildingTypes.getById("model.building.tobacconistShop");
+//                	colony.buildings.add(building);
+//                	colony.buildings.removeId("building:6542");
+//                }
+//                
+//                colony.updateColonyFeatures();
+//                // end additional building
+//                
+//                ColonyApplicationScreen colonyScreen = getApplicationScreen(ApplicationScreenType.COLONY);
+//                colonyScreen.initColony(colony, tile);
+//            }
+//		}
 		
-		setScreen(ApplicationScreenType.COLONY);
+		setScreen(ApplicationScreenType.MAP_VIEW);
 	}
 	
 	@Override
