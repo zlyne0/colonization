@@ -41,14 +41,10 @@ class CostDecider {
      * @return boolean - return true when can improve move
      */
 	boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
-        calculateTileAccess(moveNode.tile, moveType);
-        if (isMoveIllegal()) {
-            return false;
+        if (isMoveIllegal(moveNode.tile, moveType)) {
+        	return false;
         }
 		getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
-		if (isMoveIllegal()) {
-			return false;
-		}
 		return improveMove(currentNode, moveNode);
 	}
 	
@@ -81,18 +77,19 @@ class CostDecider {
 		moveCost = cost;
 	}
 	
-	protected void calculateTileAccess(Tile newTile, MoveType moveType) {
+	protected boolean isMoveIllegal(Tile newTile, MoveType moveType) {
 	    if (!MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
 	        // consider only moves without actions, actions can only happen on find path goal
 	        if (!moveType.isProgress()) {
 	            moveCost = ILLEGAL_MOVE_COST;
-	            return;
+	            return true;
 	        }
 	    }
 	    if (moveUnit.getOwner().isTileUnExplored(newTile)) {
 	        moveCost = ILLEGAL_MOVE_COST;
-	        return ;
+	        return true;
 	    }
+	    return false;
 	}
 }
 
@@ -102,9 +99,8 @@ class NavyCostDecider extends CostDecider {
     boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
         // check whether tile accessible
         // if moveNode.tile is land moveType == MoveType.MOVE_NO_ACCESS_LAND
-        calculateTileAccess(moveNode.tile, moveType);
-        if (isMoveIllegal()) {
-            return false;
+        if (isMoveIllegal(moveNode.tile, moveType)) {
+        	return false;
         }
         // check whether tile can be bombarded by colony or hostile ship
         if (isTileThreatForUnit(moveNode.tile)) {
@@ -113,9 +109,6 @@ class NavyCostDecider extends CostDecider {
         } else {
             // tile is not bombarded so use common move cost
             getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
-            if (isMoveIllegal()) {
-                return false;
-            }
         }
         return improveMove(currentNode, moveNode);
     }
