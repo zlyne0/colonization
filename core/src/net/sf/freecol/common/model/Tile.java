@@ -36,6 +36,10 @@ public class Tile implements Location, Identifiable {
 	public String getId() {
 	    return id;
 	}
+
+    public boolean equalsCoordinates(int x, int y) {
+        return this.x == x && this.y == y;
+    }
 	
 	public String toString() {
 		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 

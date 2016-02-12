@@ -9,10 +9,15 @@ public class Path {
 
 	final Array<Tile> tiles;
 	final IntArray turns;
+	final Tile startTile;
+	final Tile endTile;
 	
-	public Path(int lenght) {
-		this.tiles = new Array<Tile>(lenght);
-		this.turns = new IntArray(lenght);
+	public Path(Tile startTile, Tile endTile, int length) {
+		this.tiles = new Array<Tile>(length);
+		this.turns = new IntArray(length);
+		
+		this.startTile = startTile;
+		this.endTile = endTile;
 	}
 	
 	public void add(Tile tile, int turn) {
@@ -23,7 +28,9 @@ public class Path {
 	public String toString() {
 		String st = "";
 		for (int i=0; i<tiles.size; i++) {
-			st += "tile: [" + tiles.get(i).toString() + "], turn: [" + turns.get(i) + "]\r\n";
+		    Tile tile = tiles.get(i);
+		    String tileStr = tile.getId() + ", x: " + tile.x + ", y: " + tile.y + ", " + tile.type;
+			st += "tile: [" + tileStr + "], turn: [" + turns.get(i) + "]\r\n";
 		}
 		return st;
 	}

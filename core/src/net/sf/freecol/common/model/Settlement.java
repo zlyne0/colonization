@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 
 public abstract class Settlement implements Identifiable {
 	protected String id;
@@ -35,4 +36,10 @@ public abstract class Settlement implements Identifiable {
 	public Colony getColony() {
 		return (Colony)this;
 	}
+	
+    public boolean canBombardEnemyShip() {
+        return hasAbility(Ability.BOMBARD_SHIPS);
+    }
+
+    public abstract boolean hasAbility(String abilityCode);
 }

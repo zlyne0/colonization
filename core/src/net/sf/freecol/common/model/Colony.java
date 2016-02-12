@@ -113,6 +113,11 @@ public class Colony extends Settlement {
     	}
     }
     
+    @Override
+    public boolean hasAbility(String abilityCode) {
+        return colonyUpdatableFeatures.hasAbility(abilityCode);
+    }
+    
     private String getStockadeKey() {
         return null;
     }

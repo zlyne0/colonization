@@ -4,57 +4,70 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
+import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 
+// cost for move by civilian unit into foreign settlement is delt by moveType
+// the same case for move to foreign unit
+// the same case for defender unit
 class CostDecider {
     private static final int TURN_FACTOR = 100;
 	private static final int ILLEGAL_MOVE_COST = -1;
 
-	Unit moveUnit;
-	int unitInitialMoves;
+	protected Map map;
+	protected Unit moveUnit;
+	protected int unitInitialMoves;
+	protected boolean moveUnitPiracy = false;
 
-	private int costNewTurns;
-	private int costMovesLeft;
+	protected int costNewTurns;
+	protected int costMovesLeft;
 	
-	private int moveCost;
+	protected int moveCost;
 	private int newTotalPathCost;
+
+    void init(Map map, Unit moveUnit) {
+        this.map = map;
+        this.unitInitialMoves = moveUnit.getInitialMovesLeft();
+        this.moveUnit = moveUnit;
+        moveUnitPiracy = moveUnit.unitType.hasAbility(Ability.PIRACY);
+    }
 	
-	boolean improveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+    /**
+     * @return boolean - return true when can improve move
+     */
+	boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+        calculateTileAccess(moveNode.tile, moveType);
+        if (isMoveIllegal()) {
+            return false;
+        }
 		getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
-		if (moveCost == ILLEGAL_MOVE_COST) {
+		if (isMoveIllegal()) {
 			return false;
 		}
-		newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost;
-		
-		if (moveNode.totalCost > newTotalPathCost) {
-			moveNode.totalCost = newTotalPathCost;
-			moveNode.unitMovesLeft = costMovesLeft;
-			moveNode.turns = currentNode.turns + costNewTurns;
-			return true;
-		}
-		return false;
+		return improveMove(currentNode, moveNode);
+	}
+	
+	protected boolean improveMove(Node currentNode, Node moveNode) {
+	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost;
+	    if (moveNode.totalCost > newTotalPathCost) {
+	        moveNode.totalCost = newTotalPathCost;
+	        moveNode.unitMovesLeft = costMovesLeft;
+	        moveNode.turns = currentNode.turns + costNewTurns;
+	        return true;
+	    }
+	    return false;
 	}
 	
 	boolean isMoveIllegal() {
 		return moveCost == ILLEGAL_MOVE_COST;
 	}
 	
-	private void getCost(Tile oldTile, Tile newTile, final int movesLeftBefore, MoveType moveType, Direction moveDirection) {
-		if (!MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
-			// consider only moves without actions, actions can only happen on find path goal
-			if (!moveType.isProgress()) {
-				moveCost = ILLEGAL_MOVE_COST;
-				return;
-			}
-		}
-		if (moveUnit.getOwner().isTileUnExplored(newTile)) {
-			moveCost = ILLEGAL_MOVE_COST;
-			return ;
-		}
-		
+	protected void getCost(Tile oldTile, Tile newTile, final int movesLeftBefore, MoveType moveType, Direction moveDirection) {
 		int cost = moveUnit.getMoveCost(oldTile, newTile, moveDirection, movesLeftBefore);
 		if (cost > movesLeftBefore) {
             final int moveCostNextTurn = moveUnit.getMoveCost(oldTile, newTile, moveDirection, unitInitialMoves);
@@ -67,6 +80,107 @@ class CostDecider {
 		}
 		moveCost = cost;
 	}
+	
+	protected void calculateTileAccess(Tile newTile, MoveType moveType) {
+	    if (!MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
+	        // consider only moves without actions, actions can only happen on find path goal
+	        if (!moveType.isProgress()) {
+	            moveCost = ILLEGAL_MOVE_COST;
+	            return;
+	        }
+	    }
+	    if (moveUnit.getOwner().isTileUnExplored(newTile)) {
+	        moveCost = ILLEGAL_MOVE_COST;
+	        return ;
+	    }
+	}
+}
+
+class NavyCostDecider extends CostDecider {
+    
+    @Override
+    boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+        // check whether tile accessible
+        // if moveNode.tile is land moveType == MoveType.MOVE_NO_ACCESS_LAND
+        calculateTileAccess(moveNode.tile, moveType);
+        if (isMoveIllegal()) {
+            return false;
+        }
+        // check whether tile can be bombarded by colony or hostile ship
+        if (isTileThreatForUnit(moveNode.tile)) {
+            // when there is threat it use all moves points
+            moveCost = currentNode.unitMovesLeft;
+        } else {
+            // tile is not bombarded so use common move cost
+            getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
+            if (isMoveIllegal()) {
+                return false;
+            }
+        }
+        return improveMove(currentNode, moveNode);
+    }
+
+    public boolean isTileThreatForUnit(Tile moveTile) {
+        for (int i=0; i<Direction.values().length; i++) {
+            Direction direction = Direction.values()[i];
+            Tile neighbourToMoveTile = map.getTile(moveTile.x, moveTile.y, direction);
+            if (neighbourToMoveTile.hasSettlement()) {
+                if (isTileHasBombardedColony(neighbourToMoveTile)) {
+                    costMovesLeft = 0;
+                    costNewTurns = 1;
+                    return true;
+                }
+            } else {
+                boolean useAllMove = hasTileBombardedUnit(neighbourToMoveTile);
+                if (useAllMove) {
+                    costMovesLeft = 0;
+                    costNewTurns = 1;
+                    return true;
+                }                
+            }
+        }
+        return false;
+    }
+    
+    // TODO: move method to Tile
+    private boolean hasTileBombardedUnit(Tile tile) {
+        if (tile.units.isEmpty()) {
+            return false;
+        }
+        for (Unit unit : tile.units.entities()) {
+            if (unit.getOwner().equalsId(moveUnit.getOwner())) {
+                // TODO: ustawienie metadanych ze brak zagrozenia
+                // jesli brak jakichkolwiek jednostek to tez brak zagrozenia
+                break;
+            }
+            if (moveUnitPiracy) {
+                if (unit.isOffensiveUnit()) {
+                    return true;
+                }
+            } else {
+                if ((unit.isOffensiveUnit() && moveUnit.getOwner().atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY) ) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    // TODO: move method to Tile
+    private boolean isTileHasBombardedColony(Tile tile) {
+        if (!tile.hasSettlement()) {
+            return false;
+        }
+        Settlement settlement = tile.getSettlement();
+        if (settlement.getOwner().equalsId(moveUnit.getOwner())) {
+            return false;
+        }
+        if (settlement.canBombardEnemyShip() && (settlement.getOwner().atWarWith(moveUnit.getOwner()) || moveUnitPiracy)) {
+            return true;
+        }
+        return false;
+    }
+    
 }
 
 class Node {	
@@ -128,8 +242,7 @@ public class PathFinder {
 		resetFinderBeforeSearching(map);
 		
 		int iDirections = 0, nDirections = Direction.values().length;
-		costDecider.unitInitialMoves = moveUnit.getInitialMovesLeft();
-		costDecider.moveUnit = moveUnit;
+		costDecider.init(map, moveUnit);
 		
 		Node currentNode = grid[startTile.y][startTile.x];
 		currentNode.reset(moveUnit.getMovesLeft(), 0);
@@ -162,7 +275,7 @@ public class PathFinder {
 					moveType = MoveType.MOVE;
 				}
 				
-				if (costDecider.improveMove(currentNode, moveNode, moveType, moveDirection)) {
+				if (costDecider.calculateAndImproveMove(currentNode, moveNode, moveType, moveDirection)) {
 					if (oneOfTheBest == null || moveNode.hasBetterCostThen(oneOfTheBest)) {
 						oneOfTheBest = moveNode;
 					}
@@ -177,13 +290,13 @@ public class PathFinder {
 		}
 
 		if (reachedGoalNode != null) {
-			return createPath(reachedGoalNode);
+			return createPath(startTile, reachedGoalNode);
 		} else {
-			return createPath(oneOfTheBest);
+			return createPath(startTile, oneOfTheBest);
 		}
 	}
 	
-	private Path createPath(final Node endPathNode) {
+	private Path createPath(Tile startTile, final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -194,7 +307,7 @@ public class PathFinder {
 			count++;
 		}
 
-		Path path = new Path(count);
+		Path path = new Path(startTile, endPathNode.tile, count);
 		n = begining;
 		while (n != null) {
 			path.add(n.tile, n.turns);
