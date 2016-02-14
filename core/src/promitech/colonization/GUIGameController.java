@@ -11,6 +11,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.map.Path;
+import net.sf.freecol.common.model.map.PathFinder;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
@@ -32,6 +34,7 @@ public class GUIGameController {
 	
 	private Unit activeUnit;
 	private boolean viewMode = false;
+	private boolean createGotoPathMode = false;
 	private GameLogic gameLogic = new GameLogic();
 	private boolean blockUserInteraction = false;
 	
@@ -111,6 +114,10 @@ public class GUIGameController {
 		}
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+		
+		if (createGotoPathMode) {
+			generateGotoPath(p);
+		}
 		
 		if (viewMode) {
 			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
@@ -265,5 +272,44 @@ public class GUIGameController {
 
 	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
 		this.screenManager = screenManager;
+	}
+
+	public void gotoButtonPressed() {
+		if (createGotoPathMode == false) {
+			if (activeUnit == null) {
+				return;
+			}
+			createGotoPathMode = true;
+		} else {
+			createGotoPathMode = false;
+			mapActor.mapDrawModel().unitPath = null;
+		}
+		
+	}
+	
+	private void generateGotoPath(Point tileCoords) {
+		if (activeUnit == null) {
+			throw new IllegalStateException("activeUnit should be set to generate goto path");
+		}
+		
+		PathFinder finder = new PathFinder();
+		Tile startTile = activeUnit.getTile();
+		Tile endTile = game.map.getTile(tileCoords.x, tileCoords.y);
+		
+		Path path = finder.find(game.map, startTile, endTile, activeUnit);
+		System.out.println("found path: " + path);
+		mapActor.mapDrawModel().unitPath = path;
+	}
+
+	public boolean isShowDirectionButtons() {
+		return createGotoPathMode == false && (activeUnit != null || viewMode);
+	}
+
+	public boolean isShowGotoButton() {
+		return activeUnit != null && viewMode == false;
+	}
+	
+	public boolean isShowViewModeButton() {
+		return createGotoPathMode == false;
 	}
 }

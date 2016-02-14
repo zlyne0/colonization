@@ -119,6 +119,10 @@ public class FontResource {
 		instance.goodsQuantityFont.dispose();
 	}
 
+	public static BitmapFont getPathTurnsFont() {
+		return instance.cityNamesFont;
+	}
+	
 	public static BitmapFont getCityNamesFont() {
 		return instance.cityNamesFont;
 	}

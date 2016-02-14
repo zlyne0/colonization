@@ -7,8 +7,8 @@ import net.sf.freecol.common.model.Tile;
 
 public class Path {
 
-	final Array<Tile> tiles;
-	final IntArray turns;
+	public final Array<Tile> tiles;
+	public final IntArray turns;
 	final Tile startTile;
 	final Tile endTile;
 	

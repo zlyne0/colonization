@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 public class ButtonActor extends Actor {
     private static final Color BUTTON_COLOR = new Color(0.75f, 0.75f, 0.75f, 0.50f);  
     private final ShapeRenderer shapeRenderer;
+    private boolean enabled = true;
 
     public ButtonActor(ShapeRenderer shapeRenderer) {
         this.shapeRenderer = shapeRenderer;
@@ -18,6 +19,9 @@ public class ButtonActor extends Actor {
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
+    	if (!enabled) {
+    		return;
+    	}
         batch.end();
         
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -30,4 +34,9 @@ public class ButtonActor extends Actor {
         
         batch.begin();
     }
+    
+    public void setEnabled(boolean enabled) {
+    	this.enabled = enabled;
+    }
+    
 }

@@ -14,6 +14,7 @@ public class RadioButtonActor extends Actor {
     private final ShapeRenderer shapeRenderer;
 
     private boolean checked = false;
+    private boolean enabled = true;
     
 	public RadioButtonActor(ShapeRenderer shapeRenderer) {
         this.shapeRenderer = shapeRenderer;
@@ -21,6 +22,9 @@ public class RadioButtonActor extends Actor {
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
+    	if (!enabled) {
+    		return;
+    	}
         batch.end();
         
         Gdx.gl.glEnable(GL20.GL_BLEND);
@@ -45,5 +49,9 @@ public class RadioButtonActor extends Actor {
     
 	public boolean isChecked() {
 		return checked;
+	}
+
+	public void setEnabled(boolean enabled) {
+		this.enabled = enabled;
 	}
 }

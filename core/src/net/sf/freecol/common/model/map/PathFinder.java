@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 
 // cost for move by civilian unit into foreign settlement is delt by moveType
@@ -226,7 +225,10 @@ public class PathFinder {
 	
 	private Node grid[][];
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
-	private CostDecider costDecider = new CostDecider();
+	
+	private final CostDecider baseCostDecider = new CostDecider();
+	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
+	private CostDecider costDecider;
 
 	public PathFinder() {
 	}
@@ -235,6 +237,11 @@ public class PathFinder {
 		resetFinderBeforeSearching(map);
 		
 		int iDirections = 0, nDirections = Direction.values().length;
+		if (moveUnit.isNaval()) {
+			costDecider = navyCostDecider;
+		} else {
+			costDecider = baseCostDecider;
+		}
 		costDecider.init(map, moveUnit);
 		
 		Node currentNode = grid[startTile.y][startTile.x];

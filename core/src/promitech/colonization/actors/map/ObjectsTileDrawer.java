@@ -12,7 +12,6 @@ import promitech.colonization.GameResources;
 import promitech.colonization.actors.map.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
-import promitech.colonization.ui.resources.Messages;
 
 class ObjectsTileDrawer extends TileDrawer {
 	private static final int UNIT_IMAGE_OFFSET = 20;

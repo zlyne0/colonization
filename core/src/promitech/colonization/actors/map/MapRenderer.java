@@ -3,6 +3,7 @@ package promitech.colonization.actors.map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.math.Point;
 
 public class MapRenderer {
@@ -160,9 +162,39 @@ public class MapRenderer {
     	drawRoadLayer(batch);
     	drawLayer(batch, objectsTileDrawer);
     	drawFogOfWarLayer(batch);
+    	drawPathLayer(batch);
     }
 
-    private void drawFogOfWarLayer(Batch batch) {
+    private void drawPathLayer(Batch batch) {
+    	if (mapDrawModel.unitPath == null) {
+    		return;
+    	}
+    	Frame pathFootImg = gameResources.getCenterAdjustFrameTexture("path.foot.image");
+    	
+    	for (int i=0; i<mapDrawModel.unitPath.tiles.size; i++) {
+    		Tile tile = mapDrawModel.unitPath.tiles.get(i);
+    		if (isMapCoordinatesOnScreen(tile.x, tile.y)) {
+    			Vector2 tileScreenCords = mapToScreenCords(tile.x, tile.y);
+    			batch.draw(
+						pathFootImg.texture, 
+    					tileScreenCords.x + pathFootImg.offsetX, 
+    					tileScreenCords.y + pathFootImg.offsetY
+    			);
+    			
+    			int turns = mapDrawModel.unitPath.turns.get(i);
+    			if (turns > 0) {
+    				BitmapFont font = FontResource.getPathTurnsFont();
+    				font.draw(batch, 
+    						Integer.toString(turns), 
+    						tileScreenCords.x + TILE_WIDTH/2 + pathFootImg.texture.getRegionWidth()/2, 
+    						tileScreenCords.y + TILE_HEIGHT/2
+    				);
+    			}
+    		}
+    	}
+	}
+
+	private void drawFogOfWarLayer(Batch batch) {
     	batch.end();
     	fogOfWarDrawer.polyBatch.setProjectionMatrix(batch.getProjectionMatrix());
     	fogOfWarDrawer.polyBatch.setTransformMatrix(batch.getTransformMatrix());
@@ -254,6 +286,10 @@ public class MapRenderer {
 			return true;
 		}
 		return false;
+	}
+	
+	private boolean isMapCoordinatesOnScreen(int px, int py) {
+		return screenMin.x <= px && px <= screenMax.x && screenMin.y <= py && py <= screenMax.y; 
 	}
 	
 	public void drawSelectedTileOnInfoPanel(Batch batch, ShapeRenderer shapeRenderer, float screenX, float screenY) {
