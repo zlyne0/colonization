@@ -48,9 +48,10 @@ class CostDecider {
 	}
 	
 	protected boolean improveMove(Node currentNode, Node moveNode) {
-	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost;
+	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost + currentNode.totalCost;
+	    
 	    if (moveNode.totalCost > newTotalPathCost) {
-	        moveNode.totalCost = newTotalPathCost;
+		    moveNode.totalCost = newTotalPathCost;
 	        moveNode.unitMovesLeft = costMovesLeft;
 	        moveNode.turns = currentNode.turns + costNewTurns;
 	        return true;
@@ -77,13 +78,18 @@ class CostDecider {
 	}
 	
 	protected boolean isMoveIllegal(Tile newTile, MoveType moveType) {
-	    if (!MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
-	        // consider only moves without actions, actions can only happen on find path goal
-	        if (!moveType.isProgress()) {
-	            moveCost = ILLEGAL_MOVE_COST;
-	            return true;
-	        }
-	    }
+		if (MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
+			if (newTile.getSettlement() != null && !newTile.getSettlement().getOwner().equalsId(moveUnit.getOwner())) {
+				moveCost = ILLEGAL_MOVE_COST;
+				return true;
+			}
+		} else {
+			// consider only moves without actions, actions can only happen on find path goal
+			if (!moveType.isProgress()) {
+				moveCost = ILLEGAL_MOVE_COST;
+				return true;
+			}
+		}
 	    if (moveUnit.getOwner().isTileUnExplored(newTile)) {
 	        moveCost = ILLEGAL_MOVE_COST;
 	        return true;
@@ -136,6 +142,10 @@ class NavyCostDecider extends CostDecider {
     
     // TODO: move method to Tile
     private boolean hasTileBombardedUnit(Tile tile) {
+    	if (tile.type.isLand()) {
+    		// land units can not bombard ship
+    		return false;
+    	}
         if (tile.units.isEmpty()) {
             return false;
         }
@@ -203,7 +213,7 @@ class Node {
 	}
 	
 	public String toString() {
-		return "[" + tile.x + "," + tile.y + "], turns = " + turns + ", totalCost = " + totalCost;
+		return "[" + tile.x + "," + tile.y + "], unitMovesLeft = " + unitMovesLeft + ", turns = " + turns + ", totalCost = " + totalCost;
 	}
 }
 

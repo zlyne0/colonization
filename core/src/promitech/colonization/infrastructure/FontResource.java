@@ -120,6 +120,7 @@ public class FontResource {
 	}
 
 	public static BitmapFont getPathTurnsFont() {
+		instance.cityNamesFont.setColor(Color.WHITE);
 		return instance.cityNamesFont;
 	}
 	
