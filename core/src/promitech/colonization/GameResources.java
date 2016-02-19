@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.actors.map.MapRenderer;
@@ -279,5 +280,19 @@ public class GameResources {
     
     public Frame coatOfArms(Nation nation) {
         return getFrame(nation.getId() + ".image");
+    }
+
+    public Frame unitPathStepImage(Unit unit) {
+        if (unit.unitType.isNaval()) {
+            return getCenterAdjustFrameTexture("path.naval.image");
+        } 
+        if (unit.unitType.isWagonTrain()) {
+            return getCenterAdjustFrameTexture("path.wagon.image");
+        }
+        if (unit.isMounted()) {
+            return getCenterAdjustFrameTexture("path.horse.image");
+        }
+        return getCenterAdjustFrameTexture("path.foot.image");
+        
     }
 }

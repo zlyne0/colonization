@@ -85,6 +85,10 @@ public class UnitType extends ObjectWithFeatures {
     	return hasAbility(Ability.NAVAL_UNIT);
     }
 	
+    public boolean isWagonTrain() {
+        return WAGON_TRAIN.equalsIgnoreCase(id);
+    }
+    
 	public int getHitPoints() {
 		return hitPoints;
 	}

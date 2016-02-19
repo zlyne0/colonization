@@ -243,7 +243,7 @@ public class PathFinder {
 	public PathFinder() {
 	}
 	
-	public Path find(Map map, Tile startTile, Tile endTile, Unit moveUnit) {
+	public Path find(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
 		resetFinderBeforeSearching(map);
 		
 		int iDirections = 0, nDirections = Direction.values().length;
@@ -300,13 +300,13 @@ public class PathFinder {
 		}
 
 		if (reachedGoalNode != null) {
-			return createPath(startTile, reachedGoalNode);
+			return createPath(moveUnit, startTile, reachedGoalNode);
 		} else {
-			return createPath(startTile, oneOfTheBest);
+			return createPath(moveUnit, startTile, oneOfTheBest);
 		}
 	}
 	
-	private Path createPath(Tile startTile, final Node endPathNode) {
+	private Path createPath(final Unit moveUnit, final Tile startTile, final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -317,7 +317,7 @@ public class PathFinder {
 			count++;
 		}
 
-		Path path = new Path(startTile, endPathNode.tile, count);
+		Path path = new Path(moveUnit, startTile, endPathNode.tile, count);
 		n = begining;
 		while (n != null) {
 			path.add(n.tile, n.turns);

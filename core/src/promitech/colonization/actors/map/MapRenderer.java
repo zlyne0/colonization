@@ -169,16 +169,16 @@ public class MapRenderer {
     	if (mapDrawModel.unitPath == null) {
     		return;
     	}
-    	Frame pathFootImg = gameResources.getCenterAdjustFrameTexture("path.foot.image");
+    	Frame pathStepImg = gameResources.unitPathStepImage(mapDrawModel.unitPath.unit);
     	
     	for (int i=0; i<mapDrawModel.unitPath.tiles.size; i++) {
     		Tile tile = mapDrawModel.unitPath.tiles.get(i);
     		if (isMapCoordinatesOnScreen(tile.x, tile.y)) {
     			Vector2 tileScreenCords = mapToScreenCords(tile.x, tile.y);
     			batch.draw(
-						pathFootImg.texture, 
-    					tileScreenCords.x + pathFootImg.offsetX, 
-    					tileScreenCords.y + pathFootImg.offsetY
+						pathStepImg.texture, 
+    					tileScreenCords.x + pathStepImg.offsetX, 
+    					tileScreenCords.y + pathStepImg.offsetY
     			);
     			
     			int turns = mapDrawModel.unitPath.turns.get(i);
@@ -186,7 +186,7 @@ public class MapRenderer {
     				BitmapFont font = FontResource.getPathTurnsFont();
     				font.draw(batch, 
     						Integer.toString(turns), 
-    						tileScreenCords.x + TILE_WIDTH/2 + pathFootImg.texture.getRegionWidth()/2, 
+    						tileScreenCords.x + TILE_WIDTH/2 + pathStepImg.texture.getRegionWidth()/2, 
     						tileScreenCords.y + TILE_HEIGHT/2
     				);
     			}

@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 
 public class Path {
 
@@ -11,8 +12,10 @@ public class Path {
 	public final IntArray turns;
 	final Tile startTile;
 	final Tile endTile;
+	public final Unit unit;
 	
-	public Path(Tile startTile, Tile endTile, int length) {
+	public Path(Unit unit, Tile startTile, Tile endTile, int length) {
+	    this.unit = unit;
 		this.tiles = new Array<Tile>(length);
 		this.turns = new IntArray(length);
 		
