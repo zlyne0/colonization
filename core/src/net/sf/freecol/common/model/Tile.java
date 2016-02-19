@@ -133,6 +133,10 @@ public class Tile implements Location, Identifiable {
         }
         return quantity;
     }
+
+    public void setSettlement(Settlement settlement) {
+        this.settlement = settlement;
+    }    
     
 	public static class Xml extends XmlNodeParser {
 	    
