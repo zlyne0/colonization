@@ -137,4 +137,13 @@ public enum Direction {
     public static Direction angleToDirection(double angle) {
         return Direction.values()[(int)Math.floor(angle / (Math.PI/4))];
     }
+    
+    public static Direction fromCoordinates(int x, int y, int x2, int y2) {
+    	for (Direction d : Direction.values()) {
+    		if (d.stepX(x, y) == x2 && d.stepY(x, y) == y2) {
+    			return d;
+    		}
+    	}
+    	return null;
+    }
 }

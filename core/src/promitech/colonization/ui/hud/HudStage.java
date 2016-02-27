@@ -77,6 +77,10 @@ public class HudStage extends Stage {
         			resetButtonVisibility();
         			return true;
         		}
+        		if (keycode == Input.Keys.ENTER) {
+        			gameController.acceptGotoPathPressed();
+        			return true;
+        		}
         		Direction direction = directionByKeyCode.get(keycode);
         		if (direction != null) {
         			gameController.pressDirectionKey(direction);

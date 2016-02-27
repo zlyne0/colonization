@@ -168,80 +168,84 @@ public class GUIGameController {
 				return;
 			}
 			
-			MoveContext moveContext = new MoveContext();
-			moveContext.direction = direction;
-			moveContext.unit = mapDrawModel.getSelectedUnit();
-			moveContext.sourceTile = moveContext.unit.getTile();
-			moveContext.descTile = game.map.getTile(moveContext.sourceTile.x, moveContext.sourceTile.y, direction);
+			Unit selectedUnit = mapDrawModel.getSelectedUnit();
+			Tile sourceTile = selectedUnit.getTile();
 			
-			MoveType moveType = moveContext.unit.getMoveType(moveContext.sourceTile, moveContext.descTile);
-			moveContext.moveType = moveType;
-			System.out.println("moveType = " + moveType);
+			Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
+			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
-			switch (moveType) {
-				case MOVE: {
-					moveUnit(moveContext);
-					
-					guiMoveInteraction(moveContext);
-				} break;
-				case EMBARK: {
-					mapActor.mapDrawModel().setSelectedUnit(null);
-					activeUnit = null;
-
-					embarkUnit(moveContext);
-
-					guiMoveInteraction(moveContext);
-				} break;
-				default: {
-					System.out.println("not handled move type: " + moveType);
-				}
+			System.out.println("moveContext = " + moveContext);
+			
+			if (moveContext.canHandleMove()) {
+				moveContext.handleMove();
+				guiMoveInteraction(moveContext);
 			}
 		}
 	}
 
+	public void acceptGotoPathPressed() {
+		if (!createGotoPathMode) {
+			return;
+		}
+		if (activeUnit == null) {
+			return;
+		}
+		Path unitPath = mapActor.mapDrawModel().unitPath;
+		if (unitPath == null) {
+			return;
+		}
+		
+		MoveContext moveContext = new MoveContext(unitPath);
+		moveContext.initNextPathStep();
+
+		System.out.println("moveContext = " + moveContext);
+
+		if (moveContext.canHandleMove()) {
+			moveContext.handleMove();
+			guiMoveInteraction(moveContext);
+		}
+	}
+	
 	private void guiMoveInteraction(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.descTile)) {
-			mapActor.centerCameraOnTile(moveContext.descTile);
+		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
 		blockUserInteraction = true;
 		endOfUnitDislocationAnimation.moveContext = moveContext;
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
 	}
 	
-	private void moveUnit(MoveContext moveContext) {
-		moveContext.unit.setState(UnitState.ACTIVE);
-		moveContext.unit.setStateToAllChildren(UnitState.SENTRY);
-		int moveCost = moveContext.unit.getMoveCost(moveContext.sourceTile, moveContext.descTile, moveContext.direction);
-		System.out.println("moveLeft = " + moveContext.unit.getMovesLeft() + ", moveCost = " + moveCost);
-		moveContext.unit.reduceMovesLeft(moveCost);
-		moveContext.unit.changeLocation(moveContext.descTile);
-	}
-	
-	private void embarkUnit(MoveContext moveContext) {
-		Unit carrier = null;
-		for (Unit u : moveContext.descTile.units.entities()) {
-			if (u.canAddUnit(moveContext.unit)) {
-				carrier = u;
-				break;
-			}
-		}
-		if (carrier == null) {
-			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
-		}
-		moveContext.unit.setState(UnitState.SKIPPED);
-		moveContext.unit.changeLocation(carrier);
-		moveContext.unit.reduceMovesLeftToZero();
-	}
-	
 	private UnitDislocationAnimation.EndOfAnimationListener endOfUnitDislocationAnimation = new EndOfAnimationListener() {
 		@Override
 		public void end(Unit unit) {
-			blockUserInteraction = false;
-			if (MoveType.MOVE.equals(moveContext.moveType)) { 
+			
+			if (moveContext.isMoveType(MoveType.MOVE)) {
 				boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
 				if (exloredNewTiles) {
 					mapActor.resetUnexploredBorders();
 				}
+			}
+
+			if (moveContext.isMoveType(MoveType.EMBARK)) {
+				mapActor.mapDrawModel().setSelectedUnit(null);
+				activeUnit = null;
+			}
+			
+			if (moveContext.isMoveViaPath()) {
+				moveContext.initNextPathStep();
+				System.out.println("moveContext = " + moveContext);
+				if (moveContext.canHandleMove()) {
+					moveContext.handleMove();
+					guiMoveInteraction(moveContext);
+				} else {
+					blockUserInteraction = false;
+					
+					if (moveContext.isEndOfPath()) {
+						mapActor.mapDrawModel().unitPath = null;
+					}
+				}
+			} else {
+				blockUserInteraction = false;
 			}
 		}
 	};

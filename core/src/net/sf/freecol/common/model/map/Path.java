@@ -37,5 +37,26 @@ public class Path {
 		}
 		return st;
 	}
+
+	public void removeFirst() {
+		if (tiles.size > 0) {
+			tiles.removeIndex(0);
+		}
+		if (turns.size > 0) {
+			turns.removeIndex(0);
+		}
+	}
+
+	public boolean hasNotTilesToMove() {
+		return tiles.size < 2;
+	}
+
+	public Tile moveStepSource() {
+		return tiles.get(0);
+	}
+
+	public Tile moveStepDest() {
+		return tiles.get(1);
+	}
 	
 }

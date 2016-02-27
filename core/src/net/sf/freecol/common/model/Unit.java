@@ -566,6 +566,10 @@ public class Unit extends ObjectWithId implements Location {
 		this.movesLeft = 0;
 	}
 	
+	public boolean hasMovesPoints(int moveCost) {
+		return this.movesLeft >= moveCost;
+	}
+	
     public UnitContainer getUnitContainer() {
         return unitContainer;
     }
