@@ -240,10 +240,33 @@ public class PathFinder {
 	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
 	private CostDecider costDecider;
 
+	private Map map;
+	private Tile startTile;
+	private Tile endTile;
+	private Unit moveUnit;
+	
 	public PathFinder() {
 	}
 	
-	public Path find(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
+	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
+        this.map = map;
+        this.startTile = startTile;
+        this.endTile = null;
+        this.moveUnit = moveUnit;
+        
+        return find();
+	}
+	
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
+	    this.map = map;
+	    this.startTile = startTile;
+	    this.endTile = endTile;
+	    this.moveUnit = moveUnit;
+	    
+        return find();
+	}
+	
+	private Path find() {
 		resetFinderBeforeSearching(map);
 		
 		int iDirections = 0, nDirections = Direction.values().length;
@@ -278,7 +301,7 @@ public class PathFinder {
 				}
 				
 				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
-				if (endTile.getId().equals(moveNode.tile.getId())) {
+				if (isReachedGoal(moveNode)) {
 					reachedGoalNode = moveNode;
 					// change moveType to default move. Sometimes goal can be indian settlement 
 					// and moveType should be used only to find path
@@ -304,6 +327,14 @@ public class PathFinder {
 		} else {
 			return createPath(moveUnit, startTile, oneOfTheBest);
 		}
+	}
+	
+	private boolean isReachedGoal(Node moveNode) {
+	    if (endTile == null) {
+	        return moveNode.tile.type.isHighSea();
+	    } else {
+	        return endTile.getId().equals(moveNode.tile.getId());
+	    }
 	}
 	
 	private Path createPath(final Unit moveUnit, final Tile startTile, final Node endPathNode) {

@@ -43,7 +43,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.units.getById("unit:6762");
         
 		// when
-		path = sut.find(game.map, startTile, endTile, moveUnit);
+		path = sut.findToTile(game.map, startTile, endTile, moveUnit);
         
 		// then
 		System.out.println("path = \r\n" + path );
@@ -71,7 +71,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.units.getById("unit:6900");
 		
 		// when
-        path = sut.find(game.map, startTile, endTile, moveUnit);
+        path = sut.findToTile(game.map, startTile, endTile, moveUnit);
 		
 		// then
 		System.out.println("path = \r\n" + path );
@@ -108,7 +108,7 @@ public class PathFinderTest {
         fortressTile.setSettlement(fortressColony);
 
         // when
-        path = sut.find(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -138,7 +138,7 @@ public class PathFinderTest {
         startTile.units.add(privateer);
 
         // when
-        path = sut.find(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -151,6 +151,44 @@ public class PathFinderTest {
         assertPathStep(2, 0, 28, 76);
         assertPathStep(3, 0, 28, 74);
         assertPathStep(4, 0, 28, 72);
+    }
+	
+	@Test
+    public void canFindPathToEurope() throws Exception {
+        // given
+        Tile startTile = game.map.getTile(12, 79);
+        Unit moveUnit = startTile.units.getById("unit:6900");
+
+        // when
+	    path = sut.findToEurope(game.map, startTile, moveUnit);
+        // then
+	    System.out.println("path = " + path);
+
+        assertPathStep(0, 0, 12, 79);
+        assertPathStep(1, 0, 12, 81);
+        assertPathStep(2, 0, 12, 83);
+        assertPathStep(3, 0, 12, 85);
+        assertPathStep(4, 0, 12, 87);
+        assertPathStep(5, 0, 12, 89);
+        assertPathStep(6, 0, 13, 89);
+        assertPathStep(7, 0, 14, 89);
+        assertPathStep(8, 0, 15, 89);
+        assertPathStep(9, 1, 16, 89);
+        assertPathStep(10, 1, 17, 89);
+        assertPathStep(11, 1, 18, 89);
+        assertPathStep(12, 1, 19, 89);
+        assertPathStep(13, 1, 20, 89);
+        assertPathStep(14, 1, 21, 89);
+        assertPathStep(15, 1, 22, 89);
+        assertPathStep(16, 1, 23, 90);
+        assertPathStep(17, 2, 24, 90);
+        assertPathStep(18, 2, 25, 90);
+        assertPathStep(19, 2, 26, 90);
+        assertPathStep(20, 2, 27, 90);
+        assertPathStep(21, 2, 28, 90);
+        assertPathStep(22, 2, 29, 90);
+        assertPathStep(23, 2, 30, 90);
+        assertPathStep(24, 2, 30, 88);    
     }
 	
 	private void assertPathStep(int stepIndex, int turns, int x, int y) {

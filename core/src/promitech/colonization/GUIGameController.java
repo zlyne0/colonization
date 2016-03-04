@@ -300,7 +300,7 @@ public class GUIGameController {
 		Tile startTile = activeUnit.getTile();
 		Tile endTile = game.map.getTile(tileCoords.x, tileCoords.y);
 		
-		Path path = finder.find(game.map, startTile, endTile, activeUnit);
+		Path path = finder.findToTile(game.map, startTile, endTile, activeUnit);
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;
 	}

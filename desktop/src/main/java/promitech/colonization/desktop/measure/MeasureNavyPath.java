@@ -56,7 +56,7 @@ public class MeasureNavyPath implements MeasureTask {
 
     @Override
     public void run() {
-        path = sut.find(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer);
     }
     
     public static void main(String args[]) throws Exception {
