@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
@@ -26,16 +27,13 @@ import promitech.colonization.savegame.SaveGameParser;
 
 public class GUIGameController {
 
+	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
 	private UnitIterator unitIterator;
 	
 	private MapActor mapActor;
 	private ApplicationScreenManager screenManager;
 	
-	private Unit activeUnit;
-	private boolean viewMode = false;
-	private boolean createGotoPathMode = false;
-	private GameLogic gameLogic = new GameLogic();
 	private boolean blockUserInteraction = false;
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
@@ -58,35 +56,46 @@ public class GUIGameController {
 		
 		if (unitIterator.hasNext()) {
 			changeActiveUnit(unitIterator.next());
-			if (activeUnit != null) {
-				mapActor.centerCameraOnTile(activeUnit.getTile());
+			if (guiGameModel.isActiveUnitSet()) {
+				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
 			} 
 		}
 	}
 
-	public void setViewMode(boolean checked) {
+	public void enterInViewMode() {
 		if (blockUserInteraction) {
 			return;
 		}
+		System.out.println("enterInViewMode");
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (checked) {
-			viewMode = true;
-			if (mapDrawModel.getSelectedUnit() != null) {
-				mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
-			} else {
-				Point p = mapActor.getCenterOfScreen();
-				mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
-			}
-			mapActor.mapDrawModel().setSelectedUnit(null);
+		if (mapDrawModel.getSelectedUnit() != null) {
+			mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
 		} else {
-			viewMode = false;
-			mapDrawModel.selectedTile = null;
-			mapDrawModel.setSelectedUnit(activeUnit);
-			if (activeUnit != null) {
-				mapActor.centerCameraOnTile(activeUnit.getTile());
-			} 
+			Point p = mapActor.getCenterOfScreen();
+			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
 		}
+		guiGameModel.previewViewModeUnit = guiGameModel.getActiveUnit();
+		guiGameModel.setActiveUnit(null);
+		mapDrawModel.setSelectedUnit(null);
+		guiGameModel.setViewMode(true);
+	}
+
+	public void leaveViewMode() {
+		if (blockUserInteraction) {
+			return;
+		}
+		System.out.println("leaveInViewMode");
+		
+		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+		mapDrawModel.selectedTile = null;
+		if (guiGameModel.isActiveUnitSet()) {
+			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
+		} 
+		guiGameModel.setActiveUnit(guiGameModel.previewViewModeUnit);
+		mapDrawModel.setSelectedUnit(guiGameModel.previewViewModeUnit);
+		guiGameModel.previewViewModeUnit = null;
+		guiGameModel.setViewMode(false);
 	}
 
 	public void doubleClickOnTile(Point mapPoint) {
@@ -115,11 +124,12 @@ public class GUIGameController {
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
-		if (createGotoPathMode) {
+		if (guiGameModel.isCreateGotoPathMode()) {
 			generateGotoPath(p);
+			return;
 		}
 		
-		if (viewMode) {
+		if (guiGameModel.isViewMode()) {
 			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
 			mapDrawModel.setSelectedUnit(null);
 		} else {
@@ -155,7 +165,7 @@ public class GUIGameController {
 		}
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (viewMode) {
+		if (guiGameModel.isViewMode()) {
 			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			mapDrawModel.selectedTile = game.map.getTile(x, y);
@@ -183,29 +193,6 @@ public class GUIGameController {
 		}
 	}
 
-	public void acceptGotoPathPressed() {
-		if (!createGotoPathMode) {
-			return;
-		}
-		if (activeUnit == null) {
-			return;
-		}
-		Path unitPath = mapActor.mapDrawModel().unitPath;
-		if (unitPath == null) {
-			return;
-		}
-		
-		MoveContext moveContext = new MoveContext(unitPath);
-		moveContext.initNextPathStep();
-
-		System.out.println("moveContext = " + moveContext);
-
-		if (moveContext.canHandleMove()) {
-			moveContext.handleMove();
-			guiMoveInteraction(moveContext);
-		}
-	}
-	
 	private void guiMoveInteraction(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
@@ -228,7 +215,7 @@ public class GUIGameController {
 
 			if (moveContext.isMoveType(MoveType.EMBARK)) {
 				mapActor.mapDrawModel().setSelectedUnit(null);
-				activeUnit = null;
+				guiGameModel.setActiveUnit(null);
 			}
 			
 			if (moveContext.isMoveViaPath()) {
@@ -252,8 +239,8 @@ public class GUIGameController {
 	
 	public void closeColonyView(Colony colony) {
 		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-		if (activeUnit != null) {
-			if (colony.isUnitInColony(activeUnit)) {
+		if (guiGameModel.isActiveUnitSet()) {
+			if (colony.isUnitInColony(guiGameModel.getActiveUnit())) {
 				changeActiveUnit(null);
 			}
 		}
@@ -266,7 +253,7 @@ public class GUIGameController {
 	}
 	
 	void changeActiveUnit(Unit unit) {
-		this.activeUnit = unit;
+		guiGameModel.setActiveUnit(unit);
 		mapActor.mapDrawModel().setSelectedUnit(unit);
 	}
 	
@@ -278,42 +265,78 @@ public class GUIGameController {
 		this.screenManager = screenManager;
 	}
 
-	public void gotoButtonPressed() {
-		if (createGotoPathMode == false) {
-			if (activeUnit == null) {
-				return;
-			}
-			createGotoPathMode = true;
-		} else {
-			createGotoPathMode = false;
-			mapActor.mapDrawModel().unitPath = null;
+	public void enterIntoCreateGotoPathMode() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			return;
 		}
+		if (guiGameModel.isActiveUnitNotSet()) {
+			return;
+		}
+		mapActor.mapDrawModel().unitPath = null;
+		guiGameModel.setCreateGotoPathMode(true);
+	}
+	
+	public void leaveCreateGotoPathMode() {
+		guiGameModel.setCreateGotoPathMode(false);
+		mapActor.mapDrawModel().unitPath = null;
+	}
+
+	private void acceptGotoPath() {
+		if (!guiGameModel.isCreateGotoPathMode()) {
+			throw new IllegalStateException("should be in find path mode");
+		}
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit should be set");
+		}
+		Path unitPath = mapActor.mapDrawModel().unitPath;
+		if (unitPath == null) {
+			throw new IllegalStateException("path not generated");
+		}
+		guiGameModel.setCreateGotoPathMode(false);
 		
+		MoveContext moveContext = new MoveContext(unitPath);
+		moveContext.initNextPathStep();
+
+		System.out.println("moveContext = " + moveContext);
+
+		if (moveContext.canHandleMove()) {
+			moveContext.handleMove();
+			guiMoveInteraction(moveContext);
+		}
 	}
 	
 	private void generateGotoPath(Point tileCoords) {
-		if (activeUnit == null) {
+		if (guiGameModel.isActiveUnitNotSet()) {
 			throw new IllegalStateException("activeUnit should be set to generate goto path");
 		}
 		
 		PathFinder finder = new PathFinder();
-		Tile startTile = activeUnit.getTile();
+		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		Tile endTile = game.map.getTile(tileCoords.x, tileCoords.y);
 		
-		Path path = finder.findToTile(game.map, startTile, endTile, activeUnit);
+		Path path = finder.findToTile(game.map, startTile, endTile, guiGameModel.getActiveUnit());
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;
 	}
 
-	public boolean isShowDirectionButtons() {
-		return createGotoPathMode == false && (activeUnit != null || viewMode);
-	}
-
-	public boolean isShowGotoButton() {
-		return activeUnit != null && viewMode == false;
+	public void acceptAction() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			acceptGotoPath();
+			return;
+		}
 	}
 	
-	public boolean isShowViewModeButton() {
-		return createGotoPathMode == false;
+	public void cancelAction() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			leaveCreateGotoPathMode();
+		}
+	}
+	
+	public void addGUIGameModelChangeListener(ChangeStateListener listener) {
+		guiGameModel.addChangeListener(listener);
+	}
+
+	public void onShowGUI() {
+		guiGameModel.runListeners();
 	}
 }

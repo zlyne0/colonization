@@ -1,46 +1,27 @@
 package promitech.colonization.ui.hud;
 
-import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 
-public class RadioButtonActor extends Actor {
-    private static final Color BUTTON_COLOR = new Color(0.75f, 0.75f, 0.75f, 0.50f);  
+public class RadioButtonActor extends ButtonActor {
+    private static final Color UNCHECKED_BUTTON_COLOR = new Color(0.75f, 0.75f, 0.75f, 0.50f);  
     private static final Color CHECKED_BUTTON_COLOR = new Color(0.50f, 0.50f, 0.50f, 0.50f);  
-    private final ShapeRenderer shapeRenderer;
 
     private boolean checked = false;
-    private boolean enabled = true;
     
-	public RadioButtonActor(ShapeRenderer shapeRenderer) {
-        this.shapeRenderer = shapeRenderer;
+	public RadioButtonActor(ShapeRenderer shapeRenderer, String label) {
+		super(shapeRenderer, label);
     }
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
-    	if (!enabled) {
-    		return;
+    	if (checked) {
+    		buttonColor = CHECKED_BUTTON_COLOR;
+    	} else {
+    		buttonColor = UNCHECKED_BUTTON_COLOR;
     	}
-        batch.end();
-        
-        Gdx.gl.glEnable(GL20.GL_BLEND);
-        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
-        
-        shapeRenderer.begin(ShapeType.Filled);
-        
-        if (checked) {
-        	shapeRenderer.setColor(CHECKED_BUTTON_COLOR);
-        } else {
-        	shapeRenderer.setColor(BUTTON_COLOR);
-        }
-        shapeRenderer.rect(getX() + 10, getY() + 10, getWidth()-20, getHeight()-20);
-        shapeRenderer.end();
-        
-        batch.begin();
+    	super.draw(batch, parentAlpha);
     }
 
     public void setChecked(boolean checked) {
@@ -51,7 +32,7 @@ public class RadioButtonActor extends Actor {
 		return checked;
 	}
 
-	public void setEnabled(boolean enabled) {
-		this.enabled = enabled;
+	public void recheck() {
+		this.checked = !checked;
 	}
 }

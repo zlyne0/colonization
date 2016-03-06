@@ -56,6 +56,9 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     @Override
     protected void setStage(Stage stage) {
     	super.setStage(stage);
+    	if (stage == null) {
+    		return;
+    	}
 		setBounds(
 				stage.getWidth() - infoPanelSkin.texture.getRegionWidth(), 0,
 				infoPanelSkin.texture.getRegionWidth(), infoPanelSkin.texture.getRegionHeight()

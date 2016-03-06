@@ -19,6 +19,7 @@ public class FontResource {
 	private BitmapFont goodsQuantityFont; 
 	private BitmapFont warehouseGoodsQuantityFont;
 	private BitmapFont populationPanelFont = new BitmapFont(false);
+	private BitmapFont hudButtonsFont;
 	
 	private GlyphLayout glyphLayout = new GlyphLayout();
 	
@@ -66,6 +67,10 @@ public class FontResource {
         params.color = Color.WHITE;
 		warehouseGoodsQuantityFont = generator.generateFont(params);
 		
+		hudButtonsFont = new BitmapFont(false);
+		//hudButtonsFont.setColor(new Color(0.8f, 0.8f, 0.8f, 1f));
+		hudButtonsFont.setColor(Color.WHITE);
+		
 		generator.dispose();
 	}
 	
@@ -111,6 +116,10 @@ public class FontResource {
     	return strWidth(font, str.toString());
     }
 	
+    public static float fontHeight(BitmapFont font) {
+    	return font.getCapHeight();
+    }
+    
 	public static void dispose() {
 		instance.cityNamesFont.dispose();
 		instance.citySizeFont.dispose();
@@ -152,4 +161,8 @@ public class FontResource {
     public static BitmapFont getPopulationPanelFont() {
         return instance.populationPanelFont;
     }
+
+	public static BitmapFont getHudButtonsFont() {
+		return instance.hudButtonsFont;
+	}
 }
