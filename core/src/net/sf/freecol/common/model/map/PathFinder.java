@@ -108,7 +108,7 @@ class NavyCostDecider extends CostDecider {
         	return false;
         }
         // check whether tile can be bombarded by colony or hostile ship
-        if (isTileThreatForUnit(moveNode.tile)) {
+        if (isTileThreatForUnit(moveNode)) {
             // when there is threat it use all moves points
             moveCost = currentNode.unitMovesLeft;
         } else {
@@ -118,14 +118,21 @@ class NavyCostDecider extends CostDecider {
         return improveMove(currentNode, moveNode);
     }
 
-    public boolean isTileThreatForUnit(Tile moveTile) {
+    private boolean isTileThreatForUnit(Node moveNode) {
+        if (moveNode.tileBombardedMetaData) {
+            return moveNode.tileBombarded;
+        }
+        moveNode.tileBombardedMetaData = true;
+        
         for (int i=0; i<Direction.values().length; i++) {
             Direction direction = Direction.values()[i];
-            Tile neighbourToMoveTile = map.getTile(moveTile.x, moveTile.y, direction);
+            Tile neighbourToMoveTile = map.getTile(moveNode.tile.x, moveNode.tile.y, direction);
             if (neighbourToMoveTile.hasSettlement()) {
                 if (isTileHasBombardedColony(neighbourToMoveTile)) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
+                    
+                    moveNode.tileBombarded = true;
                     return true;
                 }
             } else {
@@ -133,10 +140,12 @@ class NavyCostDecider extends CostDecider {
                 if (useAllMove) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
+                    moveNode.tileBombarded = true;
                     return true;
                 }                
             }
         }
+        moveNode.tileBombarded = false;
         return false;
     }
     
@@ -190,6 +199,8 @@ class Node {
 	int turns;
 	int unitMovesLeft;
 	boolean noMove;
+	boolean tileBombardedMetaData = false; // whether meta data set
+	boolean tileBombarded = false;
 	Node preview;
 	Node next;
 	
@@ -210,6 +221,8 @@ class Node {
 		this.noMove = false;
 		this.preview = null;
 		this.next = null;
+		this.tileBombardedMetaData = false;
+		this.tileBombarded = false;
 	}
 	
 	public String toString() {

@@ -70,7 +70,7 @@ public class MeasureNavyPath implements MeasureTask {
         MeasureNavyPath mObject = new MeasureNavyPath();
         mObject.before();
         
-        Measurement m = new Measurement(20);
+        Measurement m = new Measurement(100);
         MeasurementResult result = m.measure(mObject);
         
         System.out.println("result " + result);
