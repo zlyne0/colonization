@@ -8,7 +8,7 @@ public class Measurement {
     }
     
     public MeasurementResult measure(MeasureTask task) {
-        MeasurementResult result = new MeasurementResult();
+        MeasurementResult result = new MeasurementResult(count);
         long startTime;
         long endTime;
         for (int i = 0; i < count; i++) {

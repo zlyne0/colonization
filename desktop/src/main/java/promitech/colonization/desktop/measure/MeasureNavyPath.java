@@ -25,7 +25,9 @@ public class MeasureNavyPath implements MeasureTask {
     
     Tile startTile;
     Tile endTile;
-    Unit privateer;
+    Tile startTile2;
+    Tile endTile2;
+    Unit moveUnit;
     
     public void before() throws Exception {
         Gdx.files = new LwjglFiles();
@@ -33,39 +35,45 @@ public class MeasureNavyPath implements MeasureTask {
         game = saveGameParser.parse();
 
         // init map
-        startTile = game.map.getTile(26, 77);
-        endTile = game.map.getTile(28, 72);
+        startTile = game.map.getTile(12, 79);
+        moveUnit = startTile.units.getById("unit:6900");
 
-        Tile privateerTile = game.map.getTile(12, 79);
-        privateer = privateerTile.units.getById("unit:6900");
-        privateerTile.units.removeId(privateer);
-        startTile.units.add(privateer);
+        startTile2 = game.map.getTile(26, 77);
+        endTile2 = game.map.getTile(28, 72);
 
-        Player fortressOwner = game.players.getById("player:112");
-        Colony fortressColony = new Colony("colony:-1");
-        fortressColony.setOwner(fortressOwner);
-
-        Building fortressBuilding = new Building("building:-1");
-        fortressBuilding.buildingType = Specification.instance.buildingTypes.getById("model.building.fortress");
-        fortressColony.buildings.add(fortressBuilding);
-        fortressColony.updateColonyFeatures();
-
-        Tile fortressTile = game.map.getTile(27, 75);
-        fortressTile.setSettlement(fortressColony);
+        {
+            // create fortress colony 
+            Player fortressOwner = game.players.getById("player:112");
+            Colony fortressColony = new Colony("colony:-1");
+            fortressColony.setOwner(fortressOwner);
+    
+            Building fortressBuilding = new Building("building:-1");
+            fortressBuilding.buildingType = Specification.instance.buildingTypes.getById("model.building.fortress");
+            fortressColony.buildings.add(fortressBuilding);
+            fortressColony.updateColonyFeatures();
+    
+            Tile fortressTile = game.map.getTile(27, 75);
+            fortressTile.setSettlement(fortressColony);
+        }
     }
 
     @Override
     public void run() {
-        path = sut.findToTile(game.map, startTile, endTile, privateer);
+        path = sut.findToEurope(game.map, startTile, moveUnit);
+        path = sut.findToTile(game.map, startTile2, endTile2, moveUnit);
     }
     
     public static void main(String args[]) throws Exception {
+        /**
+         * Should be run with -Xint -Djava.compiler=NONE jvm params.
+         */
         MeasureNavyPath mObject = new MeasureNavyPath();
         mObject.before();
         
-        Measurement m = new Measurement(10);
+        Measurement m = new Measurement(20);
         MeasurementResult result = m.measure(mObject);
         
         System.out.println("result " + result);
+        result.xxx();
     }
 }
