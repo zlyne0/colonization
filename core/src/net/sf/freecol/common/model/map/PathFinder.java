@@ -4,7 +4,6 @@ import java.util.Comparator;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
@@ -128,7 +127,7 @@ class NavyCostDecider extends CostDecider {
             Direction direction = Direction.values()[i];
             Tile neighbourToMoveTile = map.getTile(moveNode.tile.x, moveNode.tile.y, direction);
             if (neighbourToMoveTile.hasSettlement()) {
-                if (isTileHasBombardedColony(neighbourToMoveTile)) {
+                if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(moveUnit.getOwner(), moveUnitPiracy)) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
                     
@@ -136,7 +135,7 @@ class NavyCostDecider extends CostDecider {
                     return true;
                 }
             } else {
-                boolean useAllMove = hasTileBombardedUnit(neighbourToMoveTile);
+                boolean useAllMove = neighbourToMoveTile.isTileHasNavyUnitThatCanBombardUnit(moveUnit.getOwner(), moveUnitPiracy);
                 if (useAllMove) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
@@ -148,50 +147,6 @@ class NavyCostDecider extends CostDecider {
         moveNode.tileBombarded = false;
         return false;
     }
-    
-    // TODO: move method to Tile
-    private boolean hasTileBombardedUnit(Tile tile) {
-    	if (tile.type.isLand()) {
-    		// land units can not bombard ship
-    		return false;
-    	}
-        if (tile.units.isEmpty()) {
-            return false;
-        }
-        for (Unit unit : tile.units.entities()) {
-            if (unit.getOwner().equalsId(moveUnit.getOwner())) {
-                // TODO: ustawienie metadanych ze brak zagrozenia
-                // jesli brak jakichkolwiek jednostek to tez brak zagrozenia
-                break;
-            }
-            if (moveUnitPiracy) {
-                if (unit.isOffensiveUnit()) {
-                    return true;
-                }
-            } else {
-                if ((unit.isOffensiveUnit() && moveUnit.getOwner().atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY) ) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
-    // TODO: move method to Tile
-    private boolean isTileHasBombardedColony(Tile tile) {
-        if (!tile.hasSettlement()) {
-            return false;
-        }
-        Settlement settlement = tile.getSettlement();
-        if (settlement.getOwner().equalsId(moveUnit.getOwner())) {
-            return false;
-        }
-        if (settlement.canBombardEnemyShip() && (settlement.getOwner().atWarWith(moveUnit.getOwner()) || moveUnitPiracy)) {
-            return true;
-        }
-        return false;
-    }
-    
 }
 
 class Node {	
