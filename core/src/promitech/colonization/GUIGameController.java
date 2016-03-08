@@ -184,6 +184,8 @@ public class GUIGameController {
 			Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
 			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
+			mapActor.mapDrawModel().unitPath = null;
+			selectedUnit.setDestination(null);
 			System.out.println("moveContext = " + moveContext);
 			
 			if (moveContext.canHandleMove()) {
@@ -219,6 +221,12 @@ public class GUIGameController {
 			}
 			
 			if (moveContext.isMoveViaPath()) {
+				if (game.map.isUnitSeeHostileUnit(moveContext.unit)) {
+					blockUserInteraction = false;
+					System.out.println("unit: " + moveContext.unit + " see hostile unit");
+					return;
+				}
+				
 				moveContext.initNextPathStep();
 				System.out.println("moveContext = " + moveContext);
 				if (moveContext.canHandleMove()) {
@@ -236,7 +244,7 @@ public class GUIGameController {
 			}
 		}
 	};
-	
+
 	public void closeColonyView(Colony colony) {
 		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
 		if (guiGameModel.isActiveUnitSet()) {

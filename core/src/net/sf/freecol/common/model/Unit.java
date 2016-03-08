@@ -49,6 +49,7 @@ public class Unit extends ObjectWithId implements Location {
     protected int treasureAmount;
     private boolean expert = false;
     private int experience;
+    private String destination;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -206,9 +207,13 @@ public class Unit extends ObjectWithId implements Location {
         return null;
     }
 	
-    public Location getDestination() {
-        return null;
+    public String getDestination() {
+        return destination;
     }
+    
+	public void setDestination(String locationId) {
+		this.destination = locationId;
+	}
     
     public UnitState getState() {
         return state;
@@ -475,9 +480,6 @@ public class Unit extends ObjectWithId implements Location {
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
     public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
-        // Remember to also change map.findPath(...) if you change anything
-        // here.
-
         int cost = target.type.getBasicMoveCost();
         if (target.type.isLand() && !isNaval()) {
         	cost = target.getMoveCost(moveDirection, cost);
@@ -653,6 +655,7 @@ public class Unit extends ObjectWithId implements Location {
             unit.roleCount = attr.getIntAttribute("roleCount", -1);
             unit.name = attr.getStrAttribute("name");
             unit.experience = attr.getIntAttribute("experience", 0);
+            unit.destination = attr.getStrAttribute("destination");
             
             unit.expert = Specification.instance.isUnitTypeExpert(unitType);
 
@@ -699,4 +702,5 @@ public class Unit extends ObjectWithId implements Location {
             return unit.couldMove();
         }
     }
+
 }
