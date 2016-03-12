@@ -33,6 +33,9 @@ public class Unit extends ObjectWithId implements Location {
         SKIPPED
     }
 	
+    public static enum MoveDestinationType {
+    	TILE, EUROPE;
+    }
 	
     protected String name;
 	private Player owner;
@@ -49,7 +52,9 @@ public class Unit extends ObjectWithId implements Location {
     protected int treasureAmount;
     private boolean expert = false;
     private int experience;
-    private String destination;
+    private MoveDestinationType destinationType;
+    private int destinationX;
+    private int destinationY;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -207,14 +212,40 @@ public class Unit extends ObjectWithId implements Location {
         return null;
     }
 	
-    public String getDestination() {
-        return destination;
+    public boolean isDestinationSet() {
+    	return destinationType != null;
     }
     
-	public void setDestination(String locationId) {
-		this.destination = locationId;
+    public boolean isDestinationTile() {
+    	return MoveDestinationType.TILE.equals(destinationType);
+    }
+    
+	public boolean isDestinationEurope() {
+    	return MoveDestinationType.EUROPE.equals(destinationType);
 	}
     
+	public int getDestinationX() {
+		return destinationX;
+	}
+
+	public int getDestinationY() {
+		return destinationY;
+	}
+    
+	public void clearDestination() {
+		this.destinationType = null;
+	}
+    
+	public void setDestinationEurope() {
+		this.destinationType = MoveDestinationType.EUROPE;
+	}
+
+	public void setDestination(Tile tile) {
+		this.destinationType = MoveDestinationType.TILE;
+		this.destinationX = tile.x;
+		this.destinationY = tile.y;
+	}
+	
     public UnitState getState() {
         return state;
     }
@@ -286,7 +317,7 @@ public class Unit extends ObjectWithId implements Location {
                 ? "model.unit.occupation.underRepair"
                 : (getTradeRoute() != null)
                 ? "model.unit.occupation.inTradeRoute"
-                : (getDestination() != null)
+                : (isDestinationSet())
                 ? "model.unit.occupation.goingSomewhere"
                 : (getState() == Unit.UnitState.IMPROVING && getWorkImprovement() != null)
                 ? (getWorkImprovement().type.getId() + ".occupationString")
@@ -655,7 +686,12 @@ public class Unit extends ObjectWithId implements Location {
             unit.roleCount = attr.getIntAttribute("roleCount", -1);
             unit.name = attr.getStrAttribute("name");
             unit.experience = attr.getIntAttribute("experience", 0);
-            unit.destination = attr.getStrAttribute("destination");
+            
+            unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, "destinationType");
+            if (MoveDestinationType.TILE.equals(unit.destinationType)) {
+            	unit.destinationX = attr.getIntAttribute("destinationX");
+            	unit.destinationY = attr.getIntAttribute("destinationY");
+            }
             
             unit.expert = Specification.instance.isUnitTypeExpert(unitType);
 

@@ -222,7 +222,9 @@ public class PathFinder {
         this.endTile = null;
         this.moveUnit = moveUnit;
         
-        return find();
+        Path path = find();
+        path.toEurope = true;
+		return path;
 	}
 	
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
@@ -231,7 +233,9 @@ public class PathFinder {
 	    this.endTile = endTile;
 	    this.moveUnit = moveUnit;
 	    
-        return find();
+        Path path = find();
+        path.toEurope = false;
+		return path;
 	}
 	
 	private Path find() {

@@ -11,8 +11,9 @@ public class Path {
 	public final Array<Tile> tiles;
 	public final IntArray turns;
 	final Tile startTile;
-	final Tile endTile;
+	public final Tile endTile;
 	public final Unit unit;
+	boolean toEurope = false;
 	
 	public Path(Unit unit, Tile startTile, Tile endTile, int length) {
 	    this.unit = unit;
@@ -57,6 +58,10 @@ public class Path {
 
 	public Tile moveStepDest() {
 		return tiles.get(1);
+	}
+
+	public boolean isPathToEurope() {
+		return toEurope;
 	}
 	
 }

@@ -35,6 +35,7 @@ public class GUIGameController {
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
+	private PathFinder finder = new PathFinder();
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
@@ -185,7 +186,7 @@ public class GUIGameController {
 			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
 			mapActor.mapDrawModel().unitPath = null;
-			selectedUnit.setDestination(null);
+			selectedUnit.clearDestination();
 			System.out.println("moveContext = " + moveContext);
 			
 			if (moveContext.canHandleMove()) {
@@ -233,11 +234,11 @@ public class GUIGameController {
 					moveContext.handleMove();
 					guiMoveInteraction(moveContext);
 				} else {
-					blockUserInteraction = false;
-					
 					if (moveContext.isEndOfPath()) {
+						moveContext.unit.clearDestination();
 						mapActor.mapDrawModel().unitPath = null;
 					}
+					blockUserInteraction = false;
 				}
 			} else {
 				blockUserInteraction = false;
@@ -263,6 +264,25 @@ public class GUIGameController {
 	void changeActiveUnit(Unit unit) {
 		guiGameModel.setActiveUnit(unit);
 		mapActor.mapDrawModel().setSelectedUnit(unit);
+		mapActor.mapDrawModel().unitPath = null;
+		if (unit == null) {
+			return;
+		}
+		setDrawableUnitPath(unit);
+	}
+	
+	private void setDrawableUnitPath(Unit unit) {
+		mapActor.mapDrawModel().unitPath = null;
+		
+		if (unit.isDestinationTile()) {
+			Tile startTile = unit.getTile();
+			Tile endTile = game.map.getTile(unit.getDestinationX(), unit.getDestinationY());
+			mapActor.mapDrawModel().unitPath = finder.findToTile(game.map, startTile, endTile, unit);
+		}
+		if (unit.isDestinationEurope()) {
+			Tile startTile = unit.getTile();
+			mapActor.mapDrawModel().unitPath = finder.findToEurope(game.map, startTile, unit);
+		}
 	}
 	
     public Game getGame() {
@@ -280,8 +300,8 @@ public class GUIGameController {
 		if (guiGameModel.isActiveUnitNotSet()) {
 			return;
 		}
-		mapActor.mapDrawModel().unitPath = null;
 		guiGameModel.setCreateGotoPathMode(true);
+		setDrawableUnitPath(guiGameModel.getActiveUnit());		
 	}
 	
 	public void leaveCreateGotoPathMode() {
@@ -304,6 +324,11 @@ public class GUIGameController {
 		
 		MoveContext moveContext = new MoveContext(unitPath);
 		moveContext.initNextPathStep();
+		if (unitPath.isPathToEurope()) {
+			moveContext.unit.setDestinationEurope();
+		} else {
+			moveContext.unit.setDestination(unitPath.endTile);
+		}
 
 		System.out.println("moveContext = " + moveContext);
 
@@ -318,7 +343,6 @@ public class GUIGameController {
 			throw new IllegalStateException("activeUnit should be set to generate goto path");
 		}
 		
-		PathFinder finder = new PathFinder();
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		Tile endTile = game.map.getTile(tileCoords.x, tileCoords.y);
 		
