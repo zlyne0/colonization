@@ -2,8 +2,8 @@ package promitech.colonization.ui.hud;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -12,7 +12,6 @@ import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.Unit;
@@ -67,6 +66,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
+    	batch.setColor(Color.WHITE);
         batch.draw(infoPanelSkin.texture, getX(), 0);
         
     	if (selectedUnit != null) {

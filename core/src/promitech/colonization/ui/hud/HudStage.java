@@ -5,6 +5,8 @@ import java.util.Map.Entry;
 
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -73,55 +75,60 @@ public class HudStage extends Stage {
         hudInfoPanel = new HudInfoPanel(gameResources);
         
         createActionButtons(bw);
-        
-        
-        addListener(new InputListener() {
-        	@Override
-        	public boolean keyDown(InputEvent event, int keycode) {
-        		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
-        			if (viewButton.isChecked()) {
-        				gameController.leaveViewMode();
-        			} else {
-        				gameController.enterInViewMode();
-        			}
-    				return true;
-        		}
-        		if (keycode == Input.Keys.N && nextUnitButton.getParent() != null) {
-    				gameController.nextActiveUnit();
-    				return true;
-        		}
-        		
-        		if (keycode == Input.Keys.G && gotoTileButton.getParent() != null) {
-        			gameController.enterIntoCreateGotoPathMode();
-        			return true;
-        		}
-        		
-        		if (keycode == Input.Keys.ENTER) {
-        			gameController.acceptAction();
-        			return true;
-        		}
-        		
-        		if (keycode == Input.Keys.ESCAPE) {
-        			gameController.cancelAction();
-        			return true;
-        		}
-        		
-        		Direction direction = directionByKeyCode.get(keycode);
-        		if (direction != null) {
-        			ButtonActor button = directionButtons.get(direction);
-        			if (button.getParent() != null) {
-	        			gameController.pressDirectionKey(direction);
-	        			return true;
-        			}
-        		}
-        		return super.keyDown(event, keycode);
-        	}
-        });
+		addListener(keysInputListener);
         
         gameController.addGUIGameModelChangeListener(guiGameModelChangeListener);
     }
 
-	private InputListener buttonsInputListener = new InputListener() {
+    private final InputListener keysInputListener = new InputListener() {
+    	@Override
+    	public boolean keyDown(InputEvent event, int keycode) {
+    		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
+    			if (viewButton.isChecked()) {
+    				gameController.leaveViewMode();
+    			} else {
+    				gameController.enterInViewMode();
+    			}
+    			return true;
+    		}
+    		if (keycode == Input.Keys.N && nextUnitButton.getParent() != null) {
+    			gameController.nextActiveUnit();
+    			return true;
+    		}
+    		
+    		if (keycode == Input.Keys.G && gotoTileButton.getParent() != null) {
+    			gameController.enterIntoCreateGotoPathMode();
+    			return true;
+    		}
+    		
+    		if (keycode == Input.Keys.H && gotoLocationButton.getParent() != null) {
+    			showGotoLocationDialog();
+    			return true;
+    		}
+    		
+    		if (keycode == Input.Keys.ENTER) {
+    			gameController.acceptAction();
+    			return true;
+    		}
+    		
+    		if (keycode == Input.Keys.ESCAPE) {
+    			gameController.cancelAction();
+    			return true;
+    		}
+    		
+    		Direction direction = directionByKeyCode.get(keycode);
+    		if (direction != null) {
+    			ButtonActor button = directionButtons.get(direction);
+    			if (button.getParent() != null) {
+    				gameController.pressDirectionKey(direction);
+    				return true;
+    			}
+    		}
+    		return super.keyDown(event, keycode);
+    	}
+    };
+    
+	private final InputListener buttonsInputListener = new InputListener() {
     	@Override
 		public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
     		
@@ -152,6 +159,11 @@ public class HudStage extends Stage {
     			} else {
     				gameController.enterIntoCreateGotoPathMode();
     			}
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == gotoLocationButton) {
+    			showGotoLocationDialog();
     			return true;
     		}
     		
@@ -266,10 +278,11 @@ public class HudStage extends Stage {
 	
     @Override
     public void act() {
+    	shapeRenderer.setProjectionMatrix(getBatch().getProjectionMatrix());
+    	shapeRenderer.setTransformMatrix(getBatch().getTransformMatrix());
+    	shapeRenderer.translate(getViewport().getScreenX(), getViewport().getScreenY(), 0);
+    	
         super.act();
-        shapeRenderer.setProjectionMatrix(getBatch().getProjectionMatrix());
-        shapeRenderer.setTransformMatrix(getBatch().getTransformMatrix());
-        shapeRenderer.translate(getViewport().getScreenX(), getViewport().getScreenY(), 0);
     }
 
 	private void resetButtonVisibility(GUIGameModel model) {
@@ -318,6 +331,23 @@ public class HudStage extends Stage {
 			addActor(gotoLocationButton);
 			addActor(gotoTileButton);
 		}
-
 	}
+	
+    private void showGotoLocationDialog() {
+		HudStage.this.removeListener(keysInputListener);
+		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
+				gameController,
+				shapeRenderer,
+				HudStage.this.getHeight() * 0.75f
+		);
+		gotoCityDialogList.addOnCloseListener(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				HudStage.this.addListener(keysInputListener);
+				return true;
+			}
+		});
+		gotoCityDialogList.show(HudStage.this);
+    }
+	
 }

@@ -262,6 +262,10 @@ public class Unit extends ObjectWithId implements Location {
     	return unitType != null && unitType.isNaval();
     }
     
+	public boolean canMoveToHighSeas() {
+		return isNaval();
+	}
+    
     public boolean isCarrier() {
         return unitType.hasAbility(Ability.CARRY_GOODS) || hasAbility(Ability.CARRY_UNITS);
     }
@@ -738,5 +742,4 @@ public class Unit extends ObjectWithId implements Location {
             return unit.couldMove();
         }
     }
-
 }

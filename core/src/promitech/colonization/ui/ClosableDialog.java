@@ -68,11 +68,13 @@ public class ClosableDialog {
     }
     
     public void hideWithFade() {
+    	dialog.getStage().removeListener(onStageClickListener);
         dialog.hide();
         executeCloseListener();
     }
     
     public void hideWithoutFade() {
+    	dialog.getStage().removeListener(onStageClickListener);
         dialog.hide(null);
         executeCloseListener();
     }
@@ -88,14 +90,16 @@ public class ClosableDialog {
 		});
     }
     
+    private final ClickListener onStageClickListener = new ClickListener() {
+    	public void clicked(InputEvent event, float x, float y) {
+    		if (childDialog == null && canCloseBecauseClickOutsideDialog(x, y)) {
+    			hide();
+    		}
+    	}
+    };
+    
     public void show(Stage stage) {
-        stage.addListener(new ClickListener() {
-            public void clicked(InputEvent event, float x, float y) {
-                if (childDialog == null && canCloseBecauseClickOutsideDialog(x, y)) {
-                    hide();
-                }
-            }
-        });
+		stage.addListener(onStageClickListener);
         dialog.show(stage);
     }
     

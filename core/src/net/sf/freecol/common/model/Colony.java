@@ -51,6 +51,10 @@ public class Colony extends Settlement {
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
     }
+
+    public String toString() {
+    	return "id=" + id + ", name=" + getName();
+    }
     
     public int getColonyUnitsCount() {
 		return colonyWorkers.size();

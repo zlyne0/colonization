@@ -135,7 +135,7 @@ class BuildingQueueDialog extends ClosableDialog {
 			public void doubleClicked(InputEvent event, float x, float y) {
 				if (event.getListenerActor() instanceof SelectableTableItem) {
 					SelectableTableItem<ColonyBuildingQueueItem> tableItem = (SelectableTableItem)event.getListenerActor();
-					addToBuildingQueue(tableItem.object);
+					addToBuildingQueue(tableItem.payload);
 				}
 			}
 		});

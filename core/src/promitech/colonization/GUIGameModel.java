@@ -63,5 +63,9 @@ public class GUIGameModel {
 		this.createGotoPathMode = createGotoPathMode;
 		runListeners();
 	}
+
+	public void setCreateGotoPathModeWithoutListeners(boolean createGotoPathMode) {
+		this.createGotoPathMode = createGotoPathMode;
+	}
 	
 }

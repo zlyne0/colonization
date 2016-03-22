@@ -126,7 +126,8 @@ public class GUIGameController {
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
 		if (guiGameModel.isCreateGotoPathMode()) {
-			generateGotoPath(p);
+			Tile tile = game.map.getTile(p.x, p.y);
+			generateGotoPath(tile);
 			return;
 		}
 		
@@ -338,19 +339,34 @@ public class GUIGameController {
 		}
 	}
 	
-	private void generateGotoPath(Point tileCoords) {
+	private void generateGotoPath(Tile destinationTile) {
 		if (guiGameModel.isActiveUnitNotSet()) {
 			throw new IllegalStateException("activeUnit should be set to generate goto path");
 		}
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
-		Tile endTile = game.map.getTile(tileCoords.x, tileCoords.y);
 		
-		Path path = finder.findToTile(game.map, startTile, endTile, guiGameModel.getActiveUnit());
+		Path path = finder.findToTile(game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;
 	}
 
+	public void acceptPathToDestination(Tile tile) {
+		guiGameModel.setCreateGotoPathModeWithoutListeners(true);
+		generateGotoPath(tile);
+		acceptGotoPath();
+	}
+	
+	public void acceptPathToEuropeDestination() {
+		guiGameModel.setCreateGotoPathModeWithoutListeners(true);
+		mapActor.mapDrawModel().unitPath = finder.findToEurope(
+				game.map, 
+				guiGameModel.getActiveUnit().getTile(), 
+				guiGameModel.getActiveUnit()
+		);
+		acceptGotoPath();
+	}
+	
 	public void acceptAction() {
 		if (guiGameModel.isCreateGotoPathMode()) {
 			acceptGotoPath();
@@ -370,5 +386,9 @@ public class GUIGameController {
 
 	public void onShowGUI() {
 		guiGameModel.runListeners();
+	}
+
+	public Unit getActiveUnit() {
+		return guiGameModel.getActiveUnit();
 	}
 }

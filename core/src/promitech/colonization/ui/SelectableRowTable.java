@@ -109,7 +109,7 @@ public class SelectableRowTable extends Table {
 					continue;
 				}
 				set.add(ti.rowIndex);
-				uniqueRowsItems.add(ti.object);
+				uniqueRowsItems.add(ti.payload);
 			}
 		}
 		return uniqueRowsItems;
