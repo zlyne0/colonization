@@ -54,12 +54,19 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
-		
+		logicNextActiveUnit();
+	}
+	
+	private void logicNextActiveUnit() {
 		if (unitIterator.hasNext()) {
-			changeActiveUnit(unitIterator.next());
+			Unit nextUnit = unitIterator.next();
+			changeActiveUnit(nextUnit);
 			if (guiGameModel.isActiveUnitSet()) {
 				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
-			} 
+			}
+			if (nextUnit.isDestinationSet()) {
+				logicAcceptGotoPath();
+			}
 		}
 	}
 
@@ -238,6 +245,9 @@ public class GUIGameController {
 					if (moveContext.isEndOfPath()) {
 						moveContext.unit.clearDestination();
 						mapActor.mapDrawModel().unitPath = null;
+						
+					} else {
+						logicNextActiveUnit();
 					}
 					blockUserInteraction = false;
 				}
@@ -310,13 +320,7 @@ public class GUIGameController {
 		mapActor.mapDrawModel().unitPath = null;
 	}
 
-	private void acceptGotoPath() {
-		if (!guiGameModel.isCreateGotoPathMode()) {
-			throw new IllegalStateException("should be in find path mode");
-		}
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("active unit should be set");
-		}
+	private void logicAcceptGotoPath() {
 		Path unitPath = mapActor.mapDrawModel().unitPath;
 		if (unitPath == null) {
 			throw new IllegalStateException("path not generated");
@@ -352,24 +356,28 @@ public class GUIGameController {
 	}
 
 	public void acceptPathToDestination(Tile tile) {
-		guiGameModel.setCreateGotoPathModeWithoutListeners(true);
 		generateGotoPath(tile);
-		acceptGotoPath();
+		logicAcceptGotoPath();
 	}
 	
 	public void acceptPathToEuropeDestination() {
-		guiGameModel.setCreateGotoPathModeWithoutListeners(true);
 		mapActor.mapDrawModel().unitPath = finder.findToEurope(
 				game.map, 
 				guiGameModel.getActiveUnit().getTile(), 
 				guiGameModel.getActiveUnit()
 		);
-		acceptGotoPath();
+		logicAcceptGotoPath();
 	}
 	
 	public void acceptAction() {
 		if (guiGameModel.isCreateGotoPathMode()) {
-			acceptGotoPath();
+			if (!guiGameModel.isCreateGotoPathMode()) {
+				throw new IllegalStateException("should be in find path mode");
+			}
+			if (guiGameModel.isActiveUnitNotSet()) {
+				throw new IllegalStateException("active unit should be set");
+			}
+			logicAcceptGotoPath();
 			return;
 		}
 	}
