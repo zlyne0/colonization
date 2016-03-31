@@ -11,6 +11,9 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.map.Path;
+import net.sf.freecol.common.model.map.PathFinder;
+import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
@@ -24,16 +27,15 @@ import promitech.colonization.savegame.SaveGameParser;
 
 public class GUIGameController {
 
+	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
 	private UnitIterator unitIterator;
 	
 	private MapActor mapActor;
 	private ApplicationScreenManager screenManager;
 	
-	private Unit activeUnit;
-	private boolean viewMode = false;
-	private GameLogic gameLogic = new GameLogic();
 	private boolean blockUserInteraction = false;
+	private PathFinder finder = new PathFinder();
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
@@ -52,38 +54,56 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
-		
+		logicNextActiveUnit();
+	}
+	
+	private void logicNextActiveUnit() {
 		if (unitIterator.hasNext()) {
-			changeActiveUnit(unitIterator.next());
-			if (activeUnit != null) {
-				mapActor.centerCameraOnTile(activeUnit.getTile());
-			} 
+			Unit nextUnit = unitIterator.next();
+			changeActiveUnit(nextUnit);
+			if (guiGameModel.isActiveUnitSet()) {
+				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
+			}
+			if (nextUnit.isDestinationSet()) {
+				logicAcceptGotoPath();
+			}
 		}
 	}
 
-	public void setViewMode(boolean checked) {
+	public void enterInViewMode() {
 		if (blockUserInteraction) {
 			return;
 		}
+		System.out.println("enterInViewMode");
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (checked) {
-			viewMode = true;
-			if (mapDrawModel.getSelectedUnit() != null) {
-				mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
-			} else {
-				Point p = mapActor.getCenterOfScreen();
-				mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
-			}
-			mapActor.mapDrawModel().setSelectedUnit(null);
+		if (mapDrawModel.getSelectedUnit() != null) {
+			mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
 		} else {
-			viewMode = false;
-			mapDrawModel.selectedTile = null;
-			mapDrawModel.setSelectedUnit(activeUnit);
-			if (activeUnit != null) {
-				mapActor.centerCameraOnTile(activeUnit.getTile());
-			} 
+			Point p = mapActor.getCenterOfScreen();
+			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
 		}
+		guiGameModel.previewViewModeUnit = guiGameModel.getActiveUnit();
+		guiGameModel.setActiveUnit(null);
+		mapDrawModel.setSelectedUnit(null);
+		guiGameModel.setViewMode(true);
+	}
+
+	public void leaveViewMode() {
+		if (blockUserInteraction) {
+			return;
+		}
+		System.out.println("leaveInViewMode");
+		
+		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
+		mapDrawModel.selectedTile = null;
+		if (guiGameModel.isActiveUnitSet()) {
+			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
+		} 
+		guiGameModel.setActiveUnit(guiGameModel.previewViewModeUnit);
+		mapDrawModel.setSelectedUnit(guiGameModel.previewViewModeUnit);
+		guiGameModel.previewViewModeUnit = null;
+		guiGameModel.setViewMode(false);
 	}
 
 	public void doubleClickOnTile(Point mapPoint) {
@@ -112,7 +132,13 @@ public class GUIGameController {
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
-		if (viewMode) {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			Tile tile = game.map.getTile(p.x, p.y);
+			generateGotoPath(tile);
+			return;
+		}
+		
+		if (guiGameModel.isViewMode()) {
 			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
 			mapDrawModel.setSelectedUnit(null);
 		} else {
@@ -148,7 +174,7 @@ public class GUIGameController {
 		}
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (viewMode) {
+		if (guiGameModel.isViewMode()) {
 			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
 			mapDrawModel.selectedTile = game.map.getTile(x, y);
@@ -161,88 +187,80 @@ public class GUIGameController {
 				return;
 			}
 			
-			MoveContext moveContext = new MoveContext();
-			moveContext.direction = direction;
-			moveContext.unit = mapDrawModel.getSelectedUnit();
-			moveContext.sourceTile = moveContext.unit.getTile();
-			moveContext.descTile = game.map.getTile(moveContext.sourceTile.x, moveContext.sourceTile.y, direction);
+			Unit selectedUnit = mapDrawModel.getSelectedUnit();
+			Tile sourceTile = selectedUnit.getTile();
 			
-			MoveType moveType = moveContext.unit.getMoveType(moveContext.sourceTile, moveContext.descTile);
-			moveContext.moveType = moveType;
-			System.out.println("moveType = " + moveType);
+			Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
+			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
-			switch (moveType) {
-				case MOVE: {
-					moveUnit(moveContext);
-					
-					guiMoveInteraction(moveContext);
-				} break;
-				case EMBARK: {
-					mapActor.mapDrawModel().setSelectedUnit(null);
-					activeUnit = null;
-
-					embarkUnit(moveContext);
-
-					guiMoveInteraction(moveContext);
-				} break;
-				default: {
-					System.out.println("not handled move type: " + moveType);
-				}
+			mapActor.mapDrawModel().unitPath = null;
+			selectedUnit.clearDestination();
+			System.out.println("moveContext = " + moveContext);
+			
+			if (moveContext.canHandleMove()) {
+				moveContext.handleMove();
+				guiMoveInteraction(moveContext);
 			}
 		}
 	}
 
 	private void guiMoveInteraction(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.descTile)) {
-			mapActor.centerCameraOnTile(moveContext.descTile);
+		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
 		blockUserInteraction = true;
 		endOfUnitDislocationAnimation.moveContext = moveContext;
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
 	}
 	
-	private void moveUnit(MoveContext moveContext) {
-		moveContext.unit.setState(UnitState.ACTIVE);
-		moveContext.unit.setStateToAllChildren(UnitState.SENTRY);
-		int moveCost = moveContext.unit.getMoveCost(moveContext.sourceTile, moveContext.descTile, moveContext.direction);
-		System.out.println("moveLeft = " + moveContext.unit.getMovesLeft() + ", moveCost = " + moveCost);
-		moveContext.unit.reduceMovesLeft(moveCost);
-		moveContext.unit.changeLocation(moveContext.descTile);
-	}
-	
-	private void embarkUnit(MoveContext moveContext) {
-		Unit carrier = null;
-		for (Unit u : moveContext.descTile.units.entities()) {
-			if (u.canAddUnit(moveContext.unit)) {
-				carrier = u;
-				break;
-			}
-		}
-		if (carrier == null) {
-			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
-		}
-		moveContext.unit.setState(UnitState.SKIPPED);
-		moveContext.unit.changeLocation(carrier);
-		moveContext.unit.reduceMovesLeftToZero();
-	}
-	
 	private UnitDislocationAnimation.EndOfAnimationListener endOfUnitDislocationAnimation = new EndOfAnimationListener() {
 		@Override
 		public void end(Unit unit) {
-			blockUserInteraction = false;
-			if (MoveType.MOVE.equals(moveContext.moveType)) { 
+			
+			if (moveContext.isMoveType(MoveType.MOVE)) {
 				boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
 				if (exloredNewTiles) {
 					mapActor.resetUnexploredBorders();
 				}
 			}
+
+			if (moveContext.isMoveType(MoveType.EMBARK)) {
+				mapActor.mapDrawModel().setSelectedUnit(null);
+				guiGameModel.setActiveUnit(null);
+			}
+			
+			if (moveContext.isMoveViaPath()) {
+				if (game.map.isUnitSeeHostileUnit(moveContext.unit)) {
+					blockUserInteraction = false;
+					System.out.println("unit: " + moveContext.unit + " see hostile unit");
+					return;
+				}
+				
+				moveContext.initNextPathStep();
+				System.out.println("moveContext = " + moveContext);
+				if (moveContext.canHandleMove()) {
+					moveContext.handleMove();
+					guiMoveInteraction(moveContext);
+				} else {
+					if (moveContext.isEndOfPath()) {
+						moveContext.unit.clearDestination();
+						mapActor.mapDrawModel().unitPath = null;
+						
+					} else {
+						logicNextActiveUnit();
+					}
+					blockUserInteraction = false;
+				}
+			} else {
+				blockUserInteraction = false;
+			}
 		}
 	};
-	
+
 	public void closeColonyView(Colony colony) {
 		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-		if (activeUnit != null) {
-			if (colony.isUnitInColony(activeUnit)) {
+		if (guiGameModel.isActiveUnitSet()) {
+			if (colony.isUnitInColony(guiGameModel.getActiveUnit())) {
 				changeActiveUnit(null);
 			}
 		}
@@ -255,8 +273,27 @@ public class GUIGameController {
 	}
 	
 	void changeActiveUnit(Unit unit) {
-		this.activeUnit = unit;
+		guiGameModel.setActiveUnit(unit);
 		mapActor.mapDrawModel().setSelectedUnit(unit);
+		mapActor.mapDrawModel().unitPath = null;
+		if (unit == null) {
+			return;
+		}
+		setDrawableUnitPath(unit);
+	}
+	
+	private void setDrawableUnitPath(Unit unit) {
+		mapActor.mapDrawModel().unitPath = null;
+		
+		if (unit.isDestinationTile()) {
+			Tile startTile = unit.getTile();
+			Tile endTile = game.map.getTile(unit.getDestinationX(), unit.getDestinationY());
+			mapActor.mapDrawModel().unitPath = finder.findToTile(game.map, startTile, endTile, unit);
+		}
+		if (unit.isDestinationEurope()) {
+			Tile startTile = unit.getTile();
+			mapActor.mapDrawModel().unitPath = finder.findToEurope(game.map, startTile, unit);
+		}
 	}
 	
     public Game getGame() {
@@ -265,5 +302,101 @@ public class GUIGameController {
 
 	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
 		this.screenManager = screenManager;
+	}
+
+	public void enterIntoCreateGotoPathMode() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			return;
+		}
+		if (guiGameModel.isActiveUnitNotSet()) {
+			return;
+		}
+		guiGameModel.setCreateGotoPathMode(true);
+		setDrawableUnitPath(guiGameModel.getActiveUnit());		
+	}
+	
+	public void leaveCreateGotoPathMode() {
+		guiGameModel.setCreateGotoPathMode(false);
+		mapActor.mapDrawModel().unitPath = null;
+	}
+
+	private void logicAcceptGotoPath() {
+		Path unitPath = mapActor.mapDrawModel().unitPath;
+		if (unitPath == null) {
+			throw new IllegalStateException("path not generated");
+		}
+		guiGameModel.setCreateGotoPathMode(false);
+		
+		MoveContext moveContext = new MoveContext(unitPath);
+		moveContext.initNextPathStep();
+		if (unitPath.isPathToEurope()) {
+			moveContext.unit.setDestinationEurope();
+		} else {
+			moveContext.unit.setDestination(unitPath.endTile);
+		}
+
+		System.out.println("moveContext = " + moveContext);
+
+		if (moveContext.canHandleMove()) {
+			moveContext.handleMove();
+			guiMoveInteraction(moveContext);
+		}
+	}
+	
+	private void generateGotoPath(Tile destinationTile) {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("activeUnit should be set to generate goto path");
+		}
+		
+		Tile startTile = guiGameModel.getActiveUnit().getTile();
+		
+		Path path = finder.findToTile(game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
+		System.out.println("found path: " + path);
+		mapActor.mapDrawModel().unitPath = path;
+	}
+
+	public void acceptPathToDestination(Tile tile) {
+		generateGotoPath(tile);
+		logicAcceptGotoPath();
+	}
+	
+	public void acceptPathToEuropeDestination() {
+		mapActor.mapDrawModel().unitPath = finder.findToEurope(
+				game.map, 
+				guiGameModel.getActiveUnit().getTile(), 
+				guiGameModel.getActiveUnit()
+		);
+		logicAcceptGotoPath();
+	}
+	
+	public void acceptAction() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			if (!guiGameModel.isCreateGotoPathMode()) {
+				throw new IllegalStateException("should be in find path mode");
+			}
+			if (guiGameModel.isActiveUnitNotSet()) {
+				throw new IllegalStateException("active unit should be set");
+			}
+			logicAcceptGotoPath();
+			return;
+		}
+	}
+	
+	public void cancelAction() {
+		if (guiGameModel.isCreateGotoPathMode()) {
+			leaveCreateGotoPathMode();
+		}
+	}
+	
+	public void addGUIGameModelChangeListener(ChangeStateListener listener) {
+		guiGameModel.addChangeListener(listener);
+	}
+
+	public void onShowGUI() {
+		guiGameModel.runListeners();
+	}
+
+	public Unit getActiveUnit() {
+		return guiGameModel.getActiveUnit();
 	}
 }

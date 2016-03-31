@@ -33,6 +33,9 @@ public class Unit extends ObjectWithId implements Location {
         SKIPPED
     }
 	
+    public static enum MoveDestinationType {
+    	TILE, EUROPE;
+    }
 	
     protected String name;
 	private Player owner;
@@ -49,6 +52,9 @@ public class Unit extends ObjectWithId implements Location {
     protected int treasureAmount;
     private boolean expert = false;
     private int experience;
+    private MoveDestinationType destinationType;
+    private int destinationX;
+    private int destinationY;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -206,10 +212,40 @@ public class Unit extends ObjectWithId implements Location {
         return null;
     }
 	
-    public Location getDestination() {
-        return null;
+    public boolean isDestinationSet() {
+    	return destinationType != null;
     }
     
+    public boolean isDestinationTile() {
+    	return MoveDestinationType.TILE.equals(destinationType);
+    }
+    
+	public boolean isDestinationEurope() {
+    	return MoveDestinationType.EUROPE.equals(destinationType);
+	}
+    
+	public int getDestinationX() {
+		return destinationX;
+	}
+
+	public int getDestinationY() {
+		return destinationY;
+	}
+    
+	public void clearDestination() {
+		this.destinationType = null;
+	}
+    
+	public void setDestinationEurope() {
+		this.destinationType = MoveDestinationType.EUROPE;
+	}
+
+	public void setDestination(Tile tile) {
+		this.destinationType = MoveDestinationType.TILE;
+		this.destinationX = tile.x;
+		this.destinationY = tile.y;
+	}
+	
     public UnitState getState() {
         return state;
     }
@@ -226,8 +262,16 @@ public class Unit extends ObjectWithId implements Location {
     	return unitType != null && unitType.isNaval();
     }
     
+	public boolean canMoveToHighSeas() {
+		return isNaval();
+	}
+    
     public boolean isCarrier() {
         return unitType.hasAbility(Ability.CARRY_GOODS) || hasAbility(Ability.CARRY_UNITS);
+    }
+    
+    public boolean isMounted() {
+        return unitRole.hasAbility(Ability.MOUNTED);
     }
     
     public boolean isPerson() {
@@ -277,7 +321,7 @@ public class Unit extends ObjectWithId implements Location {
                 ? "model.unit.occupation.underRepair"
                 : (getTradeRoute() != null)
                 ? "model.unit.occupation.inTradeRoute"
-                : (getDestination() != null)
+                : (isDestinationSet())
                 ? "model.unit.occupation.goingSomewhere"
                 : (getState() == Unit.UnitState.IMPROVING && getWorkImprovement() != null)
                 ? (getWorkImprovement().type.getId() + ".occupationString")
@@ -451,6 +495,10 @@ public class Unit extends ObjectWithId implements Location {
             return MoveType.MOVE_ILLEGAL; // should not happen
         }
     }
+
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
+    	return getMoveCost(from, target, moveDirection, movesLeft);
+    }
     
     /**
      * Gets the cost of moving this <code>Unit</code> from the given
@@ -466,10 +514,7 @@ public class Unit extends ObjectWithId implements Location {
      * @param movesLeft The amount of moves this Unit has left.
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
-    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
-        // Remember to also change map.findPath(...) if you change anything
-        // here.
-
+    public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
         int cost = target.type.getBasicMoveCost();
         if (target.type.isLand() && !isNaval()) {
         	cost = target.getMoveCost(moveDirection, cost);
@@ -477,14 +522,14 @@ public class Unit extends ObjectWithId implements Location {
 
         if (isBeached(from)) {
             // Ship on land due to it was in a colony which was abandoned
-            cost = movesLeft;
-        } else if (cost > movesLeft) {
+            cost = _movesLeft;
+        } else if (cost > _movesLeft) {
             // Using +2 in order to make 1/3 and 2/3 move count as
             // 3/3, only when getMovesLeft > 0
-            if ((movesLeft + 2 >= getInitialMovesLeft() 
-            		|| cost <= movesLeft + 2
-            		|| target.hasSettlement()) && movesLeft != 0) {
-                cost = movesLeft;
+            if ((_movesLeft + 2 >= getInitialMovesLeft() 
+            		|| cost <= _movesLeft + 2
+            		|| target.hasSettlement()) && _movesLeft != 0) {
+                cost = _movesLeft;
             }
         }
         return cost;
@@ -556,6 +601,10 @@ public class Unit extends ObjectWithId implements Location {
     
 	public void reduceMovesLeftToZero() {
 		this.movesLeft = 0;
+	}
+	
+	public boolean hasMovesPoints(int moveCost) {
+		return this.movesLeft >= moveCost;
 	}
 	
     public UnitContainer getUnitContainer() {
@@ -641,6 +690,12 @@ public class Unit extends ObjectWithId implements Location {
             unit.roleCount = attr.getIntAttribute("roleCount", -1);
             unit.name = attr.getStrAttribute("name");
             unit.experience = attr.getIntAttribute("experience", 0);
+            
+            unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, "destinationType");
+            if (MoveDestinationType.TILE.equals(unit.destinationType)) {
+            	unit.destinationX = attr.getIntAttribute("destinationX");
+            	unit.destinationY = attr.getIntAttribute("destinationY");
+            }
             
             unit.expert = Specification.instance.isUnitTypeExpert(unitType);
 

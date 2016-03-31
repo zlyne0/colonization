@@ -11,10 +11,10 @@ public class SelectableTableItem<T> extends Table {
 	int rowIndex;
     boolean selected = false;
     
-    public final T object;
+    public final T payload;
     
-    public SelectableTableItem(T object) {
-    	this.object = object;
+    public SelectableTableItem(T payload) {
+    	this.payload = payload;
     }
     
     @Override

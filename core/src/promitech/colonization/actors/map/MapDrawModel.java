@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
@@ -307,6 +308,7 @@ public class MapDrawModel {
 	public Player playingPlayer;
 	public Map map;
 	public final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
+	public Path unitPath;
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {
 		this.map = map;

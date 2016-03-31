@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -36,6 +37,10 @@ public class Tile implements Location, Identifiable {
 	public String getId() {
 	    return id;
 	}
+
+    public boolean equalsCoordinates(int x, int y) {
+        return this.x == x && this.y == y;
+    }
 	
 	public String toString() {
 		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
@@ -129,6 +134,50 @@ public class Tile implements Location, Identifiable {
         }
         return quantity;
     }
+
+    public void setSettlement(Settlement settlement) {
+        this.settlement = settlement;
+    }    
+
+    public boolean isColonyOnTileThatCanBombardNavyUnit(Player navyUnitOwner, boolean isNavyPiracy) {
+        if (!hasSettlement()) {
+            return false;
+        }
+        Settlement settlement = getSettlement();
+        if (settlement.getOwner().equalsId(navyUnitOwner)) {
+            return false;
+        }
+        if (settlement.canBombardEnemyShip() && (settlement.getOwner().atWarWith(navyUnitOwner) || isNavyPiracy)) {
+            return true;
+        }
+        return false;
+    }
+    
+    public boolean isTileHasNavyUnitThatCanBombardUnit(Player navyUnitOwner, boolean isNavyPiracy) {
+        if (type.isLand()) {
+            // land units can not bombard ship
+            return false;
+        }
+        if (units.isEmpty()) {
+            return false;
+        }
+        for (Unit unit : units.entities()) {
+            if (unit.getOwner().equalsId(navyUnitOwner)) {
+                break;
+            }
+            if (isNavyPiracy) {
+                if (unit.isOffensiveUnit()) {
+                    return true;
+                }
+            } else {
+                if ((unit.isOffensiveUnit() && navyUnitOwner.atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
     
 	public static class Xml extends XmlNodeParser {
 	    

@@ -8,6 +8,11 @@ public class IndianSettlement extends Settlement {
     
     /** The missionary at this settlement. */
     protected Unit missionary = null;
+
+    @Override
+    public boolean hasAbility(String abilityCode) {
+        return false;
+    }
     
     public String getImageKey() {
     	String st = owner.nation().getId();

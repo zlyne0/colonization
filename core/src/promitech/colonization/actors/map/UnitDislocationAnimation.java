@@ -32,7 +32,7 @@ public class UnitDislocationAnimation {
 		v.set(0, 0);
 		
 		mapRenderer.mapToScreenCords(moveContext.sourceTile.x, moveContext.sourceTile.y, source);
-		mapRenderer.mapToScreenCords(moveContext.descTile.x, moveContext.descTile.y, dest);
+		mapRenderer.mapToScreenCords(moveContext.destTile.x, moveContext.destTile.y, dest);
 	}
 	
 	public boolean isUnitAnimated(Unit u) {
@@ -44,14 +44,19 @@ public class UnitDislocationAnimation {
 		v.set(dest).sub(source).scl(step);
 		v.add(source);
 		if (step >= 1) {
-			if (endOfAnimationListener != null) {
-				endOfAnimationListener.end(unit);
-			}
+			Unit tmpUnit = unit;
+			EndOfAnimationListener tmpListener = endOfAnimationListener;
 			endOfAnimationListener = null;
 			unit = null;
 			sourceTile = null;
+			
+			if (tmpListener != null) {
+				tmpListener.end(tmpUnit);
+			}
+			return false;
+		} else {
+			return true;
 		}
-		return step < 1;
 	}
 
 	public void addEndOfAnimationListener(EndOfAnimationListener endOfAnimationListener) {

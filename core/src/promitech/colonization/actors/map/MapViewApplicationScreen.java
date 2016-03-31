@@ -44,6 +44,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     @Override
     public void onShow() {
         Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
+        gameController.onShowGUI();
     }
     
     @Override
@@ -56,7 +57,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         stage.getViewport().apply();
         stage.act();
         stage.draw();
-
+        
         hudStage.getViewport().apply();
         hudStage.act();
         hudStage.draw();

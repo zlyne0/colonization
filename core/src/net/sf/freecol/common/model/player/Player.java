@@ -160,6 +160,10 @@ public class Player extends ObjectWithFeatures {
 		return europe != null;
 	}
     
+    public String getEuropeNameKey() {
+        return (europe == null) ? null : nation.getId() + ".europe";
+    }
+	
 	/**
 	 * @return boolean - return true when set some tile as explored 
 	 */

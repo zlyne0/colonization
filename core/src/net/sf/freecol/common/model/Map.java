@@ -2,7 +2,9 @@ package net.sf.freecol.common.model;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
+import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -58,7 +60,36 @@ public class Map extends ObjectWithId {
             }
         }
     }
-	
+
+	public boolean isUnitSeeHostileUnit(Unit unit) {
+		Tile unitTile = unit.getTile();
+		int radius = unit.lineOfSight();
+		SpiralIterator spiralIterator = new SpiralIterator(width, height);
+		spiralIterator.reset(unitTile.x, unitTile.y, true, radius);
+		
+		while (spiralIterator.hasNext()) {
+			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
+			spiralIterator.next();
+			if (tile == null) {
+				continue;
+			}
+			Player tileOwner = null;
+			if (tile.hasSettlement()) {
+				tileOwner = tile.getSettlement().getOwner();
+			} else {
+				if (tile.units.isNotEmpty()) {
+					tileOwner = tile.units.first().getOwner();
+				}
+			}
+			if (tileOwner != null) {
+				if (unit.getOwner().atWarWith(tileOwner)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+    
 	public String toString() {
 		return "width = " + width + ", height = " + height;
 	}

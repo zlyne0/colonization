@@ -11,6 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.IntSet;
 
+/**
+ * instead use STable
+ */
+@Deprecated
 public class SelectableRowTable extends Table {
 
     private static HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
@@ -109,7 +113,7 @@ public class SelectableRowTable extends Table {
 					continue;
 				}
 				set.add(ti.rowIndex);
-				uniqueRowsItems.add(ti.object);
+				uniqueRowsItems.add(ti.payload);
 			}
 		}
 		return uniqueRowsItems;
