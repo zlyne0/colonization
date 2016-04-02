@@ -6,13 +6,14 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.map.UnitDislocationAnimation.EndOfAnimationListener;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
 
@@ -120,9 +121,9 @@ public class MapActor extends Actor {
 		return mapDrawModel;
 	}
 
-	public void startUnitDislocationAnimation(MoveContext moveContext, EndOfAnimationListener endOfUnitDislocationAnimation) 
+	public void startUnitDislocationAnimation(final MoveContext moveContext, final RunnableAction endOfUnitDislocationAnimation) 
 	{
 		mapDrawModel.unitDislocationAnimation.init(mapRenderer, moveContext);
-		mapDrawModel.unitDislocationAnimation.addEndOfAnimationListener(endOfUnitDislocationAnimation);
+		getStage().addAction(Actions.sequence(mapDrawModel.unitDislocationAnimation, endOfUnitDislocationAnimation));
 	}
 }
