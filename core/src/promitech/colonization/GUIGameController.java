@@ -6,6 +6,8 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
@@ -17,8 +19,6 @@ import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
-import promitech.colonization.actors.map.UnitDislocationAnimation;
-import promitech.colonization.actors.map.UnitDislocationAnimation.EndOfAnimationListener;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.UnitIterator;
@@ -26,6 +26,14 @@ import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class GUIGameController {
+	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
+		MoveContext moveContext;
+		
+		@Override
+		public void run() {
+			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
+		}
+	}
 
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
@@ -36,6 +44,7 @@ public class GUIGameController {
 	
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
+	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
@@ -213,50 +222,46 @@ public class GUIGameController {
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
 	}
 	
-	private UnitDislocationAnimation.EndOfAnimationListener endOfUnitDislocationAnimation = new EndOfAnimationListener() {
-		@Override
-		public void end(Unit unit) {
-			
-			if (moveContext.isMoveType(MoveType.MOVE)) {
-				boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, unit);
-				if (exloredNewTiles) {
-					mapActor.resetUnexploredBorders();
-				}
-			}
-
-			if (moveContext.isMoveType(MoveType.EMBARK)) {
-				mapActor.mapDrawModel().setSelectedUnit(null);
-				guiGameModel.setActiveUnit(null);
-			}
-			
-			if (moveContext.isMoveViaPath()) {
-				if (game.map.isUnitSeeHostileUnit(moveContext.unit)) {
-					blockUserInteraction = false;
-					System.out.println("unit: " + moveContext.unit + " see hostile unit");
-					return;
-				}
-				
-				moveContext.initNextPathStep();
-				System.out.println("moveContext = " + moveContext);
-				if (moveContext.canHandleMove()) {
-					moveContext.handleMove();
-					guiMoveInteraction(moveContext);
-				} else {
-					if (moveContext.isEndOfPath()) {
-						moveContext.unit.clearDestination();
-						mapActor.mapDrawModel().unitPath = null;
-						
-					} else {
-						logicNextActiveUnit();
-					}
-					blockUserInteraction = false;
-				}
-			} else {
-				blockUserInteraction = false;
+	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
+		if (moveContext.isMoveType(MoveType.MOVE)) {
+			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, moveContext.unit);
+			if (exloredNewTiles) {
+				mapActor.resetUnexploredBorders();
 			}
 		}
-	};
-
+		
+		if (moveContext.isMoveType(MoveType.EMBARK)) {
+			mapActor.mapDrawModel().setSelectedUnit(null);
+			guiGameModel.setActiveUnit(null);
+		}
+		
+		if (moveContext.isMoveViaPath()) {
+			if (game.map.isUnitSeeHostileUnit(moveContext.unit)) {
+				blockUserInteraction = false;
+				System.out.println("unit: " + moveContext.unit + " see hostile unit");
+				return;
+			}
+			
+			moveContext.initNextPathStep();
+			System.out.println("moveContext = " + moveContext);
+			if (moveContext.canHandleMove()) {
+				moveContext.handleMove();
+				guiMoveInteraction(moveContext);
+			} else {
+				if (moveContext.isEndOfPath()) {
+					moveContext.unit.clearDestination();
+					mapActor.mapDrawModel().unitPath = null;
+					
+				} else {
+					logicNextActiveUnit();
+				}
+				blockUserInteraction = false;
+			}
+		} else {
+			blockUserInteraction = false;
+		}
+	}
+	
 	public void closeColonyView(Colony colony) {
 		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
 		if (guiGameModel.isActiveUnitSet()) {

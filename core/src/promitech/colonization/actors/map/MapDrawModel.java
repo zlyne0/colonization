@@ -307,7 +307,7 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	public Map map;
-	public final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
+	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	public Path unitPath;
 	
 	public void initialize(Map map, Player player, GameResources gameResources) {

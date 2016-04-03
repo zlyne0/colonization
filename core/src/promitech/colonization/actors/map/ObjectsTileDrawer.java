@@ -4,6 +4,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
+import com.badlogic.gdx.math.Vector2;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
@@ -107,6 +108,11 @@ class ObjectsTileDrawer extends TileDrawer {
 					screenPoint.y + h/2 + 5
 			);
 		}
+	}
+
+	protected void drawUnit(Unit unit, Vector2 aScreenPoint) {
+		this.screenPoint.set(aScreenPoint);
+		this.drawUnit(unit);
 	}
 	
 	protected void drawUnit(Unit unit) {

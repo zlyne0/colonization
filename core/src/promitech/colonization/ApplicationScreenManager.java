@@ -120,6 +120,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 //		}
 		
 		setScreen(ApplicationScreenType.MAP_VIEW);
+		Gdx.graphics.setContinuousRendering(false);
 	}
 	
 	@Override
