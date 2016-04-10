@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -15,6 +16,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
@@ -403,5 +405,35 @@ public class GUIGameController {
 
 	public Unit getActiveUnit() {
 		return guiGameModel.getActiveUnit();
+	}
+
+	public void endTurn(EndOfTurnPhaseListener endOfTurnPhaseListener) {
+		blockUserInteraction = true;
+		guiGameModel.setAiMove(true);
+		System.out.println("end turn");
+
+		game.playingPlayer.endTurn();
+		
+		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
+		for (Player player : players) {
+			if (player.nation().isUnknownEnemy()) {
+				continue;
+			}
+			
+			endOfTurnPhaseListener.nextAIturn(player);
+			System.out.println("player " + player);
+			
+			try {
+				Thread.sleep(500);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		game.playingPlayer.newTurn();
+		
+		guiGameModel.setAiMove(false);
+		blockUserInteraction = false;
+		endOfTurnPhaseListener.endOfAIturns();
 	}
 }

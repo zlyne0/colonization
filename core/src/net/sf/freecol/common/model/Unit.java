@@ -660,6 +660,14 @@ public class Unit extends ObjectWithId implements Location {
 	    return false;
 	}
 	
+	public void newTurn() {
+		if (isDamaged()) {
+			movesLeft = 0;
+		} else {
+			movesLeft = getInitialMovesLeft();
+		}
+	}
+	
     public static class Xml extends XmlNodeParser {
         
         public Xml() {

@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -42,6 +43,7 @@ public class HudStage extends Stage {
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     public final HudInfoPanel hudInfoPanel; 
     private final GUIGameController gameController;
+    private final EndOfTurnActor endOfTurnActor; 
     
     private final EnumMap<Direction, ButtonActor> directionButtons = new EnumMap<Direction, ButtonActor>(Direction.class);
     private ButtonActor centerOnUnitButton;
@@ -56,9 +58,12 @@ public class HudStage extends Stage {
     
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
+    private ButtonActor endTurnButton;
 
     private ButtonActor acceptActionButton;
     private ButtonActor cancelActionButton;
+    
+    private final Group buttonsGroup = new Group();
     
     private GUIGameModel.ChangeStateListener guiGameModelChangeListener = new ChangeStateListener() {
 		@Override
@@ -74,10 +79,17 @@ public class HudStage extends Stage {
         int bw = (int) (getHeight() * 0.33) / 3;
         hudInfoPanel = new HudInfoPanel(gameResources);
         
+        addActor(buttonsGroup);
+        addActor(hudInfoPanel);
+        
         createActionButtons(bw);
 		addListener(keysInputListener);
         
         gameController.addGUIGameModelChangeListener(guiGameModelChangeListener);
+        
+		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
+		endOfTurnActor.setWidth(getWidth());
+		endOfTurnActor.setHeight(getHeight());
     }
 
     private final InputListener keysInputListener = new InputListener() {
@@ -177,6 +189,12 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (event.getListenerActor() == endTurnButton) {
+    			endOfTurnActor.start(gameController);
+    			HudStage.this.addActor(endOfTurnActor);
+    			return true;
+    		}
+    		
     		return false;
     	}
     };	
@@ -235,6 +253,11 @@ public class HudStage extends Stage {
         viewButton.setSize(bw, bw);
         viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
         viewButton.addListener(buttonsInputListener);
+
+        endTurnButton = new ButtonActor(shapeRenderer, "end turn");
+        endTurnButton.setSize(bw, bw);
+        endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
+        endTurnButton.addListener(buttonsInputListener);
         
         acceptActionButton = new ButtonActor(shapeRenderer, "accept");
         acceptActionButton.setSize(bw, bw);
@@ -287,8 +310,11 @@ public class HudStage extends Stage {
 
 	private void resetButtonVisibility(GUIGameModel model) {
 		// remove all actors
-		this.getRoot().clearChildren();
-        addActor(hudInfoPanel);
+		buttonsGroup.clearChildren();
+		if (model.isAiMove()) {
+			return;
+		}
+		buttonsGroup.addActor(endTurnButton);
         
         viewButton.setChecked(model.isViewMode());
         gotoTileButton.setChecked(model.isCreateGotoPathMode());
@@ -298,38 +324,38 @@ public class HudStage extends Stage {
 			if (model.isActiveUnitSet()) {
 				for (Entry<Direction, ButtonActor> entry : directionButtons.entrySet()) {
 					ButtonActor directionButton = entry.getValue();
-					addActor(directionButton);
+					buttonsGroup.addActor(directionButton);
 				}
 				
 				Unit unit = model.getActiveUnit();
-		        addActor(centerOnUnitButton);
-		        addActor(unitWaitButton);
-		        addActor(sentryButton);
+				buttonsGroup.addActor(centerOnUnitButton);
+				buttonsGroup.addActor(unitWaitButton);
+				buttonsGroup.addActor(sentryButton);
 		        
 		        if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
 		        } else {
-		        	addActor(fortifyButton);
+		        	buttonsGroup.addActor(fortifyButton);
 		        	
-		        	addActor(buildColonyButton);
-		        	addActor(plowButton);
-		        	addActor(roadButton);
+		        	buttonsGroup.addActor(buildColonyButton);
+		        	buttonsGroup.addActor(plowButton);
+		        	buttonsGroup.addActor(roadButton);
 		        }
 			}
 			
 			if (!model.isViewMode()) {
-				addActor(nextUnitButton);
+				buttonsGroup.addActor(nextUnitButton);
 			}
-			addActor(viewButton);
+			buttonsGroup.addActor(viewButton);
         }
 		
         if (model.isCreateGotoPathMode()) {
-        	addActor(acceptActionButton);
-        	addActor(cancelActionButton);
+        	buttonsGroup.addActor(acceptActionButton);
+        	buttonsGroup.addActor(cancelActionButton);
         }
         
 		if (model.isActiveUnitSet()) {
-			addActor(gotoLocationButton);
-			addActor(gotoTileButton);
+			buttonsGroup.addActor(gotoLocationButton);
+			buttonsGroup.addActor(gotoTileButton);
 		}
 	}
 	

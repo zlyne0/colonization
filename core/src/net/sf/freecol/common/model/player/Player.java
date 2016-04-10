@@ -20,6 +20,8 @@ import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 class BooleanMap {
 	private boolean tab[][];
@@ -83,6 +85,7 @@ public class Player extends ObjectWithFeatures {
     private boolean dead = false;
     private int tax;
     private int gold;
+    private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
@@ -100,6 +103,12 @@ public class Player extends ObjectWithFeatures {
     
     public Nation nation() {
     	return nation;
+    }
+    
+    public StringTemplate getNationName() {
+        return (playerType == PlayerType.REBEL || playerType == PlayerType.INDEPENDENT)
+            ? StringTemplate.name(independentNationName)
+            : StringTemplate.key(Messages.nameKey(nation.getId()));
     }
     
 	public NationType nationType() {
@@ -277,6 +286,15 @@ public class Player extends ObjectWithFeatures {
 		return dead;
 	}
 	
+	public void endTurn() {
+	}
+	
+	public void newTurn() {
+		for (Unit unit : units.entities()) {
+			unit.newTurn();
+		}
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -300,6 +318,7 @@ public class Player extends ObjectWithFeatures {
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
             }
+            player.independentNationName = attr.getStrAttribute("independentNationName");
             
             player.changePlayerType(attr.getEnumAttribute(PlayerType.class, "playerType"));
             nodeObject = player;

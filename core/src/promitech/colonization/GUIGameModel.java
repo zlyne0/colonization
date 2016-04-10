@@ -16,6 +16,7 @@ public class GUIGameModel {
 	private Unit activeUnit;
 	private boolean viewMode = false;
 	private boolean createGotoPathMode = false;
+	private boolean aiMove = false;
 	
 	Unit previewViewModeUnit = null;
 
@@ -61,6 +62,15 @@ public class GUIGameModel {
 
 	public void setCreateGotoPathMode(boolean createGotoPathMode) {
 		this.createGotoPathMode = createGotoPathMode;
+		runListeners();
+	}
+
+	public boolean isAiMove() {
+		return aiMove;
+	}
+
+	public void setAiMove(boolean aiMove) {
+		this.aiMove = aiMove;
 		runListeners();
 	}
 

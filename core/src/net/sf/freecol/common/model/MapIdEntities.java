@@ -44,6 +44,28 @@ public class MapIdEntities<T extends Identifiable> {
     	return sortedEntities;
     }
     
+    public List<T> allToProcessedOrder(T startEntity) {
+    	List<T> sorted = sortedEntities();
+    	List<T> startPart = new ArrayList<T>(sorted.size());
+    	List<T> endPart = new ArrayList<T>(sorted.size());
+    	boolean found = false;
+		for (T entity : sorted) {
+    		if (entity == startEntity) {
+    			found = true;
+    			continue;
+    		}
+    		if (found) {
+    			startPart.add(entity);
+    		} else {
+    			endPart.add(entity);
+    		}
+    	}
+    	List<T> list = new ArrayList<T>(sorted.size());
+    	list.addAll(startPart);
+    	list.addAll(endPart);
+    	return list;
+    }
+    
     public T first() {
     	if (entities.isEmpty()) {
     		return null;
