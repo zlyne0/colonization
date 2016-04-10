@@ -61,6 +61,22 @@ public class GUIGameController {
         this.mapActor = mapActor;
     }
 	
+    public void skipUnit() {
+    	if (blockUserInteraction) {
+    		return;
+    	}
+    	Unit unit = guiGameModel.getActiveUnit();
+    	if (unit == null) {
+    		throw new IllegalStateException("no active unit to skip");
+    	}
+    	unit.setState(UnitState.SKIPPED);
+    	
+		guiGameModel.setActiveUnit(null);
+		mapActor.mapDrawModel().setSelectedUnit(null);
+		mapActor.mapDrawModel().unitPath = null;
+    	logicNextActiveUnit();
+    }
+    
 	public void nextActiveUnit() {
 		if (blockUserInteraction) {
 			return;

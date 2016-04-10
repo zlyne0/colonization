@@ -123,6 +123,10 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (keycode == Input.Keys.SPACE && unitWaitButton.getParent() != null) {
+    			gameController.skipUnit();
+    		}
+    		
     		if (keycode == Input.Keys.ESCAPE) {
     			gameController.cancelAction();
     			return true;
@@ -162,6 +166,11 @@ public class HudStage extends Stage {
     		
     		if (event.getListenerActor() == nextUnitButton) {
 				gameController.nextActiveUnit();
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == unitWaitButton) {
+    			gameController.skipUnit();
     			return true;
     		}
     		
