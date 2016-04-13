@@ -5,8 +5,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
+
 import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -16,10 +17,7 @@ import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
-import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
-
-import com.badlogic.gdx.graphics.g2d.Batch;
 
 class TileDrawModel {
 	private final LinkedList<Frame> backgroundTerainTextures = new LinkedList<Frame>();
@@ -95,8 +93,6 @@ class TileDrawModelInitializer {
 	private TileDrawModel borderTileDrawModel;
 	private final MapDrawModel mapDrawModel;
 	
-	private SpiralIterator spiralIterator;
-	
 	private Frame frame;
 	
 	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Map map, Player player, GameResources gameResources) {
@@ -108,8 +104,6 @@ class TileDrawModelInitializer {
 		if (player == null) {
 			throw new IllegalArgumentException("player should not be null");
 		}
-		
-		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
 	public void initMapTiles() {
@@ -145,42 +139,7 @@ class TileDrawModelInitializer {
 			}
 		}
 		
-		player.resetFogOfWar(map);
-		fogOfWarForUnits();
-		fogOfWarForSettlements();
 		initBordersForUnexploredTiles();
-	}
-
-	
-	private void fogOfWarForSettlements() {
-		for (Settlement settlement : player.settlements.entities()) {
-			x = settlement.tile.x;
-			y = settlement.tile.y;
-			int visibleRadius = settlement.settlementType.getVisibleRadius();
-			initFogOfWarForNeighboursTiles(visibleRadius);
-		}
-	}
-
-	private void fogOfWarForUnits() {
-		for (Unit unit : player.units.entities()) {
-			removeFogOfWarForUnit(unit);
-		}
-	}
-
-	private void removeFogOfWarForUnit(Unit unit) {
-		int radius = unit.lineOfSight();
-		x = unit.getTile().x;
-		y = unit.getTile().y;
-		initFogOfWarForNeighboursTiles(radius);
-	}
-	
-	private void initFogOfWarForNeighboursTiles(int radius) {
-		player.removeFogOfWar(x, y, map);
-		spiralIterator.reset(x, y, true, radius);
-		while (spiralIterator.hasNext()) {
-			player.removeFogOfWar(spiralIterator.getX(), spiralIterator.getY(), map);
-			spiralIterator.next();
-		}
 	}
 	
 	public void initBordersForUnexploredTiles() {

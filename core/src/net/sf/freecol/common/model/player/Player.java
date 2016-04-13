@@ -92,7 +92,7 @@ public class Player extends ObjectWithFeatures {
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
-    private BooleanMap fogOfWar;
+    public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
     private BooleanMap exploredTiles;
     
     protected final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
@@ -194,28 +194,6 @@ public class Player extends ObjectWithFeatures {
 		return exploredTiles.isSet(x, y);
 	}
 	
-	public void removeFogOfWar(int x, int y, Map map) {
-		if (fogOfWar == null) {
-			fogOfWar = new BooleanMap(map, true);
-		}
-		fogOfWar.set(x, y, false);
-	}
-	
-	public boolean hasFogOfWar(Tile tile) {
-		return hasFogOfWar(tile.x, tile.y);
-	}
-	
-	public boolean hasFogOfWar(int x, int y) {
-		return fogOfWar.isSet(x, y);
-	}
-	
-	public void resetFogOfWar(Map map) {
-		if (fogOfWar == null) {
-			fogOfWar = new BooleanMap(map, true);
-		}
-		fogOfWar.reset(true);
-	}
-	
 	/**
 	 * @return return true when explore new tiles
 	 */
@@ -236,7 +214,7 @@ public class Player extends ObjectWithFeatures {
 			if (setTileAsExplored(tile, map)) {
 				unexploredTile = true;
 			}
-			removeFogOfWar(tile.x, tile.y, map);
+			fogOfWar.removeFogOfWar(tile.x, tile.y);
 		}
 		return unexploredTile;
 	}
@@ -293,6 +271,7 @@ public class Player extends ObjectWithFeatures {
 		for (Unit unit : units.entities()) {
 			unit.newTurn();
 		}
+		fogOfWar.resetFogOfWar(this);
 	}
 	
     public static class Xml extends XmlNodeParser {

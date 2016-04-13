@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -24,6 +26,12 @@ public class Game implements Identifiable {
         return id;
     }
 	
+    public void afterLoadGame() {
+        for (Player player : players.entities()) {
+            player.fogOfWar.initFromMap(map, player);
+        }
+    }
+    
 	public static class Xml extends XmlNodeParser {
 		public Game game = new Game();
 		
@@ -38,6 +46,13 @@ public class Game implements Identifiable {
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
 		    System.out.println("static game");
+		}
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (qName.equals(getTagName())) {
+                ((Game)nodeObject).afterLoadGame();
+            }
 		}
 		
 		@Override

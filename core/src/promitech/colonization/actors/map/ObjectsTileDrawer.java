@@ -35,7 +35,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		drawSettlement();
 		drawTerrainFocus();
-		if (mapDrawModel.playingPlayer.hasFogOfWar(tile)) {
+		if (mapDrawModel.playingPlayer.fogOfWar.hasFogOfWar(tile.x, tile.y)) {
 			return;
 		}
 		

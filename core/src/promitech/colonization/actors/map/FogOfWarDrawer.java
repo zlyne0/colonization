@@ -47,7 +47,7 @@ class FogOfWarDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (mapDrawModel.playingPlayer.hasFogOfWar(mapx, mapy)) {
+		if (mapDrawModel.playingPlayer.fogOfWar.hasFogOfWar(mapx, mapy)) {
             poly.setPosition(screenPoint.x, screenPoint.y);
             poly.draw(polyBatch);
 		}
