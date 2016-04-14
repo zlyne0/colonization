@@ -70,9 +70,6 @@ public class GUIGameController {
     	}
     	unit.setState(UnitState.SKIPPED);
     	
-		mapActor.mapDrawModel().setSelectedUnit(null);
-		mapActor.mapDrawModel().unitPath = null;
-		guiGameModel.setActiveUnit(null);
     	logicNextActiveUnit();
     }
     
@@ -93,6 +90,10 @@ public class GUIGameController {
 			if (nextUnit.isDestinationSet()) {
 				logicAcceptGotoPath();
 			}
+		} else {
+			mapActor.mapDrawModel().setSelectedUnit(null);
+			mapActor.mapDrawModel().unitPath = null;
+			guiGameModel.setActiveUnit(null);
 		}
 	}
 
@@ -275,6 +276,9 @@ public class GUIGameController {
 				blockUserInteraction = false;
 			}
 		} else {
+			if (!moveContext.unit.couldMove()) {
+				logicNextActiveUnit();
+			}
 			blockUserInteraction = false;
 		}
 	}
