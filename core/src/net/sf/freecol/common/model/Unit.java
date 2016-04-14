@@ -666,6 +666,9 @@ public class Unit extends ObjectWithId implements Location {
 		} else {
 			movesLeft = getInitialMovesLeft();
 		}
+		if (state == UnitState.SKIPPED) {
+			setState(UnitState.ACTIVE);
+		}
 	}
 	
     public static class Xml extends XmlNodeParser {

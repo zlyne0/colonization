@@ -323,7 +323,10 @@ public class HudStage extends Stage {
 		if (model.isAiMove()) {
 			return;
 		}
-		buttonsGroup.addActor(endTurnButton);
+		boolean hasUnitsToMove = model.hasUnitsToMove();
+		if (!hasUnitsToMove) {
+			buttonsGroup.addActor(endTurnButton);
+		}
         
         viewButton.setChecked(model.isViewMode());
         gotoTileButton.setChecked(model.isCreateGotoPathMode());
@@ -351,7 +354,7 @@ public class HudStage extends Stage {
 		        }
 			}
 			
-			if (!model.isViewMode()) {
+			if (!model.isViewMode() && hasUnitsToMove) {
 				buttonsGroup.addActor(nextUnitButton);
 			}
 			buttonsGroup.addActor(viewButton);

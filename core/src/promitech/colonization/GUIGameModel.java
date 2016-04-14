@@ -4,6 +4,7 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitIterator;
 
 public class GUIGameModel {
 
@@ -19,6 +20,7 @@ public class GUIGameModel {
 	private boolean aiMove = false;
 	
 	Unit previewViewModeUnit = null;
+	UnitIterator unitIterator = null;
 
 	public boolean isActiveUnitSet() {
 		return activeUnit != null;
@@ -74,5 +76,7 @@ public class GUIGameModel {
 		runListeners();
 	}
 
-	
+	public boolean hasUnitsToMove() {
+		return unitIterator.hasNext();
+	}
 }

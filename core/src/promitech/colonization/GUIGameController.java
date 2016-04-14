@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -23,7 +24,6 @@ import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
-import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -39,7 +39,6 @@ public class GUIGameController {
 
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
-	private UnitIterator unitIterator;
 	
 	private MapActor mapActor;
 	private ApplicationScreenManager screenManager;
@@ -54,7 +53,7 @@ public class GUIGameController {
         game.playingPlayer = game.players.getById("player:1");
         System.out.println("game = " + game);
         
-        unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+        guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
 	}
 	
     public void setMapActor(MapActor mapActor) {
@@ -71,9 +70,9 @@ public class GUIGameController {
     	}
     	unit.setState(UnitState.SKIPPED);
     	
-		guiGameModel.setActiveUnit(null);
 		mapActor.mapDrawModel().setSelectedUnit(null);
 		mapActor.mapDrawModel().unitPath = null;
+		guiGameModel.setActiveUnit(null);
     	logicNextActiveUnit();
     }
     
@@ -85,8 +84,8 @@ public class GUIGameController {
 	}
 	
 	private void logicNextActiveUnit() {
-		if (unitIterator.hasNext()) {
-			Unit nextUnit = unitIterator.next();
+		if (guiGameModel.unitIterator.hasNext()) {
+			Unit nextUnit = guiGameModel.unitIterator.next();
 			changeActiveUnit(nextUnit);
 			if (guiGameModel.isActiveUnitSet()) {
 				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
@@ -440,13 +439,14 @@ public class GUIGameController {
 			System.out.println("player " + player);
 			
 			try {
-				Thread.sleep(500);
+				Thread.sleep(300);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
 		}
 		
 		game.playingPlayer.newTurn();
+		logicNextActiveUnit();
 		
 		guiGameModel.setAiMove(false);
 		blockUserInteraction = false;
