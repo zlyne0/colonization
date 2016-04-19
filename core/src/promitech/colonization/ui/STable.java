@@ -2,9 +2,17 @@ package promitech.colonization.ui;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 public class STable extends Table {
+    private static HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
+        @Override
+        public float getPrefHeight() {
+            return 20f;
+        }
+    };
+    
     private final ShapeRenderer shape;
     private int rowIndexCounter = 0;
     private STableSelectListener onSelectListener;
@@ -87,6 +95,10 @@ public class STable extends Table {
             }
         }
         return null;
+    }
+
+    public void addSeparator() {
+        super.add(SEPARATOR_ROW).fillX().row();
     }
 }
 
