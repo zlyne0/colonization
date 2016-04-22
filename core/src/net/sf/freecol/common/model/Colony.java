@@ -394,11 +394,10 @@ public class Colony extends Settlement {
     	buildingQueue.add(item);
     }
     
-	public void initBuildingQueue(List<ColonyBuildingQueueItem> items) {
-		buildingQueue.clear();
-		buildingQueue.addAll(items);
-	}
-
+    public void removeItemFromBuildingQueue(ColonyBuildingQueueItem item) {
+        buildingQueue.remove(item);
+    }
+    
 	public ColonyBuildingQueueItem getFirstBuildableItem() {
 		if (buildingQueue.isEmpty()) {
 			return null;
