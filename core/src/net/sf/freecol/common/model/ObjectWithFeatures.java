@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 
 public class ObjectWithFeatures extends ObjectWithId {
@@ -25,9 +26,18 @@ public class ObjectWithFeatures extends ObjectWithId {
         }
     };
     
-    private java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
-    private java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
-	public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+    public static final ObjectFromNodeSetter<ObjectWithFeatures, Scope> OBJECT_SCOPE_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Scope>() {
+        @Override
+        public void set(ObjectWithFeatures target, Scope entity) {
+        	target.scopes.add(entity);
+        }
+    };
+    
+    
+    public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+    private final java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
+    private final java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
+	private final List<Scope> scopes = new ArrayList<Scope>();
     
 	public ObjectWithFeatures(String id) {
 		super(id);
@@ -182,5 +192,14 @@ public class ObjectWithFeatures extends ObjectWithId {
         }
         abilities.clear();
         modifiers.clear();
+    }
+    
+    public boolean canApplyAllScopes(Identifiable obj) {
+    	for (Scope scope : scopes) {
+    		if (!scope.isAppliesTo(obj)) {
+    			return false;
+    		}
+    	}
+    	return true;
     }
 }

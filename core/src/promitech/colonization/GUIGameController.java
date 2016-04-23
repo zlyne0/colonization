@@ -11,13 +11,16 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
@@ -443,7 +446,7 @@ public class GUIGameController {
 			System.out.println("player " + player);
 			
 			try {
-				Thread.sleep(300);
+				Thread.sleep(100);
 			} catch (InterruptedException e) {
 				e.printStackTrace();
 			}
@@ -455,5 +458,47 @@ public class GUIGameController {
 		guiGameModel.setAiMove(false);
 		blockUserInteraction = false;
 		endOfTurnPhaseListener.endOfAIturns();
+	}
+
+	public void buildRoad() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit not set");
+		}
+		Tile tile = guiGameModel.getActiveUnit().getTile();
+		Unit unit = guiGameModel.getActiveUnit();
+		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+			return;
+		}
+		TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+		logicMakeImprovement(tile, unit, roadImprovement);
+	}
+
+	public void plowOrClearForestImprovement() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit not set");
+		}
+		Tile tile = guiGameModel.getActiveUnit().getTile();
+		Unit unit = guiGameModel.getActiveUnit();
+		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+			return;
+		}
+
+		TileImprovementType imprv = null;
+		if (tile.type.isForested()) {
+			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
+		} else {
+			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+		}
+		logicMakeImprovement(tile, unit, imprv);
+	}
+
+	private void logicMakeImprovement(Tile tile, Unit unit, TileImprovementType improvement) {
+		if (tile.canBeImprovedByUnit(improvement, unit)) {
+			unit.startImprovement(tile, improvement);
+			System.out.println("unit[" + unit + "] build [" + improvement + "] on tile[" + tile + "]");
+			logicNextActiveUnit();
+		} else {
+			System.out.println("unit[" + unit + "] can not make improvement[" + improvement + "] on tile[" + tile + "]");
+		}
 	}
 }

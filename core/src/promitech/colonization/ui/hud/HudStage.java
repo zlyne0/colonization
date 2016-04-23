@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
@@ -131,6 +132,14 @@ public class HudStage extends Stage {
     			gameController.cancelAction();
     			return true;
     		}
+    		if (keycode == Input.Keys.R) {
+    			gameController.buildRoad();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.P) {
+    			gameController.plowOrClearForestImprovement();
+    			return true;
+    		}
     		
     		Direction direction = directionByKeyCode.get(keycode);
     		if (direction != null) {
@@ -201,6 +210,15 @@ public class HudStage extends Stage {
     		if (event.getListenerActor() == endTurnButton) {
     			endOfTurnActor.start(gameController);
     			HudStage.this.addActor(endOfTurnActor);
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == roadButton) {
+    			gameController.buildRoad();
+    			return true;
+    		}
+    		if (event.getListenerActor() == plowButton) {
+    			gameController.plowOrClearForestImprovement();
     			return true;
     		}
     		
@@ -349,8 +367,10 @@ public class HudStage extends Stage {
 		        	buttonsGroup.addActor(fortifyButton);
 		        	
 		        	buttonsGroup.addActor(buildColonyButton);
-		        	buttonsGroup.addActor(plowButton);
-		        	buttonsGroup.addActor(roadButton);
+		        	if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+		        		buttonsGroup.addActor(plowButton);
+		        		buttonsGroup.addActor(roadButton);
+		        	}
 		        }
 			}
 			

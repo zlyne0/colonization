@@ -109,6 +109,28 @@ public class Tile implements Location, Identifiable {
 		return null;
 	}
 	
+	public boolean hasImprovementType(String improvementTypeId) {
+		if (tileItemContainer == null) {
+			return false;
+		}
+		return tileItemContainer.hasImprovementType(improvementTypeId);
+	}
+	
+	public boolean canBeImprovedByUnit(TileImprovementType improvementType, Unit unit) {
+		if (!improvementType.isSatisfyUnitRole(unit.unitRole)) {
+			return false;
+		}
+		if (unit.roleCount < improvementType.getExpendedAmount()) {
+			return false;
+		}
+		if (hasImprovementType(improvementType.getId())) {
+			return false;
+		}
+		if (!improvementType.canApplyAllScopes(type)) {
+			return false;
+		}
+		return true;
+	}
 	
     public boolean isDirectlyHighSeasConnected() {
     	if (moveToEurope) {

@@ -15,6 +15,7 @@ public final class TileType extends ObjectWithFeatures {
 	
 	boolean isForest;
 	private int basicMoveCost;
+	private int basicWorkTurns;
 	public ProductionInfo productionInfo = new ProductionInfo();
 	
 	public TileType(String id, boolean isForest) {
@@ -58,6 +59,10 @@ public final class TileType extends ObjectWithFeatures {
     	return basicMoveCost;
     }
     
+	public int getBasicWorkTurns() {
+		return basicWorkTurns;
+	}
+    
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -77,13 +82,14 @@ public final class TileType extends ObjectWithFeatures {
 			
 			TileType tileType = new TileType(id, isForest);
 			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
+			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
 			
 			nodeObject = tileType; 
 		}
 
 		@Override
 		public String getTagName() {
-			return "tile-type";
+			return tagName();
 		}
 		
 		public static String tagName() {

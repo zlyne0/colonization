@@ -28,6 +28,15 @@ public class TileItemContainer implements Identifiable {
         return moveCost;
     }
     
+	public boolean hasImprovementType(String improvementTypeId) {
+		for (TileImprovement tileImprovement : improvements.entities()) {
+			if (tileImprovement.type.equalsId(improvementTypeId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+    
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -53,4 +62,5 @@ public class TileItemContainer implements Identifiable {
         }
         
     }
+
 }

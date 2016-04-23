@@ -47,6 +47,10 @@ public class Unit extends ObjectWithId implements Location {
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
     private int hitPoints;
+    
+    private int workLeft;
+    private String tileImprovementTypeId;
+    
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
     protected int treasureAmount;
@@ -250,9 +254,9 @@ public class Unit extends ObjectWithId implements Location {
         return state;
     }
     
-    public TileImprovement getWorkImprovement() {
-        return null;
-    }
+	public String getTileImprovementTypeId() {
+		return tileImprovementTypeId;
+	}
     
     public int getMovesLeft() {
         return movesLeft;
@@ -323,8 +327,8 @@ public class Unit extends ObjectWithId implements Location {
                 ? "model.unit.occupation.inTradeRoute"
                 : (isDestinationSet())
                 ? "model.unit.occupation.goingSomewhere"
-                : (getState() == Unit.UnitState.IMPROVING && getWorkImprovement() != null)
-                ? (getWorkImprovement().type.getId() + ".occupationString")
+                : (getState() == Unit.UnitState.IMPROVING && getTileImprovementTypeId() != null)
+                ? (getTileImprovementTypeId() + ".occupationString")
                 : (getState() == Unit.UnitState.ACTIVE && getMovesLeft() <= 0)
                 ? "model.unit.occupation.activeNoMovesLeft"
                 : ("model.unit.occupation." + getState().toString().toLowerCase(Locale.US)))
@@ -573,6 +577,8 @@ public class Unit extends ObjectWithId implements Location {
         switch (s) {
         case ACTIVE:
             return true;
+        case IMPROVING: 
+        	return true;
         case FORTIFIED:
             return getState() == UnitState.FORTIFYING;
         case FORTIFYING:
@@ -671,6 +677,15 @@ public class Unit extends ObjectWithId implements Location {
 		}
 	}
 	
+	public void startImprovement(Tile tile, TileImprovementType improvement) {
+		workLeft = tile.type.getBasicWorkTurns() + improvement.getAddWorkTurns();
+		if (getMovesLeft() < 1) {
+			workLeft++;
+		}
+		tileImprovementTypeId = improvement.getId();
+		setState(UnitState.IMPROVING);
+	}
+	
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -713,6 +728,9 @@ public class Unit extends ObjectWithId implements Location {
             if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
                 unit.unitContainer = new UnitContainer(unit);
             }
+            
+            unit.workLeft = attr.getIntAttribute("workLeft", -1);
+            unit.tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
             
             nodeObject = unit;
             
