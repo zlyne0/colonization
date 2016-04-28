@@ -16,6 +16,8 @@ public class Game implements Identifiable {
 	public Map map;
 	public Player playingPlayer;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
+
+	public IdGenerator idGenerator;
 	
 	public String toString() {
 		return "map[" + map + "]";
@@ -45,7 +47,8 @@ public class Game implements Identifiable {
 		
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-		    System.out.println("static game");
+			System.out.println("static game");
+			XmlNodeParser.game.idGenerator = new IdGenerator(attr.getIntAttribute("nextId", 1));
 		}
 
 		@Override

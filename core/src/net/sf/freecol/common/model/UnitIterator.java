@@ -2,14 +2,26 @@ package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GameLogic;
 
 public class UnitIterator implements Iterator<Unit> {
 
+	public static final Comparator<Unit> xyComparator = new Comparator<Unit>() {
+		public int compare(Unit unit1, Unit unit2) {
+			Tile tile1 = unit1.getTile();
+			Tile tile2 = unit2.getTile();
+			int cmp = ((tile1 == null) ? 0 : tile1.y)
+					- ((tile2 == null) ? 0 : tile2.y);
+			return (cmp != 0 || tile1 == null || tile2 == null) ? cmp
+					: (tile1.x - tile2.x);
+		}
+	};
+	
+	
 	private final Unit.UnitPredicate predicate;
 	private final Player player;
 	private final List<Unit> units = new ArrayList<Unit>();
@@ -27,7 +39,7 @@ public class UnitIterator implements Iterator<Unit> {
             	units.add(u);
             }
         }
-        Collections.sort(units, GameLogic.xyComparator);
+        Collections.sort(units, xyComparator);
 	}
 	
 	@Override

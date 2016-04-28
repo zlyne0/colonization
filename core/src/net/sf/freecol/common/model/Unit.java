@@ -40,7 +40,7 @@ public class Unit extends ObjectWithId implements Location {
     protected String name;
 	private Player owner;
     public UnitType unitType;
-    protected UnitRole unitRole;
+    public UnitRole unitRole;
     
     private Location location;
 
@@ -49,7 +49,7 @@ public class Unit extends ObjectWithId implements Location {
     private int hitPoints;
     
     private int workLeft;
-    private String tileImprovementTypeId;
+    private TileImprovementType tileImprovementType;
     
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
@@ -74,8 +74,7 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     public String toString() {
-        String st = "id = " + id + ", unitType = " + unitType;
-        return st;
+        return "id = " + id + ", unitType = " + unitType + ", workLeft = " + workLeft;
     }
     
     public String resourceImageKey() {
@@ -254,8 +253,8 @@ public class Unit extends ObjectWithId implements Location {
         return state;
     }
     
-	public String getTileImprovementTypeId() {
-		return tileImprovementTypeId;
+	public TileImprovementType getTileImprovementType() {
+		return tileImprovementType;
 	}
     
     public int getMovesLeft() {
@@ -316,7 +315,7 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     private boolean allowMoveFrom(Tile from) {
-        return from.type.isLand() || (!owner.isRoyal() && Specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
+        return from.getType().isLand() || (!owner.isRoyal() && Specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
     }
     
     public String getOccupationKey(Player player) {
@@ -327,8 +326,8 @@ public class Unit extends ObjectWithId implements Location {
                 ? "model.unit.occupation.inTradeRoute"
                 : (isDestinationSet())
                 ? "model.unit.occupation.goingSomewhere"
-                : (getState() == Unit.UnitState.IMPROVING && getTileImprovementTypeId() != null)
-                ? (getTileImprovementTypeId() + ".occupationString")
+                : (getState() == Unit.UnitState.IMPROVING && getTileImprovementType() != null)
+                ? (getTileImprovementType().getId() + ".occupationString")
                 : (getState() == Unit.UnitState.ACTIVE && getMovesLeft() <= 0)
                 ? "model.unit.occupation.activeNoMovesLeft"
                 : ("model.unit.occupation." + getState().toString().toLowerCase(Locale.US)))
@@ -359,7 +358,7 @@ public class Unit extends ObjectWithId implements Location {
 
         Unit defender = target.units.first();
 
-        if (target.type.isLand()) {
+        if (target.getType().isLand()) {
             Settlement settlement = target.getSettlement();
             if (settlement == null) {
                 if (defender != null && owner.notEqualsId(defender.getOwner())) {
@@ -451,7 +450,7 @@ public class Unit extends ObjectWithId implements Location {
 			return MoveType.MOVE_NO_REPAIR;
 		}
 
-		if (target.type.isLand()) {
+		if (target.getType().isLand()) {
 			Settlement settlement = target.getSettlement();
 			if (settlement == null) {
 				return MoveType.MOVE_NO_ACCESS_LAND;
@@ -519,8 +518,8 @@ public class Unit extends ObjectWithId implements Location {
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
     public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
-        int cost = target.type.getBasicMoveCost();
-        if (target.type.isLand() && !isNaval()) {
+        int cost = target.getType().getBasicMoveCost();
+        if (target.getType().isLand() && !isNaval()) {
         	cost = target.getMoveCost(moveDirection, cost);
         }
 
@@ -550,17 +549,21 @@ public class Unit extends ObjectWithId implements Location {
      * @return True if the unit is a beached ship.
      */
     public boolean isBeached(Tile tile) {
-        return isNaval() && tile != null && tile.type.isLand() && !tile.hasSettlement();
+        return isNaval() && tile != null && tile.getType().isLand() && !tile.hasSettlement();
     }
     
-    public void setState(UnitState s) {
-        if (state == s) {
+    public void setState(UnitState newState) {
+    	if (UnitState.IMPROVING == state && newState != UnitState.IMPROVING) {
+    		workLeft = -1;
+    		tileImprovementType = null;
+    	}
+        if (state == newState) {
             // No need to do anything when the state is unchanged
             return;
-        } else if (!canChangeState(s)) {
-            throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + s);
+        } else if (!canChangeState(newState)) {
+            throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + newState);
         } else {
-            this.state = s;
+            this.state = newState;
         }
     }
     
@@ -611,6 +614,14 @@ public class Unit extends ObjectWithId implements Location {
 	
 	public boolean hasMovesPoints(int moveCost) {
 		return this.movesLeft >= moveCost;
+	}
+	
+	public void resetMovesLeftOnNewTurn() {
+		if (isDamaged()) {
+			movesLeft = 0;
+		} else {
+			movesLeft = getInitialMovesLeft();
+		}
 	}
 	
     public UnitContainer getUnitContainer() {
@@ -666,24 +677,34 @@ public class Unit extends ObjectWithId implements Location {
 	    return false;
 	}
 	
-	public void newTurn() {
-		if (isDamaged()) {
-			movesLeft = 0;
-		} else {
-			movesLeft = getInitialMovesLeft();
-		}
-		if (state == UnitState.SKIPPED) {
-			setState(UnitState.ACTIVE);
-		}
-	}
-	
 	public void startImprovement(Tile tile, TileImprovementType improvement) {
-		workLeft = tile.type.getBasicWorkTurns() + improvement.getAddWorkTurns();
+		workLeft = tile.getType().getBasicWorkTurns() + improvement.getAddWorkTurns();
 		if (getMovesLeft() < 1) {
 			workLeft++;
 		}
-		tileImprovementTypeId = improvement.getId();
+		tileImprovementType = improvement;
 		setState(UnitState.IMPROVING);
+	}
+	
+	/**
+	 * Return true if end of tile improvement
+	 * @return
+	 */
+	public boolean workOnImprovement() {
+		int improvementWorkDone = 1;
+		if (unitType.hasAbility(Ability.EXPERT_PIONEER)) {
+			improvementWorkDone = 2;
+		}
+		workLeft = workLeft - improvementWorkDone;
+		if (workLeft <= 0) {
+			roleCount -= tileImprovementType.getExpendedAmount();
+			if (roleCount <= 0) {
+				unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+			}
+			return true;
+		} else {
+			return false;
+		}
 	}
 	
     public static class Xml extends XmlNodeParser {
@@ -730,7 +751,10 @@ public class Unit extends ObjectWithId implements Location {
             }
             
             unit.workLeft = attr.getIntAttribute("workLeft", -1);
-            unit.tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
+            String tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
+            if (tileImprovementTypeId != null) {
+            	unit.tileImprovementType = Specification.instance.tileImprovementTypes.getById(tileImprovementTypeId);
+            }
             
             nodeObject = unit;
             

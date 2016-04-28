@@ -139,7 +139,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     	
     	String descKey;
     	if (mapActor.mapDrawModel().playingPlayer.isTileExplored(tile.x, tile.y)) {
-    		descKey = Messages.nameKey(tile.type.getId());
+    		descKey = Messages.nameKey(tile.getType().getId());
     	} else {
     		descKey = "unexplored";
     	}

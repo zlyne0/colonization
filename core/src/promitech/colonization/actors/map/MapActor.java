@@ -81,6 +81,10 @@ public class MapActor extends Actor {
 		mapDrawModel.resetUnexploredBorders(game.map, gameResources);
 	}
 	
+	public void resetMapModel() {
+		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
+	}
+	
 	@Override
 	public void act(float delta) {
 		super.act(delta);

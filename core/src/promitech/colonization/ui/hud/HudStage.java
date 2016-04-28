@@ -132,12 +132,16 @@ public class HudStage extends Stage {
     			gameController.cancelAction();
     			return true;
     		}
-    		if (keycode == Input.Keys.R) {
+    		if (keycode == Input.Keys.R && roadButton.getParent() != null) {
     			gameController.buildRoad();
     			return true;
     		}
-    		if (keycode == Input.Keys.P) {
+    		if (keycode == Input.Keys.P && plowButton.getParent() != null) {
     			gameController.plowOrClearForestImprovement();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.T && sentryButton.getParent() != null) {
+    			gameController.sentryUnit();
     			return true;
     		}
     		

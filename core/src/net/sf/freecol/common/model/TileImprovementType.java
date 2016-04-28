@@ -1,8 +1,11 @@
 package net.sf.freecol.common.model;
 
+import java.util.LinkedList;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -19,6 +22,9 @@ public class TileImprovementType extends ObjectWithFeatures {
 	
 	/** The amount of the equipment expended in making this improvement. */
 	private int expendedAmount;
+	
+	private final MapIdEntities<TileTypeTransformation> tileTypeTransformation = new MapIdEntities<TileTypeTransformation>();
+	private int magnitude;
 	
 	public TileImprovementType(String id) {
 		super(id);
@@ -59,12 +65,30 @@ public class TileImprovementType extends ObjectWithFeatures {
 	public int getAddWorkTurns() {
 		return addWorkTurns;
 	}
+
+	public int getMagnitude() {
+		return magnitude;
+	}
+
+	public TileTypeTransformation changedTileType(TileType type) {
+		return tileTypeTransformation.getByIdOrNull(type.getId());
+	}
+	
+	public MapIdEntities<TileTypeTransformation> getTileTypeTransformation() {
+		return tileTypeTransformation;
+	}
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Scope.class, ObjectWithFeatures.OBJECT_SCOPE_NODE_SETTER);
+            addNode(TileTypeTransformation.class, new ObjectFromNodeSetter<TileImprovementType, TileTypeTransformation>() {
+				@Override
+				public void set(TileImprovementType target, TileTypeTransformation entity) {
+					target.tileTypeTransformation.add(entity);
+				}
+			});
 		}
 		
 		@Override
@@ -76,6 +100,7 @@ public class TileImprovementType extends ObjectWithFeatures {
 			entity.requiredRoleId = attr.getStrAttribute("required-role");
 			entity.expendedAmount = attr.getIntAttribute("expended-amount", 0);
 			entity.addWorkTurns = attr.getIntAttribute("add-work-turns", 0);
+			entity.magnitude = attr.getIntAttribute("magnitude", 0); 
 			
 			nodeObject = entity;
 		}
@@ -89,5 +114,6 @@ public class TileImprovementType extends ObjectWithFeatures {
             return "tileimprovement-type";
         }
 	}
+
 }
 

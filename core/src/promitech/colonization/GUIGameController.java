@@ -40,6 +40,7 @@ public class GUIGameController {
 		}
 	}
 
+	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
 	
@@ -57,6 +58,8 @@ public class GUIGameController {
         System.out.println("game = " + game);
         
         guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+        
+        gameLogic = new GameLogic(game);
 	}
 	
     public void setMapActor(MapActor mapActor) {
@@ -452,7 +455,11 @@ public class GUIGameController {
 			}
 		}
 		
-		game.playingPlayer.newTurn();
+		gameLogic.newTurn(game.playingPlayer);
+		if (gameLogic.isRequireUpdateMapModel()) {
+			mapActor.resetMapModel();
+		}
+		
 		logicNextActiveUnit();
 		
 		guiGameModel.setAiMove(false);
@@ -484,7 +491,7 @@ public class GUIGameController {
 		}
 
 		TileImprovementType imprv = null;
-		if (tile.type.isForested()) {
+		if (tile.getType().isForested()) {
 			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
 		} else {
 			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
@@ -500,5 +507,10 @@ public class GUIGameController {
 		} else {
 			System.out.println("unit[" + unit + "] can not make improvement[" + improvement + "] on tile[" + tile + "]");
 		}
+	}
+
+	public void sentryUnit() {
+		guiGameModel.getActiveUnit().setState(UnitState.SENTRY);
+		logicNextActiveUnit();
 	}
 }

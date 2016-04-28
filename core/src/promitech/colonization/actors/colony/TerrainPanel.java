@@ -138,12 +138,12 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	}
 	
 	private void initMaxPossibleProdctionOnTile(Unit aUnit, Tile aTile, ColonyTile aColonyTile) {
-		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.type.productionInfo);
+		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.getType().productionInfo);
 		ProductionInfo maxPossibleProductionOnTile = colony.maxPossibleProductionOnTile(aUnit, aTile);
 
 		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
 		
-		maxPossibleProductionOnTile.determineMaxProductionType(aTile.type.productionInfo, aColonyTile.productionInfo);
+		maxPossibleProductionOnTile.determineMaxProductionType(aTile.getType().productionInfo, aColonyTile.productionInfo);
 		
 		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}

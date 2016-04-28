@@ -14,7 +14,7 @@ public class Tile implements Location, Identifiable {
 	
 	public final int x;
 	public final int y;
-	public final TileType type;
+	private TileType type;
 	public final int style;
 	public final String id;
 	private int connected = 0;
@@ -72,6 +72,15 @@ public class Tile implements Location, Identifiable {
 		return false;
 	}
 	
+	public TileImprovement getRoadImprovement() {
+		for (TileImprovement imprv : getTileImprovements()) {
+			if (imprv.type.isRoad()) {
+				return imprv;
+			}
+		}
+		return null;
+	}
+	
 	public boolean isPlowed() {
 		for (TileImprovement imprv : getTileImprovements()) {
 			if (imprv.type.isPlowed()) {
@@ -114,6 +123,13 @@ public class Tile implements Location, Identifiable {
 			return false;
 		}
 		return tileItemContainer.hasImprovementType(improvementTypeId);
+	}
+	
+	public void addImprovement(TileImprovement tileImprovement) {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.improvements.add(tileImprovement);
 	}
 	
 	public boolean canBeImprovedByUnit(TileImprovementType improvementType, Unit unit) {
@@ -199,8 +215,39 @@ public class Tile implements Location, Identifiable {
         }
         return false;
     }
-    
-    
+
+	public void setType(TileType type) {
+		this.type = type;
+	}
+
+	public TileType getType() {
+		return type;
+	}
+	
+	public void updateRoadConnections(Map map) {
+		TileImprovement roadImprovement = this.getRoadImprovement();
+		
+		for (Direction direction : Direction.allDirections) {
+			Tile neighbourTile = map.getTile(this.x, this.y, direction);
+			
+			TileImprovement neighbourRoadImprovement = neighbourTile.getRoadImprovement();
+			if (roadImprovement != null && neighbourRoadImprovement != null) {
+				roadImprovement.addConnection(direction);
+				neighbourRoadImprovement.addConnection(direction.getReverseDirection())
+					.updateStyle();
+			} else {
+				if (neighbourRoadImprovement != null && roadImprovement == null) {
+					neighbourRoadImprovement.removeConnection(direction.getReverseDirection())
+						.updateStyle();
+				}
+			}
+		}
+		if (roadImprovement != null) {
+			roadImprovement.updateStyle();
+		}
+	}
+	
+	
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {

@@ -165,19 +165,19 @@ class TileDrawModelInitializer {
 	
 	private void renderTerainAndBeaches() {
 		
-		frame = gameResources.tile(tile.type, x, y);
+		frame = gameResources.tile(tile.getType(), x, y);
 		tileDrawModel.addBackgroundTerainTexture(frame);
 		
 		// add images for beach
-		if (tile.type.isWater() && tile.style > 0) {
+		if (tile.getType().isWater() && tile.style > 0) {
 			int edgeStyle = tile.style >> 4;
     		if (edgeStyle > 0) {
-    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.type.getInsertOrder());
+    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
     		int cornerStyle = tile.style & 15;
     		if (cornerStyle > 0) {
-    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.type.getInsertOrder());
+    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
 		}
@@ -185,28 +185,28 @@ class TileDrawModelInitializer {
 	
 	private void renderBordersAndRivers(Direction direction) {
 		
-		if (tile.type.hasTheSameTerain(borderTile.type)) {
+		if (tile.getType().hasTheSameTerain(borderTile.getType())) {
 			return;
 		}
 		
-		if (tile.type.isWater() || borderTile.type.isWater()) {
-			if (!tile.type.isWater() && borderTile.type.isWater()) {
+		if (tile.getType().isWater() || borderTile.getType().isWater()) {
+			if (!tile.getType().isWater() && borderTile.getType().isWater()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+				frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
-			if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
+			if (tile.getType().isWater() && !tile.getType().isHighSea() && borderTile.getType().isHighSea()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+				frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 		} else {
 			direction = direction.getReverseDirection();
-			frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+			frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 			borderTileDrawModel.addBackgroundTerainTexture(frame);
 		}
 		
-		if (Direction.longSides.contains(direction) && tile.type.isWater()) {
+		if (Direction.longSides.contains(direction) && tile.getType().isWater()) {
 			TileImprovement riverTileImprovement = borderTile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 			if (riverTileImprovement != null) {
 				frame = gameResources.riverDelta(direction, riverTileImprovement);
@@ -220,23 +220,23 @@ class TileDrawModelInitializer {
 		if (tile.isPlowed()) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.plowed());
 		}
-		if (tile.type.getId().equals("model.tile.hills")) {
+		if (tile.getType().getId().equals("model.tile.hills")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.hills());
 		}
-		if (tile.type.getId().equals("model.tile.mountains")) {
+		if (tile.getType().getId().equals("model.tile.mountains")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.mountainsKey());
 		}
 		// draw forest with river
-		if (tile.type.isForested()) {
+		if (tile.getType().isForested()) {
 			TileImprovement riverTileImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
-			frame = gameResources.forestImg(tile.type, riverTileImprovement);
+			frame = gameResources.forestImg(tile.getType(), riverTileImprovement);
 			if (frame != null) {
 				tileDrawModel.addForegroundTerainTexture(frame);
 			}
 		}
 		for (TileImprovement tileImprovement : tile.getTileImprovements()) {
 			if (tileImprovement.type.isRiver()) {
-				tileDrawModel.addForegroundTerainTexture(gameResources.river(tileImprovement.style));
+				tileDrawModel.addForegroundTerainTexture(gameResources.river(tileImprovement.getStyle()));
 			}
 		}
 		for (TileResource tileResource : tile.getTileResources()) {
@@ -269,7 +269,7 @@ public class MapDrawModel {
 	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	public Path unitPath;
 	
-	public void initialize(Map map, Player player, GameResources gameResources) {
+	protected void initialize(Map map, Player player, GameResources gameResources) {
 		this.map = map;
 		this.playingPlayer = player;
 		width = map.width;

@@ -232,7 +232,7 @@ class ColonyProduction {
 	            continue;
 	        }
 	        
-	        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
+	        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                if (goodsType.equalsId(outputEntry.getKey())) {
@@ -274,7 +274,7 @@ class ColonyProduction {
 	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {
 		List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
 		
-        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
+        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
         for (Production production : productions) {
             for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
             	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, worker, colonyTile, null);

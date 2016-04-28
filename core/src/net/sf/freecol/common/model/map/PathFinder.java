@@ -303,7 +303,7 @@ public class PathFinder {
 	
 	private boolean isReachedGoal(Node moveNode) {
 	    if (endTile == null) {
-	        return moveNode.tile.type.isHighSea();
+	        return moveNode.tile.getType().isHighSea();
 	    } else {
 	        return endTile.getId().equals(moveNode.tile.getId());
 	    }

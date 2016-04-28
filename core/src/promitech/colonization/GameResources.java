@@ -240,7 +240,7 @@ public class GameResources {
 	public Frame forestImg(TileType type, TileImprovement riverTileImprovement) {
 		String key;
 		if (riverTileImprovement != null) {
-			key = type.getId() + ".forest" + riverTileImprovement.style;
+			key = type.getId() + ".forest" + riverTileImprovement.getStyle();
 		} else {
 			key = type.getId() + ".forest";
 		}

@@ -267,13 +267,6 @@ public class Player extends ObjectWithFeatures {
 	public void endTurn() {
 	}
 	
-	public void newTurn() {
-		for (Unit unit : units.entities()) {
-			unit.newTurn();
-		}
-		fogOfWar.resetFogOfWar(this);
-	}
-	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
