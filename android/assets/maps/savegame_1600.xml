@@ -817,7 +817,7 @@
     <serverColonyTile id="colonyTile:6851"/>
     <serverColonyTile id="colonyTile:6859"/>
   </serverObjects>
-  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1">
+  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
     <freecol-specification id="freecol" difficultyLevel="model.difficulty.medium" version="0.86">
       <modifiers>
         <modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>

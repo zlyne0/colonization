@@ -52,6 +52,7 @@ public class SaveGameParserTest {
         // then
         verifySpecification(game);
         
+        assertEquals("unit:6781", game.activeUnitId); 
         assertEquals(13, game.players.size());
         
         Tile tile = game.map.getTile(31, 23);

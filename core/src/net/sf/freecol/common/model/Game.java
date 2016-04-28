@@ -11,22 +11,27 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Game implements Identifiable {
 
-    private String id;
+    private final String id;
     
 	public Map map;
 	public Player playingPlayer;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
 
 	public IdGenerator idGenerator;
+	public String activeUnitId;
+	
+	public Game(String id) {
+		this.id = id;
+	}
+	
+	@Override
+	public String getId() {
+		return id;
+	}
 	
 	public String toString() {
 		return "map[" + map + "]";
 	}
-
-    @Override
-    public String getId() {
-        return id;
-    }
 	
     public void afterLoadGame() {
         for (Player player : players.entities()) {
@@ -35,20 +40,22 @@ public class Game implements Identifiable {
     }
     
 	public static class Xml extends XmlNodeParser {
-		public Game game = new Game();
-		
 		public Xml() {
 			addNode(new Specification.Xml());
-			addNode(new Map.Xml());
+			addNode(Map.class, "map");
 			addNodeForMapIdEntities("players", Player.class);
-			XmlNodeParser.game = game;
-			this.nodeObject = game;
 		}
 		
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			System.out.println("static game");
-			XmlNodeParser.game.idGenerator = new IdGenerator(attr.getIntAttribute("nextId", 1));
+			System.out.println("startElement game");
+			Game game = new Game(attr.getStrAttribute("id"));
+			game.idGenerator = new IdGenerator(attr.getIntAttribute("nextId", 1));
+			game.activeUnitId = attr.getStrAttribute("activeUnit");
+			
+			XmlNodeParser.game = game;
+			
+			nodeObject = game;
 		}
 
 		@Override
@@ -60,6 +67,10 @@ public class Game implements Identifiable {
 		
 		@Override
 		public String getTagName() {
+			return tagName();
+		}
+
+		public static String tagName() {
 			return "game";
 		}
 	}

@@ -125,6 +125,10 @@ public class Map extends ObjectWithId {
 		
 		@Override
 		public String getTagName() {
+			return tagName();
+		}
+
+		public static String tagName() {
 			return "map";
 		}
 		
