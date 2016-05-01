@@ -28,12 +28,12 @@ public abstract class ObjectWithId implements Identifiable {
 		return this.id.equals(id);
 	}
 	
-	public boolean equalsId(ObjectWithId obj) {
-		return obj != null && id.equals(obj.id);
+	public boolean equalsId(Identifiable obj) {
+		return obj != null && id.equals(obj.getId());
 	}
 
-    public boolean notEqualsId(ObjectWithId obj) {
-    	return !id.equals(obj.id);
+    public boolean notEqualsId(Identifiable obj) {
+    	return !id.equals(obj.getId());
     }
 	
 	public int getInsertOrder() {

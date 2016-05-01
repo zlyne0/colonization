@@ -217,7 +217,7 @@ public class Colony extends Settlement {
     
     public void initMaxPossibleProductionOnTile(Tile tile) {
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
-    		if (colonyTile.getWorkTileId().equals(tile.getId())) {
+    		if (colonyTile.equalsId(tile)) {
     			initMaxPossibleProductionOnTile(colonyTile);
     			updateModelOnWorkerAllocationOrGoodsTransfer();
     		}
@@ -225,7 +225,7 @@ public class Colony extends Settlement {
     }
     
 	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
-		if (!tile.getId().equals(aColonyTile.getWorkTileId()) && aColonyTile.getWorker() == null) {
+		if (aColonyTile.notEqualsId(tile) && aColonyTile.getWorker() == null) {
 			return;
 		}
 		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
@@ -401,13 +401,13 @@ public class Colony extends Settlement {
         for (ColonyTile ct : colonyTiles.entities()) {
             boolean foundTileForColonyTile = false; 
             for (Direction direction : Direction.allDirections) {
-                if (ct.getWorkTileId().equals(colonyTile.getId())) {
+                if (ct.equalsId(colonyTile)) {
                     ct.tile = colonyTile;
                     foundTileForColonyTile = true;
                     break;
                 }
                 Tile borderTile = map.getTile(colonyTile.x, colonyTile.y, direction);
-                if (ct.getWorkTileId().equals(borderTile.getId())) {
+                if (ct.equalsId(borderTile)) {
                     ct.tile = borderTile;
                     foundTileForColonyTile = true;
                     break;

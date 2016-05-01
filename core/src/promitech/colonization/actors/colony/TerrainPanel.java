@@ -95,7 +95,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		if (ct == null) {
 			return false;
 		}
-		if (ct.getWorkTileId().equals(colonyTile.getId())) {
+		if (ct.equalsId(colonyTile)) {
 			return false;
 		}
 		return ct.getWorker() == null;
@@ -129,7 +129,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 			return null;
 		}
 		for (int i=0; i<colonyTiles.length; i++) {
-			if (tile.getId().equals(colonyTiles[i].getWorkTileId())) {
+			if (colonyTiles[i].equalsId(tile)) {
 				return colonyTiles[i];
 			}
 		}
