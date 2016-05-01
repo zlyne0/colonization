@@ -42,46 +42,56 @@ public class GameLogic {
 	
 	public void newTurnForUnit(Unit unit) {
 		if (UnitState.IMPROVING == unit.getState()) {
-			if (unit.workOnImprovement()) {
-				Tile improvingTile = unit.getTile();
-				TileImprovementType improvementType = unit.getTileImprovementType();
-				
-				LinkedList<Settlement> neighbouringSettlements = game.map.findSettlements(improvingTile, unit.getOwner(), 2);
-				
-				TileTypeTransformation changedTileType = improvementType.changedTileType(improvingTile.getType());
-				if (changedTileType != null) {
-					improvingTile.changeTileType(changedTileType.getToType());
-					
-					Goods production = changedTileType.getProduction();
-					int prodAmount = production.getAmount();
-					if (unit.unitType.hasAbility(Ability.EXPERT_PIONEER)) {
-						prodAmount *= 2;
-					}
-					if (!neighbouringSettlements.isEmpty()) {
-						Settlement settlement = neighbouringSettlements.getFirst();
-						prodAmount = settlement.applyModifiers(Modifier.TILE_TYPE_CHANGE_PRODUCTION, prodAmount);
-						settlement.addGoods(production.getId(), prodAmount);
-					}
-				} else {
-					TileImprovement tileImprovement = new TileImprovement(game.idGenerator, improvementType);
-					improvingTile.addImprovement(tileImprovement);
-					
-					if (improvementType.isRoad()) {
-						improvingTile.updateRoadConnections(game.map);
-					}
-				}
-				// TODO: po zmianie terenu i jesli teren nalezal do colony update produkcji w colony
-				// TODO: przerwanie reszty ulepsaczy na tym terenie, jesli ulepszaja to samo
-				// orginal ServerUnit.csImproveTile
-				// TODO: ujawnianie resource exposeResourcePercent
-				
-				requireUpdateMapModel = true;
-				unit.setState(UnitState.ACTIVE);
-			}
+			workOnImprovement(unit);
 		}
 		
 		unit.resetMovesLeftOnNewTurn();
 		if (UnitState.SKIPPED == unit.getState()) {
+			unit.setState(UnitState.ACTIVE);
+		}
+	}
+
+	private void workOnImprovement(Unit unit) {
+		if (unit.workOnImprovement()) {
+			Tile improvingTile = unit.getTile();
+			TileImprovementType improvementType = unit.getTileImprovementType();
+			
+			LinkedList<Settlement> neighbouringSettlements = game.map.findSettlements(improvingTile, unit.getOwner(), 2);
+			
+			TileTypeTransformation changedTileType = improvementType.changedTileType(improvingTile.getType());
+			if (changedTileType != null) {
+				improvingTile.changeTileType(changedTileType.getToType());
+				
+				Goods production = changedTileType.getProduction();
+				int prodAmount = production.getAmount();
+				if (unit.unitType.hasAbility(Ability.EXPERT_PIONEER)) {
+					prodAmount *= 2;
+				}
+				if (!neighbouringSettlements.isEmpty()) {
+					Settlement settlement = neighbouringSettlements.getFirst();
+					prodAmount = settlement.applyModifiers(Modifier.TILE_TYPE_CHANGE_PRODUCTION, prodAmount);
+					settlement.addGoods(production.getId(), prodAmount);
+				}
+			} else {
+				TileImprovement tileImprovement = new TileImprovement(game.idGenerator, improvementType);
+				improvingTile.addImprovement(tileImprovement);
+				
+				if (improvementType.isRoad()) {
+					improvingTile.updateRoadConnections(game.map);
+				}
+			}
+			
+			for (Settlement settlement : neighbouringSettlements) {
+				if (settlement.isContainsTile(improvingTile)) {
+					settlement.initMaxPossibleProductionOnTile(improvingTile);
+					break;
+				}
+			}
+			// TODO: przerwanie reszty ulepsaczy na tym terenie, jesli ulepszaja to samo
+			// orginal ServerUnit.csImproveTile
+			// TODO: ujawnianie resource exposeResourcePercent
+			
+			requireUpdateMapModel = true;
 			unit.setState(UnitState.ACTIVE);
 		}
 	}

@@ -75,4 +75,14 @@ public class IndianSettlement extends Settlement {
 	public void addGoods(String goodsTypeId, int quantity) {
 		throw new IllegalStateException("not implemented");
 	}
+
+	@Override
+	public boolean isContainsTile(Tile improvingTile) {
+		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public void initMaxPossibleProductionOnTile(Tile tile) {
+		throw new IllegalStateException("not implemented");
+	}
 }

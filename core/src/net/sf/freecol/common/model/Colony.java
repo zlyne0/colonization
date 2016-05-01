@@ -215,14 +215,37 @@ public class Colony extends Settlement {
     	return colonyProduction.productionConsumptionForObject(colonyTile.getId());
     }
     
-	public ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
+    public void initMaxPossibleProductionOnTile(Tile tile) {
+    	for (ColonyTile colonyTile : colonyTiles.entities()) {
+    		if (colonyTile.getWorkTileId().equals(tile.getId())) {
+    			initMaxPossibleProductionOnTile(colonyTile);
+    			updateModelOnWorkerAllocationOrGoodsTransfer();
+    		}
+    	}
+    }
+    
+	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
+		if (!tile.getId().equals(aColonyTile.getWorkTileId()) && aColonyTile.getWorker() == null) {
+			return;
+		}
+		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
+		ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile(aColonyTile.getWorker(), aColonyTile.tile);
+
+		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
+		
+		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);
+		
+		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
+	}
+	
+	private ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
 		ProductionInfo productionInfo = aTile.getType().productionInfo;
 		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
 		productionSummaryForWorker.applyModifiers(owner.foundingFathers.entities());
 		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
 		return productionSummaryForWorker;
 	}
-
+	
     public int getWarehouseCapacity() {
     	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
@@ -536,6 +559,11 @@ public class Colony extends Settlement {
 			}
 		}
 		updateModelOnWorkerAllocationOrGoodsTransfer();
+	}
+	
+	@Override
+	public boolean isContainsTile(Tile tile) {
+		return true;
 	}
 	
     public static class Xml extends XmlNodeParser {

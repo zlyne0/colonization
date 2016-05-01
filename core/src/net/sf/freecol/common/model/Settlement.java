@@ -51,4 +51,8 @@ public abstract class Settlement implements Identifiable {
     
     public abstract void addGoods(String goodsTypeId, int quantity);
 
+	public abstract boolean isContainsTile(Tile improvingTile);
+	
+	public abstract void initMaxPossibleProductionOnTile(Tile tile);
+
 }

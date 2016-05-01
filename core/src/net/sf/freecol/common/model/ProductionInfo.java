@@ -30,8 +30,14 @@ public class ProductionInfo {
 
 	public ProductionInfo productionSummaryForWorker(Unit worker) {
 		ProductionInfo prodInfo = new ProductionInfo();
-		for (Production production : productions) {
-			prodInfo.addProduction(production.sumProductionForWorker(worker));
+		if (worker != null) {
+			for (Production production : attendedProductions) {
+				prodInfo.addProduction(production.sumProductionForWorker(worker));
+			}
+		} else {
+			for (Production production : unattendedProductions) {
+				prodInfo.addProduction(production.sumProductionForWorker());
+			}
 		}
 		return prodInfo;
 	}
@@ -56,12 +62,19 @@ public class ProductionInfo {
 		}
 	}
 
-	public ProductionInfo determineMaxProductionType(ProductionInfo initTypes, ProductionInfo maxProdType) {
+	public void writeMaxProductionFromAllowed(ProductionInfo allowedProductions, ProductionInfo sourceProduction) {
+		Production productionTypes = allowedProductions.maxProduction();
+		clear();
+		for (Production p : sourceProduction.productions) {
+			if (p.outputTypesEquals(productionTypes)) {
+				addProduction(new Production(p)); 
+			}
+		}
+	}
+	
+	private Production maxProduction() {
 		Production maxProduction = null;
 		for (Production p : productions) {
-			if (p.isUnattended()) {
-				continue;
-			}
 			if (maxProduction == null || p.isProductMoreThen(maxProduction)) {
 				maxProduction = p;
 			}
@@ -69,14 +82,7 @@ public class ProductionInfo {
 		if (maxProduction == null) {
 			throw new IllegalStateException("can not find max produtions in " + this.toString());
 		}
-		
-		maxProdType.clear();
-		for (Production p : initTypes.productions) {
-			if (p.outputEquals(maxProduction)) {
-				maxProdType.addProduction(new Production(p)); 
-			}
-		}
-		return maxProdType;
+		return maxProduction;
 	}
 
     public List<Production> getUnattendedProductions() {

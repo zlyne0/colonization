@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionConsumption;
-import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -76,7 +75,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		addActor(worker);
 		updateWorkerScreenPosition(worker, aColonyTile);
 
-		initMaxPossibleProdctionOnTile(worker.unit, aColonyTile.tile, aColonyTile);
+		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
 		changeColonyStateListener.changeUnitAllocation(colony);
 	}
@@ -135,17 +134,6 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 			}
 		}
 		return null;
-	}
-	
-	private void initMaxPossibleProdctionOnTile(Unit aUnit, Tile aTile, ColonyTile aColonyTile) {
-		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.getType().productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = colony.maxPossibleProductionOnTile(aUnit, aTile);
-
-		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
-		
-		maxPossibleProductionOnTile.determineMaxProductionType(aTile.getType().productionInfo, aColonyTile.productionInfo);
-		
-		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {

@@ -100,6 +100,9 @@ public class Map extends ObjectWithId {
 
 	public LinkedList<Settlement> findSettlements(Tile sourceTile, Player player, int radius) {
 		LinkedList<Settlement> ll = new LinkedList<Settlement>();
+		if (sourceTile.hasSettlement()) {
+			ll.add(sourceTile.getSettlement());
+		}
 		spiralIterator.reset(sourceTile.x, sourceTile.y, true, radius);
 		while (spiralIterator.hasNext()) {
 			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
