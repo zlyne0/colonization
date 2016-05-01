@@ -65,4 +65,14 @@ public class IndianSettlement extends Settlement {
             return "indianSettlement";
         }
     }
+
+	@Override
+	public int applyModifiers(String abilityCode, int val) {
+		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public void addGoods(String goodsTypeId, int quantity) {
+		throw new IllegalStateException("not implemented");
+	}
 }

@@ -189,7 +189,7 @@ public class GUIGameController {
 
 	private void clickOnTileDebugInfo(Point p) {
         Tile tile = game.map.getTile(p.x, p.y);
-        System.out.println("p = " + p);
+        System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
             System.out.println("tile: " + tile);
         } else {

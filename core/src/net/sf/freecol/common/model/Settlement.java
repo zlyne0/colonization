@@ -46,5 +46,9 @@ public abstract class Settlement implements Identifiable {
     }
 
     public abstract boolean hasAbility(String abilityCode);
+    
+    public abstract int applyModifiers(String abilityCode, int val);
+    
+    public abstract void addGoods(String goodsTypeId, int quantity);
 
 }

@@ -1211,30 +1211,14 @@
                           required-role="model.role.pioneer" expended-amount="1"
                           exposeResourcePercent="5">
       <scope method-name="isForested" method-value="true" />
-      <change from="model.tile.mixedForest"     to="model.tile.plains">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.coniferForest"   to="model.tile.grassland">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.broadleafForest" to="model.tile.prairie">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.tropicalForest"  to="model.tile.savannah">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.wetlandForest"   to="model.tile.marsh">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.rainForest"      to="model.tile.swamp">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
-      <change from="model.tile.scrubForest"     to="model.tile.desert">
-        <production goods-type="model.goods.lumber" value="10" />
-      </change>
-      <change from="model.tile.borealForest"    to="model.tile.tundra">
-        <production goods-type="model.goods.lumber" value="20" />
-      </change>
+      <change from="model.tile.borealForest" to="model.tile.tundra" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.broadleafForest" to="model.tile.prairie" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.coniferForest" to="model.tile.grassland" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.mixedForest" to="model.tile.plains" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.rainForest" to="model.tile.swamp" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.scrubForest" to="model.tile.desert" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.tropicalForest" to="model.tile.savannah" goods-type="model.goods.lumber" value="20"/>
+      <change from="model.tile.wetlandForest" to="model.tile.marsh" goods-type="model.goods.lumber" value="20"/>
     </tileimprovement-type>
     <tileimprovement-type id="model.improvement.fishBonusLand" natural="true"
                           zIndex="250">

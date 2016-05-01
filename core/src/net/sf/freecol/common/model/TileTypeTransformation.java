@@ -1,15 +1,15 @@
 package net.sf.freecol.common.model;
 
-import promitech.colonization.savegame.ObjectFromNodeSetter;
+import net.sf.freecol.common.model.specification.Goods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileTypeTransformation implements Identifiable {
 	private String from;
 	private String to;
-	private ProductionInfo productionInfo = new ProductionInfo() ;
 
 	private TileType toType;
+	private Goods production;
 	
 	@Override
 	public String getId() {
@@ -20,19 +20,9 @@ public class TileTypeTransformation implements Identifiable {
 		return toType;
 	}
 
-	public ProductionInfo getProductionInfo() {
-		return productionInfo;
-	}
-	
 	public static class Xml extends XmlNodeParser {
 
 		public Xml() {
-            addNode(Production.class, new ObjectFromNodeSetter<TileTypeTransformation, Production>() {
-				@Override
-				public void set(TileTypeTransformation target, Production entity) {
-					target.productionInfo.addProduction(entity);
-				}
-			});
 		}
 		
 		@Override
@@ -41,6 +31,7 @@ public class TileTypeTransformation implements Identifiable {
 			c.from = attr.getStrAttribute("from");
 			c.to = attr.getStrAttribute("to");
 			c.toType = Specification.instance.tileTypes.getById(c.to);
+			c.production = new Goods(attr.getStrAttribute("goods-type"), attr.getIntAttribute("value"));
 			nodeObject = c;
 		}
 		
@@ -53,5 +44,9 @@ public class TileTypeTransformation implements Identifiable {
 			return "change";
 		}
 		
+	}
+
+	public Goods getProduction() {
+		return production;
 	}
 }

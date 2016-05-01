@@ -27,9 +27,13 @@ public class GoodsContainer extends ObjectWithId {
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
     }
-    
+
     public void increaseGoodsQuantity(GoodsType goodsType, int quantity) {
-    	goods.addGoods(goodsType.getId(), quantity);
+    	increaseGoodsQuantity(goodsType.getId(), quantity);
+    }
+    
+    public void increaseGoodsQuantity(String goodsId, int quantity) {
+    	goods.addGoods(goodsId, quantity);
     	updateTakenCargoSlots();
     }
     

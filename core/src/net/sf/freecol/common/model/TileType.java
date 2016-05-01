@@ -13,6 +13,7 @@ public final class TileType extends ObjectWithFeatures {
     private static final String OCEAN = "model.tile.ocean";
 	private static final String HIGH_SEAS = "model.tile.highSeas";
 	
+	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
 	private int basicMoveCost;
 	private int basicWorkTurns;
@@ -63,6 +64,10 @@ public final class TileType extends ObjectWithFeatures {
 		return basicWorkTurns;
 	}
     
+	public boolean canHaveResourceType(ResourceType resourceType) {
+		return allowedResourceTypes.containsId(resourceType);
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -73,6 +78,7 @@ public final class TileType extends ObjectWithFeatures {
 					target.productionInfo.addProduction(entity);
 				}
 			});
+            addNodeForMapIdEntities("allowedResourceTypes", TileTypeAllowedResource.class);
 		}
 
 		@Override

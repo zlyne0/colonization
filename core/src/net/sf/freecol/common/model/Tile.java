@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -216,8 +217,18 @@ public class Tile implements Location, Identifiable {
         return false;
     }
 
-	public void setType(TileType type) {
-		this.type = type;
+	public void changeTileType(TileType newType) {
+		this.type = newType;
+		if (tileItemContainer == null) {
+			return;
+		}
+		Iterator<TileResource> iterator = tileItemContainer.resources.entities().iterator();
+		while (iterator.hasNext()) {
+			TileResource next = iterator.next();
+			if (!newType.canHaveResourceType(next.getResourceType())) {
+				iterator.remove();
+			}
+		}
 	}
 
 	public TileType getType() {

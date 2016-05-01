@@ -1,16 +1,25 @@
 package promitech.colonization;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Production;
+import net.sf.freecol.common.model.ProductionInfo;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
+import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.Modifier;
 
 public class GameLogic {
 
@@ -34,21 +43,31 @@ public class GameLogic {
 	public void newTurnForUnit(Unit unit) {
 		if (UnitState.IMPROVING == unit.getState()) {
 			if (unit.workOnImprovement()) {
+				Tile improvingTile = unit.getTile();
 				TileImprovementType improvementType = unit.getTileImprovementType();
 				
-				TileTypeTransformation changedTileType = improvementType.changedTileType(unit.getTile().getType());
+				LinkedList<Settlement> neighbouringSettlements = game.map.findSettlements(improvingTile, unit.getOwner(), 2);
+				
+				TileTypeTransformation changedTileType = improvementType.changedTileType(improvingTile.getType());
 				if (changedTileType != null) {
-					unit.getTile().setType(changedTileType.getToType());
-					// TODO: znalezienie najbliszego miasta i dodanie mu produkcji ze zmiany terenu
-					// TODO: delivery goods gdy w poblirzu (dwa pola) jest osada 
+					improvingTile.changeTileType(changedTileType.getToType());
+					
+					Goods production = changedTileType.getProduction();
+					int prodAmount = production.getAmount();
+					if (unit.unitType.hasAbility(Ability.EXPERT_PIONEER)) {
+						prodAmount *= 2;
+					}
+					if (!neighbouringSettlements.isEmpty()) {
+						Settlement settlement = neighbouringSettlements.getFirst();
+						prodAmount = settlement.applyModifiers(Modifier.TILE_TYPE_CHANGE_PRODUCTION, prodAmount);
+						settlement.addGoods(production.getId(), prodAmount);
+					}
 				} else {
-					// TODO: add improvement
-					// TODO: generate id
 					TileImprovement tileImprovement = new TileImprovement(game.idGenerator, improvementType);
-					unit.getTile().addImprovement(tileImprovement);
+					improvingTile.addImprovement(tileImprovement);
 					
 					if (improvementType.isRoad()) {
-						unit.getTile().updateRoadConnections(game.map);
+						improvingTile.updateRoadConnections(game.map);
 					}
 				}
 				// TODO: po zmianie terenu i jesli teren nalezal do colony update produkcji w colony
@@ -56,12 +75,7 @@ public class GameLogic {
 				// orginal ServerUnit.csImproveTile
 				// TODO: ujawnianie resource exposeResourcePercent
 				
-				// TODO: ustawienie ze wszystkie zmieniona mape i trzeba przerenderowac
 				requireUpdateMapModel = true;
-				
-//				tile.
-//				przy dodawaniu improvement na tile, inaczej trzeba traktowac wycinanie lasu inaczej droge i plow
-//				bo wycinka lasu tak naprawde nie jest ulepszeniem terenu
 				unit.setState(UnitState.ACTIVE);
 			}
 		}

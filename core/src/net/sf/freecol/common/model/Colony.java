@@ -122,6 +122,11 @@ public class Colony extends Settlement {
         return colonyUpdatableFeatures.hasAbility(abilityCode);
     }
     
+	@Override
+	public int applyModifiers(String modifierCode, int val) {
+		return (int)colonyUpdatableFeatures.applyModifier(modifierCode, (float)val);
+	}
+
     private String getStockadeKey() {
         return null;
     }
@@ -192,6 +197,11 @@ public class Colony extends Settlement {
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }
+    
+	@Override
+	public void addGoods(String goodsTypeId, int quantity) {
+		goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
+	}
     
     public ProductionConsumption productionSummary(Building building) {
     	return colonyProduction.productionConsumptionForObject(building.getId());
@@ -577,5 +587,4 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
-
 }

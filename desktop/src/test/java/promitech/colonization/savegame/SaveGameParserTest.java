@@ -2,12 +2,10 @@ package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
 
-import java.util.Map.Entry;
-
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Production;
+import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Stance;
@@ -23,7 +21,6 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
-import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
@@ -103,7 +100,7 @@ public class SaveGameParserTest {
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
         assertEquals(42, Specification.instance.unitTypes.size());
-        assertEquals(23, specification.tileTypes.size());
+        verifyTileTypes(specification);
 
         assertEquals(12, specification.resourceTypes.size());
         
@@ -123,6 +120,18 @@ public class SaveGameParserTest {
         verifySpecificationFoundingFathers(specification);
     }
 
+	private void verifyTileTypes(Specification specification) {
+		assertEquals(23, specification.tileTypes.size());
+		
+		TileType mixedForest = specification.tileTypes.getById("model.tile.mixedForest");
+		assertEquals(2, mixedForest.allowedResourceTypes.size());
+		
+		ResourceType furs = specification.resourceTypes.getById("model.resource.furs");
+		ResourceType lumber = specification.resourceTypes.getById("model.resource.lumber");
+		assertTrue(mixedForest.canHaveResourceType(furs));
+		assertTrue(mixedForest.canHaveResourceType(lumber));
+	}
+
     private void verifyTileImprovementTypes(Specification specification) {
         assertEquals( 6, specification.tileImprovementTypes.size());
         TileImprovementType clearForest = specification.tileImprovementTypes.getById("model.improvement.clearForest");
@@ -132,12 +141,8 @@ public class SaveGameParserTest {
         TileTypeTransformation changedTileType = clearForest.changedTileType(borealForest);
         assertEquals("model.tile.tundra", changedTileType.getToType().getId());
         
-        assertEquals(1, changedTileType.getProductionInfo().getAttendedProductions().size());
-        Production production = changedTileType.getProductionInfo().getAttendedProductions().get(0);
-        for (Entry<GoodsType, Integer> outputEntries : production.outputEntries()) {
-        	assertEquals("model.goods.lumber", outputEntries.getKey().getId());
-        	assertEquals(20, outputEntries.getValue().intValue());
-        }
+    	assertEquals("model.goods.lumber", changedTileType.getProduction().getId());
+    	assertEquals(20, changedTileType.getProduction().getAmount());
 	}
 
 	private void verifySpecificationFoundingFathers(Specification specification) {
