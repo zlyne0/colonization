@@ -98,6 +98,13 @@ public class Tile implements Location, Identifiable {
         return tileItemContainer.lostCityRumours.size() > 0;
     }
 
+    public boolean hasTileResource() {
+    	if (tileItemContainer == null) {
+    		return false;
+    	}
+    	return tileItemContainer.resources.size() > 0;
+    }
+    
 	public boolean hasSettlement() {
 		return settlement != null;
 	}
@@ -131,6 +138,13 @@ public class Tile implements Location, Identifiable {
 			tileItemContainer = new TileItemContainer();
 		}
 		tileItemContainer.improvements.add(tileImprovement);
+	}
+	
+	public void addResource(TileResource resource) {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.resources.add(resource);
 	}
 	
 	public boolean canBeImprovedByUnit(TileImprovementType improvementType, Unit unit) {

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -66,6 +67,11 @@ public final class TileType extends ObjectWithFeatures {
     
 	public boolean canHaveResourceType(ResourceType resourceType) {
 		return allowedResourceTypes.containsId(resourceType);
+	}
+	
+	public ResourceType exposeResource() {
+		TileTypeAllowedResource allowedResource = Randomizer.getInstance().randomOne(allowedResourceTypes.entities());
+		return allowedResource.resourceType;
 	}
 	
 	public static class Xml extends XmlNodeParser {

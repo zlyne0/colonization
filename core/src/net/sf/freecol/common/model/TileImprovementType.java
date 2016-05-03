@@ -1,15 +1,14 @@
 package net.sf.freecol.common.model;
 
-import java.util.LinkedList;
-
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
+import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileImprovementType extends ObjectWithFeatures {
+public class TileImprovementType extends ObjectWithFeatures implements WithProbability {
 	public static final String ROAD_MODEL_IMPROVEMENT_TYPE_ID = "model.improvement.road";
 	public static final String RIVER_IMPROVEMENT_TYPE_ID = "model.improvement.river";
 	public static final String PLOWED_IMPROVEMENT_TYPE_ID = "model.improvement.plow";
@@ -25,6 +24,7 @@ public class TileImprovementType extends ObjectWithFeatures {
 	
 	private final MapIdEntities<TileTypeTransformation> tileTypeTransformation = new MapIdEntities<TileTypeTransformation>();
 	private int magnitude;
+	private int exposeResourcePercent = 0;
 	
 	public TileImprovementType(String id) {
 		super(id);
@@ -77,7 +77,12 @@ public class TileImprovementType extends ObjectWithFeatures {
 	public MapIdEntities<TileTypeTransformation> getTileTypeTransformation() {
 		return tileTypeTransformation;
 	}
-	
+
+	@Override
+	public int getOccureProbability() {
+		return exposeResourcePercent;
+	}
+
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -101,6 +106,7 @@ public class TileImprovementType extends ObjectWithFeatures {
 			entity.expendedAmount = attr.getIntAttribute("expended-amount", 0);
 			entity.addWorkTurns = attr.getIntAttribute("add-work-turns", 0);
 			entity.magnitude = attr.getIntAttribute("magnitude", 0); 
+			entity.exposeResourcePercent = attr.getIntAttribute("exposeResourcePercent", 0);
 			
 			nodeObject = entity;
 		}

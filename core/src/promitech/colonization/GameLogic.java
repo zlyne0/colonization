@@ -1,21 +1,17 @@
 package promitech.colonization;
 
 import java.util.LinkedList;
-import java.util.List;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Production;
-import net.sf.freecol.common.model.ProductionInfo;
+import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
-import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
@@ -75,7 +71,6 @@ public class GameLogic {
 			} else {
 				TileImprovement tileImprovement = new TileImprovement(game.idGenerator, improvementType);
 				improvingTile.addImprovement(tileImprovement);
-				
 				if (improvementType.isRoad()) {
 					improvingTile.updateRoadConnections(game.map);
 				}
@@ -87,15 +82,32 @@ public class GameLogic {
 					break;
 				}
 			}
-			// TODO: przerwanie reszty ulepsaczy na tym terenie, jesli ulepszaja to samo
-			// orginal ServerUnit.csImproveTile
-			// TODO: ujawnianie resource exposeResourcePercent
+			
+			for (Unit u : improvingTile.units.entities()) {
+				if (u.getState() == UnitState.IMPROVING && u.getTileImprovementType().equalsId(improvementType)) {
+					u.setState(UnitState.ACTIVE);
+				}
+			}
+			
+			// does improvement expose resource
+			if (isExposedResourceAfterImprovement(improvingTile, improvementType)) {
+				ResourceType resourceType = improvingTile.getType().exposeResource();
+				int initQuantity = resourceType.initQuantity();
+				improvingTile.addResource(new TileResource(game.idGenerator, resourceType, initQuantity));
+			}
 			
 			requireUpdateMapModel = true;
 			unit.setState(UnitState.ACTIVE);
 		}
 	}
 
+	private boolean isExposedResourceAfterImprovement(Tile tile, TileImprovementType improvementType) {
+		return !tile.hasTileResource() 
+				&& Randomizer.getInstance().isHappen(improvementType) 
+				&& tile.getType().allowedResourceTypes.isNotEmpty();
+		
+	}
+	
 	public boolean isRequireUpdateMapModel() {
 		return requireUpdateMapModel;
 	}

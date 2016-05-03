@@ -12,6 +12,7 @@ public abstract class ObjectWithId implements Identifiable {
     
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
+	public static final int UNLIMITED = -1;
     
 	protected final String id;
 	private int insertOrder = 0;
