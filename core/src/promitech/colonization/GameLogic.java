@@ -37,13 +37,19 @@ public class GameLogic {
 	}
 	
 	public void newTurnForUnit(Unit unit) {
-		if (UnitState.IMPROVING == unit.getState()) {
-			workOnImprovement(unit);
-		}
-		
 		unit.resetMovesLeftOnNewTurn();
-		if (UnitState.SKIPPED == unit.getState()) {
-			unit.setState(UnitState.ACTIVE);
+		switch (unit.getState()) {
+			case IMPROVING:
+				workOnImprovement(unit);
+				break;
+			case FORTIFYING:
+				unit.setState(UnitState.FORTIFIED);
+				break;
+			case SKIPPED:
+				unit.setState(UnitState.ACTIVE);
+				break;
+			default:
+				break;
 		}
 	}
 

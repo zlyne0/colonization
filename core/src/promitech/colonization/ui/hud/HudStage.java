@@ -15,6 +15,7 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
@@ -56,6 +57,7 @@ public class HudStage extends Stage {
     private ButtonActor buildColonyButton;
     private RadioButtonActor gotoTileButton;
     private ButtonActor gotoLocationButton;
+    private ButtonActor activeButton;
     
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
@@ -144,6 +146,14 @@ public class HudStage extends Stage {
     			gameController.sentryUnit();
     			return true;
     		}
+    		if (keycode == Input.Keys.F && fortifyButton.getParent() != null) {
+    			gameController.fortify();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.A && activeButton.getParent() != null) {
+    			gameController.activeUnit();
+    			return true;
+    		}
     		
     		Direction direction = directionByKeyCode.get(keycode);
     		if (direction != null) {
@@ -225,6 +235,14 @@ public class HudStage extends Stage {
     			gameController.plowOrClearForestImprovement();
     			return true;
     		}
+    		if (event.getListenerActor() == fortifyButton) {
+    			gameController.fortify();
+    			return true;
+    		}
+    		if (event.getListenerActor() == activeButton) {
+    			gameController.activeUnit();
+    			return true;
+    		}
     		
     		return false;
     	}
@@ -252,6 +270,11 @@ public class HudStage extends Stage {
 		fortifyButton.setSize(bw, bw);
 		fortifyButton.setPosition(5*bw, 0);
 		fortifyButton.addListener(buttonsInputListener);
+		
+		activeButton = new ButtonActor(shapeRenderer, "A");
+		activeButton.setSize(bw, bw);
+		activeButton.setPosition(5*bw, 0);
+		activeButton.addListener(buttonsInputListener);
 		
 		buildColonyButton = new ButtonActor(shapeRenderer, "B");
 		buildColonyButton.setSize(bw, bw);
@@ -356,26 +379,35 @@ public class HudStage extends Stage {
         if (!model.isCreateGotoPathMode()) {
         	
 			if (model.isActiveUnitSet()) {
-				for (Entry<Direction, ButtonActor> entry : directionButtons.entrySet()) {
-					ButtonActor directionButton = entry.getValue();
-					buttonsGroup.addActor(directionButton);
+				Unit unit = model.getActiveUnit();
+				
+				buttonsGroup.addActor(centerOnUnitButton);
+				
+				if (model.getActiveUnit().getState() != UnitState.FORTIFIED) {
+					for (Entry<Direction, ButtonActor> entry : directionButtons.entrySet()) {
+						ButtonActor directionButton = entry.getValue();
+						buttonsGroup.addActor(directionButton);
+					}
+					buttonsGroup.addActor(unitWaitButton);
+					buttonsGroup.addActor(sentryButton);
+					
+					if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
+					} else {
+						buttonsGroup.addActor(fortifyButton);
+						
+						buttonsGroup.addActor(buildColonyButton);
+						if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+							buttonsGroup.addActor(plowButton);
+							buttonsGroup.addActor(roadButton);
+						}
+					}
+					buttonsGroup.addActor(gotoLocationButton);
+					buttonsGroup.addActor(gotoTileButton);
+					
+				} else {
+					buttonsGroup.addActor(activeButton);
 				}
 				
-				Unit unit = model.getActiveUnit();
-				buttonsGroup.addActor(centerOnUnitButton);
-				buttonsGroup.addActor(unitWaitButton);
-				buttonsGroup.addActor(sentryButton);
-		        
-		        if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
-		        } else {
-		        	buttonsGroup.addActor(fortifyButton);
-		        	
-		        	buttonsGroup.addActor(buildColonyButton);
-		        	if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
-		        		buttonsGroup.addActor(plowButton);
-		        		buttonsGroup.addActor(roadButton);
-		        	}
-		        }
 			}
 			
 			if (!model.isViewMode() && hasUnitsToMove) {
@@ -388,11 +420,6 @@ public class HudStage extends Stage {
         	buttonsGroup.addActor(acceptActionButton);
         	buttonsGroup.addActor(cancelActionButton);
         }
-        
-		if (model.isActiveUnitSet()) {
-			buttonsGroup.addActor(gotoLocationButton);
-			buttonsGroup.addActor(gotoTileButton);
-		}
 	}
 	
     private void showGotoLocationDialog() {

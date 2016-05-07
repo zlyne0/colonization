@@ -206,12 +206,14 @@ class UnitActionOrdersDialog extends ClosableDialog {
     	}
     	if (ActionTypes.FORTIFY.equals(item.actionType)) {
     		unit.setState(UnitState.FORTIFYING);
+    		gameController.nextActiveUnitWhenActive(unit);
     	}
     	if (ActionTypes.CLEAR_ORDERS.equals(item.actionType)) {
     		unit.setState(UnitState.ACTIVE);
     	}
     	if (ActionTypes.SENTRY.equals(item.actionType)) {
     		unit.setState(UnitState.SENTRY);
+    		gameController.nextActiveUnitWhenActive(unit);
     	}
     	if (ActionTypes.ACTIVATE.equals(item.actionType)) {
     		gameController.closeColonyViewAndActiveUnit(colony, unit);

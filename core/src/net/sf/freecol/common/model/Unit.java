@@ -553,16 +553,30 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     public void setState(UnitState newState) {
-    	if (UnitState.IMPROVING == state && newState != UnitState.IMPROVING) {
-    		workLeft = -1;
-    		tileImprovementType = null;
-    	}
         if (state == newState) {
             // No need to do anything when the state is unchanged
             return;
         } else if (!canChangeState(newState)) {
             throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + newState);
         } else {
+        	if (UnitState.IMPROVING == state && newState != UnitState.IMPROVING) {
+        		workLeft = -1;
+        		tileImprovementType = null;
+        	}
+        	switch (newState) {
+				case FORTIFYING:
+					workLeft = 1;
+					break;
+				case FORTIFIED:
+					workLeft = -1;
+					movesLeft = 0;
+					break;
+				case ACTIVE:
+					workLeft = -1;
+					break;
+				default:
+					break;
+			}
             this.state = newState;
         }
     }
@@ -570,14 +584,14 @@ public class Unit extends ObjectWithId implements Location {
     /**
      * Checks if a <code>Unit</code> can get the given state set.
      *
-     * @param s The new state for this Unit.  Should be one of
+     * @param newState The new state for this Unit.  Should be one of
      *     {UnitState.ACTIVE, FORTIFIED, ...}.
      * @return True if the <code>Unit</code> state can be changed to
      *     the new value.
      */
-    public boolean canChangeState(UnitState s) {
-        if (getState() == s) return false;
-        switch (s) {
+    public boolean canChangeState(UnitState newState) {
+        if (getState() == newState) return false;
+        switch (newState) {
         case ACTIVE:
             return true;
         case IMPROVING: 
@@ -589,9 +603,9 @@ public class Unit extends ObjectWithId implements Location {
         case IN_COLONY:
             return !isNaval();
         case SENTRY:
-            return getState() != UnitState.SENTRY;
+            return true;
         case SKIPPED:
-            return getState() == UnitState.ACTIVE;
+            return true;
         default:
             return false;
         }

@@ -70,10 +70,8 @@ public class GUIGameController {
     	if (blockUserInteraction) {
     		return;
     	}
+    	throwExceptionWhenActiveUnitNotSet();
     	Unit unit = guiGameModel.getActiveUnit();
-    	if (unit == null) {
-    		throw new IllegalStateException("no active unit to skip");
-    	}
     	unit.setState(UnitState.SKIPPED);
     	
     	logicNextActiveUnit();
@@ -84,6 +82,12 @@ public class GUIGameController {
 			return;
 		}
 		logicNextActiveUnit();
+	}
+	
+	public void nextActiveUnitWhenActive(Unit unit) {
+		if (guiGameModel.isActiveUnitSet() && guiGameModel.getActiveUnit().equalsId(unit)) {
+			logicNextActiveUnit();
+		}
 	}
 	
 	private void logicNextActiveUnit() {
@@ -376,9 +380,7 @@ public class GUIGameController {
 	}
 	
 	private void generateGotoPath(Tile destinationTile) {
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("activeUnit should be set to generate goto path");
-		}
+		throwExceptionWhenActiveUnitNotSet();
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
@@ -406,9 +408,7 @@ public class GUIGameController {
 			if (!guiGameModel.isCreateGotoPathMode()) {
 				throw new IllegalStateException("should be in find path mode");
 			}
-			if (guiGameModel.isActiveUnitNotSet()) {
-				throw new IllegalStateException("active unit should be set");
-			}
+			throwExceptionWhenActiveUnitNotSet();
 			logicAcceptGotoPath();
 			return;
 		}
@@ -468,9 +468,7 @@ public class GUIGameController {
 	}
 
 	public void buildRoad() {
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("active unit not set");
-		}
+		throwExceptionWhenActiveUnitNotSet();
 		Tile tile = guiGameModel.getActiveUnit().getTile();
 		Unit unit = guiGameModel.getActiveUnit();
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
@@ -481,9 +479,7 @@ public class GUIGameController {
 	}
 
 	public void plowOrClearForestImprovement() {
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("active unit not set");
-		}
+		throwExceptionWhenActiveUnitNotSet();
 		Tile tile = guiGameModel.getActiveUnit().getTile();
 		Unit unit = guiGameModel.getActiveUnit();
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
@@ -512,5 +508,24 @@ public class GUIGameController {
 	public void sentryUnit() {
 		guiGameModel.getActiveUnit().setState(UnitState.SENTRY);
 		logicNextActiveUnit();
+	}
+
+	public void fortify() {
+		throwExceptionWhenActiveUnitNotSet();
+		Unit activeUnit = guiGameModel.getActiveUnit();
+		activeUnit.setState(UnitState.FORTIFYING);
+		logicNextActiveUnit();
+	}
+	
+	public void activeUnit() {
+		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.getActiveUnit().setState(UnitState.ACTIVE);
+		guiGameModel.runListeners();
+	}
+	
+	private void throwExceptionWhenActiveUnitNotSet() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit not set");
+		}
 	}
 }
