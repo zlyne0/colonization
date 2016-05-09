@@ -153,6 +153,10 @@ public class HudStage extends Stage {
     		if (keycode == Input.Keys.A && activeButton.getParent() != null) {
     			gameController.activeUnit();
     			return true;
+    		} 
+    		if (keycode == Input.Keys.S && centerOnUnitButton.getParent() != null) {
+    			gameController.centerOnActiveUnit();
+    			return true;
     		}
     		
     		Direction direction = directionByKeyCode.get(keycode);
@@ -241,6 +245,10 @@ public class HudStage extends Stage {
     		}
     		if (event.getListenerActor() == activeButton) {
     			gameController.activeUnit();
+    			return true;
+    		}
+    		if (event.getListenerActor() == centerOnUnitButton) {
+    			gameController.centerOnActiveUnit();
     			return true;
     		}
     		

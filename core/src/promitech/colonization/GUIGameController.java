@@ -94,9 +94,7 @@ public class GUIGameController {
 		if (guiGameModel.unitIterator.hasNext()) {
 			Unit nextUnit = guiGameModel.unitIterator.next();
 			changeActiveUnit(nextUnit);
-			if (guiGameModel.isActiveUnitSet()) {
-				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
-			}
+			centerOnActiveUnit();
 			if (nextUnit.isDestinationSet()) {
 				logicAcceptGotoPath();
 			}
@@ -134,9 +132,7 @@ public class GUIGameController {
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		mapDrawModel.selectedTile = null;
-		if (guiGameModel.isActiveUnitSet()) {
-			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
-		} 
+		centerOnActiveUnit();
 		guiGameModel.setActiveUnit(guiGameModel.previewViewModeUnit);
 		mapDrawModel.setSelectedUnit(guiGameModel.previewViewModeUnit);
 		guiGameModel.previewViewModeUnit = null;
@@ -526,6 +522,12 @@ public class GUIGameController {
 	private void throwExceptionWhenActiveUnitNotSet() {
 		if (guiGameModel.isActiveUnitNotSet()) {
 			throw new IllegalStateException("active unit not set");
+		}
+	}
+
+	public void centerOnActiveUnit() {
+		if (guiGameModel.isActiveUnitSet()) {
+			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
 		}
 	}
 }
