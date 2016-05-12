@@ -275,8 +275,8 @@ public class GUIGameController {
 				if (moveContext.isEndOfPath()) {
 					moveContext.unit.clearDestination();
 					mapActor.mapDrawModel().unitPath = null;
-					
 				} else {
+                    moveContext.unit.setState(UnitState.SKIPPED);
 					logicNextActiveUnit();
 				}
 				blockUserInteraction = false;
