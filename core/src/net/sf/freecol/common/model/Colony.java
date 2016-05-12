@@ -215,6 +215,10 @@ public class Colony extends Settlement {
     	return colonyProduction.productionConsumptionForObject(colonyTile.getId());
     }
     
+	public void increaseWarehouseByProduction() {
+		goodsContainer.increaseGoodsQuantity(productionSummary());
+	}
+    
     public void initMaxPossibleProductionOnTile(Tile tile) {
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.equalsId(tile)) {
@@ -563,6 +567,7 @@ public class Colony extends Settlement {
 	
 	@Override
 	public boolean isContainsTile(Tile tile) {
+		// TODO: jakies nie dokonczone
 		return true;
 	}
 	

@@ -2,6 +2,7 @@ package promitech.colonization;
 
 import java.util.LinkedList;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
@@ -33,6 +34,15 @@ public class GameLogic {
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}
+		
+		for (Settlement settlement : player.settlements.entities()) {
+			if (!settlement.isColony()) {
+				continue;
+			}
+			Colony colony = (Colony)settlement;
+			colony.increaseWarehouseByProduction();
+		}
+		
 		player.fogOfWar.resetFogOfWar(player);
 	}
 	
