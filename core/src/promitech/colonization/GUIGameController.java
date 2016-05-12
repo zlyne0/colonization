@@ -372,6 +372,9 @@ public class GUIGameController {
 		if (moveContext.canHandleMove()) {
 			moveContext.handleMove();
 			guiMoveInteraction(moveContext);
+		} else {
+            moveContext.unit.clearDestination();
+            mapActor.mapDrawModel().unitPath = null;
 		}
 	}
 	
