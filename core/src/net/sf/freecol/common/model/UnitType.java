@@ -71,6 +71,8 @@ public class UnitType extends ObjectWithFeatures {
      */
     private int maximumAttrition = Xml.INFINITY;
     
+    public String expertProductionForGoodsId;
+    
     public UnitType(String id) {
     	super(id);
     }
@@ -151,7 +153,15 @@ public class UnitType extends ObjectWithFeatures {
     public boolean hasSkill() {
         return skill != UNDEFINED;
     }
-	
+    
+    public String getExpertProductionForGoodsId() {
+        return expertProductionForGoodsId;
+    }
+
+    protected int getMaximumExperience() {
+        return maximumExperience;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -177,6 +187,7 @@ public class UnitType extends ObjectWithFeatures {
             ut.hitPoints = attr.getIntAttribute("hitPoints", 0);
             ut.maximumExperience = attr.getIntAttribute("maximumExperience", 0);
             ut.recruitProbability = attr.getIntAttribute("recruitProbability", 0);
+            ut.expertProductionForGoodsId = attr.getStrAttribute("expert-production");
             ut.skill = attr.getIntAttribute("skill", Xml.UNDEFINED);
             ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
             

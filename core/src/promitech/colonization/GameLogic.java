@@ -2,10 +2,16 @@ package promitech.colonization;
 
 import java.util.LinkedList;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -13,10 +19,12 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 
 public class GameLogic {
 
@@ -40,7 +48,50 @@ public class GameLogic {
 				continue;
 			}
 			Colony colony = (Colony)settlement;
-			colony.increaseWarehouseByProduction();
+			// TODO: refactoring
+			System.out.println("###### colony " + colony);
+			for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
+			    if (colonyTile.getWorker() != null && !colonyTile.getWorker().isExpert()) {
+			        Unit worker = colonyTile.getWorker();
+			        ProductionSummary realProduction = colony.productionSummaryForTerrain(colonyTile).realProduction;
+		            
+			        System.out.println("goods: " + realProduction);
+			        System.out.println("tile " + colonyTile + " worker " + colonyTile.getWorker() + " expert " + worker.isExpert());
+			        
+                    for (Entry<String> entry : realProduction.entries()) {
+                        UnitType goodsExpertUnitType = Specification.instance.expertUnitTypeByGoodType.get(entry.key);
+                        if (goodsExpertUnitType != null && worker.unitType.canBeUpgraded(goodsExpertUnitType, ChangeType.EXPERIENCE)) {
+                            System.out.println("experience from " + worker.unitType + " to " + goodsExpertUnitType);
+                            
+                            int experience = entry.value;
+                            worker.gainExperience(experience);
+                        }
+                    }
+			    }
+			}
+			for (Building building : colony.buildings.entities()) {
+			    ProductionSummary realProduction = colony.productionSummary(building).realProduction;
+		        for (Unit worker : building.workers.entities()) {
+		            if (worker.isExpert()) {
+		                continue;
+		            }
+		            
+		            System.out.println("goods: " + realProduction);
+		            System.out.println("building " + building + " worker " + worker + " expert " + worker.isExpert());
+		            
+		            for (Entry<String> entry : realProduction.entries()) {
+		                UnitType goodsExpertUnitType = Specification.instance.expertUnitTypeByGoodType.get(entry.key);
+		                if (goodsExpertUnitType != null && worker.unitType.canBeUpgraded(goodsExpertUnitType, ChangeType.EXPERIENCE)) {
+                            System.out.println("experience from " + worker.unitType + " to " + goodsExpertUnitType);
+                            
+                            int experience = entry.value / building.workers.size();
+                            worker.gainExperience(experience);
+		                }
+		            }
+		        }
+			}
+			
+			//colony.increaseWarehouseByProduction();
 		}
 		
 		player.fogOfWar.resetFogOfWar(player);

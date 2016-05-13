@@ -54,7 +54,6 @@ public class Unit extends ObjectWithId implements Location {
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
     protected int treasureAmount;
-    private boolean expert = false;
     private int experience;
     private MoveDestinationType destinationType;
     private int destinationX;
@@ -651,8 +650,8 @@ public class Unit extends ObjectWithId implements Location {
         return treasureAmount;
     }
     
-	protected boolean isExpert() {
-		return expert;
+	public boolean isExpert() {
+		return unitType.getMaximumExperience() == 0;
 	}
 	
 	public void changeRole(UnitRole newUnitRole) {
@@ -718,6 +717,10 @@ public class Unit extends ObjectWithId implements Location {
 			return false;
 		}
 	}
+
+    public void gainExperience(int aditionalExperience) {
+        this.experience = Math.min(this.experience + aditionalExperience, unitType.getMaximumExperience());
+    }
 	
     public static class Xml extends XmlNodeParser {
         
@@ -756,8 +759,6 @@ public class Unit extends ObjectWithId implements Location {
             	unit.destinationY = attr.getIntAttribute("destinationY");
             }
             
-            unit.expert = Specification.instance.isUnitTypeExpert(unitType);
-
             if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
                 unit.unitContainer = new UnitContainer(unit);
             }
