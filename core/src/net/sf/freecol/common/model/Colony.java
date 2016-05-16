@@ -7,6 +7,8 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
@@ -17,6 +19,7 @@ import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -203,16 +206,42 @@ public class Colony extends Settlement {
 		goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
 	}
     
-    public ProductionConsumption productionSummary(Building building) {
-    	return colonyProduction.productionConsumptionForObject(building.getId());
+    public void increaseWorkersExperience() {
+        for (ColonyTile colonyTile : colonyTiles.entities()) {
+            if (colonyTile.getWorker() != null && !colonyTile.getWorker().isExpert()) {
+                Unit worker = colonyTile.getWorker();
+                increaseExperienceForWorker(colonyTile, worker, 1);
+            }
+        }
+        for (Building building : buildings.entities()) {
+            for (Unit worker : building.workers.entities()) {
+                if (worker.isExpert()) {
+                    continue;
+                }
+                increaseExperienceForWorker(building, worker, building.workers.size());
+            }
+        }
+    }
+    
+    private void increaseExperienceForWorker(ProductionLocation productionLocation, Unit worker, int prodLocWorkersAmount) {
+        ProductionSummary realProduction = productionSummary(productionLocation).realProduction;
+        System.out.println("production location [" + productionLocation + "] produce [" + realProduction + "]");
+        for (Entry<String> entry : realProduction.entries()) {
+            UnitType goodsExpertUnitType = Specification.instance.expertUnitTypeByGoodType.get(entry.key);
+            if (goodsExpertUnitType != null && worker.unitType.canBeUpgraded(goodsExpertUnitType, ChangeType.EXPERIENCE)) {
+                int experience = entry.value / prodLocWorkersAmount;
+                System.out.println("worker [" + worker + "] gain " + experience + " experience to be " + goodsExpertUnitType );
+                worker.gainExperience(experience);
+            }
+        }
+    }
+	
+    public ProductionConsumption productionSummary(ProductionLocation productionLocation) {
+    	return colonyProduction.productionConsumptionForObject(productionLocation.getId());
     }
     
     public ProductionSummary productionSummary() {
     	return colonyProduction.globalProductionConsumption();
-    }
-    
-    public ProductionConsumption productionSummaryForTerrain(ColonyTile colonyTile) {
-    	return colonyProduction.productionConsumptionForObject(colonyTile.getId());
     }
     
 	public void increaseWarehouseByProduction() {
@@ -567,8 +596,7 @@ public class Colony extends Settlement {
 	
 	@Override
 	public boolean isContainsTile(Tile tile) {
-		// TODO: jakies nie dokonczone
-		return true;
+	    return colonyTiles.containsId(tile);
 	}
 	
     public static class Xml extends XmlNodeParser {

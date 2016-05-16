@@ -192,7 +192,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 	void updateProduction() {
 		for (int i=0; i<colonyTiles.length; i++) {
-			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(colonyTiles[i]);
+			ProductionConsumption productionConsumption = colony.productionSummary(colonyTiles[i]);
 			productionQuantityDrawModels[i].init(productionConsumption.realProduction);
 		}
 	}

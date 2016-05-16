@@ -11,7 +11,7 @@ import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Building extends ObjectWithId {
+public class Building extends ObjectWithId implements ProductionLocation {
 
     public BuildingType buildingType;
     public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();

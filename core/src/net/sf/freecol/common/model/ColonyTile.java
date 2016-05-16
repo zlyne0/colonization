@@ -4,7 +4,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class ColonyTile extends ObjectWithId {
+public class ColonyTile extends ObjectWithId implements ProductionLocation {
 
 	private Unit worker;
 	public final ProductionInfo productionInfo = new ProductionInfo();
