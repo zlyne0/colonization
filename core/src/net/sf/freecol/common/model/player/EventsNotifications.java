@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.player;
 import java.util.LinkedList;
 import java.util.List;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -25,6 +26,12 @@ public class EventsNotifications implements Identifiable {
 		n.to = afterPrice;
 		notifications.add(n);
 	}
+
+    public void addWarehouseWasteNotification(Colony colony, GoodsType gt, int wasteAmount) {
+        // TODO: notification
+        // model.building.warehouseWaste
+        System.out.println("#### colony [" + colony + "] waste [" + gt + "] amount " + wasteAmount);
+    }
 	
 	public static final class Xml extends XmlNodeParser {
 

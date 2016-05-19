@@ -43,8 +43,11 @@ public class GameLogic {
 			System.out.println("calculate new turn for colony " + colony);
 			
 			colony.increaseWorkersExperience();
-			
 			colony.increaseWarehouseByProduction();
+			colony.removeExcessedStorableGoods();
+			colony.notificationsAboutLackOfResources();
+            // TODO: updejt building queue
+            // usuniecie nadmiaru z magazynu z komunikatem ze magazyny pelen
 		}
 		
 		player.fogOfWar.resetFogOfWar(player);

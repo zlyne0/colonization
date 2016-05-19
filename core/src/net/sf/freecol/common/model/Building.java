@@ -126,9 +126,9 @@ public class Building extends ObjectWithId implements ProductionLocation {
             
             // its big simplicity because for one production product create all consume product, 
             // is it will produce another product it will not be narrowed to warehouse state
-            // it's simplicity is enough because every building consume only one good
+            // this simplicity is enough because every building consume only one good
             for (String cg : consumptionGoods) {
-                prodCons.baseProduction.addGoods(cg, goodQuantity);
+                prodCons.baseProduction.addGoods(cg, -goodQuantity);
                 
                 if (consumeOnlySurplusProduction) {
                 	int realCgProd = globalProdCons.getQuantity(cg);

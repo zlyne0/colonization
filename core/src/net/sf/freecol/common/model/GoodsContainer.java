@@ -21,7 +21,7 @@ public class GoodsContainer extends ObjectWithId {
 	}
     
     public int goodsAmount(GoodsType type) {
-        return goods.getQuantity(type.id);
+        return goods.getQuantity(type.getId());
     }
 
     public boolean hasGoodsQuantity(ProductionSummary g) {
@@ -57,6 +57,22 @@ public class GoodsContainer extends ObjectWithId {
         updateTakenCargoSlots();
     }
 
+	public void decreaseGoodsQuantity(GoodsType gt, int quantity) {
+	    if (quantity == 0) {
+	        return;
+	    }
+	    goods.decrease(gt.getId(), quantity);
+        updateTakenCargoSlots();
+	}
+
+	public void decreaseGoodsQuantity(String goodsTypeId, int quantity) {
+        if (quantity == 0) {
+            return;
+        }
+        goods.decrease(goodsTypeId, quantity);
+        updateTakenCargoSlots();
+    }
+	
 	public void decreaseGoodsQuantity(ProductionSummary required) {
 		goods.decreaseGoods(required);
         updateTakenCargoSlots();

@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
@@ -235,7 +236,48 @@ public class Colony extends Settlement {
             }
         }
     }
-	
+
+    public void removeExcessedStorableGoods() {
+        int warehouseCapacity = getWarehouseCapacity();
+        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+            if (!gt.isStorable()) {
+                continue;
+            }
+            int goodsAmount = goodsContainer.goodsAmount(gt);
+            if (goodsAmount > warehouseCapacity) {
+                int wasteAmount = goodsAmount - warehouseCapacity;
+                goodsContainer.decreaseGoodsQuantity(gt, wasteAmount);
+                owner.eventsNotifications.addWarehouseWasteNotification(this, gt, wasteAmount);
+            }
+        }
+    }
+    
+    public void notificationsAboutLackOfResources() {
+        // TODO: sprawdzanie jeszcze zywnosci
+        
+        for (Building building : buildings.entities()) {
+            if (!building.equalsId("building:6545")) {
+                continue;
+            }
+            ProductionConsumption productionSummary = productionSummary(building);
+
+            for (Entry<String> entry : productionSummary.baseProduction.entries()) {
+                int quantityToConsume = -entry.value;
+                int afterConsume = goodsContainer.goodsAmount(entry.key) - quantityToConsume;
+                if (afterConsume == 0) {
+                    // TODO: model.building.notEnoughInput
+                    System.out.println("### The %building% in %colony% has stopped production because of missing " + entry.key + ".");
+                } else {
+                    if (afterConsume < quantityToConsume) {
+                        System.out.println("building " + building);
+                        // TODO: model.building.warehouseEmpty
+                        System.out.println("### There are now less than " + (quantityToConsume) + " units of " + entry.key + " in your warehouse in %colony%.");
+                    }
+                }
+            }
+        }
+    }
+    
     public ProductionConsumption productionSummary(ProductionLocation productionLocation) {
     	return colonyProduction.productionConsumptionForObject(productionLocation.getId());
     }
