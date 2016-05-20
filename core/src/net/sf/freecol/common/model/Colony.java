@@ -243,6 +243,9 @@ public class Colony extends Settlement {
             if (!gt.isStorable()) {
                 continue;
             }
+            if (gt.isFood()) {
+                continue;
+            }
             int goodsAmount = goodsContainer.goodsAmount(gt);
             if (goodsAmount > warehouseCapacity) {
                 int wasteAmount = goodsAmount - warehouseCapacity;
@@ -253,15 +256,32 @@ public class Colony extends Settlement {
     }
     
     public void notificationsAboutLackOfResources() {
-        // TODO: sprawdzanie jeszcze zywnosci
+        int foodProdCons = colonyProduction.globalProductionConsumption().getQuantity(GoodsType.FOOD);
+        if (foodProdCons < 0) {
+            // food consumption is greater then production
+            int quantityToConsume = -foodProdCons;
+            int storedAfterConsume = goodsContainer.goodsAmount(GoodsType.FOOD) - quantityToConsume;
+            
+            if (storedAfterConsume >= 0) {
+                int turns = goodsContainer.goodsAmount(GoodsType.FOOD) / quantityToConsume;
+                if (turns < 3) {
+                    // TODO: notification model.colony.famineFeared
+                    System.out.println("Famine feared in %colony%. Only %number% turns of food left.");
+                }
+            } else {
+                // TODO: model.colony.colonistStarved
+                // TODO: model.colony.colonyStarved
+                System.out.println("A colonist has starved to death in %colony%!");
+            }
+        }
         
         for (Building building : buildings.entities()) {
-            if (!building.equalsId("building:6545")) {
-                continue;
-            }
             ProductionConsumption productionSummary = productionSummary(building);
 
             for (Entry<String> entry : productionSummary.baseProduction.entries()) {
+                if (GoodsType.isFoodGoodsType(entry.key)) {
+                    continue;
+                }
                 int quantityToConsume = -entry.value;
                 int afterConsume = goodsContainer.goodsAmount(entry.key) - quantityToConsume;
                 if (afterConsume == 0) {
@@ -269,8 +289,8 @@ public class Colony extends Settlement {
                     System.out.println("### The %building% in %colony% has stopped production because of missing " + entry.key + ".");
                 } else {
                     if (afterConsume < quantityToConsume) {
-                        System.out.println("building " + building);
                         // TODO: model.building.warehouseEmpty
+                        //System.out.println("building " + building);
                         System.out.println("### There are now less than " + (quantityToConsume) + " units of " + entry.key + " in your warehouse in %colony%.");
                     }
                 }
