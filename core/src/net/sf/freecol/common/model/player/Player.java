@@ -85,6 +85,8 @@ public class Player extends ObjectWithFeatures {
     private boolean dead = false;
     private int tax;
     private int gold;
+    private int liberty;
+    private int interventionBells;
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
@@ -255,6 +257,10 @@ public class Player extends ObjectWithFeatures {
             || playerType == PlayerType.INDEPENDENT
             || playerType == PlayerType.ROYAL;
     }
+
+    public boolean isRebel() {
+        return playerType == PlayerType.REBEL;
+    }
     
 	public boolean isNotLiveEuropeanPlayer() {
 		return nation.isUnknownEnemy() || isDead() || !isEuropean(); 
@@ -266,6 +272,20 @@ public class Player extends ObjectWithFeatures {
 	
 	public void endTurn() {
 	}
+
+	public void modifyLiberty(int libertyAmount) {
+		if (!canHaveFoundingFathers()) {
+			return;
+		}
+		this.liberty = Math.max(0, this.liberty + libertyAmount);
+		if (isRebel()) {
+			interventionBells += libertyAmount;
+		}
+	}
+	
+    public boolean canHaveFoundingFathers() {
+        return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
+    }
 	
     public static class Xml extends XmlNodeParser {
         public Xml() {
@@ -286,6 +306,8 @@ public class Player extends ObjectWithFeatures {
             player.dead = attr.getBooleanAttribute("dead");
             player.tax = attr.getIntAttribute("tax", 0);
             player.gold = attr.getIntAttribute("gold", 0);
+            player.liberty = attr.getIntAttribute("liberty", 0);
+            player.interventionBells = attr.getIntAttribute("interventionBells", 0);
             player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);

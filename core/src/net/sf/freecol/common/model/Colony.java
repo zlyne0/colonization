@@ -25,6 +25,8 @@ import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class Colony extends Settlement {
     public static final int LIBERTY_PER_REBEL = 200;
@@ -297,6 +299,48 @@ public class Colony extends Settlement {
             }
         }
     }
+    
+	public void calculateSonsOfLiberty() {
+		// TODO: na podobnej zasadzie imigration
+		int oldSonsOfLiberty = sonsOfLiberty;
+		
+		ProductionSummary gpc = colonyProduction.globalProductionConsumption();
+		System.out.println("gpc = " + gpc);
+
+		System.out.println("liberty " + liberty);
+		System.out.println("sonsOfLiberty " + sonsOfLiberty);
+		System.out.println("tories " + tories);
+		
+		int bells = gpc.getQuantity(GoodsType.BELLS);
+		owner.modifyLiberty(bells);
+		liberty = Math.max(0, liberty + bells);
+		
+		updateSonOfLiberty();
+		updateProductionBonus();
+        boolean capped = Specification.options.getBoolean(GameOptions.BELL_ACCUMULATION_CAPPED);
+        if (capped && sonsOfLiberty >= 100) {
+            liberty = LIBERTY_PER_REBEL * getColonyUnitsCount();
+        }
+		System.out.println("liberty " + liberty);
+		System.out.println("sonsOfLiberty " + sonsOfLiberty);
+		System.out.println("tories " + tories);
+
+		if (sonsOfLiberty / 10 != oldSonsOfLiberty / 10) {
+			String templateName = null;
+			if (sonsOfLiberty > oldSonsOfLiberty) {
+				templateName = "model.colony.SoLIncrease";
+			} else {
+				templateName = "model.colony.SoLDecrease";
+			}
+			
+			// TODO: add notification
+			StringTemplate t = StringTemplate.template(templateName)
+					.addName("%colony%", this.getName())
+					.addAmount("%newSoL%", sonsOfLiberty);
+			String st = Messages.message(t);
+			System.out.println("st = "  + st);
+		}
+	}
     
     public ProductionConsumption productionSummary(ProductionLocation productionLocation) {
     	return colonyProduction.productionConsumptionForObject(productionLocation.getId());

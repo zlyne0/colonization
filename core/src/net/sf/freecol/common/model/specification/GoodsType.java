@@ -11,6 +11,8 @@ public class GoodsType extends ObjectWithId {
     public static final String FISH = "model.goods.fish";
     public static final String FOOD = "model.goods.food";
     public static final String GRAIN = "model.goods.grain";
+    public static final String CROSSES = "model.goods.crosses";
+    public static final String BELLS = "model.goods.bells";
     
     public static boolean isFoodGoodsType(String goodsTypeId) {
         return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId);
