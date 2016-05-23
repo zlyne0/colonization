@@ -35,7 +35,7 @@ public class GameLogic {
 			newTurnForUnit(unit);
 		}
 		
-		for (Settlement settlement : player.settlements.entities()) {
+        for (Settlement settlement : player.settlements.entities()) {
 			if (!settlement.isColony()) {
 				continue;
 			}
@@ -44,12 +44,14 @@ public class GameLogic {
 			
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
+
+			// TODO: updejt building queue
+			
 			colony.removeExcessedStorableGoods();
 			colony.notificationsAboutLackOfResources();
-            // TODO: updejt building queue
-            // usuniecie nadmiaru z magazynu z komunikatem ze magazyny pelen
+			colony.calculateSonsOfLiberty();
+			colony.calculateImmigration();
 		}
-		
 		player.fogOfWar.resetFogOfWar(player);
 	}
 

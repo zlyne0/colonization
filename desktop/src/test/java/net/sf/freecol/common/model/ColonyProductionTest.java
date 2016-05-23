@@ -29,8 +29,11 @@ public class ColonyProductionTest {
         Colony colony = (Colony)player.settlements.getById("colony:6528");
         // when
         colony.calculateSonsOfLiberty();
+        colony.calculateImmigration();        
         // then
-        
+        assertEquals(147, colony.liberty);
+        assertEquals(12, colony.sonsOfLiberty());
+        assertEquals(113, colony.immigration);
 	}
     
     @Test

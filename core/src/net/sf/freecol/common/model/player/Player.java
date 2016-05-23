@@ -87,6 +87,7 @@ public class Player extends ObjectWithFeatures {
     private int gold;
     private int liberty;
     private int interventionBells;
+    private int immigration;
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
@@ -283,6 +284,10 @@ public class Player extends ObjectWithFeatures {
 		}
 	}
 	
+    public void modifyImmigration(int amount) {
+        immigration = Math.max(0, immigration + amount);
+    }
+	
     public boolean canHaveFoundingFathers() {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
@@ -308,6 +313,7 @@ public class Player extends ObjectWithFeatures {
             player.gold = attr.getIntAttribute("gold", 0);
             player.liberty = attr.getIntAttribute("liberty", 0);
             player.interventionBells = attr.getIntAttribute("interventionBells", 0);
+            player.immigration = attr.getIntAttribute("immigration", 0);
             player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
