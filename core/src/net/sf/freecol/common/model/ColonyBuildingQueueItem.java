@@ -50,6 +50,18 @@ public class ColonyBuildingQueueItem implements Identifiable {
 		}
 		throw new IllegalStateException("there is no build item type");
 	}
+/*
+	public boolean doesNotNeedGoodsToBuild() {
+		return requiredGoods().isEmpty();
+	}
+	
+	public int getRequiredPopulation() {
+		if (unitType != null) {
+			return 1;
+		}
+		return buildingType.getRequiredPopulation();
+	}
+*/	
 	
 	public String toString() {
 		String st = "";

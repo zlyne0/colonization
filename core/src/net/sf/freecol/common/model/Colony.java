@@ -7,8 +7,10 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.Colony.NoBuildReason;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
@@ -29,8 +31,22 @@ import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class Colony extends Settlement {
+	public static final int NEVER_COMPLETE_BUILD = -1;
     public static final int LIBERTY_PER_REBEL = 200;
 
+    /** Reasons for not building a buildable. */
+    public static enum NoBuildReason {
+        NONE,
+        NOT_BUILDING,
+        NOT_BUILDABLE,
+        POPULATION_TOO_SMALL,
+        MISSING_BUILD_ABILITY,
+        MISSING_ABILITY,
+        WRONG_UPGRADE,
+        COASTAL,
+        LIMIT_EXCEEDED
+    }
+    
     GoodsContainer goodsContainer;
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
@@ -334,7 +350,7 @@ public class Colony extends Settlement {
 			
 			// TODO: add notification
 			StringTemplate t = StringTemplate.template(templateName)
-					.addName("%colony%", this.getName())
+					.add("%colony%", this.getName())
 					.addAmount("%newSoL%", sonsOfLiberty);
 			String st = Messages.message(t);
 			System.out.println("st = "  + st);
@@ -705,6 +721,64 @@ public class Colony extends Settlement {
 			}
 		}
 		updateModelOnWorkerAllocationOrGoodsTransfer();
+	}
+	
+	public void buildBuildings() {
+		ColonyBuildingQueueItem item = getFirstBuildableItem();
+		if (item == null) {
+			return;
+		}
+		
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.requiredGoods().size());
+		int turnsToComplete = getTurnsToComplete(item, requiredTurnsForGoods);
+		
+		if (turnsToComplete == NEVER_COMPLETE_BUILD) {
+			for (RequiredGoods requiredGood : item.requiredGoods()) {
+				int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
+				if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
+					int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
+					
+					// TODO: notification
+					StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
+						.addName("%goodsType%", requiredGood.getId())
+						.addAmount("%amount%", amount)
+						.add("%colony%", getName())
+						.addName("%buildable%", item.getId());
+					System.out.println("never complete building = " + Messages.message(st) );
+					break;
+				}
+			}
+		} else {
+			
+		}
+	}
+	
+	public int getTurnsToComplete(ColonyBuildingQueueItem item, ObjectIntMap<String> requiredTurnsForGood) {
+		ProductionSummary production = productionSummary();
+		GoodsContainer warehouse = getGoodsContainer();
+		
+		int requiredTurn = -1;
+		for (RequiredGoods requiredGood : item.requiredGoods()) {
+			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
+			int productionAmount = production.getQuantity(requiredGood.getId());
+			int goodRequiredTurn = NEVER_COMPLETE_BUILD;
+			
+			if (warehouseAmount < requiredGood.amount) {
+				if (productionAmount > 0) {
+					goodRequiredTurn = (requiredGood.amount - warehouseAmount) / productionAmount;
+				} else {
+					goodRequiredTurn = NEVER_COMPLETE_BUILD;
+				}
+			} else {
+				goodRequiredTurn = 0;
+			}
+			requiredTurnsForGood.put(requiredGood.getId(), goodRequiredTurn);
+			
+			if (goodRequiredTurn > requiredTurn) {
+				requiredTurn = goodRequiredTurn;
+			}
+		}
+		return requiredTurn;
 	}
 	
 	@Override

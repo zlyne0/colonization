@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import net.sf.freecol.common.model.Colony;
@@ -57,35 +58,18 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.add(buildItemNameLabel).left().row();
 		descriptionTableLayout.add(turnsToCompleteLabel).left().row();
 		
-		boolean potentialNeverFinish = false; // because no required good production
-		int requiredTurn = -1;
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.requiredGoods().size());
+		int turnsToComplete = colony.getTurnsToComplete(item, requiredTurnsForGoods);
+		
 		for (RequiredGoods requiredGood : item.requiredGoods()) {
 			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
 			int productionAmount = production.getQuantity(requiredGood.getId());
-			int goodRequiredTurn = -1;
-			
-			if (warehouseAmount < requiredGood.amount) {
-				if (productionAmount > 0) {
-					goodRequiredTurn = (requiredGood.amount - warehouseAmount) / productionAmount;
-				} else {
-					goodRequiredTurn = -1;
-				}
-			} else {
-				goodRequiredTurn = 0;
-			}
-			
-			if (goodRequiredTurn >= 0) {
-				if (goodRequiredTurn > requiredTurn) {
-					requiredTurn = goodRequiredTurn;
-				}
-			} else {
-				potentialNeverFinish = true;
-			}
+			int goodRequiredTurn = requiredTurnsForGoods.get(requiredGood.getId(), Colony.NEVER_COMPLETE_BUILD);
 			
 			Image goodImage = new Image(textureById(requiredGood.getId() + ".image"), Scaling.none, Align.center);
 			goodImage.setAlign(Align.topLeft);
 
-			//24 + 6/120 (Turns: 12)
+			//label: 24 + 6/120 (Turns: 12)
 			String label = goodRequiredTurnsStr(requiredGood.amount, warehouseAmount, productionAmount, goodRequiredTurn);
 			
 			Label goodLabel = new Label(label, labelStyle());
@@ -100,7 +84,7 @@ class ActualBuildableItemActor extends Table {
 		StringTemplate stringTemplate = StringTemplate.template(item.getId() + ".name");
 		buildItemNameLabel.setText(Messages.message(stringTemplate));
 		
-		updateTurnsToCompleteLabel(potentialNeverFinish, requiredTurn);
+		updateTurnsToCompleteLabel(turnsToComplete);
 	}
 
 	private void cleanItem() {
@@ -110,26 +94,28 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.clear();
 	}
 
-	private void updateTurnsToCompleteLabel(boolean potentialNeverFinish, int requiredTurn) {
-		String trunsToCompleteStr = Integer.toString(requiredTurn);
-		if (potentialNeverFinish) {
-			trunsToCompleteStr = ">" + trunsToCompleteStr;
+	private void updateTurnsToCompleteLabel(int requiredTurn) {
+		String trunsToCompleteStr;
+		if (requiredTurn == Colony.NEVER_COMPLETE_BUILD) {
+			trunsToCompleteStr = "> -1";
+		} else {
+			trunsToCompleteStr = Integer.toString(requiredTurn);
 		}
 		StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.long")
-				.addName("%number%", trunsToCompleteStr);
+				.add("%number%", trunsToCompleteStr);
 		turnsToCompleteLabel.setText(Messages.message(stringTemplate));
 	}
 
 	private String goodRequiredTurnsStr(int requiredGood, int warehouseAmount, int productionAmount, int requiredTurn) {
 		String label = "" + warehouseAmount + " + " + productionAmount + "/" + requiredGood;
-		if (requiredTurn >= 0) {
+		if (requiredTurn == Colony.NEVER_COMPLETE_BUILD) {
+			StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.short");
+			stringTemplate.addKey("%number%", "notApplicable.short");
+			label += " " + Messages.message(stringTemplate); 
+		} else {
 			StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.short")
 					.addAmount("%number%", requiredTurn);
 			label += " " + Messages.message(stringTemplate);
-		} else {
-			StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.short");
-			stringTemplate.add("%number%", "notApplicable.short");
-			label += " " + Messages.message(stringTemplate); 
 		}
 		return label;
 	}

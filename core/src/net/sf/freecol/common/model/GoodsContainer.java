@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -28,6 +29,10 @@ public class GoodsContainer extends ObjectWithId {
     	return goods.hasMoreOrEquals(g);
     }
 
+    public boolean hasGoodsQuantity(List<RequiredGoods> requiredGoods) {
+    	return goods.hasMoreOrEquals(requiredGoods);
+    }
+    
 	public void increaseGoodsQuantity(ProductionSummary ps) {
 		goods.addGoods(ps);
 	}

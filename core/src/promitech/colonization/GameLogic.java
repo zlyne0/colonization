@@ -45,6 +45,7 @@ public class GameLogic {
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
 
+			colony.buildBuildings();
 			// TODO: updejt building queue
 			
 			colony.removeExcessedStorableGoods();

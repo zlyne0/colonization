@@ -109,9 +109,9 @@ public class UnitLabel {
         
         StringTemplate ret = StringTemplate.template(tempStr)
                 .addStringTemplate("%type%", type)
-                .add("%nation%", Messages.nameKey(nationId));
+                .addName("%nation%", nationId);
         if (roleKey != null) {
-        	ret.add("%role%", Messages.nameKey(roleKey));
+        	ret.addName("%role%", roleKey);
         }
         return ret;
     }

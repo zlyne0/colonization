@@ -69,7 +69,7 @@ class UnitActionOrdersDialog extends ClosableDialog {
             
             StringTemplate t = StringTemplate.template(prodLocation.getGoodsType().getId() + ".workAs")
                     .addAmount("%amount%", prodLocation.getProduction())
-                    .addName("%claim%", "");
+                    .add("%claim%", "");
             label = Messages.message(t);
         }
         

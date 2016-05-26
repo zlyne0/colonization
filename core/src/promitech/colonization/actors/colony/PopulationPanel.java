@@ -78,7 +78,7 @@ public class PopulationPanel extends Table {
         populationLabel.setText(Messages.message(t));
         t = StringTemplate.template("colonyPanel.bonusLabel")
                 .addAmount("%number%", productionBonus)
-                .addName("%extra%", (optimalPopulationGrow == 0) ? "" : "(" + Integer.toString(optimalPopulationGrow) + ")");
+                .add("%extra%", (optimalPopulationGrow == 0) ? "" : "(" + Integer.toString(optimalPopulationGrow) + ")");
         prodBonusLabel.setText(Messages.message(t));
         
         t = StringTemplate.template("colonyPanel.royalistLabel").addAmount("%number%", royalists);
