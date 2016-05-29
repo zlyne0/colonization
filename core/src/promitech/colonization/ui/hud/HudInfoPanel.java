@@ -164,7 +164,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 			return;
 		}
 		
-		String label = unitLabel.getName(selectedUnit);
+		String label = UnitLabel.getName(selectedUnit);
 		if (label != null) {
 			selectedUnitDescriptions.add(label);
 		}

@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Specification;
@@ -11,17 +9,8 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class BuildingType extends ObjectWithFeatures {
+public class BuildingType extends BuildableType {
 
-    /** The required population for an ordinary buildable. */
-    private static final int DEFAULT_REQUIRED_POPULATION = 1;
-
-    /**
-     * The minimum population that a Colony needs in order to build
-     * this type.
-     */
-    private int requiredPopulation = DEFAULT_REQUIRED_POPULATION;
-    
     int level = 1;
     int workplaces = 3;
     private String upgradesFromId;
@@ -33,13 +22,16 @@ public class BuildingType extends ObjectWithFeatures {
     private int upkeep = 0;
     private int priority = Consumer.BUILDING_PRIORITY;
     
-    public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
     public final ProductionInfo productionInfo = new ProductionInfo();
     
     public BuildingType(String id) {
         super(id);
     }
 
+	public boolean isBuildingType() {
+		return true;
+	}
+    
     /**
      * Gets the reason why a given unit type can not be added to a
      * building of this type.
@@ -81,27 +73,22 @@ public class BuildingType extends ObjectWithFeatures {
 		return workplaces;
 	}
 
-	public int getRequiredPopulation() {
-		return requiredPopulation;
-	}
-
     public static class Xml extends XmlNodeParser {
         public Xml() {
+        	BuildableType.Xml.abstractAddNodes(this);
+        	
         	addNode(Production.class, new ObjectFromNodeSetter<BuildingType, Production>() {
 				@Override
 				public void set(BuildingType target, Production entity) {
 					target.productionInfo.addProduction(entity);
 				}
 			});
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-            addNode("required-ability", Ability.class, "requiredAbilities");
-            addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
             BuildingType bt = new BuildingType(attr.getStrAttribute("id"));
+            BuildableType.Xml.abstractStartElement(attr, bt);
             
             String parentIdStr = attr.getStrAttribute("extends");
             BuildingType parent = null;
@@ -129,7 +116,7 @@ public class BuildingType extends ObjectWithFeatures {
             bt.priority = attr.getIntAttribute("priority", parent.priority);
             
             if (parent != null) {
-                if (attr.getStrAttribute("required-population") == null) {
+                if (attr.getStrAttribute(BuildableType.Xml.TAG_REQUIRED_POPULATION) == null) {
                     bt.requiredPopulation = parent.requiredPopulation;
                 }
             }

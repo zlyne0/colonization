@@ -1,14 +1,14 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
-import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class UnitType extends ObjectWithFeatures {
+public class UnitType extends BuildableType {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
@@ -18,7 +18,6 @@ public class UnitType extends ObjectWithFeatures {
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
-    public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     
@@ -77,6 +76,10 @@ public class UnitType extends ObjectWithFeatures {
     	super(id);
     }
 
+	public boolean isUnitType() {
+		return true;
+	}
+    
 	public int lineOfSight() {
 		float base = lineOfSight;
 		base = applyModifier(Modifier.LINE_OF_SIGHT_BONUS, base);
@@ -164,12 +167,9 @@ public class UnitType extends ObjectWithFeatures {
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-            addNode("required-ability", Ability.class, "requiredAbilities");
+        	BuildableType.Xml.abstractAddNodes(this);
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
             addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
-            addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
         }
 
         @Override
@@ -177,6 +177,8 @@ public class UnitType extends ObjectWithFeatures {
             String id = attr.getStrAttribute("id");
             
             UnitType ut = new UnitType(id);
+            BuildableType.Xml.abstractStartElement(attr, ut);
+            
             ut.offence = attr.getIntAttribute("offence", DEFAULT_OFFENCE);
             ut.defence = attr.getIntAttribute("defence", DEFAULT_DEFENCE);
             ut.movement = attr.getIntAttribute("movement", DEFAULT_MOVEMENT);

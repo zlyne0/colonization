@@ -44,8 +44,12 @@ public class PlayerForOfWar {
 
     private void fogOfWarForUnits(Collection<Unit> units) {
         for (Unit unit : units) {
+        	Tile unitTile = unit.getTileLocationOrNull();
+        	if (unitTile == null) {
+        		continue;
+        	}
             int radius = unit.lineOfSight();
-            initFogOfWarForNeighboursTiles(unit.getTile(), radius);
+            initFogOfWarForNeighboursTiles(unitTile, radius);
         }
     }
     

@@ -56,7 +56,7 @@ class BuildItemDescActor extends Table {
 	private Table requiredGoods(ColonyBuildingQueueItem item) {
 		Table goodsLayout = new Table();
 		goodsLayout.align(Align.left);
-		for (RequiredGoods requiredGood : item.requiredGoods()) {
+		for (RequiredGoods requiredGood : item.getType().requiredGoods()) {
 			Image goodImage = goodsImage(requiredGood.getId());
 			goodImage.setAlign(Align.topLeft);
 			

@@ -2899,6 +2899,7 @@
           <ability id="model.ability.coastalOnly" source="model.building.customHouse" value="false"/>
           <ability id="model.ability.export" source="model.building.customHouse" value="true"/>
           <required-ability id="model.ability.buildCustomHouse" value="true"/>
+          <required-ability id="model.ability.hasPort" value="true"/>
           <required-goods id="model.goods.hammers" value="160"/>
           <required-goods id="model.goods.tools" value="50"/>
         </building-type>

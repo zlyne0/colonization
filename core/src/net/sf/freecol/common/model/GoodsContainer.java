@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
+// TODO: GoodsContainer should not has id, remove it and test whole
 public class GoodsContainer extends ObjectWithId {
 
     private final ProductionSummary goods = new ProductionSummary();

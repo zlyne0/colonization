@@ -10,12 +10,12 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
-import net.sf.freecol.common.model.Colony.NoBuildReason;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -72,8 +72,6 @@ public class Colony extends Settlement {
      * identical to crosses.
      */
     protected int immigration;
-    
-    String tileId;
     
     public Colony(String id) {
     	this.id = id;
@@ -138,6 +136,9 @@ public class Colony extends Settlement {
     
     public void updateColonyFeatures() {
     	colonyUpdatableFeatures.clear();
+    	if (isCoastland()) {
+    		colonyUpdatableFeatures.addAbility(Ability.HAS_PORT_ABILITY);
+    	}
     	for (Building b : buildings.entities()) {
     		colonyUpdatableFeatures.addFeatures(b.buildingType);
     	}
@@ -601,6 +602,7 @@ public class Colony extends Settlement {
 	}
 
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
+    	// TODO: przebudowa metoday aby kozystac z getNoBuildReason
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
     		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(bt)) {
@@ -619,6 +621,7 @@ public class Colony extends Settlement {
     			System.out.println("" + bt + " build level not accessible");
     			continue;
     		}
+    		// TODO: usuniecie na rzecz hasPort model.ability.hasPort
     		if (bt.hasAbility(Ability.COASTAL_ONLY) && !isCoastland()) {
     			System.out.println("" + bt + " can be built only on coastland");
     			continue;
@@ -654,7 +657,7 @@ public class Colony extends Settlement {
     	}
     }
     
-    public boolean isBuildingCanBeBuiltBecauseOfLevel(BuildingType buildingType) {
+    private boolean isBuildingCanBeBuiltBecauseOfLevel(BuildingType buildingType) {
     	for (Building building : buildings.entities()) {
     		if (building.buildingType.isTheSameRoot(buildingType)) {
     			if (building.buildingType.canUpgradeTo(buildingType)) {
@@ -687,7 +690,7 @@ public class Colony extends Settlement {
     }
     
 	public int getPriceForBuilding(ColonyBuildingQueueItem currentBuildableItem) {
-		List<RequiredGoods> requiredGoods = currentBuildableItem.requiredGoods();
+		List<RequiredGoods> requiredGoods = currentBuildableItem.getType().requiredGoods();
 		
 		Market market = owner.market();
 		
@@ -708,7 +711,7 @@ public class Colony extends Settlement {
 		}
 		
 		Market ownerMarket = owner.market();
-		for (RequiredGoods requiredGood : currentBuildableItem.requiredGoods()) {
+		for (RequiredGoods requiredGood : currentBuildableItem.getType().requiredGoods()) {
 			int reqDiffAmount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.goodsType);
 			if (reqDiffAmount <= 0) {
 				continue;
@@ -723,17 +726,18 @@ public class Colony extends Settlement {
 		updateModelOnWorkerAllocationOrGoodsTransfer();
 	}
 	
-	public void buildBuildings() {
+	public void buildBuildings(Game game) {
 		ColonyBuildingQueueItem item = getFirstBuildableItem();
 		if (item == null) {
 			return;
 		}
+		BuildableType buildableType = item.getType();
 		
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.requiredGoods().size());
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
 		int turnsToComplete = getTurnsToComplete(item, requiredTurnsForGoods);
 		
 		if (turnsToComplete == NEVER_COMPLETE_BUILD) {
-			for (RequiredGoods requiredGood : item.requiredGoods()) {
+			for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
 				int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
 				if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
 					int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
@@ -743,14 +747,104 @@ public class Colony extends Settlement {
 						.addName("%goodsType%", requiredGood.getId())
 						.addAmount("%amount%", amount)
 						.add("%colony%", getName())
-						.addName("%buildable%", item.getId());
+						.addName("%buildable%", buildableType.getId());
 					System.out.println("never complete building = " + Messages.message(st) );
 					break;
 				}
 			}
-		} else {
-			
+			return;
+		} 
+		
+		if (turnsToComplete == 0) {
+			NoBuildReason noBuildReason = getNoBuildReason(item);
+			if (NoBuildReason.NONE != noBuildReason) {
+				StringTemplate st;
+				// TODO: notification
+				switch (noBuildReason) {
+				case LIMIT_EXCEEDED:
+					st = StringTemplate.template("model.limit.wagonTrains.description");
+					break;
+				case POPULATION_TOO_SMALL:
+					st = StringTemplate.template("model.colony.buildNeedPop")
+	                    .add("%colony%", getName())
+	                    .addName("%building%", buildableType);
+					break;
+				default:
+					st = StringTemplate.template("colonyPanel.unbuildable")
+						.add("%colony%", getName())
+						.addName("%object%", buildableType);
+					break;
+				}
+				System.out.println("no build reason " + Messages.message(st));
+			} else {
+				if (buildableType.isUnitType()) {
+					Unit unit = new Unit(
+						game.idGenerator.nextId(Unit.class), 
+						(UnitType)item.getType(),
+						Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+						owner
+					);
+					tile.units.add(unit);
+					unit.setLocation(tile);
+					
+					StringTemplate st = UnitLabel.getPlainUnitLabel(unit);
+					// TODO: notification
+					System.out.println("XXX new unit = " + Messages.message(st));
+				}
+				if (item.getType().isBuildingType()) {
+					
+				}
+				
+				removeResourcesAfterCompleteBuilding(buildableType);
+			}
 		}
+	}
+	
+    private void removeResourcesAfterCompleteBuilding(BuildableType type) {
+    	for (RequiredGoods requiredGoods : type.requiredGoods.entities()) {
+    		goodsContainer.decreaseGoodsQuantity(requiredGoods.goodsType, requiredGoods.amount);
+    	}
+	}
+
+	/**
+     * Return the reason why the give <code>BuildableType</code> can
+     * not be built.
+     *
+     * @param buildableType A <code>BuildableType</code> to build.
+     * @return A <code>NoBuildReason</code> value decribing the failure,
+     *     including <code>NoBuildReason.NONE</code> on success.
+     */
+	public NoBuildReason getNoBuildReason(ColonyBuildingQueueItem queueItem) {
+		BuildableType item = queueItem.getType();
+		if (item == null) {
+			return NoBuildReason.NOT_BUILDING;
+		} else if (item.doesNotNeedGoodsToBuild()) {
+			return NoBuildReason.NOT_BUILDABLE;
+		} else if (item.getRequiredPopulation() > getColonyUnitsCount()) {
+			return NoBuildReason.POPULATION_TOO_SMALL;
+		} else if (item.hasAbility(Ability.HAS_PORT) && !isCoastland()) {
+			return NoBuildReason.COASTAL;
+		} else {
+			if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(item)) {
+				return NoBuildReason.MISSING_ABILITY;
+			}
+		}
+		if (item.isBuildingType()) {
+			if (!isBuildingCanBeBuiltBecauseOfLevel((BuildingType) item)) {
+				return NoBuildReason.WRONG_UPGRADE;
+			}
+		}
+		if (item.isUnitType()) {
+			if (UnitType.WAGON_TRAIN.equals(item.getId())) {
+				if (owner.unitTypeCount((UnitType) item) >= owner.settlements.size()) {
+					return NoBuildReason.LIMIT_EXCEEDED;
+				}
+			}
+			if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, (UnitType) item)) {
+				return NoBuildReason.MISSING_BUILD_ABILITY;
+			}
+		}
+		return NoBuildReason.NONE;
 	}
 	
 	public int getTurnsToComplete(ColonyBuildingQueueItem item, ObjectIntMap<String> requiredTurnsForGood) {
@@ -758,14 +852,18 @@ public class Colony extends Settlement {
 		GoodsContainer warehouse = getGoodsContainer();
 		
 		int requiredTurn = -1;
-		for (RequiredGoods requiredGood : item.requiredGoods()) {
+		for (RequiredGoods requiredGood : item.getType().requiredGoods()) {
 			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
 			int productionAmount = production.getQuantity(requiredGood.getId());
 			int goodRequiredTurn = NEVER_COMPLETE_BUILD;
 			
 			if (warehouseAmount < requiredGood.amount) {
 				if (productionAmount > 0) {
-					goodRequiredTurn = (requiredGood.amount - warehouseAmount) / productionAmount;
+					int reqToProduce = requiredGood.amount - warehouseAmount;
+					goodRequiredTurn = reqToProduce / productionAmount;
+					if (reqToProduce % productionAmount != 0) {
+						goodRequiredTurn++;
+					}
 				} else {
 					goodRequiredTurn = NEVER_COMPLETE_BUILD;
 				}

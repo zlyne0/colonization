@@ -48,13 +48,13 @@ public class Unit extends ObjectWithId implements Location {
     private int movesLeft;
     private int hitPoints;
     
-    private int workLeft;
+    private int workLeft = -1;
     private TileImprovementType tileImprovementType;
     
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
-    protected int treasureAmount;
-    private int experience;
+    protected int treasureAmount = 0;
+    private int experience = 0;
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
@@ -63,16 +63,34 @@ public class Unit extends ObjectWithId implements Location {
      * The amount of role-equipment this unit carries, subject to
      * role.getMaximumCount().  Currently zero or one except for pioneers.
      */
-    protected int roleCount;
+    protected int roleCount = -1;
     
     private UnitContainer unitContainer = null;
     private GoodsContainer goodsContainer = null;
     
-    public Unit(String id) {
+    protected Unit(String id) {
     	super(id);
     }
     
-    public String toString() {
+    public Unit(String id, UnitType aUnitType, UnitRole aUnitRole, Player anOwner) {
+    	super(id);
+    	this.unitType = aUnitType;
+    	this.unitRole = aUnitRole;
+    	this.owner = anOwner;
+    	this.owner.units.add(this);
+    	
+    	this.movesLeft = getInitialMovesLeft();
+    	this.hitPoints = unitType.getHitPoints();
+    	
+        if (unitType.hasAbility(Ability.CARRY_UNITS)) {
+            unitContainer = new UnitContainer(this);
+        }
+        if (unitType.hasAbility(Ability.CARRY_GOODS)) {
+        	goodsContainer = new GoodsContainer("goodsContainer:" + getId());
+        }
+    }
+
+	public String toString() {
         return "id = " + id + ", unitType = " + unitType + ", workLeft = " + workLeft;
     }
     
@@ -739,11 +757,15 @@ public class Unit extends ObjectWithId implements Location {
         public void startElement(XmlNodeAttributes attr) {
             String unitTypeStr = attr.getStrAttribute("unitType");
             String unitRoleStr = attr.getStrAttribute("role");
+            String ownerStr = attr.getStrAttribute("owner");
             
-            UnitType unitType = Specification.instance.unitTypes.getById(unitTypeStr);
-            Unit unit = new Unit(attr.getStrAttribute("id"));
-            unit.unitRole = Specification.instance.unitRoles.getById(unitRoleStr);
-            unit.unitType = unitType;
+            Unit unit = new Unit(
+        		attr.getStrAttribute("id"),
+        		Specification.instance.unitTypes.getById(unitTypeStr),
+        		Specification.instance.unitRoles.getById(unitRoleStr),
+        		game.players.getById(ownerStr)
+            );
+            
             unit.state = attr.getEnumAttribute(UnitState.class, "state");
             unit.movesLeft = attr.getIntAttribute("movesLeft");
             unit.hitPoints = attr.getIntAttribute("hitPoints");
@@ -759,10 +781,6 @@ public class Unit extends ObjectWithId implements Location {
             	unit.destinationY = attr.getIntAttribute("destinationY");
             }
             
-            if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
-                unit.unitContainer = new UnitContainer(unit);
-            }
-            
             unit.workLeft = attr.getIntAttribute("workLeft", -1);
             String tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
             if (tileImprovementTypeId != null) {
@@ -770,10 +788,6 @@ public class Unit extends ObjectWithId implements Location {
             }
             
             nodeObject = unit;
-            
-            String ownerStr = attr.getStrAttribute("owner");
-            Player owner = game.players.getById(ownerStr);
-            unit.owner = owner;
         }
 
         @Override

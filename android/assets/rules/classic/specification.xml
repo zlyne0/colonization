@@ -2106,6 +2106,7 @@
       <required-goods id="model.goods.hammers" value="160"/>
       <required-goods id="model.goods.tools" value="50"/>
       <required-ability id="model.ability.buildCustomHouse"/>
+      <required-ability id="model.ability.hasPort" value="true"/>
       <ability id="model.ability.export" value="true"/>
       <ability id="model.ability.coastalOnly" value="false"/>
     </building-type>

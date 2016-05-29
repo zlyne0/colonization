@@ -4,12 +4,13 @@ import net.sf.freecol.common.model.specification.Goods;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
+// TOOD: cala klasa jako static
 public class UnitLabel {
 
 	public UnitLabel() {
 	}
 	
-	public String getName(Unit unit) {
+	public static String getName(Unit unit) {
 		return unit.name;
 	}
 	
@@ -87,6 +88,10 @@ public class UnitLabel {
 		return Messages.message(label);
 	}
 
+	public static StringTemplate getPlainUnitLabel(Unit unit) {
+		return getUnitLabel(getName(unit), unit.unitType.getId(), 1, null, unit.unitRole.getId(), null);		
+	}
+	
     private StringTemplate getUnitType(String typeId, int number, String nationId, String roleId) {
         StringTemplate type;
         String roleKey;
@@ -115,4 +120,150 @@ public class UnitLabel {
         }
         return ret;
     }
+    
+    /**
+     * Get a label for a collection of units given a name, type,
+     * number, nation, role and extra annotation.
+     *
+     * @param name An optional unit name.
+     * @param typeId The unit type identifier.
+     * @param number The number of units.
+     * @param nationId An optional nation identifier.
+     * @param roleId The unit role identifier.
+     * @param extra An optional extra annotation.
+     * @return A <code>StringTemplate</code> to describe the given unit.
+     */
+    public static StringTemplate getUnitLabel(String name, String typeId,
+                                              int number, String nationId,
+                                              String roleId,
+                                              StringTemplate extra) {
+        // Check for special role-specific key, which will not have a
+        // %role% argument.  These exist so we can avoid mentioning
+        // the role twice, e.g. "Seasoned Scout Scout".
+        StringTemplate type;
+        String roleKey;
+        String baseKey = typeId + "." + UnitRole.getRoleSuffix(roleId);
+        if (Messages.containsKey(baseKey)) {
+            type = StringTemplate.template(baseKey).addAmount("%number%", number);
+            roleKey = null;
+        } else {
+            type = StringTemplate.template(Messages.nameKey(typeId))
+        			.addAmount("%number%", number);
+            roleKey = (UnitRole.isDefaultRoleId(roleId)) ? null : roleId;
+        }
+
+        // This is extra brutal, but crash proof.
+        StringTemplate ret;
+        if (name == null) {
+            if (nationId == null) {
+                if (roleKey == null) {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.null.null.null.null")
+                            .addStringTemplate("%type%", type);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.null.null.null.equip")
+                            .addStringTemplate("%type%", type)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                } else {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.null.null.role.null")
+                            .addStringTemplate("%type%", type)
+                            .addName("%role%", roleKey);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.null.null.role.equip")
+                            .addStringTemplate("%type%", type)
+                            .addName("%role%", roleKey)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                }
+            } else {
+                if (roleKey == null) {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.null.nation.null.null")
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.null.nation.null.equip")
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                } else {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.null.nation.role.null")
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addName("%role%", roleKey);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.null.nation.role.equip")
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addName("%role%", roleKey)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                }
+            }
+        } else {
+            if (nationId == null) {
+                if (roleKey == null) {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.name.null.null.null")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.name.null.null.equip")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                } else {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.name.null.role.null")
+                            .addName("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%role%", roleKey);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.name.null.role.equip")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%role%", roleKey)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                }
+            } else {
+                if (roleKey == null) {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.name.nation.null.null")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.name.nation.null.equip")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                } else {
+                    if (extra == null) {
+                        ret = StringTemplate.template("unitFormat.name.nation.role.null")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addName("%role%", roleKey);
+                    } else {
+                        ret = StringTemplate.template("unitFormat.name.nation.role.equip")
+                            .add("%name%", name)
+                            .addStringTemplate("%type%", type)
+                            .addName("%nation%", nationId)
+                            .addName("%role%", roleKey)
+                            .addStringTemplate("%equipment%", extra);
+                    }
+                }
+            }
+        }
+        return ret;
+    }
+    
 }

@@ -6,9 +6,12 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class ObjectWithFeatures extends ObjectWithId {
     
@@ -201,5 +204,16 @@ public class ObjectWithFeatures extends ObjectWithId {
     		}
     	}
     	return true;
+    }
+    
+    public static class Xml {
+		public static void abstractAddNodes(XmlNodeParser nodeParser) {
+			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
+			nodeParser.addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+			nodeParser.addNode("required-ability", Ability.class, "requiredAbilities");
+		}
+		
+		public static void abstractStartElement(XmlNodeAttributes attr, BuildableType bt) {
+		}
     }
 }

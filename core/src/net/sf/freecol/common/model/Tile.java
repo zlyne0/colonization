@@ -293,7 +293,6 @@ public class Tile implements Location, Identifiable {
 	            public void set(Tile tile, Unit unit) {
 	                tile.units.add(unit);
 	                unit.setLocation(tile);
-	                unit.getOwner().units.add(unit);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

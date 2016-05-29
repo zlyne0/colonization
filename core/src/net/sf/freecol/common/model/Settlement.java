@@ -8,6 +8,7 @@ public abstract class Settlement implements Identifiable {
     protected String name;
     public SettlementType settlementType;
     protected Player owner;
+    String tileId;
     public Tile tile;
     protected boolean coastland = false;
     
