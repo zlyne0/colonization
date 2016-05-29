@@ -16,8 +16,9 @@ public class Building extends ObjectWithId implements ProductionLocation {
     public BuildingType buildingType;
     public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
     
-    public Building(String id) {
+    public Building(String id, BuildingType aBuildingType) {
         super(id);
+        this.buildingType = aBuildingType;
     }
 
 	public UnitContainer.NoAddReason getNoAddReason(Unit unit) {
@@ -160,6 +161,10 @@ public class Building extends ObjectWithId implements ProductionLocation {
 	    return "id = " + getId() + ", type = " + buildingType;
 	}
 	
+	public void upgrade(BuildingType aBuildingType) {
+		this.buildingType = aBuildingType;
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
@@ -169,15 +174,9 @@ public class Building extends ObjectWithId implements ProductionLocation {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute("id");
-            Building b = new Building(id);
-            
-            String buildingTypeId = attr.getStrAttribute("buildingType");
-            if (buildingTypeId == null) {
-                throw new IllegalStateException("can not find buildingType for building " + id);
-            }
+            String buildingTypeId = attr.getStrAttributeNotNull("buildingType");
             BuildingType buildingType = Specification.instance.buildingTypes.getById(buildingTypeId);
-            b.buildingType = buildingType;
-            
+            Building b = new Building(id, buildingType);
             nodeObject = b;
         }
 

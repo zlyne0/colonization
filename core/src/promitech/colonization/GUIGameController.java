@@ -455,7 +455,7 @@ public class GUIGameController {
 		}
 		
 		gameLogic.newTurn(game.playingPlayer);
-		if (gameLogic.isRequireUpdateMapModel()) {
+		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
 		

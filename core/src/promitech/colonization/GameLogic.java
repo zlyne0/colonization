@@ -21,15 +21,14 @@ import net.sf.freecol.common.model.specification.Modifier;
 public class GameLogic {
 
 	private final Game game;
-	
-	private boolean requireUpdateMapModel = false;
+	private final NewTurnContext newTurnContext = new NewTurnContext();
 	
 	public GameLogic(Game game) {
 		this.game = game;
 	}
 
 	public void newTurn(Player player) {
-		requireUpdateMapModel = false;
+		newTurnContext.restart();
 		
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
@@ -45,8 +44,7 @@ public class GameLogic {
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
 
-			colony.buildBuildings(game);
-			// TODO: updejt building queue
+			colony.buildBuildings(game, newTurnContext);
 			
 			colony.removeExcessedStorableGoods();
 			colony.notificationsAboutLackOfResources();
@@ -122,7 +120,7 @@ public class GameLogic {
 				improvingTile.addResource(new TileResource(game.idGenerator, resourceType, initQuantity));
 			}
 			
-			requireUpdateMapModel = true;
+			newTurnContext.setRequireUpdateMapModel();
 			unit.setState(UnitState.ACTIVE);
 		}
 	}
@@ -133,8 +131,8 @@ public class GameLogic {
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
 	}
-	
-	public boolean isRequireUpdateMapModel() {
-		return requireUpdateMapModel;
+
+	public NewTurnContext getNewTurnContext() {
+		return newTurnContext;
 	}
 }

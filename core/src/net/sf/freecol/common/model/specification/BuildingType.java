@@ -73,6 +73,10 @@ public class BuildingType extends BuildableType {
 		return workplaces;
 	}
 
+	public BuildingType getUpgradesFrom() {
+		return upgradesFrom;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	BuildableType.Xml.abstractAddNodes(this);

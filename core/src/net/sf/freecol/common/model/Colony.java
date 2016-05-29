@@ -23,7 +23,9 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.Direction;
+import promitech.colonization.NewTurnContext;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -158,7 +160,12 @@ public class Colony extends Settlement {
 	}
 
     private String getStockadeKey() {
-        return null;
+    	for (Building building : buildings.entities()) {
+    		if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
+    			return StringUtils.lastPart(building.buildingType.getId(), ".");
+    		}
+    	}
+    	return null;
     }
 
 	@Override
@@ -726,11 +733,13 @@ public class Colony extends Settlement {
 		updateModelOnWorkerAllocationOrGoodsTransfer();
 	}
 	
-	public void buildBuildings(Game game) {
+	public void buildBuildings(Game game, NewTurnContext newTurnContext) {
 		ColonyBuildingQueueItem item = getFirstBuildableItem();
 		if (item == null) {
 			return;
 		}
+		// TODO: usuniecie gdzie sie da ColonyBuildingQueueItem i przekazywanie BuildableType
+		// rozbicie tej metody na mniejsze
 		BuildableType buildableType = item.getType();
 		
 		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
@@ -756,6 +765,11 @@ public class Colony extends Settlement {
 		} 
 		
 		if (turnsToComplete == 0) {
+			// TODO: tu jest cos nie tak z warunkeim jesli jest turns 0 to znaczy ze bedzie wybudowana i nie ma co badac braku powodu budowy
+			// moze wystarczy zmiana nazw zmienych aby mowily ze tursToGatherResourcesForBuild
+			
+			// TODO: przypadek gdy nie ma produkcji mlotkow a kupuje budynek i wtedy powinien zostac wybudowany, powinna byc inna ilosc tur
+			
 			NoBuildReason noBuildReason = getNoBuildReason(item);
 			if (NoBuildReason.NONE != noBuildReason) {
 				StringTemplate st;
@@ -791,13 +805,43 @@ public class Colony extends Settlement {
 					// TODO: notification
 					System.out.println("XXX new unit = " + Messages.message(st));
 				}
-				if (item.getType().isBuildingType()) {
+				if (buildableType.isBuildingType()) {
+					BuildingType buildingType = (BuildingType)buildableType;
+					BuildingType from = buildingType.getUpgradesFrom();
+					if (from != null) {
+						Building building = findBuildingByType(from.getId());
+						building.upgrade(buildingType);
+					} else {
+						Building building = new Building(game.idGenerator.nextId(Building.class), buildingType);
+						buildings.add(building);
+					}
 					
+					if (buildableType.hasModifier(Modifier.DEFENCE)) {
+						newTurnContext.setRequireUpdateMapModel();
+					}
+					updateColonyFeatures();
+					updateColonyPopulation();
+					updateModelOnWorkerAllocationOrGoodsTransfer();
+					
+					StringTemplate st = StringTemplate.template("model.colony.buildingReady")
+	                    .add("%colony%", getName())
+	                    .addName("%building%", buildableType);
+					System.out.println("new building " + buildingType + ", msg: " + Messages.message(st));
 				}
 				
 				removeResourcesAfterCompleteBuilding(buildableType);
+				buildingQueue.remove(0);
 			}
 		}
+	}
+	
+	private Building findBuildingByType(String buildingTypeId) {
+		for (Building building : buildings.entities()) {
+			if (building.buildingType.equalsId(buildingTypeId)) {
+				return building;
+			}
+		}
+		throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
 	}
 	
     private void removeResourcesAfterCompleteBuilding(BuildableType type) {
