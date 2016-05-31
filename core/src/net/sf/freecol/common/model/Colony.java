@@ -835,7 +835,7 @@ public class Colony extends Settlement {
 		}
 	}
 	
-	private Building findBuildingByType(String buildingTypeId) {
+	protected Building findBuildingByType(String buildingTypeId) {
 		for (Building building : buildings.entities()) {
 			if (building.buildingType.equalsId(buildingTypeId)) {
 				return building;
