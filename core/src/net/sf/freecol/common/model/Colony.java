@@ -743,9 +743,9 @@ public class Colony extends Settlement {
 		BuildableType buildableType = item.getType();
 		
 		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
-		int turnsToComplete = getTurnsToComplete(item, requiredTurnsForGoods);
+		int turnsToGatherResourcesForBuild = getTurnsToComplete(item, requiredTurnsForGoods);
 		
-		if (turnsToComplete == NEVER_COMPLETE_BUILD) {
+		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
 			for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
 				int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
 				if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
@@ -764,16 +764,16 @@ public class Colony extends Settlement {
 			return;
 		} 
 		
-		if (turnsToComplete == 0) {
+		System.out.println("XXX " + turnsToGatherResourcesForBuild);
+		if (turnsToGatherResourcesForBuild == 0) {
 			// TODO: tu jest cos nie tak z warunkeim jesli jest turns 0 to znaczy ze bedzie wybudowana i nie ma co badac braku powodu budowy
 			// moze wystarczy zmiana nazw zmienych aby mowily ze tursToGatherResourcesForBuild
 			
 			// TODO: przypadek gdy nie ma produkcji mlotkow a kupuje budynek i wtedy powinien zostac wybudowany, powinna byc inna ilosc tur
-			
-			NoBuildReason noBuildReason = getNoBuildReason(item);
+			// TODO: dok wymaga abiliti model.ability.hasPort a w colony prawdopodobnie jest w modifiers
+			NoBuildReason noBuildReason = getNoBuildReason(buildableType);
 			if (NoBuildReason.NONE != noBuildReason) {
 				StringTemplate st;
-				// TODO: notification
 				switch (noBuildReason) {
 				case LIMIT_EXCEEDED:
 					st = StringTemplate.template("model.limit.wagonTrains.description");
@@ -789,50 +789,56 @@ public class Colony extends Settlement {
 						.addName("%object%", buildableType);
 					break;
 				}
-				System.out.println("no build reason " + Messages.message(st));
+				// TODO: notification
+				System.out.println("no build reason '" + noBuildReason + "' " + Messages.message(st));
 			} else {
-				if (buildableType.isUnitType()) {
-					Unit unit = new Unit(
-						game.idGenerator.nextId(Unit.class), 
-						(UnitType)item.getType(),
-						Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-						owner
-					);
-					tile.units.add(unit);
-					unit.setLocation(tile);
-					
-					StringTemplate st = UnitLabel.getPlainUnitLabel(unit);
-					// TODO: notification
-					System.out.println("XXX new unit = " + Messages.message(st));
-				}
-				if (buildableType.isBuildingType()) {
-					BuildingType buildingType = (BuildingType)buildableType;
-					BuildingType from = buildingType.getUpgradesFrom();
-					if (from != null) {
-						Building building = findBuildingByType(from.getId());
-						building.upgrade(buildingType);
-					} else {
-						Building building = new Building(game.idGenerator.nextId(Building.class), buildingType);
-						buildings.add(building);
-					}
-					
-					if (buildableType.hasModifier(Modifier.DEFENCE)) {
-						newTurnContext.setRequireUpdateMapModel();
-					}
-					updateColonyFeatures();
-					updateColonyPopulation();
-					updateModelOnWorkerAllocationOrGoodsTransfer();
-					
-					StringTemplate st = StringTemplate.template("model.colony.buildingReady")
-	                    .add("%colony%", getName())
-	                    .addName("%building%", buildableType);
-					System.out.println("new building " + buildingType + ", msg: " + Messages.message(st));
-				}
-				
-				removeResourcesAfterCompleteBuilding(buildableType);
-				buildingQueue.remove(0);
+				finishBuilding(game, newTurnContext, buildableType);
 			}
 		}
+	}
+
+	private void finishBuilding(Game game, NewTurnContext newTurnContext, BuildableType buildableType) {
+		if (buildableType.isUnitType()) {
+			Unit unit = new Unit(
+				game.idGenerator.nextId(Unit.class), 
+				(UnitType)buildableType,
+				Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+				owner
+			);
+			tile.units.add(unit);
+			unit.setLocation(tile);
+			
+			StringTemplate st = UnitLabel.getPlainUnitLabel(unit);
+			// TODO: notification
+			System.out.println("XXX new unit = " + Messages.message(st));
+		}
+		if (buildableType.isBuildingType()) {
+			BuildingType buildingType = (BuildingType)buildableType;
+			BuildingType from = buildingType.getUpgradesFrom();
+			if (from != null) {
+				Building building = findBuildingByType(from.getId());
+				building.upgrade(buildingType);
+			} else {
+				Building building = new Building(game.idGenerator.nextId(Building.class), buildingType);
+				buildings.add(building);
+			}
+			
+			if (buildableType.hasModifier(Modifier.DEFENCE)) {
+				newTurnContext.setRequireUpdateMapModel();
+			}
+			updateColonyFeatures();
+			updateColonyPopulation();
+			updateModelOnWorkerAllocationOrGoodsTransfer();
+			
+			// TODO: notification
+			StringTemplate st = StringTemplate.template("model.colony.buildingReady")
+		        .add("%colony%", getName())
+		        .addName("%building%", buildableType);
+			System.out.println("new building " + buildingType + ", msg: " + Messages.message(st));
+		}
+		
+		removeResourcesAfterCompleteBuilding(buildableType);
+		buildingQueue.remove(0);
 	}
 	
 	protected Building findBuildingByType(String buildingTypeId) {
@@ -858,8 +864,7 @@ public class Colony extends Settlement {
      * @return A <code>NoBuildReason</code> value decribing the failure,
      *     including <code>NoBuildReason.NONE</code> on success.
      */
-	public NoBuildReason getNoBuildReason(ColonyBuildingQueueItem queueItem) {
-		BuildableType item = queueItem.getType();
+	public NoBuildReason getNoBuildReason(BuildableType item) {
 		if (item == null) {
 			return NoBuildReason.NOT_BUILDING;
 		} else if (item.doesNotNeedGoodsToBuild()) {
