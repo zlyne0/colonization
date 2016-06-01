@@ -11,9 +11,9 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ColonyBuildingQueueItem;
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
@@ -42,7 +42,7 @@ class ActualBuildableItemActor extends Table {
 	}
 
 	void updateBuildItem(Colony colony) {
-		ColonyBuildingQueueItem item = colony.getFirstBuildableItem();
+	    BuildableType item = colony.getFirstItemInBuildingQueue();
 		if (item == null) {
 			cleanItem();
 			return;
@@ -58,10 +58,10 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.add(buildItemNameLabel).left().row();
 		descriptionTableLayout.add(turnsToCompleteLabel).left().row();
 		
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.getType().requiredGoods().size());
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.requiredGoods().size());
 		int turnsToComplete = colony.getTurnsToComplete(item, requiredTurnsForGoods);
 		
-		for (RequiredGoods requiredGood : item.getType().requiredGoods()) {
+		for (RequiredGoods requiredGood : item.requiredGoods()) {
 			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
 			int productionAmount = production.getQuantity(requiredGood.getId());
 			int goodRequiredTurn = requiredTurnsForGoods.get(requiredGood.getId(), Colony.NEVER_COMPLETE_BUILD);

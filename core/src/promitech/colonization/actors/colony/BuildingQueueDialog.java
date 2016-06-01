@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyBuildingQueueItem;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
@@ -220,8 +221,7 @@ class BuildingQueueDialog extends ClosableDialog {
 
 	private void buyItemButtonAction() {
 		System.out.println("buy building button action");
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
-		
+		BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			System.out.println("Nothing to buy");
 			return;
@@ -248,7 +248,7 @@ class BuildingQueueDialog extends ClosableDialog {
 	}
 	
 	private void buyItem() {
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+	    BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			throw new IllegalArgumentException("there is not item to build");
 		}
@@ -294,7 +294,7 @@ class BuildingQueueDialog extends ClosableDialog {
 			buyButton.setDisabled(true);
 			return;
 		}
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+		BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			buyButton.setDisabled(true);
 			return;

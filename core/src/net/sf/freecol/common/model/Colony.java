@@ -601,13 +601,13 @@ public class Colony extends Settlement {
         buildingQueue.remove(item);
     }
     
-	public ColonyBuildingQueueItem getFirstBuildableItem() {
-		if (buildingQueue.isEmpty()) {
-			return null;
-		}
-		return buildingQueue.get(0);
+	public BuildableType getFirstItemInBuildingQueue() {
+        if (buildingQueue.isEmpty()) {
+            return null;
+        }
+        return buildingQueue.get(0).getType();
 	}
-
+	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	// TODO: przebudowa metoday aby kozystac z getNoBuildReason
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
@@ -696,8 +696,8 @@ public class Colony extends Settlement {
     	return false;
     }
     
-	public int getPriceForBuilding(ColonyBuildingQueueItem currentBuildableItem) {
-		List<RequiredGoods> requiredGoods = currentBuildableItem.getType().requiredGoods();
+	public int getPriceForBuilding(BuildableType buildableType) {
+		List<RequiredGoods> requiredGoods = buildableType.requiredGoods();
 		
 		Market market = owner.market();
 		
@@ -712,13 +712,13 @@ public class Colony extends Settlement {
 		return sum;
 	}
 
-	public void payForBuilding(ColonyBuildingQueueItem currentBuildableItem, Game game) {
+	public void payForBuilding(BuildableType buildableType, Game game) {
 		if (!Specification.options.getBoolean(GameOptions.PAY_FOR_BUILDING)) {
 			throw new IllegalStateException("Pay for building is disabled");
 		}
 		
 		Market ownerMarket = owner.market();
-		for (RequiredGoods requiredGood : currentBuildableItem.getType().requiredGoods()) {
+		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
 			int reqDiffAmount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.goodsType);
 			if (reqDiffAmount <= 0) {
 				continue;
@@ -734,16 +734,15 @@ public class Colony extends Settlement {
 	}
 	
 	public void buildBuildings(Game game, NewTurnContext newTurnContext) {
-		ColonyBuildingQueueItem item = getFirstBuildableItem();
-		if (item == null) {
+	    // TODO: rozbicie tej metody na mniejsze
+	    
+	    BuildableType buildableType = getFirstItemInBuildingQueue();
+		if (buildableType == null) {
 			return;
 		}
-		// TODO: usuniecie gdzie sie da ColonyBuildingQueueItem i przekazywanie BuildableType
-		// rozbicie tej metody na mniejsze
-		BuildableType buildableType = item.getType();
 		
 		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
-		int turnsToGatherResourcesForBuild = getTurnsToComplete(item, requiredTurnsForGoods);
+		int turnsToGatherResourcesForBuild = getTurnsToComplete(buildableType, requiredTurnsForGoods);
 		
 		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
 			for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
@@ -896,12 +895,12 @@ public class Colony extends Settlement {
 		return NoBuildReason.NONE;
 	}
 	
-	public int getTurnsToComplete(ColonyBuildingQueueItem item, ObjectIntMap<String> requiredTurnsForGood) {
+	public int getTurnsToComplete(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGood) {
 		ProductionSummary production = productionSummary();
 		GoodsContainer warehouse = getGoodsContainer();
 		
 		int requiredTurn = -1;
-		for (RequiredGoods requiredGood : item.getType().requiredGoods()) {
+		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
 			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
 			int productionAmount = production.getQuantity(requiredGood.getId());
 			int goodRequiredTurn = NEVER_COMPLETE_BUILD;
