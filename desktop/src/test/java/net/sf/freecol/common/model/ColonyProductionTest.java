@@ -16,6 +16,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.BuildableType;
+import promitech.colonization.NewTurnContext;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -27,13 +29,14 @@ public class ColonyProductionTest {
         Messages.instance().load();
     }
 
+    Game game;
     Colony colony;
     Player player;
     
     @Before
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        game = saveGameParser.parse();
         player = game.players.getById("player:1");
         colony = (Colony)player.settlements.getById("colony:6528");
     }
@@ -276,6 +279,24 @@ public class ColonyProductionTest {
 
         assertEquals(-9, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
         assertEquals(9, furTradingProdCons.realProduction.getQuantity("model.goods.coats"));
+    }
+    
+    @Test
+    public void canBuildDocks() throws Exception {
+        // given
+        Colony fortOrange = (Colony)player.settlements.getById("colony:6554");
+        fortOrange.updateColonyFeatures();
+        
+        fortOrange.goodsContainer.increaseGoodsQuantity("model.goods.hammers", 52);
+        //fortOrange.buildBuildings(game, new NewTurnContext());
+        
+        BuildableType dock = Specification.instance.buildingTypes.getById("model.building.docks");
+        
+        // when
+        boolean hasAbilitiesRequiredFrom = fortOrange.colonyUpdatableFeatures.hasAbilitiesRequiredFrom(dock);
+        
+        // then
+        assertEquals(true, hasAbilitiesRequiredFrom);
     }
     
     @Test

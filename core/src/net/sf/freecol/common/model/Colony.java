@@ -734,67 +734,64 @@ public class Colony extends Settlement {
 	}
 	
 	public void buildBuildings(Game game, NewTurnContext newTurnContext) {
-	    // TODO: rozbicie tej metody na mniejsze
-	    
 	    BuildableType buildableType = getFirstItemInBuildingQueue();
 		if (buildableType == null) {
 			return;
 		}
-		
 		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
 		int turnsToGatherResourcesForBuild = getTurnsToComplete(buildableType, requiredTurnsForGoods);
-		
 		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
-			for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
-				int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
-				if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
-					int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
-					
-					// TODO: notification
-					StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
-						.addName("%goodsType%", requiredGood.getId())
-						.addAmount("%amount%", amount)
-						.add("%colony%", getName())
-						.addName("%buildable%", buildableType.getId());
-					System.out.println("never complete building = " + Messages.message(st) );
-					break;
-				}
-			}
+			neverFinishBuildingNotification(buildableType, requiredTurnsForGoods);
 			return;
 		} 
-		
-		System.out.println("XXX " + turnsToGatherResourcesForBuild);
 		if (turnsToGatherResourcesForBuild == 0) {
-			// TODO: tu jest cos nie tak z warunkeim jesli jest turns 0 to znaczy ze bedzie wybudowana i nie ma co badac braku powodu budowy
-			// moze wystarczy zmiana nazw zmienych aby mowily ze tursToGatherResourcesForBuild
-			
-			// TODO: przypadek gdy nie ma produkcji mlotkow a kupuje budynek i wtedy powinien zostac wybudowany, powinna byc inna ilosc tur
-			// TODO: dok wymaga abiliti model.ability.hasPort a w colony prawdopodobnie jest w modifiers
 			NoBuildReason noBuildReason = getNoBuildReason(buildableType);
 			if (NoBuildReason.NONE != noBuildReason) {
-				StringTemplate st;
-				switch (noBuildReason) {
-				case LIMIT_EXCEEDED:
-					st = StringTemplate.template("model.limit.wagonTrains.description");
-					break;
-				case POPULATION_TOO_SMALL:
-					st = StringTemplate.template("model.colony.buildNeedPop")
-	                    .add("%colony%", getName())
-	                    .addName("%building%", buildableType);
-					break;
-				default:
-					st = StringTemplate.template("colonyPanel.unbuildable")
-						.add("%colony%", getName())
-						.addName("%object%", buildableType);
-					break;
-				}
-				// TODO: notification
-				System.out.println("no build reason '" + noBuildReason + "' " + Messages.message(st));
+				finishBuildingProblemNotification(buildableType, noBuildReason);
 			} else {
 				finishBuilding(game, newTurnContext, buildableType);
 			}
 		}
 	}
+
+    private void finishBuildingProblemNotification(BuildableType buildableType, NoBuildReason noBuildReason) {
+        StringTemplate st;
+        switch (noBuildReason) {
+        case LIMIT_EXCEEDED:
+        	st = StringTemplate.template("model.limit.wagonTrains.description");
+        	break;
+        case POPULATION_TOO_SMALL:
+        	st = StringTemplate.template("model.colony.buildNeedPop")
+                .add("%colony%", getName())
+                .addName("%building%", buildableType);
+        	break;
+        default:
+        	st = StringTemplate.template("colonyPanel.unbuildable")
+        		.add("%colony%", getName())
+        		.addName("%object%", buildableType);
+        	break;
+        }
+        // TODO: notification
+        System.out.println("no build reason '" + noBuildReason + "' " + Messages.message(st));
+    }
+
+    private void neverFinishBuildingNotification(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGoods) {
+        for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
+        	int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
+        	if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
+        		int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
+        		
+        		// TODO: notification
+        		StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
+        			.addName("%goodsType%", requiredGood.getId())
+        			.addAmount("%amount%", amount)
+        			.add("%colony%", getName())
+        			.addName("%buildable%", buildableType.getId());
+        		System.out.println("never complete building = " + Messages.message(st) );
+        		break;
+        	}
+        }
+    }
 
 	private void finishBuilding(Game game, NewTurnContext newTurnContext, BuildableType buildableType) {
 		if (buildableType.isUnitType()) {

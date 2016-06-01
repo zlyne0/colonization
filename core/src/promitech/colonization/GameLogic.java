@@ -41,6 +41,7 @@ public class GameLogic {
 			Colony colony = (Colony)settlement;
 			System.out.println("calculate new turn for colony " + colony);
 			
+			colony.updateColonyFeatures();
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
 
