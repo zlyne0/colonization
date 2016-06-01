@@ -79,7 +79,8 @@ public class ColonyProductionTest {
         ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
-        assertEquals(-18, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
         assertEquals(9, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
 
         assertEquals(-9, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
@@ -118,7 +119,9 @@ public class ColonyProductionTest {
         ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
-        assertEquals(-36, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(-18, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
         assertEquals(18, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
 
         assertEquals(-18, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
@@ -157,7 +160,8 @@ public class ColonyProductionTest {
         ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
-        assertEquals(-54, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(-27, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
         assertEquals(27, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
 
         assertEquals(-27, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
@@ -210,7 +214,8 @@ public class ColonyProductionTest {
         ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
-        assertEquals(-9, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
         assertEquals(9, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
 
         assertEquals(-9, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
@@ -263,8 +268,10 @@ public class ColonyProductionTest {
         Building furTrading = colony.buildings.getById("building:6545");
         ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
+
+        assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
         
-        assertEquals(-18, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
         assertEquals(9, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
 
         assertEquals(-9, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
@@ -288,7 +295,7 @@ public class ColonyProductionTest {
         
         int allFurs = colony.goodsContainer.goodsAmount("model.goods.furs");
         colony.goodsContainer.increaseGoodsQuantity("model.goods.furs", -allFurs);
-        //colony.goodsContainer.increaseGoodsQuantity("model.goods.furs", 15);
+        colony.goodsContainer.increaseGoodsQuantity("model.goods.furs", 5);
         
         int allCoast = colony.goodsContainer.goodsAmount("model.goods.coats");
         colony.goodsContainer.increaseGoodsQuantity("model.goods.coats", -allCoast);
