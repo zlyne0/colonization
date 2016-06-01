@@ -8,16 +8,19 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-// TODO: GoodsContainer should not has id, remove it and test whole
-public class GoodsContainer extends ObjectWithId {
+public class GoodsContainer implements Identifiable {
 
     private final ProductionSummary goods = new ProductionSummary();
     private int cargoSpaceTaken = 0;
     
-    public GoodsContainer(String id) {
-        super(id);
+    public GoodsContainer() {
     }
 
+    @Override
+    public String getId() {
+        throw new IllegalStateException("goodsContainer does not has id");
+    }
+    
 	public int goodsAmount(String id) {
         return goods.getQuantity(id);
 	}
@@ -111,9 +114,7 @@ public class GoodsContainer extends ObjectWithId {
     public static class Xml extends XmlNodeParser {
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            GoodsContainer goodsContainer = new GoodsContainer(id);
-            
+            GoodsContainer goodsContainer = new GoodsContainer();
             nodeObject = goodsContainer;
         }
 

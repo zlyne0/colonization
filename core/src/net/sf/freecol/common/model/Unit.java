@@ -86,7 +86,7 @@ public class Unit extends ObjectWithId implements Location {
             unitContainer = new UnitContainer(this);
         }
         if (unitType.hasAbility(Ability.CARRY_GOODS)) {
-        	goodsContainer = new GoodsContainer("goodsContainer:" + getId());
+        	goodsContainer = new GoodsContainer();
         }
     }
 
