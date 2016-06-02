@@ -609,33 +609,23 @@ public class Colony extends Settlement {
 	}
 	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
-    	// TODO: przebudowa metoday aby kozystac z getNoBuildReason
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
-    		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(bt)) {
-    			System.out.println("" + bt + ": colony do not have required ability");
-    			continue;
-    		}
+    	    
+    	    NoBuildReason noBuildReason = getNoBuildReason(bt);
+    	    if (noBuildReason != NoBuildReason.NONE) {
+    	        System.out.println("" + bt + ": " + noBuildReason);
+    	        continue;
+    	    }
+    		
     		if (isOnBuildingQueue(bt)) {
-    			System.out.println("" + bt + " already on building queue list");
-    			continue;
+    		    System.out.println("" + bt + " already on building queue list");
+    		    continue;
     		}
+    		
     		if (isBuildingAlreadyBuilt(bt)) {
-    			System.out.println("" + bt + " has already built");
-    			continue;
-    		}
-    		if (!isBuildingCanBeBuiltBecauseOfLevel(bt)) {
-    			System.out.println("" + bt + " build level not accessible");
-    			continue;
-    		}
-    		// TODO: usuniecie na rzecz hasPort model.ability.hasPort
-    		if (bt.hasAbility(Ability.COASTAL_ONLY) && !isCoastland()) {
-    			System.out.println("" + bt + " can be built only on coastland");
-    			continue;
-    		}
-    		if (bt.getRequiredPopulation() > getColonyUnitsCount()) {
-    			System.out.println("" + bt + " required more colony units");
-    			continue;
+    		    System.out.println("" + bt + " has already built");
+    		    continue;
     		}
     		items.add(new ColonyBuildingQueueItem(bt));
     	}
