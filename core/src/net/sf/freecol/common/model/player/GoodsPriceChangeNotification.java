@@ -20,6 +20,10 @@ public class GoodsPriceChangeNotification implements Notification, Identifiable 
 		return type.getId();
 	}
 	
+	public String toString() {
+		return "GoodsPriceChangeNotification[type: " + type + ", from: " + from + ", to: " + to + "]";
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		@Override
 		public void startElement(XmlNodeAttributes attr) {

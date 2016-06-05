@@ -34,7 +34,7 @@ public class GameLogic {
 			newTurnForUnit(unit);
 		}
 		
-        for (Settlement settlement : player.settlements.entities()) {
+        for (Settlement settlement : player.settlements.sortedEntities()) {
 			if (!settlement.isColony()) {
 				continue;
 			}
@@ -45,10 +45,10 @@ public class GameLogic {
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
 
-			colony.buildBuildings(game, newTurnContext);
+			colony.buildBuildings(newTurnContext);
 			
 			colony.removeExcessedStorableGoods();
-			colony.notificationsAboutLackOfResources();
+			colony.handleLackOfResources(newTurnContext);
 			colony.calculateSonsOfLiberty();
 			colony.calculateImmigration();
 		}
@@ -94,7 +94,7 @@ public class GameLogic {
 					settlement.addGoods(production.getId(), prodAmount);
 				}
 			} else {
-				TileImprovement tileImprovement = new TileImprovement(game.idGenerator, improvementType);
+				TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, improvementType);
 				improvingTile.addImprovement(tileImprovement);
 				if (improvementType.isRoad()) {
 					improvingTile.updateRoadConnections(game.map);
@@ -118,7 +118,7 @@ public class GameLogic {
 			if (isExposedResourceAfterImprovement(improvingTile, improvementType)) {
 				ResourceType resourceType = improvingTile.getType().exposeResource();
 				int initQuantity = resourceType.initQuantity();
-				improvingTile.addResource(new TileResource(game.idGenerator, resourceType, initQuantity));
+				improvingTile.addResource(new TileResource(Game.idGenerator, resourceType, initQuantity));
 			}
 			
 			newTurnContext.setRequireUpdateMapModel();

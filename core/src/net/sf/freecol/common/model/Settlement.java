@@ -3,9 +3,8 @@ package net.sf.freecol.common.model;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 
-public abstract class Settlement implements Identifiable {
-	protected String id;
-    protected String name;
+public abstract class Settlement extends ObjectWithId {
+	protected String name;
     public SettlementType settlementType;
     protected Player owner;
     String tileId;
@@ -13,12 +12,12 @@ public abstract class Settlement implements Identifiable {
     protected boolean coastland = false;
     
     protected MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
+
+    public Settlement(String id) {
+		super(id);
+	}
     
     public abstract String getImageKey();
-
-	public String getId() {
-		return id;
-	}
 
 	public String getName() {
 		return name;

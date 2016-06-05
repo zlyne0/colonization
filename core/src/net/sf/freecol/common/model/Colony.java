@@ -76,13 +76,13 @@ public class Colony extends Settlement {
     protected int immigration;
     
     public Colony(String id) {
-    	this.id = id;
+    	super(id);
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
     }
 
     public String toString() {
-    	return "id=" + id + ", name=" + getName();
+    	return "id=" + getId() + ", name=" + getName();
     }
     
     public int getColonyUnitsCount() {
@@ -199,6 +199,21 @@ public class Colony extends Settlement {
         destColonyTile.setWorker(unit);
     }
     
+    public void removeWorkerFromWorkPlace(Unit worker) {
+    	for (ColonyTile ct : colonyTiles.entities()) {
+    		if (ct.getWorker() != null && ct.getWorker().equalsId(worker)) {
+    			ct.takeWorker();
+    			return;
+    		}
+    	}
+    	for (Building b : buildings.entities()) {
+    		if (b.workers.containsId(worker)) {
+    			b.workers.removeId(worker);
+    			return;
+    		}
+    	}
+    }
+    
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
         if (!unit.isPerson()) {
             return Collections.emptyList();
@@ -283,12 +298,17 @@ public class Colony extends Settlement {
             if (goodsAmount > warehouseCapacity) {
                 int wasteAmount = goodsAmount - warehouseCapacity;
                 goodsContainer.decreaseGoodsQuantity(gt, wasteAmount);
-                owner.eventsNotifications.addWarehouseWasteNotification(this, gt, wasteAmount);
+                
+                StringTemplate st = StringTemplate.template("model.building.warehouseWaste")
+                	.add("%colony%", getName())
+                	.addName("%goods%", gt)
+                	.addAmount("%waste%", wasteAmount);
+                owner.eventsNotifications.addMessageNotification(st);
             }
         }
     }
     
-    public void notificationsAboutLackOfResources() {
+    public void handleLackOfResources(NewTurnContext newTurnContext) {
         int foodProdCons = colonyProduction.globalProductionConsumption().getQuantity(GoodsType.FOOD);
         if (foodProdCons < 0) {
             // food consumption is greater then production
@@ -298,13 +318,29 @@ public class Colony extends Settlement {
             if (storedAfterConsume >= 0) {
                 int turns = goodsContainer.goodsAmount(GoodsType.FOOD) / quantityToConsume;
                 if (turns < 3) {
-                    // TODO: notification model.colony.famineFeared
-                    System.out.println("Famine feared in %colony%. Only %number% turns of food left.");
+                	StringTemplate st = StringTemplate.template("model.colony.famineFeared")
+                				.add("%colony%", getName())
+                				.addAmount("%number%", turns);
+                	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {
-                // TODO: model.colony.colonistStarved
-                // TODO: model.colony.colonyStarved
-                System.out.println("A colonist has starved to death in %colony%!");
+            	Unit unit = colonyWorkers.get(0);
+            	removeWorkerFromWorkPlace(unit);
+            	owner.units.removeId(unit);
+            	System.out.println("unit[" + unit + "] was removed from colony[" + getName() + "]");
+            	
+    			updateColonyPopulation();
+    			updateModelOnWorkerAllocationOrGoodsTransfer();
+            	
+    			if (getColonyUnitsCount() > 0) {
+    				StringTemplate st = StringTemplate.template("model.colony.colonistStarved").add("%colony%", getName());
+    				owner.eventsNotifications.addMessageNotification(st);
+    			} else {
+    				StringTemplate st = StringTemplate.template("model.colony.colonyStarved").add("%colony%", getName());
+    				owner.eventsNotifications.addMessageNotification(st);
+    				owner.removeSettlement(this);
+    				newTurnContext.setRequireUpdateMapModel();
+    			}
             }
         }
         
@@ -318,13 +354,19 @@ public class Colony extends Settlement {
                 int quantityToConsume = -entry.value;
                 int afterConsume = goodsContainer.goodsAmount(entry.key) - quantityToConsume;
                 if (afterConsume == 0) {
-                    // TODO: model.building.notEnoughInput
-                    System.out.println("### The %building% in %colony% has stopped production because of missing " + entry.key + ".");
+                	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
+					StringTemplate st = StringTemplate.template("model.building.notEnoughInput")
+                		.add("%colony%", getName())
+                		.addName("%inputGoods%", goodsType);
+					owner.eventsNotifications.addMessageNotification(st);
                 } else {
                     if (afterConsume < quantityToConsume) {
-                        // TODO: model.building.warehouseEmpty
-                        //System.out.println("building " + building);
-                        System.out.println("### There are now less than " + (quantityToConsume) + " units of " + entry.key + " in your warehouse in %colony%.");
+                    	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
+                    	StringTemplate st = StringTemplate.template("model.building.warehouseEmpty")
+                    		.add("%colony%", getName())
+                    		.addName("%goods%", goodsType)
+                    		.addAmount("%level%", quantityToConsume);
+                    	owner.eventsNotifications.addMessageNotification(st);
                     }
                 }
             }
@@ -355,13 +397,10 @@ public class Colony extends Settlement {
 			} else {
 				templateName = "model.colony.SoLDecrease";
 			}
-			
-			// TODO: add notification
 			StringTemplate t = StringTemplate.template(templateName)
 					.add("%colony%", this.getName())
 					.addAmount("%newSoL%", sonsOfLiberty);
-			String st = Messages.message(t);
-			System.out.println("st = "  + st);
+			owner.eventsNotifications.addMessageNotification(t);
 		}
         System.out.println("calculateSonsOfLiberty: bells: " + bells + ", liberty: " + liberty + ", sonsOfLiberty: " + sonsOfLiberty + ", tories: " + tories);
 	}
@@ -723,7 +762,7 @@ public class Colony extends Settlement {
 		updateModelOnWorkerAllocationOrGoodsTransfer();
 	}
 	
-	public void buildBuildings(Game game, NewTurnContext newTurnContext) {
+	public void buildBuildings(NewTurnContext newTurnContext) {
 	    BuildableType buildableType = getFirstItemInBuildingQueue();
 		if (buildableType == null) {
 			return;
@@ -739,7 +778,7 @@ public class Colony extends Settlement {
 			if (NoBuildReason.NONE != noBuildReason) {
 				finishBuildingProblemNotification(buildableType, noBuildReason);
 			} else {
-				finishBuilding(game, newTurnContext, buildableType);
+				finishBuilding(newTurnContext, buildableType);
 			}
 		}
 	}
@@ -761,8 +800,8 @@ public class Colony extends Settlement {
         		.addName("%object%", buildableType);
         	break;
         }
-        // TODO: notification
-        System.out.println("no build reason '" + noBuildReason + "' " + Messages.message(st));
+        System.out.println("" + buildableType + " no build reason '" + noBuildReason + "'");
+        owner.eventsNotifications.addMessageNotification(st);
     }
 
     private void neverFinishBuildingNotification(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGoods) {
@@ -771,22 +810,21 @@ public class Colony extends Settlement {
         	if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
         		int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
         		
-        		// TODO: notification
         		StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
         			.addName("%goodsType%", requiredGood.getId())
         			.addAmount("%amount%", amount)
         			.add("%colony%", getName())
         			.addName("%buildable%", buildableType.getId());
-        		System.out.println("never complete building = " + Messages.message(st) );
+        		owner.eventsNotifications.addMessageNotification(st);
         		break;
         	}
         }
     }
 
-	private void finishBuilding(Game game, NewTurnContext newTurnContext, BuildableType buildableType) {
+	private void finishBuilding(NewTurnContext newTurnContext, BuildableType buildableType) {
 		if (buildableType.isUnitType()) {
 			Unit unit = new Unit(
-				game.idGenerator.nextId(Unit.class), 
+				Game.idGenerator.nextId(Unit.class), 
 				(UnitType)buildableType,
 				Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
 				owner
@@ -794,9 +832,11 @@ public class Colony extends Settlement {
 			tile.units.add(unit);
 			unit.setLocation(tile);
 			
-			StringTemplate st = UnitLabel.getPlainUnitLabel(unit);
-			// TODO: notification
-			System.out.println("XXX new unit = " + Messages.message(st));
+			StringTemplate unitNameSt = UnitLabel.getPlainUnitLabel(unit);
+			StringTemplate st = StringTemplate.template("model.colony.unitReady")
+				.add("%colony%", getName())
+				.addStringTemplate("%unit%", unitNameSt);
+			owner.eventsNotifications.addMessageNotification(st);
 		}
 		if (buildableType.isBuildingType()) {
 			BuildingType buildingType = (BuildingType)buildableType;
@@ -805,7 +845,7 @@ public class Colony extends Settlement {
 				Building building = findBuildingByType(from.getId());
 				building.upgrade(buildingType);
 			} else {
-				Building building = new Building(game.idGenerator.nextId(Building.class), buildingType);
+				Building building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
 				buildings.add(building);
 			}
 			
@@ -816,11 +856,11 @@ public class Colony extends Settlement {
 			updateColonyPopulation();
 			updateModelOnWorkerAllocationOrGoodsTransfer();
 			
-			// TODO: notification
 			StringTemplate st = StringTemplate.template("model.colony.buildingReady")
 		        .add("%colony%", getName())
 		        .addName("%building%", buildableType);
 			System.out.println("new building " + buildingType + ", msg: " + Messages.message(st));
+			owner.eventsNotifications.addMessageNotification(st);
 		}
 		
 		removeResourcesAfterCompleteBuilding(buildableType);

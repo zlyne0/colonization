@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
+import net.sf.freecol.common.model.player.Player;
 
 public class GUIGameModel {
 
@@ -18,7 +19,8 @@ public class GUIGameModel {
 	private boolean viewMode = false;
 	private boolean createGotoPathMode = false;
 	private boolean aiMove = false;
-	
+
+	Player player;
 	Unit previewViewModeUnit = null;
 	UnitIterator unitIterator = null;
 
@@ -78,5 +80,9 @@ public class GUIGameModel {
 
 	public boolean hasUnitsToMove() {
 		return unitIterator.hasNext();
+	}
+
+	public boolean hasNotifications() {
+		return player.eventsNotifications.hasNotifications();
 	}
 }

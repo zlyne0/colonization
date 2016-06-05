@@ -17,7 +17,7 @@ public class Game implements Identifiable {
 	public Player playingPlayer;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
 
-	public IdGenerator idGenerator;
+	public static IdGenerator idGenerator;
 	public String activeUnitId;
 	
 	public Game(String id) {
@@ -49,8 +49,9 @@ public class Game implements Identifiable {
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
 			System.out.println("startElement game");
+			Game.idGenerator = new IdGenerator(attr.getIntAttribute("nextId", 1));
+			
 			Game game = new Game(attr.getStrAttribute("id"));
-			game.idGenerator = new IdGenerator(attr.getIntAttribute("nextId", 1));
 			game.activeUnitId = attr.getStrAttribute("activeUnit");
 			
 			XmlNodeParser.game = game;

@@ -16,6 +16,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
@@ -62,6 +63,7 @@ public class HudStage extends Stage {
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
     private ButtonActor endTurnButton;
+    private ButtonActor showNotificationButton;
 
     private ButtonActor acceptActionButton;
     private ButtonActor cancelActionButton;
@@ -231,6 +233,11 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (event.getListenerActor() == showNotificationButton) {
+    			showNotification();
+    			return true;
+    		}
+    		
     		if (event.getListenerActor() == roadButton) {
     			gameController.buildRoad();
     			return true;
@@ -321,6 +328,11 @@ public class HudStage extends Stage {
         endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
         endTurnButton.addListener(buttonsInputListener);
         
+        showNotificationButton = new ButtonActor(shapeRenderer, "msg");
+        showNotificationButton.setSize(bw, bw);
+        showNotificationButton.setPosition(getWidth() - bw, getHeight() - bw);
+        showNotificationButton.addListener(buttonsInputListener);
+        
         acceptActionButton = new ButtonActor(shapeRenderer, "accept");
         acceptActionButton.setSize(bw, bw);
         acceptActionButton.setPosition(0, getHeight() / 2);
@@ -377,10 +389,14 @@ public class HudStage extends Stage {
 			return;
 		}
 		boolean hasUnitsToMove = model.hasUnitsToMove();
-		if (!hasUnitsToMove) {
+		boolean hasNotifications = model.hasNotifications();
+		if (!hasUnitsToMove && !hasNotifications) {
 			buttonsGroup.addActor(endTurnButton);
 		}
-        
+        if (hasNotifications) {
+        	buttonsGroup.addActor(showNotificationButton);
+        }
+		
         viewButton.setChecked(model.isViewMode());
         gotoTileButton.setChecked(model.isCreateGotoPathMode());
 		
@@ -447,4 +463,19 @@ public class HudStage extends Stage {
 		gotoCityDialogList.show(HudStage.this);
     }
 	
+	private void showNotification() {
+		Notification firstNotification = gameController.getFirstNotification();
+		
+		HudStage.this.removeListener(keysInputListener);
+		NotificationDialog dialog = new NotificationDialog(firstNotification);
+		dialog.addOnCloseListener(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				HudStage.this.addListener(keysInputListener);
+				return true;
+			}
+		});
+		dialog.show(HudStage.this);
+	}
+    
 }

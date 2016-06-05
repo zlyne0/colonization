@@ -338,8 +338,7 @@ public class StringTemplate extends ObjectWithId {
      * @param template The template value.
      * @return This <code>StringTemplate</code>.
      */
-    public StringTemplate addStringTemplate(String key,
-                                                          StringTemplate template) {
+    public StringTemplate addStringTemplate(String key, StringTemplate template) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
             addReplacement(template);

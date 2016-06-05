@@ -292,6 +292,11 @@ public class Player extends ObjectWithFeatures {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
 	
+	public void removeSettlement(Settlement settlement) {
+		settlement.tile.setSettlement(null);
+		settlements.removeId(settlement.getId());
+	}
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

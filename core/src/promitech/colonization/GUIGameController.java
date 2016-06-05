@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
@@ -58,6 +59,7 @@ public class GUIGameController {
         System.out.println("game = " + game);
         
         guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+        guiGameModel.player = game.playingPlayer;
         
         gameLogic = new GameLogic(game);
 	}
@@ -532,5 +534,11 @@ public class GUIGameController {
 		if (guiGameModel.isActiveUnitSet()) {
 			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
 		}
+	}
+
+	public Notification getFirstNotification() {
+		Notification firstNotification = game.playingPlayer.eventsNotifications.firstNotification();
+		guiGameModel.runListeners();
+		return firstNotification;
 	}
 }
