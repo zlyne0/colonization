@@ -52,6 +52,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             buildingsPanelActor.updateProductionDesc();
             terrainPanel.updateProduction();
             warehousePanel.updateGoodsQuantity(colony);
+            actualBuildableItemActor.updateBuildItem(colony);
         }
 
         @Override
