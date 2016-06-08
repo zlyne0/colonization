@@ -4,6 +4,9 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 
 public abstract class Settlement extends ObjectWithId {
+    
+    public static final int FOOD_PER_COLONIST = 200;
+    
 	protected String name;
     public SettlementType settlementType;
     protected Player owner;

@@ -762,6 +762,27 @@ public class Colony extends Settlement {
 		updateModelOnWorkerAllocationOrGoodsTransfer();
 	}
 	
+	public void increaseColonySize() {
+	    int foodGoodsAmount = goodsContainer.goodsAmount(GoodsType.FOOD);
+	    if (foodGoodsAmount >= FOOD_PER_COLONIST) {
+	        goodsContainer.decreaseGoodsQuantity(GoodsType.FOOD, FOOD_PER_COLONIST);
+	        
+	        UnitType freeColonistUnitType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
+            Unit unit = new Unit(
+                Game.idGenerator.nextId(Unit.class), 
+                freeColonistUnitType,
+                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+                owner
+            );
+            tile.units.add(unit);
+            unit.setLocation(tile);
+	        
+            StringTemplate st = StringTemplate.template("model.colony.newColonist")
+                        .add("%colony%", getName());
+            owner.eventsNotifications.addMessageNotification(st );
+	    }
+	}
+	
 	public void buildBuildings(NewTurnContext newTurnContext) {
 	    BuildableType buildableType = getFirstItemInBuildingQueue();
 		if (buildableType == null) {
