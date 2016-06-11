@@ -147,6 +147,21 @@ public class Tile implements Location, Identifiable {
 		tileItemContainer.resources.add(resource);
 	}
 	
+	public ResourceType reduceTileResourceQuantity(String resourceTypeId, int quantity) {
+		if (tileItemContainer == null) {
+			return null;
+		}
+		TileResource tileResource = tileItemContainer.resources.first();
+		if (tileResource != null && tileResource.reduceQuantityResource(quantity)) {
+			tileItemContainer.resources.removeId(tileResource);
+			if (tileItemContainer.isEmpty()) {
+				tileItemContainer = null;
+			}
+			return tileResource.getResourceType();
+		}
+		return null;
+	}
+	
 	public boolean canBeImprovedByUnit(TileImprovementType improvementType, Unit unit) {
 		if (!improvementType.isSatisfyUnitRole(unit.unitRole)) {
 			return false;

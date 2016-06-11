@@ -24,6 +24,18 @@ public class TileResource extends ObjectWithId {
 	    return resourceType;
 	}
 	
+	public boolean reduceQuantityResource(int q) {
+		if (quantity == UNLIMITED) {
+			return false;
+		}
+		quantity -= q;
+		if (quantity <= 0) {
+			quantity = 0;
+			return true;
+		}
+		return false;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
 		@Override

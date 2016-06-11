@@ -35,6 +35,10 @@ public class TileItemContainer implements Identifiable {
 		}
 		return false;
 	}
+	
+	public boolean isEmpty() {
+		return improvements.isEmpty() && resources.isEmpty() && lostCityRumours.isEmpty();
+	}
     
     public static class Xml extends XmlNodeParser {
         

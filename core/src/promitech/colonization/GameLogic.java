@@ -44,6 +44,7 @@ public class GameLogic {
 			colony.updateColonyFeatures();
 			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
+			colony.reduceTileResourceQuantity(newTurnContext);
 			
 			colony.increaseColonySize();
 			colony.buildBuildings(newTurnContext);

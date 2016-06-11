@@ -424,6 +424,27 @@ public class Colony extends Settlement {
 		goodsContainer.increaseGoodsQuantity(productionSummary());
 	}
     
+	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
+		for (ColonyTile ct : colonyTiles.entities()) {
+			if (ct.getWorker() == null) {
+				continue;
+			}
+			ProductionConsumption ps = productionSummary(ct);
+			for (Entry<String> entry : ps.realProduction.entries()) {
+				ResourceType reducedResourceType = ct.tile.reduceTileResourceQuantity(entry.key, entry.value);
+				if (reducedResourceType != null) {
+					newTurnContext.setRequireUpdateMapModel();
+					updateModelOnWorkerAllocationOrGoodsTransfer();
+
+					StringTemplate st = StringTemplate.template("model.tile.resourceExhausted")
+						.addName("%resource%", reducedResourceType)
+						.add("%colony%", getName());
+					owner.eventsNotifications.addMessageNotification(st);
+				}
+			}
+		}
+	}
+	
     public void initMaxPossibleProductionOnTile(Tile tile) {
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.equalsId(tile)) {
