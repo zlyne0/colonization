@@ -42,7 +42,6 @@ public class GameLogic {
 			System.out.println("calculate new turn for colony " + colony);
 			
 			colony.updateColonyFeatures();
-			colony.increaseWorkersExperience();
 			colony.increaseWarehouseByProduction();
 			colony.reduceTileResourceQuantity(newTurnContext);
 			
@@ -53,6 +52,7 @@ public class GameLogic {
 			colony.handleLackOfResources(newTurnContext);
 			colony.calculateSonsOfLiberty();
 			colony.calculateImmigration();
+			colony.increaseWorkersExperience();
 		}
 		player.fogOfWar.resetFogOfWar(player);
 	}

@@ -679,6 +679,11 @@ public class Unit extends ObjectWithId implements Location {
 		unitRole = newUnitRole;
 	}
 	
+	public void changeUnitType(UnitType newUnitType) {
+		this.unitType = newUnitType;
+		this.experience = 0;
+	}
+	
 	public List<UnitRole> avaliableRoles() {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
@@ -740,6 +745,10 @@ public class Unit extends ObjectWithId implements Location {
         this.experience = Math.min(this.experience + aditionalExperience, unitType.getMaximumExperience());
     }
 	
+    public boolean isPromotedToExpert() {
+    	return this.experience >= unitType.getMaximumExperience();
+    }
+    
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -822,4 +831,5 @@ public class Unit extends ObjectWithId implements Location {
             return unit.couldMove();
         }
     }
+
 }

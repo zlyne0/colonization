@@ -281,6 +281,20 @@ public class Colony extends Settlement {
                 int experience = entry.value / prodLocWorkersAmount;
                 System.out.println("worker [" + worker + "] gain " + experience + " experience to be " + goodsExpertUnitType );
                 worker.gainExperience(experience);
+                if (worker.isPromotedToExpert()) {
+                	updateModelOnWorkerAllocationOrGoodsTransfer();
+                	
+                	StringTemplate oldName = UnitLabel.getPlainUnitLabel(worker);
+                	worker.changeUnitType(goodsExpertUnitType);
+                	StringTemplate newName = UnitLabel.getPlainUnitLabel(worker);
+                	
+                	StringTemplate st = StringTemplate.template("model.unit.experience")
+                		.addStringTemplate("%oldName%", oldName)
+                		.addStringTemplate("%unit%", newName)
+                		.add("%colony%", getName());
+                	owner.eventsNotifications.addMessageNotification(st);
+                	
+                }
             }
         }
     }
