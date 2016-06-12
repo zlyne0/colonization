@@ -97,7 +97,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
 		
-		ButtonActor closeButton = new ButtonActor(this.shape);
+		ButtonActor closeButton = new ButtonActor(this.shape, "ESC");
 		closeButton.setWidth(bw);
 		closeButton.setHeight(bw);
 		closeButton.setX(stage.getWidth() - bw - 10);
@@ -122,7 +122,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
-        Table tableLayout = new Table(null);
+        Table tableLayout = new Table();
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));
         
         VerticalGroup colGroup1 = new VerticalGroup();

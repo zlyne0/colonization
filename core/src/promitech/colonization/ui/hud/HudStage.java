@@ -62,6 +62,7 @@ public class HudStage extends Stage {
     
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
+    private ButtonActor europeButton;
     private ButtonActor endTurnButton;
     private ButtonActor showNotificationButton;
 
@@ -106,6 +107,10 @@ public class HudStage extends Stage {
     			} else {
     				gameController.enterInViewMode();
     			}
+    			return true;
+    		}
+    		if (keycode == Input.Keys.Y && europeButton.getParent() != null) {
+    			gameController.showEuropeScreen();
     			return true;
     		}
     		if (keycode == Input.Keys.N && nextUnitButton.getParent() != null) {
@@ -190,6 +195,11 @@ public class HudStage extends Stage {
     			} else {
     				gameController.enterInViewMode();
     			}
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == europeButton) {
+    			gameController.showEuropeScreen();
     			return true;
     		}
     		
@@ -323,6 +333,11 @@ public class HudStage extends Stage {
         viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
         viewButton.addListener(buttonsInputListener);
 
+        europeButton = new ButtonActor(shapeRenderer, "Y");
+        europeButton.setSize(bw, bw);
+        europeButton.setPosition(getWidth() / 2 - bw, getHeight() - bw - 10);
+        europeButton.addListener(buttonsInputListener);
+        
         endTurnButton = new ButtonActor(shapeRenderer, "end turn");
         endTurnButton.setSize(bw, bw);
         endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
@@ -438,6 +453,7 @@ public class HudStage extends Stage {
 				buttonsGroup.addActor(nextUnitButton);
 			}
 			buttonsGroup.addActor(viewButton);
+			buttonsGroup.addActor(europeButton);
         }
 		
         if (model.isCreateGotoPathMode()) {

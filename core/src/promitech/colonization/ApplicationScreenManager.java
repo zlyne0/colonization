@@ -21,6 +21,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
+import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -78,6 +79,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
+		applicationScreensByType.put(ApplicationScreenType.EUROPE, new EuropeApplicationScreen());
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;

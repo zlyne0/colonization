@@ -291,6 +291,10 @@ public class GUIGameController {
 		}
 	}
 	
+	public void showEuropeScreen() {
+		screenManager.setScreen(ApplicationScreenType.EUROPE);		
+	}
+	
 	public void closeColonyView(Colony colony) {
 		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
 		if (guiGameModel.isActiveUnitSet()) {
