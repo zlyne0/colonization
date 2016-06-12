@@ -4,19 +4,15 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class ColonyTile extends ObjectWithId {
+public class ColonyTile extends ObjectWithId implements ProductionLocation {
 
 	private Unit worker;
-	private String workTileId;
 	public final ProductionInfo productionInfo = new ProductionInfo();
     public Tile tile;
 	
 	public ColonyTile(String id) {
+		// colonyTile has the same id like tile which it concern 
 		super(id);
-	}
-
-	public String getWorkTileId() {
-		return workTileId;
 	}
 
 	public void moveWorkerTo(ColonyTile destColonyTile) {
@@ -40,7 +36,7 @@ public class ColonyTile extends ObjectWithId {
 	}
 
 	public String toString() {
-	    return "ColonyTile id[" + id +"], worktileId[" + workTileId + "]";
+	    return "ColonyTile workTileId[" + id + "]";
 	}
 	
     public static class Xml extends XmlNodeParser {
@@ -57,11 +53,7 @@ public class ColonyTile extends ObjectWithId {
     	
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
-			
-			ColonyTile colonyTile = new ColonyTile(id);
-			colonyTile.workTileId = attr.getStrAttribute("workTile");
-			
+			ColonyTile colonyTile = new ColonyTile(attr.getStrAttribute("workTile"));
 			nodeObject = colonyTile;
 		}
 

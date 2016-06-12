@@ -4,32 +4,49 @@ import java.util.List;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class GoodsContainer extends ObjectWithId {
+public class GoodsContainer implements Identifiable {
 
     private final ProductionSummary goods = new ProductionSummary();
     private int cargoSpaceTaken = 0;
     
-    public GoodsContainer(String id) {
-        super(id);
+    public GoodsContainer() {
     }
 
+    @Override
+    public String getId() {
+        throw new IllegalStateException("goodsContainer does not has id");
+    }
+    
 	public int goodsAmount(String id) {
         return goods.getQuantity(id);
 	}
     
     public int goodsAmount(GoodsType type) {
-        return goods.getQuantity(type.id);
+        return goods.getQuantity(type.getId());
     }
 
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
     }
+
+    public boolean hasGoodsQuantity(List<RequiredGoods> requiredGoods) {
+    	return goods.hasMoreOrEquals(requiredGoods);
+    }
+    
+	public void increaseGoodsQuantity(ProductionSummary ps) {
+		goods.addGoods(ps);
+	}
     
     public void increaseGoodsQuantity(GoodsType goodsType, int quantity) {
-    	goods.addGoods(goodsType.getId(), quantity);
+    	increaseGoodsQuantity(goodsType.getId(), quantity);
+    }
+    
+    public void increaseGoodsQuantity(String goodsId, int quantity) {
+    	goods.addGoods(goodsId, quantity);
     	updateTakenCargoSlots();
     }
     
@@ -49,6 +66,22 @@ public class GoodsContainer extends ObjectWithId {
         updateTakenCargoSlots();
     }
 
+	public void decreaseGoodsQuantity(GoodsType gt, int quantity) {
+	    if (quantity == 0) {
+	        return;
+	    }
+	    goods.decrease(gt.getId(), quantity);
+        updateTakenCargoSlots();
+	}
+
+	public void decreaseGoodsQuantity(String goodsTypeId, int quantity) {
+        if (quantity == 0) {
+            return;
+        }
+        goods.decrease(goodsTypeId, quantity);
+        updateTakenCargoSlots();
+    }
+	
 	public void decreaseGoodsQuantity(ProductionSummary required) {
 		goods.decreaseGoods(required);
         updateTakenCargoSlots();
@@ -81,9 +114,7 @@ public class GoodsContainer extends ObjectWithId {
     public static class Xml extends XmlNodeParser {
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            GoodsContainer goodsContainer = new GoodsContainer(id);
-            
+            GoodsContainer goodsContainer = new GoodsContainer();
             nodeObject = goodsContainer;
         }
 

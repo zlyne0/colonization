@@ -40,18 +40,21 @@ public class Unit extends ObjectWithId implements Location {
     protected String name;
 	private Player owner;
     public UnitType unitType;
-    protected UnitRole unitRole;
+    public UnitRole unitRole;
     
     private Location location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
     private int hitPoints;
+    
+    private int workLeft = -1;
+    private TileImprovementType tileImprovementType;
+    
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
-    protected int treasureAmount;
-    private boolean expert = false;
-    private int experience;
+    protected int treasureAmount = 0;
+    private int experience = 0;
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
@@ -60,18 +63,35 @@ public class Unit extends ObjectWithId implements Location {
      * The amount of role-equipment this unit carries, subject to
      * role.getMaximumCount().  Currently zero or one except for pioneers.
      */
-    protected int roleCount;
+    protected int roleCount = -1;
     
     private UnitContainer unitContainer = null;
     private GoodsContainer goodsContainer = null;
     
-    public Unit(String id) {
+    protected Unit(String id) {
     	super(id);
     }
     
-    public String toString() {
-        String st = "id = " + id + ", unitType = " + unitType;
-        return st;
+    public Unit(String id, UnitType aUnitType, UnitRole aUnitRole, Player anOwner) {
+    	super(id);
+    	this.unitType = aUnitType;
+    	this.unitRole = aUnitRole;
+    	this.owner = anOwner;
+    	this.owner.units.add(this);
+    	
+    	this.movesLeft = getInitialMovesLeft();
+    	this.hitPoints = unitType.getHitPoints();
+    	
+        if (unitType.hasAbility(Ability.CARRY_UNITS)) {
+            unitContainer = new UnitContainer(this);
+        }
+        if (unitType.hasAbility(Ability.CARRY_GOODS)) {
+        	goodsContainer = new GoodsContainer();
+        }
+    }
+
+	public String toString() {
+        return "id = " + id + ", unitType = " + unitType + ", workLeft = " + workLeft;
     }
     
     public String resourceImageKey() {
@@ -250,9 +270,9 @@ public class Unit extends ObjectWithId implements Location {
         return state;
     }
     
-    public TileImprovement getWorkImprovement() {
-        return null;
-    }
+	public TileImprovementType getTileImprovementType() {
+		return tileImprovementType;
+	}
     
     public int getMovesLeft() {
         return movesLeft;
@@ -312,7 +332,7 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     private boolean allowMoveFrom(Tile from) {
-        return from.type.isLand() || (!owner.isRoyal() && Specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
+        return from.getType().isLand() || (!owner.isRoyal() && Specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
     }
     
     public String getOccupationKey(Player player) {
@@ -323,8 +343,8 @@ public class Unit extends ObjectWithId implements Location {
                 ? "model.unit.occupation.inTradeRoute"
                 : (isDestinationSet())
                 ? "model.unit.occupation.goingSomewhere"
-                : (getState() == Unit.UnitState.IMPROVING && getWorkImprovement() != null)
-                ? (getWorkImprovement().type.getId() + ".occupationString")
+                : (getState() == Unit.UnitState.IMPROVING && getTileImprovementType() != null)
+                ? (getTileImprovementType().getId() + ".occupationString")
                 : (getState() == Unit.UnitState.ACTIVE && getMovesLeft() <= 0)
                 ? "model.unit.occupation.activeNoMovesLeft"
                 : ("model.unit.occupation." + getState().toString().toLowerCase(Locale.US)))
@@ -355,7 +375,7 @@ public class Unit extends ObjectWithId implements Location {
 
         Unit defender = target.units.first();
 
-        if (target.type.isLand()) {
+        if (target.getType().isLand()) {
             Settlement settlement = target.getSettlement();
             if (settlement == null) {
                 if (defender != null && owner.notEqualsId(defender.getOwner())) {
@@ -447,7 +467,7 @@ public class Unit extends ObjectWithId implements Location {
 			return MoveType.MOVE_NO_REPAIR;
 		}
 
-		if (target.type.isLand()) {
+		if (target.getType().isLand()) {
 			Settlement settlement = target.getSettlement();
 			if (settlement == null) {
 				return MoveType.MOVE_NO_ACCESS_LAND;
@@ -507,16 +527,14 @@ public class Unit extends ObjectWithId implements Location {
      * <code>MOVE_NO_MOVES</code>, if {@link #getMoveCost} returns a move cost
      * larger than the {@link #getMovesLeft moves left}.
      *
-     * @param from The <code>Tile</code> this <code>Unit</code> will move
-     *            from.
-     * @param target The <code>Tile</code> this <code>Unit</code> will move
-     *            onto.
+     * @param from The <code>Tile</code> this <code>Unit</code> will move from.
+     * @param target The <code>Tile</code> this <code>Unit</code> will move onto.
      * @param movesLeft The amount of moves this Unit has left.
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
     public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
-        int cost = target.type.getBasicMoveCost();
-        if (target.type.isLand() && !isNaval()) {
+        int cost = target.getType().getBasicMoveCost();
+        if (target.getType().isLand() && !isNaval()) {
         	cost = target.getMoveCost(moveDirection, cost);
         }
 
@@ -546,33 +564,53 @@ public class Unit extends ObjectWithId implements Location {
      * @return True if the unit is a beached ship.
      */
     public boolean isBeached(Tile tile) {
-        return isNaval() && tile != null && tile.type.isLand() && !tile.hasSettlement();
+        return isNaval() && tile != null && tile.getType().isLand() && !tile.hasSettlement();
     }
     
-    public void setState(UnitState s) {
-        if (state == s) {
+    public void setState(UnitState newState) {
+        if (state == newState) {
             // No need to do anything when the state is unchanged
             return;
-        } else if (!canChangeState(s)) {
-            throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + s);
+        } else if (!canChangeState(newState)) {
+            throw new IllegalStateException("Illegal UnitState transition: " + state + " -> " + newState);
         } else {
-            this.state = s;
+        	if (UnitState.IMPROVING == state && newState != UnitState.IMPROVING) {
+        		workLeft = -1;
+        		tileImprovementType = null;
+        	}
+        	switch (newState) {
+				case FORTIFYING:
+					workLeft = 1;
+					break;
+				case FORTIFIED:
+					workLeft = -1;
+					movesLeft = 0;
+					break;
+				case ACTIVE:
+					workLeft = -1;
+					break;
+				default:
+					break;
+			}
+            this.state = newState;
         }
     }
     
     /**
      * Checks if a <code>Unit</code> can get the given state set.
      *
-     * @param s The new state for this Unit.  Should be one of
+     * @param newState The new state for this Unit.  Should be one of
      *     {UnitState.ACTIVE, FORTIFIED, ...}.
      * @return True if the <code>Unit</code> state can be changed to
      *     the new value.
      */
-    public boolean canChangeState(UnitState s) {
-        if (getState() == s) return false;
-        switch (s) {
+    public boolean canChangeState(UnitState newState) {
+        if (getState() == newState) return false;
+        switch (newState) {
         case ACTIVE:
             return true;
+        case IMPROVING: 
+        	return true;
         case FORTIFIED:
             return getState() == UnitState.FORTIFYING;
         case FORTIFYING:
@@ -580,9 +618,9 @@ public class Unit extends ObjectWithId implements Location {
         case IN_COLONY:
             return !isNaval();
         case SENTRY:
-            return getState() != UnitState.SENTRY;
+            return true;
         case SKIPPED:
-            return getState() == UnitState.ACTIVE;
+            return true;
         default:
             return false;
         }
@@ -607,6 +645,14 @@ public class Unit extends ObjectWithId implements Location {
 		return this.movesLeft >= moveCost;
 	}
 	
+	public void resetMovesLeftOnNewTurn() {
+		if (isDamaged()) {
+			movesLeft = 0;
+		} else {
+			movesLeft = getInitialMovesLeft();
+		}
+	}
+	
     public UnitContainer getUnitContainer() {
         return unitContainer;
     }
@@ -622,8 +668,8 @@ public class Unit extends ObjectWithId implements Location {
         return treasureAmount;
     }
     
-	protected boolean isExpert() {
-		return expert;
+	public boolean isExpert() {
+		return unitType.getMaximumExperience() == 0;
 	}
 	
 	public void changeRole(UnitRole newUnitRole) {
@@ -631,6 +677,11 @@ public class Unit extends ObjectWithId implements Location {
 			experience = 0;
 		}
 		unitRole = newUnitRole;
+	}
+	
+	public void changeUnitType(UnitType newUnitType) {
+		this.unitType = newUnitType;
+		this.experience = 0;
 	}
 	
 	public List<UnitRole> avaliableRoles() {
@@ -660,6 +711,44 @@ public class Unit extends ObjectWithId implements Location {
 	    return false;
 	}
 	
+	public void startImprovement(Tile tile, TileImprovementType improvement) {
+		workLeft = tile.getType().getBasicWorkTurns() + improvement.getAddWorkTurns();
+		if (getMovesLeft() < 1) {
+			workLeft++;
+		}
+		tileImprovementType = improvement;
+		setState(UnitState.IMPROVING);
+	}
+	
+	/**
+	 * Return true if end of tile improvement
+	 * @return
+	 */
+	public boolean workOnImprovement() {
+		int improvementWorkDone = 1;
+		if (unitType.hasAbility(Ability.EXPERT_PIONEER)) {
+			improvementWorkDone = 2;
+		}
+		workLeft = workLeft - improvementWorkDone;
+		if (workLeft <= 0) {
+			roleCount -= tileImprovementType.getExpendedAmount();
+			if (roleCount <= 0) {
+				unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+			}
+			return true;
+		} else {
+			return false;
+		}
+	}
+
+    public void gainExperience(int aditionalExperience) {
+        this.experience = Math.min(this.experience + aditionalExperience, unitType.getMaximumExperience());
+    }
+	
+    public boolean isPromotedToExpert() {
+    	return this.experience >= unitType.getMaximumExperience();
+    }
+    
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -677,11 +766,15 @@ public class Unit extends ObjectWithId implements Location {
         public void startElement(XmlNodeAttributes attr) {
             String unitTypeStr = attr.getStrAttribute("unitType");
             String unitRoleStr = attr.getStrAttribute("role");
+            String ownerStr = attr.getStrAttribute("owner");
             
-            UnitType unitType = Specification.instance.unitTypes.getById(unitTypeStr);
-            Unit unit = new Unit(attr.getStrAttribute("id"));
-            unit.unitRole = Specification.instance.unitRoles.getById(unitRoleStr);
-            unit.unitType = unitType;
+            Unit unit = new Unit(
+        		attr.getStrAttribute("id"),
+        		Specification.instance.unitTypes.getById(unitTypeStr),
+        		Specification.instance.unitRoles.getById(unitRoleStr),
+        		game.players.getById(ownerStr)
+            );
+            
             unit.state = attr.getEnumAttribute(UnitState.class, "state");
             unit.movesLeft = attr.getIntAttribute("movesLeft");
             unit.hitPoints = attr.getIntAttribute("hitPoints");
@@ -697,17 +790,13 @@ public class Unit extends ObjectWithId implements Location {
             	unit.destinationY = attr.getIntAttribute("destinationY");
             }
             
-            unit.expert = Specification.instance.isUnitTypeExpert(unitType);
-
-            if (unit.unitType.hasAbility(Ability.CARRY_UNITS)) {
-                unit.unitContainer = new UnitContainer(unit);
+            unit.workLeft = attr.getIntAttribute("workLeft", -1);
+            String tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
+            if (tileImprovementTypeId != null) {
+            	unit.tileImprovementType = Specification.instance.tileImprovementTypes.getById(tileImprovementTypeId);
             }
             
             nodeObject = unit;
-            
-            String ownerStr = attr.getStrAttribute("owner");
-            Player owner = game.players.getById(ownerStr);
-            unit.owner = owner;
         }
 
         @Override
@@ -742,4 +831,5 @@ public class Unit extends ObjectWithId implements Location {
             return unit.couldMove();
         }
     }
+
 }

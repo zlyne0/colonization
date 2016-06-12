@@ -11,13 +11,14 @@ import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Building extends ObjectWithId {
+public class Building extends ObjectWithId implements ProductionLocation {
 
     public BuildingType buildingType;
     public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
     
-    public Building(String id) {
+    public Building(String id, BuildingType aBuildingType) {
         super(id);
+        this.buildingType = aBuildingType;
     }
 
 	public UnitContainer.NoAddReason getNoAddReason(Unit unit) {
@@ -126,9 +127,9 @@ public class Building extends ObjectWithId {
             
             // its big simplicity because for one production product create all consume product, 
             // is it will produce another product it will not be narrowed to warehouse state
-            // it's simplicity is enough because every building consume only one good
+            // this simplicity is enough because every building consume only one good
             for (String cg : consumptionGoods) {
-                prodCons.baseProduction.addGoods(cg, goodQuantity);
+                prodCons.baseConsumption.addGoods(cg, -goodQuantity);
                 
                 if (consumeOnlySurplusProduction) {
                 	int realCgProd = globalProdCons.getQuantity(cg);
@@ -160,6 +161,10 @@ public class Building extends ObjectWithId {
 	    return "id = " + getId() + ", type = " + buildingType;
 	}
 	
+	public void upgrade(BuildingType aBuildingType) {
+		this.buildingType = aBuildingType;
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
@@ -169,15 +174,9 @@ public class Building extends ObjectWithId {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute("id");
-            Building b = new Building(id);
-            
-            String buildingTypeId = attr.getStrAttribute("buildingType");
-            if (buildingTypeId == null) {
-                throw new IllegalStateException("can not find buildingType for building " + id);
-            }
+            String buildingTypeId = attr.getStrAttributeNotNull("buildingType");
             BuildingType buildingType = Specification.instance.buildingTypes.getById(buildingTypeId);
-            b.buildingType = buildingType;
-            
+            Building b = new Building(id, buildingType);
             nodeObject = b;
         }
 

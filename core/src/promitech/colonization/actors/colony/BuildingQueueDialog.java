@@ -5,7 +5,6 @@ import java.util.List;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
-import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
@@ -21,37 +20,21 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyBuildingQueueItem;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
-import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.ClosableDialog;
-import promitech.colonization.ui.SelectableRowTable;
-import promitech.colonization.ui.SelectableTableItem;
+import promitech.colonization.ui.STable;
+import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class BuildItemImgActor extends SelectableTableItem<ColonyBuildingQueueItem> {
-	BuildItemImgActor(ColonyBuildingQueueItem item) {
-		super(item);
-		Image image = new Image(getItemTexture(item), Scaling.none, Align.center);
-		image.scaleBy(-0.2f);
-		add(image).expand().fill();
-	}
-	
-	private static TextureRegionDrawable getItemTexture(ColonyBuildingQueueItem item) {
-		Frame frame = GameResources.instance.getFrame(item.getId() + ".image");
-		return new TextureRegionDrawable(frame.texture);
-	}
-}
-
-class BuildItemActor extends SelectableTableItem<ColonyBuildingQueueItem> {
-	BuildItemActor(ColonyBuildingQueueItem item) {
-		super(item);
-		
+class BuildItemDescActor extends Table {
+	BuildItemDescActor(ColonyBuildingQueueItem item) {
 		Label nameLabel = nameLabel(item);
 		nameLabel.setAlignment(Align.bottomLeft);
 		add(nameLabel)
@@ -72,10 +55,9 @@ class BuildItemActor extends SelectableTableItem<ColonyBuildingQueueItem> {
 	}
 	
 	private Table requiredGoods(ColonyBuildingQueueItem item) {
-		
 		Table goodsLayout = new Table();
 		goodsLayout.align(Align.left);
-		for (RequiredGoods requiredGood : item.requiredGoods()) {
+		for (RequiredGoods requiredGood : item.getType().requiredGoods()) {
 			Image goodImage = goodsImage(requiredGood.getId());
 			goodImage.setAlign(Align.topLeft);
 			
@@ -107,11 +89,12 @@ class BuildingQueueDialog extends ClosableDialog {
 	private final Game game;
 	private final ChangeColonyStateListener changeColonyStateListener;
 	
-	private SelectableRowTable buildableItemsLayout;
-	private SelectableRowTable buildQueueLayout;
+	private STable buildableItemsLayout;
+    private STable buildQueueLayout;
 	private final ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
 	private final Table dialogLayout = new Table();
 	private TextButton buyButton;
+    private int[] buildQueueItemsAligment = new int[] { Align.center, Align.left };
 	
 	BuildingQueueDialog(float maxHeight, ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
 		super("", GameResources.instance.getUiSkin(), maxHeight);
@@ -129,16 +112,17 @@ class BuildingQueueDialog extends ClosableDialog {
 	}
 
 	private void createComponents() {
-		buildableItemsLayout = new SelectableRowTable(shape);
-		buildableItemsLayout.setDoubleClickedListener(new DoubleClickedListener() {
-			@Override
-			public void doubleClicked(InputEvent event, float x, float y) {
-				if (event.getListenerActor() instanceof SelectableTableItem) {
-					SelectableTableItem<ColonyBuildingQueueItem> tableItem = (SelectableTableItem)event.getListenerActor();
-					addToBuildingQueue(tableItem.payload);
-				}
-			}
-		});
+	    buildableItemsLayout = new STable(shape);
+	    buildableItemsLayout.addSelectListener(new STableSelectListener() {
+            @Override
+            public void onSelect(Object payload) {
+                if (payload instanceof ColonyBuildingQueueItem) {
+                    addToBuildingQueue((ColonyBuildingQueueItem)payload);
+                } else {
+                    throw new IllegalStateException("payload should be ColonyBuildingQueueItem but it is " + payload);
+                }
+            }
+        });
 		ScrollPane buildableItemsScrollPane = new ScrollPane(buildableItemsLayout, GameResources.instance.getUiSkin());
 		buildableItemsScrollPane.setFlickScroll(false);
 		buildableItemsScrollPane.setScrollingDisabled(true, false);
@@ -147,17 +131,17 @@ class BuildingQueueDialog extends ClosableDialog {
 		buildableItemsScrollPane.setOverscroll(true, true);
 		buildableItemsScrollPane.setScrollBarPositions(false, true);
 
-		
-		buildQueueLayout = new SelectableRowTable(shape);
-		buildQueueLayout.setDoubleClickedListener(new DoubleClickedListener() {
-			@Override
-			public void doubleClicked(InputEvent event, float x, float y) {
-				if (event.getListenerActor() instanceof SelectableTableItem) {
-					SelectableTableItem<ColonyBuildingQueueItem> tableItem = (SelectableTableItem)event.getListenerActor();
-					removeFromBuildingQueue(tableItem);
-				}
-			}
-		});
+		buildQueueLayout = new STable(shape);
+		buildQueueLayout.addSelectListener(new STableSelectListener() {
+            @Override
+            public void onSelect(Object payload) {
+                if (payload instanceof ColonyBuildingQueueItem) {
+                    removeFromBuildingQueue((ColonyBuildingQueueItem)payload);
+                } else {
+                    throw new IllegalStateException("payload should be ColonyBuildingQueueItem but it is " + payload);
+                }
+            }
+        });
 		ScrollPane buildQueueScrollPane = new ScrollPane(buildQueueLayout, GameResources.instance.getUiSkin());
 		buildQueueScrollPane.setFlickScroll(false);
 		buildQueueScrollPane.setScrollingDisabled(true, false);
@@ -208,22 +192,15 @@ class BuildingQueueDialog extends ClosableDialog {
 		return panel;
 	}
 
-	private void addBuildableItemToTableLayout(ColonyBuildingQueueItem item, SelectableRowTable table) {
-		BuildItemImgActor img = new BuildItemImgActor(item);
-		BuildItemActor desc = new BuildItemActor(item);
-		
-		table.addCell(img)
-			.fill().expand();
-		table.addCell(desc)
-			.expand().fill()
-			.align(Align.left);
-		table.nextRow();
+	private void addBuildableItemToTableLayout(ColonyBuildingQueueItem item, STable sTable) {
+        Image buildingImage = buildingImage(item);
+        BuildItemDescActor desc = new BuildItemDescActor(item);
+        sTable.addRow(item, buildQueueItemsAligment, buildingImage, desc);
 	}
 
-	private void removeFromBuildingQueue(SelectableTableItem<ColonyBuildingQueueItem> tableItem) {
-		buildQueueLayout.removeSelectableItems(tableItem);
-		List<ColonyBuildingQueueItem> unitItemObjects = buildQueueLayout.getItemsObjectsFromUniqueRows();
-		colony.initBuildingQueue(unitItemObjects);
+	private void removeFromBuildingQueue(ColonyBuildingQueueItem queueItem) {
+		buildQueueLayout.removeSelectedItems();
+		colony.removeItemFromBuildingQueue(queueItem);
 		updateBuildingQueueItems();
 		updateBuildableItems();
 		
@@ -244,8 +221,7 @@ class BuildingQueueDialog extends ClosableDialog {
 
 	private void buyItemButtonAction() {
 		System.out.println("buy building button action");
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
-		
+		BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			System.out.println("Nothing to buy");
 			return;
@@ -272,7 +248,7 @@ class BuildingQueueDialog extends ClosableDialog {
 	}
 	
 	private void buyItem() {
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+	    BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			throw new IllegalArgumentException("there is not item to build");
 		}
@@ -298,6 +274,14 @@ class BuildingQueueDialog extends ClosableDialog {
         }
 	}
 
+	private Image buildingImage(ColonyBuildingQueueItem item) {
+        Frame frame = GameResources.instance.getFrame(item.getId() + ".image");
+        TextureRegionDrawable textureRegionDrawable = new TextureRegionDrawable(frame.texture);
+        Image image = new Image(textureRegionDrawable, Scaling.none, Align.center);
+        image.scaleBy(-0.2f);
+        return image;
+	}
+	
 	private void updateBuildingQueueItems() {
 		buildQueueLayout.clear();
 		for (ColonyBuildingQueueItem item : colony.buildingQueue) {
@@ -310,7 +294,7 @@ class BuildingQueueDialog extends ClosableDialog {
 			buyButton.setDisabled(true);
 			return;
 		}
-		ColonyBuildingQueueItem firstBuildableItem = colony.getFirstBuildableItem();
+		BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
 			buyButton.setDisabled(true);
 			return;

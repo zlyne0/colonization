@@ -7,6 +7,7 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -14,6 +15,9 @@ import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Notification;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
@@ -42,6 +46,7 @@ public class HudStage extends Stage {
     private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     public final HudInfoPanel hudInfoPanel; 
     private final GUIGameController gameController;
+    private final EndOfTurnActor endOfTurnActor; 
     
     private final EnumMap<Direction, ButtonActor> directionButtons = new EnumMap<Direction, ButtonActor>(Direction.class);
     private ButtonActor centerOnUnitButton;
@@ -53,12 +58,17 @@ public class HudStage extends Stage {
     private ButtonActor buildColonyButton;
     private RadioButtonActor gotoTileButton;
     private ButtonActor gotoLocationButton;
+    private ButtonActor activeButton;
     
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
+    private ButtonActor endTurnButton;
+    private ButtonActor showNotificationButton;
 
     private ButtonActor acceptActionButton;
     private ButtonActor cancelActionButton;
+    
+    private final Group buttonsGroup = new Group();
     
     private GUIGameModel.ChangeStateListener guiGameModelChangeListener = new ChangeStateListener() {
 		@Override
@@ -74,10 +84,17 @@ public class HudStage extends Stage {
         int bw = (int) (getHeight() * 0.33) / 3;
         hudInfoPanel = new HudInfoPanel(gameResources);
         
+        addActor(buttonsGroup);
+        addActor(hudInfoPanel);
+        
         createActionButtons(bw);
 		addListener(keysInputListener);
         
         gameController.addGUIGameModelChangeListener(guiGameModelChangeListener);
+        
+		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
+		endOfTurnActor.setWidth(getWidth());
+		endOfTurnActor.setHeight(getHeight());
     }
 
     private final InputListener keysInputListener = new InputListener() {
@@ -111,8 +128,36 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (keycode == Input.Keys.SPACE && unitWaitButton.getParent() != null) {
+    			gameController.skipUnit();
+    		}
+    		
     		if (keycode == Input.Keys.ESCAPE) {
     			gameController.cancelAction();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.R && roadButton.getParent() != null) {
+    			gameController.buildRoad();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.P && plowButton.getParent() != null) {
+    			gameController.plowOrClearForestImprovement();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.T && sentryButton.getParent() != null) {
+    			gameController.sentryUnit();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.F && fortifyButton.getParent() != null) {
+    			gameController.fortify();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.A && activeButton.getParent() != null) {
+    			gameController.activeUnit();
+    			return true;
+    		} 
+    		if (keycode == Input.Keys.S && centerOnUnitButton.getParent() != null) {
+    			gameController.centerOnActiveUnit();
     			return true;
     		}
     		
@@ -153,6 +198,11 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (event.getListenerActor() == unitWaitButton) {
+    			gameController.skipUnit();
+    			return true;
+    		}
+    		
     		if (event.getListenerActor() == gotoTileButton) {
     			if (gotoTileButton.isChecked()) {
     				gameController.leaveCreateGotoPathMode();
@@ -174,6 +224,38 @@ public class HudStage extends Stage {
     		
     		if (event.getListenerActor() == cancelActionButton) {
     			gameController.cancelAction();
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == endTurnButton) {
+    			endOfTurnActor.start(gameController);
+    			HudStage.this.addActor(endOfTurnActor);
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == showNotificationButton) {
+    			showNotification();
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == roadButton) {
+    			gameController.buildRoad();
+    			return true;
+    		}
+    		if (event.getListenerActor() == plowButton) {
+    			gameController.plowOrClearForestImprovement();
+    			return true;
+    		}
+    		if (event.getListenerActor() == fortifyButton) {
+    			gameController.fortify();
+    			return true;
+    		}
+    		if (event.getListenerActor() == activeButton) {
+    			gameController.activeUnit();
+    			return true;
+    		}
+    		if (event.getListenerActor() == centerOnUnitButton) {
+    			gameController.centerOnActiveUnit();
     			return true;
     		}
     		
@@ -203,6 +285,11 @@ public class HudStage extends Stage {
 		fortifyButton.setSize(bw, bw);
 		fortifyButton.setPosition(5*bw, 0);
 		fortifyButton.addListener(buttonsInputListener);
+		
+		activeButton = new ButtonActor(shapeRenderer, "A");
+		activeButton.setSize(bw, bw);
+		activeButton.setPosition(5*bw, 0);
+		activeButton.addListener(buttonsInputListener);
 		
 		buildColonyButton = new ButtonActor(shapeRenderer, "B");
 		buildColonyButton.setSize(bw, bw);
@@ -235,6 +322,16 @@ public class HudStage extends Stage {
         viewButton.setSize(bw, bw);
         viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
         viewButton.addListener(buttonsInputListener);
+
+        endTurnButton = new ButtonActor(shapeRenderer, "end turn");
+        endTurnButton.setSize(bw, bw);
+        endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
+        endTurnButton.addListener(buttonsInputListener);
+        
+        showNotificationButton = new ButtonActor(shapeRenderer, "msg");
+        showNotificationButton.setSize(bw, bw);
+        showNotificationButton.setPosition(getWidth() - bw, getHeight() - bw);
+        showNotificationButton.addListener(buttonsInputListener);
         
         acceptActionButton = new ButtonActor(shapeRenderer, "accept");
         acceptActionButton.setSize(bw, bw);
@@ -287,50 +384,66 @@ public class HudStage extends Stage {
 
 	private void resetButtonVisibility(GUIGameModel model) {
 		// remove all actors
-		this.getRoot().clearChildren();
-        addActor(hudInfoPanel);
-        
+		buttonsGroup.clearChildren();
+		if (model.isAiMove()) {
+			return;
+		}
+		boolean hasUnitsToMove = model.hasUnitsToMove();
+		boolean hasNotifications = model.hasNotifications();
+		if (!hasUnitsToMove && !hasNotifications) {
+			buttonsGroup.addActor(endTurnButton);
+		}
+        if (hasNotifications) {
+        	buttonsGroup.addActor(showNotificationButton);
+        }
+		
         viewButton.setChecked(model.isViewMode());
         gotoTileButton.setChecked(model.isCreateGotoPathMode());
 		
         if (!model.isCreateGotoPathMode()) {
         	
 			if (model.isActiveUnitSet()) {
-				for (Entry<Direction, ButtonActor> entry : directionButtons.entrySet()) {
-					ButtonActor directionButton = entry.getValue();
-					addActor(directionButton);
+				Unit unit = model.getActiveUnit();
+				
+				buttonsGroup.addActor(centerOnUnitButton);
+				
+				if (model.getActiveUnit().getState() != UnitState.FORTIFIED) {
+					for (Entry<Direction, ButtonActor> entry : directionButtons.entrySet()) {
+						ButtonActor directionButton = entry.getValue();
+						buttonsGroup.addActor(directionButton);
+					}
+					buttonsGroup.addActor(unitWaitButton);
+					buttonsGroup.addActor(sentryButton);
+					
+					if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
+					} else {
+						buttonsGroup.addActor(fortifyButton);
+						
+						buttonsGroup.addActor(buildColonyButton);
+						if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+							buttonsGroup.addActor(plowButton);
+							buttonsGroup.addActor(roadButton);
+						}
+					}
+					buttonsGroup.addActor(gotoLocationButton);
+					buttonsGroup.addActor(gotoTileButton);
+					
+				} else {
+					buttonsGroup.addActor(activeButton);
 				}
 				
-				Unit unit = model.getActiveUnit();
-		        addActor(centerOnUnitButton);
-		        addActor(unitWaitButton);
-		        addActor(sentryButton);
-		        
-		        if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
-		        } else {
-		        	addActor(fortifyButton);
-		        	
-		        	addActor(buildColonyButton);
-		        	addActor(plowButton);
-		        	addActor(roadButton);
-		        }
 			}
 			
-			if (!model.isViewMode()) {
-				addActor(nextUnitButton);
+			if (!model.isViewMode() && hasUnitsToMove) {
+				buttonsGroup.addActor(nextUnitButton);
 			}
-			addActor(viewButton);
+			buttonsGroup.addActor(viewButton);
         }
 		
         if (model.isCreateGotoPathMode()) {
-        	addActor(acceptActionButton);
-        	addActor(cancelActionButton);
+        	buttonsGroup.addActor(acceptActionButton);
+        	buttonsGroup.addActor(cancelActionButton);
         }
-        
-		if (model.isActiveUnitSet()) {
-			addActor(gotoLocationButton);
-			addActor(gotoTileButton);
-		}
 	}
 	
     private void showGotoLocationDialog() {
@@ -350,4 +463,19 @@ public class HudStage extends Stage {
 		gotoCityDialogList.show(HudStage.this);
     }
 	
+	private void showNotification() {
+		Notification firstNotification = gameController.getFirstNotification();
+		
+		HudStage.this.removeListener(keysInputListener);
+		NotificationDialog dialog = new NotificationDialog(firstNotification);
+		dialog.addOnCloseListener(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				HudStage.this.addListener(keysInputListener);
+				return true;
+			}
+		});
+		dialog.show(HudStage.this);
+	}
+    
 }

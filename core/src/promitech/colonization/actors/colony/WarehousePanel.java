@@ -22,6 +22,10 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         this.changeColonyStateListener = changeColonyStateListener;
     }
 
+    int capacity() {
+        return colony.getWarehouseCapacity();
+    }
+    
     public void initGoods(Colony aColony, DragAndDrop goodsDragAndDrop) {
         this.colony = aColony;
         

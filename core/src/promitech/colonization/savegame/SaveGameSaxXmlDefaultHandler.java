@@ -38,7 +38,12 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
 
         nodeAttributes.qName = qName;
         nodeAttributes.attributes = attributes;
-        xmlNodeParser.startElement(nodeAttributes);
+        try {
+        	xmlNodeParser.startElement(nodeAttributes);
+        } catch (RuntimeException e) {
+        	System.out.println("can not parse " + nodeAttributes);
+        	throw e;
+        }
         if (xmlNodeParser instanceof MapIdEntities.Xml) {
             ((MapIdEntities.Xml)xmlNodeParser).setMap(parentXmlParser);
         }

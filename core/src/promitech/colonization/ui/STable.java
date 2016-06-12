@@ -1,10 +1,22 @@
 package promitech.colonization.ui;
 
+import java.util.LinkedList;
+import java.util.List;
+
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.IntSet;
 
 public class STable extends Table {
+    private static HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
+        @Override
+        public float getPrefHeight() {
+            return 20f;
+        }
+    };
+    
     private final ShapeRenderer shape;
     private int rowIndexCounter = 0;
     private STableSelectListener onSelectListener;
@@ -87,6 +99,41 @@ public class STable extends Table {
             }
         }
         return null;
+    }
+
+    public void removeSelectedItems() {
+        LinkedList<Actor> toRemove = new LinkedList<Actor>();
+        for (Actor actor : getChildren()) {
+            if (actor instanceof STableItem) {
+                STableItem ti = (STableItem)actor;
+                if (ti.selected) {
+                    toRemove.add(actor);
+                }
+            }
+        }
+        for (Actor a : toRemove) {
+            removeActor(a);
+        }
+    }
+
+    public <T> List<T> getUniquePayloads() {
+        LinkedList<T> uniqueRowsItems = new LinkedList<T>();
+        IntSet set = new IntSet(this.getChildren().size / 2);
+        for (Actor actor : getChildren()) {
+            if (actor instanceof STableItem) {
+                STableItem ti = (STableItem) actor;
+                if (set.contains(ti.rowIndex)) {
+                    continue;
+                }
+                set.add(ti.rowIndex);
+                uniqueRowsItems.add((T)ti.payload);
+            }
+        }
+        return uniqueRowsItems;
+    }
+    
+    public void addSeparator() {
+        super.add(SEPARATOR_ROW).fillX().row();
     }
 }
 

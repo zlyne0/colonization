@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionConsumption;
-import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -76,7 +75,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		addActor(worker);
 		updateWorkerScreenPosition(worker, aColonyTile);
 
-		initMaxPossibleProdctionOnTile(worker.unit, aColonyTile.tile, aColonyTile);
+		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
 		changeColonyStateListener.changeUnitAllocation(colony);
 	}
@@ -96,7 +95,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		if (ct == null) {
 			return false;
 		}
-		if (ct.getWorkTileId().equals(colonyTile.getId())) {
+		if (ct.equalsId(colonyTile)) {
 			return false;
 		}
 		return ct.getWorker() == null;
@@ -130,22 +129,11 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 			return null;
 		}
 		for (int i=0; i<colonyTiles.length; i++) {
-			if (tile.getId().equals(colonyTiles[i].getWorkTileId())) {
+			if (colonyTiles[i].equalsId(tile)) {
 				return colonyTiles[i];
 			}
 		}
 		return null;
-	}
-	
-	private void initMaxPossibleProdctionOnTile(Unit aUnit, Tile aTile, ColonyTile aColonyTile) {
-		System.out.println("maxPossibleProductionOnTile: forTile: " + aTile.type.productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = colony.maxPossibleProductionOnTile(aUnit, aTile);
-
-		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
-		
-		maxPossibleProductionOnTile.determineMaxProductionType(aTile.type.productionInfo, aColonyTile.productionInfo);
-		
-		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {
@@ -204,7 +192,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 	void updateProduction() {
 		for (int i=0; i<colonyTiles.length; i++) {
-			ProductionConsumption productionConsumption = colony.productionSummaryForTerrain(colonyTiles[i]);
+			ProductionConsumption productionConsumption = colony.productionSummary(colonyTiles[i]);
 			productionQuantityDrawModels[i].init(productionConsumption.realProduction);
 		}
 	}

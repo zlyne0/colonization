@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.HashMap;
+
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -83,6 +85,7 @@ public class Specification implements Identifiable {
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
+    public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
     
     private String difficultyLevel;
     
@@ -97,20 +100,18 @@ public class Specification implements Identifiable {
         return "freecol";
     }
     
-    public boolean isUnitTypeExpert(UnitType unitType) {
-		for (UnitRole ur : unitRoles.entities()) {
-			if (ur.expertUnitTypeId != null && ur.expertUnitTypeId.equals(unitType.id)) {
-				return true;
-			}
-		}
-    	return false;
-    }
-
     public void updateReferences() {
         updateEuropeanNations();
         
         for (Nation nation : nations.entities()) {
             nation.updateReferences();
+        }
+        
+        expertUnitTypeByGoodType.clear();
+        for (UnitType unitType : unitTypes.entities()) {
+            if (unitType.getExpertProductionForGoodsId() != null) {
+                expertUnitTypeByGoodType.put(unitType.getExpertProductionForGoodsId(), unitType);
+            }
         }
     }
 

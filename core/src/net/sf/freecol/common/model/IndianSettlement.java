@@ -6,8 +6,12 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianSettlement extends Settlement {
     
-    /** The missionary at this settlement. */
+	/** The missionary at this settlement. */
     protected Unit missionary = null;
+
+    public IndianSettlement(String id) {
+		super(id);
+	}
 
     @Override
     public boolean hasAbility(String abilityCode) {
@@ -45,7 +49,7 @@ public class IndianSettlement extends Settlement {
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            IndianSettlement is = new IndianSettlement();
+            IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull("id"));
             is.name = attr.getStrAttribute("name");
             Player owner = game.players.getById(attr.getStrAttribute("owner"));
             is.owner = owner;
@@ -65,4 +69,24 @@ public class IndianSettlement extends Settlement {
             return "indianSettlement";
         }
     }
+
+	@Override
+	public int applyModifiers(String abilityCode, int val) {
+		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public void addGoods(String goodsTypeId, int quantity) {
+		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public boolean isContainsTile(Tile improvingTile) {
+		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public void initMaxPossibleProductionOnTile(Tile tile) {
+		throw new IllegalStateException("not implemented");
+	}
 }

@@ -5,8 +5,9 @@ import java.util.Collections;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
+
 import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -16,10 +17,7 @@ import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
-import promitech.colonization.SpiralIterator;
 import promitech.colonization.gdx.Frame;
-
-import com.badlogic.gdx.graphics.g2d.Batch;
 
 class TileDrawModel {
 	private final LinkedList<Frame> backgroundTerainTextures = new LinkedList<Frame>();
@@ -95,8 +93,6 @@ class TileDrawModelInitializer {
 	private TileDrawModel borderTileDrawModel;
 	private final MapDrawModel mapDrawModel;
 	
-	private SpiralIterator spiralIterator;
-	
 	private Frame frame;
 	
 	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Map map, Player player, GameResources gameResources) {
@@ -108,8 +104,6 @@ class TileDrawModelInitializer {
 		if (player == null) {
 			throw new IllegalArgumentException("player should not be null");
 		}
-		
-		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
 	public void initMapTiles() {
@@ -145,42 +139,7 @@ class TileDrawModelInitializer {
 			}
 		}
 		
-		player.resetFogOfWar(map);
-		fogOfWarForUnits();
-		fogOfWarForSettlements();
 		initBordersForUnexploredTiles();
-	}
-
-	
-	private void fogOfWarForSettlements() {
-		for (Settlement settlement : player.settlements.entities()) {
-			x = settlement.tile.x;
-			y = settlement.tile.y;
-			int visibleRadius = settlement.settlementType.getVisibleRadius();
-			initFogOfWarForNeighboursTiles(visibleRadius);
-		}
-	}
-
-	private void fogOfWarForUnits() {
-		for (Unit unit : player.units.entities()) {
-			removeFogOfWarForUnit(unit);
-		}
-	}
-
-	private void removeFogOfWarForUnit(Unit unit) {
-		int radius = unit.lineOfSight();
-		x = unit.getTile().x;
-		y = unit.getTile().y;
-		initFogOfWarForNeighboursTiles(radius);
-	}
-	
-	private void initFogOfWarForNeighboursTiles(int radius) {
-		player.removeFogOfWar(x, y, map);
-		spiralIterator.reset(x, y, true, radius);
-		while (spiralIterator.hasNext()) {
-			player.removeFogOfWar(spiralIterator.getX(), spiralIterator.getY(), map);
-			spiralIterator.next();
-		}
 	}
 	
 	public void initBordersForUnexploredTiles() {
@@ -206,19 +165,19 @@ class TileDrawModelInitializer {
 	
 	private void renderTerainAndBeaches() {
 		
-		frame = gameResources.tile(tile.type, x, y);
+		frame = gameResources.tile(tile.getType(), x, y);
 		tileDrawModel.addBackgroundTerainTexture(frame);
 		
 		// add images for beach
-		if (tile.type.isWater() && tile.style > 0) {
+		if (tile.getType().isWater() && tile.style > 0) {
 			int edgeStyle = tile.style >> 4;
     		if (edgeStyle > 0) {
-    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.type.getInsertOrder());
+    			frame = gameResources.tileEdge(edgeStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
     		int cornerStyle = tile.style & 15;
     		if (cornerStyle > 0) {
-    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.type.getInsertOrder());
+    			frame = gameResources.tileCorner(cornerStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
 		}
@@ -226,28 +185,28 @@ class TileDrawModelInitializer {
 	
 	private void renderBordersAndRivers(Direction direction) {
 		
-		if (tile.type.hasTheSameTerain(borderTile.type)) {
+		if (tile.getType().hasTheSameTerain(borderTile.getType())) {
 			return;
 		}
 		
-		if (tile.type.isWater() || borderTile.type.isWater()) {
-			if (!tile.type.isWater() && borderTile.type.isWater()) {
+		if (tile.getType().isWater() || borderTile.getType().isWater()) {
+			if (!tile.getType().isWater() && borderTile.getType().isWater()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+				frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
-			if (tile.type.isWater() && !tile.type.isHighSea() && borderTile.type.isHighSea()) {
+			if (tile.getType().isWater() && !tile.getType().isHighSea() && borderTile.getType().isHighSea()) {
 				direction = direction.getReverseDirection();
-				frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+				frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 				borderTileDrawModel.addBackgroundTerainTexture(frame);
 			}
 		} else {
 			direction = direction.getReverseDirection();
-			frame = gameResources.tileBorder(tile.type, direction, x, y, tile.type.getInsertOrder());
+			frame = gameResources.tileBorder(tile.getType(), direction, x, y, tile.getType().getInsertOrder());
 			borderTileDrawModel.addBackgroundTerainTexture(frame);
 		}
 		
-		if (Direction.longSides.contains(direction) && tile.type.isWater()) {
+		if (Direction.longSides.contains(direction) && tile.getType().isWater()) {
 			TileImprovement riverTileImprovement = borderTile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 			if (riverTileImprovement != null) {
 				frame = gameResources.riverDelta(direction, riverTileImprovement);
@@ -261,23 +220,23 @@ class TileDrawModelInitializer {
 		if (tile.isPlowed()) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.plowed());
 		}
-		if (tile.type.getId().equals("model.tile.hills")) {
+		if (tile.getType().getId().equals("model.tile.hills")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.hills());
 		}
-		if (tile.type.getId().equals("model.tile.mountains")) {
+		if (tile.getType().getId().equals("model.tile.mountains")) {
 			tileDrawModel.addForegroundTerainTexture(gameResources.mountainsKey());
 		}
 		// draw forest with river
-		if (tile.type.isForested()) {
+		if (tile.getType().isForested()) {
 			TileImprovement riverTileImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
-			frame = gameResources.forestImg(tile.type, riverTileImprovement);
+			frame = gameResources.forestImg(tile.getType(), riverTileImprovement);
 			if (frame != null) {
 				tileDrawModel.addForegroundTerainTexture(frame);
 			}
 		}
 		for (TileImprovement tileImprovement : tile.getTileImprovements()) {
 			if (tileImprovement.type.isRiver()) {
-				tileDrawModel.addForegroundTerainTexture(gameResources.river(tileImprovement.style));
+				tileDrawModel.addForegroundTerainTexture(gameResources.river(tileImprovement.getStyle()));
 			}
 		}
 		for (TileResource tileResource : tile.getTileResources()) {
@@ -310,7 +269,7 @@ public class MapDrawModel {
 	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	public Path unitPath;
 	
-	public void initialize(Map map, Player player, GameResources gameResources) {
+	protected void initialize(Map map, Player player, GameResources gameResources) {
 		this.map = map;
 		this.playingPlayer = player;
 		width = map.width;

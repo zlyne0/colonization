@@ -407,6 +407,8 @@ public final class Ability implements Identifiable {
         = "model.ability.undead";
 
 
+	public static final Ability HAS_PORT_ABILITY = new Ability(HAS_PORT, true);
+    
     private boolean value = true;
     private String source;
     private String id;

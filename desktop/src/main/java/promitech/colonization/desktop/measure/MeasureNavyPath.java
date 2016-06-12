@@ -47,7 +47,7 @@ public class MeasureNavyPath implements MeasureTask {
             Colony fortressColony = new Colony("colony:-1");
             fortressColony.setOwner(fortressOwner);
     
-            Building fortressBuilding = new Building("building:-1");
+            Building fortressBuilding = new Building("building:-1", Specification.instance.buildingTypes.getById("model.building.fortress"));
             fortressBuilding.buildingType = Specification.instance.buildingTypes.getById("model.building.fortress");
             fortressColony.buildings.add(fortressBuilding);
             fortressColony.updateColonyFeatures();

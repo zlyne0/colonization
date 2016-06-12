@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.LinkedList;
+
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.player.Player;
@@ -15,6 +17,7 @@ public class Map extends ObjectWithId {
 	public final int height;
 	
 	private final Tile[][] tiles;
+	private final SpiralIterator spiralIterator;
 	
 	public Map(String id, int width, int height) {
 	    super(id);
@@ -23,6 +26,7 @@ public class Map extends ObjectWithId {
 		this.height = height;
 		
 		tiles = new Tile[height][width];
+		spiralIterator = new SpiralIterator(width, height);
 	}
 	
 	public Tile getTile(int x, int y, Direction direction) {
@@ -94,6 +98,22 @@ public class Map extends ObjectWithId {
 		return "width = " + width + ", height = " + height;
 	}
 
+	public LinkedList<Settlement> findSettlements(Tile sourceTile, Player player, int radius) {
+		LinkedList<Settlement> ll = new LinkedList<Settlement>();
+		if (sourceTile.hasSettlement()) {
+			ll.add(sourceTile.getSettlement());
+		}
+		spiralIterator.reset(sourceTile.x, sourceTile.y, true, radius);
+		while (spiralIterator.hasNext()) {
+			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
+			if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
+				ll.add(tile.settlement);
+			}
+			spiralIterator.next();
+		}
+		return ll;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		
 		public Xml() {
@@ -125,6 +145,10 @@ public class Map extends ObjectWithId {
 		
 		@Override
 		public String getTagName() {
+			return tagName();
+		}
+
+		public static String tagName() {
 			return "map";
 		}
 		

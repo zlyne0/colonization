@@ -6,7 +6,6 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileItemContainer implements Identifiable {
-    private String id;
     
     public final MapIdEntities<TileImprovement> improvements = new MapIdEntities<TileImprovement>();
     public final MapIdEntities<TileResource> resources = new MapIdEntities<TileResource>();
@@ -14,7 +13,7 @@ public class TileItemContainer implements Identifiable {
     
     @Override
     public String getId() {
-        return id;
+    	throw new IllegalStateException("object without id");
     }
     
     public int getMoveCost(Direction moveDirection, int basicMoveCost) {
@@ -28,6 +27,19 @@ public class TileItemContainer implements Identifiable {
         return moveCost;
     }
     
+	public boolean hasImprovementType(String improvementTypeId) {
+		for (TileImprovement tileImprovement : improvements.entities()) {
+			if (tileImprovement.type.equalsId(improvementTypeId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	public boolean isEmpty() {
+		return improvements.isEmpty() && resources.isEmpty() && lostCityRumours.isEmpty();
+	}
+    
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
@@ -39,7 +51,6 @@ public class TileItemContainer implements Identifiable {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             TileItemContainer tic = new TileItemContainer();
-            tic.id = attr.getStrAttribute("id");
             nodeObject = tic;
         }
         
@@ -53,4 +64,5 @@ public class TileItemContainer implements Identifiable {
         }
         
     }
+
 }

@@ -1,13 +1,18 @@
 package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
+
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
+import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
@@ -44,6 +49,7 @@ public class SaveGameParserTest {
         // then
         verifySpecification(game);
         
+        assertEquals("unit:6781", game.activeUnitId); 
         assertEquals(13, game.players.size());
         
         Tile tile = game.map.getTile(31, 23);
@@ -77,7 +83,7 @@ public class SaveGameParserTest {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
-        assertEquals(1, player.eventsNotifications.notifications.size());
+        assertEquals(2, player.eventsNotifications.notifications.size());
 	}
     
     private void verifySettlementBuildingWorker(Game game) {
@@ -94,10 +100,12 @@ public class SaveGameParserTest {
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
         assertEquals(42, Specification.instance.unitTypes.size());
-        assertEquals(23, specification.tileTypes.size());
+        verifyTileTypes(specification);
 
         assertEquals(12, specification.resourceTypes.size());
-        assertEquals( 6, specification.tileImprovementTypes.size());
+        
+        verifyTileImprovementTypes(specification);
+        
         assertEquals(11, specification.unitRoles.size());
         assertEquals(25, specification.nations.size());
         assertEquals(21, specification.goodsTypes.size());
@@ -112,7 +120,32 @@ public class SaveGameParserTest {
         verifySpecificationFoundingFathers(specification);
     }
 
-    private void verifySpecificationFoundingFathers(Specification specification) {
+	private void verifyTileTypes(Specification specification) {
+		assertEquals(23, specification.tileTypes.size());
+		
+		TileType mixedForest = specification.tileTypes.getById("model.tile.mixedForest");
+		assertEquals(2, mixedForest.allowedResourceTypes.size());
+		
+		ResourceType furs = specification.resourceTypes.getById("model.resource.furs");
+		ResourceType lumber = specification.resourceTypes.getById("model.resource.lumber");
+		assertTrue(mixedForest.canHaveResourceType(furs));
+		assertTrue(mixedForest.canHaveResourceType(lumber));
+	}
+
+    private void verifyTileImprovementTypes(Specification specification) {
+        assertEquals( 6, specification.tileImprovementTypes.size());
+        TileImprovementType clearForest = specification.tileImprovementTypes.getById("model.improvement.clearForest");
+        assertEquals( 8, clearForest.getTileTypeTransformation().size());
+        
+        TileType borealForest = specification.tileTypes.getById("model.tile.borealForest");
+        TileTypeTransformation changedTileType = clearForest.changedTileType(borealForest);
+        assertEquals("model.tile.tundra", changedTileType.getToType().getId());
+        
+    	assertEquals("model.goods.lumber", changedTileType.getProduction().getId());
+    	assertEquals(20, changedTileType.getProduction().getAmount());
+	}
+
+	private void verifySpecificationFoundingFathers(Specification specification) {
         assertEquals(25, specification.foundingFathers.size());
         
         FoundingFather henryHudson = specification.foundingFathers.getById("model.foundingFather.henryHudson");

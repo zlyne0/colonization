@@ -1,6 +1,9 @@
 package promitech.colonization;
 
+import java.util.Collection;
 import java.util.Random;
+
+import net.sf.freecol.common.model.specification.WithProbability;
 
 public final class Randomizer {
 
@@ -22,7 +25,37 @@ public final class Randomizer {
 	}
 
 	public int randomInt(int min, int max) {
+		if (min == -1 || max == -1) {
+			return -1;
+		}
 		return rand.nextInt(max - min) + min;
+	}
+
+	public boolean isHappen(WithProbability event) {
+		if (event.getOccureProbability() <= 0) {
+			return false;
+		}
+		return randomInt(100) < event.getOccureProbability();
+	}
+
+	public <T extends WithProbability> T randomOne(Collection<T> events) {
+		if (events.isEmpty()) {
+			return null;
+		}
+		int total = 0;
+		for (T wp : events) {
+			total += wp.getOccureProbability();
+		}
+		
+		int r = randomInt(total);
+		int totalSelect = 0;
+		for (T wp : events) {
+			totalSelect += wp.getOccureProbability();
+			if (r < totalSelect) {
+				return wp;
+			}
+		}
+		return null;
 	}
 	
 }

@@ -128,11 +128,8 @@ class GoodActor extends Widget {
     	batch.draw(textureRegion, getX(), getY() + fontHeight);
         
         BitmapFont font = FontResource.getGoodsQuantityFont();
-        if (quantity == 0) {
-            font.setColor(Color.GRAY);
-        } else {
-            font.setColor(Color.WHITE);
-        }
+        font.setColor(quantityColor());
+        
         float quantityStrLength = FontResource.strIntWidth(font, quantity);
         font.draw(batch, Integer.toString(quantity), 
         		getX() + getWidth()/2 - quantityStrLength/2, 
@@ -140,6 +137,19 @@ class GoodActor extends Widget {
         );
     }
 
+    private Color quantityColor() {
+        if (quantity ==  0) {
+            return Color.GRAY;
+        }
+        if (getParent() instanceof WarehousePanel) {
+            WarehousePanel warehousePanel = (WarehousePanel)getParent();
+            if (quantity > warehousePanel.capacity()) {
+                return Color.RED;
+            }
+        }
+        return Color.WHITE;
+    }
+    
     public String toString() {
         return "type[" + goodTypeId + "], quantity[" + quantity + "]";
     }

@@ -1,18 +1,25 @@
 package net.sf.freecol.common.model.specification;
 
-import promitech.colonization.savegame.XmlNodeAttributes;
-import promitech.colonization.savegame.XmlNodeParser;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.player.Market;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class GoodsType extends ObjectWithId {
 
     public static final String FISH = "model.goods.fish";
     public static final String FOOD = "model.goods.food";
     public static final String GRAIN = "model.goods.grain";
+    public static final String CROSSES = "model.goods.crosses";
+    public static final String BELLS = "model.goods.bells";
+    
+    public static boolean isFoodGoodsType(String goodsTypeId) {
+        return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId);
+    }
     
     boolean farmed;
-    boolean food;
+    private boolean food;
     boolean military;
     boolean ignoreLimit;
     boolean newWorldGoods;
@@ -120,6 +127,10 @@ public class GoodsType extends ObjectWithId {
     
     public GoodsType getMadeFrom() {
         return madeFrom;
+    }
+    
+    public boolean isFood() {
+        return food;
     }
     
 	public static class Xml extends XmlNodeParser {

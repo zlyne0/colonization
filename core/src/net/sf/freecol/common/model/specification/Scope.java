@@ -1,20 +1,53 @@
 package net.sf.freecol.common.model.specification;
 
+import java.lang.reflect.Method;
+
 import net.sf.freecol.common.model.Identifiable;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-class Scope implements Identifiable {
+public class Scope implements Identifiable {
 
-	boolean matchNegated = false;
-	boolean matchesNull = true;
+	private boolean matchNegated = false;
+	private boolean matchesNull = true;
 	public String abilityId = null;
 	public boolean abilityValue = true;
 	public String type;
 	
+	private String methodName;
+	private String methodValue;
+	
 	@Override
 	public String getId() {
 		throw new IllegalStateException("there is no id for feature scope");
+	}
+	
+	public boolean isAppliesTo(Identifiable obj) {
+		if (obj == null) {
+			return matchesNull;
+		}
+		if (type != null) {
+			if (!type.equals(obj.getId())) {
+				return matchNegated;
+			}
+		}
+		if (methodName != null) {
+			try {
+				Method method = obj.getClass().getMethod(methodName);
+				Object retObj = method.invoke(obj);
+				return methodValue.equalsIgnoreCase(String.valueOf(retObj));
+			} catch (Exception e) {
+				e.printStackTrace();
+				return matchNegated;
+			}
+		}
+		return !matchNegated;
+	}
+	
+	public String toString() {
+		return "matchNegated = " + matchNegated + ", matchesNull = " + matchesNull 
+				+ ", abilityId = " + abilityId + ", abilityValue = " + abilityValue 
+				+ ", type = " + type + ", methodName = " + methodName + ", metchodValue = " + methodValue;
 	}
 	
 	public static class Xml extends XmlNodeParser {
@@ -27,6 +60,9 @@ class Scope implements Identifiable {
 			scope.abilityId = attr.getStrAttribute("ability-id");
 			scope.abilityValue = attr.getBooleanAttribute("ability-value", true);
 			scope.type = attr.getStrAttribute("type");
+			
+			scope.methodName = attr.getStrAttribute("method-name");
+			scope.methodValue = attr.getStrAttribute("method-value");
 			
 			nodeObject = scope;
 		}

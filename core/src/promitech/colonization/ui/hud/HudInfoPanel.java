@@ -139,7 +139,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     	
     	String descKey;
     	if (mapActor.mapDrawModel().playingPlayer.isTileExplored(tile.x, tile.y)) {
-    		descKey = Messages.nameKey(tile.type.getId());
+    		descKey = Messages.nameKey(tile.getType().getId());
     	} else {
     		descKey = "unexplored";
     	}
@@ -159,29 +159,33 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 	@Override
 	public void changeSelectedUnitAction(Unit newSelectedUnit) {
 		this.selectedUnit = newSelectedUnit;
-		selectedUnitDescriptions.clear();
-		if (newSelectedUnit == null) {
-			return;
-		}
-		
-		String label = unitLabel.getName(selectedUnit);
-		if (label != null) {
-			selectedUnitDescriptions.add(label);
-		}
-		label = unitLabel.getUnitType(selectedUnit);
-		if (label != null) {
-			selectedUnitDescriptions.add(label);
-		}
-		
-		label = unitLabel.getUnitEquipment(selectedUnit);
-		if (label != null) {
-			selectedUnitDescriptions.add(label);
-		}
-		
-		carrierGoods = null;
-		if (newSelectedUnit.getGoodsContainer() != null) {
-		    carrierGoods = newSelectedUnit.getGoodsContainer().carrierGoods();
-		}
+		updateSelectedUnitDescription();
+	}
+	
+	public void updateSelectedUnitDescription() {
+	    selectedUnitDescriptions.clear();
+	    if (selectedUnit == null) {
+	        return;
+	    }
+	    
+	    String label = UnitLabel.getName(selectedUnit);
+	    if (label != null) {
+	        selectedUnitDescriptions.add(label);
+	    }
+	    label = unitLabel.getUnitType(selectedUnit);
+	    if (label != null) {
+	        selectedUnitDescriptions.add(label);
+	    }
+	    
+	    label = unitLabel.getUnitEquipment(selectedUnit);
+	    if (label != null) {
+	        selectedUnitDescriptions.add(label);
+	    }
+	    
+	    carrierGoods = null;
+	    if (selectedUnit.getGoodsContainer() != null) {
+	        carrierGoods = selectedUnit.getGoodsContainer().carrierGoods();
+	    }
 	}
 	
 	public void setMapActor(MapActor mapActor) {

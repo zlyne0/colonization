@@ -3,25 +3,37 @@ package net.sf.freecol.common.model;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileResource implements Identifiable {
-	private static final int UNLIMITED = -1;
+public class TileResource extends ObjectWithId {
 	
-	private String id;
 	private final ResourceType resourceType;
+	private int quantity;
 	
-	private int quantity = UNLIMITED;
-	
-	public TileResource(ResourceType resourceType) {
+	public TileResource(String id, ResourceType resourceType, int quantity) {
+		super(id);
 		this.resourceType = resourceType;
+		this.quantity = quantity;
 	}
-	
-	@Override
-	public String getId() {
-	    return id;
+
+	public TileResource(IdGenerator idGenerator, ResourceType resourceType, int quantity) {
+		super(idGenerator.nextId(ResourceType.class));
+		this.resourceType = resourceType;
+		this.quantity = quantity;
 	}
 	
 	public ResourceType getResourceType() {
 	    return resourceType;
+	}
+	
+	public boolean reduceQuantityResource(int q) {
+		if (quantity == UNLIMITED) {
+			return false;
+		}
+		quantity -= q;
+		if (quantity <= 0) {
+			quantity = 0;
+			return true;
+		}
+		return false;
 	}
 	
 	public static class Xml extends XmlNodeParser {
@@ -29,13 +41,9 @@ public class TileResource implements Identifiable {
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String resourceTypeStr = attr.getStrAttribute("type");
-			int quantity = attr.getIntAttribute("quantity");
+			int quantity = attr.getIntAttribute("quantity", UNLIMITED);
 			ResourceType resourceType = Specification.instance.resourceTypes.getById(resourceTypeStr);
-
-			TileResource tileResource = new TileResource(resourceType);
-			tileResource.quantity = quantity;
-			tileResource.id = attr.getStrAttribute("id");
-			
+			TileResource tileResource = new TileResource(attr.getStrAttribute("id"), resourceType, quantity);
 			nodeObject = tileResource;
 		}
 

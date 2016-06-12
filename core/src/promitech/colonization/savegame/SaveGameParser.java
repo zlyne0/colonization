@@ -13,6 +13,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.SavedGame;
+import net.sf.freecol.common.model.Specification;
 
 public class SaveGameParser {
 
@@ -24,7 +26,6 @@ public class SaveGameParser {
 	
 	public Game parse() throws IOException, ParserConfigurationException, SAXException {
 		loadDefaultSpecification();
-
         FileHandle fh = Gdx.files.internal(saveGameFileName);
         
 		InputStream read = fh.read();
@@ -32,13 +33,13 @@ public class SaveGameParser {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 
-		final Game.Xml xmlGame = new Game.Xml();
-		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlGame);
+		final SavedGame.Xml xmlSavedGame = new SavedGame.Xml();
+		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlSavedGame);
 		
 		saxParser.parse(read, df);
 		read.close();
 		
-		return xmlGame.game;
+		return xmlSavedGame.savedGame.game;
 	}
 	
 	private void loadDefaultSpecification() throws IOException, ParserConfigurationException, SAXException {
@@ -49,8 +50,18 @@ public class SaveGameParser {
 		SAXParserFactory factory = SAXParserFactory.newInstance();
 		SAXParser saxParser = factory.newSAXParser();
 
-		final Game.Xml xmlGame = new Game.Xml();
-		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlGame);
+		XmlNodeParser specificationParser = new XmlNodeParser() {
+			@Override
+			public void startElement(XmlNodeAttributes attr) {
+			}
+			@Override
+			public String getTagName() {
+				return null;
+			}
+		};
+		specificationParser.addNode(new Specification.Xml());
+		
+		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(specificationParser);
 		saxParser.parse(read, df);
 		read.close();
 	}

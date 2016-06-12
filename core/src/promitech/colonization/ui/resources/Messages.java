@@ -35,10 +35,13 @@ public class Messages {
 	}
 	
 	public void load() {
+		load(Locale.getDefault());
+	}
+
+	public void load(Locale locale) {
 		I18NBundle.setExceptionOnMissingKey(false);
 		
 		FileHandle baseFileHandle = Gdx.files.internal("i18n/FreeColMessages");
-		Locale locale = Locale.getDefault();
 		msgBundle = I18NBundle.createBundle(baseFileHandle, locale);
 
 		NumberRules.load();
@@ -47,6 +50,10 @@ public class Messages {
 	
 	public static String msg(String key) {
 		return messagesResources.msgBundle.get(key);
+	}
+	
+	public static String msgName(String key) {
+		return messagesResources.msgBundle.get(nameKey(key));
 	}
 	
 	public void dispose() {
@@ -185,8 +192,7 @@ public class Messages {
             if (keyIndex < 0 || keyIndex > closeChoice) {
                 // key not found, choice might be a key itself
                 String otherKey = input.substring(pipeIndex + 1, closeChoice);
-                if (otherKey.startsWith("%") && otherKey.endsWith("%")
-                    && template != null) {
+                if (otherKey.startsWith("%") && otherKey.endsWith("%") && template != null) {
                     StringTemplate replacement = template.getReplacement(otherKey);
                     if (replacement == null) {
                     	System.out.println("Failed to find replacement for " + otherKey);

@@ -23,6 +23,7 @@ import net.sf.freecol.common.model.Tile;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.ui.resources.Messages;
 
 public class ApplicationScreenManager extends ApplicationAdapter {
@@ -165,6 +166,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 	public void dispose() {
 	    Messages.instance().dispose();
 	    FontResource.dispose();
+	    ThreadsResources.instance.dispose();
 	    
 		batch.dispose();
 		shape.dispose();

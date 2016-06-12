@@ -817,7 +817,7 @@
     <serverColonyTile id="colonyTile:6851"/>
     <serverColonyTile id="colonyTile:6859"/>
   </serverObjects>
-  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1">
+  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
     <freecol-specification id="freecol" difficultyLevel="model.difficulty.medium" version="0.86">
       <modifiers>
         <modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>
@@ -1951,30 +1951,14 @@
         </tileimprovement-type>
         <tileimprovement-type id="model.improvement.clearForest" natural="false" magnitude="1" add-work-turns="2" required-role="model.role.pioneer" expended-amount="1" movement-cost="0" zIndex="0" exposeResourcePercent="5">
           <scope matchNegated="false" matchesNull="true" method-name="isForested" method-value="true"/>
-          <change from="model.tile.borealForest" to="model.tile.tundra">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.broadleafForest" to="model.tile.prairie">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.coniferForest" to="model.tile.grassland">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.mixedForest" to="model.tile.plains">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.rainForest" to="model.tile.swamp">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.scrubForest" to="model.tile.desert">
-            <production goods-type="model.goods.lumber" value="10"/>
-          </change>
-          <change from="model.tile.tropicalForest" to="model.tile.savannah">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.wetlandForest" to="model.tile.marsh">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
+          <change from="model.tile.borealForest" to="model.tile.tundra" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.broadleafForest" to="model.tile.prairie" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.coniferForest" to="model.tile.grassland" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.mixedForest" to="model.tile.plains" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.rainForest" to="model.tile.swamp" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.scrubForest" to="model.tile.desert" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.tropicalForest" to="model.tile.savannah" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.wetlandForest" to="model.tile.marsh" goods-type="model.goods.lumber" value="20"/>
         </tileimprovement-type>
         <tileimprovement-type id="model.improvement.fishBonusLand" natural="true" magnitude="1" add-work-turns="0" movement-cost="0" zIndex="250" exposeResourcePercent="0">
           <modifier id="model.goods.fish" source="model.improvement.fishBonusLand" value="2.0" type="additive" index="50"/>
@@ -4547,6 +4531,7 @@
     <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" liberty="137" interventionBells="0" currentFather="model.foundingFather.adamSmith" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
       <eventsNotificatioins>
       	<goodsPriceChange type="model.goods.ore" from="5" to="4"/>
+      	<messageNotification id="messageNotification:1234" body="msg" />
       </eventsNotificatioins>
       <market id="market:5" owner="player:1">
         <marketData id="marketData:6" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>

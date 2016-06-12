@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class ProductionSummary {
     public static final int CARRIER_SLOT_MAX_QUANTITY = 100;
@@ -173,6 +174,15 @@ public class ProductionSummary {
         }
         return true;
     }
+    
+	public boolean hasMoreOrEquals(List<RequiredGoods> requiredGoods) {
+		for (RequiredGoods rg : requiredGoods) {
+			if (goods.get(rg.getId(), 0) < rg.amount) {
+				return false;
+			}
+		}
+		return true;
+	}
     
 	public Entries<String> entries() {
 		return goods.entries();

@@ -92,6 +92,10 @@ public class Modifier implements Identifiable {
         }
 	}
 	
+	public String toString() {
+	    return "modifier id: " + id + ", modifierType: " + modifierType;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
 		@Override

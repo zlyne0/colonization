@@ -8,15 +8,17 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileImprovement implements Identifiable {
     
-    private String id;
+    private final String id;
     
 	public final TileImprovementType type;
-	public final String style;
+	private String style;
 	public int magnitude = 0;
 	private int turns = 0;
 	private long connected = 0L;
-	
-	public TileImprovement(TileImprovementType type, String style) {
+
+	public TileImprovement(String id, TileImprovementType type, String style) {
+		this.id = id;
+		this.magnitude = type.getMagnitude();
 		this.type = type;
 		if (style != null) {
 			StringBuilder sb = new StringBuilder();
@@ -31,6 +33,14 @@ public class TileImprovement implements Identifiable {
 		} else {
 			this.style = style;
 		}
+		connected = getConnectionsFromStyle();
+	}
+
+	public TileImprovement(IdGenerator idGenerator, TileImprovementType type) {
+		this.id = idGenerator.nextId(TileImprovement.class);
+		this.type = type;
+		this.magnitude = type.getMagnitude();
+		this.style = null;
 	}
 
 	@Override
@@ -40,6 +50,10 @@ public class TileImprovement implements Identifiable {
 	
 	public boolean isComplete() {
 		return turns <= 0;
+	}
+
+	public String getStyle() {
+		return style;
 	}
 	
     public int getMoveCost(Direction direction, int moveCost) {
@@ -68,39 +82,64 @@ public class TileImprovement implements Identifiable {
     }
     
     private List<Direction> getConnectionDirections() {
-    	if (isRoad()) {
+    	if (type.isRoad()) {
     		return Direction.allDirections;
     	} 
-    	if (isRiver()) {
+    	if (type.isRiver()) {
     		return Direction.longSides;
     	}
     	return null;
     }
 
-    public boolean isRiver() {
-        return "model.improvement.river".equals(type.getId());
-    }
-    
-    public boolean isRoad() {
-        return "model.improvement.road".equals(type.getId());
-    }
-    
     public String toString() {
     	return id + " type: " + type.getId();
     }
+
+    private void setConnection(Direction direction, boolean val) {
+    	if (val) {
+    		connected |= 1 << direction.ordinal();
+    	} else {
+    		connected &= ~(1 << direction.ordinal());
+    	}
+    }
+
+	public TileImprovement addConnection(Direction direction) {
+		setConnection(direction, true);
+		return this;
+	}
+
+	public TileImprovement removeConnection(Direction direction) {
+		setConnection(direction, false);
+		return this;
+	}
     
+	public void updateStyle() {
+		this.style = encodeConnections();
+	}
+	
+    private String encodeConnections() {
+        List<Direction> dirns = getConnectionDirections();
+        if (dirns == null) {
+        	return null;
+        }
+        StringBuilder sb = new StringBuilder();
+        for (Direction d : dirns) {
+            sb.append((isConnectedTo(d)) ? Integer.toString(magnitude) : "0");
+        }
+        return sb.toString();
+    }
+	
 	public static class Xml extends XmlNodeParser {
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String typeStr = attr.getStrAttribute("type");
 			String style = attr.getStrAttribute("style");
+			String id = attr.getStrAttribute("id");
 			TileImprovementType type = Specification.instance.tileImprovementTypes.getById(typeStr);
-			TileImprovement tileImprovement = new TileImprovement(type, style);
+			TileImprovement tileImprovement = new TileImprovement(id, type, style);
 			tileImprovement.magnitude = attr.getIntAttribute("magnitude", 0);
 			tileImprovement.turns = attr.getIntAttribute("turns");
-			tileImprovement.id = attr.getStrAttribute("id");
-			tileImprovement.connected = tileImprovement.getConnectionsFromStyle();
 			
 			nodeObject = tileImprovement;
 		}

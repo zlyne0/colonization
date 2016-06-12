@@ -65,7 +65,7 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		System.out.println("put unit [" + unitActor.unit + "] to tile " + colonyTile);
 		
 		unitActor.unit.setState(UnitState.ACTIVE);
-		colonyTile.units.add(unitActor.unit);
+		unitActor.unit.changeLocation(colonyTile);
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);

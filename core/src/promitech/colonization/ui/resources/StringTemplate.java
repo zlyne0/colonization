@@ -225,7 +225,7 @@ public class StringTemplate extends ObjectWithId {
     public StringTemplate add(String key, String value) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
-            addReplacement(new StringTemplate(value, TemplateType.KEY));
+            addReplacement(new StringTemplate(value, TemplateType.NAME));
         } else {
             throw new IllegalArgumentException("Cannot add key-value pair to StringTemplate type "
                                                + templateType);
@@ -233,6 +233,17 @@ public class StringTemplate extends ObjectWithId {
         return this;
     }
 
+    public StringTemplate addKey(String key, String value) {
+        if (templateType == TemplateType.TEMPLATE) {
+            addKey(key);
+            addReplacement(new StringTemplate(value, TemplateType.KEY));
+        } else {
+            throw new IllegalArgumentException("Cannot add key-value pair to StringTemplate type "
+                                               + templateType);
+        }
+        return this;
+    }
+    
     /**
      * Add a replacement value without a key to the StringTemplate.
      * This is only possible if the StringTemplate is of type LABEL.
@@ -242,7 +253,7 @@ public class StringTemplate extends ObjectWithId {
      */
     public StringTemplate add(String value) {
         if (templateType == TemplateType.LABEL) {
-            addReplacement(new StringTemplate(value, TemplateType.KEY));
+            addReplacement(new StringTemplate(value, TemplateType.NAME));
         } else {
             throw new IllegalArgumentException("Cannot add a single string to StringTemplate type "
                                                + templateType);
@@ -262,7 +273,7 @@ public class StringTemplate extends ObjectWithId {
     public StringTemplate addName(String key, String value) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
-            addReplacement(new StringTemplate(value, TemplateType.NAME));
+            addReplacement(new StringTemplate(Messages.nameKey(value), TemplateType.KEY));
         } else {
             throw new IllegalArgumentException("Cannot add key-value pair to StringTemplate type "
                                                + templateType);
@@ -282,8 +293,7 @@ public class StringTemplate extends ObjectWithId {
     public StringTemplate addName(String key, ObjectWithId object) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
-            addReplacement(new StringTemplate(Messages.nameKey(object.getId()),
-                                              TemplateType.KEY));
+            addReplacement(new StringTemplate(Messages.nameKey(object.getId()), TemplateType.KEY));
         } else {
             throw new IllegalArgumentException("Cannot add key-value pair to StringTemplate type "
                                                + templateType);
@@ -317,7 +327,7 @@ public class StringTemplate extends ObjectWithId {
      * @return This <code>StringTemplate</code>.
      */
     public StringTemplate addAmount(String key, Number amount) {
-        addName(key, amount.toString());
+        add(key, amount.toString());
         return this;
     }
 
@@ -328,8 +338,7 @@ public class StringTemplate extends ObjectWithId {
      * @param template The template value.
      * @return This <code>StringTemplate</code>.
      */
-    public StringTemplate addStringTemplate(String key,
-                                                          StringTemplate template) {
+    public StringTemplate addStringTemplate(String key, StringTemplate template) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
             addReplacement(template);

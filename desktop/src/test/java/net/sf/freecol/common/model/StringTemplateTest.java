@@ -1,6 +1,9 @@
 package net.sf.freecol.common.model;
 
 import static org.junit.Assert.*;
+
+import java.util.Locale;
+
 import net.sf.freecol.common.model.specification.Goods;
 
 import org.junit.BeforeClass;
@@ -17,7 +20,7 @@ public class StringTemplateTest {
     @BeforeClass
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
-        
+        Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 	
@@ -43,4 +46,24 @@ public class StringTemplateTest {
     	assertEquals("60 Tools", message);
 	}
 	
+    @Test
+	public void buildableNeedsGoods() throws Exception {
+		// given
+    	int amount = 200;
+    	String goodsTypeId = "model.goods.tools";
+    	String colonyName = "New Amsterdam";
+    	String buildingId = "model.building.schoolhouse";
+    	
+    	StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
+			.addName("%goodsType%", goodsTypeId)
+			.addAmount("%amount%", amount)
+			.add("%colony%", colonyName)
+			.addName("%buildable%", buildingId);
+    	// when
+    	String str = Messages.message(st);
+
+    	// then
+		assertEquals("200 Tools are missing to build Schoolhouse in New Amsterdam, Your Excellency.", str);
+	}
+    
 }

@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitIterator;
+import net.sf.freecol.common.model.player.Player;
 
 public class GUIGameModel {
 
@@ -16,8 +18,11 @@ public class GUIGameModel {
 	private Unit activeUnit;
 	private boolean viewMode = false;
 	private boolean createGotoPathMode = false;
-	
+	private boolean aiMove = false;
+
+	Player player;
 	Unit previewViewModeUnit = null;
+	UnitIterator unitIterator = null;
 
 	public boolean isActiveUnitSet() {
 		return activeUnit != null;
@@ -64,5 +69,20 @@ public class GUIGameModel {
 		runListeners();
 	}
 
-	
+	public boolean isAiMove() {
+		return aiMove;
+	}
+
+	public void setAiMove(boolean aiMove) {
+		this.aiMove = aiMove;
+		runListeners();
+	}
+
+	public boolean hasUnitsToMove() {
+		return unitIterator.hasNext();
+	}
+
+	public boolean hasNotifications() {
+		return player.eventsNotifications.hasNotifications();
+	}
 }

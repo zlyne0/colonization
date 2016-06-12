@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.Identifiable;
 public abstract class XmlNodeParser {
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
+	public static final int UNLIMITED = -1;
     
     protected XmlTagMetaData xmlNodeMetaData;
     private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();

@@ -33,7 +33,7 @@ public class Path {
 		String st = "";
 		for (int i=0; i<tiles.size; i++) {
 		    Tile tile = tiles.get(i);
-		    String tileStr = tile.getId() + ", x: " + tile.x + ", y: " + tile.y + ", " + tile.type;
+		    String tileStr = tile.getId() + ", x: " + tile.x + ", y: " + tile.y + ", " + tile.getType();
 			st += "tile: [" + tileStr + "], turn: [" + turns.get(i) + "]\r\n";
 		}
 		return st;

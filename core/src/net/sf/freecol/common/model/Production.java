@@ -45,6 +45,10 @@ public class Production implements Identifiable {
         this.input.put(goodsType, amount);
     }
 
+	public Production sumProductionForWorker() {
+		return sumProductionForWorker(null);
+	}
+    
 	public Production sumProductionForWorker(Unit worker) {
 		Production prod = new Production(this.unattended);
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
@@ -132,7 +136,7 @@ public class Production implements Identifiable {
 		return unattended;
 	}
 
-	public boolean outputEquals(Production prod) {
+	public boolean outputTypesEquals(Production prod) {
 		if (this.output.size() != prod.output.size()) {
 			return false;
 		}

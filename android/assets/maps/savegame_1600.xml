@@ -817,7 +817,7 @@
     <serverColonyTile id="colonyTile:6851"/>
     <serverColonyTile id="colonyTile:6859"/>
   </serverObjects>
-  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1">
+  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
     <freecol-specification id="freecol" difficultyLevel="model.difficulty.medium" version="0.86">
       <modifiers>
         <modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>
@@ -1951,30 +1951,14 @@
         </tileimprovement-type>
         <tileimprovement-type id="model.improvement.clearForest" natural="false" magnitude="1" add-work-turns="2" required-role="model.role.pioneer" expended-amount="1" movement-cost="0" zIndex="0" exposeResourcePercent="5">
           <scope matchNegated="false" matchesNull="true" method-name="isForested" method-value="true"/>
-          <change from="model.tile.borealForest" to="model.tile.tundra">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.broadleafForest" to="model.tile.prairie">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.coniferForest" to="model.tile.grassland">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.mixedForest" to="model.tile.plains">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.rainForest" to="model.tile.swamp">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.scrubForest" to="model.tile.desert">
-            <production goods-type="model.goods.lumber" value="10"/>
-          </change>
-          <change from="model.tile.tropicalForest" to="model.tile.savannah">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
-          <change from="model.tile.wetlandForest" to="model.tile.marsh">
-            <production goods-type="model.goods.lumber" value="20"/>
-          </change>
+          <change from="model.tile.borealForest" to="model.tile.tundra" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.broadleafForest" to="model.tile.prairie" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.coniferForest" to="model.tile.grassland" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.mixedForest" to="model.tile.plains" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.rainForest" to="model.tile.swamp" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.scrubForest" to="model.tile.desert" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.tropicalForest" to="model.tile.savannah" goods-type="model.goods.lumber" value="20"/>
+          <change from="model.tile.wetlandForest" to="model.tile.marsh" goods-type="model.goods.lumber" value="20"/>
         </tileimprovement-type>
         <tileimprovement-type id="model.improvement.fishBonusLand" natural="true" magnitude="1" add-work-turns="0" movement-cost="0" zIndex="250" exposeResourcePercent="0">
           <modifier id="model.goods.fish" source="model.improvement.fishBonusLand" value="2.0" type="additive" index="50"/>
@@ -2915,6 +2899,7 @@
           <ability id="model.ability.coastalOnly" source="model.building.customHouse" value="false"/>
           <ability id="model.ability.export" source="model.building.customHouse" value="true"/>
           <required-ability id="model.ability.buildCustomHouse" value="true"/>
+          <required-ability id="model.ability.hasPort" value="true"/>
           <required-goods id="model.goods.hammers" value="160"/>
           <required-goods id="model.goods.tools" value="50"/>
         </building-type>
@@ -18333,7 +18318,8 @@
       <tile id="tile:3267" x="19" y="75" type="model.tile.prairie" owner="player:154" owningSettlement="indianSettlement:6339" style="0" region="region:5009" connected="14" contiguity="2">
         <cachedTile player="player:1" copied="false"/>
       </tile>
-      <tile id="tile:3268" x="20" y="75" type="model.tile.plains" owner="player:154" owningSettlement="indianSettlement:6339" style="0" region="region:5009" contiguity="2">
+      <tile id="tile:3268" x="20" y="75" type="model.tile.arctic" owner="player:154" owningSettlement="indianSettlement:6339" style="0" region="region:5009" contiguity="2">
+      	<unit id="unit:-11" unitType="model.unit.hardyPioneer" movesLeft="3" state="active" role="model.role.pioneer" roleCount="3" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3268" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="7"/>
         <cachedTile player="player:1" copied="false"/>
       </tile>
       <tile id="tile:3269" x="21" y="75" type="model.tile.marsh" style="0" region="region:5009" contiguity="2">
@@ -18655,6 +18641,7 @@
         <cachedTile player="player:1" copied="false"/>
       </tile>
       <tile id="tile:3352" x="24" y="77" type="model.tile.mixedForest" owner="player:1" owningSettlement="colony:6528" style="0" region="region:5009" connected="7" contiguity="2">
+		<unit id="unit:-12" unitType="model.unit.hardyPioneer" movesLeft="3" state="active" role="model.role.pioneer" roleCount="3" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3268" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="7"/>      
         <tileitemcontainer id="tileitemcontainer:6784" tile="tile:3352">
           <tileimprovement id="tileimprovement:6783" tile="tile:3352" type="model.improvement.road" turns="0" magnitude="1" style="01000101"/>
         </tileitemcontainer>

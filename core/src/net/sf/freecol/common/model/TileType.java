@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -13,8 +14,10 @@ public final class TileType extends ObjectWithFeatures {
     private static final String OCEAN = "model.tile.ocean";
 	private static final String HIGH_SEAS = "model.tile.highSeas";
 	
+	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
 	private int basicMoveCost;
+	private int basicWorkTurns;
 	public ProductionInfo productionInfo = new ProductionInfo();
 	
 	public TileType(String id, boolean isForest) {
@@ -58,6 +61,19 @@ public final class TileType extends ObjectWithFeatures {
     	return basicMoveCost;
     }
     
+	public int getBasicWorkTurns() {
+		return basicWorkTurns;
+	}
+    
+	public boolean canHaveResourceType(ResourceType resourceType) {
+		return allowedResourceTypes.containsId(resourceType);
+	}
+	
+	public ResourceType exposeResource() {
+		TileTypeAllowedResource allowedResource = Randomizer.getInstance().randomOne(allowedResourceTypes.entities());
+		return allowedResource.resourceType;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -68,6 +84,7 @@ public final class TileType extends ObjectWithFeatures {
 					target.productionInfo.addProduction(entity);
 				}
 			});
+            addNodeForMapIdEntities("allowedResourceTypes", TileTypeAllowedResource.class);
 		}
 
 		@Override
@@ -77,13 +94,14 @@ public final class TileType extends ObjectWithFeatures {
 			
 			TileType tileType = new TileType(id, isForest);
 			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
+			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
 			
 			nodeObject = tileType; 
 		}
 
 		@Override
 		public String getTagName() {
-			return "tile-type";
+			return tagName();
 		}
 		
 		public static String tagName() {

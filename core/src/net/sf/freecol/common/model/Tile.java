@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -14,7 +15,7 @@ public class Tile implements Location, Identifiable {
 	
 	public final int x;
 	public final int y;
-	public final TileType type;
+	private TileType type;
 	public final int style;
 	public final String id;
 	private int connected = 0;
@@ -72,6 +73,15 @@ public class Tile implements Location, Identifiable {
 		return false;
 	}
 	
+	public TileImprovement getRoadImprovement() {
+		for (TileImprovement imprv : getTileImprovements()) {
+			if (imprv.type.isRoad()) {
+				return imprv;
+			}
+		}
+		return null;
+	}
+	
 	public boolean isPlowed() {
 		for (TileImprovement imprv : getTileImprovements()) {
 			if (imprv.type.isPlowed()) {
@@ -88,6 +98,13 @@ public class Tile implements Location, Identifiable {
         return tileItemContainer.lostCityRumours.size() > 0;
     }
 
+    public boolean hasTileResource() {
+    	if (tileItemContainer == null) {
+    		return false;
+    	}
+    	return tileItemContainer.resources.size() > 0;
+    }
+    
 	public boolean hasSettlement() {
 		return settlement != null;
 	}
@@ -109,6 +126,57 @@ public class Tile implements Location, Identifiable {
 		return null;
 	}
 	
+	public boolean hasImprovementType(String improvementTypeId) {
+		if (tileItemContainer == null) {
+			return false;
+		}
+		return tileItemContainer.hasImprovementType(improvementTypeId);
+	}
+	
+	public void addImprovement(TileImprovement tileImprovement) {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.improvements.add(tileImprovement);
+	}
+	
+	public void addResource(TileResource resource) {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.resources.add(resource);
+	}
+	
+	public ResourceType reduceTileResourceQuantity(String resourceTypeId, int quantity) {
+		if (tileItemContainer == null) {
+			return null;
+		}
+		TileResource tileResource = tileItemContainer.resources.first();
+		if (tileResource != null && tileResource.reduceQuantityResource(quantity)) {
+			tileItemContainer.resources.removeId(tileResource);
+			if (tileItemContainer.isEmpty()) {
+				tileItemContainer = null;
+			}
+			return tileResource.getResourceType();
+		}
+		return null;
+	}
+	
+	public boolean canBeImprovedByUnit(TileImprovementType improvementType, Unit unit) {
+		if (!improvementType.isSatisfyUnitRole(unit.unitRole)) {
+			return false;
+		}
+		if (unit.roleCount < improvementType.getExpendedAmount()) {
+			return false;
+		}
+		if (hasImprovementType(improvementType.getId())) {
+			return false;
+		}
+		if (!improvementType.canApplyAllScopes(type)) {
+			return false;
+		}
+		return true;
+	}
 	
     public boolean isDirectlyHighSeasConnected() {
     	if (moveToEurope) {
@@ -177,8 +245,49 @@ public class Tile implements Location, Identifiable {
         }
         return false;
     }
-    
-    
+
+	public void changeTileType(TileType newType) {
+		this.type = newType;
+		if (tileItemContainer == null) {
+			return;
+		}
+		Iterator<TileResource> iterator = tileItemContainer.resources.entities().iterator();
+		while (iterator.hasNext()) {
+			TileResource next = iterator.next();
+			if (!newType.canHaveResourceType(next.getResourceType())) {
+				iterator.remove();
+			}
+		}
+	}
+
+	public TileType getType() {
+		return type;
+	}
+	
+	public void updateRoadConnections(Map map) {
+		TileImprovement roadImprovement = this.getRoadImprovement();
+		
+		for (Direction direction : Direction.allDirections) {
+			Tile neighbourTile = map.getTile(this.x, this.y, direction);
+			
+			TileImprovement neighbourRoadImprovement = neighbourTile.getRoadImprovement();
+			if (roadImprovement != null && neighbourRoadImprovement != null) {
+				roadImprovement.addConnection(direction);
+				neighbourRoadImprovement.addConnection(direction.getReverseDirection())
+					.updateStyle();
+			} else {
+				if (neighbourRoadImprovement != null && roadImprovement == null) {
+					neighbourRoadImprovement.removeConnection(direction.getReverseDirection())
+						.updateStyle();
+				}
+			}
+		}
+		if (roadImprovement != null) {
+			roadImprovement.updateStyle();
+		}
+	}
+	
+	
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {
@@ -199,7 +308,6 @@ public class Tile implements Location, Identifiable {
 	            public void set(Tile tile, Unit unit) {
 	                tile.units.add(unit);
 	                unit.setLocation(tile);
-	                unit.getOwner().units.add(unit);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

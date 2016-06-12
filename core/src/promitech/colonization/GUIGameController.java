@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -10,18 +11,23 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.player.Notification;
+import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
-import promitech.colonization.gamelogic.UnitIterator;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -35,9 +41,9 @@ public class GUIGameController {
 		}
 	}
 
+	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
-	private UnitIterator unitIterator;
 	
 	private MapActor mapActor;
 	private ApplicationScreenManager screenManager;
@@ -52,13 +58,27 @@ public class GUIGameController {
         game.playingPlayer = game.players.getById("player:1");
         System.out.println("game = " + game);
         
-        unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+        guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+        guiGameModel.player = game.playingPlayer;
+        
+        gameLogic = new GameLogic(game);
 	}
 	
     public void setMapActor(MapActor mapActor) {
         this.mapActor = mapActor;
     }
 	
+    public void skipUnit() {
+    	if (blockUserInteraction) {
+    		return;
+    	}
+    	throwExceptionWhenActiveUnitNotSet();
+    	Unit unit = guiGameModel.getActiveUnit();
+    	unit.setState(UnitState.SKIPPED);
+    	
+    	logicNextActiveUnit();
+    }
+    
 	public void nextActiveUnit() {
 		if (blockUserInteraction) {
 			return;
@@ -66,16 +86,24 @@ public class GUIGameController {
 		logicNextActiveUnit();
 	}
 	
+	public void nextActiveUnitWhenActive(Unit unit) {
+		if (guiGameModel.isActiveUnitSet() && guiGameModel.getActiveUnit().equalsId(unit)) {
+			logicNextActiveUnit();
+		}
+	}
+	
 	private void logicNextActiveUnit() {
-		if (unitIterator.hasNext()) {
-			Unit nextUnit = unitIterator.next();
+		if (guiGameModel.unitIterator.hasNext()) {
+			Unit nextUnit = guiGameModel.unitIterator.next();
 			changeActiveUnit(nextUnit);
-			if (guiGameModel.isActiveUnitSet()) {
-				mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
-			}
+			centerOnActiveUnit();
 			if (nextUnit.isDestinationSet()) {
 				logicAcceptGotoPath();
 			}
+		} else {
+			mapActor.mapDrawModel().setSelectedUnit(null);
+			mapActor.mapDrawModel().unitPath = null;
+			guiGameModel.setActiveUnit(null);
 		}
 	}
 
@@ -106,9 +134,7 @@ public class GUIGameController {
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		mapDrawModel.selectedTile = null;
-		if (guiGameModel.isActiveUnitSet()) {
-			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
-		} 
+		centerOnActiveUnit();
 		guiGameModel.setActiveUnit(guiGameModel.previewViewModeUnit);
 		mapDrawModel.setSelectedUnit(guiGameModel.previewViewModeUnit);
 		guiGameModel.previewViewModeUnit = null;
@@ -165,7 +191,7 @@ public class GUIGameController {
 
 	private void clickOnTileDebugInfo(Point p) {
         Tile tile = game.map.getTile(p.x, p.y);
-        System.out.println("p = " + p);
+        System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
             System.out.println("tile: " + tile);
         } else {
@@ -251,13 +277,16 @@ public class GUIGameController {
 				if (moveContext.isEndOfPath()) {
 					moveContext.unit.clearDestination();
 					mapActor.mapDrawModel().unitPath = null;
-					
 				} else {
+                    moveContext.unit.setState(UnitState.SKIPPED);
 					logicNextActiveUnit();
 				}
 				blockUserInteraction = false;
 			}
 		} else {
+			if (!moveContext.unit.couldMove()) {
+				logicNextActiveUnit();
+			}
 			blockUserInteraction = false;
 		}
 	}
@@ -345,13 +374,14 @@ public class GUIGameController {
 		if (moveContext.canHandleMove()) {
 			moveContext.handleMove();
 			guiMoveInteraction(moveContext);
+		} else {
+            moveContext.unit.clearDestination();
+            mapActor.mapDrawModel().unitPath = null;
 		}
 	}
 	
 	private void generateGotoPath(Tile destinationTile) {
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("activeUnit should be set to generate goto path");
-		}
+		throwExceptionWhenActiveUnitNotSet();
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
@@ -379,9 +409,7 @@ public class GUIGameController {
 			if (!guiGameModel.isCreateGotoPathMode()) {
 				throw new IllegalStateException("should be in find path mode");
 			}
-			if (guiGameModel.isActiveUnitNotSet()) {
-				throw new IllegalStateException("active unit should be set");
-			}
+			throwExceptionWhenActiveUnitNotSet();
 			logicAcceptGotoPath();
 			return;
 		}
@@ -403,5 +431,114 @@ public class GUIGameController {
 
 	public Unit getActiveUnit() {
 		return guiGameModel.getActiveUnit();
+	}
+
+	public void endTurn(EndOfTurnPhaseListener endOfTurnPhaseListener) {
+		blockUserInteraction = true;
+		guiGameModel.setAiMove(true);
+		System.out.println("end turn");
+
+		game.playingPlayer.endTurn();
+		
+		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
+		for (Player player : players) {
+			if (player.nation().isUnknownEnemy()) {
+				continue;
+			}
+			
+			endOfTurnPhaseListener.nextAIturn(player);
+			System.out.println("player " + player);
+			
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+		}
+		
+		gameLogic.newTurn(game.playingPlayer);
+		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
+			mapActor.resetMapModel();
+		}
+		
+		logicNextActiveUnit();
+		
+		guiGameModel.setAiMove(false);
+		blockUserInteraction = false;
+		endOfTurnPhaseListener.endOfAIturns();
+	}
+
+	public void buildRoad() {
+		throwExceptionWhenActiveUnitNotSet();
+		Tile tile = guiGameModel.getActiveUnit().getTile();
+		Unit unit = guiGameModel.getActiveUnit();
+		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+			return;
+		}
+		TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+		logicMakeImprovement(tile, unit, roadImprovement);
+	}
+
+	public void plowOrClearForestImprovement() {
+		throwExceptionWhenActiveUnitNotSet();
+		Tile tile = guiGameModel.getActiveUnit().getTile();
+		Unit unit = guiGameModel.getActiveUnit();
+		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+			return;
+		}
+
+		TileImprovementType imprv = null;
+		if (tile.getType().isForested()) {
+			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
+		} else {
+			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+		}
+		logicMakeImprovement(tile, unit, imprv);
+	}
+
+	private void logicMakeImprovement(Tile tile, Unit unit, TileImprovementType improvement) {
+		if (tile.canBeImprovedByUnit(improvement, unit)) {
+			unit.startImprovement(tile, improvement);
+			System.out.println("unit[" + unit + "] build [" + improvement + "] on tile[" + tile + "]");
+			logicNextActiveUnit();
+		} else {
+			System.out.println("unit[" + unit + "] can not make improvement[" + improvement + "] on tile[" + tile + "]");
+		}
+	}
+
+	public void sentryUnit() {
+		guiGameModel.getActiveUnit().setState(UnitState.SENTRY);
+		logicNextActiveUnit();
+	}
+
+	public void fortify() {
+		throwExceptionWhenActiveUnitNotSet();
+		Unit activeUnit = guiGameModel.getActiveUnit();
+		activeUnit.setState(UnitState.FORTIFYING);
+		logicNextActiveUnit();
+	}
+	
+	public void activeUnit() {
+		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.getActiveUnit().setState(UnitState.ACTIVE);
+		guiGameModel.runListeners();
+	}
+	
+	private void throwExceptionWhenActiveUnitNotSet() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit not set");
+		}
+	}
+
+	public void centerOnActiveUnit() {
+		if (guiGameModel.isActiveUnitSet()) {
+			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
+		}
+	}
+
+	public Notification getFirstNotification() {
+		Notification firstNotification = game.playingPlayer.eventsNotifications.firstNotification();
+		guiGameModel.runListeners();
+		return firstNotification;
 	}
 }

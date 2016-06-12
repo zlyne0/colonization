@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
@@ -14,12 +13,6 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;
 
 class ColonyProduction {
-    private static final Set<String> FOOD_GOODS = new HashSet<String>();
-    static {
-        FOOD_GOODS.add(GoodsType.FISH);
-        FOOD_GOODS.add(GoodsType.GRAIN);
-    }
-    
 	private boolean needUpdate = true;
 	private final Colony colony;
 	private final java.util.Map<String,ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();
@@ -89,7 +82,7 @@ class ColonyProduction {
 	
     private void consolidateFoods() {
         for (Entry<String> entry : globalProductionConsumption.entries()) {
-            if (FOOD_GOODS.contains(entry.key)) {
+            if (GoodsType.isFoodGoodsType(entry.key)) {
                 int q = entry.value;
                 globalProductionConsumption.decrease(entry.key, q);
                 globalProductionConsumption.addGoods(GoodsType.FOOD, q);
@@ -232,7 +225,7 @@ class ColonyProduction {
 	            continue;
 	        }
 	        
-	        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
+	        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                if (goodsType.equalsId(outputEntry.getKey())) {
@@ -274,7 +267,7 @@ class ColonyProduction {
 	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {
 		List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
 		
-        List<Production> productions = colonyTile.tile.type.productionInfo.getAttendedProductions();
+        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
         for (Production production : productions) {
             for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
             	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, worker, colonyTile, null);
