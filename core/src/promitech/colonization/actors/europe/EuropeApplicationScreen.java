@@ -47,16 +47,18 @@ class GoodPriceActor extends Widget {
     
     @Override
     public float getPrefWidth() {
-    	return textureRegion.getRegionWidth();
+        BitmapFont font = getLabelFont();
+        return Math.max(textureRegion.getRegionWidth(), FontResource.strWidth(font, label));
     }
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
-    	batch.draw(textureRegion, getX(), getY() + fontHeight);
-        
-        BitmapFont font = FontResource.getGoodsQuantityFont();
-        font.setColor(Color.WHITE);
-        
+    	batch.draw(
+    	    textureRegion, 
+    	    getX() + getWidth() / 2 - textureRegion.getRegionWidth() / 2, 
+    	    getY() + fontHeight
+    	);
+    	BitmapFont font = getLabelFont();
         float priceStrLength = FontResource.strWidth(font, label);
         font.draw(batch, label, 
         		getX() + getWidth()/2 - priceStrLength/2, 
@@ -64,6 +66,12 @@ class GoodPriceActor extends Widget {
         );
     }
 	
+    private BitmapFont getLabelFont() {
+        BitmapFont font = FontResource.getGoodsQuantityFont();
+        font.setColor(Color.WHITE);
+        return font;
+    }
+    
     public void initPrice(int sellPrice, int buyPrice) {
 		this.sellPrice = sellPrice;
 		this.buyPrice = buyPrice;
@@ -81,7 +89,6 @@ class MarketPanel extends Table {
 	private java.util.Map<String, GoodPriceActor> goodActorByType = new HashMap<String, GoodPriceActor>();	
 	
 	public void init() {
-		//this.defaults().pad(10, 10, 10, 10);
 		this.defaults().space(10, 10, 10, 10);
 		
         for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {

@@ -134,10 +134,14 @@ class MarketData extends ObjectWithId {
         return costToBuy != oldCostToBuy || paidForSale != oldPaidForSale;
     }
     
-    public final int getCostToBuy() {
+    public final int getBuyPrice() {
         return costToBuy;
     }
 	
+    public final int getSellPrice() {
+        return paidForSale;
+    }
+    
     public final int getCostToBuy(int amount) {
     	return costToBuy * amount;
     }
