@@ -75,6 +75,12 @@ public class SaveGameParserTest {
         assertNotNull(player.getEurope());
         assertEquals("europe:2", player.getEurope().getId());
         
+        assertNotNull(player.getEurope().units.getById("unit:7108"));
+        assertNotNull(player.getEurope().units.getById("unit:7109"));
+        assertNotNull(player.getEurope().units.getById("unit:7097"));
+        assertNotNull(player.getEurope().units.getById("unit:7095"));
+        assertNotNull(player.getHighSeas().units.getById("unit:6437"));
+        
         assertEquals(16, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");
         assertNotNull(food);

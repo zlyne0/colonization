@@ -2,10 +2,11 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Europe extends ObjectWithFeatures {
+public class Europe extends ObjectWithFeatures implements UnitLocation {
 
     /** The initial recruit price. */
     private static final int RECRUIT_PRICE_INITIAL = 200;
@@ -15,6 +16,7 @@ public class Europe extends ObjectWithFeatures {
     
     private int recruitPrice;
     private int recruitLowerCap;
+    public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     
     public Europe(String id) {
         super(id);
@@ -25,6 +27,14 @@ public class Europe extends ObjectWithFeatures {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            
+            addNode(Unit.class, new ObjectFromNodeSetter<Europe,Unit>() {
+                @Override
+                public void set(Europe target, Unit entity) {
+                    target.units.add(entity);
+                    entity.setUnitLocation(target);
+                }
+            });
         }
         
         @Override

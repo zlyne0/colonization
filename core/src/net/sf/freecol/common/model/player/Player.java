@@ -92,6 +92,7 @@ public class Player extends ObjectWithFeatures {
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    private HighSeas highSeas;
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
@@ -296,7 +297,11 @@ public class Player extends ObjectWithFeatures {
 		settlement.tile.setSettlement(null);
 		settlements.removeId(settlement.getId());
 	}
-    
+
+    public HighSeas getHighSeas() {
+        return highSeas;
+    }
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -304,6 +309,7 @@ public class Player extends ObjectWithFeatures {
             addNode(Europe.class, "europe");
             addNode(Market.class, "market");
             addNode(EventsNotifications.class, "eventsNotifications");
+            addNode(HighSeas.class, "highSeas");
         }
 
         @Override

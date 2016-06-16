@@ -16,7 +16,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit extends ObjectWithId implements Location {
+public class Unit extends ObjectWithId implements UnitLocation {
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -42,7 +42,7 @@ public class Unit extends ObjectWithId implements Location {
     public UnitType unitType;
     public UnitRole unitRole;
     
-    private Location location;
+    private UnitLocation location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -125,12 +125,8 @@ public class Unit extends ObjectWithId implements Location {
 		return null;
 	}
 	
-	public void setLocation(Unit unit) {
-		location = unit;
-	}
-	
-	public void setLocation(Tile tile) {
-		location = tile;
+	public void setUnitLocation(UnitLocation unitLocation) {
+	    this.location = unitLocation;
 	}
 	
 	public void changeLocation(Unit newUnitLocation) {
@@ -756,7 +752,7 @@ public class Unit extends ObjectWithId implements Location {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
                     actualUnit.unitContainer.addUnit(newUnit);
-                    newUnit.setLocation(actualUnit);
+                    newUnit.setUnitLocation(actualUnit);
                 }
             });
             addNode(GoodsContainer.class, "goodsContainer");

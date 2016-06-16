@@ -11,7 +11,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Tile implements Location, Identifiable {
+public class Tile implements UnitLocation, Identifiable {
 	
 	public final int x;
 	public final int y;
@@ -307,7 +307,7 @@ public class Tile implements Location, Identifiable {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
 	                tile.units.add(unit);
-	                unit.setLocation(tile);
+	                unit.setUnitLocation(tile);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

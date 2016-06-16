@@ -30,7 +30,7 @@ public interface Localable {
      *
      * @return The location of this <code>Locatable</code>.
      */
-    public Location getLocation();
+    public UnitLocation getLocation();
 
     /**
      * Sets the location for this <code>Locatable</code>.
@@ -39,7 +39,7 @@ public interface Localable {
      *     <code>Locatable</code>.
      * @return True if the location change succeeds.
      */
-    public boolean setLocation(Location newLocation);
+    public boolean setLocation(UnitLocation newLocation);
 
     /**
      * Is this locatable in Europe.

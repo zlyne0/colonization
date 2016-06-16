@@ -810,7 +810,7 @@ public class Colony extends Settlement {
                 owner
             );
             tile.units.add(unit);
-            unit.setLocation(tile);
+            unit.setUnitLocation(tile);
 	        
             StringTemplate st = StringTemplate.template("model.colony.newColonist")
                         .add("%colony%", getName());
@@ -886,7 +886,7 @@ public class Colony extends Settlement {
 				owner
 			);
 			tile.units.add(unit);
-			unit.setLocation(tile);
+			unit.setUnitLocation(tile);
 			
 			StringTemplate unitNameSt = UnitLabel.getPlainUnitLabel(unit);
 			StringTemplate st = StringTemplate.template("model.colony.unitReady")
