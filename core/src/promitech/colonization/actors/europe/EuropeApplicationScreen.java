@@ -15,6 +15,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.player.MarketData;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
@@ -48,7 +50,7 @@ class GoodPriceActor extends Widget {
     @Override
     public float getPrefWidth() {
         BitmapFont font = getLabelFont();
-        return Math.max(textureRegion.getRegionWidth(), FontResource.strWidth(font, label));
+        return Math.max(textureRegion.getRegionWidth(), FontResource.strWidth(font, "15/15"));
     }
     
     @Override
@@ -88,8 +90,11 @@ class MarketPanel extends Table {
 	
 	private java.util.Map<String, GoodPriceActor> goodActorByType = new HashMap<String, GoodPriceActor>();	
 	
-	public void init() {
-		this.defaults().space(10, 10, 10, 10);
+	MarketPanel() {
+		defaults().space(10, 10, 10, 10);
+	}
+	
+	public void init(Player player) {
 		
         for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {
         	if (!goodsType.isStorable()) {
@@ -102,7 +107,8 @@ class MarketPanel extends Table {
         		goodActorByType.put(goodsType.getId(), goodPriceActor);
         		add(goodPriceActor);
         	}
-        	goodPriceActor.initPrice(18, 19);
+        	MarketData marketData = player.market().marketGoods.getById(goodsType.getId());
+        	goodPriceActor.initPrice(marketData.getSellPrice(), marketData.getBuyPrice());
         }
 	}
 }
@@ -141,13 +147,12 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         stage.setDebugAll(true);
 	}
 	
-	public void init() {
-		marketPanel.init();
+	public void init(Player player) {
+		marketPanel.init(player);
 	}
 	
 	@Override
 	public void onShow() {
-		init();
 		Gdx.input.setInputProcessor(stage);
 	}
 	

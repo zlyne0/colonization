@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-class MarketData extends ObjectWithId {
+public class MarketData extends ObjectWithId {
 	
     /** Inclusive lower bound on goods price. */
     public static final int MINIMUM_PRICE = 1;

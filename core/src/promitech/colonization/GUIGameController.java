@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
+import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
@@ -292,6 +293,8 @@ public class GUIGameController {
 	}
 	
 	public void showEuropeScreen() {
+        EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);
+        screen.init(game.playingPlayer);
 		screenManager.setScreen(ApplicationScreenType.EUROPE);		
 	}
 	
