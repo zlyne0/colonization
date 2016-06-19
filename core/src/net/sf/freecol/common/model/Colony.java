@@ -809,8 +809,7 @@ public class Colony extends Settlement {
                 Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
                 owner
             );
-            tile.units.add(unit);
-            unit.setUnitLocation(tile);
+            unit.changeUnitLocation(tile);
 	        
             StringTemplate st = StringTemplate.template("model.colony.newColonist")
                         .add("%colony%", getName());
@@ -885,8 +884,7 @@ public class Colony extends Settlement {
 				Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
 				owner
 			);
-			tile.units.add(unit);
-			unit.setUnitLocation(tile);
+			unit.changeUnitLocation(tile);
 			
 			StringTemplate unitNameSt = UnitLabel.getPlainUnitLabel(unit);
 			StringTemplate st = StringTemplate.template("model.colony.unitReady")

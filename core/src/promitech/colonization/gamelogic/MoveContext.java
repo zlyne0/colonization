@@ -96,7 +96,7 @@ public class MoveContext {
 	
 	void embarkUnit() {
 		Unit carrier = null;
-		for (Unit u : destTile.units.entities()) {
+		for (Unit u : destTile.getUnits().entities()) {
 			if (u.canAddUnit(unit)) {
 				carrier = u;
 				break;
@@ -106,7 +106,7 @@ public class MoveContext {
 			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
 		}
 		unit.setState(UnitState.SKIPPED);
-		unit.changeLocation(carrier);
+		unit.changeUnitLocation(carrier);
 		unit.reduceMovesLeftToZero();
 	}
 	
@@ -115,7 +115,7 @@ public class MoveContext {
 		unit.setStateToAllChildren(UnitState.SENTRY);
 		System.out.println("moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		unit.reduceMovesLeft(moveCost);
-		unit.changeLocation(destTile);
+		unit.changeUnitLocation(destTile);
 	}
 	
 	public boolean canHandleMove() {

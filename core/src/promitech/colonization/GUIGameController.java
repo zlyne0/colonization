@@ -182,7 +182,7 @@ public class GUIGameController {
 			Tile tile = game.map.getTile(p.x, p.y);
 
 			if (!tile.hasSettlement()) {
-				Unit newSelectedUnit = tile.units.first();
+				Unit newSelectedUnit = tile.getUnits().first();
 				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
 					changeActiveUnit(newSelectedUnit);
 				}

@@ -11,6 +11,9 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.UnitActor;
+import promitech.colonization.actors.UnitDragAndDropSource;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
 
@@ -89,7 +92,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		updateProductionDesc();
 		
-		changeColonyStateListener.changeUnitAllocation(colony);
+		changeColonyStateListener.changeUnitAllocation();
 	}
 
 	@Override

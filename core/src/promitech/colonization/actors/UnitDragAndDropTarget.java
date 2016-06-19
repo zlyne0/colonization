@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
@@ -6,8 +6,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 
 import promitech.colonization.Validation;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 
-class UnitDragAndDropTarget extends Target {
+public class UnitDragAndDropTarget extends Target {
 
 	private DragAndDropTargetContainer<UnitActor> targetContainer;
 	

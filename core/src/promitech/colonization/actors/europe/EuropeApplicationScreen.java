@@ -1,126 +1,69 @@
 package promitech.colonization.actors.europe;
 
-import java.util.HashMap;
-
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.GL20;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
+import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
+import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
-import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.player.MarketData;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
-import promitech.colonization.GameResources;
+import promitech.colonization.actors.CarrierUnitsPanel;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
 
-class GoodPriceActor extends Widget {
-	
-	private int sellPrice = 0;
-	private int buyPrice = 0;
-	private final GoodsType goodsType;
-	private final TextureRegion textureRegion;
-	private final float fontHeight;
-	private String label;
-	
-	GoodPriceActor(GoodsType goodsType) {
-		this.goodsType = goodsType;
-		
-		Frame img = GameResources.instance.goodsImage(goodsType);
-		this.textureRegion = img.texture;
-		this.fontHeight = FontResource.getGoodsQuantityFont().getCapHeight();
-	}
-	
-    @Override
-    public float getPrefHeight() {
-    	return textureRegion.getRegionHeight() + fontHeight;
-    }
-    
-    @Override
-    public float getPrefWidth() {
-        BitmapFont font = getLabelFont();
-        return Math.max(textureRegion.getRegionWidth(), FontResource.strWidth(font, "15/15"));
-    }
-    
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-    	batch.draw(
-    	    textureRegion, 
-    	    getX() + getWidth() / 2 - textureRegion.getRegionWidth() / 2, 
-    	    getY() + fontHeight
-    	);
-    	BitmapFont font = getLabelFont();
-        float priceStrLength = FontResource.strWidth(font, label);
-        font.draw(batch, label, 
-        		getX() + getWidth()/2 - priceStrLength/2, 
-        		getY() + fontHeight
-        );
-    }
-	
-    private BitmapFont getLabelFont() {
-        BitmapFont font = FontResource.getGoodsQuantityFont();
-        font.setColor(Color.WHITE);
-        return font;
-    }
-    
-    public void initPrice(int sellPrice, int buyPrice) {
-		this.sellPrice = sellPrice;
-		this.buyPrice = buyPrice;
-		this.label = "" + sellPrice + "/" + buyPrice;
-    }
-    
-    public String toString() {
-        return "type[" + goodsType + "], price[" + sellPrice + "/" + buyPrice + "]";
-    }
-	
-}
-
-class MarketPanel extends Table {
-	
-	private java.util.Map<String, GoodPriceActor> goodActorByType = new HashMap<String, GoodPriceActor>();	
-	
-	MarketPanel() {
-		defaults().space(10, 10, 10, 10);
-	}
-	
-	public void init(Player player) {
-		
-        for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {
-        	if (!goodsType.isStorable()) {
-        		continue;
-        	}
-        	
-        	GoodPriceActor goodPriceActor = goodActorByType.get(goodsType.getId());
-        	if (goodPriceActor == null) {
-        		goodPriceActor = new GoodPriceActor(goodsType);
-        		goodActorByType.put(goodsType.getId(), goodPriceActor);
-        		add(goodPriceActor);
-        	}
-        	MarketData marketData = player.market().marketGoods.getById(goodsType.getId());
-        	goodPriceActor.initPrice(marketData.getSellPrice(), marketData.getBuyPrice());
-        }
-	}
-}
-
 public class EuropeApplicationScreen extends ApplicationScreen {
-
+	private DragAndDrop goodsDragAndDrop;
+	private DragAndDrop unitsDragAndDrop;
+	
 	private Stage stage;
 	private MarketPanel marketPanel; 
+	private CarrierUnitsPanel carrierUnitsPanel;
+	private OutsideUnitsPanel outsideUnitsPanel;
+	
+	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
+		@Override
+		public void changeUnitAllocation() {
+		}
+
+		@Override
+		public void transfereGoods() {
+		}
+
+		@Override
+		public void changeBuildingQueue() {
+		}
+	};
+	
+    private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
+        public void doubleClicked(InputEvent event, float x, float y) {
+            UnitActor unitActor = (UnitActor)event.getListenerActor();
+            //showUnitOrders(unitActor);
+            System.out.println("XXX unit double click");
+        }
+    };
 	
 	@Override
 	public void create() {
-		stage = new Stage();
+        unitsDragAndDrop = new DragAndDrop();
+        unitsDragAndDrop.setDragActorPosition(0, 0);
+        unitsDragAndDrop.setTapSquareSize(3);
+        
+        goodsDragAndDrop = new DragAndDrop();
+        goodsDragAndDrop.setDragActorPosition(0, 0);
+        goodsDragAndDrop.setTapSquareSize(3);
+		
+		
+		stage = new Stage();		
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
 		
 		ButtonActor closeButton = new ButtonActor(this.shape, "ESC");
@@ -138,10 +81,21 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         stage.addActor(closeButton);
 		
         marketPanel = new MarketPanel();
+        carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         
+        Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();
+        tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
         tableLayout.setFillParent(true);
-        tableLayout.add(marketPanel); 
+        
+        HorizontalGroup rowGroup1 = new HorizontalGroup();
+        rowGroup1.addActor(carrierUnitsPanel);
+        rowGroup1.addActor(outsideUnitsPanel);
+        
+        
+        tableLayout.add(rowGroup1).row();
+        tableLayout.add(marketPanel);
         
         stage.addActor(tableLayout);
         stage.setDebugAll(true);
@@ -149,6 +103,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	public void init(Player player) {
 		marketPanel.init(player);
+		carrierUnitsPanel.initUnits(player.getEurope());
+		outsideUnitsPanel.initUnits(player.getEurope());
 	}
 	
 	@Override

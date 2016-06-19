@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -6,28 +6,30 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
 
-import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitLocation;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
+public class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 
     private final ChangeColonyStateListener changeColonyStateListener;
     private final DoubleClickedListener unitActorDoubleClickListener;
 	private final HorizontalGroup widgets = new HorizontalGroup();
 	private final ShapeRenderer shapeRenderer;
-	private Tile colonyTile;
-	private Colony colony;
+	private final DragAndDrop unitDragAndDrop;
+	private UnitLocation unitLocation;
 	
-	public OutsideUnitsPanel(ShapeRenderer shapeRenderer, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
+	public OutsideUnitsPanel(ShapeRenderer shapeRenderer, DragAndDrop unitDragAndDrop, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 		super(null, GameResources.instance.getUiSkin());
 		this.changeColonyStateListener = changeColonyStateListener;
 		this.unitActorDoubleClickListener = unitActorDoubleClickListener;
 		this.shapeRenderer = shapeRenderer;
+		this.unitDragAndDrop = unitDragAndDrop;
 		setWidget(widgets);
 		
         setForceScroll(false, false);
@@ -38,16 +40,15 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
         widgets.align(Align.center);
         widgets.space(15);
 	}
-
 	
 	@Override
 	public void takePayload(UnitActor unitActor, float x, float y) {
-		System.out.println("take unit [" + unitActor.unit + "] from tile " + colonyTile);
+		System.out.println("take unit [" + unitActor.unit + "] from unitLocation " + unitLocation);
 
 		unitActor.dragAndDropSourceContainer = null;
 		unitActor.disableUnitChip();
 		
-		colonyTile.units.removeId(unitActor.unit);
+		unitLocation.getUnits().removeId(unitActor.unit);
 		widgets.removeActor(unitActor);
 		
 		validate();
@@ -62,10 +63,10 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	
 	@Override
 	public void putPayload(UnitActor unitActor, float x, float y) {
-		System.out.println("put unit [" + unitActor.unit + "] to tile " + colonyTile);
+		System.out.println("put unit [" + unitActor.unit + "] to unitLocation " + unitLocation);
 		
 		unitActor.unit.setState(UnitState.ACTIVE);
-		unitActor.unit.changeLocation(colonyTile);
+		unitActor.unit.changeUnitLocation(unitLocation);
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);
@@ -74,17 +75,16 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		validate();
 		setScrollPercentX(100);
 		
-		changeColonyStateListener.changeUnitAllocation(colony);
+		changeColonyStateListener.changeUnitAllocation();
 	}
 
-	void initUnits(Tile colonyTile, DragAndDrop dragAndDrop) {
-		this.colonyTile = colonyTile;
-		this.colony = (Colony)colonyTile.getSettlement();
-		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
+	public void initUnits(UnitLocation unitLocation) {
+		this.unitLocation = unitLocation;
+		unitDragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		
 		widgets.clear();
 		
-		for (Unit unit : colonyTile.units.entities()) {
+		for (Unit unit : unitLocation.getUnits().entities()) {
 		    if (unit.isCarrier()) {
 		        continue;
 		    }
@@ -92,7 +92,7 @@ class OutsideUnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 			unitActor.enableUnitChip(shapeRenderer);
 			
 			unitActor.dragAndDropSourceContainer = this;
-			dragAndDrop.addSource(new UnitDragAndDropSource(unitActor));
+			unitDragAndDrop.addSource(new UnitDragAndDropSource(unitActor));
 			
 			widgets.addActor(unitActor);
 		}

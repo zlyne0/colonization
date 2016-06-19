@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -10,14 +10,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.GoodsContainer;
-import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class CarrierUnitsPanel extends HorizontalGroup {
+public class CarrierUnitsPanel extends HorizontalGroup {
     class UnitsPanel extends ScrollPane {
         private final HorizontalGroup widgets = new HorizontalGroup();
         
@@ -97,9 +101,11 @@ class CarrierUnitsPanel extends HorizontalGroup {
         	widgets.clear();
         	GoodsContainer goodsContainer = unitActor.unit.getGoodsContainer();
         	for (AbstractGoods carrierGood : goodsContainer.carrierGoods()) {
-        		GoodActor goodActor = new GoodActor(carrierGood.getTypeId(), carrierGood.getQuantity());
+        		GoodsType goodsType = Specification.instance.goodsTypes.getById(carrierGood.getTypeId());
+        		
+        		QuantityGoodActor goodActor = new QuantityGoodActor(goodsType, carrierGood.getQuantity());
         		goodActor.dragAndDropSourceContainer = this;
-        		goodsDragAndDrop.addSource(new GoodActor.GoodsDragAndDropSource(goodActor));
+        		goodsDragAndDrop.addSource(new QuantityGoodActor.GoodsDragAndDropSource(goodActor));
         		widgets.addActor(goodActor);
         	}
         }
@@ -183,14 +189,14 @@ class CarrierUnitsPanel extends HorizontalGroup {
 	    }
 	};
 	
-	void initUnits(Tile colonyTile) {
+	public void initUnits(UnitLocation unitLocation) {
 	    carrierUnitsPanel.clear();
 	    cargoPanel.clear();
 	    
-	    goodsDragAndDrop.addTarget(new GoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
+	    goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
 	    
 		boolean firstUnit = true;
-		for (Unit unit : colonyTile.units.entities()) {
+		for (Unit unit : unitLocation.getUnits().entities()) {
 		    if (!unit.isCarrier()) {
 		        continue;
 		    }

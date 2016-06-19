@@ -53,7 +53,7 @@ public class SaveGameParserTest {
         assertEquals(13, game.players.size());
         
         Tile tile = game.map.getTile(31, 23);
-        Unit tileUnit = tile.units.getById("unit:6449");
+        Unit tileUnit = tile.getUnits().getById("unit:6449");
         assertNotNull(tileUnit);
         
         Unit unit = tileUnit.getUnitContainer().getUnits().first();
@@ -75,11 +75,11 @@ public class SaveGameParserTest {
         assertNotNull(player.getEurope());
         assertEquals("europe:2", player.getEurope().getId());
         
-        assertNotNull(player.getEurope().units.getById("unit:7108"));
-        assertNotNull(player.getEurope().units.getById("unit:7109"));
-        assertNotNull(player.getEurope().units.getById("unit:7097"));
-        assertNotNull(player.getEurope().units.getById("unit:7095"));
-        assertNotNull(player.getHighSeas().units.getById("unit:6437"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7108"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7109"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7097"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7095"));
+        assertNotNull(player.getHighSeas().getUnits().getById("unit:6437"));
         
         assertEquals(16, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");

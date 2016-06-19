@@ -49,8 +49,8 @@ class ObjectsTileDrawer extends TileDrawer {
 				drawRestOfUnits = false;
 			}
 		}
-		if (drawRestOfUnits && tile.units.size() > 0 && !tile.hasSettlement()) {
-			Unit firstUnit = tile.units.first();
+		if (drawRestOfUnits && tile.getUnits().size() > 0 && !tile.hasSettlement()) {
+			Unit firstUnit = tile.getUnits().first();
 			if (!mapDrawModel.unitDislocationAnimation.isUnitAnimated(firstUnit)) {
 				drawUnit(firstUnit);
 			}

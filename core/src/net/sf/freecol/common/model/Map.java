@@ -81,8 +81,8 @@ public class Map extends ObjectWithId {
 			if (tile.hasSettlement()) {
 				tileOwner = tile.getSettlement().getOwner();
 			} else {
-				if (tile.units.isNotEmpty()) {
-					tileOwner = tile.units.first().getOwner();
+				if (tile.getUnits().isNotEmpty()) {
+					tileOwner = tile.getUnits().first().getOwner();
 				}
 			}
 			if (tileOwner != null) {

@@ -110,10 +110,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 
 	public Tile getTile() {
 		if (location == null) {
-			throw new IllegalStateException("location is null unit: " + this);
+			throw new IllegalStateException("unit[" + getId() + "] location is null unit: " + this);
 		}
 		if (!(location instanceof Tile)) {
-			throw new IllegalStateException("location is not tile but it's " + location.getClass());
+			throw new IllegalStateException("unit[" + getId() + "] location is not tile but it's " + location.getClass());
 		}
 		return (Tile)location;
 	}
@@ -125,29 +125,14 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return null;
 	}
 	
-	public void setUnitLocation(UnitLocation unitLocation) {
-	    this.location = unitLocation;
+	public void changeUnitLocation(UnitLocation newUnitLocation) {
+		if (location != null) {
+			location.getUnits().removeId(this);
+		}
+		newUnitLocation.getUnits().add(this);
+		location = newUnitLocation;
 	}
 	
-	public void changeLocation(Unit newUnitLocation) {
-		Tile actualTile = getTileLocationOrNull();
-    	if (actualTile != null) {
-    		this.owner.units.removeId(this);
-    		actualTile.units.removeId(this);
-    	}
-    	newUnitLocation.unitContainer.addUnit(this);
-    	location = newUnitLocation;
-	}
-	
-    public void changeLocation(Tile newTileLocation) {
-    	Tile actualTile = getTileLocationOrNull();
-    	if (actualTile != null) {
-    		actualTile.units.removeId(this);
-    	}
-    	newTileLocation.units.add(this);
-    	location = newTileLocation;
-    }
-
     public boolean canAddUnit(Unit unit) {
     	if (unitContainer == null) {
     		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
@@ -369,7 +354,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         	return MoveType.MOVE_ILLEGAL;
         }
 
-        Unit defender = target.units.first();
+        Unit defender = target.getUnits().first();
 
         if (target.getType().isLand()) {
             Settlement settlement = target.getSettlement();
@@ -414,7 +399,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
             if (defender == null || !defender.isOwner(owner)) {
                 return MoveType.MOVE_NO_ACCESS_EMBARK;
             }
-            for (Unit u : target.units.entities()) {
+            for (Unit u : target.getUnits().entities()) {
                 if (u.unitContainer != null && u.canAddUnit(this)) {
                 	return MoveType.EMBARK;
                 }
@@ -475,7 +460,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 				return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
 			}
 		} else { // target at sea
-			Unit defender = target.units.first();
+			Unit defender = target.getUnits().first();
 			if (defender != null && !defender.isOwner(owner)) {
 				return (isOffensiveUnit()) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
 			}
@@ -653,6 +638,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return unitContainer;
     }
     
+	@Override
+	public MapIdEntities<Unit> getUnits() {
+		return unitContainer.getUnits();
+	}
+    
     public boolean canCarryTreasure() {
         return hasAbility(Ability.CARRY_TREASURE);
     }
@@ -751,8 +741,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                    actualUnit.unitContainer.addUnit(newUnit);
-                    newUnit.setUnitLocation(actualUnit);
+                    newUnit.changeUnitLocation(actualUnit);
                 }
             });
             addNode(GoodsContainer.class, "goodsContainer");
@@ -824,7 +813,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
          * @return True if the unit can be moved.
          */
         public boolean obtains(Unit unit) {
-            return unit.couldMove();
+            return unit.location instanceof Tile && unit.couldMove();
         }
     }
 

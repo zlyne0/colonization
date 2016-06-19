@@ -22,7 +22,7 @@ public class Tile implements UnitLocation, Identifiable {
 	private boolean moveToEurope = false;
 	
 	protected Settlement settlement;
-	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+	private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	private TileItemContainer tileItemContainer;
 	
@@ -39,6 +39,11 @@ public class Tile implements UnitLocation, Identifiable {
 	    return id;
 	}
 
+	@Override
+	public MapIdEntities<Unit> getUnits() {
+		return units;
+	}
+	
     public boolean equalsCoordinates(int x, int y) {
         return this.x == x && this.y == y;
     }
@@ -306,8 +311,7 @@ public class Tile implements UnitLocation, Identifiable {
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
-	                tile.units.add(unit);
-	                unit.setUnitLocation(tile);
+	                unit.changeUnitLocation(tile);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

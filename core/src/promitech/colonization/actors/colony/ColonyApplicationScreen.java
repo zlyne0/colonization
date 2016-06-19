@@ -1,7 +1,6 @@
 package promitech.colonization.actors.colony;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.Input;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -19,6 +18,11 @@ import net.sf.freecol.common.model.Tile;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.CarrierUnitsPanel;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.ShiftPressed;
+import promitech.colonization.actors.UnitActor;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
@@ -44,7 +48,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
         @Override
-        public void changeUnitAllocation(Colony colony) {
+        public void changeUnitAllocation() {
             colony.updateColonyPopulation();
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             populationPanel.update(colony);
@@ -76,11 +80,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             showUnitOrders(unitActor);
         }
     };
-
-    private static boolean shiftPressed = false;  
-    static boolean isShiftPressed() {
-    	return shiftPressed || Gdx.input.isKeyPressed(Input.Keys.SHIFT_LEFT) || Gdx.input.isKeyPressed(Input.Keys.SHIFT_RIGHT);
-    }
 
 	@Override
 	public void create() {
@@ -114,7 +113,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
-		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, changeColonyStateListener, unitActorDoubleClickListener);
+		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
@@ -180,11 +179,11 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 			}
 			@Override
 			public void dragStart(InputEvent event, float x, float y, int pointer) {
-				shiftPressed = true;
+				ShiftPressed.setShiftPressed(true);
 			}
 			@Override
 			public void dragStop(InputEvent event, float x, float y, int pointer) {
-				shiftPressed = false;
+				ShiftPressed.setShiftPressed(false);
 			}
 		});
 		return textButton;
@@ -201,7 +200,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
         warehousePanel.initGoods(colony, goodsDragAndDrop);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);
-        outsideUnitsPanel.initUnits(colonyTile, unitsDragAndDrop);
+        outsideUnitsPanel.initUnits(colonyTile);
         carrierUnitsPanel.initUnits(colonyTile);
         populationPanel.update(colony);
         actualBuildableItemActor.updateBuildItem(colony);

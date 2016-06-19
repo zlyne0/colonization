@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -7,11 +7,12 @@ import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.map.UnitDrawer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class UnitActor extends Widget {
-    final Unit unit;
+public class UnitActor extends Widget {
+    public final Unit unit;
     private boolean drawUnitChip;
     private boolean drawFocus = false;
     private ShapeRenderer shapeRenderer;
@@ -23,7 +24,7 @@ class UnitActor extends Widget {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
     }
     
-    UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
+    public UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
     	this.texture = getTexture(unit);
         this.drawUnitChip = false;
         this.unit = unit;
@@ -31,7 +32,7 @@ class UnitActor extends Widget {
         addListener(unitActorDoubleClickListener);
     }
 
-    void updateTexture() {
+    public void updateTexture() {
     	this.texture = getTexture(unit);
     	invalidate();
     	pack();

@@ -55,9 +55,9 @@ public class UnitDrawer {
 		shapeRenderer.setColor(Color.BLACK);
 		shapeRenderer.rect(cx, cy, BOX_WIDTH, BOX_HEIGHT);
 		
-		if (tile != null && tile.units.size() > 1) {
+		if (tile != null && tile.getUnits().size() > 1) {
 			shapeRenderer.setColor(Color.WHITE);
-			int max = tile.units.size() > 10 ? 10 : tile.units.size(); 
+			int max = tile.getUnits().size() > 10 ? 10 : tile.getUnits().size(); 
 			for (int i=0; i<max; i++) {
 				shapeRenderer.line(cx - 7, cy - (i*2) + 19, cx - 1, cy - (i*2) + 19);
 			}

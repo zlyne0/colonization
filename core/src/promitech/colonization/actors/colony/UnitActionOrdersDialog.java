@@ -27,6 +27,8 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.ClosableDialog;

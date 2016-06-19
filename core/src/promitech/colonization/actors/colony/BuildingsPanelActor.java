@@ -8,6 +8,9 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.UnitActor;
+import promitech.colonization.actors.UnitDragAndDropTarget;
 import promitech.colonization.ui.DoubleClickedListener;
 
 class BuildingsPanelActor extends Table {

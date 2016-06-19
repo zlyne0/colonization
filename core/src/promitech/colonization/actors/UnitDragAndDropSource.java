@@ -1,10 +1,10 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 
-class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source {
+public class UnitDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source {
 	
     public UnitDragAndDropSource(UnitActor actor) {
         super(actor);

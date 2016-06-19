@@ -16,12 +16,17 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     
     private int recruitPrice;
     private int recruitLowerCap;
-    public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+    private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     
     public Europe(String id) {
         super(id);
     }
 
+	@Override
+	public MapIdEntities<Unit> getUnits() {
+		return units;
+	}
+    
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
@@ -30,9 +35,8 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
             
             addNode(Unit.class, new ObjectFromNodeSetter<Europe,Unit>() {
                 @Override
-                public void set(Europe target, Unit entity) {
-                    target.units.add(entity);
-                    entity.setUnitLocation(target);
+                public void set(Europe europe, Unit unit) {
+                    unit.changeUnitLocation(europe);
                 }
             });
         }
@@ -56,5 +60,4 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         }
         
     }
-    
 }

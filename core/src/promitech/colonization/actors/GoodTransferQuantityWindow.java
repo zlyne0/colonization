@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -15,9 +15,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.ui.resources.Messages;
 
-class GoodTransferQuantityWindow extends Dialog {
+public class GoodTransferQuantityWindow extends Dialog {
 
 	private final Skin skin;
 	private TextField numberTextField;

@@ -110,7 +110,7 @@ public class GameLogic {
 				}
 			}
 			
-			for (Unit u : improvingTile.units.entities()) {
+			for (Unit u : improvingTile.getUnits().entities()) {
 				if (u.getState() == UnitState.IMPROVING && u.getTileImprovementType().equalsId(improvementType)) {
 					u.setState(UnitState.ACTIVE);
 				}
