@@ -8,5 +8,10 @@ public class TransactionEffectOnMarket {
 	public boolean priceChanged() {
 		return beforePrice != afterPrice;
 	}
+
+    public void reset() {
+        beforePrice = 0;
+        afterPrice = 0;
+    }
 }
 

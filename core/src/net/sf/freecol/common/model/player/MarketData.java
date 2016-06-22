@@ -138,7 +138,7 @@ public class MarketData extends ObjectWithId {
         return costToBuy;
     }
 	
-    public final int getSellPrice() {
+    public final int getSalePrice() {
         return paidForSale;
     }
     
@@ -185,6 +185,17 @@ public class MarketData extends ObjectWithId {
 		return price();
 	}
 
+    boolean modifyOnSellGoods(int goodsAmount, int price, int priceAfterTax, int playerModifiedMarketAmount) {
+        if (goodsAmount == 0) {
+            return false;
+        }
+        modifySales(goodsAmount);
+        modifyIncomeBeforeTaxes(price);
+        modifyIncomeAfterTaxes(priceAfterTax);
+        modifyAmountInMarket(playerModifiedMarketAmount);
+        return price();
+    }
+	
 	public static class Xml extends XmlNodeParser {
 
 		@Override

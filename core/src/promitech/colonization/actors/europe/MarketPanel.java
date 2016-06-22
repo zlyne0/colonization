@@ -31,7 +31,7 @@ class MarketPanel extends Table {
         		add(marketGoodsActor);
         	}
         	MarketData marketData = player.market().marketGoods.getById(goodsType.getId());
-        	marketGoodsActor.initPrice(marketData.getSellPrice(), marketData.getBuyPrice());
+        	marketGoodsActor.initPrice(marketData.getSalePrice(), marketData.getBuyPrice());
         }
 	}
 }

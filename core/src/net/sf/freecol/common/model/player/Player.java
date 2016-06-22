@@ -302,6 +302,10 @@ public class Player extends ObjectWithFeatures {
         return highSeas;
     }
 	
+    public int getTax() {
+        return tax;
+    }
+    
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

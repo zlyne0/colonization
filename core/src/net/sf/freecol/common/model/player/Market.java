@@ -38,6 +38,11 @@ public class Market extends ObjectWithId {
         MarketData data = marketGoods.getByIdOrNull(type.getId());
         return (data == null) ? 0 : data.getCostToBuy(amount);
     }
+    
+    public int getSalePrice(GoodsType type, int amount) {
+        MarketData data = marketGoods.getByIdOrNull(type.getId());
+        return (data == null) ? 0 : data.getSalePrice() * amount;
+    }
 
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
@@ -49,6 +54,7 @@ public class Market extends ObjectWithId {
 		player.subtractGold(price);
 		goodsContainer.increaseGoodsQuantity(goodsType, goodsAmount);
 		
+		TRANSACTION_EFFECT_ON_MARKET.reset();
 		int playerModifiedMarketAmount = goodsAmount;
 		if (goodsType.isStorable()) {
 			playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
@@ -64,6 +70,27 @@ public class Market extends ObjectWithId {
 		return TRANSACTION_EFFECT_ON_MARKET;
 	}
 
+	public TransactionEffectOnMarket sellGoods(Player player, GoodsType goodsType, int goodsAmount, GoodsContainer goodsContainer) {
+	    int price = getSalePrice(goodsType, goodsAmount);
+	    int tax = player.getTax();
+	    
+        int priceBeforeTaxes = price;
+        int priceAfterTaxes = ((100 - tax) * priceBeforeTaxes) / 100;
+	    
+        player.addGold(priceAfterTaxes);
+        goodsContainer.decreaseGoodsQuantity(goodsType, goodsAmount);
+        
+        TRANSACTION_EFFECT_ON_MARKET.reset();
+        int playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
+        MarketData marketData = requireMarketData(goodsType);
+        TRANSACTION_EFFECT_ON_MARKET.beforePrice = marketData.getCostToBuy(goodsAmount);
+        marketData.modifyOnSellGoods(goodsAmount, price, priceAfterTaxes, playerModifiedMarketAmount);
+        TRANSACTION_EFFECT_ON_MARKET.afterPrice = marketData.getCostToBuy(goodsAmount);
+        
+        TRANSACTION_EFFECT_ON_MARKET.goodsModifiedMarket = playerModifiedMarketAmount;
+        return TRANSACTION_EFFECT_ON_MARKET;
+	}
+	
     public boolean addGoodsToMarket(GoodsType goodsType, int amount) {
         MarketData data = requireMarketData(goodsType);
         data.modifyAmountInMarket(amount);
