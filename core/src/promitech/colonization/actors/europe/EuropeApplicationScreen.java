@@ -29,6 +29,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private MarketPanel marketPanel; 
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
+	private MarketLog marketLog;
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
 		@Override
@@ -83,12 +84,14 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         marketPanel = new MarketPanel();
         carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        marketLog = new MarketLog();
         
         Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
         tableLayout.setFillParent(true);
         
+        tableLayout.add(marketLog).row();
         HorizontalGroup rowGroup1 = new HorizontalGroup();
         rowGroup1.addActor(carrierUnitsPanel);
         rowGroup1.addActor(outsideUnitsPanel);
