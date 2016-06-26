@@ -28,7 +28,7 @@ public class STable extends Table {
     
     public void addRow(Object payload, int columnAlignment[], Actor ... actors) {
         if (columnAlignment.length != actors.length) {
-            throw new IllegalStateException("col alignment != actor columns");
+            throw new IllegalStateException("columns alignment != actor columns");
         }
         for (int i=0; i<actors.length; i++) {
             Actor actor = actors[i];

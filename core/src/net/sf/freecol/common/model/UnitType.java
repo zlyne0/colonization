@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.Comparator;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -9,6 +11,13 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType extends BuildableType {
+	
+    public static final Comparator<UnitType> UNIT_TYPE_PRICE_COMPARATOR = new Comparator<UnitType>() {
+		@Override
+		public int compare(UnitType o1, UnitType o2) {
+			return o1.getPrice() - o2.getPrice();
+		}
+	};
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
@@ -76,6 +85,10 @@ public class UnitType extends BuildableType {
     	super(id);
     }
 
+    public String resourceImageKey() {
+    	return getId() + ".image";
+    }
+    
 	public boolean isUnitType() {
 		return true;
 	}
@@ -157,6 +170,10 @@ public class UnitType extends BuildableType {
         return skill != UNDEFINED;
     }
     
+	public boolean hasPrice() {
+		return price != UNDEFINED;
+	}
+    
     public String getExpertProductionForGoodsId() {
         return expertProductionForGoodsId;
     }
@@ -164,7 +181,11 @@ public class UnitType extends BuildableType {
     protected int getMaximumExperience() {
         return maximumExperience;
     }
-    
+
+	public int getPrice() {
+		return price;
+	}
+
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	BuildableType.Xml.abstractAddNodes(this);
@@ -205,4 +226,5 @@ public class UnitType extends BuildableType {
             return "unit-type";
         }
     }
+
 }

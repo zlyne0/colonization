@@ -29,7 +29,9 @@ public class UnitActor extends Widget {
         this.drawUnitChip = false;
         this.unit = unit;
         setSize(getPrefWidth(), getPrefHeight());
-        addListener(unitActorDoubleClickListener);
+        if (unitActorDoubleClickListener != null) {
+        	addListener(unitActorDoubleClickListener);
+        }
     }
 
     public void updateTexture() {

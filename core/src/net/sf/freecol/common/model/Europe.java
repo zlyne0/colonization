@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -17,6 +20,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitPrice;
     private int recruitLowerCap;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+    protected final List<UnitType> recruitables = new ArrayList<UnitType>();
     
     public Europe(String id) {
         super(id);
@@ -27,6 +31,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return units;
 	}
     
+	public List<UnitType> getRecruitables() {
+		return recruitables;
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
@@ -51,6 +59,14 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         }
 
         @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+        	if (attr.isQNameEquals("recruit")) {
+        		UnitType unitType = Specification.instance.unitTypes.getById(attr.getStrAttribute("id"));
+        		((Europe)nodeObject).recruitables.add(unitType);
+        	}
+        }
+        
+        @Override
         public String getTagName() {
             return tagName();
         }
@@ -58,6 +74,5 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         public static String tagName() {
             return "europe";
         }
-        
     }
 }

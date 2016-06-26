@@ -87,6 +87,9 @@ public class Specification implements Identifiable {
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
     
+    public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
+    public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
+    
     private String difficultyLevel;
     
     public static final Specification instance = new Specification();
@@ -111,6 +114,13 @@ public class Specification implements Identifiable {
         for (UnitType unitType : unitTypes.entities()) {
             if (unitType.getExpertProductionForGoodsId() != null) {
                 expertUnitTypeByGoodType.put(unitType.getExpertProductionForGoodsId(), unitType);
+            }
+            if (unitType.hasPrice()) {
+            	if (unitType.getSkill() > 0) {
+            		unitTypesTrainedInEurope.add(unitType);
+            	} else if (!unitType.hasSkill()) {
+            		unitTypesPurchasedInEurope.add(unitType);
+            	}
             }
         }
     }

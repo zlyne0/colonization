@@ -9,7 +9,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
@@ -20,6 +22,7 @@ import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
+import promitech.colonization.ui.resources.Messages;
 
 public class EuropeApplicationScreen extends ApplicationScreen {
 	private DragAndDrop goodsDragAndDrop;
@@ -30,6 +33,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private MarketLog marketLog;
+	private HighSeasUnitsPanel highSeasUnitsPanel;
+	
+	private Player player;
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
 		@Override
@@ -65,13 +71,44 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		
 		
 		stage = new Stage();		
+		
+        marketPanel = new MarketPanel();
+        carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        marketLog = new MarketLog();
+        highSeasUnitsPanel = new HighSeasUnitsPanel();
+        
+        Frame paperBackground = gameResources.getFrame("Paper");
+        Table tableLayout = new Table();
+        tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
+        tableLayout.setFillParent(true);
+        
+        HorizontalGroup rowGroup2 = new HorizontalGroup();
+        rowGroup2.addActor(highSeasUnitsPanel);
+        rowGroup2.addActor(marketLog);
+        tableLayout.add(rowGroup2).row();
+        HorizontalGroup rowGroup1 = new HorizontalGroup();
+        rowGroup1.addActor(carrierUnitsPanel);
+        rowGroup1.addActor(outsideUnitsPanel);
+        
+        tableLayout.add(rowGroup1).row();
+        tableLayout.add(marketPanel);
+
+		Table buttonsLayout = createButtonsLayout();
+        
+        stage.addActor(tableLayout);
+		stage.addActor(buttonsLayout);
+        
+        stage.setDebugAll(true);
+	}
+
+	private Table createButtonsLayout() {
 		int bw = (int) (stage.getHeight() * 0.33) / 3;
+		bw -= 10;
 		
 		ButtonActor closeButton = new ButtonActor(this.shape, "ESC");
 		closeButton.setWidth(bw);
 		closeButton.setHeight(bw);
-		closeButton.setX(stage.getWidth() - bw - 10);
-		closeButton.setY(stage.getHeight() - bw - 10);
 		closeButton.addListener(new InputListener() {
         	@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -79,35 +116,76 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         		return true;
         	}
         });
-        stage.addActor(closeButton);
 		
-        marketPanel = new MarketPanel();
-        carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
-        outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
-        marketLog = new MarketLog();
-        
-        Frame paperBackground = gameResources.getFrame("Paper");
-        Table tableLayout = new Table();
-        tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
-        tableLayout.setFillParent(true);
-        
-        tableLayout.add(marketLog).row();
-        HorizontalGroup rowGroup1 = new HorizontalGroup();
-        rowGroup1.addActor(carrierUnitsPanel);
-        rowGroup1.addActor(outsideUnitsPanel);
-        
-        
-        tableLayout.add(rowGroup1).row();
-        tableLayout.add(marketPanel);
-        
-        stage.addActor(tableLayout);
-        stage.setDebugAll(true);
+		ButtonActor recruitButton = new ButtonActor(this.shape, Messages.msg("recruit"));
+		recruitButton.setWidth(bw);
+		recruitButton.setHeight(bw);
+		recruitButton.addListener(new InputListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				ImmigrantsUnitsDialog buyableUnitsDialog = new ImmigrantsUnitsDialog(
+						stage.getHeight() * 0.75f, 
+						shape,
+						player.getEurope().getRecruitables()
+					);
+				buyableUnitsDialog.show(stage);
+				
+				System.out.println("event " + event);
+				return true;
+			}
+		});
+
+		ButtonActor purchaseButton = new ButtonActor(this.shape, Messages.msg("purchase"));
+		purchaseButton.setWidth(bw);
+		purchaseButton.setHeight(bw);
+		purchaseButton.addListener(new InputListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
+						stage.getHeight() * 0.75f, 
+						shape,
+						Specification.instance.unitTypesPurchasedInEurope.sortedEntities()
+					);
+				buyableUnitsDialog.show(stage);
+				return true;
+			}
+		});
+
+		ButtonActor trainButton = new ButtonActor(this.shape, Messages.msg("train"));
+		trainButton.setWidth(bw);
+		trainButton.setHeight(bw);
+		trainButton.addListener(new InputListener() {
+			@Override
+			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
+					stage.getHeight() * 0.75f, 
+					shape,
+					Specification.instance.unitTypesTrainedInEurope.sortedEntities()
+				);
+				buyableUnitsDialog.show(stage);
+				return true;
+			}
+		});
+
+		Table buttonsLayout = new Table();
+		buttonsLayout.setFillParent(true);
+		buttonsLayout.align(Align.top | Align.right);
+		buttonsLayout.defaults().space(0).pad(10, 10, 0, 10);
+		
+		buttonsLayout.add(closeButton).row();
+		buttonsLayout.add(recruitButton).row();
+		buttonsLayout.add(purchaseButton).row();
+		buttonsLayout.add(trainButton).row();
+		return buttonsLayout;
 	}
 	
 	public void init(Player player) {
+		this.player = player;
+		
 		marketPanel.init(player);
 		carrierUnitsPanel.initUnits(player.getEurope());
 		outsideUnitsPanel.initUnits(player.getEurope());
+		highSeasUnitsPanel.initUnits(player.getHighSeas());
 	}
 	
 	@Override

@@ -1,7 +1,6 @@
 package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
@@ -18,51 +17,9 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
-import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
 
 public class CarrierUnitsPanel extends HorizontalGroup {
-    class UnitsPanel extends ScrollPane {
-        private final HorizontalGroup widgets = new HorizontalGroup();
-        
-        UnitsPanel() {
-            super(null, GameResources.instance.getUiSkin());
-            setWidget(widgets);
-            
-            setForceScroll(false, false);
-            setFadeScrollBars(false);
-            setOverscroll(true, true);
-            
-            widgets.align(Align.center);
-            widgets.space(15);
-        }
-    
-        public void clear() {
-            widgets.clear();
-        }
-        
-        void disableAllUnitActors() {
-            for (Actor a : widgets.getChildren()) {
-                if (a instanceof UnitActor) {
-                    ((UnitActor)a).disableFocus();
-                }
-            }
-        }
-        
-        void addUnit(UnitActor unitActor) {
-            widgets.addActor(unitActor);
-        }
-        
-        @Override
-        public float getPrefWidth() {
-            return MapRenderer.TILE_WIDTH*2;
-        }
-        @Override
-        public float getPrefHeight() {
-            return MapRenderer.TILE_HEIGHT*2;
-        }
-    }
-
     class CargoPanel extends ScrollPane implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
         private final HorizontalGroup widgets = new HorizontalGroup();
         private static final float GOOD_IMG_WIDTH = 32;

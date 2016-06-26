@@ -12,8 +12,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
 public class MapIdEntities<T extends Identifiable> {
-    private java.util.Map<String,T> entities = new HashMap<String,T>();
-    private List<T> sortedEntities; 
+    protected java.util.Map<String,T> entities = new HashMap<String,T>();
+    protected List<T> sortedEntities; 
     
     public void add(T entity) {
         if (entity instanceof ObjectWithId) {
