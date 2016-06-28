@@ -89,6 +89,7 @@ public class Specification implements Identifiable {
     
     public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
     public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
+    public final MapIdEntities<GoodsType> immigrationGoodsTypeList = new MapIdEntities<GoodsType>();
     
     private String difficultyLevel;
     
@@ -121,6 +122,13 @@ public class Specification implements Identifiable {
             	} else if (!unitType.hasSkill()) {
             		unitTypesPurchasedInEurope.add(unitType);
             	}
+            }
+        }
+        
+        immigrationGoodsTypeList.clear();
+        for (GoodsType gt : goodsTypes.entities()) {
+            if (gt.isImmigrationType()) {
+                immigrationGoodsTypeList.add(gt);
             }
         }
     }

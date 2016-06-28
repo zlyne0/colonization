@@ -3,7 +3,9 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -17,6 +19,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     /** The initial lower bound on recruitment price. */
     private static final int LOWER_CAP_INITIAL = 80;
     
+    private Player owner;
     private int recruitPrice;
     private int recruitLowerCap;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
@@ -35,6 +38,47 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return recruitables;
 	}
 	
+    public void setOwner(Player owner) {
+        this.owner = owner;
+    }
+	
+    public int getNextImmigrantTurns() {
+        int production = getTotalImmigrationProduction();
+        int turns = 100;
+//        if (production > 0) {
+//            int immigrationRequired = owner.getImmigrationRequired() - owner.getImmigration();
+//            turns = immigrationRequired / production;
+//            if (immigrationRequired % production > 0) {
+//                turns++;
+//            }
+//        }
+        return turns;
+    }
+    
+//    public int getRecruitImmigrantPrice() {
+//        
+//    }
+    
+    private int getTotalImmigrationProduction() {
+        int prod = owner.getImmigrationProduction() + getImmigrationProduction();
+        if (prod < 0) {
+            prod = 0;
+        }
+        return prod;
+    }
+    
+    private int getImmigrationProduction() {
+        int n = 0;
+        for (Unit u : units.entities()) {
+            if (u.isPerson()) { 
+                n++;
+            }
+        }
+        n *= Specification.options.getIntValue(GameOptions.EUROPEAN_UNIT_IMMIGRATION_PENALTY);
+        n += Specification.options.getIntValue(GameOptions.PLAYER_IMMIGRATION_BONUS);
+        return n;
+    }
+
     public static class Xml extends XmlNodeParser {
 
         public Xml() {

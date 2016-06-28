@@ -125,6 +125,12 @@ public class GoodsType extends ObjectWithId {
     	return isNewWorldGoodsType() || getMadeFrom() != null && getMadeFrom().isNewWorldGoodsType();
     }
     
+    public boolean isImmigrationType() {
+        // TODO: ObjectWithFuture
+        //return containsModifierKey(Modifier.IMMIGRATION);
+        return false;
+    }
+    
     public GoodsType getMadeFrom() {
         return madeFrom;
     }

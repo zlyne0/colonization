@@ -1,12 +1,16 @@
 package net.sf.freecol.common.model.player;
 
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Stance;
@@ -15,9 +19,11 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
@@ -260,6 +266,10 @@ public class Player extends ObjectWithFeatures {
             || playerType == PlayerType.ROYAL;
     }
 
+    public boolean isColonial() {
+        return playerType == PlayerType.COLONIAL;
+    }
+    
     public boolean isRebel() {
         return playerType == PlayerType.REBEL;
     }
@@ -288,7 +298,33 @@ public class Player extends ObjectWithFeatures {
     public void modifyImmigration(int amount) {
         immigration = Math.max(0, immigration + amount);
     }
-	
+
+    public int getImmigrationProduction() {
+        if (!isColonial()) {
+            return 0;
+        }
+        int production = 0;
+        for (Settlement settlement : settlements.entities()) {
+            ProductionSummary productionSummary = settlement.productionSummary();
+            for (GoodsType goodsType : Specification.instance.immigrationGoodsTypeList.entities()) {
+                production += productionSummary.getQuantity(goodsType.getId());
+            }
+        }
+        
+//        for (Colony colony : getColonies()) {
+//            for (GoodsType goodsType : immigrationGoodsTypes) {
+//                production += colony.getTotalProductionOf(goodsType);
+//            }
+//        }
+//        Europe europe = getEurope();
+//        if (europe != null) {
+//            production += europe.getImmigration(production);
+//        }
+        
+        
+        return production;
+    }
+    
     public boolean canHaveFoundingFathers() {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
@@ -305,12 +341,18 @@ public class Player extends ObjectWithFeatures {
     public int getTax() {
         return tax;
     }
-    
+
     public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-            addNode(Europe.class, "europe");
+            addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
+                @Override
+                public void set(Player target, Europe entity) {
+                    target.europe = entity;
+                    entity.setOwner(target);
+                }
+            });
             addNode(Market.class, "market");
             addNode(EventsNotifications.class, "eventsNotifications");
             addNode(HighSeas.class, "highSeas");

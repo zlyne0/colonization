@@ -14,9 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
-import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.STable;
@@ -68,6 +66,27 @@ public class ImmigrantsUnitsDialog extends ClosableDialog {
         }
         europe.getRecruitPrice();
 		*/
+		
+		// imigration production tylko dla if (!isColonial()) return 0;
+		// player
+		// immigration="0"
+		// immigrationRequired="107"
+		// europe
+		// recruitPrice="710" 
+		// recruitLowerCap="80"
+		
+		// biore wszystkie goodsType ktore maja modyfikator model.modifier.immigration czyli crosses
+		// zliaczam calkowita produkcje crosses ze wszystkich colony
+		// jesli nation jest krajem Europe europe = getEurope(); dodatek do produkcji
+		// liczenie dodatku
+		// wszystkie unit.isPerson w europe
+		// poddanie mnoznikom
+//        n *= spec.getInteger(GameOptions.EUROPEAN_UNIT_IMMIGRATION_PENALTY);
+//        n += spec.getInteger(GameOptions.PLAYER_IMMIGRATION_BONUS);
+		// dodaje dodatek
+		// calkowita produkcja crosses nie moze byc ujemna, jesli jest ujemne wyjdzie zero
+		
+		// wyliczenie turns ilosc tur do nastepnej immigration
 		
         String header = Messages.message(StringTemplate.template("recruitPanel.clickOn")
             .addAmount("%money%", 123)
