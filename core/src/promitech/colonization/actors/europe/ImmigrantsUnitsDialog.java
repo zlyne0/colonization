@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
@@ -88,9 +89,13 @@ public class ImmigrantsUnitsDialog extends ClosableDialog {
 		
 		// wyliczenie turns ilosc tur do nastepnej immigration
 		
+		Europe europe = null;
+		
+		
+		
         String header = Messages.message(StringTemplate.template("recruitPanel.clickOn")
-            .addAmount("%money%", 123)
-            .addAmount("%number%", 234));
+            .addAmount("%money%", europe.getRecruitImmigrantPrice())
+            .addAmount("%number%", europe.getNextImmigrantTurns()));
         Label lable = new Label(header, GameResources.instance.getUiSkin());
         lable.setWrap(true);
 		

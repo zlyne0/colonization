@@ -45,19 +45,25 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     public int getNextImmigrantTurns() {
         int production = getTotalImmigrationProduction();
         int turns = 100;
-//        if (production > 0) {
-//            int immigrationRequired = owner.getImmigrationRequired() - owner.getImmigration();
-//            turns = immigrationRequired / production;
-//            if (immigrationRequired % production > 0) {
-//                turns++;
-//            }
-//        }
+        if (production > 0) {
+            int immigrationRequired = owner.getImmigrationRequired() - owner.getImmigration();
+            turns = immigrationRequired / production;
+            if (immigrationRequired % production > 0) {
+                turns++;
+            }
+        }
         return turns;
     }
     
-//    public int getRecruitImmigrantPrice() {
-//        
-//    }
+    public int getRecruitImmigrantPrice() {
+        if (!owner.isColonial()) {
+        	return -1;
+        }
+        int required = owner.getImmigrationRequired();
+        int immigration = owner.getImmigration();
+        int difference = Math.max(required - immigration, 0);
+        return Math.max((recruitPrice * difference) / required, recruitLowerCap);
+    }
     
     private int getTotalImmigrationProduction() {
         int prod = owner.getImmigrationProduction() + getImmigrationProduction();
