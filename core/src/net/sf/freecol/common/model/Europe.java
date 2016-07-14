@@ -3,16 +3,21 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.WithProbability;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Europe extends ObjectWithFeatures implements UnitLocation {
 
+	private static final int MAX_RECRUITABLE_UNITS = 3;
+	
     /** The initial recruit price. */
     private static final int RECRUIT_PRICE_INITIAL = 200;
 
@@ -23,7 +28,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitPrice;
     private int recruitLowerCap;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    protected final List<UnitType> recruitables = new ArrayList<UnitType>();
+    protected final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
     
     public Europe(String id) {
         super(id);
@@ -85,6 +90,55 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         return n;
     }
 
+	public void buyUnit(UnitType unitType, int price) {
+		owner.subtractGold(price);
+		
+        UnitRole role = (Specification.options.getBoolean(GameOptions.EQUIP_EUROPEAN_RECRUITS))
+                ? unitType.getDefaultRole()
+                : Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
+        unit.changeUnitLocation(this);
+        if (unit.isCarrier()) {
+        	unit.setState(UnitState.ACTIVE);
+        } else {
+        	unit.setState(UnitState.SENTRY);
+        }
+	}
+
+	public void recruitImmigrant(UnitType unitType, int price) {
+		buyUnit(unitType, price);
+		
+		increaseRecruitmentDifficulty();
+		for (UnitType ut : recruitables) {
+			if (ut.equalsId(unitType)) {
+				recruitables.remove(ut);
+				break;
+			}
+		}
+		generateRecruitablesUnitList();
+	}
+
+	private void generateRecruitablesUnitList() {
+		if (recruitables.size() >= MAX_RECRUITABLE_UNITS) {
+			return;
+		}
+		List<WithProbability<UnitType>> recruitProbabilities = new ArrayList<WithProbability<UnitType>>(Specification.instance.unitTypeRecruitProbabilities.size());
+		for (WithProbability<UnitType> recruitProbability : Specification.instance.unitTypeRecruitProbabilities) { 
+			if (owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, recruitProbability.probabilityObject())) {
+				recruitProbabilities.add(recruitProbability);
+			}
+		}
+		for (int i=0; i<MAX_RECRUITABLE_UNITS - recruitables.size(); i++) {
+			WithProbability<UnitType> randomOne = Randomizer.getInstance().randomOne(recruitProbabilities);
+			recruitables.add(randomOne.probabilityObject());
+		}
+	}
+	
+    private void increaseRecruitmentDifficulty() {
+        recruitPrice += Specification.options.getIntValue(GameOptions.RECRUIT_PRICE_INCREASE);
+        recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
+    }
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
@@ -125,4 +179,5 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
             return "europe";
         }
     }
+
 }

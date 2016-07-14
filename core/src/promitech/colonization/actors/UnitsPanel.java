@@ -18,6 +18,7 @@ public class UnitsPanel extends ScrollPane {
         setForceScroll(false, false);
         setFadeScrollBars(false);
         setOverscroll(true, true);
+        setScrollBarPositions(false, true);
         
         widgets.align(Align.center);
         widgets.space(15);

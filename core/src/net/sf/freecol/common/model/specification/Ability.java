@@ -429,14 +429,12 @@ public final class Ability implements Identifiable {
 
     public boolean canApplyTo(ObjectWithFeatures obj) {
     	if (scopes.isEmpty()) {
-    		return false;
+    		return true;
     	}
     	for (int i=0; i<scopes.size(); i++) {
     		Scope s = scopes.get(i);
-    		if (s.type != null) {
-    			if (obj.getId().equals(s.type)) {
-    				return true;
-    			}
+    		if (s.isAppliesTo(obj)) {
+    			return true;
     		}
     		if (obj.hasAbility(s.abilityId, s.abilityValue)) {
     			return true;

@@ -16,30 +16,54 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.STable;
+import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class BuyableUnitsDialog extends ClosableDialog {
+class BuyableUnitsDialog extends ClosableDialog implements STableSelectListener {
 
 	private final ShapeRenderer shape;
 	private final List<UnitType> unitsTypes;
+	private final Player player;
+	private final ChangeColonyStateListener changeColonyStateListener;
 	
-	public BuyableUnitsDialog(float maxHeight, ShapeRenderer shape, List<UnitType> unitsTypes) {
+	public BuyableUnitsDialog(float maxHeight, ShapeRenderer shape, List<UnitType> unitsTypes, Player player, ChangeColonyStateListener changeColonyStateListener) {
 		super("", GameResources.instance.getUiSkin(), maxHeight);
 		this.shape = shape;
 		this.unitsTypes = unitsTypes;
+		this.player = player;
+		this.changeColonyStateListener = changeColonyStateListener;
 		
 		createComponents();
 		
 		withHidingOnEsc();
 	}
 
+	@Override
+	public void onSelect(Object payload) {
+		UnitType unitType = (UnitType)payload;
+		
+		if (player.hasGold(unitType.getPrice())) {
+			System.out.println("buy unit in europe " + unitType);
+			player.getEurope().buyUnit(unitType, unitType.getPrice());
+			
+			changeColonyStateListener.changeUnitAllocation();
+			
+			hide();
+		} else {
+			System.out.println("do not have gold to by unit " + unitType);
+		}
+	}
+	
 	private void createComponents() {
 		STable unitsTable = new STable(shape);
 		unitsTable.defaults().space(10, 0, 10, 0);
+		unitsTable.addSelectListener(this);
 		
 		int[] labelAlign = new int[] { Align.left, Align.left, Align.right };
 		

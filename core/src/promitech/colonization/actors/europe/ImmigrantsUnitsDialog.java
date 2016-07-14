@@ -1,7 +1,5 @@
 package promitech.colonization.actors.europe;
 
-import java.util.List;
-
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -14,27 +12,47 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
-import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.STable;
+import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class ImmigrantsUnitsDialog extends ClosableDialog {
+public class ImmigrantsUnitsDialog extends ClosableDialog implements STableSelectListener {
 
 	private final ShapeRenderer shape;
-	private final List<UnitType> unitsTypes;
+	private final Player player;
+	private final ChangeColonyStateListener changeColonyStateListener;
 	
-	public ImmigrantsUnitsDialog(float maxHeight, ShapeRenderer shape, List<UnitType> unitsTypes) {
+	public ImmigrantsUnitsDialog(float maxHeight, ShapeRenderer shape, Player player, ChangeColonyStateListener changeColonyStateListener) {
 		super("", GameResources.instance.getUiSkin());
 		this.shape = shape;
-		this.unitsTypes = unitsTypes;
+		this.player = player;
+		this.changeColonyStateListener = changeColonyStateListener;
 		
 		createComponents();
 		
 		withHidingOnEsc();
+	}
+
+	@Override
+	public void onSelect(Object payload) {
+		UnitType unitType = (UnitType)payload;
+		int price = player.getEurope().getRecruitImmigrantPrice();
+		if (player.hasGold(price)) {
+			System.out.println("recruit immigrant " + unitType + " for gold " + price);
+			
+			player.getEurope().recruitImmigrant(unitType, price);
+			changeColonyStateListener.changeUnitAllocation();
+			
+			hide();
+		} else {
+			System.out.println("do not have gold to recruit immigrant " + unitType + " for gold " + price);
+		}
 	}
 
 	private void createComponents() {
@@ -42,8 +60,9 @@ public class ImmigrantsUnitsDialog extends ClosableDialog {
 		
 		STable unitsTable = new STable(shape);
 		unitsTable.defaults().space(10, 0, 10, 0);
+		unitsTable.addSelectListener(this);
 		
-		for (UnitType unitType : unitsTypes) {
+		for (UnitType unitType : player.getEurope().getRecruitables()) {
 			TextureRegion texture = GameResources.instance.getFrame(unitType.resourceImageKey()).texture;
 			Image image = new Image(new TextureRegionDrawable(texture), Scaling.none, Align.center);
 			
@@ -53,49 +72,10 @@ public class ImmigrantsUnitsDialog extends ClosableDialog {
 
 			unitsTable.addRow(unitType, labelAlign, image, label);
 		}
-
-		// TODO: freecol, RecruitPanel 
-		/*
-		Player player;
-		Europe europe;
-        int production = player.getTotalImmigrationProduction();
-        int turns = 100;
-        if (production > 0) {
-            int immigrationRequired = player.getImmigrationRequired() - player.getImmigration();
-            turns = immigrationRequired / production;
-            if (immigrationRequired % production > 0) turns++;
-        }
-        europe.getRecruitPrice();
-		*/
-		
-		// imigration production tylko dla if (!isColonial()) return 0;
-		// player
-		// immigration="0"
-		// immigrationRequired="107"
-		// europe
-		// recruitPrice="710" 
-		// recruitLowerCap="80"
-		
-		// biore wszystkie goodsType ktore maja modyfikator model.modifier.immigration czyli crosses
-		// zliaczam calkowita produkcje crosses ze wszystkich colony
-		// jesli nation jest krajem Europe europe = getEurope(); dodatek do produkcji
-		// liczenie dodatku
-		// wszystkie unit.isPerson w europe
-		// poddanie mnoznikom
-//        n *= spec.getInteger(GameOptions.EUROPEAN_UNIT_IMMIGRATION_PENALTY);
-//        n += spec.getInteger(GameOptions.PLAYER_IMMIGRATION_BONUS);
-		// dodaje dodatek
-		// calkowita produkcja crosses nie moze byc ujemna, jesli jest ujemne wyjdzie zero
-		
-		// wyliczenie turns ilosc tur do nastepnej immigration
-		
-		Europe europe = null;
-		
-		
 		
         String header = Messages.message(StringTemplate.template("recruitPanel.clickOn")
-            .addAmount("%money%", europe.getRecruitImmigrantPrice())
-            .addAmount("%number%", europe.getNextImmigrantTurns()));
+            .addAmount("%money%", player.getEurope().getRecruitImmigrantPrice())
+            .addAmount("%number%", player.getEurope().getNextImmigrantTurns()));
         Label lable = new Label(header, GameResources.instance.getUiSkin());
         lable.setWrap(true);
 		
@@ -122,5 +102,4 @@ public class ImmigrantsUnitsDialog extends ClosableDialog {
 		panel.add(okButton).right().pad(0, 20, 20, 20);
 		return panel;
 	}
-
 }

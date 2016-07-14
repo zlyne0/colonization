@@ -4,7 +4,7 @@ import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-class TileTypeAllowedResource implements Identifiable, WithProbability {
+class TileTypeAllowedResource implements Identifiable, WithProbability<TileTypeAllowedResource> {
 
 	public final ResourceType resourceType;
 	public final int probability;
@@ -22,6 +22,11 @@ class TileTypeAllowedResource implements Identifiable, WithProbability {
 	@Override
 	public int getOccureProbability() {
 		return probability;
+	}
+
+	@Override
+	public TileTypeAllowedResource probabilityObject() {
+		return this;
 	}
 	
 	public static class Xml extends XmlNodeParser {

@@ -4871,7 +4871,7 @@
         <stringTemplate id="Pacific Ocean" templateType="name"/>
       </historyEvent>
       <highSeas id="highSeas:3">
-        <unit id="unit:6437" name="Halve Maen" unitType="model.unit.merchantman" movesLeft="15" state="active" role="model.role.default" roleCount="0" owner="player:1" location="highSeas:3" treasureAmount="0" entryLocation="tile:3398" turnsOfTraining="0" experience="0" workLeft="1" hitPoints="6" attrition="0" destination="europe:2">
+        <unit id="unit:6437" name="Halve Maen" unitType="model.unit.merchantman" movesLeft="15" state="active" role="model.role.default" roleCount="0" owner="player:1" location="highSeas:3" treasureAmount="0" entryLocation="tile:3398" turnsOfTraining="0" experience="0" workLeft="1" hitPoints="6" attrition="0" destination="europe:2" destinationType="EUROPE">
           <goodsContainer id="goodsContainer:6438">
             <storedGoods>
               <goods type="model.goods.cloth" amount="94"/>
@@ -4885,6 +4885,7 @@
             </oldStoredGoods>
           </goodsContainer>
         </unit>
+		<unit id="unit:-20" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0" destinationType="TILE" destinationX="1" destinationY="1"/>
         <destination id="europe:2"/>
         <destination id="map:247"/>
       </highSeas>
@@ -4895,6 +4896,8 @@
         <unit id="unit:7097" unitType="model.unit.expertFarmer" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:7108" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:7109" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+		<unit id="unit:-21" name="Gideon" unitType="model.unit.caravel" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
+		<unit id="unit:-22" name="Gideon2" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
         <ability id="model.ability.dressMissionary" value="true"/>
         <recruit id="model.unit.firebrandPreacher"/>
         <recruit id="model.unit.freeColonist"/>
@@ -18922,6 +18925,8 @@
         <unit id="unit:6764" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:6811" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:6762" unitType="model.unit.hardyPioneer" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" workType="model.goods.bells" experienceType="model.goods.bells" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+		<unit id="unit:-23" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
+        
         <colony id="colony:6528" owner="player:1" tile="tile:3392" settlementType="model.settlement.colony" name="Nieuw Amsterdam" established="8" sonsOfLiberty="11" oldSonsOfLiberty="11" tories="6" oldTories="6" liberty="142" immigration="112" productionBonus="0">
           <goodsContainer id="goodsContainer:6529">
             <storedGoods>

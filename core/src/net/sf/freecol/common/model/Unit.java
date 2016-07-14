@@ -346,7 +346,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
 
     public boolean isColonist() {
-        return unitType.hasAbility(Ability.FOUND_COLONY) && owner.hasAbility(Ability.FOUNDS_COLONIES);
+        return unitType.hasAbility(Ability.FOUND_COLONY) && owner.getFeatures().hasAbility(Ability.FOUNDS_COLONIES);
     }
     
     private MoveType getLandMoveType(Tile from, Tile target) {
@@ -482,7 +482,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         if (settlement instanceof Colony) {
             return (owner.atWarWith(settlement.getOwner()))
                 ? MoveType.MOVE_NO_ACCESS_WAR
-                : (!owner.hasAbility(Ability.TRADE_WITH_FOREIGN_COLONIES))
+                : (!owner.getFeatures().hasAbility(Ability.TRADE_WITH_FOREIGN_COLONIES))
                 ? MoveType.MOVE_NO_ACCESS_TRADE
                 : MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS;
         } else if (settlement instanceof IndianSettlement) {
@@ -691,7 +691,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    if (unitRole.hasAbility(code)) {
 	        return true;
 	    }
-	    if (owner.hasAbility(code)) {
+	    if (owner.getFeatures().hasAbility(code)) {
 	        return true;
 	    }
 	    return false;

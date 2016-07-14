@@ -630,7 +630,7 @@ public class Colony extends Settlement {
             return -1;
         }
         float membership = (liberty * 100.0f) / (LIBERTY_PER_REBEL * uc);
-        membership = owner.applyModifier(Modifier.SOL, membership);
+        membership = owner.getFeatures().applyModifier(Modifier.SOL, membership);
         
         if (membership < 0.0f) {
             membership = 0.0f;
@@ -685,7 +685,7 @@ public class Colony extends Settlement {
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
-    	    
+
     	    NoBuildReason noBuildReason = getNoBuildReason(bt);
     	    if (noBuildReason != NoBuildReason.NONE) {
     	        System.out.println("" + bt + ": " + noBuildReason);
@@ -706,11 +706,9 @@ public class Colony extends Settlement {
     }
     
     public void buildableUnits(List<ColonyBuildingQueueItem> items) {
+    	// TODO: rozwarzenie uzycia getNoBuildReason
     	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
     	for (UnitType unitType : unitTypes) {
-    		if (unitType.getId().equals("model.unit.flyingDutchman")) {
-    			System.getProperties();
-    		}
     		if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, unitType)) {
     			System.out.println("" + unitType + " can not be built because of buildable ability");
     			continue;
@@ -969,7 +967,7 @@ public class Colony extends Settlement {
 					return NoBuildReason.LIMIT_EXCEEDED;
 				}
 			}
-			if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, (UnitType) item)) {
+			if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, item)) {
 				return NoBuildReason.MISSING_BUILD_ABILITY;
 			}
 		}

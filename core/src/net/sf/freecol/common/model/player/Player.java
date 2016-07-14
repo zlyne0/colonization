@@ -1,15 +1,13 @@
 package net.sf.freecol.common.model.player;
 
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
-import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -20,7 +18,6 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
-import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -77,7 +74,7 @@ class BooleanMap {
 	}
 }
 
-public class Player extends ObjectWithFeatures {
+public class Player extends ObjectWithId {
 	
     public static enum PlayerType {
         NATIVE, COLONIAL, REBEL, INDEPENDENT, ROYAL, UNDEAD, RETIRED
@@ -112,6 +109,7 @@ public class Player extends ObjectWithFeatures {
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     private HighSeas highSeas;
+    private final ObjectWithFeatures updatableFeatures;
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
@@ -122,6 +120,7 @@ public class Player extends ObjectWithFeatures {
 
     public Player(String id) {
     	super(id);
+    	updatableFeatures = new ObjectWithFeatures("tmp:" +  id);
     }
     
     public Nation nation() {
@@ -170,8 +169,8 @@ public class Player extends ObjectWithFeatures {
             switch (type) {
             case REBEL: 
             case INDEPENDENT:
-                addAbility(Ability.INDEPENDENCE_DECLARED, true);
-                addAbility(Ability.INDEPENDENT_NATION, true);
+//                addAbility(Ability.INDEPENDENCE_DECLARED, true);
+//                addAbility(Ability.INDEPENDENT_NATION, true);
                 break;
             default:
                 break;
@@ -351,10 +350,17 @@ public class Player extends ObjectWithFeatures {
         return tax;
     }
 
+	public ObjectWithFeatures getFeatures() {
+		return updatableFeatures;
+	}
+    
+	public void addFoundingFathers(FoundingFather father) {
+		foundingFathers.add(father);
+		updatableFeatures.addFeatures(father);
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
                 @Override
                 public void set(Player target, Europe entity) {
@@ -384,6 +390,7 @@ public class Player extends ObjectWithFeatures {
             player.nation = Specification.instance.nations.getById(nationIdStr);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
+                player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
             }
             player.independentNationName = attr.getStrAttribute("independentNationName");
             
@@ -403,7 +410,7 @@ public class Player extends ObjectWithFeatures {
         	    for (int i=0; i<count; i++) {
         	        String fatherId = attr.getStrAttributeNotNull("x" + i);
         	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
-        	        ((Player)nodeObject).foundingFathers.add(father);
+        	        ((Player)nodeObject).addFoundingFathers(father);
         	    }
         	}
         }

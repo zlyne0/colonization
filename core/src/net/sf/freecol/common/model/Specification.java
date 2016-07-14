@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.xml.sax.SAXException;
 
@@ -10,6 +12,7 @@ import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
@@ -83,6 +86,7 @@ public class Specification implements Identifiable {
     public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
     public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    public final List<WithProbability<UnitType>> unitTypeRecruitProbabilities = new ArrayList<WithProbability<UnitType>>();
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
@@ -113,6 +117,8 @@ public class Specification implements Identifiable {
         
         expertUnitTypeByGoodType.clear();
         for (UnitType unitType : unitTypes.entities()) {
+        	unitType.updateDefaultRoleReference();
+        	
             if (unitType.getExpertProductionForGoodsId() != null) {
                 expertUnitTypeByGoodType.put(unitType.getExpertProductionForGoodsId(), unitType);
             }
@@ -122,6 +128,9 @@ public class Specification implements Identifiable {
             	} else if (!unitType.hasSkill()) {
             		unitTypesPurchasedInEurope.add(unitType);
             	}
+            }
+            if (unitType.isRecruitable()) {
+            	unitTypeRecruitProbabilities.add(unitType.createRecruitProbability());
             }
         }
         

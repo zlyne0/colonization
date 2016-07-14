@@ -130,7 +130,7 @@ public class GameLogic {
 
 	private boolean isExposedResourceAfterImprovement(Tile tile, TileImprovementType improvementType) {
 		return !tile.hasTileResource() 
-				&& Randomizer.getInstance().isHappen(improvementType) 
+				&& Randomizer.getInstance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
 	}

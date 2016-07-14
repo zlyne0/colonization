@@ -40,6 +40,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
 		@Override
 		public void changeUnitAllocation() {
+			marketPanel.init(player);
+			carrierUnitsPanel.initUnits(player.getEurope());
+			outsideUnitsPanel.initUnits(player.getEurope());
 		}
 
 		@Override
@@ -124,10 +127,11 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 				ImmigrantsUnitsDialog buyableUnitsDialog = new ImmigrantsUnitsDialog(
-						stage.getHeight() * 0.75f, 
-						shape,
-						player.getEurope().getRecruitables()
-					);
+					stage.getHeight() * 0.75f, 
+					shape,
+					player,
+					changeColonyStateListener
+				);
 				buyableUnitsDialog.show(stage);
 				
 				System.out.println("event " + event);
@@ -144,7 +148,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
 						stage.getHeight() * 0.75f, 
 						shape,
-						Specification.instance.unitTypesPurchasedInEurope.sortedEntities()
+						Specification.instance.unitTypesPurchasedInEurope.sortedEntities(),
+						player,
+						changeColonyStateListener
 					);
 				buyableUnitsDialog.show(stage);
 				return true;
@@ -160,7 +166,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
 					stage.getHeight() * 0.75f, 
 					shape,
-					Specification.instance.unitTypesTrainedInEurope.sortedEntities()
+					Specification.instance.unitTypesTrainedInEurope.sortedEntities(),
+					player,
+					changeColonyStateListener
 				);
 				buyableUnitsDialog.show(stage);
 				return true;
