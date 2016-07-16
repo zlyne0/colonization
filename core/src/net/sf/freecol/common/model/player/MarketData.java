@@ -146,6 +146,10 @@ public class MarketData extends ObjectWithId {
     	return costToBuy * amount;
     }
     
+    public final int getCostToSell(int amount) {
+    	return paidForSale * amount;
+    }
+    
 	void modifySales(int goodsAmount) {
 		if (goodsAmount != 0) {
 			traded = true;
@@ -196,6 +200,10 @@ public class MarketData extends ObjectWithId {
         return price();
     }
 	
+    public boolean hasNotArrears() {
+    	return arrears == 0;
+    }
+    
 	public static class Xml extends XmlNodeParser {
 
 		@Override

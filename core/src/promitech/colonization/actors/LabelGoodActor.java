@@ -79,10 +79,10 @@ public class LabelGoodActor extends Widget {
 
         @Override
         public void drop(Source source, Payload payload, float x, float y, int pointer) {
-            Validation.instanceOf(source.getActor(), QuantityGoodActor.class);
+            Validation.instanceOf(source.getActor(), LabelGoodActor.class);
             Validation.instanceOf(payload.getObject(), DragAndDropPayload.class);
 
-            QuantityGoodActor actor = (QuantityGoodActor)source.getActor();
+            LabelGoodActor actor = (LabelGoodActor)source.getActor();
             DragAndDropSourceContainer<AbstractGoods> sourceContainer = actor.dragAndDropSourceContainer;
             
             DragAndDropPayload dadPayload = (DragAndDropPayload)payload.getObject();

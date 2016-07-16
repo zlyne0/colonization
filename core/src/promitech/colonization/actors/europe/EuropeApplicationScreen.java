@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
@@ -22,6 +23,7 @@ import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.hud.ButtonActor;
+import promitech.colonization.ui.hud.NotificationDialog;
 import promitech.colonization.ui.resources.Messages;
 
 public class EuropeApplicationScreen extends ApplicationScreen {
@@ -52,6 +54,12 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		@Override
 		public void changeBuildingQueue() {
 		}
+
+		@Override
+		public void addNotification(Notification notification) {
+			NotificationDialog dialog = new NotificationDialog(notification);
+			dialog.show(EuropeApplicationScreen.this.stage);
+		}
 	};
 	
     private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
@@ -74,11 +82,10 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		
 		
 		stage = new Stage();		
-		
-        marketPanel = new MarketPanel();
+		marketLog = new MarketLog();
+        marketPanel = new MarketPanel(gameController.getGame(), goodsDragAndDrop, changeColonyStateListener, marketLog);
         carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
-        marketLog = new MarketLog();
         highSeasUnitsPanel = new HighSeasUnitsPanel();
         
         Frame paperBackground = gameResources.getFrame("Paper");

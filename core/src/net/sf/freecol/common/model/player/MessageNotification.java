@@ -1,14 +1,31 @@
 package net.sf.freecol.common.model.player;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithId;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class MessageNotification extends ObjectWithId implements Notification, Identifiable {
 	
 	private final String body;
 
+	public static MessageNotification createGoodsPriceChangeNotification(Player player, TransactionEffectOnMarket transaction) {
+		String strTempCode = transaction.isPriceIncrease() ? "model.market.priceIncrease" : "model.market.priceDecrease";
+		
+		StringTemplate st = StringTemplate.template(strTempCode)
+			.addStringTemplate("%market%", player.getNationName())
+			.addName("%goods%", transaction.goodsTypeId)
+			.addAmount("%buy%", transaction.buyPriceAfterTransaction)
+			.addAmount("%sell%", transaction.sellPriceAfterTransaction);
+		return new MessageNotification(
+			Game.idGenerator.nextId(MessageNotification.class), 
+			Messages.message(st)
+		);
+	}
+	
 	public MessageNotification(String id, String body) {
 		super(id);
 		this.body = body;

@@ -27,7 +27,7 @@ public class NotificationDialog extends ClosableDialog {
 			text = "can not recognize Notification: " + notification;
 		}
 		Label label = new Label(text, GameResources.instance.getUiSkin());
-		dialogLayout.add(label);
+		dialogLayout.add(label).pad(20);
 		
 		getContentTable().add(dialogLayout).top().expand();
 		getButtonTable().add(buttonsPanel()).expandX();

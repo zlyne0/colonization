@@ -1,8 +1,12 @@
 package net.sf.freecol.common.model.player;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
@@ -10,17 +14,12 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Market extends ObjectWithId {
+	
 	public final MapIdEntities<MarketData> marketGoods = new MapIdEntities<MarketData>();
 	
 	// Propagate 5-30% of the original change.
 	private static final int PROPAGATED_GOODS_LOWER_BOUND = 5; 
 	private static final int PROPAGATED_GOODS_UPPER_BOUND = 30;
-	
-	public static final int modifyGoodsAmountPropagatetToMarkets(int amount) {
-        amount *= Randomizer.getInstance().randomInt(PROPAGATED_GOODS_LOWER_BOUND, PROPAGATED_GOODS_UPPER_BOUND);
-        amount /= 100;
-		return amount;
-	}
 	
 	public Market(String id) {
 		super(id);
@@ -39,14 +38,10 @@ public class Market extends ObjectWithId {
         return (data == null) ? 0 : data.getCostToBuy(amount);
     }
     
-    public int getSalePrice(GoodsType type, int amount) {
-        MarketData data = marketGoods.getByIdOrNull(type.getId());
-        return (data == null) ? 0 : data.getSalePrice() * amount;
-    }
 
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
-	public TransactionEffectOnMarket buyGoods(Player player, GoodsType goodsType, int goodsAmount, GoodsContainer goodsContainer) {
+	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount, GoodsContainer goodsContainer) {
 		int price = getBidPrice(goodsType, goodsAmount);
 		if (player.hasNotGold(price)) {
 			throw new IllegalStateException("Insufficient funds to pay for build");
@@ -60,35 +55,56 @@ public class Market extends ObjectWithId {
 			playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
 			
 			MarketData marketData = requireMarketData(goodsType);
-			TRANSACTION_EFFECT_ON_MARKET.beforePrice = marketData.getCostToBuy(goodsAmount);
+			TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
 			marketData.modifyOnBuyGoods(goodsAmount, price, playerModifiedMarketAmount);
-			TRANSACTION_EFFECT_ON_MARKET.afterPrice = marketData.getCostToBuy(goodsAmount);
+			TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
 		}
 		
 		// bought goods amount on market. Can be modified by player modifiers and differ from argument goodsAmount
-		TRANSACTION_EFFECT_ON_MARKET.goodsModifiedMarket = playerModifiedMarketAmount;
+		propagateTransactionToEuropeanMarkets(game, player, goodsType, -playerModifiedMarketAmount);
 		return TRANSACTION_EFFECT_ON_MARKET;
 	}
 
-	public TransactionEffectOnMarket sellGoods(Player player, GoodsType goodsType, int goodsAmount, GoodsContainer goodsContainer) {
-	    int price = getSalePrice(goodsType, goodsAmount);
-	    int tax = player.getTax();
-	    
-        int priceBeforeTaxes = price;
-        int priceAfterTaxes = ((100 - tax) * priceBeforeTaxes) / 100;
-	    
-        player.addGold(priceAfterTaxes);
-        goodsContainer.decreaseGoodsQuantity(goodsType, goodsAmount);
-        
-        TRANSACTION_EFFECT_ON_MARKET.reset();
-        int playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
+	public TransactionEffectOnMarket sellGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
         MarketData marketData = requireMarketData(goodsType);
-        TRANSACTION_EFFECT_ON_MARKET.beforePrice = marketData.getCostToBuy(goodsAmount);
-        marketData.modifyOnSellGoods(goodsAmount, price, priceAfterTaxes, playerModifiedMarketAmount);
-        TRANSACTION_EFFECT_ON_MARKET.afterPrice = marketData.getCostToBuy(goodsAmount);
+		
+		TRANSACTION_EFFECT_ON_MARKET.reset();
+		
+		TRANSACTION_EFFECT_ON_MARKET.sell(goodsType, goodsAmount, marketData, player.getTax());
+		player.addGold(TRANSACTION_EFFECT_ON_MARKET.netPrice);
         
-        TRANSACTION_EFFECT_ON_MARKET.goodsModifiedMarket = playerModifiedMarketAmount;
+        int playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
+		TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
+        marketData.modifyOnSellGoods(goodsAmount, TRANSACTION_EFFECT_ON_MARKET.grossPrice, TRANSACTION_EFFECT_ON_MARKET.netPrice, playerModifiedMarketAmount);
+        TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
+        
+        propagateTransactionToEuropeanMarkets(game, player, goodsType, playerModifiedMarketAmount);
         return TRANSACTION_EFFECT_ON_MARKET;
+	}
+	
+	private void propagateTransactionToEuropeanMarkets(Game game, Player owner, GoodsType goodsType, int goodsAmount) {
+		if (!goodsType.isStorable()) {
+			return;
+		}
+		goodsAmount = modifyGoodsAmountPropagatetToMarkets(goodsAmount);
+        if (goodsAmount == 0) {
+        	return;
+        }
+        for (Player player : game.players.entities()) {
+        	if (player.isNotLiveEuropeanPlayer()) {
+        		continue;
+        	}
+        	if (player.equalsId(owner)) {
+        		continue;
+        	}
+        	player.market().addGoodsToMarket(goodsType, goodsAmount);
+        }
+	}
+
+	private final int modifyGoodsAmountPropagatetToMarkets(int amount) {
+        amount *= Randomizer.getInstance().randomInt(PROPAGATED_GOODS_LOWER_BOUND, PROPAGATED_GOODS_UPPER_BOUND);
+        amount /= 100;
+		return amount;
 	}
 	
     public boolean addGoodsToMarket(GoodsType goodsType, int amount) {
@@ -106,6 +122,30 @@ public class Market extends ObjectWithId {
     	}
     	return marketData;
     }
+	
+	public boolean canTradeInEurope(String goodsTypeId) {
+		MarketData marketData = marketGoods.getByIdOrNull(goodsTypeId);
+		if (marketData == null || marketData.hasNotArrears()) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean canTradeInCustomHouse(Game game, Player player, String goodsTypeId) {
+		MarketData marketData = marketGoods.getByIdOrNull(goodsTypeId);
+		if (marketData == null || marketData.hasNotArrears()) {
+			return true;
+		}
+        if (Specification.options.getBoolean(GameOptions.CUSTOM_IGNORE_BOYCOTT)) {
+            return true;
+        }
+        if (player.getFeatures().hasAbility(Ability.CUSTOM_HOUSE_TRADES_WITH_FOREIGN_COUNTRIES)) {
+        	if (player.hasPeaceOrAllianceWithOneOfEuropeanPlayers(game)) {
+        		return true;
+        	}
+        }
+		return false;
+	}
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {

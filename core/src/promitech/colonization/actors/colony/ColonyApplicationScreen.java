@@ -15,6 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.player.Notification;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
@@ -71,6 +72,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		@Override
 		public void changeBuildingQueue() {
 			actualBuildableItemActor.updateBuildItem(colony);
+		}
+
+		@Override
+		public void addNotification(Notification notification) {
 		}
     };
 

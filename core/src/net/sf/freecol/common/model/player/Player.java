@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.player;
 import java.util.HashMap;
 
 import net.sf.freecol.common.model.Europe;
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Nation;
@@ -141,6 +142,19 @@ public class Player extends ObjectWithId {
 		return market;
 	}
 	
+    /**
+     * What is the name of the player's market?
+     * Following a declaration of independence we are assumed to trade
+     * broadly with any European market rather than a specific port.
+     *
+     * @return A <code>StringTemplate</code> for the player market.
+     */
+    public StringTemplate marketName() {
+        return (getEurope() == null)
+            ? StringTemplate.key("model.market.independent")
+            : StringTemplate.key(getEuropeNameKey());
+    }
+	
     public String toString() {
         return "id = " + id + ", nation = " + nation;
     }
@@ -152,6 +166,26 @@ public class Player extends ObjectWithId {
     public boolean hasContacted(Player player) {
         return getStance(player) != Stance.UNCONTACTED;
     }
+    
+    public boolean atPeaceOrAlliance(Player player) {
+    	Stance s = getStance(player);
+    	return s == Stance.PEACE || s == Stance.ALLIANCE;    	
+    }
+    
+	public boolean hasPeaceOrAllianceWithOneOfEuropeanPlayers(Game game) {
+		for (Player other : game.players.entities()) {
+			if (other.isNotLiveEuropeanPlayer()) {
+				continue;
+			}
+			if (this.equalsId(other)) {
+				continue;
+			}
+			if (this.atPeaceOrAlliance(other)) {
+				return true;
+			}
+		}
+		return false;
+	}
     
     public Stance getStance(Player player) {
     	if (player == null) {

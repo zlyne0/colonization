@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market;
+import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
@@ -785,11 +786,9 @@ public class Colony extends Settlement {
 			if (reqDiffAmount <= 0) {
 				continue;
 			}
-			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoods(owner, requiredGood.goodsType, reqDiffAmount, goodsContainer);
-			
-			game.propagateBuyToEuropeanMarkets(owner, requiredGood.goodsType, effectOnMarket.goodsModifiedMarket);
-			if (effectOnMarket.priceChanged()) {
-				owner.eventsNotifications.addPriceChangeNotification(requiredGood.goodsType, effectOnMarket.beforePrice, effectOnMarket.afterPrice);
+			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoods(game, owner, requiredGood.goodsType, reqDiffAmount, goodsContainer);
+			if (effectOnMarket.isMarketPriceChanged()) {
+				owner.eventsNotifications.addMessageNotification(MessageNotification.createGoodsPriceChangeNotification(owner, effectOnMarket));
 			}
 		}
 		updateModelOnWorkerAllocationOrGoodsTransfer();
@@ -811,7 +810,7 @@ public class Colony extends Settlement {
 	        
             StringTemplate st = StringTemplate.template("model.colony.newColonist")
                         .add("%colony%", getName());
-            owner.eventsNotifications.addMessageNotification(st );
+            owner.eventsNotifications.addMessageNotification(st);
 	    }
 	}
 	

@@ -4897,7 +4897,15 @@
         <unit id="unit:7108" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:7109" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
 		<unit id="unit:-21" name="Gideon" unitType="model.unit.caravel" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
-		<unit id="unit:-22" name="Gideon2" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
+		<unit id="unit:-22" name="Gideon2" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0">
+          <goodsContainer id="goodsContainer:6438">
+            <storedGoods>
+              <goods type="model.goods.cloth" amount="94"/>
+              <goods type="model.goods.coats" amount="69"/>
+              <goods type="model.goods.ore" amount="200"/>
+            </storedGoods>
+          </goodsContainer>
+		</unit>
         <ability id="model.ability.dressMissionary" value="true"/>
         <recruit id="model.unit.firebrandPreacher"/>
         <recruit id="model.unit.freeColonist"/>
