@@ -436,9 +436,6 @@ public final class Ability implements Identifiable {
     		if (s.isAppliesTo(obj)) {
     			return true;
     		}
-    		if (obj.hasAbility(s.abilityId, s.abilityValue)) {
-    			return true;
-    		}
     	}
     	return false;
     }

@@ -2,8 +2,11 @@ package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLocation;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -21,6 +24,12 @@ public class HighSeas implements Identifiable, UnitLocation {
 		return units;
 	}
     
+	public int getSailTurns(Unit unit) {
+	    // TODO: dodanie modyfikatora poruszania dla jednostek morskich  model.modifier.movementBonus
+	    float base = Specification.options.getIntValue(GameOptions.TURNS_TO_SAIL);
+	    return (int)unit.getOwner().getFeatures().applyModifier(Modifier.SAIL_HIGH_SEAS, base, unit.unitType);
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {

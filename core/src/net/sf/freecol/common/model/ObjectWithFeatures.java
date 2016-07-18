@@ -161,6 +161,20 @@ public class ObjectWithFeatures extends ObjectWithId {
         return list != null && !list.isEmpty();
     }
     
+    public float applyModifier(String modifierName, float base, ObjectWithFeatures obj) {
+        List<Modifier> list = modifiers.get(modifierName);
+        if (list == null || list.isEmpty()) {
+            return base;
+        }
+        for (int i=0; i<list.size(); i++) {
+            Modifier m = list.get(i);
+            if (m.canAppliesTo(obj)) {
+                base = m.apply(base);
+            }
+        }
+        return base;
+    }
+    
     public float applyModifier(String modifierName, float base) {
         List<Modifier> list = modifiers.get(modifierName);
         if (list == null || list.isEmpty()) {
@@ -200,7 +214,7 @@ public class ObjectWithFeatures extends ObjectWithId {
         modifiers.clear();
     }
     
-    public boolean canApplyAllScopes(Identifiable obj) {
+    public boolean canApplyAllScopes(ObjectWithFeatures obj) {
     	for (Scope scope : scopes) {
     		if (!scope.isAppliesTo(obj)) {
     			return false;
