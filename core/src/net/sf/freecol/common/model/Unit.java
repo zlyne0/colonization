@@ -535,7 +535,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
     
     public int getInitialMovesLeft() {
-    	return (int)unitType.applyModifier(Modifier.MOVEMENT_BONUS, unitType.getMovement());
+        return (int)owner.getFeatures().applyModifier(
+            Modifier.MOVEMENT_BONUS, 
+            unitType.getMovement(), 
+            unitType
+        );
     }
     
     /**

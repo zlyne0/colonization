@@ -25,7 +25,6 @@ public class HighSeas implements Identifiable, UnitLocation {
 	}
     
 	public int getSailTurns(Unit unit) {
-	    // TODO: dodanie modyfikatora poruszania dla jednostek morskich  model.modifier.movementBonus
 	    float base = Specification.options.getIntValue(GameOptions.TURNS_TO_SAIL);
 	    return (int)unit.getOwner().getFeatures().applyModifier(Modifier.SAIL_HIGH_SEAS, base, unit.unitType);
 	}

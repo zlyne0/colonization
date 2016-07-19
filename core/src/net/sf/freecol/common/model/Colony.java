@@ -707,22 +707,13 @@ public class Colony extends Settlement {
     }
     
     public void buildableUnits(List<ColonyBuildingQueueItem> items) {
-    	// TODO: rozwarzenie uzycia getNoBuildReason
     	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
     	for (UnitType unitType : unitTypes) {
-    		if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, unitType)) {
-    			System.out.println("" + unitType + " can not be built because of buildable ability");
-    			continue;
-    		}
-    		if (!colonyUpdatableFeatures.hasAbilitiesRequiredFrom(unitType)) {
-    			System.out.println("" + unitType + " can not be built because of required abilities");
-    			continue;
-    		}
-    		if (UnitType.WAGON_TRAIN.equals(unitType.getId())) {
-    			if (owner.unitTypeCount(unitType) >= owner.settlements.size()) {
-    				continue;
-    			}
-    		}
+    	    NoBuildReason noBuildReason = getNoBuildReason(unitType);
+            if (noBuildReason != NoBuildReason.NONE) {
+                System.out.println("can not build " + unitType + " because of " + noBuildReason);
+                continue;
+            }
     		items.add(new ColonyBuildingQueueItem(unitType));
     	}
     }
