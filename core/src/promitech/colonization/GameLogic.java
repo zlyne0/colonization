@@ -13,10 +13,13 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.HighSeas;
+import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
 
@@ -72,7 +75,30 @@ public class GameLogic {
 			default:
 				break;
 		}
+		if (unit.isAtLocation(HighSeas.class)) {
+		    sailOnHighSeas(unit);
+		}
 	}
+
+    private void sailOnHighSeas(Unit unit) {
+        unit.sailOnHighSea();
+        if (unit.isWorkComplete()) {
+            if (unit.isDestinationEurope()) {
+                unit.clearDestination();
+                unit.changeUnitLocation(unit.getOwner().getEurope());
+                
+                StringTemplate st = StringTemplate.template("model.unit.arriveInEurope")
+                    .addKey("%europe%", unit.getOwner().getEuropeNameKey());
+                unit.getOwner().eventsNotifications.addMessageNotification(st);
+            }
+            
+            if (unit.isDestinationTile()) {
+                Tile tile = game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
+                unit.clearDestination();
+                unit.changeUnitLocation(tile);
+            }
+        }
+    }
 
 	private void workOnImprovement(Unit unit) {
 		if (unit.workOnImprovement()) {

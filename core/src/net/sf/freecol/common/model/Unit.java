@@ -125,6 +125,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return null;
 	}
 	
+	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
+	    return location != null && location.getClass().equals(unitLocationClass);
+	}
+	
 	public void changeUnitLocation(UnitLocation newUnitLocation) {
 		if (location != null) {
 			location.getUnits().removeId(this);
@@ -339,7 +343,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 			return MoveType.MOVE_NO_TILE;
 		}
     	if (isNaval()) {
-    		return getNavalMoveType(from, target);
+    		return getNavalMoveType(target);
     	} else {
     		return getLandMoveType(from, target);
     	}
@@ -440,7 +444,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         }
     }
     
-	private MoveType getNavalMoveType(Tile from, Tile target) {
+	public MoveType getNavalMoveType(Tile target) {
 		if (target == null) {
 			return (owner.canMoveToEurope()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE_NO_EUROPE;
 		} 
@@ -729,6 +733,14 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		} else {
 			return false;
 		}
+	}
+	
+	public void sailOnHighSea() {
+	    workLeft -= 1;
+	}
+	
+	public boolean isWorkComplete() {
+	    return workLeft <= 0;
 	}
 
     public void gainExperience(int aditionalExperience) {

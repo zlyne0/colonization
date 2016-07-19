@@ -7,6 +7,7 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
+import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -112,6 +113,29 @@ public class Map extends ObjectWithId {
 			spiralIterator.next();
 		}
 		return ll;
+	}
+	
+	public Tile findFirstMovableHighSeasTile(Unit unit, int x, int y) {
+	    Tile tile = getTile(x, y);
+	    MoveType navalMoveType = unit.getNavalMoveType(tile);
+	    if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
+	        return tile;
+	    }
+	    
+	    int radius = 1;
+        while (true) {
+            spiralIterator.reset(x, y, false, radius);
+            while (spiralIterator.hasNext()) {
+                tile = getTile(spiralIterator.getX(), spiralIterator.getY());
+                navalMoveType = unit.getNavalMoveType(tile);
+                
+                if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
+                    return tile;
+                }
+                spiralIterator.next();
+            }
+            radius++;
+	    }
 	}
 	
 	public static class Xml extends XmlNodeParser {
