@@ -739,6 +739,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    workLeft -= 1;
 	}
 	
+	public void moveUnitToHighSea() {
+	    changeUnitLocation(owner.getHighSeas());
+	    movesLeft = 0;
+	    setDestinationEurope();
+	    workLeft = getSailTurns();
+	}
+	
+    public int getSailTurns() {
+        float base = Specification.options.getIntValue(GameOptions.TURNS_TO_SAIL);
+        return (int)getOwner().getFeatures().applyModifier(Modifier.SAIL_HIGH_SEAS, base, unitType);
+    }
+    
 	public boolean isWorkComplete() {
 	    return workLeft <= 0;
 	}

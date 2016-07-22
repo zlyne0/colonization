@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
@@ -76,6 +77,11 @@ public class HudStage extends Stage {
 		public void change(GUIGameModel model) {
 			resetButtonVisibility(model);
 		}
+
+        @Override
+        public void dialogToShow(Dialog dialog) {
+            dialog.show(HudStage.this);
+        }
 	};
     
     public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {

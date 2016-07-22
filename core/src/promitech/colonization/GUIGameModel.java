@@ -3,6 +3,8 @@ package promitech.colonization;
 import java.util.LinkedList;
 import java.util.List;
 
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
+
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.player.Player;
@@ -11,9 +13,10 @@ public class GUIGameModel {
 
 	public static interface ChangeStateListener {
 		public void change(GUIGameModel model);
+		public void dialogToShow(Dialog dialog);
 	}
 	
-	private List<ChangeStateListener> listeners = new LinkedList<GUIGameModel.ChangeStateListener>(); 
+	private final List<ChangeStateListener> listeners = new LinkedList<GUIGameModel.ChangeStateListener>(); 
 	
 	private Unit activeUnit;
 	private boolean viewMode = false;
@@ -85,4 +88,10 @@ public class GUIGameModel {
 	public boolean hasNotifications() {
 		return player.eventsNotifications.hasNotifications();
 	}
+
+    public void showDialog(Dialog dialog) {
+        for (ChangeStateListener l : listeners) {
+            l.dialogToShow(dialog);
+        }
+    }
 }
