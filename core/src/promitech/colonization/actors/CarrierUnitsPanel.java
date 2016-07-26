@@ -92,9 +92,11 @@ public class CarrierUnitsPanel extends HorizontalGroup {
         public void putPayload(AbstractGoods anAbstractGood, float x, float y) {
             System.out.println("carrierPanel: carrierId[" + unitActor.unit.getId() + "] put goods " + anAbstractGood);
             
-            unitActor.unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
-            updateCargoPanelData();
-            changeColonyStateListener.transfereGoods();
+            if (anAbstractGood.isNotEmpty()) {
+	            unitActor.unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
+	            updateCargoPanelData();
+	            changeColonyStateListener.transfereGoods();
+            }
         }
 
         @Override

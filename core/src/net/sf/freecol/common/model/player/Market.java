@@ -41,22 +41,24 @@ public class Market extends ObjectWithId {
 
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
-	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount, GoodsContainer goodsContainer) {
-		int price = getBidPrice(goodsType, goodsAmount);
-		if (player.hasNotGold(price)) {
+	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
+		MarketData marketData = requireMarketData(goodsType);
+		TRANSACTION_EFFECT_ON_MARKET.reset();
+		TRANSACTION_EFFECT_ON_MARKET.goodsTypeId = goodsType.getId();
+		TRANSACTION_EFFECT_ON_MARKET.quantity = goodsAmount;
+       
+        TRANSACTION_EFFECT_ON_MARKET.grossPrice = getBidPrice(goodsType, goodsAmount);
+		
+		if (player.hasNotGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice)) {
 			throw new IllegalStateException("Insufficient funds to pay for build");
 		}
-		player.subtractGold(price);
-		goodsContainer.increaseGoodsQuantity(goodsType, goodsAmount);
+		player.subtractGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice);
 		
-		TRANSACTION_EFFECT_ON_MARKET.reset();
 		int playerModifiedMarketAmount = goodsAmount;
 		if (goodsType.isStorable()) {
 			playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
-			
-			MarketData marketData = requireMarketData(goodsType);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
-			marketData.modifyOnBuyGoods(goodsAmount, price, playerModifiedMarketAmount);
+			marketData.modifyOnBuyGoods(goodsAmount, TRANSACTION_EFFECT_ON_MARKET.grossPrice, playerModifiedMarketAmount);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
 		}
 		

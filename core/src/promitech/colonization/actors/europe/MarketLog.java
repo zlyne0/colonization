@@ -48,6 +48,18 @@ public class MarketLog extends ScrollPane {
         appendLine("      " + Messages.message(t4));
     }
     
+    public void logPurchase(TransactionEffectOnMarket transaction) {
+        StringTemplate t1 = StringTemplate.template("transaction.purchase")
+            .addName("%goods%", transaction.goodsTypeId)
+            .addAmount("%amount%", transaction.quantity)
+            .addAmount("%gold%", transaction.buyPriceBeforeTransaction);
+        StringTemplate t2 = StringTemplate.template("transaction.price")
+            .addAmount("%gold%", transaction.grossPrice);
+        
+        appendLine(Messages.message(t1)); 
+        appendLine("      " + Messages.message(t2));
+    }
+    
     public void appendLine(String str) {
         if (label.getText().length > 0) {
             label.setText(label.getText() + "\n");
@@ -67,5 +79,10 @@ public class MarketLog extends ScrollPane {
     public float getPrefWidth() {
         return 200;
     }
+
+	public void logMessage(String msgCode) {
+		appendLine(Messages.msg(msgCode));
+	}
+
 }
 
