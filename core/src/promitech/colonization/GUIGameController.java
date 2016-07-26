@@ -31,6 +31,8 @@ import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
 	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
@@ -250,7 +252,7 @@ public class GUIGameController {
 	}
 	
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
-		if (moveContext.isMoveType(MoveType.MOVE)) {
+		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
 			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, moveContext.unit);
 			if (exloredNewTiles) {
 				mapActor.resetUnexploredBorders();
@@ -276,8 +278,13 @@ public class GUIGameController {
 				guiMoveInteraction(moveContext);
 			} else {
 				if (moveContext.isEndOfPath()) {
-					moveContext.unit.clearDestination();
-					mapActor.mapDrawModel().unitPath = null;
+					if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
+			            moveContext.unit.moveUnitToHighSea();
+			            logicNextActiveUnit();
+					} else {
+	                    moveContext.unit.clearDestination();
+	                    mapActor.mapDrawModel().unitPath = null;
+					}
 				} else {
                     moveContext.unit.setState(UnitState.SKIPPED);
 					logicNextActiveUnit();
@@ -287,10 +294,43 @@ public class GUIGameController {
 		} else {
 			if (!moveContext.unit.couldMove()) {
 				logicNextActiveUnit();
+				blockUserInteraction = false;
+			} else {
+			    if (moveContext.unit.getTile().getType().isHighSea()) {
+			        createHighSeasQuestion(moveContext);
+			    } else {
+	                blockUserInteraction = false;
+			    }
 			}
-			blockUserInteraction = false;
 		}
 	}
+
+	private final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        @Override
+        public void executeAction(MoveContext payload) {
+            payload.unit.moveUnitToHighSea();
+            logicNextActiveUnit();
+            blockUserInteraction = false;
+        }
+    };
+
+    private final QuestionDialog.OptionAction<MoveContext> sailHighSeasNoAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        @Override
+        public void executeAction(MoveContext payload) {
+            blockUserInteraction = false;
+        }
+    };
+    
+    private void createHighSeasQuestion(MoveContext moveContext) {
+        QuestionDialog questionDialog = new QuestionDialog();
+        questionDialog.addQuestion(StringTemplate.template("highseas.text")
+            .addAmount("%number%", moveContext.unit.getSailTurns())
+        );
+        questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
+        questionDialog.addAnswer("highseas.no", sailHighSeasNoAnswer, moveContext);
+        
+        guiGameModel.showDialog(questionDialog);
+    }
 	
 	public void showEuropeScreen() {
         EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);

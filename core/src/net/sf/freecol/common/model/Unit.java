@@ -125,6 +125,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return null;
 	}
 	
+	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
+	    return location != null && location.getClass().equals(unitLocationClass);
+	}
+	
 	public void changeUnitLocation(UnitLocation newUnitLocation) {
 		if (location != null) {
 			location.getUnits().removeId(this);
@@ -339,7 +343,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 			return MoveType.MOVE_NO_TILE;
 		}
     	if (isNaval()) {
-    		return getNavalMoveType(from, target);
+    		return getNavalMoveType(target);
     	} else {
     		return getLandMoveType(from, target);
     	}
@@ -440,7 +444,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         }
     }
     
-	private MoveType getNavalMoveType(Tile from, Tile target) {
+	public MoveType getNavalMoveType(Tile target) {
 		if (target == null) {
 			return (owner.canMoveToEurope()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE_NO_EUROPE;
 		} 
@@ -535,7 +539,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
     
     public int getInitialMovesLeft() {
-    	return (int)unitType.applyModifier(Modifier.MOVEMENT_BONUS, unitType.getMovement());
+        return (int)owner.getFeatures().applyModifier(
+            Modifier.MOVEMENT_BONUS, 
+            unitType.getMovement(), 
+            unitType
+        );
     }
     
     /**
@@ -725,6 +733,26 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		} else {
 			return false;
 		}
+	}
+	
+	public void sailOnHighSea() {
+	    workLeft -= 1;
+	}
+	
+	public void moveUnitToHighSea() {
+	    changeUnitLocation(owner.getHighSeas());
+	    movesLeft = 0;
+	    setDestinationEurope();
+	    workLeft = getSailTurns();
+	}
+	
+    public int getSailTurns() {
+        float base = Specification.options.getIntValue(GameOptions.TURNS_TO_SAIL);
+        return (int)getOwner().getFeatures().applyModifier(Modifier.SAIL_HIGH_SEAS, base, unitType);
+    }
+    
+	public boolean isWorkComplete() {
+	    return workLeft <= 0;
 	}
 
     public void gainExperience(int aditionalExperience) {

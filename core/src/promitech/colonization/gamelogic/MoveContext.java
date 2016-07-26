@@ -76,6 +76,7 @@ public class MoveContext {
 	
 	public void handleMove() {
 		switch (moveType) {
+		    case MOVE_HIGH_SEAS:
 			case MOVE: {
 				if (path != null) {
 					path.removeFirst();
@@ -119,7 +120,7 @@ public class MoveContext {
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.EMBARK.equals(moveType));
+		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.MOVE_HIGH_SEAS.equals(moveType) || MoveType.EMBARK.equals(moveType));
 	}
 
 	public boolean isMoveViaPath() {

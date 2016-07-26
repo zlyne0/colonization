@@ -4885,7 +4885,7 @@
             </oldStoredGoods>
           </goodsContainer>
         </unit>
-		<unit id="unit:-20" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0" destinationType="TILE" destinationX="1" destinationY="1"/>
+		<unit id="unit:-20" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0" destinationType="TILE" destinationX="30" destinationY="80"/>
         <destination id="europe:2"/>
         <destination id="map:247"/>
       </highSeas>
