@@ -32,11 +32,8 @@ public class HighSeasTest {
         
         Unit merchantman = player.units.getById("unit:6437");
         
-        
-        HighSeas highSeas = player.getHighSeas();
-        
         // when
-        int sailTurns = highSeas.getSailTurns(merchantman);
+        int sailTurns = merchantman.getSailTurns();
 
         // then
         assertEquals(3, sailTurns);
@@ -56,10 +53,8 @@ public class HighSeasTest {
         
         Unit merchantman = player.units.getById("unit:6437");
         
-        HighSeas highSeas = player.getHighSeas();
-        
         // when
-        int sailTurns = highSeas.getSailTurns(merchantman);
+        int sailTurns = merchantman.getSailTurns();
 
         // then
         assertEquals(2, sailTurns);
