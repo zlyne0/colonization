@@ -332,6 +332,11 @@ public class GUIGameController {
         guiGameModel.showDialog(questionDialog);
     }
 	
+    public void showMapScreenAndActiveNextUnit() {
+    	screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
+    	logicNextActiveUnit();
+    }
+    
 	public void showEuropeScreen() {
         EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);
         screen.init(game.playingPlayer);

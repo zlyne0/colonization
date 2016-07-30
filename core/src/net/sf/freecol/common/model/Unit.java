@@ -245,6 +245,12 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		this.destinationType = MoveDestinationType.EUROPE;
 	}
 
+	public void setDestination(int x, int y) {
+		this.destinationType = MoveDestinationType.TILE;
+		this.destinationX = x;
+		this.destinationY = y;
+	}
+	
 	public void setDestination(Tile tile) {
 		this.destinationType = MoveDestinationType.TILE;
 		this.destinationX = tile.x;
@@ -744,6 +750,13 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    movesLeft = 0;
 	    setDestinationEurope();
 	    workLeft = getSailTurns();
+	}
+	
+	public void sailUnitToNewWorld() {
+		changeUnitLocation(owner.getHighSeas());
+		movesLeft = 0;
+		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+		workLeft = getSailTurns();
 	}
 	
     public int getSailTurns() {

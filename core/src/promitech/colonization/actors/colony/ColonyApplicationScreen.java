@@ -1,5 +1,8 @@
 package promitech.colonization.actors.colony;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -14,8 +17,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragListener;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Notification;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
@@ -27,11 +37,157 @@ import promitech.colonization.actors.UnitActor;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.UnitActionOrdersDialog;
+import promitech.colonization.ui.UnitActionOrdersDialog.ActionTypes;
+import promitech.colonization.ui.UnitActionOrdersDialog.UnitActionOrderItem;
 import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.resources.Messages;
 
 public class ColonyApplicationScreen extends ApplicationScreen {
 
+	private class ColonyUnitOrders implements UnitActionOrdersDialog.UnitOrderExecutor {
+		
+		@Override
+	    public boolean executeCommand(UnitActor unitActor, UnitActionOrderItem item, UnitActionOrdersDialog dialog) {
+	    	Unit unit = unitActor.unit;
+	    	
+	    	System.out.println("execute action type: " + item.actionType);
+	    	if (ActionTypes.LIST_PRODUCTIONS.equals(item.actionType)) {
+	    		dialog.clearItem();
+	    		productionOrders(unit, dialog);
+	    		dialog.pack();
+	    		dialog.resetPositionToCenter();
+	    		return false;
+	    	}
+	    	if (ActionTypes.LIST_CHANGE_PRODUCTIONS.equals(item.actionType)) {
+	    		dialog.clearItem();
+	    		terrainProductionOrders(unit, dialog);
+	    		dialog.pack();
+	    		dialog.resetPositionToCenter();
+	    		return false;
+	    	}
+			
+	    	if (ActionTypes.LEAVE_TOWN.equals(item.actionType)) {
+	    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+	    		source.takePayload(unitActor, -1, -1);
+	    		outsideUnitsPanel.putPayload(unitActor, -1, -1);
+	    	}
+	    	if (ActionTypes.EQUIPPED.equals(item.actionType)) {
+	    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+	    		source.takePayload(unitActor, -1, -1);
+	    		colony.changeUnitRole(unit, item.newRole);
+	    		unitActor.updateTexture();
+	    		outsideUnitsPanel.putPayload(unitActor, -1, -1);
+	    	}
+	    	if (ActionTypes.FORTIFY.equals(item.actionType)) {
+	    		unit.setState(UnitState.FORTIFYING);
+	    		gameController.nextActiveUnitWhenActive(unit);
+	    	}
+	    	if (ActionTypes.CLEAR_ORDERS.equals(item.actionType)) {
+	    		unit.setState(UnitState.ACTIVE);
+	    	}
+	    	if (ActionTypes.SENTRY.equals(item.actionType)) {
+	    		unit.setState(UnitState.SENTRY);
+	    		gameController.nextActiveUnitWhenActive(unit);
+	    	}
+	    	if (ActionTypes.ACTIVATE.equals(item.actionType)) {
+	    		gameController.closeColonyViewAndActiveUnit(colony, unit);
+	    	}
+	    	if (ActionTypes.ASSIGN_TO_PRODUCTION.equals(item.actionType)) {
+	    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
+	    		source.takePayload(unitActor, -1, -1);
+	    		
+	    		// from any location to building
+	    		if (item.prodLocation.getBuilding() != null) {
+	    			buildingsPanelActor.putWorkerOnBuilding(unitActor, item.prodLocation.getBuilding());
+	    		}
+	    		if (item.prodLocation.getColonyTile() != null) {
+	    			terrainPanel.putWorkerOnTerrain(unitActor, item.prodLocation.getColonyTile());
+	    		}
+	    	}
+	    	if (ActionTypes.CHANGE_TERRAIN_PRODUCTION.equals(item.actionType)) {
+	    		// from terrain location to terrain location but diffrent goods type
+	    		terrainPanel.changeWorkerProduction(unitActor, item.prodLocation);
+	    	}
+	    	return true;
+		}
+	    
+	    private void createOrders(Unit unit, UnitActionOrdersDialog dialog) {
+	        if (unit.isPerson()) {
+	        	dialog.addCommandItem(new UnitActionOrderItem("model.unit.workingAs", ActionTypes.LIST_PRODUCTIONS));
+	        }
+	        if (colony.isUnitInColony(unit)) {
+	        	if (colony.isUnitOnTerrain(unit)) {
+	        		dialog.addCommandItem(new UnitActionOrderItem("model.unit.changeWork", ActionTypes.LIST_CHANGE_PRODUCTIONS));
+	        	}
+	            if (colony.canReducePopulation()) {
+	            	dialog.addCommandItemSeparator();
+	                addEquippedRoles(unit, dialog);
+	            	dialog.addCommandItemSeparator();
+	            	dialog.addCommandItem(new UnitActionOrderItem("leaveTown", ActionTypes.LEAVE_TOWN));
+	            }
+	        } else {
+            	dialog.addCommandItemSeparator();
+	            addEquippedRoles(unit, dialog);
+            	dialog.addCommandItemSeparator();
+	            addCommands(unit, dialog);
+	        }
+	    }
+	    
+	    private void addCommands(Unit unit, UnitActionOrdersDialog dialog) {
+	        dialog.addCommandItem(new UnitActionOrderItem("activateUnit", ActionTypes.ACTIVATE));
+	        if (unit.canChangeState(UnitState.FORTIFYING)) {
+	        	dialog.addCommandItem(new UnitActionOrderItem("fortifyUnit", ActionTypes.FORTIFY));
+	        }
+	        dialog.addCommandItem(new UnitActionOrderItem("clearUnitOrders", ActionTypes.CLEAR_ORDERS));
+			
+			if (unit.canChangeState(UnitState.SENTRY)) {
+				dialog.addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
+			}
+	    }
+	    
+	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {
+	        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+	            List<UnitRole> avaliableRoles = unit.avaliableRoles();
+	            Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+	            
+	            System.out.println("avaliable roles size " + avaliableRoles.size());
+	            for (UnitRole aRole : avaliableRoles) {
+	                System.out.println("ur " + aRole);
+	                if (unit.getUnitRole().equalsId(aRole)) {
+	                    continue;
+	                }
+	                ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
+	                if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
+	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
+	                }
+	            }
+	        }
+	    }
+	    
+	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
+	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
+	    	Collections.sort(potentialTerrainProductions, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
+	    	
+	    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
+	        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
+	            System.out.println("prod: " + g);
+	        	dialog.addCommandItem(new UnitActionOrderItem(g, ActionTypes.CHANGE_TERRAIN_PRODUCTION));
+	        }
+	    }
+		
+		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
+			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
+			Collections.sort(maxProductionForGoods, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
+			
+			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
+			for (GoodMaxProductionLocation g : maxProductionForGoods) {
+				System.out.println("max: " + g);
+				dialog.addCommandItem(new UnitActionOrderItem(g, ActionTypes.ASSIGN_TO_PRODUCTION));
+			}
+		}
+	}
+	
     private DragAndDrop unitsDragAndDrop;
     private DragAndDrop goodsDragAndDrop;
 	private Stage stage;
@@ -46,6 +202,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 
     private Colony colony;
     private Tile colonyTile;
+    
+    private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
         @Override
@@ -212,11 +370,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     }
 	
     private void showUnitOrders(UnitActor unitActor) {
-    	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(
-        		shape, colony, unitActor, 
-        		outsideUnitsPanel, terrainPanel, buildingsPanelActor,
-        		gameController
-        );
+    	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(shape, unitActor, colonyUnitOrders);
+    	colonyUnitOrders.createOrders(unitActor.unit, dialog);
     	dialog.show(stage);
     }
     

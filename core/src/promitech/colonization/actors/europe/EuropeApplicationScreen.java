@@ -12,6 +12,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.ApplicationScreen;
@@ -22,11 +23,39 @@ import promitech.colonization.actors.OutsideUnitsPanel;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.UnitActionOrdersDialog;
+import promitech.colonization.ui.UnitActionOrdersDialog.ActionTypes;
+import promitech.colonization.ui.UnitActionOrdersDialog.UnitActionOrderItem;
 import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.hud.NotificationDialog;
 import promitech.colonization.ui.resources.Messages;
 
 public class EuropeApplicationScreen extends ApplicationScreen {
+	
+	private class EuropeUnitOrders implements UnitActionOrdersDialog.UnitOrderExecutor {
+
+		@Override
+		public boolean executeCommand(UnitActor unitActor, UnitActionOrderItem item, UnitActionOrdersDialog dialog) {
+			switch (item.actionType) {
+			case SAIL_TO_NEW_WORLD:
+				unitActor.unit.sailUnitToNewWorld();
+				if (player.getEurope().isNoNavyInPort()) {
+	        		gameController.showMapScreenAndActiveNextUnit();
+				} else {
+					changeColonyStateListener.changeUnitAllocation();
+				}
+				break;
+			}
+			return true;
+		}
+		
+		private void createOrders(Unit unit, UnitActionOrdersDialog dialog) {
+			if (unit.isNaval()) {
+				dialog.addCommandItem(new UnitActionOrderItem("NewWorld", ActionTypes.SAIL_TO_NEW_WORLD));
+			}
+		}
+	}
+	
 	private DragAndDrop goodsDragAndDrop;
 	private DragAndDrop unitsDragAndDrop;
 	
@@ -36,6 +65,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private MarketLog marketLog;
 	private HighSeasUnitsPanel highSeasUnitsPanel;
+	private final EuropeUnitOrders europeUnitOrders = new EuropeUnitOrders();
 	
 	private Player player;
 	
@@ -65,8 +95,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
     private final DoubleClickedListener unitActorDoubleClickListener = new DoubleClickedListener() {
         public void doubleClicked(InputEvent event, float x, float y) {
             UnitActor unitActor = (UnitActor)event.getListenerActor();
-            //showUnitOrders(unitActor);
-            System.out.println("XXX unit double click");
+            showUnitOrders(unitActor);
         }
     };
 	
@@ -110,6 +139,12 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		stage.addActor(buttonsLayout);
         
         stage.setDebugAll(true);
+	}
+
+	protected void showUnitOrders(UnitActor unitActor) {
+    	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(shape, unitActor, europeUnitOrders);
+    	europeUnitOrders.createOrders(unitActor.unit, dialog);
+    	dialog.show(stage);
 	}
 
 	private Table createButtonsLayout() {

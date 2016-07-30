@@ -91,6 +91,8 @@ public class Player extends ObjectWithId {
     private int gold;
     private int liberty;
     private int interventionBells;
+    private int entryLocationX;
+    private int entryLocationY;
     
     /**
      * The number of immigration points.  Immigration points are an
@@ -392,6 +394,14 @@ public class Player extends ObjectWithId {
 		foundingFathers.add(father);
 		updatableFeatures.addFeatures(father);
 	}
+
+	public int getEntryLocationX() {
+		return entryLocationX;
+	}
+
+	public int getEntryLocationY() {
+		return entryLocationY;
+	}
 	
     public static class Xml extends XmlNodeParser {
         public Xml() {
@@ -427,6 +437,9 @@ public class Player extends ObjectWithId {
                 player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
             }
             player.independentNationName = attr.getStrAttribute("independentNationName");
+
+            player.entryLocationX = attr.getIntAttribute("entryLocationX", 1);
+            player.entryLocationY = attr.getIntAttribute("entryLocationY", 1);
             
             player.changePlayerType(attr.getEnumAttribute(PlayerType.class, "playerType"));
             nodeObject = player;

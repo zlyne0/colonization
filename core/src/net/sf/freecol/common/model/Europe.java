@@ -139,6 +139,15 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
     }
 	
+	public boolean isNoNavyInPort() {
+		for (Unit unit : units.entities()) {
+			if (unit.isNaval()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
