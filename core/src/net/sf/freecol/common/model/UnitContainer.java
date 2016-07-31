@@ -112,6 +112,10 @@ public class UnitContainer {
         }
     }
 
+    public boolean isNotEmpty() {
+    	return units.isNotEmpty();
+    }
+    
     public MapIdEntities<Unit> getUnits() {
         return units;
     }

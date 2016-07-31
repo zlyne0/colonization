@@ -39,6 +39,16 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return units;
 	}
     
+	@Override
+	public boolean canAutoLoadUnit() {
+		return units.isNotEmpty();
+	}
+	
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return true;
+	}
+	
 	public List<UnitType> getRecruitables() {
 		return recruitables;
 	}

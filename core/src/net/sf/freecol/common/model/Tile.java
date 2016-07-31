@@ -44,6 +44,16 @@ public class Tile implements UnitLocation, Identifiable {
 		return units;
 	}
 	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return hasSettlement() && units.isNotEmpty();
+	}
+	
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return hasSettlement();
+	}
+	
     public boolean equalsCoordinates(int x, int y) {
         return this.x == x && this.y == y;
     }

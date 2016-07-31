@@ -132,8 +132,15 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	public void changeUnitLocation(UnitLocation newUnitLocation) {
 		if (location != null) {
 			location.getUnits().removeId(this);
+			
+			if (location.canAutoLoadUnit()) {
+				embarkUnitsFromLocation(location);
+			}
 		}
 		newUnitLocation.getUnits().add(this);
+		if (newUnitLocation.canAutoUnloadUnits()) {
+			disembarkUnitsToLocation(newUnitLocation);
+		}
 		location = newUnitLocation;
 	}
 	
@@ -196,6 +203,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
     
     public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
+    }
+    
+    public boolean hasNoSpace() {
+    	return unitType.getSpace() == 0 || getSpaceTaken() >= unitType.getSpace();
     }
     
 	public boolean couldMove() {
@@ -657,6 +668,16 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return unitContainer.getUnits();
 	}
     
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
+	}
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
     public boolean canCarryTreasure() {
         return hasAbility(Ability.CARRY_TREASURE);
     }
@@ -747,14 +768,40 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	
 	public void moveUnitToHighSea() {
 	    changeUnitLocation(owner.getHighSeas());
-	    movesLeft = 0;
+	    reduceMovesLeftToZero();
 	    setDestinationEurope();
 	    workLeft = getSailTurns();
 	}
 	
+	private void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
+		if (hasNoSpace()) {
+			return;
+		}
+		for (Unit unit : new ArrayList<Unit>(anUnitLocation.getUnits().entities())) {
+			if (UnitState.SENTRY.equals(unit.getState())) {
+				if (this.canAddUnit(unit)) {
+					unit.setState(UnitState.SKIPPED);
+					unit.changeUnitLocation(this);
+					unit.reduceMovesLeftToZero();
+				}
+			}
+		}
+	}
+	
+	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
+		if (unitContainer != null && unitContainer.isNotEmpty()) {
+			for (Unit unit : unitContainer.getUnits().entities()) {
+				newUnitLocation.getUnits().add(unit);
+				unit.location = newUnitLocation;
+				unit.setState(UnitState.ACTIVE);
+			}
+			unitContainer.getUnits().clear();
+		}
+	}
+	
 	public void sailUnitToNewWorld() {
 		changeUnitLocation(owner.getHighSeas());
-		movesLeft = 0;
+		reduceMovesLeftToZero();
 		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
 		workLeft = getSailTurns();
 	}
@@ -857,5 +904,4 @@ public class Unit extends ObjectWithId implements UnitLocation {
             return unit.location instanceof Tile && unit.couldMove();
         }
     }
-
 }

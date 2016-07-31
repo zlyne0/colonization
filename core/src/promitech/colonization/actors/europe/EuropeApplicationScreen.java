@@ -75,6 +75,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			marketPanel.init(player);
 			carrierUnitsPanel.initUnits(player.getEurope());
 			outsideUnitsPanel.initUnits(player.getEurope());
+			highSeasUnitsPanel.initUnits(player.getHighSeas());
 		}
 
 		@Override

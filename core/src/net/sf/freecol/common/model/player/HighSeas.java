@@ -20,7 +20,17 @@ public class HighSeas implements Identifiable, UnitLocation {
 	public MapIdEntities<Unit> getUnits() {
 		return units;
 	}
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
     
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
+	}
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
