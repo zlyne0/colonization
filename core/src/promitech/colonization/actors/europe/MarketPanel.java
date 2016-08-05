@@ -2,6 +2,8 @@ package promitech.colonization.actors.europe;
 
 import java.util.HashMap;
 
+import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
@@ -14,31 +16,32 @@ import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.actors.ChangeColonyStateListener;
-import promitech.colonization.actors.QuantityGoodActor;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 
 class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
 	private java.util.Map<String, MarketGoodsActor> goodActorByType = new HashMap<String, MarketGoodsActor>();
 	private final DragAndDrop goodsDragAndDrop;
+	private ShapeRenderer shapeRenderer;
 	private Player player;
 	private Game game;
 	
 	private MarketLog marketLog;
 	private ChangeColonyStateListener changeColonyStateListener;
 	
-	MarketPanel(Game game, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener, MarketLog marketLog) {
+	MarketPanel(Game game, ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener, MarketLog marketLog) {
 		this.game = game;
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		this.marketLog = marketLog;
 		this.changeColonyStateListener = changeColonyStateListener;
+		this.shapeRenderer = shapeRenderer;
 		
-		defaults().space(10, 10, 10, 10);
+		defaults().space(0, 0, 0, 0);
 		
-		goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, this));
+		goodsDragAndDrop.addTarget(new MarketGoodsActor.GoodsDragAndDropTarget(this, this));
 	}
 	
-	public void init(Player player) {
+	void init(Player player) {
 		this.player = player;
 		
         for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {
@@ -48,16 +51,27 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
         	
         	MarketGoodsActor marketGoodsActor = goodActorByType.get(goodsType.getId());
         	if (marketGoodsActor == null) {
-        		marketGoodsActor = new MarketGoodsActor(goodsType, this);
+        		marketGoodsActor = new MarketGoodsActor(goodsType, shapeRenderer, this);
         		goodActorByType.put(goodsType.getId(), marketGoodsActor);
-        		add(marketGoodsActor);
+        		add(marketGoodsActor)
+        			.width(marketGoodsActor.getPrefWidth() + 20)
+        			.height(marketGoodsActor.getPrefHeight() + 20);
+        		
         		goodsDragAndDrop.addSource(new MarketGoodsActor.GoodsDragAndDropSource(marketGoodsActor));
         	}
         	MarketData marketData = player.market().marketGoods.getById(goodsType.getId());
-        	marketGoodsActor.initPrice(marketData.getSalePrice(), marketData.getBuyPrice());
+        	marketGoodsActor.initData(marketData);
         }
 	}
 
+	@Override
+	public void draw(Batch batch, float parentAlpha) {
+        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+        shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+        
+		super.draw(batch, parentAlpha);
+	}
+	
 	@Override
 	public void putPayload(AbstractGoods payload, float x, float y) {
 		System.out.println("sell goods " + payload);
@@ -86,11 +100,10 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 	public void takePayload(AbstractGoods payload, float x, float y) {
 		System.out.println("Buy goods " + payload);
 		
-		// TODO: jesli good type jest zbojkotowany to nie mozna kupic, musi byc zrzucony wyjatek w buyGoods
-
 		GoodsType goodsType = Specification.instance.goodsTypes.getById(payload.getTypeId());
 
-		if (player.hasNotGold(player.market().getBidPrice(goodsType, payload.getQuantity()))) {
+		int price = player.market().getBidPrice(goodsType, payload.getQuantity());
+		if (player.hasNotGold(price)) {
 			marketLog.logMessage("notEnoughGold");
 			payload.makeEmpty();
 		} else {

@@ -55,16 +55,18 @@ public class LabelGoodActor extends Widget {
     
     @Override
     public void draw(Batch batch, float parentAlpha) {
-    	font.setColor(getQuantityColor());
+    	float halfOfImgAndStrHeight = (textureRegion.getRegionHeight() + font.getCapHeight()) / 2;
     	batch.draw(
     	    textureRegion, 
-    	    getX() + getWidth() / 2 - textureRegion.getRegionWidth() / 2, 
-    	    getY() + font.getCapHeight()
+    	    getX() + getWidth()/2 - textureRegion.getRegionWidth()/2,
+    	    getY() + getHeight()/2 + halfOfImgAndStrHeight - textureRegion.getRegionHeight()
     	);
-        float priceStrLength = FontResource.strWidth(font, label);
+    	
+        float priceStrWidth = FontResource.strWidth(font, label);
+        font.setColor(getQuantityColor());
         font.draw(batch, label, 
-        		getX() + getWidth()/2 - priceStrLength/2, 
-        		getY() + font.getCapHeight()
+        		getX() + getWidth()/2 - priceStrWidth/2,
+        		getY() + getHeight()/2 - halfOfImgAndStrHeight + font.getCapHeight()  
         );
     }
 

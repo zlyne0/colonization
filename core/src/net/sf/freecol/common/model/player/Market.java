@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
@@ -37,12 +36,22 @@ public class Market extends ObjectWithId {
         MarketData data = marketGoods.getByIdOrNull(type.getId());
         return (data == null) ? 0 : data.getCostToBuy(amount);
     }
-    
+
+	public boolean hasArrears(GoodsType type) {
+        MarketData data = marketGoods.getByIdOrNull(type.getId());
+        if (data == null) {
+        	return false;
+        }
+		return data.hasArrears();
+	}
 
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
 		MarketData marketData = requireMarketData(goodsType);
+		if (marketData.hasArrears()) {
+			throw new IllegalStateException("can not buy goods: " + goodsType + " because of arrears");
+		}
 		TRANSACTION_EFFECT_ON_MARKET.reset();
 		TRANSACTION_EFFECT_ON_MARKET.goodsTypeId = goodsType.getId();
 		TRANSACTION_EFFECT_ON_MARKET.quantity = goodsAmount;
@@ -69,6 +78,9 @@ public class Market extends ObjectWithId {
 
 	public TransactionEffectOnMarket sellGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
         MarketData marketData = requireMarketData(goodsType);
+		if (marketData.hasArrears()) {
+			throw new IllegalStateException("can not sell goods: " + goodsType + " because of arrears");
+		}
 		
 		TRANSACTION_EFFECT_ON_MARKET.reset();
 		

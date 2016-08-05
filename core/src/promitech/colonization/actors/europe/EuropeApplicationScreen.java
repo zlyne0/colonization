@@ -113,7 +113,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		
 		stage = new Stage();		
 		marketLog = new MarketLog();
-        marketPanel = new MarketPanel(gameController.getGame(), goodsDragAndDrop, changeColonyStateListener, marketLog);
+        marketPanel = new MarketPanel(gameController.getGame(), shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
         carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
         highSeasUnitsPanel = new HighSeasUnitsPanel();

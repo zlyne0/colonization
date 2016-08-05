@@ -4537,7 +4537,7 @@
         <marketData id="marketData:9" goods-type="model.goods.cotton" amount="1494" initialPrice="2" arrears="0" sales="338" incomeAfterTaxes="608" incomeBeforeTaxes="676" traded="true"/>
         <marketData id="marketData:10" goods-type="model.goods.furs" amount="1507" initialPrice="3" arrears="0" sales="486" incomeAfterTaxes="1370" incomeBeforeTaxes="1458" traded="true"/>
         <marketData id="marketData:11" goods-type="model.goods.lumber" amount="3000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:12" goods-type="model.goods.ore" amount="2006" initialPrice="4" arrears="0" sales="200" incomeAfterTaxes="648" incomeBeforeTaxes="800" traded="true"/>
+        <marketData id="marketData:12" goods-type="model.goods.ore" amount="2006" initialPrice="4" arrears="1000" sales="200" incomeAfterTaxes="648" incomeBeforeTaxes="800" traded="true"/>
         <marketData id="marketData:13" goods-type="model.goods.silver" amount="500" initialPrice="16" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:14" goods-type="model.goods.horses" amount="962" initialPrice="1" arrears="0" sales="-166" incomeAfterTaxes="-498" incomeBeforeTaxes="-498" traded="true"/>
         <marketData id="marketData:15" goods-type="model.goods.rum" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -4545,7 +4545,7 @@
         <marketData id="marketData:17" goods-type="model.goods.cloth" amount="1016" initialPrice="10" arrears="0" sales="392" incomeAfterTaxes="3342" incomeBeforeTaxes="3920" traded="true"/>
         <marketData id="marketData:18" goods-type="model.goods.coats" amount="1006" initialPrice="12" arrears="0" sales="246" incomeAfterTaxes="2447" incomeBeforeTaxes="2952" traded="true"/>
         <marketData id="marketData:19" goods-type="model.goods.tradeGoods" amount="2996" initialPrice="1" arrears="0" sales="-400" incomeAfterTaxes="-1200" incomeBeforeTaxes="-1200" traded="true"/>
-        <marketData id="marketData:20" goods-type="model.goods.tools" amount="955" initialPrice="1" arrears="0" sales="-420" incomeAfterTaxes="-1260" incomeBeforeTaxes="-1260" traded="true"/>
+        <marketData id="marketData:20" goods-type="model.goods.tools" amount="955" initialPrice="1" arrears="100" sales="-420" incomeAfterTaxes="-1260" incomeBeforeTaxes="-1260" traded="true"/>
         <marketData id="marketData:21" goods-type="model.goods.muskets" amount="994" initialPrice="1" arrears="0" sales="-200" incomeAfterTaxes="-600" incomeBeforeTaxes="-600" traded="true"/>
       </market>
       <tension player="player:133" value="1100"/>

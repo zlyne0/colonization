@@ -204,6 +204,10 @@ public class MarketData extends ObjectWithId {
     	return arrears == 0;
     }
     
+    public boolean hasArrears() {
+    	return arrears > 0;
+    }
+    
 	public static class Xml extends XmlNodeParser {
 
 		@Override

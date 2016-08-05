@@ -757,6 +757,9 @@ public class Colony extends Settlement {
 		
 		int sum = 0;
 		for (RequiredGoods rg : requiredGoods) {
+			if (market.hasArrears(rg.goodsType)) {
+				return Integer.MAX_VALUE;
+			}
 			int warehouseGoodsAmount = goodsContainer.goodsAmount(rg.getId());
 			if (rg.amount > warehouseGoodsAmount) {
 				int requireGoods = rg.amount - warehouseGoodsAmount;
