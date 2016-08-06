@@ -5,7 +5,6 @@ import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -123,22 +122,22 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
         tableLayout.setFillParent(true);
         
-        HorizontalGroup rowGroup2 = new HorizontalGroup();
-        rowGroup2.addActor(highSeasUnitsPanel);
-        rowGroup2.addActor(marketLog);
-        tableLayout.add(rowGroup2).row();
-        HorizontalGroup rowGroup1 = new HorizontalGroup();
-        rowGroup1.addActor(carrierUnitsPanel);
-        rowGroup1.addActor(outsideUnitsPanel);
+        Table buttonsLayout = createButtonsLayout();
         
-        tableLayout.add(rowGroup1).row();
+        Table rowGroup2 = new Table();
+        rowGroup2.add(highSeasUnitsPanel).expandX().fillX();
+        rowGroup2.add(marketLog).expandX().fillX();
+        rowGroup2.add(buttonsLayout);
+        tableLayout.add(rowGroup2).expandX().fillX().row();
+        
+        Table unitsPanel = new Table();
+        unitsPanel.add(carrierUnitsPanel).fillX().expandX().row();
+        unitsPanel.add(outsideUnitsPanel).expandX().fillX();
+        
+        tableLayout.add(unitsPanel).fillX().expandX().row();
         tableLayout.add(marketPanel);
 
-		Table buttonsLayout = createButtonsLayout();
-        
         stage.addActor(tableLayout);
-		stage.addActor(buttonsLayout);
-        
         stage.setDebugAll(true);
 	}
 
@@ -219,11 +218,10 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		});
 
 		Table buttonsLayout = new Table();
-		buttonsLayout.setFillParent(true);
 		buttonsLayout.align(Align.top | Align.right);
-		buttonsLayout.defaults().space(0).pad(10, 10, 0, 10);
+		buttonsLayout.defaults().space(0).pad(10, 10, 0, 10).size(bw, bw);
 		
-		buttonsLayout.add(closeButton).row();
+		buttonsLayout.add(closeButton).spaceBottom(bw).row();
 		buttonsLayout.add(recruitButton).row();
 		buttonsLayout.add(purchaseButton).row();
 		buttonsLayout.add(trainButton).row();

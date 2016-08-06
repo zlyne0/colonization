@@ -16,6 +16,7 @@ public class HighSeasUnitsPanel extends Table {
 		ingoingUnits = new UnitsPanel();
 		outgoingUnits = new UnitsPanel();
 		
+		defaults().fillX().expandX();
 		add(ingoingUnits).row();
 		add(outgoingUnits);
 	}

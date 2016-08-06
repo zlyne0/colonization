@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
@@ -19,7 +20,7 @@ import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-public class CarrierUnitsPanel extends HorizontalGroup {
+public class CarrierUnitsPanel extends Table {
     class CargoPanel extends ScrollPane implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
         private final HorizontalGroup widgets = new HorizontalGroup();
         private static final float GOOD_IMG_WIDTH = 32;
@@ -134,8 +135,8 @@ public class CarrierUnitsPanel extends HorizontalGroup {
 		carrierUnitsPanel = new UnitsPanel();
 		cargoPanel = new CargoPanel(goodsDragAndDrop);
 		
-		addActor(carrierUnitsPanel);
-		addActor(cargoPanel);
+		add(carrierUnitsPanel).fillX().expandX();
+		add(cargoPanel);
 	}
 	
 	private ClickListener unitActorClickListener = new ClickListener() {
