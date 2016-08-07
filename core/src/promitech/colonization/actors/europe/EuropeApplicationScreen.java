@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Notification;
@@ -19,6 +20,7 @@ import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.actors.CarrierUnitsPanel;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.PlayerGoldTaxYearLabel;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.ui.DoubleClickedListener;
@@ -59,6 +61,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private DragAndDrop unitsDragAndDrop;
 	
 	private Stage stage;
+	private PlayerGoldTaxYearLabel playerGoldTaxYearLabel; 
 	private MarketPanel marketPanel; 
 	private CarrierUnitsPanel carrierUnitsPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
@@ -121,6 +124,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         Table tableLayout = new Table();
         tableLayout.setBackground(new TiledDrawable(paperBackground.texture));            
         tableLayout.setFillParent(true);
+        
+        playerGoldTaxYearLabel = new PlayerGoldTaxYearLabel();
+        tableLayout.add(playerGoldTaxYearLabel).row();
         
         Table buttonsLayout = createButtonsLayout();
         
@@ -228,13 +234,15 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		return buttonsLayout;
 	}
 	
-	public void init(Player player) {
+	public void init(Player player, Game game) {
 		this.player = player;
 		
 		marketPanel.init(player);
 		carrierUnitsPanel.initUnits(player.getEurope());
 		outsideUnitsPanel.initUnits(player.getEurope());
 		highSeasUnitsPanel.initUnits(player.getHighSeas());
+		
+		playerGoldTaxYearLabel.init(player, game.getTurn());
 	}
 	
 	@Override

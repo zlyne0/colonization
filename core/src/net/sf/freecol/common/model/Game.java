@@ -17,6 +17,7 @@ public class Game implements Identifiable {
 
 	public static IdGenerator idGenerator;
 	public String activeUnitId;
+	private Turn turn;
 	
 	public Game(String id) {
 		this.id = id;
@@ -29,6 +30,10 @@ public class Game implements Identifiable {
 	
 	public String toString() {
 		return "map[" + map + "]";
+	}
+
+	public Turn getTurn() {
+		return turn;
 	}
 	
     public void afterLoadGame() {
@@ -51,6 +56,7 @@ public class Game implements Identifiable {
 			
 			Game game = new Game(attr.getStrAttribute("id"));
 			game.activeUnitId = attr.getStrAttribute("activeUnit");
+			game.turn = new Turn(attr.getIntAttribute("turn"));
 			
 			XmlNodeParser.game = game;
 			

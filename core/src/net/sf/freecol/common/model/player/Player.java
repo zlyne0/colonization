@@ -307,6 +307,10 @@ public class Player extends ObjectWithId {
     	return this.gold >= gold;
     }
     
+    public int getGold() {
+    	return gold;
+    }
+    
     public boolean isEuropean() {
         return playerType == PlayerType.COLONIAL
             || playerType == PlayerType.REBEL

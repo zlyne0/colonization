@@ -339,7 +339,7 @@ public class GUIGameController {
     
 	public void showEuropeScreen() {
         EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);
-        screen.init(game.playingPlayer);
+        screen.init(game.playingPlayer, game);
 		screenManager.setScreen(ApplicationScreenType.EUROPE);		
 	}
 	
