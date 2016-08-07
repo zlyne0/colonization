@@ -33,9 +33,6 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
         
         goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, this));
         
-        defaults().space(20);
-        pad(20);
-        
         updateGoodsQuantity(aColony);
         updateDragAndDropSource(goodsDragAndDrop);
     }
@@ -65,7 +62,9 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
             warehouseGoodActor = new WarehouseGoodsActor(goodsType, goodsAmount);
             warehouseGoodActor.dragAndDropSourceContainer = this;
             goodActorByType.put(goodsType.getId(), warehouseGoodActor);
-            add(warehouseGoodActor);
+            add(warehouseGoodActor)
+				.width(warehouseGoodActor.getPrefWidth() + 20)
+				.height(warehouseGoodActor.getPrefHeight() + 20);
         }
         warehouseGoodActor.setQuantity(goodsAmount);
     }
