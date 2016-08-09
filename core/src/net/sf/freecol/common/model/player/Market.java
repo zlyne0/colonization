@@ -45,6 +45,20 @@ public class Market extends ObjectWithId {
 		return data.hasArrears();
 	}
 
+	public MarketData payArrears(Player player, GoodsType goodsType) {
+		MarketData md = requireMarketData(goodsType);
+		
+		if (player.hasNotGold(md.getArrears())) {
+			throw new IllegalStateException(
+					"has not enought gold(" + player.getGold() + ") " + 
+			        "to pay arrears(" + md.getArrears() + ") " + 
+					"for " + md.getGoodsType());
+		}
+		player.subtractGold(md.getArrears());
+		md.repayArrears();
+		return md;
+	}
+	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {

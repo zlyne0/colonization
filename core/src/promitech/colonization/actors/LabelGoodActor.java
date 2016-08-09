@@ -81,4 +81,8 @@ public class LabelGoodActor extends Widget {
 	public String toString() {
 		return "type[" + goodsType + "], label[" + label + "]";
 	}
+
+	public GoodsType getGoodsType() {
+		return goodsType;
+	}
 }

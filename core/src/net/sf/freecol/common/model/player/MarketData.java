@@ -207,6 +207,18 @@ public class MarketData extends ObjectWithId {
     public boolean hasArrears() {
     	return arrears > 0;
     }
+
+	public void repayArrears() {
+		arrears = 0;
+	}
+
+    public int getArrears() {
+    	return arrears;
+    }
+
+	protected GoodsType getGoodsType() {
+		return goodsType;
+	}
     
 	public static class Xml extends XmlNodeParser {
 
@@ -238,6 +250,5 @@ public class MarketData extends ObjectWithId {
 		public static String tagName() {
 			return "marketData";
 		}
-		
 	}
 }

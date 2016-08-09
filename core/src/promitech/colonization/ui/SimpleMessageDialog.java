@@ -28,7 +28,8 @@ public class SimpleMessageDialog extends ClosableDialog {
 	public SimpleMessageDialog withContant(StringTemplate st) {
 		String msg = Messages.message(st);
 		Label contentLabel = new Label(msg, skin);
-		getContentTable().add(contentLabel);
+		contentLabel.setWrap(true);		
+		getContentTable().add(contentLabel).fillX().pad(20).space(10).width(500).row();
 		return this;
 	}
 

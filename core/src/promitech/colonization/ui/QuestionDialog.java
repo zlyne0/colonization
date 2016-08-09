@@ -29,8 +29,8 @@ public class QuestionDialog extends Dialog {
         @Override
         public void changed(ChangeEvent event, Actor actor) {
             OptionAction<Object> optionAction = (OptionAction<Object>) actionByButton.get(event.getListenerActor());
+            hide();
             if (optionAction != null) {
-                hide();
                 optionAction.executeAction(payloadByButton.get(event.getListenerActor()));
             }
         }
@@ -54,6 +54,13 @@ public class QuestionDialog extends Dialog {
         dialogLayout.add(button).fillX().space(10).row();
         actionByButton.put(button, optionAction);
         payloadByButton.put(button, payload);
+    }
+    
+    public void addOnlyCloseAnswer(String msgKey) {
+    	TextButton button = new TextButton(Messages.msg(msgKey), GameResources.instance.getUiSkin());
+    	button.addListener(buttonChangeListener);
+    	
+        dialogLayout.add(button).fillX().space(10).row();
     }
     
     @Override
