@@ -68,6 +68,21 @@ public class UnitRole extends ObjectWithFeatures {
 	    return required;
 	}
 	
+    public boolean isAvailableTo(UnitType unitType, ObjectWithFeatures place) {
+        if (requiredAbilities != null) {
+            for (Ability aa : requiredAbilities.entities()) {
+                boolean found = unitType.hasAbility(aa.getId());
+                if (!found) {
+                	found = place.hasAbility(aa.getId());
+                }
+                if (aa.isValueNotEquals(found)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

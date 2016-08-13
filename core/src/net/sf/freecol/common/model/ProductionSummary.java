@@ -17,6 +17,8 @@ public class ProductionSummary {
     
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
+	public static ProductionSummary EMPTY = new ProductionSummary();
+	
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
     }

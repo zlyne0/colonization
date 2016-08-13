@@ -1,8 +1,11 @@
 package net.sf.freecol.common.model.player;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -13,6 +16,11 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Market extends ObjectWithId {
+	
+	public static interface MarketTransactionLogger {
+		void logSale(TransactionEffectOnMarket transaction);
+		void logPurchase(TransactionEffectOnMarket transaction);
+	}
 	
 	public final MapIdEntities<MarketData> marketGoods = new MapIdEntities<MarketData>();
 	
@@ -45,6 +53,20 @@ public class Market extends ObjectWithId {
 		return data.hasArrears();
 	}
 
+	public boolean canAffordFor(Player player, ProductionSummary required) {
+		int paidSum = 0;
+		for (Entry<String> goodsTypeEntry : required.entries()) {
+			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
+			if (data != null && data.hasArrears()) {
+				return false;
+			}
+			if (goodsTypeEntry.value > 0) {
+				paidSum += data.getCostToBuy(goodsTypeEntry.value);
+			}
+		}
+		return player.hasGold(paidSum);
+	}
+	
 	public MarketData payArrears(Player player, GoodsType goodsType) {
 		MarketData md = requireMarketData(goodsType);
 		
@@ -197,5 +219,6 @@ public class Market extends ObjectWithId {
 		}
 		
 	}
+
 
 }

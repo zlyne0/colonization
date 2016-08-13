@@ -4,12 +4,13 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class MarketLog extends ScrollPane {
+public class MarketLog extends ScrollPane implements Market.MarketTransactionLogger {
     private final Label label; 
     
     public MarketLog() {

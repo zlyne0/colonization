@@ -148,7 +148,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    
 	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {
 	        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
-	            List<UnitRole> avaliableRoles = unit.avaliableRoles();
+	            List<UnitRole> avaliableRoles = unit.avaliableRoles(colony.colonyUpdatableFeatures);
 	            Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
 	            
 	            System.out.println("avaliable roles size " + avaliableRoles.size());

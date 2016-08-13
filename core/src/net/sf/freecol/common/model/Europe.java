@@ -3,10 +3,15 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Market.MarketTransactionLogger;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.Randomizer;
@@ -158,6 +163,29 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return true;
 	}
 
+    public void changeUnitRole(Game game, Unit unit, UnitRole newUnitRole, MarketTransactionLogger marketLog) {
+    	if (!newUnitRole.isAvailableTo(unit.unitType, this)) {
+    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
+    	}
+    	ProductionSummary requiredGoods = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);
+    	
+    	unit.changeRole(newUnitRole);
+
+    	Player player = unit.getOwner();
+		for (Entry<String> reqGoodsEntry : requiredGoods.entries()) {
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(reqGoodsEntry.key);
+			if (reqGoodsEntry.value > 0) {
+				// buy
+				TransactionEffectOnMarket transaction = player.market().buyGoods(game, player, goodsType, reqGoodsEntry.value);
+				marketLog.logPurchase(transaction);
+			} else {
+				// sell
+				TransactionEffectOnMarket transaction = player.market().sellGoods(game, player, goodsType, -reqGoodsEntry.value);
+				marketLog.logSale(transaction);
+			}
+		}
+    }
+	
     public static class Xml extends XmlNodeParser {
 
         public Xml() {

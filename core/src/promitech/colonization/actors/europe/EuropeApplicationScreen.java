@@ -1,5 +1,8 @@
 package promitech.colonization.actors.europe;
 
+import java.util.Collections;
+import java.util.List;
+
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
@@ -11,10 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.actors.CarrierUnitsPanel;
@@ -46,6 +54,17 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 					changeColonyStateListener.changeUnitAllocation();
 				}
 				break;
+			case EQUIPPED:
+				player.getEurope().changeUnitRole(game, unitActor.unit, item.newRole, marketLog);
+				unitActor.updateTexture();
+				break;
+
+			case CLEAR_ORDERS:
+				unitActor.unit.setState(UnitState.ACTIVE);
+				break;
+			case SENTRY: 
+				unitActor.unit.setState(UnitState.SENTRY);
+				break;
 			}
 			return true;
 		}
@@ -54,7 +73,39 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			if (unit.isNaval()) {
 				dialog.addCommandItem(new UnitActionOrderItem("NewWorld", ActionTypes.SAIL_TO_NEW_WORLD));
 			}
+			if (unit.isPerson()) {
+				addEquippedRoles(unit, dialog);
+			}
+			
+	        dialog.addCommandItemSeparator();
+	        dialog.addCommandItem(new UnitActionOrderItem("clearUnitOrders", ActionTypes.CLEAR_ORDERS));
+	        if (unit.canChangeState(UnitState.SENTRY)) {
+	        	dialog.addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
+	        }
 		}
+		
+	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {
+	        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+	            List<UnitRole> avaliableRoles = unit.avaliableRoles(player.getEurope());
+	            Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+	            
+	            System.out.println("avaliable roles size " + avaliableRoles.size());
+	            for (UnitRole aRole : avaliableRoles) {
+	                System.out.println("ur " + aRole);
+	                if (unit.getUnitRole().equalsId(aRole)) {
+	                    continue;
+	                }
+	                if (aRole.hasAbility(Ability.DRESS_MISSIONARY)) {
+	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, ProductionSummary.EMPTY, ActionTypes.EQUIPPED));
+	                	continue;
+	                }
+	                ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
+	                if (player.market().canAffordFor(player, required)) {
+	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
+	                }
+	            }
+	        }
+	    }
 	}
 	
 	private DragAndDrop goodsDragAndDrop;
@@ -69,6 +120,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private HighSeasUnitsPanel highSeasUnitsPanel;
 	private final EuropeUnitOrders europeUnitOrders = new EuropeUnitOrders();
 	
+	private Game game;
 	private Player player;
 	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
@@ -236,6 +288,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	public void init(Player player, Game game) {
 		this.player = player;
+		this.game = game;
 		
 		marketPanel.init(player);
 		carrierUnitsPanel.initUnits(player.getEurope());

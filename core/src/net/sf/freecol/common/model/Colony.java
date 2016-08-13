@@ -55,7 +55,7 @@ public class Colony extends Settlement {
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
     
-    final ObjectWithFeatures colonyUpdatableFeatures;
+    public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
     final List<Unit> colonyWorkers = new ArrayList<Unit>();
@@ -235,7 +235,7 @@ public class Colony extends Settlement {
     }
 
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
-    	if (!newUnitRole.isAvailableTo(unit.unitType)) {
+    	if (!newUnitRole.isAvailableTo(unit.unitType, colonyUpdatableFeatures)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
     	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);

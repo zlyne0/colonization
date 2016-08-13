@@ -705,10 +705,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		this.experience = 0;
 	}
 	
-	public List<UnitRole> avaliableRoles() {
+	public List<UnitRole> avaliableRoles(ObjectWithFeatures place) {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(unitType)) {
+            if (role.isAvailableTo(unitType, place)) {
                 a.add(role);
             }
         }
