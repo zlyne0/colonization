@@ -4,17 +4,17 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class HighSeasUnitsPanel extends Table {
-	private final OutsideUnitsPanel	ingoingUnits;
-	private final OutsideUnitsPanel	outgoingUnits;
+	private final UnitsPanel	ingoingUnits;
+	private final UnitsPanel	outgoingUnits;
 	
 	public HighSeasUnitsPanel() {
-		ingoingUnits = new OutsideUnitsPanel();
-		outgoingUnits = new OutsideUnitsPanel();
+		ingoingUnits = new UnitsPanel();
+		outgoingUnits = new UnitsPanel();
 		
 		defaults().fillX().expandX();
 		add(ingoingUnits).row();
@@ -25,12 +25,12 @@ public class HighSeasUnitsPanel extends Table {
 		StringTemplate st = StringTemplate.template("goingTo")
 	        .add("%type%", "ship")
 	        .addStringTemplate("%location%", StringTemplate.key(player.nation().getId() + ".europe"));		
-		ingoingUnits.setLabelStr(Messages.message(st));
+		ingoingUnits.withLabel(Messages.message(st));
 		
 		st = StringTemplate.template("goingTo")
 		        .add("%type%", "ship")
 		        .add("%location%", player.getNewLandName());		
-		outgoingUnits.setLabelStr(Messages.message(st));
+		outgoingUnits.withLabel(Messages.message(st));
 		
 		
 		ingoingUnits.clearUnits();

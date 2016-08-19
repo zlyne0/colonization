@@ -26,7 +26,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.actors.ChangeColonyStateListener;
-import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.PlayerGoldTaxYearLabel;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gdx.Frame;
@@ -113,8 +113,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private Stage stage;
 	private PlayerGoldTaxYearLabel playerGoldTaxYearLabel; 
 	private MarketPanel marketPanel; 
-	private OutsideUnitsPanel carrierUnitsPanel;
-	private OutsideUnitsPanel outsideUnitsPanel;
+	private UnitsPanel carrierUnitsPanel;
+	private UnitsPanel outsideUnitsPanel;
 	private MarketLog marketLog;
 	private HighSeasUnitsPanel highSeasUnitsPanel;
 	private final EuropeUnitOrders europeUnitOrders = new EuropeUnitOrders();
@@ -167,17 +167,18 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		stage = new Stage();		
 		marketLog = new MarketLog();
         marketPanel = new MarketPanel(gameController.getGame(), shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
-        carrierUnitsPanel = new OutsideUnitsPanel()
+        carrierUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener)
+				.withLabel(Messages.msg("inPort"));
         
-        outsideUnitsPanel = new OutsideUnitsPanel()
+        outsideUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
-        		.withUnitDoubleClick(unitActorDoubleClickListener);
+        		.withUnitDoubleClick(unitActorDoubleClickListener)
+        		.withLabel(Messages.msg("docks"));
         highSeasUnitsPanel = new HighSeasUnitsPanel();
         
-        outsideUnitsPanel.setLabelStr(Messages.msg("docks"));
         
         Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();

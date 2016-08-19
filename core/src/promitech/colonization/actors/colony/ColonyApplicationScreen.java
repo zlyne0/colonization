@@ -30,7 +30,7 @@ import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
-import promitech.colonization.actors.OutsideUnitsPanel;
+import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.ShiftPressed;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
@@ -194,8 +194,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private WarehousePanel warehousePanel;
 	private TerrainPanel terrainPanel;
 	private ActualBuildableItemActor actualBuildableItemActor; 
-	private OutsideUnitsPanel outsideUnitsPanel;
-	private OutsideUnitsPanel carrierUnitsPanel;
+	private UnitsPanel outsideUnitsPanel;
+	private UnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
 
@@ -275,21 +275,22 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
-        outsideUnitsPanel = new OutsideUnitsPanel()
+        outsideUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)
-        		.withUnitDoubleClick(unitActorDoubleClickListener);
+        		.withUnitDoubleClick(unitActorDoubleClickListener)
+        		.withLabel(Messages.msg("outsideColony"));
 		
-        carrierUnitsPanel = new OutsideUnitsPanel()
+        carrierUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener)
+        		.withLabel(Messages.msg("inPort"));
         
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
         actualBuildableItemActor = new ActualBuildableItemActor();
         
-        outsideUnitsPanel.setLabelStr(Messages.msg("outsideColony"));
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
