@@ -71,6 +71,8 @@ public class FontResource {
 		//hudButtonsFont.setColor(new Color(0.8f, 0.8f, 0.8f, 1f));
 		hudButtonsFont.setColor(Color.WHITE);
 		
+		unitBoxFont.setColor(Color.BLACK);
+		
 		generator.dispose();
 	}
 	

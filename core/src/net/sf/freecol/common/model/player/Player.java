@@ -93,6 +93,7 @@ public class Player extends ObjectWithId {
     private int interventionBells;
     private int entryLocationX;
     private int entryLocationY;
+    private String newLandName;
     
     /**
      * The number of immigration points.  Immigration points are an
@@ -406,6 +407,10 @@ public class Player extends ObjectWithId {
 	public int getEntryLocationY() {
 		return entryLocationY;
 	}
+
+	public String getNewLandName() {
+		return newLandName;
+	}
 	
     public static class Xml extends XmlNodeParser {
         public Xml() {
@@ -429,6 +434,7 @@ public class Player extends ObjectWithId {
             
             Player player = new Player(idStr);
             player.dead = attr.getBooleanAttribute("dead");
+            player.newLandName = attr.getStrAttribute("newLandName");
             player.tax = attr.getIntAttribute("tax", 0);
             player.gold = attr.getIntAttribute("gold", 0);
             player.liberty = attr.getIntAttribute("liberty", 0);

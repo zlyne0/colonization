@@ -18,14 +18,13 @@ import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
-import promitech.colonization.actors.CarrierUnitsPanel;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.OutsideUnitsPanel;
 import promitech.colonization.actors.PlayerGoldTaxYearLabel;
@@ -114,7 +113,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private Stage stage;
 	private PlayerGoldTaxYearLabel playerGoldTaxYearLabel; 
 	private MarketPanel marketPanel; 
-	private CarrierUnitsPanel carrierUnitsPanel;
+	private OutsideUnitsPanel carrierUnitsPanel;
 	private OutsideUnitsPanel outsideUnitsPanel;
 	private MarketLog marketLog;
 	private HighSeasUnitsPanel highSeasUnitsPanel;
@@ -127,9 +126,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		@Override
 		public void changeUnitAllocation() {
 			marketPanel.init(player);
-			carrierUnitsPanel.initUnits(player.getEurope());
-			outsideUnitsPanel.initUnits(player.getEurope());
-			highSeasUnitsPanel.initUnits(player.getHighSeas());
+			carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
+			outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
+			highSeasUnitsPanel.initUnits(player);
 		}
 
 		@Override
@@ -168,9 +167,17 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		stage = new Stage();		
 		marketLog = new MarketLog();
         marketPanel = new MarketPanel(gameController.getGame(), shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
-        carrierUnitsPanel = new CarrierUnitsPanel(shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
-        outsideUnitsPanel = new OutsideUnitsPanel(shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        carrierUnitsPanel = new OutsideUnitsPanel()
+        		.withUnitChips(shape)
+        		.withUnitDoubleClick(unitActorDoubleClickListener)
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
+        
+        outsideUnitsPanel = new OutsideUnitsPanel()
+        		.withUnitChips(shape)
+        		.withUnitDoubleClick(unitActorDoubleClickListener);
         highSeasUnitsPanel = new HighSeasUnitsPanel();
+        
+        outsideUnitsPanel.setLabelStr(Messages.msg("docks"));
         
         Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();
@@ -291,9 +298,9 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		this.game = game;
 		
 		marketPanel.init(player);
-		carrierUnitsPanel.initUnits(player.getEurope());
-		outsideUnitsPanel.initUnits(player.getEurope());
-		highSeasUnitsPanel.initUnits(player.getHighSeas());
+		carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
+		outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
+		highSeasUnitsPanel.initUnits(player);
 		
 		playerGoldTaxYearLabel.init(player, game.getTurn());
 	}

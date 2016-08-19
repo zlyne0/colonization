@@ -29,7 +29,6 @@ import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.CarrierUnitsPanel;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.OutsideUnitsPanel;
 import promitech.colonization.actors.ShiftPressed;
@@ -196,7 +195,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	private TerrainPanel terrainPanel;
 	private ActualBuildableItemActor actualBuildableItemActor; 
 	private OutsideUnitsPanel outsideUnitsPanel;
-	private CarrierUnitsPanel carrierUnitsPanel;
+	private OutsideUnitsPanel carrierUnitsPanel;
 	private PopulationPanel populationPanel;
 	private ProductionPanel productionPanel;
 
@@ -276,11 +275,21 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
-		outsideUnitsPanel = new OutsideUnitsPanel(this.shape, unitsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
-        carrierUnitsPanel = new CarrierUnitsPanel(this.shape, goodsDragAndDrop, changeColonyStateListener, unitActorDoubleClickListener);
+        outsideUnitsPanel = new OutsideUnitsPanel()
+        		.withUnitChips(shape)
+        		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)
+        		.withUnitDoubleClick(unitActorDoubleClickListener);
+		
+        carrierUnitsPanel = new OutsideUnitsPanel()
+        		.withUnitChips(shape)
+        		.withUnitDoubleClick(unitActorDoubleClickListener)
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
+        
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
         actualBuildableItemActor = new ActualBuildableItemActor();
+        
+        outsideUnitsPanel.setLabelStr(Messages.msg("outsideColony"));
         
         Frame paperBackground = gameResources.getFrame("Paper");
         
@@ -363,8 +372,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor.initBuildings(colony, unitsDragAndDrop);
         warehousePanel.initGoods(colony, goodsDragAndDrop);
         terrainPanel.initTerrains(mapScreen.getMapActor().mapDrawModel(), colonyTile, unitsDragAndDrop);
-        outsideUnitsPanel.initUnits(colonyTile);
-        carrierUnitsPanel.initUnits(colonyTile);
+        outsideUnitsPanel.initUnits(colonyTile, Unit.NOT_CARRIER_UNIT_PREDICATE);
+        carrierUnitsPanel.initUnits(colonyTile, Unit.CARRIER_UNIT_PREDICATE);
+        
         populationPanel.update(colony);
         actualBuildableItemActor.updateBuildItem(colony);
     }

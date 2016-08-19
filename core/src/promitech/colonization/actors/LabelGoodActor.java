@@ -15,6 +15,8 @@ import promitech.colonization.infrastructure.FontResource;
 
 public class LabelGoodActor extends Widget {
 
+	private static final float GOOD_IMG_WIDTH = 32;
+	
 	protected static class DragAndDropPayload {
 		AbstractGoods abstractGoods;
 		boolean changeTransferGoodsQuantity = false;
@@ -31,6 +33,14 @@ public class LabelGoodActor extends Widget {
 	protected String label = "";
     public DragAndDropSourceContainer<AbstractGoods> dragAndDropSourceContainer;
     
+    public static float goodsImgWidth() {
+    	return GOOD_IMG_WIDTH;
+    }
+    
+    public static float goodsImgHeight() {
+    	return FontResource.getGoodsQuantityFont().getCapHeight() + GOOD_IMG_WIDTH;
+    }
+    
 	public LabelGoodActor(GoodsType goodsType) {
 		this.goodsType = goodsType;
 		
@@ -45,7 +55,7 @@ public class LabelGoodActor extends Widget {
 	
     @Override
     public float getPrefHeight() {
-    	return textureRegion.getRegionHeight() + font.getCapHeight();
+    	return goodsImgHeight();
     }
     
     @Override

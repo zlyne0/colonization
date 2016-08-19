@@ -882,6 +882,20 @@ public class Unit extends ObjectWithId implements UnitLocation {
         }
     }
     
+    public static UnitPredicate NOT_CARRIER_UNIT_PREDICATE = new UnitPredicate() {
+		@Override
+		public boolean obtains(Unit unit) {
+			return !unit.isCarrier();
+		}
+	};
+
+    public static UnitPredicate CARRIER_UNIT_PREDICATE = new UnitPredicate() {
+		@Override
+		public boolean obtains(Unit unit) {
+			return unit.isCarrier();
+		}
+	};
+	
     /**
      * A predicate that can be applied to a unit.
      */
