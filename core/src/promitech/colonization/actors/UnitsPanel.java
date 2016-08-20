@@ -34,7 +34,7 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 	private final ChangeColonyStateListener changeColonyStateListener;
 	private float cargoWidthWidth;
 	private final DragAndDrop goodsDragAndDrop;
-	private Unit unit;
+	private UnitActor unitActor;
 	private final float prefHeight;
 	
 	CargoPanel(DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener) {
@@ -49,17 +49,17 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 		defaults().align(Align.left);
 	}
 	
-	void initCargoForUnit(Unit unit) {
-		this.unit = unit;
-		cargoWidthWidth = unit.unitType.getSpace() * (LabelGoodActor.goodsImgWidth() + ITEMS_SPACE);
+	void initCargoForUnit(UnitActor unitActor) {
+		this.unitActor = unitActor;
+		cargoWidthWidth = unitActor.unit.unitType.getSpace() * (LabelGoodActor.goodsImgWidth() + ITEMS_SPACE);
 		
 		updateCargoPanelData();
 	}
 	
-	private void updateCargoPanelData() {
+	protected void updateCargoPanelData() {
 		clear();
 		
-		GoodsContainer goodsContainer = unit.getGoodsContainer();
+		GoodsContainer goodsContainer = unitActor.unit.getGoodsContainer();
 		for (AbstractGoods carrierGood : goodsContainer.carrierGoods()) {
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(carrierGood.getTypeId());
 			
@@ -84,25 +84,19 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 	
 	@Override
 	public void putPayload(AbstractGoods anAbstractGood, float x, float y) {
-		System.out.println("carrierPanel: carrierId[" + unit.getId() + "] put goods " + anAbstractGood);
-		
-		if (anAbstractGood.isNotEmpty()) {
-			unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
-			updateCargoPanelData();
-			changeColonyStateListener.transfereGoods();
-		}
+		unitActor.putPayload(anAbstractGood, x, y);
 	}
 	
 	@Override
 	public boolean canPutPayload(AbstractGoods anAbstractGood, float x, float y) {
-		return unit.hasSpaceForAdditionalCargo(anAbstractGood);
+		return unitActor.canPutPayload(anAbstractGood, x, y);
 	}
 	
 	@Override
 	public void takePayload(AbstractGoods anAbstractGood, float x, float y) {
-		System.out.println("carrierPanel: carrierId[" + unit.getId() + "] take goods " + anAbstractGood);
+		System.out.println("carrierPanel: carrierId[" + unitActor.unit.getId() + "] take goods " + anAbstractGood);
 		
-		unit.getGoodsContainer().decreaseGoodsQuantity(anAbstractGood);
+		unitActor.unit.getGoodsContainer().decreaseGoodsQuantity(anAbstractGood);
 		updateCargoPanelData();
 		changeColonyStateListener.transfereGoods();
 	}
@@ -117,6 +111,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
     private DoubleClickedListener unitActorDoubleClickListener;
 	private ShapeRenderer shapeRenderer;
 	private DragAndDrop unitDragAndDrop;
+	private DragAndDrop goodsDragAndDrop;
 	private UnitLocation unitLocation;
 	
 	private boolean showUnitChip = false;
@@ -174,6 +169,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		this.shapeRenderer = shapeRenderer;
 		this.withUnitFocus = true;
 		this.changeColonyStateListener = changeColonyStateListener;
+		this.goodsDragAndDrop = goodsDragAndDrop;
 		
 		cargoPanel = new CargoPanel(goodsDragAndDrop, changeColonyStateListener);
 		goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
@@ -281,12 +277,17 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 			unitDragAndDrop.addSource(new UnitDragAndDropSource(unitActor));
 		}
 
+		if (withUnitFocus) {
+			unitActor.withCargoPanel(cargoPanel, changeColonyStateListener);
+			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(unitActor, unitActor));
+		}
+		
 		widgets.addActor(unitActor);
 		return unitActor;
 	}
 	
 	private void updateCargo(UnitActor unitActor) {
-        cargoPanel.initCargoForUnit(unitActor.unit);
+        cargoPanel.initCargoForUnit(unitActor);
         widgets.addActorAfter(selectedActor, cargoPanel);
 	}
 	

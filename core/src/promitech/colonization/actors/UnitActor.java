@@ -6,17 +6,22 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.actors.map.UnitDrawer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-public class UnitActor extends Widget {
+public class UnitActor extends Widget implements DragAndDropTargetContainer<AbstractGoods> {
     public final Unit unit;
     private boolean drawUnitChip;
     private boolean drawFocus = false;
     private ShapeRenderer shapeRenderer;
     private TextureRegion texture;
+    
+    private ChangeColonyStateListener changeColonyStateListener;
+    private CargoPanel cargoPanel;
     
     public DragAndDropSourceContainer<UnitActor> dragAndDropSourceContainer;
     
@@ -34,6 +39,12 @@ public class UnitActor extends Widget {
         }
     }
 
+    public UnitActor withCargoPanel(CargoPanel cargoPanel, ChangeColonyStateListener changeColonyStateListener) {
+    	this.changeColonyStateListener = changeColonyStateListener;
+    	this.cargoPanel = cargoPanel;
+    	return this;
+    }
+    
     public void updateTexture() {
     	this.texture = getTexture(unit);
     	invalidate();
@@ -111,4 +122,21 @@ public class UnitActor extends Widget {
         drawFocus = true;
         this.shapeRenderer = aShapeRenderer;
     }
+
+	@Override
+	public void putPayload(AbstractGoods anAbstractGood, float x, float y) {
+		System.out.println("carrierPanel: carrierId[" + unit.getId() + "] put goods " + anAbstractGood);
+		
+		if (anAbstractGood.isNotEmpty()) {
+			unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
+			
+			cargoPanel.updateCargoPanelData();
+			changeColonyStateListener.transfereGoods();
+		}
+	}
+
+	@Override
+	public boolean canPutPayload(AbstractGoods anAbstractGood, float x, float y) {
+		return unit.hasSpaceForAdditionalCargo(anAbstractGood);
+	}
 }

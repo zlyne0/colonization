@@ -9,8 +9,8 @@ import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class HighSeasUnitsPanel extends Table {
-	private final UnitsPanel	ingoingUnits;
-	private final UnitsPanel	outgoingUnits;
+	private final UnitsPanel ingoingUnits;
+	private final UnitsPanel outgoingUnits;
 	
 	public HighSeasUnitsPanel() {
 		ingoingUnits = new UnitsPanel();
