@@ -233,7 +233,7 @@ public class GUIGameController {
 			
 			mapActor.mapDrawModel().unitPath = null;
 			selectedUnit.clearDestination();
-			System.out.println("moveContext = " + moveContext);
+			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
 			if (moveContext.canHandleMove()) {
 				moveContext.handleMove();
@@ -260,6 +260,7 @@ public class GUIGameController {
 		}
 		
 		if (moveContext.isMoveType(MoveType.EMBARK)) {
+			System.out.println("XXX onEndOfUnitDislocationAnimation.embark");
 			mapActor.mapDrawModel().setSelectedUnit(null);
 			guiGameModel.setActiveUnit(null);
 		}
@@ -272,7 +273,7 @@ public class GUIGameController {
 			}
 			
 			moveContext.initNextPathStep();
-			System.out.println("moveContext = " + moveContext);
+			System.out.println("moveContext.isMoveViaPath = " + moveContext);
 			if (moveContext.canHandleMove()) {
 				moveContext.handleMove();
 				guiMoveInteraction(moveContext);
@@ -425,6 +426,10 @@ public class GUIGameController {
 
 		if (moveContext.canHandleMove()) {
 			moveContext.handleMove();
+//			if (moveContext.isMoveType(MoveType.EMBARK)) {
+//				guiGameModel.setActiveUnit(null);
+//				mapActor.mapDrawModel().setSelectedUnit(null);
+//			}
 			guiMoveInteraction(moveContext);
 		} else {
             moveContext.unit.clearDestination();

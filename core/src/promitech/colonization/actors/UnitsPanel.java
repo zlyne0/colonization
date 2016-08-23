@@ -287,8 +287,10 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	}
 	
 	private void updateCargo(UnitActor unitActor) {
-        cargoPanel.initCargoForUnit(unitActor);
-        widgets.addActorAfter(selectedActor, cargoPanel);
+		if (withUnitFocus) {
+	        cargoPanel.initCargoForUnit(unitActor);
+	        widgets.addActorAfter(selectedActor, cargoPanel);
+		}
 	}
 	
 	@Override

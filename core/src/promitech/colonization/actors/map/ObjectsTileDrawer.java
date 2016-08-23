@@ -43,7 +43,7 @@ class ObjectsTileDrawer extends TileDrawer {
 		boolean drawRestOfUnits = true;
 		Unit selectedUnit = mapDrawModel.getSelectedUnit();
 		if (selectedUnit != null && !mapDrawModel.unitDislocationAnimation.isUnitAnimated(selectedUnit)) {
-			Tile selectedUnitTile = selectedUnit.getTile();
+			Tile selectedUnitTile = selectedUnit.getTileLocationOrNull();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
 				drawUnit(selectedUnit);
 				drawRestOfUnits = false;
@@ -56,7 +56,7 @@ class ObjectsTileDrawer extends TileDrawer {
 			}
 		}
 		
-		if (mapDrawModel.unitDislocationAnimation.isAnimatedUnitTile(mapx, mapy)) {
+		if (mapDrawModel.unitDislocationAnimation.isTileAnimated(mapx, mapy)) {
 			mapDrawModel.unitDislocationAnimation.drawUnit(this);
 		}
 	}

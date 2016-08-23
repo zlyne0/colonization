@@ -106,6 +106,7 @@ public class MoveContext {
 		if (carrier == null) {
 			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
 		}
+		System.out.println("moveContext.embarkUnit = " + this);
 		unit.setState(UnitState.SKIPPED);
 		unit.changeUnitLocation(carrier);
 		unit.reduceMovesLeftToZero();
