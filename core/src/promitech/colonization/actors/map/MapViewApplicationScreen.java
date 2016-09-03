@@ -25,6 +25,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources, shape);
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
+        gameController.setMapHudStage(hudStage);
         
         //stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
         stage = new Stage();
@@ -68,6 +69,11 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         hudStage.getViewport().update(width, height, true);
+    }
+    
+    @Override
+    public void dispose() {
+    	gameController.setMapHudStage(null);
     }
 
 	public MapActor getMapActor() {

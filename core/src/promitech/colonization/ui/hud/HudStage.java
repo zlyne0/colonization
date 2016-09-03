@@ -78,19 +78,6 @@ public class HudStage extends Stage {
 		public void change(GUIGameModel model) {
 			resetButtonVisibility(model);
 		}
-
-        @Override
-        public void dialogToShow(Dialog dialog) {
-            dialog.show(HudStage.this);
-        }
-
-		@Override
-		public void showChooseUnitsToDisembark(MoveContext moveContext) {
-			HudStage.this.setDebugAll(true);
-			
-			ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, moveContext, gameController);
-			chooseUnitsDialog.show(HudStage.this);
-		}
 	};
     
     public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources,  ShapeRenderer shape) {
@@ -114,6 +101,15 @@ public class HudStage extends Stage {
 		endOfTurnActor.setHeight(getHeight());
     }
 
+    public void showDialog(Dialog dialog) {
+    	dialog.show(this);
+    }
+    
+    public void showChooseUnitsToDisembarkDialog(MoveContext carrierMoveContext) {
+    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, carrierMoveContext, gameController);
+    	chooseUnitsDialog.show(this);
+    }
+    
     private final InputListener keysInputListener = new InputListener() {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {

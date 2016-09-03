@@ -46,12 +46,10 @@ public class ChooseUnitsToDisembarkDialog extends ClosableDialog {
 	}
 
 	private void createUnitsList() {
-		UnitLabel unitLabel = new UnitLabel();
-		
 		int[] alligment = new int[] { Align.center, Align.left };
 		for (Unit u : moveContext.unit.getUnitContainer().getUnits().entities()) {
 			UnitActor ua = new UnitActor(u, null);
-			Label ual = new Label(unitLabel.getUnitType(u), GameResources.instance.getUiSkin());
+			Label ual = new Label(UnitLabel.getUnitType(u), GameResources.instance.getUiSkin());
 			unitTable.addRow(u, alligment, ua, ual);
 		}
 		unitTable.addSelectListener(new STableSelectListener() {

@@ -34,6 +34,7 @@ import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.hud.HudStage;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
@@ -51,6 +52,7 @@ public class GUIGameController {
 	private Game game;
 	
 	private MapActor mapActor;
+	private HudStage mapHudStage;
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
@@ -58,6 +60,9 @@ public class GUIGameController {
 	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
+	
+	public GUIGameController() {
+	}
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
@@ -249,7 +254,7 @@ public class GUIGameController {
 							destTile
 						);
 					} else {
-						guiGameModel.showChooseUnitsToDisembark(moveContext);
+						mapHudStage.showChooseUnitsToDisembarkDialog(moveContext);
 					}
 					break;
 				default:
@@ -372,7 +377,7 @@ public class GUIGameController {
         questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
         questionDialog.addAnswer("highseas.no", sailHighSeasNoAnswer, moveContext);
         
-        guiGameModel.showDialog(questionDialog);
+        mapHudStage.showDialog(questionDialog);
     }
 	
     public void showMapScreenAndActiveNextUnit() {
@@ -660,5 +665,9 @@ public class GUIGameController {
 			}
 		}
 		guiMoveInteraction();
+	}
+
+	public void setMapHudStage(HudStage hudStage) {
+		this.mapHudStage = hudStage;
 	}
 }
