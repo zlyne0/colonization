@@ -7,6 +7,7 @@ public enum MoveType {
     ATTACK_UNIT(null, false),
     ATTACK_SETTLEMENT(null, false),
     EMBARK(null, false),
+    DISEMBARK(null, false),
     ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST(null, false),
     ENTER_INDIAN_SETTLEMENT_WITH_SCOUT(null, false),
     ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY(null, false),

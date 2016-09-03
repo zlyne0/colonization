@@ -119,4 +119,16 @@ public class UnitContainer {
     public MapIdEntities<Unit> getUnits() {
         return units;
     }
+
+	public boolean hasUnitWithMovePoints() {
+		if (units.isEmpty()) {
+			return false;
+		}
+		for (Unit u : units.entities()) {
+			if (u.hasMovesPoints()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

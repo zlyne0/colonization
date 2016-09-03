@@ -4,7 +4,6 @@ import net.sf.freecol.common.model.specification.Goods;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-// TOOD: cala klasa jako static
 public class UnitLabel {
 
 	public UnitLabel() {

@@ -24,6 +24,7 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
+import promitech.colonization.gamelogic.MoveContext;
 
 public class HudStage extends Stage {
     private static Direction[][] BUTTON_DIRECTIONS = new Direction[][] { 
@@ -44,7 +45,7 @@ public class HudStage extends Stage {
     	directionByKeyCode.put(Input.Keys.A, Direction.W);
     }
     
-    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private final ShapeRenderer shapeRenderer;
     public final HudInfoPanel hudInfoPanel; 
     private final GUIGameController gameController;
     private final EndOfTurnActor endOfTurnActor; 
@@ -82,11 +83,20 @@ public class HudStage extends Stage {
         public void dialogToShow(Dialog dialog) {
             dialog.show(HudStage.this);
         }
+
+		@Override
+		public void showChooseUnitsToDisembark(MoveContext moveContext) {
+			HudStage.this.setDebugAll(true);
+			
+			ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, moveContext, gameController);
+			chooseUnitsDialog.show(HudStage.this);
+		}
 	};
     
-    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources,  ShapeRenderer shape) {
         super(viewport);
         this.gameController = gameController;
+        this.shapeRenderer = shape;
 
         int bw = (int) (getHeight() * 0.33) / 3;
         hudInfoPanel = new HudInfoPanel(gameResources);

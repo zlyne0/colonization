@@ -28,6 +28,10 @@ public class UnitActor extends Widget implements DragAndDropTargetContainer<Abst
     private static TextureRegion getTexture(Unit unit) {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
     }
+
+    public UnitActor(final Unit unit) {
+    	this(unit, null);
+    }
     
     public UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
     	this.texture = getTexture(unit);

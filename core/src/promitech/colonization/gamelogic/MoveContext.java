@@ -18,6 +18,10 @@ public class MoveContext {
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
 
+	public MoveContext(Tile sourceTile, Tile destTile, Unit unit) {
+		this(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));
+	}
+	
 	public MoveContext(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
 		this.path = null;
 		this.unit = unit;
@@ -95,7 +99,7 @@ public class MoveContext {
 		}
 	}
 	
-	void embarkUnit() {
+	private void embarkUnit() {
 		Unit carrier = null;
 		for (Unit u : destTile.getUnits().entities()) {
 			if (u.canAddUnit(unit)) {
@@ -112,7 +116,7 @@ public class MoveContext {
 		unit.reduceMovesLeftToZero();
 	}
 	
-	void moveUnit() {
+	private void moveUnit() {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
 		System.out.println("moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
@@ -124,6 +128,10 @@ public class MoveContext {
 		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.MOVE_HIGH_SEAS.equals(moveType) || MoveType.EMBARK.equals(moveType));
 	}
 
+	public boolean isRequireUserInteraction() {
+		return MoveType.DISEMBARK.equals(moveType);
+	}
+	
 	public boolean isMoveViaPath() {
 		return path != null;
 	}
@@ -135,6 +143,4 @@ public class MoveContext {
 	public boolean isMoveType(MoveType moveType) {
 		return moveType.equals(this.moveType);
 	}
-
-	
 }

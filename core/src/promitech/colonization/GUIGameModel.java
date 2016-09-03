@@ -8,12 +8,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.gamelogic.MoveContext;
 
 public class GUIGameModel {
 
 	public static interface ChangeStateListener {
 		public void change(GUIGameModel model);
 		public void dialogToShow(Dialog dialog);
+		public void showChooseUnitsToDisembark(MoveContext moveContext);
 	}
 	
 	private final List<ChangeStateListener> listeners = new LinkedList<GUIGameModel.ChangeStateListener>(); 
@@ -94,4 +96,10 @@ public class GUIGameModel {
             l.dialogToShow(dialog);
         }
     }
+    
+	public void showChooseUnitsToDisembark(MoveContext moveContext) {
+		for (ChangeStateListener l : listeners) {
+			l.showChooseUnitsToDisembark(moveContext);
+		}
+	}
 }

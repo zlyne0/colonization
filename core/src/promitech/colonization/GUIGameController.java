@@ -1,6 +1,8 @@
 package promitech.colonization;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -54,6 +56,8 @@ public class GUIGameController {
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
 	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
+	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
+	private Unit disembarkCarrier;
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
@@ -235,13 +239,40 @@ public class GUIGameController {
 			selectedUnit.clearDestination();
 			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
-			if (moveContext.canHandleMove()) {
-				moveContext.handleMove();
-				guiMoveInteraction(moveContext);
+			if (moveContext.isRequireUserInteraction()) {
+				switch (moveContext.moveType) {
+				case DISEMBARK:
+					if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
+						disembarkUnitToLocation(
+							moveContext.unit, 
+							moveContext.unit.getUnitContainer().getUnits().first(), 
+							destTile
+						);
+					} else {
+						guiGameModel.showChooseUnitsToDisembark(moveContext);
+					}
+					break;
+				default:
+					break;
+				}
+			} else {
+				if (moveContext.canHandleMove()) {
+					moveContext.handleMove();
+					guiMoveInteraction(moveContext);
+				}
 			}
 		}
 	}
 
+	private void guiMoveInteraction() {
+		if (movesToAnimate.isEmpty()) {
+			return;
+		}
+		MoveContext mc = movesToAnimate.removeFirst();
+		mc.handleMove();
+		guiMoveInteraction(mc);
+	}
+	
 	private void guiMoveInteraction(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
@@ -293,16 +324,27 @@ public class GUIGameController {
 				blockUserInteraction = false;
 			}
 		} else {
-			if (!moveContext.unit.couldMove()) {
-				logicNextActiveUnit();
-				blockUserInteraction = false;
+			
+			if (disembarkCarrier != null) {
+				if (movesToAnimate.isEmpty()) {
+					disembarkCarrier = null;
+					blockUserInteraction = false;
+				} else {
+					guiMoveInteraction();
+				}
 			} else {
-			    if (moveContext.unit.getTile().getType().isHighSea()) {
-			        createHighSeasQuestion(moveContext);
-			    } else {
-	                blockUserInteraction = false;
-			    }
+				if (!moveContext.unit.couldMove()) {
+					logicNextActiveUnit();
+					blockUserInteraction = false;
+				} else {
+				    if (moveContext.unit.getTile().getType().isHighSea()) {
+				        createHighSeasQuestion(moveContext);
+				    } else {
+		                blockUserInteraction = false;
+				    }
+				}
 			}
+			
 		}
 	}
 
@@ -597,5 +639,26 @@ public class GUIGameController {
 		Notification firstNotification = game.playingPlayer.eventsNotifications.firstNotification();
 		guiGameModel.runListeners();
 		return firstNotification;
+	}
+
+	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
+		disembarkCarrier = carrier;
+		
+		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
+		mc.handleMove();
+		guiMoveInteraction(mc);
+	}
+	
+	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
+		disembarkCarrier = carrier;
+		
+		for (Unit u : unitsToDisembark) {
+			MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, u);
+			System.out.println("try disembark " + mc.toString());
+			if (mc.canHandleMove()) {
+				movesToAnimate.add(mc);
+			}
+		}
+		guiMoveInteraction();
 	}
 }

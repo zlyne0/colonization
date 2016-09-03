@@ -22,7 +22,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         
         gameController.setApplicationScreenManager(this.screenManager);
         
-        hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources);
+        hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources, shape);
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
         

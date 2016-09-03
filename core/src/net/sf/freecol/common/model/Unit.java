@@ -280,6 +280,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return movesLeft;
     }
     
+    public boolean hasMovesPoints() {
+    	return movesLeft > 0;
+    }
+    
     public boolean isNaval() {
     	return unitType != null && unitType.isNaval();
     }
@@ -472,6 +476,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		if (target.getType().isLand()) {
 			Settlement settlement = target.getSettlement();
 			if (settlement == null) {
+				if (unitContainer != null && unitContainer.hasUnitWithMovePoints()) {
+					if (!hasTileEnemyUnits(target)) {
+						return MoveType.DISEMBARK;
+					}
+				}
 				return MoveType.MOVE_NO_ACCESS_LAND;
 			} else if (settlement.getOwner().equalsId(owner)) {
 				return MoveType.MOVE;
@@ -481,14 +490,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
 				return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
 			}
 		} else { // target at sea
-			Unit defender = target.getUnits().first();
-			if (defender != null && !defender.isOwner(owner)) {
+			if (hasTileEnemyUnits(target)) {
 				return (isOffensiveUnit()) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
 			}
 			return (target.isDirectlyHighSeasConnected()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE;
 		}
 	}
     
+	private boolean hasTileEnemyUnits(Tile target) {
+		Unit defender = target.getUnits().first();
+		return defender != null && !defender.isOwner(owner);
+	}
+	
     /**
      * Is this unit allowed to contact a settlement?
      *
@@ -556,11 +569,12 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
     
     public int getInitialMovesLeft() {
-        return (int)owner.getFeatures().applyModifier(
+        float m = owner.getFeatures().applyModifier(
             Modifier.MOVEMENT_BONUS, 
             unitType.getMovement(), 
             unitType
         );
+    	return (int)unitRole.applyModifier(Modifier.MOVEMENT_BONUS, m);
     }
     
     /**
