@@ -163,11 +163,15 @@ public class GUIGameController {
 		}
 		if (tile.hasSettlement()) {
 		    if (tile.getSettlement().isColony()) {
-		        ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-		        colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
-		        screenManager.setScreen(ApplicationScreenType.COLONY);
+		    	showColonyScreen(tile);
 		    }
 		}
+	}
+	
+	public void showColonyScreen(Tile tile) {
+		ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+		colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+		screenManager.setScreen(ApplicationScreenType.COLONY);
 	}
 	
 	public void clickOnTile(Point p) {
@@ -322,6 +326,14 @@ public class GUIGameController {
 	                    moveContext.unit.clearDestination();
 	                    mapActor.mapDrawModel().unitPath = null;
 					}
+					
+					if (!moveContext.unit.couldMove()) {
+						logicNextActiveUnit();
+						blockUserInteraction = false;
+					}					
+					if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+						showColonyScreen(moveContext.destTile);
+					}
 				} else {
                     moveContext.unit.setState(UnitState.SKIPPED);
 					logicNextActiveUnit();
@@ -347,6 +359,9 @@ public class GUIGameController {
 				    } else {
 		                blockUserInteraction = false;
 				    }
+				}
+				if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+					showColonyScreen(moveContext.destTile);
 				}
 			}
 			
