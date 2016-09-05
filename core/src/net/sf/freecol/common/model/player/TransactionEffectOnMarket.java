@@ -2,13 +2,7 @@ package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.specification.GoodsType;
 
-public class TransactionEffectOnMarket {
-	public int sellPriceBeforeTransaction;
-	public int buyPriceBeforeTransaction;
-	public int sellPriceAfterTransaction;
-	public int buyPriceAfterTransaction;
-	
-	public String goodsTypeId;
+public class TransactionEffectOnMarket extends MarketChangePrice {
 	public int quantity;
 	public int sellPrice;
 	
@@ -17,21 +11,9 @@ public class TransactionEffectOnMarket {
 	public int taxPercent;
 	public int tax;
 	
-	public boolean isMarketPriceChanged() {
-		return sellPriceBeforeTransaction != sellPriceAfterTransaction || buyPriceBeforeTransaction != buyPriceAfterTransaction;
-	}
-
-	public boolean isPriceIncrease() {
-		return sellPriceAfterTransaction > sellPriceBeforeTransaction;
-	}
-	
     public void reset() {
-    	sellPriceBeforeTransaction = 0;
-    	buyPriceBeforeTransaction = 0;
-    	sellPriceAfterTransaction = 0;
-    	buyPriceAfterTransaction = 0;
+    	super.reset();
 
-        goodsTypeId = null;
         quantity = 0;
         sellPrice = 0;
         
@@ -52,16 +34,6 @@ public class TransactionEffectOnMarket {
         netPrice = ((100 - taxPercent) * grossPrice) / 100;
 
         tax = grossPrice - netPrice;
-	}
-
-	public void setPricesBeforeTransaction(MarketData marketData) {
-		sellPriceBeforeTransaction = marketData.getSalePrice();
-		buyPriceBeforeTransaction = marketData.getBuyPrice();
-	}
-
-	public void setPricesAfterTransaction(MarketData marketData) {
-		sellPriceAfterTransaction = marketData.getSalePrice();
-		buyPriceAfterTransaction = marketData.getBuyPrice();
 	}
 }
 

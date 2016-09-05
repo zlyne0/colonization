@@ -12,7 +12,7 @@ public class MessageNotification extends ObjectWithId implements Notification, I
 	
 	private final String body;
 
-	public static MessageNotification createGoodsPriceChangeNotification(Player player, TransactionEffectOnMarket transaction) {
+	public static MessageNotification createGoodsPriceChangeNotification(Player player, MarketChangePrice transaction) {
 		String strTempCode = transaction.isPriceIncrease() ? "model.market.priceIncrease" : "model.market.priceDecrease";
 		
 		StringTemplate st = StringTemplate.template(strTempCode)

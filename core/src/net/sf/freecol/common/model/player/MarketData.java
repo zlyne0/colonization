@@ -20,7 +20,7 @@ public class MarketData extends ObjectWithId {
      */
     public static final int MINIMUM_AMOUNT = 100;
 	
-	private GoodsType goodsType;
+	private final GoodsType goodsType;
     /** Amount of this goods in the market. */
 	private int amountInMarket;
 	private int initialPrice;
@@ -40,12 +40,6 @@ public class MarketData extends ObjectWithId {
     /** Current purchase price. */
     private int costToBuy;
     
-    /**
-     * Place to save to old price so as to be able to tell when a price change
-     * message should be generated.  Not necessary to serialize.
-     */
-    private int oldPrice;
-    
 	public MarketData(GoodsType goodsType) {
 		super(goodsType.getId());
 		this.goodsType = goodsType;
@@ -58,7 +52,6 @@ public class MarketData extends ObjectWithId {
         sales = 0;
         incomeBeforeTaxes = 0;
         incomeAfterTaxes = 0;
-        oldPrice = costToBuy;
         traded = false;
 	}
 
@@ -237,7 +230,6 @@ public class MarketData extends ObjectWithId {
 			md.traded = attr.getBooleanAttribute("traded", md.sales != 0);
 			
 	        md.update();
-	        md.oldPrice = md.costToBuy;
 			
 			nodeObject = md;
 		}

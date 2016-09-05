@@ -21,6 +21,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -559,6 +560,8 @@ public class GUIGameController {
 
 		game.playingPlayer.endTurn();
 		
+		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
+		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {
 			if (player.nation().isUnknownEnemy()) {
@@ -574,6 +577,8 @@ public class GUIGameController {
 				e.printStackTrace();
 			}
 		}
+		
+		gameLogic.comparePrices(game.playingPlayer, marketSnapshoot);
 		
 		gameLogic.newTurn(game.playingPlayer);
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
