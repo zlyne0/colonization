@@ -90,6 +90,8 @@ public class SaveGameParserTest {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
         assertEquals(1, player.eventsNotifications.notifications.size());
+        
+        assertNotNull(player.getMonarch());
 	}
     
     private void verifySettlementBuildingWorker(Game game) {

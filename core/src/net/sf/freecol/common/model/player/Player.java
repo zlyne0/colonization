@@ -107,12 +107,14 @@ public class Player extends ObjectWithId {
      * to migrate.
      */
     protected int immigrationRequired;
+    private boolean attackedByPrivateers = false;
     
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     private HighSeas highSeas;
+    protected Monarch monarch;
     private final ObjectWithFeatures updatableFeatures;
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
@@ -164,6 +166,15 @@ public class Player extends ObjectWithId {
     
     public boolean atWarWith(Player player) {
         return getStance(player) == Stance.WAR;
+    }
+    
+    public boolean atWarWithAnyEuropean(MapIdEntities<Player> players) {
+        for (Player p : players.entities()) {
+            if (p.isLiveEuropeanPlayer() && p.notEqualsId(this) && this.atWarWith(p)) { 
+                return true;
+            }
+        }
+        return false;
     }
     
     public boolean hasContacted(Player player) {
@@ -335,6 +346,10 @@ public class Player extends ObjectWithId {
 		return dead;
 	}
 	
+    public boolean isLiveEuropeanPlayer() {
+        return isDead() || !isEuropean();
+    }
+	
 	public void endTurn() {
 	}
 
@@ -412,13 +427,28 @@ public class Player extends ObjectWithId {
 		return newLandName;
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public boolean isAttackedByPrivateers() {
+        return attackedByPrivateers;
+    }
+
+    public Monarch getMonarch() {
+        return monarch;
+    }
+    
+	public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
                 @Override
                 public void set(Player target, Europe entity) {
                     target.europe = entity;
                     entity.setOwner(target);
+                }
+            });
+            addNode(Monarch.class, new ObjectFromNodeSetter<Player, Monarch>() {
+                @Override
+                public void set(Player target, Monarch entity) {
+                    target.monarch = entity;
+                    entity.setPlayer(target);
                 }
             });
             addNode(Market.class, "market");
@@ -434,6 +464,7 @@ public class Player extends ObjectWithId {
             
             Player player = new Player(idStr);
             player.dead = attr.getBooleanAttribute("dead");
+            player.attackedByPrivateers = attr.getBooleanAttribute("attackedByPrivateers", false);
             player.newLandName = attr.getStrAttribute("newLandName");
             player.tax = attr.getIntAttribute("tax", 0);
             player.gold = attr.getIntAttribute("gold", 0);
