@@ -34,6 +34,7 @@ public class Market extends ObjectWithId {
 
 	public int buildingGoodsPrice(GoodsType goodsType, int amount) {
 		if (goodsType.isStorable()) {
+		    // price for buy goods for buildings is 10% higher than in market
 			return (getBidPrice(goodsType, amount) * 110) / 100;
 		} else {
 			return goodsType.getPrice() * amount;
