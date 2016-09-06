@@ -186,6 +186,16 @@ public class Player extends ObjectWithId {
     	return s == Stance.PEACE || s == Stance.ALLIANCE;    	
     }
     
+    public boolean atPeaceOrCeaseFire(Player player) {
+    	Stance s = getStance(player);
+    	return s == Stance.PEACE || s == Stance.CEASE_FIRE;
+    }
+    
+    public boolean atWarOrCeaseFire(Player player) {
+    	Stance s = getStance(player);
+    	return s == Stance.WAR || s == Stance.CEASE_FIRE;
+    }
+    
 	public boolean hasPeaceOrAllianceWithOneOfEuropeanPlayers(Game game) {
 		for (Player other : game.players.entities()) {
 			if (other.isNotLiveEuropeanPlayer()) {
@@ -347,7 +357,7 @@ public class Player extends ObjectWithId {
 	}
 	
     public boolean isLiveEuropeanPlayer() {
-        return isDead() || !isEuropean();
+        return !nation.isUnknownEnemy() && !isDead() && isEuropean();
     }
 	
 	public void endTurn() {
