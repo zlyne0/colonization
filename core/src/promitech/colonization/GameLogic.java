@@ -18,10 +18,14 @@ import net.sf.freecol.common.model.player.MarketChangePrice;
 import net.sf.freecol.common.model.player.MarketData;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.MessageNotification;
+import net.sf.freecol.common.model.player.Monarch;
+import net.sf.freecol.common.model.player.Monarch.MonarchAction;
+import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
@@ -60,6 +64,11 @@ public class GameLogic {
 			colony.calculateImmigration();
 			colony.increaseWorkersExperience();
 		}
+        
+        if (player.isColonial()) {
+        	generateMonarchAction(player);
+        }
+        
 		player.fogOfWar.resetFogOfWar(player);
 	}
 
@@ -180,4 +189,50 @@ public class GameLogic {
 			}
 		}
 	}
+	
+	private void generateMonarchAction(Player player) {
+    	WithProbability<MonarchAction> randomMonarchAction = Randomizer.getInstance().randomOne(player.getMonarch().getActionChoices(game));
+    	if (randomMonarchAction == null) {
+    		return;
+    	}
+    	Monarch monarch = player.getMonarch();
+    	MonarchAction action = randomMonarchAction.probabilityObject();
+    	
+    	switch (action) {
+	    	case NO_ACTION:
+	    		break;
+	    	case RAISE_TAX_ACT:
+	    	case RAISE_TAX_WAR:
+	    		MonarchActionNotification man = new MonarchActionNotification(action);
+	    		
+	            player.market().findMostValuableGoods(player, man);
+	            if (man.getGoodsType() == null) {
+	            	System.out.println("Ignoring tax raise, no goods to boycott.");
+	            	return;
+	            }
+	            man.setId(Game.idGenerator.nextId(MonarchActionNotification.class));
+	            man.setTax(monarch.potentialTaxRaiseValue(game));
+	            
+	            player.eventsNotifications.notifications.addFirst(man);
+	            
+	    		break;
+	    	case LOWER_TAX_WAR:
+	    	case LOWER_TAX_OTHER:
+	    		break;
+	    	case FORCE_TAX:
+	    	case WAIVE_TAX:
+	    	case ADD_TO_REF:
+	    	case DECLARE_PEACE:
+	    	case DECLARE_WAR:
+	    	case SUPPORT_LAND:
+	    	case SUPPORT_SEA:
+	    	case MONARCH_MERCENARIES: 
+	    	case HESSIAN_MERCENARIES:
+	    	case DISPLEASURE:
+		default:
+			break;
+		}
+	}
+
 }
+

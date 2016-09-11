@@ -17,6 +17,8 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.MessageNotification;
+import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
@@ -80,7 +82,7 @@ public class HudStage extends Stage {
 		}
 	};
     
-    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources,  ShapeRenderer shape) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources, ShapeRenderer shape) {
         super(viewport);
         this.gameController = gameController;
         this.shapeRenderer = shape;
@@ -492,18 +494,28 @@ public class HudStage extends Stage {
     }
 	
 	private void showNotification() {
-		Notification firstNotification = gameController.getFirstNotification();
+		Notification notification = gameController.getFirstNotification();
 		
-		HudStage.this.removeListener(keysInputListener);
-		NotificationDialog dialog = new NotificationDialog(firstNotification);
-		dialog.addOnCloseListener(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				HudStage.this.addListener(keysInputListener);
-				return true;
-			}
-		});
-		dialog.show(HudStage.this);
+		if (notification instanceof MessageNotification) {
+			HudStage.this.removeListener(keysInputListener);
+			NotificationDialog dialog = new NotificationDialog(notification);
+			dialog.addOnCloseListener(new EventListener() {
+				@Override
+				public boolean handle(Event event) {
+					HudStage.this.addListener(keysInputListener);
+					return true;
+				}
+			});
+			dialog.show(HudStage.this);
+		}
+		
+		if (notification instanceof MonarchActionNotification) {
+			MonarchActionNotificationDialog dialog = new MonarchActionNotificationDialog(
+				gameController,
+				(MonarchActionNotification)notification
+			);
+			dialog.show(HudStage.this);
+		}
 	}
     
 }

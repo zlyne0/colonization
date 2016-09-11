@@ -209,6 +209,10 @@ public class MarketData extends ObjectWithId {
     	return arrears;
     }
 
+    protected void setArrears(int arrears) {
+    	this.arrears = arrears;
+    }
+    
 	protected GoodsType getGoodsType() {
 		return goodsType;
 	}

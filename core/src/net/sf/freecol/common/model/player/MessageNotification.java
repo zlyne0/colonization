@@ -1,14 +1,13 @@
 package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithId;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class MessageNotification extends ObjectWithId implements Notification, Identifiable {
+public class MessageNotification extends ObjectWithId implements Notification {
 	
 	private final String body;
 

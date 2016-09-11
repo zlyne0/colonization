@@ -16,6 +16,8 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.Monarch.MonarchAction;
+import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
@@ -89,7 +91,12 @@ public class SaveGameParserTest {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
-        assertEquals(1, player.eventsNotifications.notifications.size());
+        assertEquals(2, player.eventsNotifications.notifications.size());
+        
+        MonarchActionNotification monarchNotification = (MonarchActionNotification)player.eventsNotifications.notifications.get(1);
+        assertEquals(MonarchAction.RAISE_TAX_ACT, monarchNotification.getAction());
+        assertEquals("model.goods.furs", monarchNotification.getGoodsType().getId());
+        assertEquals(12, monarchNotification.getTax());
         
         assertNotNull(player.getMonarch());
 	}

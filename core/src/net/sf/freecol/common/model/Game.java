@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.player.Player;
@@ -78,5 +81,15 @@ public class Game implements Identifiable {
 		public static String tagName() {
 			return "game";
 		}
+	}
+
+	public Set<String> getEuropeanNationIds() {
+		Set<String> nationsIds = new HashSet<String>(players.size());
+		for (Player player : players.entities()) {
+			if (player.isEuropean()) {
+				nationsIds.add(player.nation().getId());
+			}
+		}
+		return nationsIds;
 	}
 }

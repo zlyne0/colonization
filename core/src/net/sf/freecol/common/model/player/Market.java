@@ -2,10 +2,12 @@ package net.sf.freecol.common.model.player;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -80,6 +82,11 @@ public class Market extends ObjectWithId {
 		player.subtractGold(md.getArrears());
 		md.repayArrears();
 		return md;
+	}
+	
+	public void createArrears(GoodsType goodsType) {
+		MarketData md = requireMarketData(goodsType);
+		md.setArrears(md.getSalePrice() * Specification.options.getIntValue(GameOptions.ARREARS_FACTOR));
 	}
 	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
@@ -197,6 +204,46 @@ public class Market extends ObjectWithId {
         }
 		return false;
 	}
+	
+    /**
+     * Get the most valuable goods available in one of the player's
+     * colonies for the purposes of choosing a threat-to-boycott.  The
+     * goods must not currently be boycotted, the player must have
+     * traded in it, and the amount to be discarded will not exceed
+     * GoodsContainer.CARGO_SIZE.
+     * @param man 
+     *
+     * @return A goods object, or null if nothing suitable found.
+     */
+    public void findMostValuableGoods(Player player, MonarchActionNotification man) {
+        if (!player.isEuropean()) {
+        	man.setGoodsType(null);
+        	return;
+        }
+        int value = 0;
+        
+        for (Settlement settlement : player.settlements.entities()) {
+        	Colony colony = settlement.getColony();
+        	for (MarketData md : marketGoods.entities()) {
+        		if (md.hasArrears()) {
+        			continue;
+        		}
+        		int a = colony.getGoodsContainer().goodsAmount(md.getGoodsType());
+        		a = Math.min(a, ProductionSummary.CARRIER_SLOT_MAX_QUANTITY);
+        		if (a <= 0) {
+        			continue;
+        		}
+        		int sellPrice = md.getCostToSell(a);
+        		if (sellPrice > value) {
+        			value = sellPrice;
+        			man.setGoodsAmount(a);
+        			man.setGoodsType(md.getGoodsType());
+        			man.setColonyId(colony.getId());
+        		}
+        	}
+        }
+    }
+	
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {

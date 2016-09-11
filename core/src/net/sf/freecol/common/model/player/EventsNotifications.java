@@ -49,6 +49,12 @@ public class EventsNotifications implements Identifiable {
 					target.notifications.add(entity);
 				}
 			});
+			addNode(MonarchActionNotification.class, new ObjectFromNodeSetter<EventsNotifications, MonarchActionNotification>() {
+				@Override
+				public void set(EventsNotifications target, MonarchActionNotification entity) {
+					target.notifications.add(entity);
+				}
+			});
 		}
 		
 		@Override

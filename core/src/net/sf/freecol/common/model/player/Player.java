@@ -416,6 +416,10 @@ public class Player extends ObjectWithId {
         return tax;
     }
 
+	protected void riseTax(int tax) {
+		this.tax = tax;
+	}
+    
 	public ObjectWithFeatures getFeatures() {
 		return updatableFeatures;
 	}

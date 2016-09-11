@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.WithProbability;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -164,6 +165,15 @@ public class Monarch extends ObjectWithId {
         return Specification.options.getIntValue(GameOptions.MAXIMUM_TAX);
     }
 
+    public int potentialTaxRaiseValue(Game game) {
+        int taxAdjustment = Specification.options.getIntValue(GameOptions.TAX_ADJUSTMENT);
+        int turn = game.getTurn().getNumber();
+        int oldTax = player.getTax();
+        int adjust = Math.max(1, (6 - taxAdjustment) * 10); // 20-60
+        adjust = 1 + Randomizer.getInstance().randomInt(5 + turn/adjust);
+        return Math.min(oldTax + adjust, getMaximumTaxInGame());
+    }
+    
     protected String getNameKey() {
         return nameKey;
     }
