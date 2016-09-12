@@ -47,7 +47,7 @@ public class MarketTest {
 		
         int beforeBuyPrice = market.getBidPrice(goodsType, 100);
 		
-        MarketData marketData = market.requireMarketData(goodsType);
+        MarketData marketData = market.marketGoods.getById(goodsType.getId());
         
 		// when
         boolean modifyOnBuyGoods = marketData.modifyOnBuyGoods(goodsAmount, beforeBuyPrice, goodsAmount);
