@@ -42,6 +42,9 @@ public class Game implements Identifiable {
     public void afterLoadGame() {
         for (Player player : players.entities()) {
             player.fogOfWar.initFromMap(map, player);
+            if (player.isEuropean()) {
+                player.market().initGoods();
+            }
         }
     }
     

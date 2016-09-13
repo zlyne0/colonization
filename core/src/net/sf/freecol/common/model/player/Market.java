@@ -71,7 +71,7 @@ public class Market extends ObjectWithId {
 	}
 	
 	public MarketData payArrears(Player player, GoodsType goodsType) {
-		MarketData md = requireMarketData(goodsType);
+		MarketData md = marketGoods.getByIdOrNull(goodsType.getId());
 		
 		if (player.hasNotGold(md.getArrears())) {
 			throw new IllegalStateException(
@@ -85,14 +85,14 @@ public class Market extends ObjectWithId {
 	}
 	
 	public void createArrears(GoodsType goodsType) {
-		MarketData md = requireMarketData(goodsType);
+	    MarketData md = marketGoods.getByIdOrNull(goodsType.getId());
 		md.setArrears(md.getSalePrice() * Specification.options.getIntValue(GameOptions.ARREARS_FACTOR));
 	}
 	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
     
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
-		MarketData marketData = requireMarketData(goodsType);
+	    MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
 		if (marketData.hasArrears()) {
 			throw new IllegalStateException("can not buy goods: " + goodsType + " because of arrears");
 		}
@@ -121,7 +121,7 @@ public class Market extends ObjectWithId {
 	}
 
 	public TransactionEffectOnMarket sellGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
-        MarketData marketData = requireMarketData(goodsType);
+	    MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
 		if (marketData.hasArrears()) {
 			throw new IllegalStateException("can not sell goods: " + goodsType + " because of arrears");
 		}
@@ -166,19 +166,9 @@ public class Market extends ObjectWithId {
 	}
 	
     public boolean addGoodsToMarket(GoodsType goodsType, int amount) {
-        MarketData data = requireMarketData(goodsType);
+        MarketData data = marketGoods.getByIdOrNull(goodsType.getId());
         data.modifyAmountInMarket(amount);
         return data.price();
-    }
-	
-    protected MarketData requireMarketData(GoodsType goodsType) {
-    	MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
-    	if (marketData == null) {
-    		marketData = new MarketData(goodsType);
-    		marketData.update();
-    		marketGoods.add(marketData);
-    	}
-    	return marketData;
     }
 	
 	public boolean canTradeInEurope(String goodsTypeId) {
@@ -243,7 +233,17 @@ public class Market extends ObjectWithId {
         	}
         }
     }
-	
+
+    public void initGoods() {
+        for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+            MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
+            if (marketData == null) {
+                marketData = new MarketData(goodsType);
+                marketData.update();
+                marketGoods.add(marketData);
+            }
+        }
+    }
 	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
@@ -267,6 +267,4 @@ public class Market extends ObjectWithId {
 		}
 		
 	}
-
-
 }
