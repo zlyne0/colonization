@@ -174,6 +174,14 @@ public class Monarch extends ObjectWithId {
         return Math.min(oldTax + adjust, getMaximumTaxInGame());
     }
     
+    public int generateLowerTaxValue() {
+        int taxAdjustment = Specification.options.getIntValue(GameOptions.TAX_ADJUSTMENT);
+        int oldTax = player.getTax();
+        int adjust = Math.max(1, 10 - taxAdjustment); // 5-10
+        adjust = 1 + Randomizer.getInstance().randomInt(adjust);
+        return Math.max(oldTax - adjust, Monarch.MINIMUM_TAX_RATE);
+    }
+    
     protected String getNameKey() {
         return nameKey;
     }

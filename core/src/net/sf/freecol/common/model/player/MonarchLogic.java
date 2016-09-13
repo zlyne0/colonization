@@ -8,7 +8,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 public class MonarchLogic {
 
 	public static void acceptRiseTax(Player player, MonarchActionNotification ntf) {
-		player.riseTax(ntf.getTax());
+		player.setTax(ntf.getTax());
 	}
 	
 	public static void refuseRiseTax(final Player player, MonarchActionNotification ntf) {
@@ -18,7 +18,7 @@ public class MonarchLogic {
 			// Player has removed the goods from the colony,
 			// so raise the tax anyway.
 			final int extraTax = 3;
-			player.riseTax(ntf.getTax() + extraTax);
+			player.setTax(ntf.getTax() + extraTax);
 			
 			StringTemplate st = StringTemplate.template("model.monarch.action.FORCE_TAX")
 					.addAmount("%amount%", ntf.getTax() + extraTax);
@@ -46,6 +46,10 @@ public class MonarchLogic {
 			);
 			player.eventsNotifications.addMessageNotification(msg);
 		}
+	}
+
+	public static void lowerRax(Player player, MonarchActionNotification ntf) {
+		player.setTax(ntf.getTax());
 	}
 	
 	

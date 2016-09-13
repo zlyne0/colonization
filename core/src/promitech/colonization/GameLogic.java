@@ -197,13 +197,14 @@ public class GameLogic {
     	}
     	Monarch monarch = player.getMonarch();
     	MonarchAction action = randomMonarchAction.probabilityObject();
+    	MonarchActionNotification man;
     	
     	switch (action) {
 	    	case NO_ACTION:
 	    		break;
 	    	case RAISE_TAX_ACT:
 	    	case RAISE_TAX_WAR:
-	    		MonarchActionNotification man = new MonarchActionNotification(action);
+	    		man = new MonarchActionNotification(action);
 	    		
 	            player.market().findMostValuableGoods(player, man);
 	            if (man.getGoodsType() == null) {
@@ -218,6 +219,11 @@ public class GameLogic {
 	    		break;
 	    	case LOWER_TAX_WAR:
 	    	case LOWER_TAX_OTHER:
+	    		man = new MonarchActionNotification(action);
+	    		man.setTax(monarch.generateLowerTaxValue());
+	    		
+	            player.eventsNotifications.notifications.addFirst(man);
+	    		
 	    		break;
 	    	case FORCE_TAX:
 	    	case WAIVE_TAX:

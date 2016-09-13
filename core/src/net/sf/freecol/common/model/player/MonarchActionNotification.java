@@ -77,14 +77,19 @@ public class MonarchActionNotification implements Notification, Identifiable {
 		
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			GoodsType goodsType = Specification.instance.goodsTypes.getById(attr.getStrAttribute("goodsType"));
 			
 			MonarchActionNotification man = new MonarchActionNotification(attr.getEnumAttribute(MonarchAction.class, "action"));
 			man.setId(attr.getStrAttribute("id"));
 			man.setColonyId(attr.getStrAttribute("colonyId"));
-			man.setGoodsType(goodsType);
-			man.setGoodsAmount(attr.getIntAttribute("goodsAmount"));
-			man.setTax(attr.getIntAttribute("tax"));
+			
+			String goodsTypeId = attr.getStrAttribute("goodsType");
+			if (goodsTypeId != null) {
+				GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsTypeId);
+				man.setGoodsType(goodsType);
+			}
+			
+			man.setGoodsAmount(attr.getIntAttribute("goodsAmount", 0));
+			man.setTax(attr.getIntAttribute("tax", 0));
 			
 			nodeObject = man;
 		}

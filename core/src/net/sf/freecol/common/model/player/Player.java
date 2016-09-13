@@ -416,7 +416,7 @@ public class Player extends ObjectWithId {
         return tax;
     }
 
-	protected void riseTax(int tax) {
+	protected void setTax(int tax) {
 		this.tax = tax;
 	}
     

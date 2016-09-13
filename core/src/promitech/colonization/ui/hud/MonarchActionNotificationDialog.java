@@ -23,6 +23,10 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 	    		generateRiseTaxContent(ntfhy, game, player);
 	    		
 				break;
+	    	case LOWER_TAX_WAR:
+	    	case LOWER_TAX_OTHER:
+	    		generateLowerTaxContent(ntfhy, game, player);
+				break;
 			default:
 				throw new IllegalStateException("can not recognize monarch action " + ntfhy.getAction());
 		}
@@ -61,6 +65,26 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 		};
 		addAnswer("model.monarch.action." + ntfhy.getAction() + ".no", optionActionNo, ntfhy);
 	}
-	
+
+	private void generateLowerTaxContent(MonarchActionNotification ntfhy, Game game, final Player player) {
+		StringTemplate template = StringTemplate.template("model.monarch.action." + ntfhy.getAction())
+                .addAmount("%difference%", player.getTax() - ntfhy.getTax())
+                .addAmount("%newTax%", ntfhy.getTax());
+		
+        if (ntfhy.getAction() == MonarchAction.LOWER_TAX_WAR) {
+            template = template.add("%nation%", Nation.getRandomNonPlayerNationNameKey(game));
+        } else {
+            template = template.addAmount("%number%", Randomizer.getInstance().randomInt(5));
+        }
+        addQuestion(template);
+        
+        OptionAction<MonarchActionNotification> confirmAnswer = new OptionAction<MonarchActionNotification>() {
+			@Override
+			public void executeAction(MonarchActionNotification payload) {
+				MonarchLogic.lowerRax(player, payload);
+			}
+		};
+		addAnswer("model.monarch.action." + ntfhy.getAction() + ".no", confirmAnswer, ntfhy);
+	}
 
 }
