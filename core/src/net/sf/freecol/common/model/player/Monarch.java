@@ -51,6 +51,10 @@ public class Monarch extends ObjectWithId {
     private boolean supportSea = false;
     private boolean displeasure = false;
     
+    private ArmyForce expeditionaryForce;
+    private ArmyForce interventionForce;
+    private ArmyForce mercenaryForce;
+    
     public Monarch(String id) {
         super(id);
     }
@@ -200,6 +204,13 @@ public class Monarch extends ObjectWithId {
 
     public static class Xml extends XmlNodeParser {
 
+        public Xml() {
+            // TODO: zmianya aby polew w ostatnim parametrze moglo byc zwyklym polem a nie MapIdEntities
+            addNode("expeditionaryForce", ArmyForce.class, "expeditionaryForce");
+            addNode("interventionForce", ArmyForce.class, "interventionForce");
+            addNode("mercenaryForce", ArmyForce.class, "mercenaryForce");
+        }
+        
         @Override
         public void startElement(XmlNodeAttributes attr) {
             Monarch monarch = new Monarch(attr.getStrAttribute("id"));
