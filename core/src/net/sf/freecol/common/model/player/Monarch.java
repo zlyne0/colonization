@@ -7,6 +7,8 @@ import java.util.List;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.WithProbability;
@@ -51,9 +53,9 @@ public class Monarch extends ObjectWithId {
     private boolean supportSea = false;
     private boolean displeasure = false;
     
-    private ArmyForce expeditionaryForce;
-    private ArmyForce interventionForce;
-    private ArmyForce mercenaryForce;
+    public ArmyForce expeditionaryForce;
+    public ArmyForce interventionForce;
+    public ArmyForce mercenaryForce;
     
     public Monarch(String id) {
         super(id);
@@ -186,6 +188,30 @@ public class Monarch extends ObjectWithId {
         return Math.max(oldTax - adjust, Monarch.MINIMUM_TAX_RATE);
     }
     
+    public ArmyForceAbstractUnit chooseForAddRoyalExpedition() {
+    	boolean needNaval = expeditionaryForce.capacity() < expeditionaryForce.spaceRequired() + 15;
+        List<UnitType> types = (needNaval) ? Specification.instance.getRoyalNavyUnitTypes() : Specification.instance.getRoyalLandUnitTypes();
+        if (types.isEmpty()) {
+        	return null;
+        }
+        UnitType unitType = Randomizer.getInstance().randomOneFromList(types);
+
+        UnitRole role;
+        int number = 0;
+        if (needNaval || !unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+        	role = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        	number = 1;
+        } else {
+        	if (Randomizer.getInstance().randomInt(3) == 0) {
+        		role = Specification.instance.unitRoles.getById("model.role.cavalry");
+        	} else {
+        		role = Specification.instance.unitRoles.getById("model.role.infantry");
+        	}
+        	number = Randomizer.getInstance().randomInt(1, 4);
+        }
+        return new ArmyForceAbstractUnit(unitType, role, number);
+    }
+    
     protected String getNameKey() {
         return nameKey;
     }
@@ -202,10 +228,21 @@ public class Monarch extends ObjectWithId {
         this.player = player;
     }
 
+	public ArmyForce getExpeditionaryForce() {
+		return expeditionaryForce;
+	}
+
+	public ArmyForce getInterventionForce() {
+		return interventionForce;
+	}
+
+	public ArmyForce getMercenaryForce() {
+		return mercenaryForce;
+	}
+
     public static class Xml extends XmlNodeParser {
 
         public Xml() {
-            // TODO: zmianya aby polew w ostatnim parametrze moglo byc zwyklym polem a nie MapIdEntities
             addNode("expeditionaryForce", ArmyForce.class, "expeditionaryForce");
             addNode("interventionForce", ArmyForce.class, "interventionForce");
             addNode("mercenaryForce", ArmyForce.class, "mercenaryForce");
@@ -230,5 +267,4 @@ public class Monarch extends ObjectWithId {
             return "monarch";
         }
     }
-
 }

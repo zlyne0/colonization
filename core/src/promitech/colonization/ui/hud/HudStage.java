@@ -115,6 +115,10 @@ public class HudStage extends Stage {
     private final InputListener keysInputListener = new InputListener() {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
+    		if (keycode == Input.Keys.GRAVE) {
+    			// TODO: open cheat console
+    			return true;
+    		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
     			if (viewButton.isChecked()) {
     				gameController.leaveViewMode();

@@ -108,6 +108,10 @@ public class UnitType extends BuildableType {
     	return hasAbility(Ability.NAVAL_UNIT);
     }
 	
+    public boolean canCarryUnits() {
+    	return hasAbility(Ability.CARRY_UNITS);
+    }
+    
     public boolean isWagonTrain() {
         return WAGON_TRAIN.equalsIgnoreCase(id);
     }

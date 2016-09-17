@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MarketChangePrice;
 import net.sf.freecol.common.model.player.MarketData;
@@ -26,6 +27,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.WithProbability;
+import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
@@ -195,11 +197,16 @@ public class GameLogic {
     	if (randomMonarchAction == null) {
     		return;
     	}
-    	Monarch monarch = player.getMonarch();
     	MonarchAction action = randomMonarchAction.probabilityObject();
-    	MonarchActionNotification man;
     	
-    	switch (action) {
+    	handleMonarchAction(player, action);
+	}
+
+	protected void handleMonarchAction(Player player, MonarchAction action) {
+    	Monarch monarch = player.getMonarch();
+		MonarchActionNotification man;
+		
+		switch (action) {
 	    	case NO_ACTION:
 	    		break;
 	    	case RAISE_TAX_ACT:
@@ -225,9 +232,25 @@ public class GameLogic {
 	            player.eventsNotifications.notifications.addFirst(man);
 	    		
 	    		break;
-	    	case FORCE_TAX:
 	    	case WAIVE_TAX:
+	    		man = new MonarchActionNotification(action);
+	    		player.eventsNotifications.notifications.addFirst(man);
+	    		break;
 	    	case ADD_TO_REF:
+	    		ArmyForceAbstractUnit royalAdditions = monarch.chooseForAddRoyalExpedition();
+	            if (royalAdditions == null) {
+	            	break;
+	            }
+	            monarch.getExpeditionaryForce().addArmy(royalAdditions);
+	    		
+	            man = new MonarchActionNotification(action);
+	            
+	            StringTemplate st = StringTemplate.template("model.monarch.action." + action)
+	            		.addAmount("%number%", royalAdditions.getAmount())
+	            		.addName("%unit%", royalAdditions.getUnitType());
+	            man.setMsgBody(Messages.message(st));
+	            player.eventsNotifications.notifications.addFirst(man);
+	            break;
 	    	case DECLARE_PEACE:
 	    	case DECLARE_WAR:
 	    	case SUPPORT_LAND:

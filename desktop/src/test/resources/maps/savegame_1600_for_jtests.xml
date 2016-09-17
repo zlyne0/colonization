@@ -4912,7 +4912,6 @@
             <abstractUnit id="model.unit.kingsRegular" role="model.role.infantry" number="31"/>
             <abstractUnit id="model.unit.kingsRegular" role="model.role.cavalry" number="15"/>
             <abstractUnit id="model.unit.artillery" role="model.role.default" number="14"/>
-            <abstractUnit id="model.unit.kingsRegular" role="model.role.cavalry" number="1"/>
           </landUnits>
         </expeditionaryForce>
         <interventionForce>

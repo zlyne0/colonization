@@ -82,7 +82,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
     	this.movesLeft = getInitialMovesLeft();
     	this.hitPoints = unitType.getHitPoints();
     	
-        if (unitType.hasAbility(Ability.CARRY_UNITS)) {
+        if (unitType.canCarryUnits()) {
             unitContainer = new UnitContainer(this);
         }
         if (unitType.hasAbility(Ability.CARRY_GOODS)) {
@@ -293,7 +293,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	}
     
     public boolean isCarrier() {
-        return unitType.hasAbility(Ability.CARRY_GOODS) || hasAbility(Ability.CARRY_UNITS);
+        return unitType.canCarryUnits() || unitType.hasAbility(Ability.CARRY_GOODS);
     }
     
     public boolean isMounted() {

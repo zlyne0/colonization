@@ -27,6 +27,12 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 	    	case LOWER_TAX_OTHER:
 	    		generateLowerTaxContent(ntfhy, game, player);
 				break;
+	    	case WAIVE_TAX:
+	    		generateWaiveTaxContent(ntfhy, game, player);
+	    		break;
+	    	case ADD_TO_REF:
+	    		genereteAddToRoyalForceContent(ntfhy, game, player);
+	    		break;
 			default:
 				throw new IllegalStateException("can not recognize monarch action " + ntfhy.getAction());
 		}
@@ -87,4 +93,16 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 		addAnswer("model.monarch.action." + ntfhy.getAction() + ".no", confirmAnswer, ntfhy);
 	}
 
+	private void generateWaiveTaxContent(MonarchActionNotification ntfhy, Game game, Player player) {
+		StringTemplate st = StringTemplate.template("model.monarch.action." + ntfhy.getAction());
+		addQuestion(st);
+		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+	}
+
+
+	private void genereteAddToRoyalForceContent(MonarchActionNotification ntfhy, Game game, Player player) {
+		addQuestion(ntfhy.getMsgBody());
+		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+	}
+	
 }

@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
@@ -83,7 +84,7 @@ public class SaveGameParserTest {
         assertNotNull(player.getEurope().getUnits().getById("unit:7095"));
         assertNotNull(player.getHighSeas().getUnits().getById("unit:6437"));
         
-        assertEquals(16, player.market().marketGoods.size());
+        assertEquals(21, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");
         assertNotNull(food);
         
@@ -98,7 +99,20 @@ public class SaveGameParserTest {
         assertEquals("model.goods.furs", monarchNotification.getGoodsType().getId());
         assertEquals(12, monarchNotification.getTax());
         
-        assertNotNull(player.getMonarch());
+        verifyPlayerMonarch(player);
+	}
+
+	private void verifyPlayerMonarch(Player player) {
+		assertNotNull(player.getMonarch());
+        ArmyForceAbstractUnit manOfWar = player.getMonarch().getExpeditionaryForce().navalUnits.getById("model.role.default");
+        assertEquals(13, manOfWar.getAmount());
+        assertEquals("model.role.default", manOfWar.getUnitRole().getId());
+        assertEquals("model.unit.manOWar", manOfWar.getUnitType().getId());
+        
+        ArmyForceAbstractUnit cavalery = player.getMonarch().getExpeditionaryForce().landUnits.getById("model.role.cavalry");
+        assertEquals(15, cavalery.getAmount());
+        assertEquals("model.role.cavalry", cavalery.getUnitRole().getId());
+        assertEquals("model.unit.kingsRegular", cavalery.getUnitType().getId());
 	}
     
     private void verifySettlementBuildingWorker(Game game) {

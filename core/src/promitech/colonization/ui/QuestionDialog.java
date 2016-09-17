@@ -42,6 +42,10 @@ public class QuestionDialog extends Dialog {
     
     public void addQuestion(StringTemplate st) {
         String question = Messages.message(st);
+        addQuestion(question);
+    }
+
+    public void addQuestion(String question) {
         Label lable = new Label(question, GameResources.instance.getUiSkin());
         lable.setWrap(true);
         dialogLayout.add(lable).fillX().pad(20).space(10).width(500).row();

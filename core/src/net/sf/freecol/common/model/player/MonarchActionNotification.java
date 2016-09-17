@@ -15,6 +15,7 @@ public class MonarchActionNotification implements Notification, Identifiable {
 	private int goodsAmount;
 	private String colonyId;
 	private int tax;
+	private String msgBody;
 	
 	public MonarchActionNotification(MonarchAction action) {
 		this.action = action;
@@ -64,6 +65,14 @@ public class MonarchActionNotification implements Notification, Identifiable {
 	public void setTax(int tax) {
 		this.tax = tax;
 	}
+
+	public String getMsgBody() {
+		return msgBody;
+	}
+
+	public void setMsgBody(String msgBody) {
+		this.msgBody = msgBody;
+	}
 	
 	public String toString() {
 		return  "id = " + getId() + 
@@ -90,6 +99,7 @@ public class MonarchActionNotification implements Notification, Identifiable {
 			
 			man.setGoodsAmount(attr.getIntAttribute("goodsAmount", 0));
 			man.setTax(attr.getIntAttribute("tax", 0));
+			man.setMsgBody(attr.getStrAttribute("msgBody"));
 			
 			nodeObject = man;
 		}

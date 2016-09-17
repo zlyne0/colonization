@@ -14,6 +14,43 @@ public class ArmyForce implements Identifiable {
     public String getId() {
         throw new IllegalStateException("object do not has id");
     }
+
+    public int spaceRequired() {
+        int spaceRequired = 0;
+        for (ArmyForceAbstractUnit lu : landUnits.entities()) {
+            spaceRequired += lu.getUnitType().getSpaceTaken() * lu.getAmount();
+        }
+    	return spaceRequired;    			
+    }
+    
+    public int capacity() {
+    	int capacity = 0;
+    	for (ArmyForceAbstractUnit a : navalUnits.entities()) {
+    		if (a.getUnitType().canCarryUnits()) {
+    			capacity += a.getUnitType().getSpace() * a.getAmount();
+    		}
+    	}
+    	return capacity;
+    }
+
+	public void addArmy(ArmyForceAbstractUnit army) {
+		ArmyForceAbstractUnit existed;
+		if (army.getUnitType().isNaval()) {
+			existed = navalUnits.getById(army.getUnitRole().getId());
+			if (existed != null) {
+				existed.addAmount(army);
+			} else {
+				navalUnits.add(army);
+			}
+		} else {
+			existed = landUnits.getById(army.getUnitRole().getId());
+			if (existed != null) {
+				existed.addAmount(army);
+			} else {
+				landUnits.add(army);
+			}
+		}
+	}
     
     public static class Xml extends XmlNodeParser {
 
@@ -33,9 +70,9 @@ public class ArmyForce implements Identifiable {
         }
 
         public static String tagName() {
-            return "expeditionaryForce";
+            return "not set, xml node parent set name";
         }
         
     }
-    
+
 }

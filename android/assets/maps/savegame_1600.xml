@@ -4532,7 +4532,9 @@
     <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" liberty="137" interventionBells="0" currentFather="model.foundingFather.adamSmith" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" entryLocationX="30" entryLocationY="78" index.river="2" index.land="7" index.mountain="3">
       <eventsNotificatioins>
 <!--       	<monarchActionNotification id="monarchActionNotification:1235" action="RAISE_TAX_ACT" goodsType="model.goods.furs" goodsAmount="100" tax="12" colonyId="colony:6528" /> -->
-      	<monarchActionNotification id="monarchActionNotification:1236" action="LOWER_TAX_OTHER" tax="12"/>
+<!--       	<monarchActionNotification id="monarchActionNotification:1236" action="LOWER_TAX_OTHER" tax="12"/> -->
+<!--       	<monarchActionNotification id="monarchActionNotification:1236" action="WAIVE_TAX" tax="12"/> -->
+<!--       	<monarchActionNotification id="monarchActionNotification:1235" action="ADD_TO_REF" msgBody="msg body msg body" /> -->
       </eventsNotificatioins>
     
       <market id="market:5" owner="player:1">

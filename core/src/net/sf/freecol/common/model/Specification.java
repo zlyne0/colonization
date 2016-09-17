@@ -6,6 +6,7 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
@@ -155,6 +156,26 @@ public class Specification implements Identifiable {
                 europeanNations.add(nation);
             }
         }
+    }
+    
+    public List<UnitType> getRoyalLandUnitTypes() {
+        List<UnitType> types = new ArrayList<UnitType>();
+        for (UnitType ut : unitTypes.entities()) {
+    		if (!ut.isNaval() && ut.hasAbility(Ability.REF_UNIT)) {
+    			types.add(ut);
+    		}
+        }
+        return types;
+    }
+    
+    public List<UnitType> getRoyalNavyUnitTypes() {
+    	List<UnitType> types = new ArrayList<UnitType>();
+    	for (UnitType ut : unitTypes.entities()) {
+    		if (ut.isNaval() && ut.hasAbility(Ability.REF_UNIT)) {
+    			types.add(ut);
+    		}
+    	}
+    	return types;
     }
     
     private void clear() {
