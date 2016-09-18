@@ -2,6 +2,8 @@ package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -51,6 +53,26 @@ public class MonarchLogic {
 	public static void lowerRax(Player player, MonarchActionNotification ntf) {
 		player.setTax(ntf.getTax());
 	}
+
+	public static void riseExpeditionaryForce(Monarch monarch, ArmyForceAbstractUnit royalAdditions) {
+        monarch.getExpeditionaryForce().addArmy(royalAdditions);
+	}
 	
+	public static void buyMercenaries(final Player player, final MonarchActionNotification ntf) {
+		if (player.hasGold(ntf.getPrice())) {
+			player.subtractGold(ntf.getPrice());
+			for (ArmyForceAbstractUnit af : ntf.getMercenaries()) {
+				for (int i=0; i<af.getAmount(); i++) {
+					Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), af.getUnitType(), af.getUnitRole(), player);
+					unit.changeUnitLocation(player.getEurope());
+				}
+			}
+		} else {
+			player.getMonarch().setDispleasure(true);
+			MonarchActionNotification man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
+			man.setMsgBody(Messages.msg("model.monarch.action." + MonarchAction.DISPLEASURE));
+			player.eventsNotifications.notifications.addFirst(man);
+		}
+	}
 	
 }

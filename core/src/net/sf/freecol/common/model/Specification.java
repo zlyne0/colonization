@@ -96,6 +96,11 @@ public class Specification implements Identifiable {
     public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
     public final MapIdEntities<GoodsType> immigrationGoodsTypeList = new MapIdEntities<GoodsType>();
     
+    public final List<UnitType> navalTypes = new ArrayList<UnitType>();
+    public final List<UnitType> bombardTypes = new ArrayList<UnitType>();
+    public final List<UnitType> landTypes = new ArrayList<UnitType>();
+    public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();    
+    
     private String difficultyLevel;
     
     public static final Specification instance = new Specification();
@@ -141,9 +146,11 @@ public class Specification implements Identifiable {
                 immigrationGoodsTypeList.add(gt);
             }
         }
+        
+        createSupportUnitLists();
     }
 
-    private void updateEuropeanNations() {
+	private void updateEuropeanNations() {
         europeanNations.clear();
         for (Nation nation : nations.entities()) {
             if (nation.nationType.isEuropean()) {
@@ -177,7 +184,24 @@ public class Specification implements Identifiable {
     	}
     	return types;
     }
-    
+
+    private void createSupportUnitLists() {
+		for (UnitType unitType : unitTypes.entities()) {
+			if (unitType.hasAbility(Ability.SUPPORT_UNIT)) {
+				if (unitType.hasAbility(Ability.NAVAL_UNIT)) {
+					navalTypes.add(unitType);
+				} else if (unitType.hasAbility(Ability.BOMBARD)) {
+					bombardTypes.add(unitType);
+				} else if (unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+					landTypes.add(unitType);
+				}
+			}
+			if (unitType.hasAbility(Ability.MERCENARY_UNIT)) {
+				mercenaryTypes.add(unitType);
+			}
+		}
+	}
+
     private void clear() {
     	tileTypes.clear();
     	tileImprovementTypes.clear();
@@ -189,6 +213,14 @@ public class Specification implements Identifiable {
         goodsTypes.clear();
         buildingTypes.clear();
         europeanNations.clear();
+        
+        unitTypesTrainedInEurope.clear();
+        unitTypesPurchasedInEurope.clear();
+        immigrationGoodsTypeList.clear();
+        navalTypes.clear();
+        bombardTypes.clear();
+        landTypes.clear();
+        mercenaryTypes.clear();    
     }
     
 	public static class Xml extends XmlNodeParser {

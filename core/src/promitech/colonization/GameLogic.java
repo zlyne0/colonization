@@ -1,11 +1,14 @@
 package promitech.colonization;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -13,6 +16,7 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MarketChangePrice;
@@ -22,6 +26,7 @@ import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.Monarch;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
+import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
@@ -205,6 +210,7 @@ public class GameLogic {
 	protected void handleMonarchAction(Player player, MonarchAction action) {
     	Monarch monarch = player.getMonarch();
 		MonarchActionNotification man;
+		StringTemplate st;
 		
 		switch (action) {
 	    	case NO_ACTION:
@@ -218,7 +224,6 @@ public class GameLogic {
 	            	System.out.println("Ignoring tax raise, no goods to boycott.");
 	            	return;
 	            }
-	            man.setId(Game.idGenerator.nextId(MonarchActionNotification.class));
 	            man.setTax(monarch.potentialTaxRaiseValue(game));
 	            
 	            player.eventsNotifications.notifications.addFirst(man);
@@ -241,27 +246,85 @@ public class GameLogic {
 	            if (royalAdditions == null) {
 	            	break;
 	            }
-	            monarch.getExpeditionaryForce().addArmy(royalAdditions);
+	            MonarchLogic.riseExpeditionaryForce(monarch, royalAdditions);
 	    		
 	            man = new MonarchActionNotification(action);
-	            
-	            StringTemplate st = StringTemplate.template("model.monarch.action." + action)
+	            st = StringTemplate.template("model.monarch.action." + action)
 	            		.addAmount("%number%", royalAdditions.getAmount())
 	            		.addName("%unit%", royalAdditions.getUnitType());
 	            man.setMsgBody(Messages.message(st));
 	            player.eventsNotifications.notifications.addFirst(man);
 	            break;
 	    	case DECLARE_PEACE:
+	    		List<Player> friends = monarch.collectPotentialFriends(game);
+	    		if (friends.isEmpty()) {
+	    			break;
+	    		}
+	    		Player friend = Randomizer.getInstance().randomOneFromList(friends);
+	    		
+	    		player.changeStance(friend, Stance.PEACE);
+	    		
+	    		st = StringTemplate.template("model.monarch.action." + action).addName("%nation%", friend.nation());
+	    		man = new MonarchActionNotification(action);
+	    		man.setMsgBody(Messages.message(st));
+	    		player.eventsNotifications.notifications.addFirst(man);
+	    		break;
 	    	case DECLARE_WAR:
+	            List<Player> enemies = monarch.collectPotentialEnemies(game);
+	            if (enemies.isEmpty()) {
+	            	break;
+	            }
+	            Player enemy = Randomizer.getInstance().randomOneFromList(enemies);
+	            player.changeStance(enemy, Stance.WAR);
+	            
+	    		st = StringTemplate.template("model.monarch.action." + action).addName("%nation%", enemy.nation());
+	    		man = new MonarchActionNotification(action);
+	    		man.setMsgBody(Messages.message(st));
+	    		player.eventsNotifications.notifications.addFirst(man);
+	    		break;
 	    	case SUPPORT_LAND:
 	    	case SUPPORT_SEA:
-	    	case MONARCH_MERCENARIES: 
+	    		List<ArmyForceAbstractUnit> supportUnits = monarch.chooseForSupport(action);
+	    		if (supportUnits.isEmpty()) {
+	    			break;
+	    		}
+	    		String unitsLabel = "";
+	    		for (ArmyForceAbstractUnit af : supportUnits) {
+	    			for (int i=0; i<af.getAmount(); i++) {
+	    				Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), af.getUnitType(), af.getUnitRole(), player);
+	    				unit.changeUnitLocation(player.getEurope());
+	    			}
+	    			if (!unitsLabel.isEmpty()) {
+	    				unitsLabel += ", ";
+	    			}
+	    			unitsLabel += Messages.message(UnitLabel.getLabelWithAmount(af.getUnitType(), af.getUnitRole(), af.getAmount()));
+	    		}
+	    		st = StringTemplate.template("model.monarch.action." + action).add("%addition%", unitsLabel);
+	    		
+	    		man = new MonarchActionNotification(action);
+	    		man.setMsgBody(Messages.message(st));
+	    		player.eventsNotifications.notifications.addFirst(man);
+	    		break;
+	    	case MONARCH_MERCENARIES:
+	    		List<ArmyForceAbstractUnit> mercenaries = new ArrayList<ArmyForceAbstractUnit>(); 
+	    		int price = monarch.chooseMercenaries(mercenaries);
+	    		if (mercenaries.isEmpty()) {
+	    			break;
+	    		}
+	    		man = new MonarchActionNotification(action, mercenaries, price);
+	    		player.eventsNotifications.notifications.addFirst(man);
+	    		break;
 	    	case HESSIAN_MERCENARIES:
 	    	case DISPLEASURE:
+				player.getMonarch().setDispleasure(true);
+				man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
+				man.setMsgBody(Messages.msg("model.monarch.action." + MonarchAction.DISPLEASURE));
+				player.eventsNotifications.notifications.addFirst(man);
+	    		break;
 		default:
 			break;
 		}
 	}
-
+	
 }
 

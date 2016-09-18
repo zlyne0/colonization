@@ -116,7 +116,7 @@ public class HudStage extends Stage {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.GRAVE) {
-    			// TODO: open cheat console
+    			gameController.generateMonarchAction();
     			return true;
     		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {

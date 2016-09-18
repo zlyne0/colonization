@@ -2,6 +2,8 @@ package promitech.colonization.ui.hud;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Nation;
+import net.sf.freecol.common.model.UnitLabel;
+import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.MonarchLogic;
@@ -9,6 +11,7 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MonarchActionNotificationDialog extends QuestionDialog {
@@ -31,7 +34,15 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 	    		generateWaiveTaxContent(ntfhy, game, player);
 	    		break;
 	    	case ADD_TO_REF:
-	    		genereteAddToRoyalForceContent(ntfhy, game, player);
+	    	case DECLARE_PEACE:
+	    	case DECLARE_WAR:
+	    	case SUPPORT_LAND:
+	    	case SUPPORT_SEA:
+	    	case DISPLEASURE:
+	    		genereteContentFromNotificationMsgBody(ntfhy);
+	    		break;
+	    	case MONARCH_MERCENARIES:
+	    		generateMercenariesContent(ntfhy, game, player);
 	    		break;
 			default:
 				throw new IllegalStateException("can not recognize monarch action " + ntfhy.getAction());
@@ -56,7 +67,6 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 		OptionAction<MonarchActionNotification> optionActionYes = new OptionAction<MonarchActionNotification>() {
 			@Override
 			public void executeAction(MonarchActionNotification payload) {
-				System.out.println("answer yes " + payload);
 				MonarchLogic.acceptRiseTax(player, payload);
 			}
 
@@ -99,9 +109,33 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
 	}
 
-
-	private void genereteAddToRoyalForceContent(MonarchActionNotification ntfhy, Game game, Player player) {
+	private void genereteContentFromNotificationMsgBody(MonarchActionNotification ntfhy) {
 		addQuestion(ntfhy.getMsgBody());
+		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+	}
+
+	private void generateMercenariesContent(MonarchActionNotification ntfhy, Game game, final Player player) {
+		String st = ""; 
+		for (ArmyForceAbstractUnit af : ntfhy.getMercenaries()) {
+			if (!st.isEmpty()) {
+				st += ", ";
+			}
+			st += Messages.message(UnitLabel.getLabelWithAmount(af.getUnitType(), af.getUnitRole(), af.getAmount()));
+		}
+		
+		StringTemplate temp = StringTemplate.template("model.monarch.action." + ntfhy.getAction())
+                .add("%mercenaries%", st)
+                .addAmount("%gold%", ntfhy.getPrice());
+		addQuestion(temp);
+		
+		OptionAction<MonarchActionNotification> optionActionYes = new OptionAction<MonarchActionNotification>() {
+			@Override
+			public void executeAction(MonarchActionNotification payload) {
+				MonarchLogic.buyMercenaries(player, payload);
+			}
+		};
+		addAnswer("model.monarch.action." + ntfhy.getAction() + ".yes", optionActionYes, ntfhy);
+
 		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
 	}
 	

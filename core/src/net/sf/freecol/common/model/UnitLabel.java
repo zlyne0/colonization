@@ -87,6 +87,13 @@ public class UnitLabel {
 		return Messages.message(label);
 	}
 
+    public static StringTemplate getLabelWithAmount(UnitType unitType, UnitRole unitRole, int amount) {
+        StringTemplate tmpl = getUnitLabel(null, unitType.getId(), amount, null, unitRole.getId(), null);
+        return StringTemplate.template("abstractUnit")
+			.addAmount("%number%", amount)
+			.addStringTemplate("%unit%", tmpl);
+    }
+	
 	public static StringTemplate getPlainUnitLabel(Unit unit) {
 		return getUnitLabel(getName(unit), unit.unitType.getId(), 1, null, unit.unitRole.getId(), null);		
 	}

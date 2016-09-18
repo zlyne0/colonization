@@ -92,12 +92,18 @@ public class SaveGameParserTest {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
-        assertEquals(2, player.eventsNotifications.notifications.size());
+        assertEquals(3, player.eventsNotifications.notifications.size());
         
         MonarchActionNotification monarchNotification = (MonarchActionNotification)player.eventsNotifications.notifications.get(1);
         assertEquals(MonarchAction.RAISE_TAX_ACT, monarchNotification.getAction());
         assertEquals("model.goods.furs", monarchNotification.getGoodsType().getId());
         assertEquals(12, monarchNotification.getTax());
+        
+        MonarchActionNotification man1236 = (MonarchActionNotification)player.eventsNotifications.notifications.get(2);
+        assertEquals("monarchActionNotification:1236", man1236.getId());
+        assertEquals(MonarchAction.MONARCH_MERCENARIES, man1236.getAction());
+        assertEquals(1500, man1236.getPrice());
+        assertEquals(3, man1236.getMercenaries().size());
         
         verifyPlayerMonarch(player);
 	}

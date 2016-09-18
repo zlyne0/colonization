@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.WithProbability;
@@ -185,7 +186,19 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			}
 		}
     }
-	
+
+	public int getUnitPrice(UnitType unitType, UnitRole unitRole, int amount) {
+		if (!unitType.hasPrice()) {
+			return Integer.MAX_VALUE;
+		}
+		int price = unitType.getPrice();
+		for (Goods goods : unitRole.requiredGoods.entities()) {
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(goods.getId());
+			price += owner.market().getBidPrice(goodsType, goods.getAmount() * unitRole.getMaximumCount());
+		}
+		return price * amount;
+	}
+
     public static class Xml extends XmlNodeParser {
 
         public Xml() {

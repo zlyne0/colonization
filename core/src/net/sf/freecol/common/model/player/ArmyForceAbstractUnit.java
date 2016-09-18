@@ -35,6 +35,14 @@ public class ArmyForceAbstractUnit extends ObjectWithId {
 		this.amount += army.amount;
 	}
 	
+	public void increaseAmount() {
+		this.amount++;
+	}
+	
+	public String toString() {
+		return "type: " + unitType.getId() + ", role: " + unitRole.getId() + ", amount: " + amount; 
+	}
+	
     public static class Xml extends XmlNodeParser {
         @Override
         public void startElement(XmlNodeAttributes attr) {

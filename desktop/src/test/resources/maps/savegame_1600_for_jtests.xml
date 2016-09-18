@@ -4532,6 +4532,11 @@
       <eventsNotificatioins>
       	<messageNotification id="messageNotification:1234" body="msg" />
       	<monarchActionNotification id="monarchActionNotification:1235" action="RAISE_TAX_ACT" goodsType="model.goods.furs" goodsAmount="100" tax="12" colonyId="colony:6528" />
+		<monarchActionNotification id="monarchActionNotification:1236" action="MONARCH_MERCENARIES" price="1500">
+			<abstractUnit id="model.unit.kingsRegular" role="model.role.infantry" number="31" />
+			<abstractUnit id="model.unit.kingsRegular" role="model.role.cavalry" number="15" />
+			<abstractUnit id="model.unit.artillery" role="model.role.default" number="14" />
+		</monarchActionNotification>
       </eventsNotificatioins>
       <market id="market:5" owner="player:1">
         <marketData id="marketData:6" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>

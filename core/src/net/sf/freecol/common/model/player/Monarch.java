@@ -138,34 +138,56 @@ public class Monarch extends ObjectWithId {
 
     private boolean hasPotentialFriends(Game game) {
     	for (Player p : game.players.entities()) {
-    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(player)) {
-    			if (p.isRoyal()) {
-    				continue;
-    			}
-    			if (player.atWarOrCeaseFire(p)) {
-    				return true;
-    			}
+    		if (isPotentialFriend(p)) {
+    			return true;
     		}
     	}
     	return false;
     }
+    
+	public List<Player> collectPotentialFriends(Game game) {
+		List<Player> friends = new ArrayList<Player>();
+		for (Player p : game.players.entities()) {
+			if (isPotentialFriend(p)) {
+				friends.add(p);
+			}
+		}
+		return friends;
+	}
+	
+	private boolean isPotentialFriend(Player p) {
+		return !p.isRoyal() && p.isLiveEuropeanPlayer() && p.notEqualsId(player) && player.atWarOrCeaseFire(p);
+	}
     
     private boolean hasPotentialEnemies(Game game) {
     	if (player.getFeatures().hasAbility(Ability.IGNORE_EUROPEAN_WARS)) {
     		return false;
     	}
     	for (Player p : game.players.entities()) {
-    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(player)) {
-    			if (p.getFeatures().hasAbility(Ability.IGNORE_EUROPEAN_WARS) || p.isRoyal()) {
-    				continue;
-    			}
-    			if (player.atPeaceOrCeaseFire(p)) {
-    				return true;
-    			}
+    		if (isPotentialEnemy(p)) {
+    			return true;
     		}
     	}
     	return false;
     }
+
+	private boolean isPotentialEnemy(Player p) {
+		return !p.isRoyal() 
+				&& p.isLiveEuropeanPlayer() 
+				&& p.notEqualsId(player) 
+				&& player.atPeaceOrCeaseFire(p) 
+				&& !p.getFeatures().hasAbility(Ability.IGNORE_EUROPEAN_WARS);
+	}
+    
+	public List<Player> collectPotentialEnemies(Game game) {
+		List<Player> friends = new ArrayList<Player>();
+		for (Player p : game.players.entities()) {
+			if (isPotentialEnemy(p)) {
+				friends.add(p);
+			}
+		}
+		return friends;
+	}
     
     private int getMaximumTaxInGame() {
         return Specification.options.getIntValue(GameOptions.MAXIMUM_TAX);
@@ -203,15 +225,95 @@ public class Monarch extends ObjectWithId {
         	number = 1;
         } else {
         	if (Randomizer.getInstance().randomInt(3) == 0) {
-        		role = Specification.instance.unitRoles.getById("model.role.cavalry");
+        		role = Specification.instance.unitRoles.getById(UnitRole.CAVALRY_ROLE_ID);
         	} else {
-        		role = Specification.instance.unitRoles.getById("model.role.infantry");
+        		role = Specification.instance.unitRoles.getById(UnitRole.INFANTRY_ROLE_ID);
         	}
         	number = Randomizer.getInstance().randomInt(1, 4);
         }
         return new ArmyForceAbstractUnit(unitType, role, number);
     }
-    
+
+	public List<ArmyForceAbstractUnit> chooseForSupport(final MonarchAction action) {
+		List<ArmyForceAbstractUnit> support = new ArrayList<ArmyForceAbstractUnit>();
+		
+		Specification spec = Specification.instance;
+		Randomizer rand = Randomizer.getInstance();
+		
+		if (action == MonarchAction.SUPPORT_SEA) {
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.navalTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
+			supportSea = true;
+			return support;
+		}
+		
+		int difficulty = Specification.options.getIntValue(GameOptions.MONARCH_SUPPORT);
+        switch (difficulty) {
+        case 4:
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.bombardTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+            break;
+        case 3:
+        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+            break;
+        case 2:
+        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+            break;
+        case 1:
+        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+            break;
+        case 0:
+			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+            break;
+        default:
+            break;
+        }
+		return support;
+	}
+
+	public int chooseMercenaries(final List<ArmyForceAbstractUnit> mercenaries) {
+		final int mercPrice = Specification.options.getIntValue(GameOptions.MERCENARY_PRICE);
+		
+		
+		List<UnitRole> unitsRoles = new ArrayList<UnitRole>(2);
+		unitsRoles.add(Specification.instance.unitRoles.getById(UnitRole.DRAGOON));
+		unitsRoles.add(Specification.instance.unitRoles.getById(UnitRole.SOLDIER));
+		
+		int price = 0;
+		int unitsRoleCount = Randomizer.getInstance().randomInt(2, 4);
+		while (unitsRoleCount > 0) {
+			UnitType unitType = Randomizer.getInstance().randomOneFromList(Specification.instance.mercenaryTypes);
+			
+			UnitRole unitRole;
+			if (unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+				unitRole = Randomizer.getInstance().randomOneFromList(unitsRoles);
+			} else {
+				unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+			}
+			int unitsCount = Randomizer.getInstance().randomInt(1, Math.min(unitsRoleCount, 2) + 1);
+			unitsRoleCount -= unitsCount;
+
+			ArmyForceAbstractUnit af = new ArmyForceAbstractUnit(unitType, unitRole, 0);
+			int oneUnitPrice = player.getEurope().getUnitPrice(unitType, unitRole, 1) * mercPrice / 100;
+			for (int i=0; i<unitsCount; i++) {
+				if (player.hasGold(price + oneUnitPrice)) {
+					price += oneUnitPrice;
+					af.increaseAmount();
+				}
+			}
+			if (af.getAmount() > 0) {
+				mercenaries.add(af);
+			}
+		}
+		
+		System.out.println("Mercenaries: ");
+		for (ArmyForceAbstractUnit af : mercenaries) {
+			System.out.println("  " + af);
+		}		
+		return price;
+	}
+	
     protected String getNameKey() {
         return nameKey;
     }
@@ -223,6 +325,10 @@ public class Monarch extends ObjectWithId {
     protected boolean isDispleasure() {
         return displeasure;
     }
+
+	public void setDispleasure(boolean displeasure) {
+		this.displeasure = displeasure;
+	}
 
     public void setPlayer(Player player) {
         this.player = player;
@@ -267,4 +373,5 @@ public class Monarch extends ObjectWithId {
             return "monarch";
         }
     }
+
 }

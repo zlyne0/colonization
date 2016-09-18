@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Stance;
+import net.sf.freecol.common.model.Tension;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
@@ -122,7 +123,8 @@ public class Player extends ObjectWithId {
     public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
     private BooleanMap exploredTiles;
     
-    protected final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
+    private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
+    private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
 
     public Player(String id) {
     	super(id);
@@ -222,6 +224,62 @@ public class Player extends ObjectWithId {
     	return stance;
     }
     
+    public void changeStance(final Player otherPlayer, final Stance newStance) {
+    	Stance old = getStance(otherPlayer);
+    	
+    	if (old != newStance) {
+    		modifyStance(otherPlayer, newStance);
+    		int modifier = old.getTensionModifier(newStance);
+			modifyTension(otherPlayer, modifier);
+    		
+			if (old != Stance.UNCONTACTED) {
+				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
+					.addName("%nation%", nation())
+				);
+				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				otherPlayer.eventsNotifications.addMessageNotification(msg);
+			}
+    	}
+    	
+    	old = otherPlayer.getStance(this);
+    	if (old != newStance) {
+    		otherPlayer.modifyStance(this, newStance);
+    		int modifier = old.getTensionModifier(newStance);
+    		otherPlayer.modifyTension(otherPlayer, modifier);
+    		
+            if (old != Stance.UNCONTACTED) {
+				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
+					.addName("%nation%", otherPlayer.nation())
+				);
+				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				this.eventsNotifications.addMessageNotification(msg);
+            }
+    	}
+    }
+    
+    private void modifyStance(Player p, Stance newStance) {
+        if (newStance == null) {
+            stance.remove(p.getId());
+            return;
+        }
+        Stance oldStance = stance.get(p.getId());
+        if (newStance == oldStance) {
+        	return;
+        }
+        stance.put(p.getId(), newStance);
+    }
+    
+    private void modifyTension(Player p, int val) {
+		if (val == 0) {
+    		return;
+    	}
+    	Tension tensionObj = tension.get(p.getId());
+    	if (tensionObj == null) {
+    		tensionObj = new Tension(Tension.TENSION_MIN);
+    	}
+    	tensionObj.modify(val);
+    }
+    
     private void changePlayerType(PlayerType type) {
         if (playerType != PlayerType.REBEL && playerType != PlayerType.INDEPENDENT) {
             switch (type) {
@@ -241,6 +299,10 @@ public class Player extends ObjectWithId {
     	return false;
     }
     
+    public boolean isIndian() {
+        return playerType == PlayerType.NATIVE;
+    }
+	
     public boolean isRoyal() {
         return playerType == PlayerType.ROYAL;
     }
@@ -506,6 +568,11 @@ public class Player extends ObjectWithId {
         		String playerId = attr.getStrAttribute("player");
         		Stance stance = Stance.valueOf(attr.getStrAttribute("value").toUpperCase());
         		((Player)nodeObject).stance.put(playerId, stance);
+        	}
+        	if (attr.isQNameEquals("tension")) {
+        		String playerId = attr.getStrAttribute("player");
+        		Tension tension = new Tension(attr.getIntAttribute("value"));
+        		((Player)nodeObject).tension.put(playerId, tension);
         	}
         	if (attr.isQNameEquals("foundingFathers")) {
         	    int count = attr.getIntAttribute("xLength", 0);
