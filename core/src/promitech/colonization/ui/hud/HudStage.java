@@ -74,11 +74,12 @@ public class HudStage extends Stage {
     private ButtonActor cancelActionButton;
     
     private final Group buttonsGroup = new Group();
+    private boolean needUpdateButtonVisibility = true;
     
     private GUIGameModel.ChangeStateListener guiGameModelChangeListener = new ChangeStateListener() {
 		@Override
 		public void change(GUIGameModel model) {
-			resetButtonVisibility(model);
+			needUpdateButtonVisibility = true;
 		}
 	};
     
@@ -96,7 +97,7 @@ public class HudStage extends Stage {
         createActionButtons(bw);
 		addListener(keysInputListener);
         
-        gameController.addGUIGameModelChangeListener(guiGameModelChangeListener);
+		gameController.getGuiGameModel().addChangeListener(guiGameModelChangeListener);
         
 		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
 		endOfTurnActor.setWidth(getWidth());
@@ -412,10 +413,15 @@ public class HudStage extends Stage {
     	shapeRenderer.setTransformMatrix(getBatch().getTransformMatrix());
     	shapeRenderer.translate(getViewport().getScreenX(), getViewport().getScreenY(), 0);
     	
+    	if (needUpdateButtonVisibility) {
+    	    resetButtonVisibility(gameController.getGuiGameModel());
+    	}
         super.act();
     }
 
 	private void resetButtonVisibility(GUIGameModel model) {
+	    needUpdateButtonVisibility = false;
+	    
 		// remove all actors
 		buttonsGroup.clearChildren();
 		if (model.isAiMove()) {

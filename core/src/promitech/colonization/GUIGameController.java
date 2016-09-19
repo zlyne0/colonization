@@ -27,7 +27,6 @@ import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
@@ -71,6 +70,7 @@ public class GUIGameController {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
         game = saveGameParser.parse();
         game.playingPlayer = game.players.getById("player:1");
+        game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);
         
         guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
@@ -452,6 +452,10 @@ public class GUIGameController {
         return game;
     }
 
+    public GUIGameModel getGuiGameModel() {
+        return guiGameModel;
+    }
+    
 	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
 		this.screenManager = screenManager;
 	}
@@ -543,10 +547,6 @@ public class GUIGameController {
 		}
 	}
 	
-	public void addGUIGameModelChangeListener(ChangeStateListener listener) {
-		guiGameModel.addChangeListener(listener);
-	}
-
 	public void onShowGUI() {
 		guiGameModel.runListeners();
 	}
@@ -696,4 +696,5 @@ public class GUIGameController {
 	public void generateMonarchAction() {
 	    MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.MONARCH_MERCENARIES);
 	}
+
 }

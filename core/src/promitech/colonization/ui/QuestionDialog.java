@@ -69,7 +69,6 @@ public class QuestionDialog extends Dialog {
     
     @Override
     public Dialog show(Stage stage) {
-        stage.setDebugAll(true);
         getContentTable().add(dialogLayout).fillX();
         return super.show(stage);
     }

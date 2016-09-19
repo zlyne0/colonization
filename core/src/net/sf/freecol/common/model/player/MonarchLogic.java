@@ -44,7 +44,7 @@ public class MonarchLogic {
                 }
                 man.setTax(monarch.potentialTaxRaiseValue(game));
                 
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 
                 break;
             case LOWER_TAX_WAR:
@@ -52,12 +52,12 @@ public class MonarchLogic {
                 man = new MonarchActionNotification(action);
                 man.setTax(monarch.generateLowerTaxValue());
                 
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 
                 break;
             case WAIVE_TAX:
                 man = new MonarchActionNotification(action);
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case ADD_TO_REF:
                 ArmyForceAbstractUnit royalAdditions = monarch.chooseForAddRoyalExpedition();
@@ -71,7 +71,7 @@ public class MonarchLogic {
                         .addAmount("%number%", royalAdditions.getAmount())
                         .addName("%unit%", royalAdditions.getUnitType());
                 man.setMsgBody(Messages.message(st));
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case DECLARE_PEACE:
                 List<Player> friends = monarch.collectPotentialFriends(game);
@@ -85,7 +85,7 @@ public class MonarchLogic {
                 st = StringTemplate.template(action.msgKey()).addName("%nation%", friend.nation());
                 man = new MonarchActionNotification(action);
                 man.setMsgBody(Messages.message(st));
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case DECLARE_WAR:
                 List<Player> enemies = monarch.collectPotentialEnemies(game);
@@ -98,7 +98,7 @@ public class MonarchLogic {
                 st = StringTemplate.template(action.msgKey()).addName("%nation%", enemy.nation());
                 man = new MonarchActionNotification(action);
                 man.setMsgBody(Messages.message(st));
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case SUPPORT_LAND:
             case SUPPORT_SEA:
@@ -121,7 +121,7 @@ public class MonarchLogic {
                 
                 man = new MonarchActionNotification(action);
                 man.setMsgBody(Messages.message(st));
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case MONARCH_MERCENARIES:
                 List<ArmyForceAbstractUnit> mercenaries = new ArrayList<ArmyForceAbstractUnit>(); 
@@ -130,7 +130,7 @@ public class MonarchLogic {
                     break;
                 }
                 man = new MonarchActionNotification(action, mercenaries, price);
-                player.eventsNotifications.notifications.addFirst(man);
+                player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
             case HESSIAN_MERCENARIES:
             case DISPLEASURE:
@@ -208,7 +208,7 @@ public class MonarchLogic {
 	    player.getMonarch().setDispleasure(true);
 	    MonarchActionNotification man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
 	    man.setMsgBody(Messages.msg(MonarchAction.DISPLEASURE.msgKey()));
-	    player.eventsNotifications.notifications.addFirst(man);
+	    player.eventsNotifications.addMessageNotificationAsFirst(man);
 	}
 
 	
