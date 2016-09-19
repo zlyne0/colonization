@@ -39,15 +39,14 @@ public class MarketTest {
 	public void shouldChangeGoodsPriceWhenBuy() throws Exception {
 		// given
         int goodsAmount = 100;
-        String goodsTypeStr = "model.goods.cigars";
+        String goodsTypeId = "model.goods.cigars";
         
-        GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsTypeStr);
         Player player = game.players.getById("player:1");
         Market market = player.market();
 		
-        int beforeBuyPrice = market.getBidPrice(goodsType, 100);
+        int beforeBuyPrice = market.getBidPrice(goodsTypeId, 100);
 		
-        MarketData marketData = market.marketGoods.getById(goodsType.getId());
+        MarketData marketData = market.marketGoods.getById(goodsTypeId);
         
 		// when
         boolean modifyOnBuyGoods = marketData.modifyOnBuyGoods(goodsAmount, beforeBuyPrice, goodsAmount);
@@ -55,7 +54,7 @@ public class MarketTest {
 		// then
 		assertTrue(modifyOnBuyGoods);
         assertEquals(1200, beforeBuyPrice);
-        int afterBuyPrice = market.getBidPrice(goodsType, 100);
+        int afterBuyPrice = market.getBidPrice(goodsTypeId, 100);
         assertEquals(1300, afterBuyPrice);
         
         System.out.println("before buy price = " + beforeBuyPrice);

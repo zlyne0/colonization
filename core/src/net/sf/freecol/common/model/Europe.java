@@ -193,8 +193,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
 		int price = unitType.getPrice();
 		for (Goods goods : unitRole.requiredGoods.entities()) {
-			GoodsType goodsType = Specification.instance.goodsTypes.getById(goods.getId());
-			price += owner.market().getBidPrice(goodsType, goods.getAmount() * unitRole.getMaximumCount());
+			price += owner.market().getBidPrice(goods.getId(), goods.getAmount() * unitRole.getMaximumCount());
 		}
 		return price * amount;
 	}

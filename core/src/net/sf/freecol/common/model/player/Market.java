@@ -37,14 +37,14 @@ public class Market extends ObjectWithId {
 	public int buildingGoodsPrice(GoodsType goodsType, int amount) {
 		if (goodsType.isStorable()) {
 		    // price for buy goods for buildings is 10% higher than in market
-			return (getBidPrice(goodsType, amount) * 110) / 100;
+			return (getBidPrice(goodsType.getId(), amount) * 110) / 100;
 		} else {
 			return goodsType.getPrice() * amount;
 		}
 	}
 	
-    public int getBidPrice(GoodsType type, int amount) {
-        MarketData data = marketGoods.getByIdOrNull(type.getId());
+    public int getBidPrice(String goodsTypeId, int amount) {
+        MarketData data = marketGoods.getByIdOrNull(goodsTypeId);
         return (data == null) ? 0 : data.getCostToBuy(amount);
     }
 
@@ -100,7 +100,7 @@ public class Market extends ObjectWithId {
 		TRANSACTION_EFFECT_ON_MARKET.goodsTypeId = goodsType.getId();
 		TRANSACTION_EFFECT_ON_MARKET.quantity = goodsAmount;
        
-        TRANSACTION_EFFECT_ON_MARKET.grossPrice = getBidPrice(goodsType, goodsAmount);
+        TRANSACTION_EFFECT_ON_MARKET.grossPrice = getBidPrice(goodsType.getId(), goodsAmount);
 		
 		if (player.hasNotGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice)) {
 			throw new IllegalStateException("Insufficient funds to pay for build");
