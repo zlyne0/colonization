@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
-import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -28,6 +27,7 @@ import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -175,7 +175,7 @@ public class GameLogic {
 
 	private boolean isExposedResourceAfterImprovement(Tile tile, TileImprovementType improvementType) {
 		return !tile.hasTileResource() 
-				&& Randomizer.getInstance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
+				&& Randomizer.instance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
 	}
@@ -198,7 +198,7 @@ public class GameLogic {
 	}
 	
 	private void generateMonarchAction(Player player) {
-    	WithProbability<MonarchAction> randomMonarchAction = Randomizer.getInstance().randomOne(player.getMonarch().getActionChoices(game));
+    	WithProbability<MonarchAction> randomMonarchAction = Randomizer.instance().randomOne(player.getMonarch().getActionChoices(game));
     	if (randomMonarchAction == null) {
     		return;
     	}
@@ -249,7 +249,7 @@ public class GameLogic {
 	            MonarchLogic.riseExpeditionaryForce(monarch, royalAdditions);
 	    		
 	            man = new MonarchActionNotification(action);
-	            st = StringTemplate.template("model.monarch.action." + action)
+	            st = StringTemplate.template(action.msgKey())
 	            		.addAmount("%number%", royalAdditions.getAmount())
 	            		.addName("%unit%", royalAdditions.getUnitType());
 	            man.setMsgBody(Messages.message(st));
@@ -260,11 +260,11 @@ public class GameLogic {
 	    		if (friends.isEmpty()) {
 	    			break;
 	    		}
-	    		Player friend = Randomizer.getInstance().randomOneFromList(friends);
+	    		Player friend = Randomizer.instance().randomMember(friends);
 	    		
 	    		player.changeStance(friend, Stance.PEACE);
 	    		
-	    		st = StringTemplate.template("model.monarch.action." + action).addName("%nation%", friend.nation());
+	    		st = StringTemplate.template(action.msgKey()).addName("%nation%", friend.nation());
 	    		man = new MonarchActionNotification(action);
 	    		man.setMsgBody(Messages.message(st));
 	    		player.eventsNotifications.notifications.addFirst(man);
@@ -274,10 +274,10 @@ public class GameLogic {
 	            if (enemies.isEmpty()) {
 	            	break;
 	            }
-	            Player enemy = Randomizer.getInstance().randomOneFromList(enemies);
+	            Player enemy = Randomizer.instance().randomMember(enemies);
 	            player.changeStance(enemy, Stance.WAR);
 	            
-	    		st = StringTemplate.template("model.monarch.action." + action).addName("%nation%", enemy.nation());
+	    		st = StringTemplate.template(action.msgKey()).addName("%nation%", enemy.nation());
 	    		man = new MonarchActionNotification(action);
 	    		man.setMsgBody(Messages.message(st));
 	    		player.eventsNotifications.notifications.addFirst(man);
@@ -299,7 +299,7 @@ public class GameLogic {
 	    			}
 	    			unitsLabel += Messages.message(UnitLabel.getLabelWithAmount(af.getUnitType(), af.getUnitRole(), af.getAmount()));
 	    		}
-	    		st = StringTemplate.template("model.monarch.action." + action).add("%addition%", unitsLabel);
+	    		st = StringTemplate.template(action.msgKey()).add("%addition%", unitsLabel);
 	    		
 	    		man = new MonarchActionNotification(action);
 	    		man.setMsgBody(Messages.message(st));
@@ -316,10 +316,7 @@ public class GameLogic {
 	    		break;
 	    	case HESSIAN_MERCENARIES:
 	    	case DISPLEASURE:
-				player.getMonarch().setDispleasure(true);
-				man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
-				man.setMsgBody(Messages.msg("model.monarch.action." + MonarchAction.DISPLEASURE));
-				player.eventsNotifications.notifications.addFirst(man);
+	    	    MonarchLogic.generateDispleasureMessageNotification(player);
 	    		break;
 		default:
 			break;

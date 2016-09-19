@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.player;
 
 import java.util.Locale;
 

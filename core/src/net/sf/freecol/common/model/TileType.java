@@ -70,7 +70,7 @@ public final class TileType extends ObjectWithFeatures {
 	}
 	
 	public ResourceType exposeResource() {
-		TileTypeAllowedResource allowedResource = Randomizer.getInstance().randomOne(allowedResourceTypes.entities());
+		TileTypeAllowedResource allowedResource = Randomizer.instance().randomOne(allowedResourceTypes.entities());
 		return allowedResource.resourceType;
 	}
 	

@@ -27,7 +27,7 @@ public class Nation extends ObjectWithId {
 	
 	public static String getRandomNonPlayerNationNameKey(Game game) {
 		Set<String> gameNationIds = game.getEuropeanNationIds();
-		int start = Randomizer.getInstance().randomInt(EUROPEAN_NATIONS.length);
+		int start = Randomizer.instance().randomInt(EUROPEAN_NATIONS.length);
 		for (int index = 0; index < EUROPEAN_NATIONS.length; index++) {
 			String nationId = "model.nation." + EUROPEAN_NATIONS[(start + index) % EUROPEAN_NATIONS.length];
 			if (!gameNationIds.contains(nationId)) {

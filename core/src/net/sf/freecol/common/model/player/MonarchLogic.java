@@ -22,7 +22,7 @@ public class MonarchLogic {
 			final int extraTax = 3;
 			player.setTax(ntf.getTax() + extraTax);
 			
-			StringTemplate st = StringTemplate.template("model.monarch.action.FORCE_TAX")
+			StringTemplate st = StringTemplate.template(MonarchAction.FORCE_TAX.msgKey())
 					.addAmount("%amount%", ntf.getTax() + extraTax);
 			
 			MessageNotification msgNtf = new MessageNotification(
@@ -68,11 +68,15 @@ public class MonarchLogic {
 				}
 			}
 		} else {
-			player.getMonarch().setDispleasure(true);
-			MonarchActionNotification man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
-			man.setMsgBody(Messages.msg("model.monarch.action." + MonarchAction.DISPLEASURE));
-			player.eventsNotifications.notifications.addFirst(man);
+		    generateDispleasureMessageNotification(player);
 		}
+	}
+	
+	public static void generateDispleasureMessageNotification(Player player) {
+	    player.getMonarch().setDispleasure(true);
+	    MonarchActionNotification man = new MonarchActionNotification(MonarchAction.DISPLEASURE);
+	    man.setMsgBody(Messages.msg(MonarchAction.DISPLEASURE.msgKey()));
+	    player.eventsNotifications.notifications.addFirst(man);
 	}
 	
 }

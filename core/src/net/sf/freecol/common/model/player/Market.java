@@ -160,7 +160,7 @@ public class Market extends ObjectWithId {
 	}
 
 	private final int modifyGoodsAmountPropagatetToMarkets(int amount) {
-        amount *= Randomizer.getInstance().randomInt(PROPAGATED_GOODS_LOWER_BOUND, PROPAGATED_GOODS_UPPER_BOUND);
+        amount *= Randomizer.instance().randomInt(PROPAGATED_GOODS_LOWER_BOUND, PROPAGATED_GOODS_UPPER_BOUND);
         amount /= 100;
 		return amount;
 	}

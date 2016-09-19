@@ -145,7 +145,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			}
 		}
 		for (int i=0; i<MAX_RECRUITABLE_UNITS - recruitables.size(); i++) {
-			WithProbability<UnitType> randomOne = Randomizer.getInstance().randomOne(recruitProbabilities);
+			WithProbability<UnitType> randomOne = Randomizer.instance().randomOne(recruitProbabilities);
 			recruitables.add(randomOne.probabilityObject());
 		}
 	}

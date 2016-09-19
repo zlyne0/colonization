@@ -33,7 +33,19 @@ public class Monarch extends ObjectWithId {
         SUPPORT_SEA,
         MONARCH_MERCENARIES, 
         HESSIAN_MERCENARIES,
-        DISPLEASURE,
+        DISPLEASURE;
+        
+        public String msgKey() {
+            return "model.monarch.action." + this;
+        }
+        
+        public String yesMsgKey() {
+            return msgKey() + ".yes";
+        }
+        
+        public String noMsgKey() {
+            return msgKey() + ".no";
+        }
     }
     
     /** The minimum price for a monarch offer of mercenaries. */
@@ -198,7 +210,7 @@ public class Monarch extends ObjectWithId {
         int turn = game.getTurn().getNumber();
         int oldTax = player.getTax();
         int adjust = Math.max(1, (6 - taxAdjustment) * 10); // 20-60
-        adjust = 1 + Randomizer.getInstance().randomInt(5 + turn/adjust);
+        adjust = 1 + Randomizer.instance().randomInt(5 + turn/adjust);
         return Math.min(oldTax + adjust, getMaximumTaxInGame());
     }
     
@@ -206,7 +218,7 @@ public class Monarch extends ObjectWithId {
         int taxAdjustment = Specification.options.getIntValue(GameOptions.TAX_ADJUSTMENT);
         int oldTax = player.getTax();
         int adjust = Math.max(1, 10 - taxAdjustment); // 5-10
-        adjust = 1 + Randomizer.getInstance().randomInt(adjust);
+        adjust = 1 + Randomizer.instance().randomInt(adjust);
         return Math.max(oldTax - adjust, Monarch.MINIMUM_TAX_RATE);
     }
     
@@ -216,7 +228,7 @@ public class Monarch extends ObjectWithId {
         if (types.isEmpty()) {
         	return null;
         }
-        UnitType unitType = Randomizer.getInstance().randomOneFromList(types);
+        UnitType unitType = Randomizer.instance().randomMember(types);
 
         UnitRole role;
         int number = 0;
@@ -224,12 +236,12 @@ public class Monarch extends ObjectWithId {
         	role = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
         	number = 1;
         } else {
-        	if (Randomizer.getInstance().randomInt(3) == 0) {
+        	if (Randomizer.instance().randomInt(3) == 0) {
         		role = Specification.instance.unitRoles.getById(UnitRole.CAVALRY_ROLE_ID);
         	} else {
         		role = Specification.instance.unitRoles.getById(UnitRole.INFANTRY_ROLE_ID);
         	}
-        	number = Randomizer.getInstance().randomInt(1, 4);
+        	number = Randomizer.instance().randomInt(1, 4);
         }
         return new ArmyForceAbstractUnit(unitType, role, number);
     }
@@ -238,10 +250,10 @@ public class Monarch extends ObjectWithId {
 		List<ArmyForceAbstractUnit> support = new ArrayList<ArmyForceAbstractUnit>();
 		
 		Specification spec = Specification.instance;
-		Randomizer rand = Randomizer.getInstance();
+		Randomizer rand = Randomizer.instance();
 		
 		if (action == MonarchAction.SUPPORT_SEA) {
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.navalTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.navalTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
 			supportSea = true;
 			return support;
 		}
@@ -249,22 +261,22 @@ public class Monarch extends ObjectWithId {
 		int difficulty = Specification.options.getIntValue(GameOptions.MONARCH_SUPPORT);
         switch (difficulty) {
         case 4:
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.bombardTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.bombardTypes), spec.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
             break;
         case 3:
-        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+        	support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
             break;
         case 2:
-        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
+        	support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 2));
             break;
         case 1:
-        	support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 1));
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+        	support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.DRAGOON), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
             break;
         case 0:
-			support.add(new ArmyForceAbstractUnit(rand.randomOneFromList(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
+			support.add(new ArmyForceAbstractUnit(rand.randomMember(spec.landTypes), spec.unitRoles.getById(UnitRole.SOLDIER), 1));
             break;
         default:
             break;
@@ -281,17 +293,17 @@ public class Monarch extends ObjectWithId {
 		unitsRoles.add(Specification.instance.unitRoles.getById(UnitRole.SOLDIER));
 		
 		int price = 0;
-		int unitsRoleCount = Randomizer.getInstance().randomInt(2, 4);
+		int unitsRoleCount = Randomizer.instance().randomInt(2, 4);
 		while (unitsRoleCount > 0) {
-			UnitType unitType = Randomizer.getInstance().randomOneFromList(Specification.instance.mercenaryTypes);
+			UnitType unitType = Randomizer.instance().randomMember(Specification.instance.mercenaryTypes);
 			
 			UnitRole unitRole;
 			if (unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
-				unitRole = Randomizer.getInstance().randomOneFromList(unitsRoles);
+				unitRole = Randomizer.instance().randomMember(unitsRoles);
 			} else {
 				unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
 			}
-			int unitsCount = Randomizer.getInstance().randomInt(1, Math.min(unitsRoleCount, 2) + 1);
+			int unitsCount = Randomizer.instance().randomInt(1, Math.min(unitsRoleCount, 2) + 1);
 			unitsRoleCount -= unitsCount;
 
 			ArmyForceAbstractUnit af = new ArmyForceAbstractUnit(unitType, unitRole, 0);

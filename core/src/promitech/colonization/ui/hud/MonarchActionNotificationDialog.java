@@ -51,14 +51,14 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 	}
 
 	private void generateRiseTaxContent(final MonarchActionNotification ntfhy, Game game, final Player player) {
-		StringTemplate template = StringTemplate.template("model.monarch.action." + ntfhy.getAction())
+		StringTemplate template = StringTemplate.template(ntfhy.getAction().msgKey())
 			.addName("%goods%", ntfhy.getGoodsType())
 			.addAmount("%amount%", ntfhy.getTax());
 		
 		if (ntfhy.getAction() == MonarchAction.RAISE_TAX_WAR) {
 			template.addKey("%nation%", Nation.getRandomNonPlayerNationNameKey(game));
 		} else if (ntfhy.getAction() == MonarchAction.RAISE_TAX_ACT) {
-			template.addAmount("%number%", Randomizer.getInstance().randomInt(6));
+			template.addAmount("%number%", Randomizer.instance().randomInt(6));
 			template.add("%newWorld%", player.getNewLandName());
 		}
 		
@@ -71,7 +71,7 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 			}
 
 		};
-		addAnswer("model.monarch.action." + ntfhy.getAction() + ".yes", optionActionYes, ntfhy);
+		addAnswer(ntfhy.getAction().yesMsgKey(), optionActionYes, ntfhy);
 		
 		OptionAction<MonarchActionNotification> optionActionNo = new OptionAction<MonarchActionNotification>() {
 			@Override
@@ -79,18 +79,18 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 				MonarchLogic.refuseRiseTax(player, payload);
 			}
 		};
-		addAnswer("model.monarch.action." + ntfhy.getAction() + ".no", optionActionNo, ntfhy);
+		addAnswer(ntfhy.getAction().noMsgKey(), optionActionNo, ntfhy);
 	}
 
 	private void generateLowerTaxContent(MonarchActionNotification ntfhy, Game game, final Player player) {
-		StringTemplate template = StringTemplate.template("model.monarch.action." + ntfhy.getAction())
+		StringTemplate template = StringTemplate.template(ntfhy.getAction().msgKey())
                 .addAmount("%difference%", player.getTax() - ntfhy.getTax())
                 .addAmount("%newTax%", ntfhy.getTax());
 		
         if (ntfhy.getAction() == MonarchAction.LOWER_TAX_WAR) {
             template = template.add("%nation%", Nation.getRandomNonPlayerNationNameKey(game));
         } else {
-            template = template.addAmount("%number%", Randomizer.getInstance().randomInt(5));
+            template = template.addAmount("%number%", Randomizer.instance().randomInt(5));
         }
         addQuestion(template);
         
@@ -100,18 +100,18 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 				MonarchLogic.lowerRax(player, payload);
 			}
 		};
-		addAnswer("model.monarch.action." + ntfhy.getAction() + ".no", confirmAnswer, ntfhy);
+		addAnswer(ntfhy.getAction().noMsgKey(), confirmAnswer, ntfhy);
 	}
 
 	private void generateWaiveTaxContent(MonarchActionNotification ntfhy, Game game, Player player) {
-		StringTemplate st = StringTemplate.template("model.monarch.action." + ntfhy.getAction());
+		StringTemplate st = StringTemplate.template(ntfhy.getAction().msgKey());
 		addQuestion(st);
-		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+		addOnlyCloseAnswer(ntfhy.getAction().noMsgKey());
 	}
 
 	private void genereteContentFromNotificationMsgBody(MonarchActionNotification ntfhy) {
 		addQuestion(ntfhy.getMsgBody());
-		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+		addOnlyCloseAnswer(ntfhy.getAction().noMsgKey());
 	}
 
 	private void generateMercenariesContent(MonarchActionNotification ntfhy, Game game, final Player player) {
@@ -123,7 +123,7 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 			st += Messages.message(UnitLabel.getLabelWithAmount(af.getUnitType(), af.getUnitRole(), af.getAmount()));
 		}
 		
-		StringTemplate temp = StringTemplate.template("model.monarch.action." + ntfhy.getAction())
+		StringTemplate temp = StringTemplate.template(ntfhy.getAction().msgKey())
                 .add("%mercenaries%", st)
                 .addAmount("%gold%", ntfhy.getPrice());
 		addQuestion(temp);
@@ -134,9 +134,9 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 				MonarchLogic.buyMercenaries(player, payload);
 			}
 		};
-		addAnswer("model.monarch.action." + ntfhy.getAction() + ".yes", optionActionYes, ntfhy);
+		addAnswer(ntfhy.getAction().yesMsgKey(), optionActionYes, ntfhy);
 
-		addOnlyCloseAnswer("model.monarch.action." + ntfhy.getAction() + ".no");
+		addOnlyCloseAnswer(ntfhy.getAction().noMsgKey());
 	}
 	
 }

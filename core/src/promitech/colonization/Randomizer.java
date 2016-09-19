@@ -17,7 +17,7 @@ public final class Randomizer {
 		rand = new Random(System.currentTimeMillis());
 	}
 
-	public static Randomizer getInstance() {
+	public static Randomizer instance() {
 		return instance;
 	}
 	
@@ -59,7 +59,7 @@ public final class Randomizer {
 		return null;
 	}
 
-	public <T> T randomOneFromList(List<T> col) {
+	public <T> T randomMember(List<T> col) {
 		if (col.isEmpty()) {
 			return null;
 		}
