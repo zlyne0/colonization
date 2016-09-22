@@ -168,13 +168,16 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	if (!newUnitRole.isAvailableTo(unit.unitType, this)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
-    	ProductionSummary requiredGoods = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);
+    	ProductionSummary requiredGoods = UnitRoleLogic.requiredGoodsToChangeRole(unit, newUnitRole);
     	
     	unit.changeRole(newUnitRole);
 
     	Player player = unit.getOwner();
 		for (Entry<String> reqGoodsEntry : requiredGoods.entries()) {
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(reqGoodsEntry.key);
+			if (reqGoodsEntry.value == 0) {
+				continue;
+			}
 			if (reqGoodsEntry.value > 0) {
 				// buy
 				TransactionEffectOnMarket transaction = player.market().buyGoods(game, player, goodsType, reqGoodsEntry.value);

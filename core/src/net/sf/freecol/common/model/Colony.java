@@ -238,12 +238,10 @@ public class Colony extends Settlement {
     	if (!newUnitRole.isAvailableTo(unit.unitType, colonyUpdatableFeatures)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
-    	ProductionSummary required = unit.unitRole.requiredGoodsToChangeRoleTo(newUnitRole);
-    	
-    	if (!goodsContainer.hasGoodsQuantity(required)) {
-    		throw new IllegalStateException("warehouse do not have enough goods " + required);
-    	}
-    	unit.changeRole(newUnitRole);
+
+    	ProductionSummary required = new ProductionSummary();
+		int maxAvailableRoleCount = UnitRoleLogic.maximumAvailableRequiredGoods(unit, newUnitRole, goodsContainer, required);
+    	unit.changeRole(newUnitRole, maxAvailableRoleCount);
     	goodsContainer.decreaseGoodsQuantity(required);
     }
     

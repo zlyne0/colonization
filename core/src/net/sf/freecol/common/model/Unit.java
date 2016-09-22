@@ -706,12 +706,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	public boolean isExpert() {
 		return unitType.getMaximumExperience() == 0;
 	}
-	
+
 	public void changeRole(UnitRole newUnitRole) {
+		changeRole(newUnitRole, newUnitRole.getMaximumCount());
+	}
+	
+	public void changeRole(UnitRole newUnitRole, int aRoleCount) {
 		if (!newUnitRole.isCompatibleWith(unitRole)) {
 			experience = 0;
 		}
 		unitRole = newUnitRole;
+		roleCount = aRoleCount;
+		reduceMovesLeftToZero();
 	}
 	
 	public void changeUnitType(UnitType newUnitType) {
@@ -836,6 +842,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
     public boolean isPromotedToExpert() {
     	return this.experience >= unitType.getMaximumExperience();
     }
+
+	public int getRoleCount() {
+		return roleCount;
+	}
     
     public static class Xml extends XmlNodeParser {
         

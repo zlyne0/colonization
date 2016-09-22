@@ -71,6 +71,10 @@ public class MarketLog extends ScrollPane implements Market.MarketTransactionLog
         layout();
     }
     
+    public void clearLog() {
+    	label.setText("");
+    }
+    
     @Override
     public float getPrefHeight() {
         return 300;

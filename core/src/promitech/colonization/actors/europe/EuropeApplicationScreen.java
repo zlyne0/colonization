@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -98,7 +99,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, ProductionSummary.EMPTY, ActionTypes.EQUIPPED));
 	                	continue;
 	                }
-	                ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
+	                ProductionSummary required = UnitRoleLogic.requiredGoodsToChangeRole(unit, aRole);
 	                if (player.market().canAffordFor(player, required)) {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
 	                }
@@ -308,6 +309,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void onShow() {
+		marketLog.clearLog();
 		Gdx.input.setInputProcessor(stage);
 	}
 	

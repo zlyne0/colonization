@@ -15,6 +15,8 @@ public class UnitRole extends ObjectWithFeatures {
 	public static final String SOLDIER = "model.role.soldier";
 	public static final String DRAGOON = "model.role.dragoon";
 	
+	public static final int DEFAULT_UNIT_ROLE_COUNT = 1;
+	
     public static String getRoleSuffix(String roleId) {
         return StringUtils.lastPart(roleId, ".");
     }
@@ -27,7 +29,7 @@ public class UnitRole extends ObjectWithFeatures {
 	protected String expertUnitTypeId;
 	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
 	private String downgradeRoleId;
-	private int maximumCount = 1;
+	private int maximumCount = DEFAULT_UNIT_ROLE_COUNT;
 	
 	public UnitRole(String id) {
 		super(id);
@@ -66,14 +68,7 @@ public class UnitRole extends ObjectWithFeatures {
 				|| role.getId().equals(this.downgradeRoleId) 
 				|| this.getId().equals(role.downgradeRoleId);
 	}
-    
-	public ProductionSummary requiredGoodsToChangeRoleTo(UnitRole newRole) {
-        ProductionSummary required = new ProductionSummary();
-        required.addGoods(newRole.requiredGoods.entities());
-        required.decreaseGoods(requiredGoods.entities());
-	    return required;
-	}
-	
+
     public boolean isAvailableTo(UnitType unitType, ObjectWithFeatures place) {
         if (requiredAbilities != null) {
             for (Ability aa : requiredAbilities.entities()) {
@@ -106,7 +101,7 @@ public class UnitRole extends ObjectWithFeatures {
 			UnitRole ur = new UnitRole(idStr);
 			ur.expertUnitTypeId = attr.getStrAttribute("expertUnit");
 			ur.downgradeRoleId = attr.getStrAttribute("downgrade");
-			ur.maximumCount = attr.getIntAttribute("maximumCount", 1);
+			ur.maximumCount = attr.getIntAttribute("maximumCount", DEFAULT_UNIT_ROLE_COUNT);
 			nodeObject = ur;
 		}
 

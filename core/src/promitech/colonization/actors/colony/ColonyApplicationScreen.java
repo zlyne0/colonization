@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
@@ -156,7 +157,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	                if (unit.getUnitRole().equalsId(aRole)) {
 	                    continue;
 	                }
-	                ProductionSummary required = unit.getUnitRole().requiredGoodsToChangeRoleTo(aRole);
+	                ProductionSummary required = UnitRoleLogic.minimumRequiredGoods(unit.getUnitRole(), aRole);
 	                if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
 	                }
