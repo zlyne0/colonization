@@ -42,6 +42,7 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 	    		genereteContentFromNotificationMsgBody(ntfhy);
 	    		break;
 	    	case MONARCH_MERCENARIES:
+	    	case HESSIAN_MERCENARIES: 
 	    		generateMercenariesContent(ntfhy, game, player);
 	    		break;
 			default:
@@ -126,6 +127,13 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
 		StringTemplate temp = StringTemplate.template(ntfhy.getAction().msgKey())
                 .add("%mercenaries%", st)
                 .addAmount("%gold%", ntfhy.getPrice());
+		if (ntfhy.getAction() == MonarchAction.HESSIAN_MERCENARIES) {
+			int leaderCount = Messages.keyMessagePrefixCount("model.mercenaries.");
+			int leaderIndex = Randomizer.instance().randomInt(leaderCount);
+			String leaderName = Messages.msg("model.mercenaries." + leaderIndex);
+			temp.add("%leader%", leaderName);
+		}
+		
 		addQuestion(temp);
 		
 		OptionAction<MonarchActionNotification> optionActionYes = new OptionAction<MonarchActionNotification>() {

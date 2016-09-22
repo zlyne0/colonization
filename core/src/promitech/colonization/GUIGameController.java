@@ -694,7 +694,7 @@ public class GUIGameController {
 	}
 
 	public void generateMonarchAction() {
-	    MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.MONARCH_MERCENARIES);
+	    MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.HESSIAN_MERCENARIES);
 	}
 
 }

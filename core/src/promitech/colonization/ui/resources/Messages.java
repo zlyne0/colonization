@@ -75,6 +75,18 @@ public class Messages {
     	return true;
     }
 	
+    public static int keyMessagePrefixCount(String keyMsg) {
+    	int count = 0;
+    	while (count < 100) {
+    		if (containsKey(keyMsg + count)) {
+    			count++;
+    		} else {
+    			break;
+    		}
+    	}
+    	return count;
+    }
+    
     private static Selector getSelector(String tag) {
         return tagMap.get(tag.toLowerCase(Locale.US));
     }

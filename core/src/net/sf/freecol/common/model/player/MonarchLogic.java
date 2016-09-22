@@ -123,6 +123,7 @@ public class MonarchLogic {
                 man.setMsgBody(Messages.message(st));
                 player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
+            case HESSIAN_MERCENARIES:
             case MONARCH_MERCENARIES:
                 List<ArmyForceAbstractUnit> mercenaries = new ArrayList<ArmyForceAbstractUnit>(); 
                 int price = monarch.chooseMercenaries(mercenaries);
@@ -132,7 +133,6 @@ public class MonarchLogic {
                 man = new MonarchActionNotification(action, mercenaries, price);
                 player.eventsNotifications.addMessageNotificationAsFirst(man);
                 break;
-            case HESSIAN_MERCENARIES:
             case DISPLEASURE:
                 MonarchLogic.generateDispleasureMessageNotification(player);
                 break;

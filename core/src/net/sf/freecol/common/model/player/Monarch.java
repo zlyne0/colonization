@@ -292,10 +292,16 @@ public class Monarch extends ObjectWithId {
 		unitsRoles.add(Specification.instance.unitRoles.getById(UnitRole.DRAGOON));
 		unitsRoles.add(Specification.instance.unitRoles.getById(UnitRole.SOLDIER));
 		
+		List<UnitType> mercTypes = new ArrayList<UnitType>(Specification.instance.mercenaryTypes);
+		
 		int price = 0;
 		int unitsRoleCount = Randomizer.instance().randomInt(2, 4);
 		while (unitsRoleCount > 0) {
-			UnitType unitType = Randomizer.instance().randomMember(Specification.instance.mercenaryTypes);
+			UnitType unitType = Randomizer.instance().randomMember(mercTypes);
+			if (unitType == null) {
+				break;
+			}
+			mercTypes.remove(unitType);
 			
 			UnitRole unitRole;
 			if (unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
