@@ -17,7 +17,9 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -438,9 +440,6 @@ public class Player extends ObjectWithId {
     }
 
     public int getImmigrationProduction() {
-        if (!isColonial()) {
-            return 0;
-        }
         int production = 0;
         for (Settlement settlement : settlements.entities()) {
             ProductionSummary productionSummary = settlement.productionSummary();
@@ -459,6 +458,31 @@ public class Player extends ObjectWithId {
 		return immigration;
 	}
 	
+	public boolean shouldANewColonistEmigrate() {
+		return immigrationRequired <= immigration;
+	}
+	
+    public void updateImmigrationRequired() {
+        if (!isColonial()) {
+        	return;
+        }
+        final int current = immigrationRequired;
+        final int base = Specification.options.getIntValue(GameOptions.CROSSES_INCREMENT);
+        // If the religious unrest bonus is present, immigrationRequired
+        // has already been reduced.  We want to apply the bonus to the
+        // sum of the *unreduced* immigration target and the increment.
+        final int unreduced = Math.round(current / updatableFeatures.applyModifier(Modifier.RELIGIOUS_UNREST_BONUS, 1f));
+        immigrationRequired = (int)updatableFeatures.applyModifier(Modifier.RELIGIOUS_UNREST_BONUS, unreduced + base);
+    }
+	
+	public void reduceImmigration() {
+		if (Specification.options.getBoolean(GameOptions.SAVE_PRODUCTION_OVERFLOW)) {
+			immigration = immigrationRequired - immigration;
+		} else {
+			immigration = 0;
+		}
+	}
+    
     public boolean canHaveFoundingFathers() {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
@@ -591,4 +615,5 @@ public class Player extends ObjectWithId {
             return "player";
         }
     }
+
 }

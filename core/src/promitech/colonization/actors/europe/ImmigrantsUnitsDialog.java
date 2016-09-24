@@ -46,7 +46,7 @@ public class ImmigrantsUnitsDialog extends ClosableDialog implements STableSelec
 		if (player.hasGold(price)) {
 			System.out.println("recruit immigrant " + unitType + " for gold " + price);
 			
-			player.getEurope().recruitImmigrant(unitType, price);
+			player.getEurope().buyImmigrant(unitType, price);
 			changeColonyStateListener.changeUnitAllocation();
 			
 			hide();

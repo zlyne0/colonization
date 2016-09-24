@@ -36,7 +36,7 @@ public class GameLogic {
 
 	public void newTurn(Player player) {
 		newTurnContext.restart();
-		
+		System.out.println("newTurn");
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}
@@ -58,14 +58,16 @@ public class GameLogic {
 			colony.removeExcessedStorableGoods();
 			colony.handleLackOfResources(newTurnContext);
 			colony.calculateSonsOfLiberty();
-			colony.calculateImmigration();
+			
 			colony.increaseWorkersExperience();
 		}
         
         if (player.isColonial()) {
         	MonarchLogic.generateMonarchAction(game, player);
+        	player.getEurope().handleImmigrationOnNewTurn();
         }
         
+        System.out.println("end of newTurn");
 		player.fogOfWar.resetFogOfWar(player);
 	}
 

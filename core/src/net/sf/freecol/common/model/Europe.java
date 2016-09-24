@@ -19,6 +19,7 @@ import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class Europe extends ObjectWithFeatures implements UnitLocation {
 
@@ -34,7 +35,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitPrice;
     private int recruitLowerCap;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    protected final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
+    private final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
     
     public Europe(String id) {
         super(id);
@@ -64,7 +65,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     }
 	
     public int getNextImmigrantTurns() {
-        int production = getTotalImmigrationProduction();
+        int production = penalizedImmigration(owner.getImmigrationProduction());
         int turns = 100;
         if (production > 0) {
             int immigrationRequired = owner.getImmigrationRequired() - owner.getImmigration();
@@ -76,6 +77,58 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         return turns;
     }
     
+	public void handleImmigrationOnNewTurn() {
+    	int immigrationProduction = owner.getImmigrationProduction();
+    	int penalizedImmigration = penalizedImmigration(immigrationProduction);
+    	
+    	System.out.println("immigration " + 
+			"playerImmigration: " + owner.getImmigration() + 
+			", prod: " + immigrationProduction + 
+			", penalized: " + penalizedImmigration +
+			", playerReqImmigration: " + owner.getImmigrationRequired()
+    	);
+    	
+    	owner.modifyImmigration(penalizedImmigration);
+    	if (owner.shouldANewColonistEmigrate()) {
+    		owner.reduceImmigration();
+    		owner.updateImmigrationRequired();
+    		
+    		Unit emigrateUnit = emigrate();
+
+    		StringTemplate st = StringTemplate.template("model.europe.emigrate")
+				.addKey("%europe%", owner.getEuropeNameKey())
+				.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(emigrateUnit));
+    		owner.eventsNotifications.addMessageNotification(st);
+    	}
+	}
+    
+    /**
+     * Get any immigration produced in Europe.
+     *
+     * Col1 penalizes immigration by -4 per unit in Europe per turn,
+     * but there is a +2 player bonus, which we might as well add
+     * here.  Total immigration per turn can not be negative, but that
+     * is handled in ServerPlayer.
+     *
+     * @param production The current total colony production.
+     * @return Immigration produced this turn in Europe.
+     */
+    private int penalizedImmigration(int production) {
+        int n = 0;
+        for (Unit u : units.entities()) {
+            if (u.isPerson()) {
+            	n++;
+            }
+        }
+        n *= Specification.options.getIntValue(GameOptions.EUROPEAN_UNIT_IMMIGRATION_PENALTY);
+        n += Specification.options.getIntValue(GameOptions.PLAYER_IMMIGRATION_BONUS);
+        // Do not allow total production to be negative.
+        if (n + production < 0) {
+        	n = -production;
+        }
+        return n;
+    }
+    
     public int getRecruitImmigrantPrice() {
         if (!owner.isColonial()) {
         	return -1;
@@ -85,46 +138,45 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         int difference = Math.max(required - immigration, 0);
         return Math.max((recruitPrice * difference) / required, recruitLowerCap);
     }
-    
-    private int getTotalImmigrationProduction() {
-        int prod = owner.getImmigrationProduction() + getImmigrationProduction();
-        if (prod < 0) {
-            prod = 0;
-        }
-        return prod;
-    }
-    
-    private int getImmigrationProduction() {
-        int n = 0;
-        for (Unit u : units.entities()) {
-            if (u.isPerson()) { 
-                n++;
-            }
-        }
-        n *= Specification.options.getIntValue(GameOptions.EUROPEAN_UNIT_IMMIGRATION_PENALTY);
-        n += Specification.options.getIntValue(GameOptions.PLAYER_IMMIGRATION_BONUS);
-        return n;
-    }
 
-	public void buyUnit(UnitType unitType, int price) {
-		owner.subtractGold(price);
-		
-        UnitRole role = (Specification.options.getBoolean(GameOptions.EQUIP_EUROPEAN_RECRUITS))
-                ? unitType.getDefaultRole()
-                : Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-        Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
-        unit.changeUnitLocation(this);
-        if (unit.isCarrier()) {
-        	unit.setState(UnitState.ACTIVE);
-        } else {
-        	unit.setState(UnitState.SENTRY);
-        }
+    public void buyUnit(UnitType unitType, int price) {
+    	owner.subtractGold(price);
+    	createUnit(unitType);
+    }
+    
+	private Unit emigrate() {
+		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
+		Unit unit = createUnit(emigrateUnitType);
+		recruitImmigrant(emigrateUnitType);
+		return unit;
 	}
 
-	public void recruitImmigrant(UnitType unitType, int price) {
-		buyUnit(unitType, price);
+	public Unit buyImmigrant(UnitType unitType, int price) {
+		owner.subtractGold(price);
+		Unit unit = createUnit(unitType);
 		
-		increaseRecruitmentDifficulty();
+		recruitPrice += Specification.options.getIntValue(GameOptions.RECRUIT_PRICE_INCREASE);
+		recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
+		
+		recruitImmigrant(unitType);
+		return unit;
+	}
+	
+	private Unit createUnit(UnitType unitType) {
+		UnitRole role = (Specification.options.getBoolean(GameOptions.EQUIP_EUROPEAN_RECRUITS))
+		? unitType.getDefaultRole()
+				: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+		Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
+		unit.changeUnitLocation(this);
+		if (unit.isCarrier()) {
+			unit.setState(UnitState.ACTIVE);
+		} else {
+			unit.setState(UnitState.SENTRY);
+		}
+		return unit;
+	}
+	
+	private void recruitImmigrant(UnitType unitType) {
 		for (UnitType ut : recruitables) {
 			if (ut.equalsId(unitType)) {
 				recruitables.remove(ut);
@@ -133,7 +185,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
 		generateRecruitablesUnitList();
 	}
-
+	
 	private void generateRecruitablesUnitList() {
 		if (recruitables.size() >= MAX_RECRUITABLE_UNITS) {
 			return;
@@ -149,11 +201,6 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			recruitables.add(randomOne.probabilityObject());
 		}
 	}
-	
-    private void increaseRecruitmentDifficulty() {
-        recruitPrice += Specification.options.getIntValue(GameOptions.RECRUIT_PRICE_INCREASE);
-        recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
-    }
 	
 	public boolean isNoNavyInPort() {
 		for (Unit unit : units.entities()) {
