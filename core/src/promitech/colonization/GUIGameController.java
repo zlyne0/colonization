@@ -22,8 +22,6 @@ import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
-import net.sf.freecol.common.model.player.Monarch.MonarchAction;
-import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -692,10 +690,4 @@ public class GUIGameController {
 	public void setMapHudStage(HudStage hudStage) {
 		this.mapHudStage = hudStage;
 	}
-
-	public void generateMonarchAction() {
-	    //MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.HESSIAN_MERCENARIES);
-	    game.playingPlayer.modifyImmigration(150);
-	}
-
 }

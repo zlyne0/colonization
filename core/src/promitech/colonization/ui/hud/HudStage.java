@@ -25,6 +25,7 @@ import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
+import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.GameResources;
 import promitech.colonization.gamelogic.MoveContext;
 
@@ -117,7 +118,7 @@ public class HudStage extends Stage {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.GRAVE) {
-    			gameController.generateMonarchAction();
+    			showCheatConsoleDialog();
     			return true;
     		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
@@ -376,6 +377,23 @@ public class HudStage extends Stage {
         cancelActionButton.setSize(bw, bw);
         cancelActionButton.setPosition(getWidth() - bw, getHeight() / 2);
         cancelActionButton.addListener(buttonsInputListener);
+	}
+
+	protected void showCheatConsoleDialog() {
+		HudStage.this.removeListener(keysInputListener);
+		
+		CheatConsole cheatConsole = new CheatConsole(
+			HudStage.this.getWidth() * 0.75f, 
+			HudStage.this.getHeight() * 0.75f
+		);
+		cheatConsole.addOnCloseListener(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				HudStage.this.addListener(keysInputListener);
+				return true;
+			}
+		});
+		cheatConsole.show(HudStage.this);
 	}
 
 	private void createDirectionButtons(int bw) {

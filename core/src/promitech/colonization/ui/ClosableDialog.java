@@ -17,7 +17,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 public class ClosableDialog {
     private static final long CLOSE_AFTER_CREATE_TIMEOUT = 1000;
 
-    private final Dialog dialog;
+    protected final Dialog dialog;
     private final long createTime;
     private LinkedList<EventListener> onCloseListeners = new LinkedList<EventListener>();
     
