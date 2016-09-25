@@ -13,10 +13,17 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.HighSeas;
+import net.sf.freecol.common.model.player.MarketChangePrice;
+import net.sf.freecol.common.model.player.MarketData;
+import net.sf.freecol.common.model.player.MarketSnapshoot;
+import net.sf.freecol.common.model.player.MessageNotification;
+import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
 
@@ -29,7 +36,7 @@ public class GameLogic {
 
 	public void newTurn(Player player) {
 		newTurnContext.restart();
-		
+		System.out.println("newTurn");
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}
@@ -51,9 +58,16 @@ public class GameLogic {
 			colony.removeExcessedStorableGoods();
 			colony.handleLackOfResources(newTurnContext);
 			colony.calculateSonsOfLiberty();
-			colony.calculateImmigration();
+			
 			colony.increaseWorkersExperience();
 		}
+        
+        if (player.isColonial()) {
+        	MonarchLogic.generateMonarchAction(game, player);
+        	player.getEurope().handleImmigrationOnNewTurn();
+        }
+        
+        System.out.println("end of newTurn");
 		player.fogOfWar.resetFogOfWar(player);
 	}
 
@@ -72,7 +86,30 @@ public class GameLogic {
 			default:
 				break;
 		}
+		if (unit.isAtLocation(HighSeas.class)) {
+		    sailOnHighSeas(unit);
+		}
 	}
+
+    private void sailOnHighSeas(Unit unit) {
+        unit.sailOnHighSea();
+        if (unit.isWorkComplete()) {
+            if (unit.isDestinationEurope()) {
+                unit.clearDestination();
+                unit.changeUnitLocation(unit.getOwner().getEurope());
+                
+                StringTemplate st = StringTemplate.template("model.unit.arriveInEurope")
+                    .addKey("%europe%", unit.getOwner().getEuropeNameKey());
+                unit.getOwner().eventsNotifications.addMessageNotification(st);
+            }
+            
+            if (unit.isDestinationTile()) {
+                Tile tile = game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
+                unit.clearDestination();
+                unit.changeUnitLocation(tile);
+            }
+        }
+    }
 
 	private void workOnImprovement(Unit unit) {
 		if (unit.workOnImprovement()) {
@@ -110,7 +147,7 @@ public class GameLogic {
 				}
 			}
 			
-			for (Unit u : improvingTile.units.entities()) {
+			for (Unit u : improvingTile.getUnits().entities()) {
 				if (u.getState() == UnitState.IMPROVING && u.getTileImprovementType().equalsId(improvementType)) {
 					u.setState(UnitState.ACTIVE);
 				}
@@ -130,7 +167,7 @@ public class GameLogic {
 
 	private boolean isExposedResourceAfterImprovement(Tile tile, TileImprovementType improvementType) {
 		return !tile.hasTileResource() 
-				&& Randomizer.getInstance().isHappen(improvementType) 
+				&& Randomizer.instance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
 	}
@@ -138,4 +175,18 @@ public class GameLogic {
 	public NewTurnContext getNewTurnContext() {
 		return newTurnContext;
 	}
+
+	public void comparePrices(Player playingPlayer, MarketSnapshoot marketSnapshoot) {
+		for (MarketData md : playingPlayer.market().marketGoods.entities()) {
+			MarketChangePrice mcp = marketSnapshoot.prices.getByIdOrNull(md.getId());
+			if (mcp != null) {
+				mcp.setPricesAfterTransaction(md);
+				if (mcp.isMarketPriceChanged()) {
+					MessageNotification goodsPriceChangeNotification = MessageNotification.createGoodsPriceChangeNotification(playingPlayer, mcp);
+					playingPlayer.eventsNotifications.addMessageNotification(goodsPriceChangeNotification);
+				}
+			}
+		}
+	}
 }
+

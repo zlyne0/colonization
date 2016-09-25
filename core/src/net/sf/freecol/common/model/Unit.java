@@ -16,7 +16,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit extends ObjectWithId implements Location {
+public class Unit extends ObjectWithId implements UnitLocation {
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -42,7 +42,7 @@ public class Unit extends ObjectWithId implements Location {
     public UnitType unitType;
     public UnitRole unitRole;
     
-    private Location location;
+    private UnitLocation location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -82,7 +82,7 @@ public class Unit extends ObjectWithId implements Location {
     	this.movesLeft = getInitialMovesLeft();
     	this.hitPoints = unitType.getHitPoints();
     	
-        if (unitType.hasAbility(Ability.CARRY_UNITS)) {
+        if (unitType.canCarryUnits()) {
             unitContainer = new UnitContainer(this);
         }
         if (unitType.hasAbility(Ability.CARRY_GOODS)) {
@@ -110,10 +110,10 @@ public class Unit extends ObjectWithId implements Location {
 
 	public Tile getTile() {
 		if (location == null) {
-			throw new IllegalStateException("location is null unit: " + this);
+			throw new IllegalStateException("unit[" + getId() + "] location is null unit: " + this);
 		}
 		if (!(location instanceof Tile)) {
-			throw new IllegalStateException("location is not tile but it's " + location.getClass());
+			throw new IllegalStateException("unit[" + getId() + "] location is not tile but it's " + location.getClass());
 		}
 		return (Tile)location;
 	}
@@ -125,33 +125,25 @@ public class Unit extends ObjectWithId implements Location {
 		return null;
 	}
 	
-	public void setLocation(Unit unit) {
-		location = unit;
+	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
+	    return location != null && location.getClass().equals(unitLocationClass);
 	}
 	
-	public void setLocation(Tile tile) {
-		location = tile;
+	public void changeUnitLocation(UnitLocation newUnitLocation) {
+		if (location != null) {
+			location.getUnits().removeId(this);
+			
+			if (location.canAutoLoadUnit()) {
+				embarkUnitsFromLocation(location);
+			}
+		}
+		newUnitLocation.getUnits().add(this);
+		if (newUnitLocation.canAutoUnloadUnits()) {
+			disembarkUnitsToLocation(newUnitLocation);
+		}
+		location = newUnitLocation;
 	}
 	
-	public void changeLocation(Unit newUnitLocation) {
-		Tile actualTile = getTileLocationOrNull();
-    	if (actualTile != null) {
-    		this.owner.units.removeId(this);
-    		actualTile.units.removeId(this);
-    	}
-    	newUnitLocation.unitContainer.addUnit(this);
-    	location = newUnitLocation;
-	}
-	
-    public void changeLocation(Tile newTileLocation) {
-    	Tile actualTile = getTileLocationOrNull();
-    	if (actualTile != null) {
-    		actualTile.units.removeId(this);
-    	}
-    	newTileLocation.units.add(this);
-    	location = newTileLocation;
-    }
-
     public boolean canAddUnit(Unit unit) {
     	if (unitContainer == null) {
     		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
@@ -213,6 +205,10 @@ public class Unit extends ObjectWithId implements Location {
     	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
     }
     
+    public boolean hasNoSpace() {
+    	return unitType.getSpace() == 0 || getSpaceTaken() >= unitType.getSpace();
+    }
+    
 	public boolean couldMove() {
         return state == UnitState.ACTIVE
             && movesLeft > 0
@@ -260,6 +256,12 @@ public class Unit extends ObjectWithId implements Location {
 		this.destinationType = MoveDestinationType.EUROPE;
 	}
 
+	public void setDestination(int x, int y) {
+		this.destinationType = MoveDestinationType.TILE;
+		this.destinationX = x;
+		this.destinationY = y;
+	}
+	
 	public void setDestination(Tile tile) {
 		this.destinationType = MoveDestinationType.TILE;
 		this.destinationX = tile.x;
@@ -278,6 +280,10 @@ public class Unit extends ObjectWithId implements Location {
         return movesLeft;
     }
     
+    public boolean hasMovesPoints() {
+    	return movesLeft > 0;
+    }
+    
     public boolean isNaval() {
     	return unitType != null && unitType.isNaval();
     }
@@ -287,7 +293,7 @@ public class Unit extends ObjectWithId implements Location {
 	}
     
     public boolean isCarrier() {
-        return unitType.hasAbility(Ability.CARRY_GOODS) || hasAbility(Ability.CARRY_UNITS);
+        return unitType.canCarryUnits() || unitType.hasAbility(Ability.CARRY_GOODS);
     }
     
     public boolean isMounted() {
@@ -358,14 +364,14 @@ public class Unit extends ObjectWithId implements Location {
 			return MoveType.MOVE_NO_TILE;
 		}
     	if (isNaval()) {
-    		return getNavalMoveType(from, target);
+    		return getNavalMoveType(target);
     	} else {
     		return getLandMoveType(from, target);
     	}
     }
 
     public boolean isColonist() {
-        return unitType.hasAbility(Ability.FOUND_COLONY) && owner.hasAbility(Ability.FOUNDS_COLONIES);
+        return unitType.hasAbility(Ability.FOUND_COLONY) && owner.getFeatures().hasAbility(Ability.FOUNDS_COLONIES);
     }
     
     private MoveType getLandMoveType(Tile from, Tile target) {
@@ -373,7 +379,7 @@ public class Unit extends ObjectWithId implements Location {
         	return MoveType.MOVE_ILLEGAL;
         }
 
-        Unit defender = target.units.first();
+        Unit defender = target.getUnits().first();
 
         if (target.getType().isLand()) {
             Settlement settlement = target.getSettlement();
@@ -418,7 +424,7 @@ public class Unit extends ObjectWithId implements Location {
             if (defender == null || !defender.isOwner(owner)) {
                 return MoveType.MOVE_NO_ACCESS_EMBARK;
             }
-            for (Unit u : target.units.entities()) {
+            for (Unit u : target.getUnits().entities()) {
                 if (u.unitContainer != null && u.canAddUnit(this)) {
                 	return MoveType.EMBARK;
                 }
@@ -459,7 +465,7 @@ public class Unit extends ObjectWithId implements Location {
         }
     }
     
-	private MoveType getNavalMoveType(Tile from, Tile target) {
+	public MoveType getNavalMoveType(Tile target) {
 		if (target == null) {
 			return (owner.canMoveToEurope()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE_NO_EUROPE;
 		} 
@@ -470,6 +476,11 @@ public class Unit extends ObjectWithId implements Location {
 		if (target.getType().isLand()) {
 			Settlement settlement = target.getSettlement();
 			if (settlement == null) {
+				if (unitContainer != null && unitContainer.hasUnitWithMovePoints()) {
+					if (!hasTileEnemyUnits(target)) {
+						return MoveType.DISEMBARK;
+					}
+				}
 				return MoveType.MOVE_NO_ACCESS_LAND;
 			} else if (settlement.getOwner().equalsId(owner)) {
 				return MoveType.MOVE;
@@ -479,14 +490,18 @@ public class Unit extends ObjectWithId implements Location {
 				return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
 			}
 		} else { // target at sea
-			Unit defender = target.units.first();
-			if (defender != null && !defender.isOwner(owner)) {
+			if (hasTileEnemyUnits(target)) {
 				return (isOffensiveUnit()) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
 			}
 			return (target.isDirectlyHighSeasConnected()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE;
 		}
 	}
     
+	private boolean hasTileEnemyUnits(Tile target) {
+		Unit defender = target.getUnits().first();
+		return defender != null && !defender.isOwner(owner);
+	}
+	
     /**
      * Is this unit allowed to contact a settlement?
      *
@@ -501,7 +516,7 @@ public class Unit extends ObjectWithId implements Location {
         if (settlement instanceof Colony) {
             return (owner.atWarWith(settlement.getOwner()))
                 ? MoveType.MOVE_NO_ACCESS_WAR
-                : (!owner.hasAbility(Ability.TRADE_WITH_FOREIGN_COLONIES))
+                : (!owner.getFeatures().hasAbility(Ability.TRADE_WITH_FOREIGN_COLONIES))
                 ? MoveType.MOVE_NO_ACCESS_TRADE
                 : MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS;
         } else if (settlement instanceof IndianSettlement) {
@@ -554,7 +569,12 @@ public class Unit extends ObjectWithId implements Location {
     }
     
     public int getInitialMovesLeft() {
-    	return (int)unitType.applyModifier(Modifier.MOVEMENT_BONUS, unitType.getMovement());
+        float m = owner.getFeatures().applyModifier(
+            Modifier.MOVEMENT_BONUS, 
+            unitType.getMovement(), 
+            unitType
+        );
+    	return (int)unitRole.applyModifier(Modifier.MOVEMENT_BONUS, m);
     }
     
     /**
@@ -657,6 +677,21 @@ public class Unit extends ObjectWithId implements Location {
         return unitContainer;
     }
     
+	@Override
+	public MapIdEntities<Unit> getUnits() {
+		return unitContainer.getUnits();
+	}
+    
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
+	}
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
     public boolean canCarryTreasure() {
         return hasAbility(Ability.CARRY_TREASURE);
     }
@@ -671,12 +706,18 @@ public class Unit extends ObjectWithId implements Location {
 	public boolean isExpert() {
 		return unitType.getMaximumExperience() == 0;
 	}
-	
+
 	public void changeRole(UnitRole newUnitRole) {
+		changeRole(newUnitRole, newUnitRole.getMaximumCount());
+	}
+	
+	public void changeRole(UnitRole newUnitRole, int aRoleCount) {
 		if (!newUnitRole.isCompatibleWith(unitRole)) {
 			experience = 0;
 		}
 		unitRole = newUnitRole;
+		roleCount = aRoleCount;
+		reduceMovesLeftToZero();
 	}
 	
 	public void changeUnitType(UnitType newUnitType) {
@@ -684,10 +725,10 @@ public class Unit extends ObjectWithId implements Location {
 		this.experience = 0;
 	}
 	
-	public List<UnitRole> avaliableRoles() {
+	public List<UnitRole> avaliableRoles(ObjectWithFeatures place) {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(unitType)) {
+            if (role.isAvailableTo(unitType, place)) {
                 a.add(role);
             }
         }
@@ -705,7 +746,7 @@ public class Unit extends ObjectWithId implements Location {
 	    if (unitRole.hasAbility(code)) {
 	        return true;
 	    }
-	    if (owner.hasAbility(code)) {
+	    if (owner.getFeatures().hasAbility(code)) {
 	        return true;
 	    }
 	    return false;
@@ -740,6 +781,59 @@ public class Unit extends ObjectWithId implements Location {
 			return false;
 		}
 	}
+	
+	public void sailOnHighSea() {
+	    workLeft -= 1;
+	}
+	
+	public void moveUnitToHighSea() {
+	    changeUnitLocation(owner.getHighSeas());
+	    reduceMovesLeftToZero();
+	    setDestinationEurope();
+	    workLeft = getSailTurns();
+	}
+	
+	private void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
+		if (hasNoSpace()) {
+			return;
+		}
+		for (Unit unit : new ArrayList<Unit>(anUnitLocation.getUnits().entities())) {
+			if (UnitState.SENTRY.equals(unit.getState())) {
+				if (this.canAddUnit(unit)) {
+					unit.setState(UnitState.SKIPPED);
+					unit.changeUnitLocation(this);
+					unit.reduceMovesLeftToZero();
+				}
+			}
+		}
+	}
+	
+	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
+		if (unitContainer != null && unitContainer.isNotEmpty()) {
+			for (Unit unit : unitContainer.getUnits().entities()) {
+				newUnitLocation.getUnits().add(unit);
+				unit.location = newUnitLocation;
+				unit.setState(UnitState.ACTIVE);
+			}
+			unitContainer.getUnits().clear();
+		}
+	}
+	
+	public void sailUnitToNewWorld() {
+		changeUnitLocation(owner.getHighSeas());
+		reduceMovesLeftToZero();
+		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+		workLeft = getSailTurns();
+	}
+	
+    public int getSailTurns() {
+        float base = Specification.options.getIntValue(GameOptions.TURNS_TO_SAIL);
+        return (int)getOwner().getFeatures().applyModifier(Modifier.SAIL_HIGH_SEAS, base, unitType);
+    }
+    
+	public boolean isWorkComplete() {
+	    return workLeft <= 0;
+	}
 
     public void gainExperience(int aditionalExperience) {
         this.experience = Math.min(this.experience + aditionalExperience, unitType.getMaximumExperience());
@@ -748,6 +842,10 @@ public class Unit extends ObjectWithId implements Location {
     public boolean isPromotedToExpert() {
     	return this.experience >= unitType.getMaximumExperience();
     }
+
+	public int getRoleCount() {
+		return roleCount;
+	}
     
     public static class Xml extends XmlNodeParser {
         
@@ -755,8 +853,7 @@ public class Unit extends ObjectWithId implements Location {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
-                    actualUnit.unitContainer.addUnit(newUnit);
-                    newUnit.setLocation(actualUnit);
+                    newUnit.changeUnitLocation(actualUnit);
                 }
             });
             addNode(GoodsContainer.class, "goodsContainer");
@@ -809,6 +906,20 @@ public class Unit extends ObjectWithId implements Location {
         }
     }
     
+    public static UnitPredicate NOT_CARRIER_UNIT_PREDICATE = new UnitPredicate() {
+		@Override
+		public boolean obtains(Unit unit) {
+			return !unit.isCarrier();
+		}
+	};
+
+    public static UnitPredicate CARRIER_UNIT_PREDICATE = new UnitPredicate() {
+		@Override
+		public boolean obtains(Unit unit) {
+			return unit.isCarrier();
+		}
+	};
+	
     /**
      * A predicate that can be applied to a unit.
      */
@@ -828,8 +939,7 @@ public class Unit extends ObjectWithId implements Location {
          * @return True if the unit can be moved.
          */
         public boolean obtains(Unit unit) {
-            return unit.couldMove();
+            return unit.location instanceof Tile && unit.couldMove();
         }
     }
-
 }

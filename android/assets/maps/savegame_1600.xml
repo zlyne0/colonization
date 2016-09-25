@@ -4529,7 +4529,14 @@
         <Nation id="model.nation.tupi" state="not_available"/>
       </Nations>
     </nationOptions>
-    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" liberty="137" interventionBells="0" currentFather="model.foundingFather.adamSmith" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
+    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" liberty="137" interventionBells="0" currentFather="model.foundingFather.adamSmith" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" entryLocationX="30" entryLocationY="78" index.river="2" index.land="7" index.mountain="3">
+      <eventsNotificatioins>
+<!--       	<monarchActionNotification id="monarchActionNotification:1235" action="RAISE_TAX_ACT" goodsType="model.goods.furs" goodsAmount="100" tax="12" colonyId="colony:6528" /> -->
+<!--       	<monarchActionNotification id="monarchActionNotification:1236" action="LOWER_TAX_OTHER" tax="12"/> -->
+<!--       	<monarchActionNotification id="monarchActionNotification:1236" action="WAIVE_TAX" tax="12"/> -->
+<!--       	<monarchActionNotification id="monarchActionNotification:1235" action="ADD_TO_REF" msgBody="msg body msg body" /> -->
+      </eventsNotificatioins>
+    
       <market id="market:5" owner="player:1">
         <marketData id="marketData:6" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:7" goods-type="model.goods.sugar" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -4537,7 +4544,7 @@
         <marketData id="marketData:9" goods-type="model.goods.cotton" amount="1494" initialPrice="2" arrears="0" sales="338" incomeAfterTaxes="608" incomeBeforeTaxes="676" traded="true"/>
         <marketData id="marketData:10" goods-type="model.goods.furs" amount="1507" initialPrice="3" arrears="0" sales="486" incomeAfterTaxes="1370" incomeBeforeTaxes="1458" traded="true"/>
         <marketData id="marketData:11" goods-type="model.goods.lumber" amount="3000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:12" goods-type="model.goods.ore" amount="2006" initialPrice="4" arrears="0" sales="200" incomeAfterTaxes="648" incomeBeforeTaxes="800" traded="true"/>
+        <marketData id="marketData:12" goods-type="model.goods.ore" amount="2006" initialPrice="4" arrears="1000" sales="200" incomeAfterTaxes="648" incomeBeforeTaxes="800" traded="true"/>
         <marketData id="marketData:13" goods-type="model.goods.silver" amount="500" initialPrice="16" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:14" goods-type="model.goods.horses" amount="962" initialPrice="1" arrears="0" sales="-166" incomeAfterTaxes="-498" incomeBeforeTaxes="-498" traded="true"/>
         <marketData id="marketData:15" goods-type="model.goods.rum" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -4545,7 +4552,7 @@
         <marketData id="marketData:17" goods-type="model.goods.cloth" amount="1016" initialPrice="10" arrears="0" sales="392" incomeAfterTaxes="3342" incomeBeforeTaxes="3920" traded="true"/>
         <marketData id="marketData:18" goods-type="model.goods.coats" amount="1006" initialPrice="12" arrears="0" sales="246" incomeAfterTaxes="2447" incomeBeforeTaxes="2952" traded="true"/>
         <marketData id="marketData:19" goods-type="model.goods.tradeGoods" amount="2996" initialPrice="1" arrears="0" sales="-400" incomeAfterTaxes="-1200" incomeBeforeTaxes="-1200" traded="true"/>
-        <marketData id="marketData:20" goods-type="model.goods.tools" amount="955" initialPrice="1" arrears="0" sales="-420" incomeAfterTaxes="-1260" incomeBeforeTaxes="-1260" traded="true"/>
+        <marketData id="marketData:20" goods-type="model.goods.tools" amount="955" initialPrice="1" arrears="100" sales="-420" incomeAfterTaxes="-1260" incomeBeforeTaxes="-1260" traded="true"/>
         <marketData id="marketData:21" goods-type="model.goods.muskets" amount="994" initialPrice="1" arrears="0" sales="-200" incomeAfterTaxes="-600" incomeBeforeTaxes="-600" traded="true"/>
       </market>
       <tension player="player:133" value="1100"/>
@@ -4871,7 +4878,7 @@
         <stringTemplate id="Pacific Ocean" templateType="name"/>
       </historyEvent>
       <highSeas id="highSeas:3">
-        <unit id="unit:6437" name="Halve Maen" unitType="model.unit.merchantman" movesLeft="15" state="active" role="model.role.default" roleCount="0" owner="player:1" location="highSeas:3" treasureAmount="0" entryLocation="tile:3398" turnsOfTraining="0" experience="0" workLeft="1" hitPoints="6" attrition="0" destination="europe:2">
+        <unit id="unit:6437" name="Halve Maen" unitType="model.unit.merchantman" movesLeft="15" state="active" role="model.role.default" roleCount="0" owner="player:1" location="highSeas:3" treasureAmount="0" entryLocation="tile:3398" turnsOfTraining="0" experience="0" workLeft="1" hitPoints="6" attrition="0" destination="europe:2" destinationType="EUROPE">
           <goodsContainer id="goodsContainer:6438">
             <storedGoods>
               <goods type="model.goods.cloth" amount="94"/>
@@ -4885,6 +4892,7 @@
             </oldStoredGoods>
           </goodsContainer>
         </unit>
+		<unit id="unit:-20" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0" destinationType="TILE" destinationX="30" destinationY="80"/>
         <destination id="europe:2"/>
         <destination id="map:247"/>
       </highSeas>
@@ -4895,6 +4903,16 @@
         <unit id="unit:7097" unitType="model.unit.expertFarmer" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:7108" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:7109" unitType="model.unit.artillery" movesLeft="3" state="sentry" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+		<unit id="unit:-21" name="Gideon" unitType="model.unit.caravel" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
+		<unit id="unit:-22" name="Gideon2" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0">
+          <goodsContainer id="goodsContainer:6438">
+            <storedGoods>
+              <goods type="model.goods.cloth" amount="94"/>
+              <goods type="model.goods.coats" amount="69"/>
+              <goods type="model.goods.ore" amount="200"/>
+            </storedGoods>
+          </goodsContainer>
+		</unit>
         <ability id="model.ability.dressMissionary" value="true"/>
         <recruit id="model.unit.firebrandPreacher"/>
         <recruit id="model.unit.freeColonist"/>
@@ -18922,6 +18940,8 @@
         <unit id="unit:6764" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:6811" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="unit:6762" unitType="model.unit.hardyPioneer" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3392" treasureAmount="0" turnsOfTraining="0" workType="model.goods.bells" experienceType="model.goods.bells" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+		<unit id="unit:-23" name="Gideon3" unitType="model.unit.frigate" movesLeft="12" state="active" role="model.role.default" roleCount="0" owner="player:1" location="tile:3392" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="0"/>
+        
         <colony id="colony:6528" owner="player:1" tile="tile:3392" settlementType="model.settlement.colony" name="Nieuw Amsterdam" established="8" sonsOfLiberty="11" oldSonsOfLiberty="11" tories="6" oldTories="6" liberty="142" immigration="112" productionBonus="0">
           <goodsContainer id="goodsContainer:6529">
             <storedGoods>

@@ -1,19 +1,18 @@
 package promitech.colonization;
 
-import java.util.LinkedList;
-import java.util.List;
-
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
+import net.sf.freecol.common.model.player.EventsNotifications.AddNotificationListener;
+import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 
-public class GUIGameModel {
+public class GUIGameModel implements AddNotificationListener {
 
 	public static interface ChangeStateListener {
 		public void change(GUIGameModel model);
 	}
 	
-	private List<ChangeStateListener> listeners = new LinkedList<GUIGameModel.ChangeStateListener>(); 
+	private ChangeStateListener listener; 
 	
 	private Unit activeUnit;
 	private boolean viewMode = false;
@@ -42,13 +41,13 @@ public class GUIGameModel {
 	}
 	
 	void runListeners() {
-		for (ChangeStateListener l : listeners) {
-			l.change(this);
-		}
+	    if (listener != null) {
+	        listener.change(this);
+	    }
 	}
 	
 	public void addChangeListener(ChangeStateListener listener) {
-		this.listeners.add(listener);
+	    this.listener = listener;
 	}
 
 	public boolean isViewMode() {
@@ -85,4 +84,9 @@ public class GUIGameModel {
 	public boolean hasNotifications() {
 		return player.eventsNotifications.hasNotifications();
 	}
+
+    @Override
+    public void onAddNotification(Notification notification) {
+        runListeners();
+    }
 }

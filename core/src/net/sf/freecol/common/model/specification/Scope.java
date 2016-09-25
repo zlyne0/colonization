@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.specification;
 import java.lang.reflect.Method;
 
 import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.ObjectWithFeatures;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -10,9 +11,9 @@ public class Scope implements Identifiable {
 
 	private boolean matchNegated = false;
 	private boolean matchesNull = true;
-	public String abilityId = null;
-	public boolean abilityValue = true;
-	public String type;
+	private String abilityId = null;
+	private boolean abilityValue = true;
+	private String type;
 	
 	private String methodName;
 	private String methodValue;
@@ -22,7 +23,7 @@ public class Scope implements Identifiable {
 		throw new IllegalStateException("there is no id for feature scope");
 	}
 	
-	public boolean isAppliesTo(Identifiable obj) {
+	public boolean isAppliesTo(ObjectWithFeatures obj) {
 		if (obj == null) {
 			return matchesNull;
 		}
@@ -30,6 +31,11 @@ public class Scope implements Identifiable {
 			if (!type.equals(obj.getId())) {
 				return matchNegated;
 			}
+		}
+		if (abilityId != null) {
+		    if (!obj.hasAbility(abilityId, abilityValue)) {
+		        return matchNegated;
+		    }
 		}
 		if (methodName != null) {
 			try {

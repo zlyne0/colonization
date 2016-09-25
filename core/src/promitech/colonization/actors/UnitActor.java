@@ -1,4 +1,4 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
@@ -6,32 +6,50 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.actors.map.UnitDrawer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class UnitActor extends Widget {
-    final Unit unit;
+public class UnitActor extends Widget implements DragAndDropTargetContainer<AbstractGoods> {
+    public final Unit unit;
     private boolean drawUnitChip;
     private boolean drawFocus = false;
     private ShapeRenderer shapeRenderer;
     private TextureRegion texture;
+    
+    private ChangeColonyStateListener changeColonyStateListener;
+    private CargoPanel cargoPanel;
     
     public DragAndDropSourceContainer<UnitActor> dragAndDropSourceContainer;
     
     private static TextureRegion getTexture(Unit unit) {
         return GameResources.instance.getFrame(unit.resourceImageKey()).texture;
     }
+
+    public UnitActor(final Unit unit) {
+    	this(unit, null);
+    }
     
-    UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
+    public UnitActor(final Unit unit, DoubleClickedListener unitActorDoubleClickListener) {
     	this.texture = getTexture(unit);
         this.drawUnitChip = false;
         this.unit = unit;
         setSize(getPrefWidth(), getPrefHeight());
-        addListener(unitActorDoubleClickListener);
+        if (unitActorDoubleClickListener != null) {
+        	addListener(unitActorDoubleClickListener);
+        }
     }
 
-    void updateTexture() {
+    public UnitActor withCargoPanel(CargoPanel cargoPanel, ChangeColonyStateListener changeColonyStateListener) {
+    	this.changeColonyStateListener = changeColonyStateListener;
+    	this.cargoPanel = cargoPanel;
+    	return this;
+    }
+    
+    public void updateTexture() {
     	this.texture = getTexture(unit);
     	invalidate();
     	pack();
@@ -108,4 +126,21 @@ class UnitActor extends Widget {
         drawFocus = true;
         this.shapeRenderer = aShapeRenderer;
     }
+
+	@Override
+	public void putPayload(AbstractGoods anAbstractGood, float x, float y) {
+		System.out.println("carrierPanel: carrierId[" + unit.getId() + "] put goods " + anAbstractGood);
+		
+		if (anAbstractGood.isNotEmpty()) {
+			unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
+			
+			cargoPanel.updateCargoPanelData();
+			changeColonyStateListener.transfereGoods();
+		}
+	}
+
+	@Override
+	public boolean canPutPayload(AbstractGoods anAbstractGood, float x, float y) {
+		return unit.hasSpaceForAdditionalCargo(anAbstractGood);
+	}
 }

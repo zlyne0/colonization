@@ -1,15 +1,19 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
@@ -83,9 +87,19 @@ public class Specification implements Identifiable {
     public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
     public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    public final List<WithProbability<UnitType>> unitTypeRecruitProbabilities = new ArrayList<WithProbability<UnitType>>();
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
+    
+    public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
+    public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
+    public final MapIdEntities<GoodsType> immigrationGoodsTypeList = new MapIdEntities<GoodsType>();
+    
+    public final List<UnitType> navalTypes = new ArrayList<UnitType>();
+    public final List<UnitType> bombardTypes = new ArrayList<UnitType>();
+    public final List<UnitType> landTypes = new ArrayList<UnitType>();
+    public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();    
     
     private String difficultyLevel;
     
@@ -109,13 +123,34 @@ public class Specification implements Identifiable {
         
         expertUnitTypeByGoodType.clear();
         for (UnitType unitType : unitTypes.entities()) {
+        	unitType.updateDefaultRoleReference();
+        	
             if (unitType.getExpertProductionForGoodsId() != null) {
                 expertUnitTypeByGoodType.put(unitType.getExpertProductionForGoodsId(), unitType);
             }
+            if (unitType.hasPrice()) {
+            	if (unitType.getSkill() > 0) {
+            		unitTypesTrainedInEurope.add(unitType);
+            	} else if (!unitType.hasSkill()) {
+            		unitTypesPurchasedInEurope.add(unitType);
+            	}
+            }
+            if (unitType.isRecruitable()) {
+            	unitTypeRecruitProbabilities.add(unitType.createRecruitProbability());
+            }
         }
+        
+        immigrationGoodsTypeList.clear();
+        for (GoodsType gt : goodsTypes.entities()) {
+            if (gt.isImmigrationType()) {
+                immigrationGoodsTypeList.add(gt);
+            }
+        }
+        
+        createSupportUnitLists();
     }
 
-    private void updateEuropeanNations() {
+	private void updateEuropeanNations() {
         europeanNations.clear();
         for (Nation nation : nations.entities()) {
             if (nation.nationType.isEuropean()) {
@@ -130,6 +165,43 @@ public class Specification implements Identifiable {
         }
     }
     
+    public List<UnitType> getRoyalLandUnitTypes() {
+        List<UnitType> types = new ArrayList<UnitType>();
+        for (UnitType ut : unitTypes.entities()) {
+    		if (!ut.isNaval() && ut.hasAbility(Ability.REF_UNIT)) {
+    			types.add(ut);
+    		}
+        }
+        return types;
+    }
+    
+    public List<UnitType> getRoyalNavyUnitTypes() {
+    	List<UnitType> types = new ArrayList<UnitType>();
+    	for (UnitType ut : unitTypes.entities()) {
+    		if (ut.isNaval() && ut.hasAbility(Ability.REF_UNIT)) {
+    			types.add(ut);
+    		}
+    	}
+    	return types;
+    }
+
+    private void createSupportUnitLists() {
+		for (UnitType unitType : unitTypes.entities()) {
+			if (unitType.hasAbility(Ability.SUPPORT_UNIT)) {
+				if (unitType.hasAbility(Ability.NAVAL_UNIT)) {
+					navalTypes.add(unitType);
+				} else if (unitType.hasAbility(Ability.BOMBARD)) {
+					bombardTypes.add(unitType);
+				} else if (unitType.hasAbility(Ability.CAN_BE_EQUIPPED)) {
+					landTypes.add(unitType);
+				}
+			}
+			if (unitType.hasAbility(Ability.MERCENARY_UNIT)) {
+				mercenaryTypes.add(unitType);
+			}
+		}
+	}
+
     private void clear() {
     	tileTypes.clear();
     	tileImprovementTypes.clear();
@@ -141,6 +213,14 @@ public class Specification implements Identifiable {
         goodsTypes.clear();
         buildingTypes.clear();
         europeanNations.clear();
+        
+        unitTypesTrainedInEurope.clear();
+        unitTypesPurchasedInEurope.clear();
+        immigrationGoodsTypeList.clear();
+        navalTypes.clear();
+        bombardTypes.clear();
+        landTypes.clear();
+        mercenaryTypes.clear();    
     }
     
 	public static class Xml extends XmlNodeParser {

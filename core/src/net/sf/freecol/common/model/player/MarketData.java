@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-class MarketData extends ObjectWithId {
+public class MarketData extends ObjectWithId {
 	
     /** Inclusive lower bound on goods price. */
     public static final int MINIMUM_PRICE = 1;
@@ -20,7 +20,7 @@ class MarketData extends ObjectWithId {
      */
     public static final int MINIMUM_AMOUNT = 100;
 	
-	private GoodsType goodsType;
+	private final GoodsType goodsType;
     /** Amount of this goods in the market. */
 	private int amountInMarket;
 	private int initialPrice;
@@ -40,12 +40,6 @@ class MarketData extends ObjectWithId {
     /** Current purchase price. */
     private int costToBuy;
     
-    /**
-     * Place to save to old price so as to be able to tell when a price change
-     * message should be generated.  Not necessary to serialize.
-     */
-    private int oldPrice;
-    
 	public MarketData(GoodsType goodsType) {
 		super(goodsType.getId());
 		this.goodsType = goodsType;
@@ -58,7 +52,6 @@ class MarketData extends ObjectWithId {
         sales = 0;
         incomeBeforeTaxes = 0;
         incomeAfterTaxes = 0;
-        oldPrice = costToBuy;
         traded = false;
 	}
 
@@ -134,12 +127,20 @@ class MarketData extends ObjectWithId {
         return costToBuy != oldCostToBuy || paidForSale != oldPaidForSale;
     }
     
-    public final int getCostToBuy() {
+    public final int getBuyPrice() {
         return costToBuy;
     }
 	
+    public final int getSalePrice() {
+        return paidForSale;
+    }
+    
     public final int getCostToBuy(int amount) {
     	return costToBuy * amount;
+    }
+    
+    public final int getCostToSell(int amount) {
+    	return paidForSale * amount;
     }
     
 	void modifySales(int goodsAmount) {
@@ -181,6 +182,41 @@ class MarketData extends ObjectWithId {
 		return price();
 	}
 
+    boolean modifyOnSellGoods(int goodsAmount, int price, int priceAfterTax, int playerModifiedMarketAmount) {
+        if (goodsAmount == 0) {
+            return false;
+        }
+        modifySales(goodsAmount);
+        modifyIncomeBeforeTaxes(price);
+        modifyIncomeAfterTaxes(priceAfterTax);
+        modifyAmountInMarket(playerModifiedMarketAmount);
+        return price();
+    }
+	
+    public boolean hasNotArrears() {
+    	return arrears == 0;
+    }
+    
+    public boolean hasArrears() {
+    	return arrears > 0;
+    }
+
+	public void repayArrears() {
+		arrears = 0;
+	}
+
+    public int getArrears() {
+    	return arrears;
+    }
+
+    protected void setArrears(int arrears) {
+    	this.arrears = arrears;
+    }
+    
+	protected GoodsType getGoodsType() {
+		return goodsType;
+	}
+    
 	public static class Xml extends XmlNodeParser {
 
 		@Override
@@ -198,7 +234,6 @@ class MarketData extends ObjectWithId {
 			md.traded = attr.getBooleanAttribute("traded", md.sales != 0);
 			
 	        md.update();
-	        md.oldPrice = md.costToBuy;
 			
 			nodeObject = md;
 		}
@@ -211,6 +246,5 @@ class MarketData extends ObjectWithId {
 		public static String tagName() {
 			return "marketData";
 		}
-		
 	}
 }

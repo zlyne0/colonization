@@ -18,6 +18,10 @@ public class MoveContext {
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
 
+	public MoveContext(Tile sourceTile, Tile destTile, Unit unit) {
+		this(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));
+	}
+	
 	public MoveContext(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
 		this.path = null;
 		this.unit = unit;
@@ -76,6 +80,7 @@ public class MoveContext {
 	
 	public void handleMove() {
 		switch (moveType) {
+		    case MOVE_HIGH_SEAS:
 			case MOVE: {
 				if (path != null) {
 					path.removeFirst();
@@ -94,9 +99,9 @@ public class MoveContext {
 		}
 	}
 	
-	void embarkUnit() {
+	private void embarkUnit() {
 		Unit carrier = null;
-		for (Unit u : destTile.units.entities()) {
+		for (Unit u : destTile.getUnits().entities()) {
 			if (u.canAddUnit(unit)) {
 				carrier = u;
 				break;
@@ -105,23 +110,28 @@ public class MoveContext {
 		if (carrier == null) {
 			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
 		}
+		System.out.println("moveContext.embarkUnit = " + this);
 		unit.setState(UnitState.SKIPPED);
-		unit.changeLocation(carrier);
+		unit.changeUnitLocation(carrier);
 		unit.reduceMovesLeftToZero();
 	}
 	
-	void moveUnit() {
+	private void moveUnit() {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
 		System.out.println("moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		unit.reduceMovesLeft(moveCost);
-		unit.changeLocation(destTile);
+		unit.changeUnitLocation(destTile);
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.EMBARK.equals(moveType));
+		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.MOVE_HIGH_SEAS.equals(moveType) || MoveType.EMBARK.equals(moveType));
 	}
 
+	public boolean isRequireUserInteraction() {
+		return MoveType.DISEMBARK.equals(moveType);
+	}
+	
 	public boolean isMoveViaPath() {
 		return path != null;
 	}
@@ -133,6 +143,4 @@ public class MoveContext {
 	public boolean isMoveType(MoveType moveType) {
 		return moveType.equals(this.moveType);
 	}
-
-	
 }

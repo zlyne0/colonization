@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.Stance;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -16,7 +15,11 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
+import net.sf.freecol.common.model.player.Monarch.MonarchAction;
+import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
@@ -53,7 +56,7 @@ public class SaveGameParserTest {
         assertEquals(13, game.players.size());
         
         Tile tile = game.map.getTile(31, 23);
-        Unit tileUnit = tile.units.getById("unit:6449");
+        Unit tileUnit = tile.getUnits().getById("unit:6449");
         assertNotNull(tileUnit);
         
         Unit unit = tileUnit.getUnitContainer().getUnits().first();
@@ -75,7 +78,13 @@ public class SaveGameParserTest {
         assertNotNull(player.getEurope());
         assertEquals("europe:2", player.getEurope().getId());
         
-        assertEquals(16, player.market().marketGoods.size());
+        assertNotNull(player.getEurope().getUnits().getById("unit:7108"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7109"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7097"));
+        assertNotNull(player.getEurope().getUnits().getById("unit:7095"));
+        assertNotNull(player.getHighSeas().getUnits().getById("unit:6437"));
+        
+        assertEquals(21, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");
         assertNotNull(food);
         
@@ -83,7 +92,33 @@ public class SaveGameParserTest {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
-        assertEquals(2, player.eventsNotifications.notifications.size());
+        assertEquals(3, player.eventsNotifications.getNotifications().size());
+        
+        MonarchActionNotification monarchNotification = (MonarchActionNotification)player.eventsNotifications.getNotifications().get(1);
+        assertEquals(MonarchAction.RAISE_TAX_ACT, monarchNotification.getAction());
+        assertEquals("model.goods.furs", monarchNotification.getGoodsType().getId());
+        assertEquals(12, monarchNotification.getTax());
+        
+        MonarchActionNotification man1236 = (MonarchActionNotification)player.eventsNotifications.getNotifications().get(2);
+        assertEquals("monarchActionNotification:1236", man1236.getId());
+        assertEquals(MonarchAction.MONARCH_MERCENARIES, man1236.getAction());
+        assertEquals(1500, man1236.getPrice());
+        assertEquals(3, man1236.getMercenaries().size());
+        
+        verifyPlayerMonarch(player);
+	}
+
+	private void verifyPlayerMonarch(Player player) {
+		assertNotNull(player.getMonarch());
+        ArmyForceAbstractUnit manOfWar = player.getMonarch().getExpeditionaryForce().navalUnits.getById("model.role.default");
+        assertEquals(13, manOfWar.getAmount());
+        assertEquals("model.role.default", manOfWar.getUnitRole().getId());
+        assertEquals("model.unit.manOWar", manOfWar.getUnitType().getId());
+        
+        ArmyForceAbstractUnit cavalery = player.getMonarch().getExpeditionaryForce().landUnits.getById("model.role.cavalry");
+        assertEquals(15, cavalery.getAmount());
+        assertEquals("model.role.cavalry", cavalery.getUnitRole().getId());
+        assertEquals("model.unit.kingsRegular", cavalery.getUnitType().getId());
 	}
     
     private void verifySettlementBuildingWorker(Game game) {

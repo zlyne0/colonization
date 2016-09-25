@@ -4,7 +4,6 @@ import java.util.LinkedList;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
-import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -13,25 +12,36 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class EventsNotifications implements Identifiable {
 
-	public final LinkedList<Notification> notifications = new LinkedList<Notification>();
-	
+    public static interface AddNotificationListener {
+        public void onAddNotification(Notification notification);
+    }
+    
+	private final LinkedList<Notification> notifications = new LinkedList<Notification>();
+	private AddNotificationListener addNotificationListener;
+    
 	@Override
 	public String getId() {
 		throw new IllegalStateException("there is no id");
 	}
 
-	public void addPriceChangeNotification(GoodsType goodsType, int beforePrice, int afterPrice) {
-		GoodsPriceChangeNotification n = new GoodsPriceChangeNotification();
-		n.type = goodsType;
-		n.from = beforePrice;
-		n.to = afterPrice;
-		notifications.add(n);
+    public void addMessageNotificationAsFirst(Notification notification) {
+        notifications.addFirst(notification);
+        if (addNotificationListener != null) {
+            addNotificationListener.onAddNotification(notification);
+        }
+    }
+	
+	public void addMessageNotification(Notification notification) {
+		notifications.add(notification);
+		if (addNotificationListener != null) {
+		    addNotificationListener.onAddNotification(notification);
+		}
 	}
-
+	
 	public void addMessageNotification(StringTemplate st) {
 		System.out.println("message notification: " + st);
 		String nextId = Game.idGenerator.nextId(MessageNotification.class);
-		notifications.add(new MessageNotification(nextId, Messages.message(st)));
+		this.addMessageNotification(new MessageNotification(nextId, Messages.message(st)));
 	}
 
 	public Notification firstNotification() {
@@ -45,18 +55,26 @@ public class EventsNotifications implements Identifiable {
 		return !notifications.isEmpty();
 	}
 	
+	public void setAddNotificationListener(AddNotificationListener listener) {
+	    this.addNotificationListener = listener;
+	}
+
+    public LinkedList<Notification> getNotifications() {
+        return notifications;
+    }
+	
 	public static final class Xml extends XmlNodeParser {
 
 		public Xml() {
-			addNode(GoodsPriceChangeNotification.class, new ObjectFromNodeSetter<EventsNotifications, GoodsPriceChangeNotification>() {
-				@Override
-				public void set(EventsNotifications target, GoodsPriceChangeNotification entity) {
-					target.notifications.add(entity);
-				}
-			});
 			addNode(MessageNotification.class, new ObjectFromNodeSetter<EventsNotifications, MessageNotification>() {
 				@Override
 				public void set(EventsNotifications target, MessageNotification entity) {
+					target.notifications.add(entity);
+				}
+			});
+			addNode(MonarchActionNotification.class, new ObjectFromNodeSetter<EventsNotifications, MonarchActionNotification>() {
+				@Override
+				public void set(EventsNotifications target, MonarchActionNotification entity) {
 					target.notifications.add(entity);
 				}
 			});

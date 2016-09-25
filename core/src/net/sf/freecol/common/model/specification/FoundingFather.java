@@ -8,6 +8,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class FoundingFather extends ObjectWithFeatures {
 
+    public static final String FERDINAND_MAGELLAN = "model.foundingFather.ferdinandMagellan"; 
+    
     public static enum FoundingFatherType {
         TRADE,
         EXPLORATION,

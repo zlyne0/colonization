@@ -22,6 +22,14 @@ public class AbstractGoods {
 		}
 	}
 	
+	public void makeEmpty() {
+		quantity = 0;
+	}
+	
+	public boolean isNotEmpty() {
+		return quantity > 0;
+	}
+	
 	public int getQuantity() {
 		return quantity;
 	}

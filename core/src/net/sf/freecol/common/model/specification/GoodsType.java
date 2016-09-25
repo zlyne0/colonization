@@ -1,12 +1,12 @@
 package net.sf.freecol.common.model.specification;
 
-import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Market;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class GoodsType extends ObjectWithId {
+public class GoodsType extends ObjectWithFeatures {
 
     public static final String FISH = "model.goods.fish";
     public static final String FOOD = "model.goods.food";
@@ -125,6 +125,10 @@ public class GoodsType extends ObjectWithId {
     	return isNewWorldGoodsType() || getMadeFrom() != null && getMadeFrom().isNewWorldGoodsType();
     }
     
+    public boolean isImmigrationType() {
+        return hasModifier(Modifier.IMMIGRATION);
+    }
+    
     public GoodsType getMadeFrom() {
         return madeFrom;
     }
@@ -137,6 +141,10 @@ public class GoodsType extends ObjectWithId {
 		private static final String PRICE_DIFFERENCE_TAG = "price-difference";
 		private static final String INITIAL_AMOUNT_TAG = "initial-amount";
 		private static final String INITIAL_PRICE_TAG = "initial-price";
+
+		public Xml() {
+		    ObjectWithFeatures.Xml.abstractAddNodes(this);
+		}
 		
         @Override
         public void startElement(XmlNodeAttributes attr) {

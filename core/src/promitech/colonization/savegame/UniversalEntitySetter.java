@@ -15,6 +15,10 @@ public class UniversalEntitySetter {
             if (MapIdEntities.class.equals(field.getType())) {
                 MapIdEntities map = (MapIdEntities)field.get(targetObject);
                 map.add(entity);
+            } else {
+            	if (entity.getClass().equals(field.getType())) {
+            		field.set(targetObject, entity);
+            	}
             }
         } catch (NoSuchFieldException e) {
             System.out.println("can not find field " + targetFieldName + ", on class " + targetObject.getClass());

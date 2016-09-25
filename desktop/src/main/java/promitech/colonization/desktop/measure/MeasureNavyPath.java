@@ -36,7 +36,7 @@ public class MeasureNavyPath implements MeasureTask {
 
         // init map
         startTile = game.map.getTile(12, 79);
-        moveUnit = startTile.units.getById("unit:6900");
+        moveUnit = startTile.getUnits().getById("unit:6900");
 
         startTile2 = game.map.getTile(26, 77);
         endTile2 = game.map.getTile(28, 72);

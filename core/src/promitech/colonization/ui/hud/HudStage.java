@@ -11,11 +11,14 @@ import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.MessageNotification;
+import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
@@ -23,6 +26,7 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
+import promitech.colonization.gamelogic.MoveContext;
 
 public class HudStage extends Stage {
     private static Direction[][] BUTTON_DIRECTIONS = new Direction[][] { 
@@ -43,7 +47,7 @@ public class HudStage extends Stage {
     	directionByKeyCode.put(Input.Keys.A, Direction.W);
     }
     
-    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
+    private final ShapeRenderer shapeRenderer;
     public final HudInfoPanel hudInfoPanel; 
     private final GUIGameController gameController;
     private final EndOfTurnActor endOfTurnActor; 
@@ -62,6 +66,7 @@ public class HudStage extends Stage {
     
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
+    private ButtonActor europeButton;
     private ButtonActor endTurnButton;
     private ButtonActor showNotificationButton;
 
@@ -69,17 +74,19 @@ public class HudStage extends Stage {
     private ButtonActor cancelActionButton;
     
     private final Group buttonsGroup = new Group();
+    private boolean needUpdateButtonVisibility = true;
     
     private GUIGameModel.ChangeStateListener guiGameModelChangeListener = new ChangeStateListener() {
 		@Override
 		public void change(GUIGameModel model) {
-			resetButtonVisibility(model);
+			needUpdateButtonVisibility = true;
 		}
 	};
     
-    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources, ShapeRenderer shape) {
         super(viewport);
         this.gameController = gameController;
+        this.shapeRenderer = shape;
 
         int bw = (int) (getHeight() * 0.33) / 3;
         hudInfoPanel = new HudInfoPanel(gameResources);
@@ -90,22 +97,39 @@ public class HudStage extends Stage {
         createActionButtons(bw);
 		addListener(keysInputListener);
         
-        gameController.addGUIGameModelChangeListener(guiGameModelChangeListener);
+		gameController.getGuiGameModel().addChangeListener(guiGameModelChangeListener);
         
 		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
 		endOfTurnActor.setWidth(getWidth());
 		endOfTurnActor.setHeight(getHeight());
     }
 
+    public void showDialog(Dialog dialog) {
+    	dialog.show(this);
+    }
+    
+    public void showChooseUnitsToDisembarkDialog(MoveContext carrierMoveContext) {
+    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, carrierMoveContext, gameController);
+    	chooseUnitsDialog.show(this);
+    }
+    
     private final InputListener keysInputListener = new InputListener() {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
+    		if (keycode == Input.Keys.GRAVE) {
+    			gameController.generateMonarchAction();
+    			return true;
+    		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
     			if (viewButton.isChecked()) {
     				gameController.leaveViewMode();
     			} else {
     				gameController.enterInViewMode();
     			}
+    			return true;
+    		}
+    		if (keycode == Input.Keys.Y && europeButton.getParent() != null) {
+    			gameController.showEuropeScreen();
     			return true;
     		}
     		if (keycode == Input.Keys.N && nextUnitButton.getParent() != null) {
@@ -190,6 +214,11 @@ public class HudStage extends Stage {
     			} else {
     				gameController.enterInViewMode();
     			}
+    			return true;
+    		}
+    		
+    		if (event.getListenerActor() == europeButton) {
+    			gameController.showEuropeScreen();
     			return true;
     		}
     		
@@ -323,6 +352,11 @@ public class HudStage extends Stage {
         viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
         viewButton.addListener(buttonsInputListener);
 
+        europeButton = new ButtonActor(shapeRenderer, "Y");
+        europeButton.setSize(bw, bw);
+        europeButton.setPosition(getWidth() / 2 - bw, getHeight() - bw - 10);
+        europeButton.addListener(buttonsInputListener);
+        
         endTurnButton = new ButtonActor(shapeRenderer, "end turn");
         endTurnButton.setSize(bw, bw);
         endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
@@ -379,10 +413,15 @@ public class HudStage extends Stage {
     	shapeRenderer.setTransformMatrix(getBatch().getTransformMatrix());
     	shapeRenderer.translate(getViewport().getScreenX(), getViewport().getScreenY(), 0);
     	
+    	if (needUpdateButtonVisibility) {
+    	    resetButtonVisibility(gameController.getGuiGameModel());
+    	}
         super.act();
     }
 
 	private void resetButtonVisibility(GUIGameModel model) {
+	    needUpdateButtonVisibility = false;
+	    
 		// remove all actors
 		buttonsGroup.clearChildren();
 		if (model.isAiMove()) {
@@ -438,6 +477,7 @@ public class HudStage extends Stage {
 				buttonsGroup.addActor(nextUnitButton);
 			}
 			buttonsGroup.addActor(viewButton);
+			buttonsGroup.addActor(europeButton);
         }
 		
         if (model.isCreateGotoPathMode()) {
@@ -464,18 +504,28 @@ public class HudStage extends Stage {
     }
 	
 	private void showNotification() {
-		Notification firstNotification = gameController.getFirstNotification();
+		Notification notification = gameController.getFirstNotification();
 		
-		HudStage.this.removeListener(keysInputListener);
-		NotificationDialog dialog = new NotificationDialog(firstNotification);
-		dialog.addOnCloseListener(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				HudStage.this.addListener(keysInputListener);
-				return true;
-			}
-		});
-		dialog.show(HudStage.this);
+		if (notification instanceof MessageNotification) {
+			HudStage.this.removeListener(keysInputListener);
+			NotificationDialog dialog = new NotificationDialog(notification);
+			dialog.addOnCloseListener(new EventListener() {
+				@Override
+				public boolean handle(Event event) {
+					HudStage.this.addListener(keysInputListener);
+					return true;
+				}
+			});
+			dialog.show(HudStage.this);
+		}
+		
+		if (notification instanceof MonarchActionNotification) {
+			MonarchActionNotificationDialog dialog = new MonarchActionNotificationDialog(
+				gameController,
+				(MonarchActionNotification)notification
+			);
+			dialog.show(HudStage.this);
+		}
 	}
     
 }

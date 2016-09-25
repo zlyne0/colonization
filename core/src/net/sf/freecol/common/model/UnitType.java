@@ -1,14 +1,24 @@
 package net.sf.freecol.common.model;
 
+import java.util.Comparator;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
+import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType extends BuildableType {
+	
+    public static final Comparator<UnitType> UNIT_TYPE_PRICE_COMPARATOR = new Comparator<UnitType>() {
+		@Override
+		public int compare(UnitType o1, UnitType o2) {
+			return o1.getPrice() - o2.getPrice();
+		}
+	};
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
@@ -64,6 +74,10 @@ public class UnitType extends BuildableType {
     /** The maximum experience a unit of this type can accumulate. */
     private int maximumExperience = 0;
 
+    /** The default role for a unit of this type. */
+    private UnitRole defaultRole = null;
+    private String defaultRoleId = null;
+    
     /**
      * The maximum attrition this UnitType can accumulate without
      * being destroyed.
@@ -76,6 +90,10 @@ public class UnitType extends BuildableType {
     	super(id);
     }
 
+    public String resourceImageKey() {
+    	return getId() + ".image";
+    }
+    
 	public boolean isUnitType() {
 		return true;
 	}
@@ -90,6 +108,10 @@ public class UnitType extends BuildableType {
     	return hasAbility(Ability.NAVAL_UNIT);
     }
 	
+    public boolean canCarryUnits() {
+    	return hasAbility(Ability.CARRY_UNITS);
+    }
+    
     public boolean isWagonTrain() {
         return WAGON_TRAIN.equalsIgnoreCase(id);
     }
@@ -157,12 +179,46 @@ public class UnitType extends BuildableType {
         return skill != UNDEFINED;
     }
     
+	public boolean hasPrice() {
+		return price != UNDEFINED;
+	}
+    
     public String getExpertProductionForGoodsId() {
         return expertProductionForGoodsId;
     }
 
     protected int getMaximumExperience() {
         return maximumExperience;
+    }
+
+	public int getPrice() {
+		return price;
+	}
+
+	public void updateDefaultRoleReference() {
+		defaultRole = Specification.instance.unitRoles.getById(defaultRoleId);
+	}
+
+	public UnitRole getDefaultRole() {
+		return defaultRole;
+	}
+
+    public boolean isRecruitable() {
+        return recruitProbability > 0;
+    }
+	
+    public WithProbability<UnitType> createRecruitProbability() {
+    	return new WithProbability<UnitType>() {
+			@Override
+			public int getOccureProbability() {
+				return recruitProbability;
+			}
+
+			@Override
+			public UnitType probabilityObject() {
+				return UnitType.this;
+			}
+		};
     }
     
     public static class Xml extends XmlNodeParser {
@@ -192,8 +248,16 @@ public class UnitType extends BuildableType {
             ut.expertProductionForGoodsId = attr.getStrAttribute("expert-production");
             ut.skill = attr.getIntAttribute("skill", Xml.UNDEFINED);
             ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
+            ut.defaultRoleId = UnitRole.DEFAULT_ROLE_ID;
             
             nodeObject = ut;
+        }
+
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+        	if (attr.isQNameEquals("default-role")) {
+        		((UnitType)nodeObject).defaultRoleId = attr.getStrAttributeNotNull("id");
+        	}
         }
         
         @Override
@@ -205,4 +269,5 @@ public class UnitType extends BuildableType {
             return "unit-type";
         }
     }
+
 }

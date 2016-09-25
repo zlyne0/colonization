@@ -58,4 +58,5 @@ public abstract class Settlement extends ObjectWithId {
 	
 	public abstract void initMaxPossibleProductionOnTile(Tile tile);
 
+	public abstract ProductionSummary productionSummary();	
 }

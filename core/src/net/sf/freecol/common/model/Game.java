@@ -1,10 +1,11 @@
 package net.sf.freecol.common.model;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.xml.sax.SAXException;
 
-import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -19,6 +20,7 @@ public class Game implements Identifiable {
 
 	public static IdGenerator idGenerator;
 	public String activeUnitId;
+	private Turn turn;
 	
 	public Game(String id) {
 		this.id = id;
@@ -32,10 +34,17 @@ public class Game implements Identifiable {
 	public String toString() {
 		return "map[" + map + "]";
 	}
+
+	public Turn getTurn() {
+		return turn;
+	}
 	
     public void afterLoadGame() {
         for (Player player : players.entities()) {
             player.fogOfWar.initFromMap(map, player);
+            if (player.isEuropean()) {
+                player.market().initGoods();
+            }
         }
     }
     
@@ -53,6 +62,7 @@ public class Game implements Identifiable {
 			
 			Game game = new Game(attr.getStrAttribute("id"));
 			game.activeUnitId = attr.getStrAttribute("activeUnit");
+			game.turn = new Turn(attr.getIntAttribute("turn"));
 			
 			XmlNodeParser.game = game;
 			
@@ -76,23 +86,13 @@ public class Game implements Identifiable {
 		}
 	}
 
-	public void propagateBuyToEuropeanMarkets(Player owner, GoodsType goodsType, int marketBoughtGoodsAmount) {
-		if (!goodsType.isStorable()) {
-			return;
+	public Set<String> getEuropeanNationIds() {
+		Set<String> nationsIds = new HashSet<String>(players.size());
+		for (Player player : players.entities()) {
+			if (player.isEuropean()) {
+				nationsIds.add(player.nation().getId());
+			}
 		}
-		marketBoughtGoodsAmount = Market.modifyGoodsAmountPropagatetToMarkets(marketBoughtGoodsAmount);
-        if (marketBoughtGoodsAmount == 0) {
-        	return;
-        }
-
-        for (Player player : players.entities()) {
-        	if (player.isNotLiveEuropeanPlayer()) {
-        		continue;
-        	}
-        	if (player.equalsId(owner)) {
-        		continue;
-        	}
-        	player.market().addGoodsToMarket(goodsType, marketBoughtGoodsAmount);
-        }
+		return nationsIds;
 	}
 }

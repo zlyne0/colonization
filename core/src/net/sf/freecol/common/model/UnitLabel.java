@@ -4,17 +4,16 @@ import net.sf.freecol.common.model.specification.Goods;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-// TOOD: cala klasa jako static
 public class UnitLabel {
 
-	public UnitLabel() {
+	private UnitLabel() {
 	}
 	
 	public static String getName(Unit unit) {
 		return unit.name;
 	}
 	
-	public String getUnitEquipment(Unit unit) {
+	public static String getUnitEquipment(Unit unit) {
         StringTemplate extra = null;
 		
         if (unit.unitRole.isDefaultRole()) {
@@ -65,7 +64,7 @@ public class UnitLabel {
         }
 	}
 
-    public String getMovesAsString(Unit unit) {
+    public static String getMovesAsString(Unit unit) {
         StringBuilder sb = new StringBuilder(16);
         int quotient = unit.getMovesLeft() / 3;
         int remainder = unit.getMovesLeft() % 3;
@@ -79,7 +78,7 @@ public class UnitLabel {
         return sb.toString();
     }
     
-	public String getUnitType(Unit unit) {
+	public static String getUnitType(Unit unit) {
 		StringTemplate label = getUnitType(
 				unit.unitType.getId(), 1, 
 				unit.getOwner().nation().getId(), 
@@ -88,11 +87,18 @@ public class UnitLabel {
 		return Messages.message(label);
 	}
 
+    public static StringTemplate getLabelWithAmount(UnitType unitType, UnitRole unitRole, int amount) {
+        StringTemplate tmpl = getUnitLabel(null, unitType.getId(), amount, null, unitRole.getId(), null);
+        return StringTemplate.template("abstractUnit")
+			.addAmount("%number%", amount)
+			.addStringTemplate("%unit%", tmpl);
+    }
+	
 	public static StringTemplate getPlainUnitLabel(Unit unit) {
 		return getUnitLabel(getName(unit), unit.unitType.getId(), 1, null, unit.unitRole.getId(), null);		
 	}
 	
-    private StringTemplate getUnitType(String typeId, int number, String nationId, String roleId) {
+    private static StringTemplate getUnitType(String typeId, int number, String nationId, String roleId) {
         StringTemplate type;
         String roleKey;
         String baseKey = typeId + "." + UnitRole.getRoleSuffix(roleId);

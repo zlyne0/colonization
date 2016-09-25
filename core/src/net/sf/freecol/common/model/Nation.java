@@ -1,15 +1,42 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.specification.NationType;
-import promitech.colonization.GameResources;
-import promitech.colonization.savegame.XmlNodeAttributes;
-import promitech.colonization.savegame.XmlNodeParser;
+import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
+
+import net.sf.freecol.common.model.specification.NationType;
+import promitech.colonization.GameResources;
+import promitech.colonization.Randomizer;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
 
 public class Nation extends ObjectWithId {
     
     public static final String UNKNOWN_NATION_ID = "model.nation.unknownEnemy";
+    
+    
+    private static final String[] EUROPEAN_NATIONS = {
+		// Original Col1 nations
+		"dutch", "english", "french", "spanish",
+		// FreeCol's additions
+		"danish", "portuguese", "swedish", "russian",
+		// other European non-player nations
+		"austrian", "german", "prussian", "turkish"
+    };
+	
+	public static String getRandomNonPlayerNationNameKey(Game game) {
+		Set<String> gameNationIds = game.getEuropeanNationIds();
+		int start = Randomizer.instance().randomInt(EUROPEAN_NATIONS.length);
+		for (int index = 0; index < EUROPEAN_NATIONS.length; index++) {
+			String nationId = "model.nation." + EUROPEAN_NATIONS[(start + index) % EUROPEAN_NATIONS.length];
+			if (!gameNationIds.contains(nationId)) {
+				return Messages.nameKey(nationId);
+			}
+		}
+		// this should never happen
+		return "";
+	}
     
 	public final NationType nationType;
 	private Color color;

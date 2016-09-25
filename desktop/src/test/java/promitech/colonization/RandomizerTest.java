@@ -6,7 +6,7 @@ import org.junit.Test;
 
 public class RandomizerTest {
 
-	Randomizer sut = Randomizer.getInstance();
+	Randomizer sut = Randomizer.instance();
 	
 	@Test
 	public void canGenerateNumberInBracket() {

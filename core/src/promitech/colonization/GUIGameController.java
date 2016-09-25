@@ -1,6 +1,8 @@
 package promitech.colonization;
 
 import java.io.IOException;
+import java.util.Collection;
+import java.util.LinkedList;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -19,17 +21,23 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.player.MarketSnapshoot;
+import net.sf.freecol.common.model.player.Monarch.MonarchAction;
+import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
+import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.hud.HudStage;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
 	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
@@ -46,16 +54,23 @@ public class GUIGameController {
 	private Game game;
 	
 	private MapActor mapActor;
+	private HudStage mapHudStage;
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
 	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
+	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
+	private Unit disembarkCarrier;
+	
+	public GUIGameController() {
+	}
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
         SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
         game = saveGameParser.parse();
         game.playingPlayer = game.players.getById("player:1");
+        game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);
         
         guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
@@ -151,11 +166,15 @@ public class GUIGameController {
 		}
 		if (tile.hasSettlement()) {
 		    if (tile.getSettlement().isColony()) {
-		        ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-		        colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
-		        screenManager.setScreen(ApplicationScreenType.COLONY);
+		    	showColonyScreen(tile);
 		    }
 		}
+	}
+	
+	public void showColonyScreen(Tile tile) {
+		ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+		colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+		screenManager.setScreen(ApplicationScreenType.COLONY);
 	}
 	
 	public void clickOnTile(Point p) {
@@ -181,7 +200,7 @@ public class GUIGameController {
 			Tile tile = game.map.getTile(p.x, p.y);
 
 			if (!tile.hasSettlement()) {
-				Unit newSelectedUnit = tile.units.first();
+				Unit newSelectedUnit = tile.getUnits().first();
 				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
 					changeActiveUnit(newSelectedUnit);
 				}
@@ -230,15 +249,42 @@ public class GUIGameController {
 			
 			mapActor.mapDrawModel().unitPath = null;
 			selectedUnit.clearDestination();
-			System.out.println("moveContext = " + moveContext);
+			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
-			if (moveContext.canHandleMove()) {
-				moveContext.handleMove();
-				guiMoveInteraction(moveContext);
+			if (moveContext.isRequireUserInteraction()) {
+				switch (moveContext.moveType) {
+				case DISEMBARK:
+					if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
+						disembarkUnitToLocation(
+							moveContext.unit, 
+							moveContext.unit.getUnitContainer().getUnits().first(), 
+							destTile
+						);
+					} else {
+						mapHudStage.showChooseUnitsToDisembarkDialog(moveContext);
+					}
+					break;
+				default:
+					break;
+				}
+			} else {
+				if (moveContext.canHandleMove()) {
+					moveContext.handleMove();
+					guiMoveInteraction(moveContext);
+				}
 			}
 		}
 	}
 
+	private void guiMoveInteraction() {
+		if (movesToAnimate.isEmpty()) {
+			return;
+		}
+		MoveContext mc = movesToAnimate.removeFirst();
+		mc.handleMove();
+		guiMoveInteraction(mc);
+	}
+	
 	private void guiMoveInteraction(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
@@ -249,7 +295,7 @@ public class GUIGameController {
 	}
 	
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
-		if (moveContext.isMoveType(MoveType.MOVE)) {
+		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
 			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, moveContext.unit);
 			if (exloredNewTiles) {
 				mapActor.resetUnexploredBorders();
@@ -257,6 +303,7 @@ public class GUIGameController {
 		}
 		
 		if (moveContext.isMoveType(MoveType.EMBARK)) {
+			System.out.println("XXX onEndOfUnitDislocationAnimation.embark");
 			mapActor.mapDrawModel().setSelectedUnit(null);
 			guiGameModel.setActiveUnit(null);
 		}
@@ -269,14 +316,27 @@ public class GUIGameController {
 			}
 			
 			moveContext.initNextPathStep();
-			System.out.println("moveContext = " + moveContext);
+			System.out.println("moveContext.isMoveViaPath = " + moveContext);
 			if (moveContext.canHandleMove()) {
 				moveContext.handleMove();
 				guiMoveInteraction(moveContext);
 			} else {
 				if (moveContext.isEndOfPath()) {
-					moveContext.unit.clearDestination();
-					mapActor.mapDrawModel().unitPath = null;
+					if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
+			            moveContext.unit.moveUnitToHighSea();
+			            logicNextActiveUnit();
+					} else {
+	                    moveContext.unit.clearDestination();
+	                    mapActor.mapDrawModel().unitPath = null;
+					}
+					
+					if (!moveContext.unit.couldMove()) {
+						logicNextActiveUnit();
+						blockUserInteraction = false;
+					}					
+					if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+						showColonyScreen(moveContext.destTile);
+					}
 				} else {
                     moveContext.unit.setState(UnitState.SKIPPED);
 					logicNextActiveUnit();
@@ -284,11 +344,69 @@ public class GUIGameController {
 				blockUserInteraction = false;
 			}
 		} else {
-			if (!moveContext.unit.couldMove()) {
-				logicNextActiveUnit();
+			
+			if (disembarkCarrier != null) {
+				if (movesToAnimate.isEmpty()) {
+					disembarkCarrier = null;
+					blockUserInteraction = false;
+				} else {
+					guiMoveInteraction();
+				}
+			} else {
+				if (!moveContext.unit.couldMove()) {
+					logicNextActiveUnit();
+					blockUserInteraction = false;
+				} else {
+				    if (moveContext.unit.getTile().getType().isHighSea()) {
+				        createHighSeasQuestion(moveContext);
+				    } else {
+		                blockUserInteraction = false;
+				    }
+				}
+				if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+					showColonyScreen(moveContext.destTile);
+				}
 			}
-			blockUserInteraction = false;
+			
 		}
+	}
+
+	private final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        @Override
+        public void executeAction(MoveContext payload) {
+            payload.unit.moveUnitToHighSea();
+            logicNextActiveUnit();
+            blockUserInteraction = false;
+        }
+    };
+
+    private final QuestionDialog.OptionAction<MoveContext> sailHighSeasNoAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        @Override
+        public void executeAction(MoveContext payload) {
+            blockUserInteraction = false;
+        }
+    };
+    
+    private void createHighSeasQuestion(MoveContext moveContext) {
+        QuestionDialog questionDialog = new QuestionDialog();
+        questionDialog.addQuestion(StringTemplate.template("highseas.text")
+            .addAmount("%number%", moveContext.unit.getSailTurns())
+        );
+        questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
+        questionDialog.addAnswer("highseas.no", sailHighSeasNoAnswer, moveContext);
+        
+        mapHudStage.showDialog(questionDialog);
+    }
+	
+    public void showMapScreenAndActiveNextUnit() {
+    	screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
+    	logicNextActiveUnit();
+    }
+    
+	public void showEuropeScreen() {
+        EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);
+        screen.init(game.playingPlayer, game);
+		screenManager.setScreen(ApplicationScreenType.EUROPE);		
 	}
 	
 	public void closeColonyView(Colony colony) {
@@ -334,6 +452,10 @@ public class GUIGameController {
         return game;
     }
 
+    public GUIGameModel getGuiGameModel() {
+        return guiGameModel;
+    }
+    
 	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
 		this.screenManager = screenManager;
 	}
@@ -373,6 +495,10 @@ public class GUIGameController {
 
 		if (moveContext.canHandleMove()) {
 			moveContext.handleMove();
+//			if (moveContext.isMoveType(MoveType.EMBARK)) {
+//				guiGameModel.setActiveUnit(null);
+//				mapActor.mapDrawModel().setSelectedUnit(null);
+//			}
 			guiMoveInteraction(moveContext);
 		} else {
             moveContext.unit.clearDestination();
@@ -421,10 +547,6 @@ public class GUIGameController {
 		}
 	}
 	
-	public void addGUIGameModelChangeListener(ChangeStateListener listener) {
-		guiGameModel.addChangeListener(listener);
-	}
-
 	public void onShowGUI() {
 		guiGameModel.runListeners();
 	}
@@ -439,6 +561,8 @@ public class GUIGameController {
 		System.out.println("end turn");
 
 		game.playingPlayer.endTurn();
+		
+		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {
@@ -455,6 +579,8 @@ public class GUIGameController {
 				e.printStackTrace();
 			}
 		}
+		
+		gameLogic.comparePrices(game.playingPlayer, marketSnapshoot);
 		
 		gameLogic.newTurn(game.playingPlayer);
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
@@ -541,4 +667,35 @@ public class GUIGameController {
 		guiGameModel.runListeners();
 		return firstNotification;
 	}
+
+	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
+		disembarkCarrier = carrier;
+		
+		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
+		mc.handleMove();
+		guiMoveInteraction(mc);
+	}
+	
+	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
+		disembarkCarrier = carrier;
+		
+		for (Unit u : unitsToDisembark) {
+			MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, u);
+			System.out.println("try disembark " + mc.toString());
+			if (mc.canHandleMove()) {
+				movesToAnimate.add(mc);
+			}
+		}
+		guiMoveInteraction();
+	}
+
+	public void setMapHudStage(HudStage hudStage) {
+		this.mapHudStage = hudStage;
+	}
+
+	public void generateMonarchAction() {
+	    //MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.HESSIAN_MERCENARIES);
+	    game.playingPlayer.modifyImmigration(150);
+	}
+
 }

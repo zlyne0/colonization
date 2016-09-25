@@ -80,7 +80,7 @@ public class UnitContainer {
     }
 	
     public void addUnit(Unit unit) {
-        if (!containerUnit.unitType.hasAbility(Ability.CARRY_UNITS)) {
+        if (!containerUnit.unitType.canCarryUnits()) {
             throw new IllegalStateException("unit[" + containerUnit + "] has not ability carry unit but try add unit to it");
         }
         this.units.add(unit);
@@ -112,7 +112,23 @@ public class UnitContainer {
         }
     }
 
+    public boolean isNotEmpty() {
+    	return units.isNotEmpty();
+    }
+    
     public MapIdEntities<Unit> getUnits() {
         return units;
     }
+
+	public boolean hasUnitWithMovePoints() {
+		if (units.isEmpty()) {
+			return false;
+		}
+		for (Unit u : units.entities()) {
+			if (u.hasMovesPoints()) {
+				return true;
+			}
+		}
+		return false;
+	}
 }

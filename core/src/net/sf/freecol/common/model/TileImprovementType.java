@@ -8,7 +8,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileImprovementType extends ObjectWithFeatures implements WithProbability {
+public class TileImprovementType extends ObjectWithFeatures {
 	public static final String ROAD_MODEL_IMPROVEMENT_TYPE_ID = "model.improvement.road";
 	public static final String RIVER_IMPROVEMENT_TYPE_ID = "model.improvement.river";
 	public static final String PLOWED_IMPROVEMENT_TYPE_ID = "model.improvement.plow";
@@ -25,6 +25,18 @@ public class TileImprovementType extends ObjectWithFeatures implements WithProba
 	private final MapIdEntities<TileTypeTransformation> tileTypeTransformation = new MapIdEntities<TileTypeTransformation>();
 	private int magnitude;
 	private int exposeResourcePercent = 0;
+
+	private WithProbability<TileImprovementType> exposedResourceAfterImprovement = new WithProbability<TileImprovementType>() {
+		@Override
+		public int getOccureProbability() {
+			return TileImprovementType.this.exposeResourcePercent;
+		}
+
+		@Override
+		public TileImprovementType probabilityObject() {
+			return TileImprovementType.this;
+		}
+	};
 	
 	public TileImprovementType(String id) {
 		super(id);
@@ -78,11 +90,10 @@ public class TileImprovementType extends ObjectWithFeatures implements WithProba
 		return tileTypeTransformation;
 	}
 
-	@Override
-	public int getOccureProbability() {
-		return exposeResourcePercent;
+	public WithProbability<TileImprovementType> getExposedResourceAfterImprovement() {
+		return exposedResourceAfterImprovement;
 	}
-
+	
 	public static class Xml extends XmlNodeParser {
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

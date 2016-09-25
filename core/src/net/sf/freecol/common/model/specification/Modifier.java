@@ -1,6 +1,11 @@
 package net.sf.freecol.common.model.specification;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.ObjectWithFeatures;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -64,6 +69,7 @@ public class Modifier implements Identifiable {
 	private String id;
     private ModifierType modifierType;
     private float value;
+    private final List<Scope> scopes = new ArrayList<Scope>();
 
     /**
      * The value increments per turn.  This can be used to create
@@ -91,6 +97,18 @@ public class Modifier implements Identifiable {
             throw new IllegalArgumentException("can not recognize modifierType: " + modifierType);
         }
 	}
+
+    public boolean canAppliesTo(ObjectWithFeatures obj) {
+        if (scopes.isEmpty()) {
+            return true;
+        }
+        for (Scope s : scopes) {
+            if (s.isAppliesTo(obj)) {
+                return true;
+            }
+        }
+        return false;
+    }
 	
 	public String toString() {
 	    return "modifier id: " + id + ", modifierType: " + modifierType;
@@ -98,7 +116,16 @@ public class Modifier implements Identifiable {
 	
 	public static class Xml extends XmlNodeParser {
 
-		@Override
+	    public Xml() {
+            addNode(Scope.class, new ObjectFromNodeSetter<Modifier, Scope>() {
+                @Override
+                public void set(Modifier target, Scope entity) {
+                    target.scopes.add(entity);
+                }
+            });
+        }
+
+	    @Override
         public void startElement(XmlNodeAttributes attr) {
 			Modifier modifier = new Modifier();
 			modifier.id = attr.getStrAttribute("id");

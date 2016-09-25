@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.ClosableDialog;

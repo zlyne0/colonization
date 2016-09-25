@@ -16,7 +16,7 @@ public class ResourceType extends ObjectWithFeatures {
 	}
 
 	public int initQuantity() {
-		return Randomizer.getInstance().randomInt(minValue, maxValue);		
+		return Randomizer.instance().randomInt(minValue, maxValue);		
 	}
 	
 	public static class Xml extends XmlNodeParser {

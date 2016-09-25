@@ -36,13 +36,11 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     
     private Unit selectedUnit;
     private final List<String> selectedUnitDescriptions = new ArrayList<String>(5);
-	private final UnitLabel unitLabel;
 	private List<AbstractGoods> carrierGoods;
     
     public HudInfoPanel(GameResources gameResources) {
     	this.gameResources = gameResources;
         infoPanelSkin = gameResources.getFrame("InfoPanel.skin");
-        unitLabel = new UnitLabel();
         
         addListener(new InputListener() {
         	@Override
@@ -90,7 +88,7 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 		for (int i=0; i<selectedUnitDescriptions.size(); i++) {
 			drawUnitDescriptionLine(batch, i, selectedUnitDescriptions.get(i));
 		}
-		String unitMovesLabel = Messages.msg("moves") + " " + unitLabel.getMovesAsString(selectedUnit);
+		String unitMovesLabel = Messages.msg("moves") + " " + UnitLabel.getMovesAsString(selectedUnit);
 		drawUnitDescriptionLine(batch, selectedUnitDescriptions.size()+1, unitMovesLabel);
 		
 		drawUnitContener(batch, unit);
@@ -172,12 +170,12 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
 	    if (label != null) {
 	        selectedUnitDescriptions.add(label);
 	    }
-	    label = unitLabel.getUnitType(selectedUnit);
+	    label = UnitLabel.getUnitType(selectedUnit);
 	    if (label != null) {
 	        selectedUnitDescriptions.add(label);
 	    }
 	    
-	    label = unitLabel.getUnitEquipment(selectedUnit);
+	    label = UnitLabel.getUnitEquipment(selectedUnit);
 	    if (label != null) {
 	        selectedUnitDescriptions.add(label);
 	    }

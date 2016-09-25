@@ -12,6 +12,7 @@ class UnitDislocationAnimation extends TemporalAction {
 	
 	private Unit unit;
 	private Tile sourceTile;
+	private Tile destTile;
 	
 	private final Vector2 source = new Vector2();
 	private final Vector2 dest = new Vector2();
@@ -27,6 +28,7 @@ class UnitDislocationAnimation extends TemporalAction {
 	public void init(MapRenderer mapRenderer, MoveContext moveContext) {
 		this.unit = moveContext.unit;
 		this.sourceTile = moveContext.sourceTile;
+		this.destTile = moveContext.destTile;
 		
 		mapRenderer.mapToScreenCords(moveContext.sourceTile.x, moveContext.sourceTile.y, source);
 		mapRenderer.mapToScreenCords(moveContext.destTile.x, moveContext.destTile.y, dest);
@@ -44,6 +46,7 @@ class UnitDislocationAnimation extends TemporalAction {
 	protected void end() {
 		unit = null;
 		sourceTile = null;
+		destTile = null;
 	}
 	
 	@Override
@@ -56,10 +59,15 @@ class UnitDislocationAnimation extends TemporalAction {
 		return this.unit != null && u != null && this.unit.equalsId(u);
 	}
 
-	public boolean isAnimatedUnitTile(int mapx, int mapy) {
-		return unit != null && sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy;
+	public boolean isAnimatedSourceTile(int mapx, int mapy) {
+		return sourceTile != null && sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy;
 	}
 
+	public boolean isTileAnimated(int mapx, int mapy) {
+		return (sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy) ||
+				(destTile != null && destTile.x == mapx && destTile.y == mapy);
+	}
+	
 	public void drawUnit(ObjectsTileDrawer unitDrawer) {
 		if (unit != null) {
 			unitDrawer.drawUnit(unit, v);

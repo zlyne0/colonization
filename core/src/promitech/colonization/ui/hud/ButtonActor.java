@@ -7,11 +7,11 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
-import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import promitech.colonization.infrastructure.FontResource;
 
-public class ButtonActor extends Actor {
+public class ButtonActor extends Widget {
     private static final Color DEFAULT_BUTTON_COLOR = new Color(0.75f, 0.75f, 0.75f, 0.50f);  
     
     private final ShapeRenderer shapeRenderer;
@@ -26,6 +26,16 @@ public class ButtonActor extends Actor {
     public ButtonActor(ShapeRenderer shapeRenderer, String label) {
         this.shapeRenderer = shapeRenderer;
         this.label = label;
+    }
+    
+    @Override
+    public float getPrefWidth() {
+    	return getWidth();
+    }
+    
+    @Override
+    public float getPrefHeight() {
+    	return getHeight();
     }
     
     @Override

@@ -11,9 +11,11 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.QuantityGoodActor;
 
 class WarehousePanel extends Table implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
-    private java.util.Map<String, GoodActor> goodActorByType = new HashMap<String, GoodActor>();
+    private java.util.Map<String, WarehouseGoodsActor> goodActorByType = new HashMap<String, WarehouseGoodsActor>();
     
     private Colony colony;
     private final ChangeColonyStateListener changeColonyStateListener;
@@ -29,18 +31,15 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
     public void initGoods(Colony aColony, DragAndDrop goodsDragAndDrop) {
         this.colony = aColony;
         
-        goodsDragAndDrop.addTarget(new GoodActor.GoodsDragAndDropTarget(this, this));
-        
-        defaults().space(20);
-        pad(20);
+        goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, this));
         
         updateGoodsQuantity(aColony);
         updateDragAndDropSource(goodsDragAndDrop);
     }
     
     private void updateDragAndDropSource(DragAndDrop goodsDragAndDrop) {
-    	for (Entry<String, GoodActor> entry : goodActorByType.entrySet()) {
-    		goodsDragAndDrop.addSource(new GoodActor.GoodsDragAndDropSource(entry.getValue()));
+    	for (Entry<String, WarehouseGoodsActor> entry : goodActorByType.entrySet()) {
+    		goodsDragAndDrop.addSource(new QuantityGoodActor.GoodsDragAndDropSource(entry.getValue()));
     	}
     }
     
@@ -58,12 +57,14 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
     }
     
     private void setGoodQuantity(GoodsType goodsType, int goodsAmount) {
-        GoodActor warehouseGoodActor = goodActorByType.get(goodsType.getId());
+    	WarehouseGoodsActor warehouseGoodActor = goodActorByType.get(goodsType.getId());
         if (warehouseGoodActor == null) {
-            warehouseGoodActor = new GoodActor(goodsType.getId(), goodsAmount);
+            warehouseGoodActor = new WarehouseGoodsActor(goodsType, goodsAmount);
             warehouseGoodActor.dragAndDropSourceContainer = this;
             goodActorByType.put(goodsType.getId(), warehouseGoodActor);
-            add(warehouseGoodActor);
+            add(warehouseGoodActor)
+				.width(warehouseGoodActor.getPrefWidth() + 20)
+				.height(warehouseGoodActor.getPrefHeight() + 20);
         }
         warehouseGoodActor.setQuantity(goodsAmount);
     }
@@ -72,7 +73,7 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
     public void putPayload(AbstractGoods payload, float x, float y) {
         System.out.println("warehousePanel: put good " + payload);
         
-        GoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
+        QuantityGoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
         if (warehouseGoodActor == null) {
             throw new IllegalStateException("can not find warehouse good actor by goodId: " + payload.getTypeId());
         }
@@ -91,7 +92,7 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
     public void takePayload(AbstractGoods payload, float x, float y) {
         System.out.println("warehousePanel: take good " + payload);
         
-        GoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
+        QuantityGoodActor warehouseGoodActor = goodActorByType.get(payload.getTypeId());
         if (warehouseGoodActor == null) {
             throw new IllegalStateException("can not find warehouse good actor by goodId: " + payload.getTypeId());
         }

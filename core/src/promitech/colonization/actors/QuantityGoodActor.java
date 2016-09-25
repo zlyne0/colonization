@@ -1,43 +1,29 @@
-package promitech.colonization.actors.colony;
+package promitech.colonization.actors;
 
 import com.badlogic.gdx.graphics.Color;
-import com.badlogic.gdx.graphics.g2d.Batch;
-import com.badlogic.gdx.graphics.g2d.BitmapFont;
-import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
-import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Payload;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
-import promitech.colonization.GameResources;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;
-import promitech.colonization.gdx.Frame;
-import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.actors.colony.DragAndDropSourceContainer;
+import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 
-class GoodActor extends Widget {
-    
-	static class DragAndDropPayload {
-		AbstractGoods abstractGoods;
-		boolean changeTransferGoodsQuantity = false;
-		
-		DragAndDropPayload(AbstractGoods abstractGoods, boolean changeTransferGoodsQuantity) {
-			this.abstractGoods = abstractGoods;
-			this.changeTransferGoodsQuantity = changeTransferGoodsQuantity;
-		}
-	}
+public class QuantityGoodActor extends LabelGoodActor {
 	
     public static class GoodsDragAndDropSource extends com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Source {
-        public GoodsDragAndDropSource(GoodActor actor) {
+        public GoodsDragAndDropSource(QuantityGoodActor actor) {
             super(actor);
         }
 
         @Override
         public Payload dragStart(InputEvent event, float x, float y, int pointer) {
-            GoodActor goodActor = (GoodActor)getActor();
+            QuantityGoodActor goodActor = (QuantityGoodActor)getActor();
             System.out.println("GoodsDragAndDropSource.dragStart");
             if (goodActor.isEmpty()) {
                 return null;
@@ -46,14 +32,14 @@ class GoodActor extends Widget {
             Image dragImg = new Image(goodActor.getTextureRegion());
             
             Payload payload = new Payload();
-            payload.setObject(new DragAndDropPayload(goodActor.newAbstractGoods(), ColonyApplicationScreen.isShiftPressed()));
+            payload.setObject(new DragAndDropPayload(goodActor.newAbstractGoods(), ShiftPressed.isShiftPressed()));
             payload.setDragActor(dragImg);
             payload.setInvalidDragActor(dragImg);
             payload.setValidDragActor(dragImg);
             return payload;
         }
     }
-    
+	
     public static class GoodsDragAndDropTarget extends Target {
         private final DragAndDropTargetContainer<AbstractGoods> targetContainer;
         
@@ -64,7 +50,6 @@ class GoodActor extends Widget {
 
         @Override
         public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
-            Validation.instanceOf(source.getActor(), GoodActor.class);
             Validation.instanceOf(payload.getObject(), DragAndDropPayload.class);
             
             DragAndDropPayload dadPayload = (DragAndDropPayload)payload.getObject();
@@ -76,10 +61,10 @@ class GoodActor extends Widget {
 
         @Override
         public void drop(Source source, Payload payload, float x, float y, int pointer) {
-            Validation.instanceOf(source.getActor(), GoodActor.class);
+            Validation.instanceOf(source.getActor(), LabelGoodActor.class);
             Validation.instanceOf(payload.getObject(), DragAndDropPayload.class);
 
-            GoodActor actor = (GoodActor)source.getActor();
+            LabelGoodActor actor = (LabelGoodActor)source.getActor();
             DragAndDropSourceContainer<AbstractGoods> sourceContainer = actor.dragAndDropSourceContainer;
             
             DragAndDropPayload dadPayload = (DragAndDropPayload)payload.getObject();
@@ -95,91 +80,46 @@ class GoodActor extends Widget {
         }
     }
     
-    private final String goodTypeId;
-    private int quantity = 0;
-    private final TextureRegion textureRegion;
+    protected int quantity = 0;
     
-    private final float fontHeight;
-    DragAndDropSourceContainer<AbstractGoods> dragAndDropSourceContainer;
-    
-    GoodActor(String goodTypeId, int quantity) {
-        Frame img = GameResources.instance.goodsImage(goodTypeId);
-        textureRegion = img.texture;
-        
-        this.quantity = quantity;
-        this.goodTypeId = goodTypeId;
-        
-        setSize(getPrefWidth(), getPrefHeight());
-        fontHeight = FontResource.getGoodsQuantityFont().getCapHeight();
-    }
-    
-    @Override
-    public float getPrefHeight() {
-    	return textureRegion.getRegionHeight() + fontHeight;
-    }
-    
-    @Override
-    public float getPrefWidth() {
-    	return textureRegion.getRegionWidth();
-    }
-    
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-    	batch.draw(textureRegion, getX(), getY() + fontHeight);
-        
-        BitmapFont font = FontResource.getGoodsQuantityFont();
-        font.setColor(quantityColor());
-        
-        float quantityStrLength = FontResource.strIntWidth(font, quantity);
-        font.draw(batch, Integer.toString(quantity), 
-        		getX() + getWidth()/2 - quantityStrLength/2, 
-        		getY() + fontHeight
-        );
+    public QuantityGoodActor(GoodsType goodsType, int quantity) {
+    	super(goodsType);
+    	this.setQuantity(quantity);
     }
 
-    private Color quantityColor() {
+    @Override
+    public Color getQuantityColor() {
         if (quantity ==  0) {
             return Color.GRAY;
         }
-        if (getParent() instanceof WarehousePanel) {
-            WarehousePanel warehousePanel = (WarehousePanel)getParent();
-            if (quantity > warehousePanel.capacity()) {
-                return Color.RED;
-            }
-        }
-        return Color.WHITE;
+    	return super.getQuantityColor();
     }
     
     public String toString() {
-        return "type[" + goodTypeId + "], quantity[" + quantity + "]";
+        return super.toString() + ", quantity[" + quantity + "]";
     }
     
     public void setQuantity(int quantity) {
-        this.quantity = quantity;
-    }
-
-    public TextureRegion getTextureRegion() {
-        return textureRegion;
+    	this.quantity = quantity;
+    	this.setLabel(Integer.toString(quantity));
     }
 
     public boolean isEmpty() {
         return quantity <= 0;
     }
 
-    public String getGoodTypeId() {
-        return goodTypeId;
-    }
-
     AbstractGoods newAbstractGoods() {
-    	return new AbstractGoods(goodTypeId, quantity);
+    	return new AbstractGoods(goodsType.getId(), quantity);
     }
     
     public void increaseQuantity(AbstractGoods anAbstractGood) {
         quantity += anAbstractGood.getQuantity();
+    	setLabel(Integer.toString(quantity));
     }
 
 	public void decreaseQuantity(AbstractGoods anAbstractGood) {
         quantity -= anAbstractGood.getQuantity();
+    	setLabel(Integer.toString(quantity));
 	}
 
 	public boolean equalsOrLess(AbstractGoods anAbstractGood) {

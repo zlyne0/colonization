@@ -217,7 +217,7 @@ public class GameResources {
 	}
 
 	public Frame hills() {
-		Randomizer randomizer = Randomizer.getInstance();		
+		Randomizer randomizer = Randomizer.instance();		
 		String keyPrefix = "model.tile.hills.overlay";
 		int countForPrefix = getCountForPrefix(keyPrefix);
 		String key = keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
@@ -225,7 +225,7 @@ public class GameResources {
 	}
 
 	public Frame mountainsKey() {
-		Randomizer randomizer = Randomizer.getInstance();		
+		Randomizer randomizer = Randomizer.instance();		
 		String keyPrefix = "model.tile.mountains.overlay";
 		int countForPrefix = getCountForPrefix(keyPrefix);
 		String key = keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";

@@ -13,6 +13,10 @@ import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.UnitActor;
+import promitech.colonization.actors.UnitDragAndDropSource;
+import promitech.colonization.actors.UnitDragAndDropTarget;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
@@ -62,7 +66,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		ColonyTile aColonyTile = prodLocation.getColonyTile();
 		aColonyTile.productionInfo.clear();
 		aColonyTile.productionInfo.addProduction(prodLocation.tileTypeInitProduction);
-		changeColonyStateListener.changeUnitAllocation(colony);
+		changeColonyStateListener.changeUnitAllocation();
 	}
 	
 	void putWorkerOnTerrain(UnitActor worker, ColonyTile aColonyTile) {
@@ -77,7 +81,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
-		changeColonyStateListener.changeUnitAllocation(colony);
+		changeColonyStateListener.changeUnitAllocation();
 	}
 	
 	@Override
@@ -116,7 +120,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 				colonyTile.takeWorker();
 				removeActor(unitActor);
 				
-				changeColonyStateListener.changeUnitAllocation(colony);
+				changeColonyStateListener.changeUnitAllocation();
 				return;
 			}
 		}

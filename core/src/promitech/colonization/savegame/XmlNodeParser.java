@@ -38,7 +38,7 @@ public abstract class XmlNodeParser {
         nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
     }
 	
-	public void addNode(Class<? extends Identifiable> entityClass, ObjectFromNodeSetter<?,?> setter) {
+	public <T extends Identifiable> void addNode(Class<T> entityClass, ObjectFromNodeSetter<?,T> setter) {
 	    XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, setter);
 	    nodeMetaData.put(xmlTagMetaData.getTagName(), xmlTagMetaData);
 	}

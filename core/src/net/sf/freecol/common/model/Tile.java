@@ -11,7 +11,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Tile implements Location, Identifiable {
+public class Tile implements UnitLocation, Identifiable {
 	
 	public final int x;
 	public final int y;
@@ -22,7 +22,7 @@ public class Tile implements Location, Identifiable {
 	private boolean moveToEurope = false;
 	
 	protected Settlement settlement;
-	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+	private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	private TileItemContainer tileItemContainer;
 	
@@ -39,6 +39,21 @@ public class Tile implements Location, Identifiable {
 	    return id;
 	}
 
+	@Override
+	public MapIdEntities<Unit> getUnits() {
+		return units;
+	}
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return hasSettlement() && units.isNotEmpty();
+	}
+	
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return hasSettlement();
+	}
+	
     public boolean equalsCoordinates(int x, int y) {
         return this.x == x && this.y == y;
     }
@@ -306,8 +321,7 @@ public class Tile implements Location, Identifiable {
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
-	                tile.units.add(unit);
-	                unit.setLocation(tile);
+	                unit.changeUnitLocation(tile);
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {

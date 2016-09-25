@@ -17,6 +17,8 @@ public class ProductionSummary {
     
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
+	public static ProductionSummary EMPTY = new ProductionSummary();
+	
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
     }
@@ -68,19 +70,7 @@ public class ProductionSummary {
             goods.getAndIncrement(psEntry.key, 0, psEntry.value);
         }
     }
-    
-	public void addGoods(Collection<Goods> goodsCollection) {
-		for (Goods g : goodsCollection) {
-			goods.getAndIncrement(g.getId(), 0, g.getAmount());
-		}
-	}
 
-	public void decreaseGoods(Collection<Goods> goodsCollection) {
-		for (Goods g : goodsCollection) {
-			goods.getAndIncrement(g.getId(), 0, -g.getAmount());
-		}
-	}
-	
 	public void decreaseGoods(ProductionSummary goodsCollection) {
 		for (Entry<String> g : goodsCollection.goods.entries()) {
 			goods.getAndIncrement(g.key, 0, -g.value);

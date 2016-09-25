@@ -40,7 +40,7 @@ public class PathFinderTest {
 		// given
         Tile startTile = game.map.getTile(24, 78);
         Tile endTile = game.map.getTile(21, 72);
-        Unit moveUnit = startTile.units.getById("unit:6762");
+        Unit moveUnit = startTile.getUnits().getById("unit:6762");
         
 		// when
 		path = sut.findToTile(game.map, startTile, endTile, moveUnit);
@@ -68,7 +68,7 @@ public class PathFinderTest {
 		// given
         Tile startTile = game.map.getTile(12, 79);
         Tile endTile = game.map.getTile(12, 83);
-        Unit moveUnit = startTile.units.getById("unit:6900");
+        Unit moveUnit = startTile.getUnits().getById("unit:6900");
 		
 		// when
         path = sut.findToTile(game.map, startTile, endTile, moveUnit);
@@ -91,9 +91,9 @@ public class PathFinderTest {
         Tile endTile = game.map.getTile(28, 72);
 
         Tile privateerTile = game.map.getTile(12, 79);
-        Unit privateer = privateerTile.units.getById("unit:6900");
-        privateerTile.units.removeId(privateer);
-        startTile.units.add(privateer);
+        Unit privateer = privateerTile.getUnits().getById("unit:6900");
+        privateerTile.getUnits().removeId(privateer);
+        startTile.getUnits().add(privateer);
 
         Player fortressOwner = game.players.getById("player:112");
         Colony fortressColony = new Colony("colony:-1");
@@ -133,9 +133,9 @@ public class PathFinderTest {
         Tile endTile = game.map.getTile(28, 72);
 
         Tile privateerTile = game.map.getTile(12, 79);
-        Unit privateer = privateerTile.units.getById("unit:6900");
-        privateerTile.units.removeId(privateer);
-        startTile.units.add(privateer);
+        Unit privateer = privateerTile.getUnits().getById("unit:6900");
+        privateerTile.getUnits().removeId(privateer);
+        startTile.getUnits().add(privateer);
 
         // when
         path = sut.findToTile(game.map, startTile, endTile, privateer);
@@ -157,7 +157,7 @@ public class PathFinderTest {
     public void canFindPathToEurope() throws Exception {
         // given
         Tile startTile = game.map.getTile(12, 79);
-        Unit moveUnit = startTile.units.getById("unit:6900");
+        Unit moveUnit = startTile.getUnits().getById("unit:6900");
 
         // when
 	    path = sut.findToEurope(game.map, startTile, moveUnit);

@@ -26,7 +26,7 @@ public class UnitIteratorTest {
         
         for (Unit unit : player.units.entities()) {
             unit.reduceMovesLeft(-1);
-            unit.setLocation(new Tile("tile:1", 1, 1, new TileType("tileType:1", false), 1));
+            unit.changeUnitLocation(new Tile("tile:1", 1, 1, new TileType("tileType:1", false), 1));
         }
         
         UnitIterator unitIterator = new UnitIterator(player, predicate);

@@ -76,18 +76,6 @@ public class ObjectWithFeatures extends ObjectWithId {
 	    list.add(obj);
 	}
 	
-    public boolean isAvailableTo(ObjectWithFeatures features) {
-        if (requiredAbilities != null) {
-            for (Ability aa : requiredAbilities.entities()) {
-                boolean found = features.hasAbility(aa.getId());
-                if (aa.isValueNotEquals(found)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-	
     public boolean hasAbility(String abilityCode) {
     	return hasAbility(abilityCode, true);
     }
@@ -121,17 +109,22 @@ public class ObjectWithFeatures extends ObjectWithId {
 	}
 	
 	public boolean canApplyAbilityToObject(String abilityCode, ObjectWithFeatures obj) {
-        List<Ability> list = abilities.get(abilityCode);
-        if (list == null || list.isEmpty()) {
-            return false;
-        }
+		List<Ability> list = abilities.get(abilityCode);
+		if (list == null || list.isEmpty()) {
+			return false;
+		}
+		
+		boolean foundAbility = false;
         for (int i=0; i<list.size(); i++) {
         	Ability a = list.get(i);
         	if (a.canApplyTo(obj)) {
-        		return true;
+        		if (a.isValueEquals(false)) {
+        			return false;
+        		}
+        		foundAbility = true;
         	}
         }
-        return false;
+        return foundAbility;
 	}
 	
 	public boolean hasRequiredAbility(String reqAbilityCode, boolean reqValue) {
@@ -156,6 +149,20 @@ public class ObjectWithFeatures extends ObjectWithId {
         return list != null && !list.isEmpty();
     }
     
+    public float applyModifier(String modifierName, float base, ObjectWithFeatures obj) {
+        List<Modifier> list = modifiers.get(modifierName);
+        if (list == null || list.isEmpty()) {
+            return base;
+        }
+        for (int i=0; i<list.size(); i++) {
+            Modifier m = list.get(i);
+            if (m.canAppliesTo(obj)) {
+                base = m.apply(base);
+            }
+        }
+        return base;
+    }
+    
     public float applyModifier(String modifierName, float base) {
         List<Modifier> list = modifiers.get(modifierName);
         if (list == null || list.isEmpty()) {
@@ -169,8 +176,12 @@ public class ObjectWithFeatures extends ObjectWithId {
     }
 
     public void addFeaturesAndOverwriteExisted(ObjectWithFeatures parent) {
-        this.modifiers.putAll(parent.modifiers);
-        this.abilities.putAll(parent.abilities);
+    	for (Entry<String, List<Ability>> entrySet : parent.abilities.entrySet()) {
+    		this.abilities.put(entrySet.getKey(), new ArrayList<Ability>(entrySet.getValue()));
+    	}
+    	for (Entry<String, List<Modifier>> entrySet : parent.modifiers.entrySet()) {
+    		this.modifiers.put(entrySet.getKey(), new ArrayList<Modifier>(entrySet.getValue()));
+    	}
     }
     
     public void addFeatures(ObjectWithFeatures parent) {
@@ -187,17 +198,11 @@ public class ObjectWithFeatures extends ObjectWithId {
     }
     
     public void clear() {
-    	for (Entry<String, List<Ability>> entrySet : abilities.entrySet()) {
-    		entrySet.getValue().clear();
-    	}
-        for (Entry<String, List<Modifier>> entrySet : modifiers.entrySet()) {
-        	entrySet.getValue().clear();
-        }
         abilities.clear();
         modifiers.clear();
     }
     
-    public boolean canApplyAllScopes(Identifiable obj) {
+    public boolean canApplyAllScopes(ObjectWithFeatures obj) {
     	for (Scope scope : scopes) {
     		if (!scope.isAppliesTo(obj)) {
     			return false;

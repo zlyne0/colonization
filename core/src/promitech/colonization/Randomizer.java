@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Random;
 
 import net.sf.freecol.common.model.specification.WithProbability;
@@ -16,7 +17,7 @@ public final class Randomizer {
 		rand = new Random(System.currentTimeMillis());
 	}
 
-	public static Randomizer getInstance() {
+	public static Randomizer instance() {
 		return instance;
 	}
 	
@@ -56,6 +57,17 @@ public final class Randomizer {
 			}
 		}
 		return null;
+	}
+
+	public <T> T randomMember(List<T> col) {
+		if (col.isEmpty()) {
+			return null;
+		}
+		if (col.size() == 1) {
+			return col.get(0);
+		}
+		int index = randomInt(col.size());
+		return col.get(index);
 	}
 	
 }

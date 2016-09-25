@@ -17,7 +17,6 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
-import promitech.colonization.NewTurnContext;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -46,11 +45,9 @@ public class ColonyProductionTest {
     	// given
         // when
         colony.calculateSonsOfLiberty();
-        colony.calculateImmigration();        
         // then
         assertEquals(147, colony.liberty);
         assertEquals(12, colony.sonsOfLiberty());
-        assertEquals(113, colony.immigration);
 	}
     
     @Test
