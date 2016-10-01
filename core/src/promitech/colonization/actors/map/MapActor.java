@@ -3,11 +3,11 @@ package promitech.colonization.actors.map;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.sf.freecol.common.model.Game;
@@ -17,7 +17,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
 
-public class MapActor extends Actor {
+public class MapActor extends Widget {
 
 	private final GameResources gameResources;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
@@ -100,11 +100,15 @@ public class MapActor extends Actor {
 	}
 	
 	@Override
-	protected void sizeChanged() {
+	public void layout() {
 		mapRenderer.setMapRendererSize((int)getWidth(), (int)getHeight());
 		mapRenderer.centerCameraOnTileCords(24, 78);
 	}
 
+	public void centerCameraOnTile(int x, int y) {
+		mapRenderer.centerCameraOnTileCords(x, y);
+	}
+	
 	public void centerCameraOnTile(Tile tile) {
 		mapRenderer.centerCameraOnTileCords(tile.x, tile.y);
 	}

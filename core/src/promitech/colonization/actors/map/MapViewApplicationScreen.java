@@ -3,7 +3,7 @@ package promitech.colonization.actors.map;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
@@ -22,13 +22,13 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         
         gameController.setApplicationScreenManager(this.screenManager);
         
-        hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources, shape);
+        hudStage = new HudStage(new ScreenViewport(), gameController, gameResources);
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
         gameController.setMapHudStage(hudStage);
         
         //stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
-        stage = new Stage();
+        stage = new Stage(new ScreenViewport());
         
         Table w = new Table();
         w.setFillParent(true);
@@ -38,7 +38,6 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         w.defaults().expandY();
         w.add(mapActor);
         w.pack();
-        
         stage.addActor(w);      
     }
     
@@ -56,11 +55,11 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     
     @Override
     public void render() {
-        stage.getViewport().apply();
+        stage.getViewport().apply(true);
         stage.act();
         stage.draw();
         
-        hudStage.getViewport().apply();
+        hudStage.getViewport().apply(true);
         hudStage.act();
         hudStage.draw();
     }
@@ -69,6 +68,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     public void resize(int width, int height) {
         stage.getViewport().update(width, height, true);
         hudStage.getViewport().update(width, height, true);
+        hudStage.updateLayout();
     }
     
     @Override

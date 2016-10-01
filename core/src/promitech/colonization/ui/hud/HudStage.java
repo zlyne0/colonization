@@ -84,18 +84,19 @@ public class HudStage extends Stage {
 		}
 	};
     
-    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources, ShapeRenderer shape) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
         super(viewport);
         this.gameController = gameController;
-        this.shapeRenderer = shape;
+        this.shapeRenderer = new ShapeRenderer();
 
-        int bw = (int) (getHeight() * 0.33) / 3;
         hudInfoPanel = new HudInfoPanel(gameResources);
         
         addActor(buttonsGroup);
         addActor(hudInfoPanel);
         
-        createActionButtons(bw);
+        createActionButtons();
+        updateLayout();
+        
 		addListener(keysInputListener);
         
 		gameController.getGuiGameModel().addChangeListener(guiGameModelChangeListener);
@@ -293,92 +294,104 @@ public class HudStage extends Stage {
     	}
     };	
 
-	private void createActionButtons(int bw) {
-        createDirectionButtons(bw);
+	private void createActionButtons() {
+        createDirectionButtons();
 		
 		centerOnUnitButton = new ButtonActor(shapeRenderer, "C");
-		centerOnUnitButton.setSize(bw, bw);
-		centerOnUnitButton.setPosition(bw, bw);
 		centerOnUnitButton.addListener(buttonsInputListener);
 
 		unitWaitButton = new ButtonActor(shapeRenderer, "wait");		
-		unitWaitButton.setSize(bw, bw);
-		unitWaitButton.setPosition(3*bw, 0);
 		unitWaitButton.addListener(buttonsInputListener);
 		
 		sentryButton = new ButtonActor(shapeRenderer, "S");
-		sentryButton.setSize(bw, bw);
-		sentryButton.setPosition(4*bw, 0);
 		sentryButton.addListener(buttonsInputListener);
 		
 		fortifyButton = new ButtonActor(shapeRenderer, "F");
-		fortifyButton.setSize(bw, bw);
-		fortifyButton.setPosition(5*bw, 0);
 		fortifyButton.addListener(buttonsInputListener);
 		
 		activeButton = new ButtonActor(shapeRenderer, "A");
-		activeButton.setSize(bw, bw);
-		activeButton.setPosition(5*bw, 0);
 		activeButton.addListener(buttonsInputListener);
 		
 		buildColonyButton = new ButtonActor(shapeRenderer, "B");
-		buildColonyButton.setSize(bw, bw);
-		buildColonyButton.setPosition(0, bw*4);
 		buildColonyButton.addListener(buttonsInputListener);
 		plowButton = new ButtonActor(shapeRenderer, "P");
-		plowButton.setSize(bw, bw);
-		plowButton.setPosition(0, bw*5);
 		plowButton.addListener(buttonsInputListener);
 		roadButton = new ButtonActor(shapeRenderer, "R");
-		roadButton.setSize(bw, bw);
-		roadButton.setPosition(0, bw*6);
 		roadButton.addListener(buttonsInputListener);
 		
 		gotoTileButton = new RadioButtonActor(shapeRenderer, "goto");
-		gotoTileButton.setSize(bw, bw);
-		gotoTileButton.setPosition(6*bw, 0);
 		gotoTileButton.addListener(buttonsInputListener);
 		gotoLocationButton = new ButtonActor(shapeRenderer, "goto l.");
-		gotoLocationButton.setSize(bw, bw);
-		gotoLocationButton.setPosition(7*bw, 0);
 		gotoLocationButton.addListener(buttonsInputListener);
 		
 		nextUnitButton = new ButtonActor(shapeRenderer, "next");
-        nextUnitButton.setSize(bw, bw);
-        nextUnitButton.setPosition(getWidth() - bw, getHeight() - 3*bw);
         nextUnitButton.addListener(buttonsInputListener);
 	
 		viewButton = new RadioButtonActor(shapeRenderer, "V");
-        viewButton.setSize(bw, bw);
-        viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
         viewButton.addListener(buttonsInputListener);
 
         europeButton = new ButtonActor(shapeRenderer, "Y");
-        europeButton.setSize(bw, bw);
-        europeButton.setPosition(getWidth() / 2 - bw, getHeight() - bw - 10);
         europeButton.addListener(buttonsInputListener);
         
         endTurnButton = new ButtonActor(shapeRenderer, "end turn");
-        endTurnButton.setSize(bw, bw);
-        endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
         endTurnButton.addListener(buttonsInputListener);
         
         showNotificationButton = new ButtonActor(shapeRenderer, "msg");
-        showNotificationButton.setSize(bw, bw);
-        showNotificationButton.setPosition(getWidth() - bw, getHeight() - bw);
         showNotificationButton.addListener(buttonsInputListener);
         
         acceptActionButton = new ButtonActor(shapeRenderer, "accept");
-        acceptActionButton.setSize(bw, bw);
-        acceptActionButton.setPosition(0, getHeight() / 2);
         acceptActionButton.addListener(buttonsInputListener);
 
         cancelActionButton = new ButtonActor(shapeRenderer, "cancel");
-        cancelActionButton.setSize(bw, bw);
-        cancelActionButton.setPosition(getWidth() - bw, getHeight() / 2);
         cancelActionButton.addListener(buttonsInputListener);
+        
 	}
 
+	public void updateLayout() {
+		int bw = (int) (getHeight() * 0.33) / 3;
+		
+		layoutForDirectionButtons(bw);
+		
+		centerOnUnitButton.setSize(bw, bw);
+		centerOnUnitButton.setPosition(bw, bw);
+		
+		unitWaitButton.setSize(bw, bw);
+		unitWaitButton.setPosition(3*bw, 0);
+		
+		sentryButton.setSize(bw, bw);
+		sentryButton.setPosition(4*bw, 0);
+		fortifyButton.setSize(bw, bw);
+		fortifyButton.setPosition(5*bw, 0);
+		activeButton.setSize(bw, bw);
+		activeButton.setPosition(5*bw, 0);
+		buildColonyButton.setSize(bw, bw);
+		buildColonyButton.setPosition(0, bw*4);
+		plowButton.setSize(bw, bw);
+		plowButton.setPosition(0, bw*5);
+		roadButton.setSize(bw, bw);
+		roadButton.setPosition(0, bw*6);
+		gotoTileButton.setSize(bw, bw);
+		gotoTileButton.setPosition(6*bw, 0);
+		gotoLocationButton.setSize(bw, bw);
+		gotoLocationButton.setPosition(7*bw, 0);
+		nextUnitButton.setSize(bw, bw);
+		nextUnitButton.setPosition(getWidth() - bw, getHeight() - 3*bw);
+		viewButton.setSize(bw, bw);
+		viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
+		europeButton.setSize(bw, bw);
+		europeButton.setPosition(getWidth() / 2 - bw, getHeight() - bw - 10);
+		endTurnButton.setSize(bw, bw);
+		endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
+		showNotificationButton.setSize(bw, bw);
+		showNotificationButton.setPosition(getWidth() - bw, getHeight() - bw);
+		acceptActionButton.setSize(bw, bw);
+		acceptActionButton.setPosition(0, getHeight() / 2);
+		cancelActionButton.setSize(bw, bw);
+		cancelActionButton.setPosition(getWidth() - bw, getHeight() / 2);
+		
+		hudInfoPanel.layout();
+	}
+	
 	protected void showCheatConsoleDialog() {
 		HudStage.this.removeListener(keysInputListener);
 		
@@ -396,34 +409,44 @@ public class HudStage extends Stage {
 		cheatConsole.show(HudStage.this);
 	}
 
-	private void createDirectionButtons(int bw) {
+	private void createDirectionButtons() {
 		for (int y = 0; y < BUTTON_DIRECTIONS.length; y++) {
             for (int x = 0; x < BUTTON_DIRECTIONS[y].length; x++) {
-                Direction direction = BUTTON_DIRECTIONS[y][x];
+                final Direction direction = BUTTON_DIRECTIONS[y][x];
                 if (direction == null) {
                     continue;
                 }
-                ButtonActor button = createDirectionButton(direction, x * bw, y * bw, bw);
+                ButtonActor button = new ButtonActor(shapeRenderer);
+                button.addListener(new InputListener() {
+                    @Override
+                    public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
+            			gameController.pressDirectionKey(direction);
+                        return true;
+                    }
+                });
                 directionButtons.put(direction, button);
             }
         }
 	}
-	
-    private ButtonActor createDirectionButton(final Direction direction, int x, int y, int width) {
-        ButtonActor button = new ButtonActor(shapeRenderer);
-        button.addListener(new InputListener() {
-            @Override
-            public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-    			gameController.pressDirectionKey(direction);
-                return true;
+
+	private void layoutForDirectionButtons(int bw) {
+		for (int y = 0; y < BUTTON_DIRECTIONS.length; y++) {
+            for (int x = 0; x < BUTTON_DIRECTIONS[y].length; x++) {
+                final Direction direction = BUTTON_DIRECTIONS[y][x];
+                if (direction == null) {
+                    continue;
+                }
+                ButtonActor button = directionButtons.get(direction);
+                if (button != null) {
+                    button.setX(x * bw);
+                    button.setY(y * bw);
+                    button.setWidth(bw);
+                    button.setHeight(bw);
+                }
+                directionButtons.put(direction, button);
             }
-        });
-        button.setX(x);
-        button.setY(y);
-        button.setWidth(width);
-        button.setHeight(width);
-        return button;
-    }
+		}
+	}
 	
     @Override
     public void act() {
@@ -545,5 +568,5 @@ public class HudStage extends Stage {
 			dialog.show(HudStage.this);
 		}
 	}
-    
+
 }
