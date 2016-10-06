@@ -25,8 +25,8 @@ import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
-import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.gamelogic.MoveContext;
 
 public class HudStage extends Stage {
@@ -97,7 +97,7 @@ public class HudStage extends Stage {
         createActionButtons();
         updateLayout();
         
-		addListener(keysInputListener);
+		addListener(inputListener);
         
 		gameController.getGuiGameModel().addChangeListener(guiGameModelChangeListener);
         
@@ -115,7 +115,8 @@ public class HudStage extends Stage {
     	chooseUnitsDialog.show(this);
     }
     
-    private final InputListener keysInputListener = new InputListener() {
+    private final InputListener inputListener = new InputListener() {
+    	
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.GRAVE) {
@@ -393,16 +394,17 @@ public class HudStage extends Stage {
 	}
 	
 	protected void showCheatConsoleDialog() {
-		HudStage.this.removeListener(keysInputListener);
+		HudStage.this.removeListener(inputListener);
 		
 		CheatConsole cheatConsole = new CheatConsole(
 			HudStage.this.getWidth() * 0.75f, 
-			HudStage.this.getHeight() * 0.75f
+			HudStage.this.getHeight() * 0.75f,
+			gameController
 		);
 		cheatConsole.addOnCloseListener(new EventListener() {
 			@Override
 			public boolean handle(Event event) {
-				HudStage.this.addListener(keysInputListener);
+				HudStage.this.addListener(inputListener);
 				return true;
 			}
 		});
@@ -459,7 +461,7 @@ public class HudStage extends Stage {
     	}
         super.act();
     }
-
+    
 	private void resetButtonVisibility(GUIGameModel model) {
 	    needUpdateButtonVisibility = false;
 	    
@@ -528,7 +530,7 @@ public class HudStage extends Stage {
 	}
 	
     private void showGotoLocationDialog() {
-		HudStage.this.removeListener(keysInputListener);
+		HudStage.this.removeListener(inputListener);
 		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
 				gameController,
 				shapeRenderer,
@@ -537,7 +539,7 @@ public class HudStage extends Stage {
 		gotoCityDialogList.addOnCloseListener(new EventListener() {
 			@Override
 			public boolean handle(Event event) {
-				HudStage.this.addListener(keysInputListener);
+				HudStage.this.addListener(inputListener);
 				return true;
 			}
 		});
@@ -548,12 +550,12 @@ public class HudStage extends Stage {
 		Notification notification = gameController.getFirstNotification();
 		
 		if (notification instanceof MessageNotification) {
-			HudStage.this.removeListener(keysInputListener);
+			HudStage.this.removeListener(inputListener);
 			NotificationDialog dialog = new NotificationDialog(notification);
 			dialog.addOnCloseListener(new EventListener() {
 				@Override
 				public boolean handle(Event event) {
-					HudStage.this.addListener(keysInputListener);
+					HudStage.this.addListener(inputListener);
 					return true;
 				}
 			});

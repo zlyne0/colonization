@@ -181,24 +181,25 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
+		Tile clickedTile = game.map.getTile(p.x, p.y);
+		if (clickedTile == null) {
+			return;
+		}
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
 		if (guiGameModel.isCreateGotoPathMode()) {
-			Tile tile = game.map.getTile(p.x, p.y);
-			generateGotoPath(tile);
+			generateGotoPath(clickedTile);
 			return;
 		}
 		
 		if (guiGameModel.isViewMode()) {
-			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
+			mapDrawModel.selectedTile = clickedTile;
 			mapDrawModel.setSelectedUnit(null);
 		} else {
 			mapDrawModel.selectedTile = null;
-			Tile tile = game.map.getTile(p.x, p.y);
-
-			if (!tile.hasSettlement()) {
-				Unit newSelectedUnit = tile.getUnits().first();
+			if (!clickedTile.hasSettlement()) {
+				Unit newSelectedUnit = clickedTile.getUnits().first();
 				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
 					changeActiveUnit(newSelectedUnit);
 				}
@@ -689,5 +690,9 @@ public class GUIGameController {
 
 	public void setMapHudStage(HudStage hudStage) {
 		this.mapHudStage = hudStage;
+	}
+
+	public void resetMapModel() {
+		mapActor.resetMapModel();
 	}
 }

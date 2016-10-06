@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 
+import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 
@@ -19,9 +20,11 @@ public class CheatConsole extends ClosableDialog {
 	private final Label label;
 	private final TextField textField;
 	private final ScrollPane scrollPane;
+	private final GUIGameController gameControler;
 	
-	public CheatConsole(float width, float height) {
+	public CheatConsole(float width, float height, GUIGameController gameControler) {
 		super("", GameResources.instance.getUiSkin());
+		this.gameControler = gameControler;
 		
 		dialogLayout.setSize(width, height);
 		
@@ -62,7 +65,11 @@ public class CheatConsole extends ClosableDialog {
 //		    game.playingPlayer.modifyImmigration(150);
 //		}
 
-		
+		if (cmd.equals("map show")) {
+			gameControler.getGame().playingPlayer.getExploredTiles().reset(true);
+			gameControler.resetMapModel();
+			hideWithFade();
+		}
 	}
 
 	private void addConsoleLine(String line) {

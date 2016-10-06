@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.map.BooleanMap;
 import promitech.colonization.SpiralIterator;
 
 public class PlayerForOfWar {
