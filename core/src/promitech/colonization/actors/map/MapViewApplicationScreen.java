@@ -43,8 +43,15 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         		} else {
         			stageCamera.zoom *= 0.75;
         		}
-        		stageCamera.zoom = MathUtils.clamp(stageCamera.zoom, 1f, 6f);
-        		System.out.println("zoom = " + stageCamera.zoom);
+        		if (stageCamera.zoom < 1f) {
+        			stageCamera.zoom = 1f;
+        			return true;
+        		}
+        		if (stageCamera.zoom >= 6f) {
+        			stageCamera.zoom = 6f;
+        			return true;
+        		}
+        		mapActor.centerCameraOnScreenCords(x, y);
         				
         		resizeMapStage();        		
         		return true;
