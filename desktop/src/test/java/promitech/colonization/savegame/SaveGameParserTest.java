@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Specification.Options;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -27,6 +28,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
+import promitech.colonization.MapGeneratorOptions;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -134,6 +136,9 @@ public class SaveGameParserTest {
 
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
+		
+		verifyOptions(Specification.options);
+		
         assertEquals(42, Specification.instance.unitTypes.size());
         verifyTileTypes(specification);
 
@@ -154,6 +159,11 @@ public class SaveGameParserTest {
         verifySpecificationUnitTypes(specification);
         verifySpecificationFoundingFathers(specification);
     }
+
+	private void verifyOptions(Options options) {
+		int temperature = options.getIntValue(MapGeneratorOptions.TEMPERATURE);
+		assertEquals(2, temperature);
+	}
 
 	private void verifyTileTypes(Specification specification) {
 		assertEquals(23, specification.tileTypes.size());

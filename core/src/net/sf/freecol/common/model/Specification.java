@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
+import net.sf.freecol.common.model.specification.options.RangeOption;
 import net.sf.freecol.common.model.specification.options.StringOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -39,8 +40,11 @@ public class Specification implements Identifiable {
         }
 
         public int getIntValue(String code) {
-            IntegerOption option = (IntegerOption)optionValues.getById(code);
-            return option.getValue();
+        	ObjectWithId option = optionValues.getById(code);
+        	if (option instanceof RangeOption) {
+                return ((RangeOption)option).getValueAsInt();
+        	}
+            return ((IntegerOption)option).getValue();
         }
 
         public String getStringValue(String code) {

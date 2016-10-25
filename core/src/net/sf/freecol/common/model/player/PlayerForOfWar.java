@@ -25,6 +25,10 @@ public class PlayerForOfWar {
         fogOfWar.set(x, y, false);
     }
     
+    public void removeFogOfWar() {
+    	fogOfWar.reset(false);
+    }
+    
     public boolean hasFogOfWar(int x, int y) {
         return fogOfWar.isSet(x, y);
     }

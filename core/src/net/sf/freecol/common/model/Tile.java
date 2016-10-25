@@ -16,7 +16,7 @@ public class Tile implements UnitLocation, Identifiable {
 	public final int x;
 	public final int y;
 	private TileType type;
-	public final int style;
+	private int style;
 	public final String id;
 	private int connected = 0;
 	private boolean moveToEurope = false;
@@ -301,7 +301,14 @@ public class Tile implements UnitLocation, Identifiable {
 			roadImprovement.updateStyle();
 		}
 	}
-	
+
+	public void setStyle(int style) {
+		this.style = style;
+	}
+
+	public int getStyle() {
+		return style;
+	}
 	
 	public static class Xml extends XmlNodeParser {
 	    

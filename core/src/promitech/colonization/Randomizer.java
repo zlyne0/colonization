@@ -32,6 +32,13 @@ public final class Randomizer {
 		return rand.nextInt(max - min) + min;
 	}
 
+	public boolean isHappen(int percentProbability) {
+		if (percentProbability <= 0) {
+			return false;
+		}
+		return randomInt(100) < percentProbability;
+	}
+	
 	public boolean isHappen(WithProbability event) {
 		if (event.getOccureProbability() <= 0) {
 			return false;

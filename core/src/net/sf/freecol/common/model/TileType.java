@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.map.GenerationValues;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
@@ -9,16 +10,22 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public final class TileType extends ObjectWithFeatures {
 
-	private static final String MODEL_TILE_LAKE = "model.tile.lake";
-	private static final String GREAT_RIVER = "model.tile.greatRiver";
-    private static final String OCEAN = "model.tile.ocean";
-	private static final String HIGH_SEAS = "model.tile.highSeas";
+	public static final String MODEL_TILE_LAKE = "model.tile.lake";
+	public static final String GREAT_RIVER = "model.tile.greatRiver";
+    public static final String OCEAN = "model.tile.ocean";
+	public static final String HIGH_SEAS = "model.tile.highSeas";
+	public static final String LAKE = "model.tile.lake";
+	
+	public static final String HILLS = "model.tile.hills";
+    public static final String MOUNTAINS = "model.tile.mountains";
 	
 	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
+	private boolean elevation;
 	private int basicMoveCost;
 	private int basicWorkTurns;
 	public ProductionInfo productionInfo = new ProductionInfo();
+	private GenerationValues generationValues;
 	
 	public TileType(String id, boolean isForest) {
 		super(id);
@@ -64,7 +71,15 @@ public final class TileType extends ObjectWithFeatures {
 	public int getBasicWorkTurns() {
 		return basicWorkTurns;
 	}
-    
+
+	public boolean isElevation() {
+		return elevation;
+	}
+	
+	public GenerationValues getGenerationValues() {
+		return generationValues;
+	}
+	
 	public boolean canHaveResourceType(ResourceType resourceType) {
 		return allowedResourceTypes.containsId(resourceType);
 	}
@@ -85,6 +100,7 @@ public final class TileType extends ObjectWithFeatures {
 				}
 			});
             addNodeForMapIdEntities("allowedResourceTypes", TileTypeAllowedResource.class);
+            addNode(GenerationValues.class, "generationValues");
 		}
 
 		@Override
@@ -95,7 +111,8 @@ public final class TileType extends ObjectWithFeatures {
 			TileType tileType = new TileType(id, isForest);
 			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
 			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
-			
+			tileType.elevation = attr.getBooleanAttribute("is-elevation", false);
+					
 			nodeObject = tileType; 
 		}
 

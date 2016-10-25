@@ -12,6 +12,7 @@ import com.badlogic.gdx.utils.Align;
 
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
+import promitech.colonization.MapGenerator;
 import promitech.colonization.ui.ClosableDialog;
 
 public class CheatConsole extends ClosableDialog {
@@ -67,6 +68,12 @@ public class CheatConsole extends ClosableDialog {
 
 		if (cmd.equals("map show")) {
 			gameControler.getGame().playingPlayer.getExploredTiles().reset(true);
+			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
+			gameControler.resetMapModel();
+			hideWithFade();
+		}
+		if (cmd.equals("map generate")) {
+			new MapGenerator().generate(gameControler.getGame());
 			gameControler.resetMapModel();
 			hideWithFade();
 		}

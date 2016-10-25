@@ -4,6 +4,8 @@ import static net.sf.freecol.common.util.CollectionUtils.makeUnmodifiableList;
 
 import java.util.List;
 
+import promitech.colonization.math.Point;
+
 /**
  * The directions a Unit can move to. Includes deltas for moving
  * to adjacent squares, which are required due to the isometric
@@ -89,6 +91,11 @@ public enum Direction {
         return y + (((y & 1) != 0) ? oddDY : evenDY);
     }
 
+    public void step(int x, int y, Point dest) {
+    	dest.x = stepX(x, y);
+    	dest.y = stepY(x, y);
+    }
+    
     /**
      * Gets this direction rotated by n places.
      *
