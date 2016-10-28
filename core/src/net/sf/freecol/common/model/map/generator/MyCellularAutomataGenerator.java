@@ -1,7 +1,9 @@
-package promitech.colonization;
+package net.sf.freecol.common.model.map.generator;
 
 import com.github.czyzby.noise4j.map.Grid;
 import com.github.czyzby.noise4j.map.generator.cellular.CellularAutomataGenerator;
+
+import promitech.colonization.SpiralIterator;
 
 public class MyCellularAutomataGenerator extends CellularAutomataGenerator {
 

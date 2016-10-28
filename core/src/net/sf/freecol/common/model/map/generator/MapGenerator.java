@@ -1,4 +1,4 @@
-package promitech.colonization;
+package net.sf.freecol.common.model.map.generator;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
@@ -12,6 +12,11 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Consumer;
+import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Initiator;
+import promitech.colonization.Direction;
+import promitech.colonization.Randomizer;
+import promitech.colonization.SpiralIterator;
 
 public class MapGenerator {
     public final static int POLAR_HEIGHT = 2;
@@ -63,10 +68,42 @@ public class MapGenerator {
 		postLandGeneration(map);
 		generateRandomTileTypes(map);
 		generateMountains(map);
+		createHighSea(map);
 		game.map = map;
 	}
 
-    private void generateMountains(Map map) {
+	private void createHighSea(final Map map) {
+    	final float highSeaDistance = Specification.options.getIntValue(MapGeneratorOptions.DISTANCE_TO_HIGH_SEA);
+    	WaveDistanceCreator wdc = new WaveDistanceCreator(map.width, map.height, highSeaDistance);
+    	wdc.init(new Initiator() {
+			@Override
+			public float val(int x, int y) {
+				if (map.getTile(x, y).getType().isWater()) {
+					return WaveDistanceCreator.DEST;
+				} else {
+					return WaveDistanceCreator.SRC;
+				}
+			}
+    	});
+    	wdc.generate();
+    	
+    	final float maxRangeOfHighSeas = 0.25f;
+    	final float minw = map.width * maxRangeOfHighSeas;
+    	final float maxw = map.width * (1 - maxRangeOfHighSeas);
+    	final TileType highSeas = Specification.instance.tileTypes.getById(TileType.HIGH_SEAS);
+    	
+    	wdc.consume(new Consumer() {
+			@Override
+			public void val(int x, int y, float v) {
+				if (v != WaveDistanceCreator.SRC && v > highSeaDistance && (x < minw || x > maxw)) {
+					map.getTile(x, y).changeTileType(highSeas);
+				}
+			}
+		});
+    	
+	}
+
+	private void generateMountains(Map map) {
     	// 50% of user settings will be allocated for random hills
     	// here and there the rest will be allocated for large
     	// mountain ranges

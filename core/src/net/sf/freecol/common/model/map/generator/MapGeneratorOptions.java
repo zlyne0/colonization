@@ -17,7 +17,7 @@
  *  along with FreeCol.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package promitech.colonization;
+package net.sf.freecol.common.model.map.generator;
 
 /**
  * Keeps track of the available map generator options.

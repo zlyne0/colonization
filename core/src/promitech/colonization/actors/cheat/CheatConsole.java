@@ -10,9 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.map.generator.MapGenerator;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
-import promitech.colonization.MapGenerator;
 import promitech.colonization.ui.ClosableDialog;
 
 public class CheatConsole extends ClosableDialog {

@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
+import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -28,7 +29,6 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
-import promitech.colonization.MapGeneratorOptions;
 
 import org.junit.BeforeClass;
 import org.junit.Test;
