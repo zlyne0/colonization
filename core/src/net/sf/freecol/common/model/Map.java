@@ -33,6 +33,10 @@ public class Map extends ObjectWithId {
 	public Tile getTile(int x, int y, Direction direction) {
 		return getTile(direction.stepX(x, y), direction.stepY(x, y));
 	}
+
+	public Tile getTile(Tile source, Direction direction) {
+		return getTile(direction.stepX(source.x, source.y), direction.stepY(source.x, source.y));
+	}
 	
 	public Tile getTile(int x, int y) {
 		if (!isCoordinateValid(x, y)) {

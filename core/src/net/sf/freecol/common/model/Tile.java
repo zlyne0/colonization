@@ -187,7 +187,7 @@ public class Tile implements UnitLocation, Identifiable {
 		if (hasImprovementType(improvementType.getId())) {
 			return false;
 		}
-		if (!improvementType.canApplyAllScopes(type)) {
+		if (!type.isTileImprovementAllowed(improvementType)) {
 			return false;
 		}
 		return true;

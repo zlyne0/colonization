@@ -25,6 +25,7 @@ import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.MapActor;
@@ -695,4 +696,17 @@ public class GUIGameController {
 	public void resetMapModel() {
 		mapActor.resetMapModel();
 	}
+
+	public void showCheatConsoleDialog() {
+		mapHudStage.removeInputListenerFromStage();
+		CheatConsole cheatConsole = new CheatConsole(
+				mapHudStage.getWidth() * 0.75f, 
+				mapHudStage.getHeight() * 0.75f,
+				this
+			);
+		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
+		cheatConsole.addOnCloseListener(mapHudStage.addInputListenerToStageEvent);
+		cheatConsole.show(mapHudStage);
+	}
+	
 }

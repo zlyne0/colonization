@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.map.generator.MapGenerator;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
@@ -22,6 +23,7 @@ public class CheatConsole extends ClosableDialog {
 	private final TextField textField;
 	private final ScrollPane scrollPane;
 	private final GUIGameController gameControler;
+	private Tile selectedTile;
 	
 	public CheatConsole(float width, float height, GUIGameController gameControler) {
 		super("", GameResources.instance.getUiSkin());
@@ -77,6 +79,24 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
+		if (cmd.equals("m")) {
+			gameControler.getGame().playingPlayer.getExploredTiles().reset(true);
+			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
+			gameControler.resetMapModel();
+			
+			new MapGenerator().generate(gameControler.getGame());
+			gameControler.resetMapModel();
+			hideWithFade();
+		}
+		if (cmd.equals("r")) {
+			if (selectedTile != null) {
+				new MapGenerator().generateRivers(gameControler.getGame().map, selectedTile.x, selectedTile.y);
+				gameControler.resetMapModel();
+				hideWithFade();
+			} else {
+				addConsoleLine("selected tile not set");
+			}
+		}
 	}
 
 	private void addConsoleLine(String line) {
@@ -93,6 +113,10 @@ public class CheatConsole extends ClosableDialog {
 	public void show(Stage stage) {
 		super.show(stage);
 		stage.setKeyboardFocus(textField);
+	}
+
+	public void setSelectedTile(Tile selectedTile) {
+		this.selectedTile = selectedTile;
 	}
 
 }

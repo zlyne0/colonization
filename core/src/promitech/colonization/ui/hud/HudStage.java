@@ -26,7 +26,6 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
-import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.gamelogic.MoveContext;
 
 public class HudStage extends Stage {
@@ -120,7 +119,7 @@ public class HudStage extends Stage {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.GRAVE) {
-    			showCheatConsoleDialog();
+    			gameController.showCheatConsoleDialog();
     			return true;
     		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
@@ -393,22 +392,16 @@ public class HudStage extends Stage {
 		hudInfoPanel.layout();
 	}
 	
-	protected void showCheatConsoleDialog() {
+	public final EventListener addInputListenerToStageEvent = new EventListener() {
+		@Override
+		public boolean handle(Event event) {
+			HudStage.this.addListener(inputListener);
+			return true;
+		}
+	};
+	
+	public void removeInputListenerFromStage() {
 		HudStage.this.removeListener(inputListener);
-		
-		CheatConsole cheatConsole = new CheatConsole(
-			HudStage.this.getWidth() * 0.75f, 
-			HudStage.this.getHeight() * 0.75f,
-			gameController
-		);
-		cheatConsole.addOnCloseListener(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				HudStage.this.addListener(inputListener);
-				return true;
-			}
-		});
-		cheatConsole.show(HudStage.this);
 	}
 
 	private void createDirectionButtons() {
@@ -530,19 +523,13 @@ public class HudStage extends Stage {
 	}
 	
     private void showGotoLocationDialog() {
-		HudStage.this.removeListener(inputListener);
+    	removeInputListenerFromStage();
 		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
 				gameController,
 				shapeRenderer,
 				HudStage.this.getHeight() * 0.75f
 		);
-		gotoCityDialogList.addOnCloseListener(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				HudStage.this.addListener(inputListener);
-				return true;
-			}
-		});
+		gotoCityDialogList.addOnCloseListener(addInputListenerToStageEvent);
 		gotoCityDialogList.show(HudStage.this);
     }
 	
@@ -550,15 +537,9 @@ public class HudStage extends Stage {
 		Notification notification = gameController.getFirstNotification();
 		
 		if (notification instanceof MessageNotification) {
-			HudStage.this.removeListener(inputListener);
+			removeInputListenerFromStage();
 			NotificationDialog dialog = new NotificationDialog(notification);
-			dialog.addOnCloseListener(new EventListener() {
-				@Override
-				public boolean handle(Event event) {
-					HudStage.this.addListener(inputListener);
-					return true;
-				}
-			});
+			dialog.addOnCloseListener(addInputListenerToStageEvent);
 			dialog.show(HudStage.this);
 		}
 		

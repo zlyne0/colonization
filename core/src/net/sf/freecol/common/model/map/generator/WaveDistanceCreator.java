@@ -17,6 +17,7 @@ public class WaveDistanceCreator {
 	static final float DEST = Float.MAX_VALUE;
 	
 	public final Grid grid;
+	private final IntArray poolIndex; 
 	private int gx, gy;
 	private float maxRange;
 	private int cellIndex;
@@ -24,8 +25,13 @@ public class WaveDistanceCreator {
 	public WaveDistanceCreator(int width, int height, float maxRange) {
 		this.maxRange = maxRange;
 		grid = new Grid(width, height);
+		poolIndex = new IntArray(false, grid.getWidth() * grid.getHeight());
 	}
 	
+	public WaveDistanceCreator(int width, int height) {
+		this(width, height, Float.MAX_VALUE);
+	}
+
 	public void init(WaveDistanceCreator.Initiator initiator) {
 		for (cellIndex=0; cellIndex<grid.getArray().length; cellIndex++) {
 			grid.getArray()[cellIndex] = initiator.val(grid.toX(cellIndex), grid.toY(cellIndex));
@@ -33,7 +39,8 @@ public class WaveDistanceCreator {
 	}
 	
 	public void generate() {
-		IntArray poolIndex = new IntArray(false, grid.getWidth() * grid.getHeight());
+		poolIndex.clear();
+		
 		int x, y, nx, ny;
 		float v, newValue;
 		

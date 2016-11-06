@@ -2,7 +2,9 @@ package net.sf.freecol.common.model.map.generator;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import com.github.czyzby.noise4j.map.Grid;
 import com.github.czyzby.noise4j.map.generator.cellular.CellularAutomataGenerator;
@@ -11,6 +13,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovement;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Consumer;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Initiator;
@@ -26,6 +30,7 @@ public class MapGenerator {
 	public static final String TEMPORARY_LAND_TYPE = "model.tile.grassland";
 
 	private SpiralIterator mapSpiralIterator;
+	private List<Tile> randomableLandTiles;
 	
     private int minimumLatitude;
     private int maximumLatitude;
@@ -67,11 +72,216 @@ public class MapGenerator {
 		}
 		postLandGeneration(map);
 		generateRandomTileTypes(map);
+		
+		initRandomableLandTiles(map);
+		
 		generateMountains(map);
 		createHighSea(map);
+		generateRivers(map);
 		game.map = map;
 	}
 
+	private void generateRivers(final Map map) {
+    	TileImprovementType riverImprovementType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+  
+    	for (int i=0; i<20; i++) {
+    		Tile landTile = getRandomLandTile(map);
+    		if (!canBeRiverSource(map, landTile, riverImprovementType)) {
+    			continue;
+    		}
+    		River river = new River(map, riverImprovementType);
+			if (river.startFlow(landTile)) {
+				System.out.println("found river");
+				drawRiver(river, riverImprovementType);
+			} else {
+				System.out.println("## can not find river");
+			}
+    	}
+    	updateRiverStyles(map);
+	}
+	
+	public void generateRivers(final Map map, int x, int y) {
+		TileImprovementType riverImprovementType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+		Tile landTile = map.getTile(x, y);
+		
+		River river = new River(map, riverImprovementType);
+		if (river.startFlow(landTile)) {
+			System.out.println("found river");
+			drawRiver(river, riverImprovementType);
+		} else {
+			System.out.println("## can not find river");
+		}
+		updateRiverStyles(map);
+	} 
+
+	private void updateRiverStyles(Map map) {
+		Tile tile, neighbourTile;
+		int x, y;
+		for (y=0; y<map.height; y++) {
+			for (x=0; x<map.width; x++) {
+				tile = map.getTile(x, y);
+				TileImprovement riverImprovement = tile.getTileImprovementByType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+				
+				if (riverImprovement != null) {
+					for (Direction d : Direction.longSides) {
+						neighbourTile = map.getTile(tile, d);
+						if (neighbourTile == null) {
+							continue;
+						}
+						if (neighbourTile.hasImprovementType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID) || neighbourTile.getType().isWater()) {
+							riverImprovement.addConnection(d);
+						}
+					}
+					riverImprovement.updateStyle();
+				}
+			}
+		}
+	}
+
+	private void drawRiver(River river, TileImprovementType riverImprovement) {
+		for (Tile tile : river.riverTiles) {
+    		TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, riverImprovement);
+    		tile.addImprovement(tileImprovement);
+		}
+	}
+
+	static class River {
+	    private static enum SideDirection {
+	        STRAIGHT_AHEAD,
+	        RIGHT_TURN,
+	        LEFT_TURN;
+
+	        public Direction getNewDirection(Direction oldDirection) {
+	            switch(this) {
+	            case STRAIGHT_AHEAD:
+	                return oldDirection;
+	            case RIGHT_TURN:
+	                switch(oldDirection) {
+	                case NE:
+	                    return Direction.SE;
+	                case SE:
+	                    return Direction.SW;
+	                case SW:
+	                    return Direction.NW;
+	                case NW:
+	                    return Direction.NE;
+	                default:
+	                    return oldDirection;
+	                }
+	            case LEFT_TURN:
+	                switch(oldDirection) {
+	                case NE:
+	                    return Direction.NW;
+	                case SE:
+	                    return Direction.NE;
+	                case SW:
+	                    return Direction.SE;
+	                case NW:
+	                    return Direction.SW;
+	                default:
+	                    return oldDirection;
+	                }
+	            }
+	            return oldDirection;
+	        }
+	    }
+		
+		
+		private final Map map;
+		private final TileImprovementType riverImprovement;
+		private final Set<Tile> riverTiles = new HashSet<Tile>();
+		
+		public River(Map map, TileImprovementType riverImprovement) {
+			this.map = map;
+			this.riverImprovement = riverImprovement;
+		}
+		
+		private boolean contains(Tile tile) {
+			return riverTiles.contains(tile);
+		}
+		
+		private boolean isNextToSelf(Tile source, Tile tile) {
+			for (Direction d : Direction.longSides) {
+				Tile t = map.getTile(tile, d);
+				if (t != source && this.contains(t)) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		public boolean startFlow(Tile source) {
+			return flow(source);
+		}
+		
+		public boolean flow(Tile source) {
+			riverTiles.add(source);
+			
+			for (Direction sourceDirection : Direction.longSides) {
+				Tile nextTile = map.getTile(source, sourceDirection);
+				if (canNotFlow(source, nextTile)) {
+					continue;
+				}
+				if (isNeighbourWater(nextTile)) {
+					riverTiles.add(nextTile);
+					return true;
+				} else {
+					boolean flow = flow(nextTile);
+					if (flow) {
+						return true;
+					}
+				}
+			}
+			riverTiles.remove(source);
+			return false;
+		}
+		
+		private boolean isNeighbourWater(Tile tile) {
+			for (Direction d : Direction.longSides) {
+				Tile nextTile = map.getTile(tile, d);
+				if (nextTile != null && (nextTile.getType().isWater() || nextTile.hasImprovementType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID))) {
+					return true;
+				}
+			}
+			return false;
+		}
+		
+		private boolean canNotFlow(Tile source, Tile nextTile) {
+			if (nextTile == null) {
+				return true;
+			}
+			if (!nextTile.getType().isTileImprovementAllowed(riverImprovement)) {
+				// is the tile suitable for this river?
+				return true;
+			} 
+			if (this.contains(nextTile)) {
+				// Tile is already in river.
+				return true;
+			}
+			if (this.isNextToSelf(source, nextTile)) {
+				//Tile is next to the river.
+				return true;
+			}
+			return false;
+		}
+	}
+	
+	private boolean canBeRiverSource(Map map, Tile tile, TileImprovementType riverImprovementType) {
+		if (tile == null) {
+			return false;
+		}
+		if (foundNeighbours(map, tile.x, tile.y, TileType.OCEAN, 2)) {
+			return false;
+		}
+		if (tile.hasImprovementType(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID)) {
+			return false;
+		}
+		if (!tile.getType().isTileImprovementAllowed(riverImprovementType)) {
+			return false;
+		}
+		return true;
+	}
+	
 	private void createHighSea(final Map map) {
     	final float highSeaDistance = Specification.options.getIntValue(MapGeneratorOptions.DISTANCE_TO_HIGH_SEA);
     	WaveDistanceCreator wdc = new WaveDistanceCreator(map.width, map.height, highSeaDistance);
@@ -374,24 +584,28 @@ public class MapGenerator {
         tile.setStyle(result);
     }
 
-    private Tile getRandomLandTile(Map map) {
+    private void initRandomableLandTiles(Map map) {
         final int SLOSH = 5;
         if (map.width <= SLOSH*2 || map.height <= SLOSH*2) {
         	throw new IllegalStateException("map is too small");
         }
 
-        int x = Randomizer.instance().randomInt(SLOSH, map.width-SLOSH);
-        int y = Randomizer.instance().randomInt(SLOSH, map.height-SLOSH);
-        mapSpiralIterator.reset(x, y, true, Integer.MAX_VALUE);
-        
-        while (mapSpiralIterator.hasNext()) {
-        	Tile tile = map.getTile(mapSpiralIterator.getX(), mapSpiralIterator.getY());
-        	if (tile != null && tile.getType().isLand()) {
-        		return tile;
-        	}
-        	mapSpiralIterator.next();
-        }
-        return null;
+        randomableLandTiles = new ArrayList<Tile>((map.height-SLOSH) * (map.width-SLOSH));
+    	
+    	Tile tile;
+		int x, y;
+		for (y=SLOSH; y<map.height-SLOSH; y++) {
+			for (x=SLOSH; x<map.width-SLOSH; x++) {
+				tile = map.getTile(x, y);
+	        	if (tile != null && tile.getType().isLand()) {
+	        		randomableLandTiles.add(tile);
+	        	}
+			}
+		}
+    }
+    
+    private Tile getRandomLandTile(Map map) {
+    	return randomableLandTiles.get(Randomizer.instance().randomInt(randomableLandTiles.size()));
     }
 
     private boolean foundNeighbours(Map map, int x, int y, String tileType) {

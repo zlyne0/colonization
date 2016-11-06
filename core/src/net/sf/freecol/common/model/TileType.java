@@ -64,6 +64,10 @@ public final class TileType extends ObjectWithFeatures {
         return hasAbility(Ability.MOVE_TO_EUROPE);
     }
 	
+    public boolean isTileImprovementAllowed(TileImprovementType impType) {
+    	return impType.canApplyAllScopes(this);
+    }
+    
     public int getBasicMoveCost() {
     	return basicMoveCost;
     }
