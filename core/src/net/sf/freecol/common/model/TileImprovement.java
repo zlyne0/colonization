@@ -88,7 +88,7 @@ public class TileImprovement implements Identifiable {
     	if (type.isRiver()) {
     		return Direction.longSides;
     	}
-    	return null;
+    	throw new IllegalStateException("can not generate connection directions for tile improvement " + this);
     }
 
     public String toString() {

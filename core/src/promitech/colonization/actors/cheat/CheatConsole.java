@@ -88,15 +88,6 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
-		if (cmd.equals("r")) {
-			if (selectedTile != null) {
-				new MapGenerator().generateRivers(gameControler.getGame().map, selectedTile.x, selectedTile.y);
-				gameControler.resetMapModel();
-				hideWithFade();
-			} else {
-				addConsoleLine("selected tile not set");
-			}
-		}
 	}
 
 	private void addConsoleLine(String line) {
