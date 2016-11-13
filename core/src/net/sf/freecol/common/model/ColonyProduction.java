@@ -221,7 +221,7 @@ class ColonyProduction {
 	        if (colonyTile.getWorker() != null) {
 	            continue;
 	        }
-	        if (colonyTile.tile.getId().equals(colony.tileId)) {
+	        if (colonyTile.tile.getId().equals(colony.tile.getId())) {
 	            continue;
 	        }
 	        

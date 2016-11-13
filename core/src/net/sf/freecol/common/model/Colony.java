@@ -1015,7 +1015,6 @@ public class Colony extends Settlement {
             colony.tories = attr.getIntAttribute("tories", 0);
             colony.productionBonus = attr.getIntAttribute("productionBonus", 0);
             colony.liberty = attr.getIntAttribute("liberty", 0);
-            colony.tileId = attr.getStrAttribute("tile");
             colony.owner = owner;
             colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);

@@ -26,7 +26,7 @@ class RiverFlowGenerator {
 		randomDirectionLists = new ArrayList<List<Direction>>(2);
 		for (int i=0; i<2; i++) {
 			List<Direction> l = new ArrayList<Direction>(Direction.longSides);
-			Collections.shuffle(l);
+			Collections.shuffle(l, Randomizer.instance().getRand());
 			randomDirectionLists.add(l);
 		}
 	}

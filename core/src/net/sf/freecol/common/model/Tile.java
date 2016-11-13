@@ -69,6 +69,21 @@ public class Tile implements UnitLocation, Identifiable {
 	    return tileItemContainer.improvements.entities();
 	}
 	
+	public void removeTileImprovement(String typeStr) {
+		if (tileItemContainer == null) {
+			return;
+		}
+		for (TileImprovement ti : tileItemContainer.improvements.entities()) {
+			if (ti.type.id.equals(typeStr)) {
+				tileItemContainer.improvements.removeId(ti);
+				break;
+			}
+		}
+		if (tileItemContainer.isEmpty()) {
+			tileItemContainer = null;
+		}
+	}
+	
 	public Collection<TileResource> getTileResources() {
 	    if (tileItemContainer == null) {
 	        return Collections.emptyList();

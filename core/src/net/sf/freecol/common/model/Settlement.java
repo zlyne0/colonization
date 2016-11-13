@@ -10,7 +10,6 @@ public abstract class Settlement extends ObjectWithId {
 	protected String name;
     public SettlementType settlementType;
     protected Player owner;
-    String tileId;
     public Tile tile;
     protected boolean coastland = false;
     
@@ -24,6 +23,10 @@ public abstract class Settlement extends ObjectWithId {
 
 	public String getName() {
 		return name;
+	}
+	
+	public void setName(String name) {
+		this.name = name;
 	}
 
 	public Player getOwner() {

@@ -14,6 +14,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.map.Region;
+import net.sf.freecol.common.model.map.Region.RegionType;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Consumer;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Initiator;
 import promitech.colonization.Direction;
@@ -40,14 +42,16 @@ public class MapGenerator {
 	private int poleTemperature = -20;
 	private int equatorTemperature= 40;
     
-	private int landTilesCount = 0;
+	protected int landTilesCount = 0;
 	
 	public MapGenerator() {
 		riverImprovementType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 	}
 	
 	public void generate(Game game) {
+		// TODO: set players on new game 
 		// TODO: w and h should be as parameters
+		// TODO: clear units and settlements
 		int w = 40;
 		int h = 100;
 		
@@ -76,6 +80,7 @@ public class MapGenerator {
 			}
 		}
 		postLandGeneration(map);
+		createStandardRegions(map);
 		generateRandomTileTypes(map);
 		
 		initRandomableLandTiles(map);
@@ -83,7 +88,27 @@ public class MapGenerator {
 		generateMountains(map);
 		createHighSea(map);
 		generateRivers(map);
+		
+		new IndianSettlementsGenerator(this, game, map).makeNativeSettlements();
+		
 		game.map = map;
+	}
+
+	private void createStandardRegions(Map map) {
+		int x, y;
+		for (y=0; y<Map.STANDARD_REGION_NAMES.length; y++) {
+			for (x=0; x<Map.STANDARD_REGION_NAMES[0].length; x++) {
+				Region r = new Region(Map.STANDARD_REGION_NAMES[y][x], RegionType.LAND);
+				r.setPrediscovered(true);
+				map.regions.add(r);
+			}
+		}
+		Region region = new Region(Region.ARCTIC, RegionType.LAND);
+		region.setPrediscovered(true);
+		map.regions.add(region);
+		region = new Region(Region.ANTARCTIC, RegionType.LAND);
+		region.setPrediscovered(true);
+		map.regions.add(region);
 	}
 
 	private void generateRivers(final Map map) {
@@ -129,6 +154,10 @@ public class MapGenerator {
 						}
 					}
 					riverImprovement.updateStyle();
+					if (riverImprovement.getStyle().equals("0000")) {
+						System.out.println("WARN: Incorrect river style " + tile + ". Removed.");
+						tile.removeTileImprovement(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+					}
 				}
 			}
 		}
@@ -484,7 +513,7 @@ public class MapGenerator {
 		}
     }
     
-    private Tile getRandomLandTile(Map map) {
+    Tile getRandomLandTile(Map map) {
     	return randomableLandTiles.get(Randomizer.instance().randomInt(randomableLandTiles.size()));
     }
 

@@ -375,6 +375,10 @@ public class Player extends ObjectWithId {
         return !nation.isUnknownEnemy() && !isDead() && isEuropean();
     }
 	
+    public boolean isLiveIndianPlayer() {
+    	return isIndian() && !nation.isUnknownEnemy() && !isDead();
+    }
+    
 	public void endTurn() {
 	}
 

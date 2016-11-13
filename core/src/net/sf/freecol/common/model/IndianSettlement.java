@@ -9,6 +9,10 @@ public class IndianSettlement extends Settlement {
 	/** The missionary at this settlement. */
     protected Unit missionary = null;
 
+    public IndianSettlement(IdGenerator idGenerator) {
+    	super(idGenerator.nextId(IndianSettlement.class));
+    }
+    
     public IndianSettlement(String id) {
 		super(id);
 	}

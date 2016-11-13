@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
 import net.sf.freecol.common.model.ObjectWithFeatures;
-import net.sf.freecol.common.model.SettlementType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -21,7 +20,8 @@ public class EuropeanNationType extends NationType {
     
     public static class Xml extends XmlNodeParser {
         public Xml() {
-            addNodeForMapIdEntities("settlementTypes", SettlementType.class);
+        	NationType.Xml.abstractAddNodes(this);
+
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
         }
@@ -31,6 +31,8 @@ public class EuropeanNationType extends NationType {
             EuropeanNationType nationType = new EuropeanNationType(attr.getStrAttribute("id"));
             nationType.european = true;
             nationType.ref = attr.getBooleanAttribute("ref");
+            
+            NationType.Xml.abstractStartElement(attr, nationType);
             nodeObject = nationType;
         }
         

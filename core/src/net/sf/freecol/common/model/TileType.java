@@ -21,6 +21,7 @@ public final class TileType extends ObjectWithFeatures {
 	
 	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
+	private boolean canSettle;
 	private boolean elevation;
 	private int basicMoveCost;
 	private int basicWorkTurns;
@@ -60,6 +61,10 @@ public final class TileType extends ObjectWithFeatures {
 		return isForest;
 	}
 
+	public boolean canSettle() {
+		return canSettle;
+	}
+	
     public boolean isDirectlyHighSeasConnected() {
         return hasAbility(Ability.MOVE_TO_EUROPE);
     }
@@ -116,7 +121,7 @@ public final class TileType extends ObjectWithFeatures {
 			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
 			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
 			tileType.elevation = attr.getBooleanAttribute("is-elevation", false);
-					
+			tileType.canSettle = attr.getBooleanAttribute("can-settle", false);
 			nodeObject = tileType; 
 		}
 

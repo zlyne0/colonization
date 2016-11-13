@@ -76,5 +76,9 @@ public final class Randomizer {
 		int index = randomInt(col.size());
 		return col.get(index);
 	}
+
+	public Random getRand() {
+		return rand;
+	}
 	
 }
