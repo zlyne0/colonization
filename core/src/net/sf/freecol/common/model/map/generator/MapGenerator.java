@@ -571,7 +571,14 @@ public class MapGenerator {
 	    int birthLimit = 11;
 	    int deathLimit = 11;
 	    int iterationAmount = 3;
-		
+
+	    // big islands, continents
+	    aliveChance = 0.6f;
+	    radius = 2;
+	    birthLimit = 11;
+	    deathLimit = 8;
+	    iterationAmount = 3;	    
+	    
 		CellularAutomataGenerator cellularGenerator = new MyCellularAutomataGenerator();
         cellularGenerator.setAliveChance(aliveChance);
         cellularGenerator.setRadius(radius);

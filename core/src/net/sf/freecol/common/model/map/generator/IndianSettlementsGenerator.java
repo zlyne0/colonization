@@ -11,6 +11,7 @@ import java.util.Set;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -129,7 +130,7 @@ class IndianSettlementsGenerator {
 	        });
         	if (!settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		createIndianSettlement(capitalType, territory.player, tile);
+        		Settlement.createIndianSettlement(territory.player, tile, capitalType);
         		territory.centerTile = tile;
         		territory.numberOfSettlements--;
         	}
@@ -147,24 +148,12 @@ class IndianSettlementsGenerator {
         	SettlementType settlementRegularType = territory.player.nationType().getSettlementRegularType();
         	while (territory.numberOfSettlements > 0 && !settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		createIndianSettlement(settlementRegularType, territory.player, tile);
+        		Settlement.createIndianSettlement(territory.player, tile, settlementRegularType);
         		territory.numberOfSettlements--;
         	}
         }
 	}
 
-	private void createIndianSettlement(SettlementType settlementType, Player player, Tile tile) {
-		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
-		indianSettlement.settlementType = settlementType;
-		indianSettlement.setName(Integer.toString(player.settlements.size()));
-		
-		indianSettlement.tile = tile;
-		tile.setSettlement(indianSettlement);
-		
-		indianSettlement.setOwner(player);
-		player.settlements.add(indianSettlement);
-	}
-	
 	public Tile centerOfRegion(Map map, Region region) {
 		int x, y;
 		for (y=0; y<Map.STANDARD_REGION_NAMES.length; y++) {

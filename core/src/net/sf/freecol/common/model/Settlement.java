@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.ui.resources.Messages;
 
 public abstract class Settlement extends ObjectWithId {
     
@@ -15,6 +16,34 @@ public abstract class Settlement extends ObjectWithId {
     
     protected MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
 
+    public static IndianSettlement createIndianSettlement(Player player, Tile tile, SettlementType settlementType) {
+    	String settlmentName = settlmentName(player);
+    	
+		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
+		indianSettlement.settlementType = settlementType;
+		indianSettlement.setName(settlmentName);
+		
+		indianSettlement.tile = tile;
+		tile.setSettlement(indianSettlement);
+		
+		indianSettlement.setOwner(player);
+		player.settlements.add(indianSettlement);
+		
+		return indianSettlement;
+    }
+    
+    private static String settlmentName(Player player) {
+    	String key = "" + player.nation().getId() + ".settlementName." + player.settlements.size();
+    	
+    	if (!Messages.containsKey(key)) {
+    		key = player.nation().getId() + ".settlementName.freecol." + player.settlements.size();
+    	}
+    	if (Messages.containsKey(key)) {
+    		return Messages.msg(key);
+    	}
+		return Integer.toString(player.settlements.size());
+    }
+    
     public Settlement(String id) {
 		super(id);
 	}
