@@ -98,10 +98,47 @@ public class MapGenerator {
 		new IndianSettlementsGenerator(this, game, map).makeNativeSettlements();
 		
 		generatePlayersStartPositions(map, game);
+		generateLostCityRumours(map);
 		
 		game.map = map;
 	}
 
+	private void generateLostCityRumours(Map map) {
+		final int rumourNumber = Specification.options.getIntValue(MapGeneratorOptions.RUMOUR_NUMBER);
+		int number = landTilesCount / rumourNumber;
+		
+		for (int i = 0; i < number; i++) {
+			for (int tries = 0; tries < 100; tries++) {
+				Tile tile = getRandomLandTile(map);
+				if (tile == null || map.isPolar(tile)) {
+					continue;
+				}
+				if (tile.getUnits().size() > 0 || tile.hasSettlement() || tile.hasLostCityRumour()) {
+					continue;
+				}
+				if (hasLostCityRumoursInRange(map, tile.x, tile.y, 2)) {
+					continue;
+				}
+				tile.addLostCityRumors();
+				break;
+			}
+		}
+	}
+
+	private boolean hasLostCityRumoursInRange(Map map, int x, int y, int radius) {
+		mapSpiralIterator.reset(x, y, true, radius);
+		while (mapSpiralIterator.hasNext()) {
+			Tile tile = map.getTile(mapSpiralIterator.getX(), mapSpiralIterator.getY());
+			if (tile != null) {
+				if (tile.hasLostCityRumour()) {
+					return true;
+				}
+			}
+			mapSpiralIterator.next();
+		}
+		return false;
+	}
+	
 	private void generatePlayersStartPositions(Map map, Game game) {
 		List<Player> players = new ArrayList<Player>();
 		for (Player p : game.players.entities()) {

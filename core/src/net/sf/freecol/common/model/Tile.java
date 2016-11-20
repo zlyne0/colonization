@@ -125,7 +125,7 @@ public class Tile implements UnitLocation, Identifiable {
         if (tileItemContainer == null) {
             return false;
         }
-        return tileItemContainer.lostCityRumours.size() > 0;
+        return tileItemContainer.isLostCityRumours();
     }
 
     public boolean hasTileResource() {
@@ -175,6 +175,13 @@ public class Tile implements UnitLocation, Identifiable {
 			tileItemContainer = new TileItemContainer();
 		}
 		tileItemContainer.resources.add(resource);
+	}
+	
+	public void addLostCityRumors() {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.setLostCityRumours(true);
 	}
 	
 	public ResourceType reduceTileResourceQuantity(String resourceTypeId, int quantity) {

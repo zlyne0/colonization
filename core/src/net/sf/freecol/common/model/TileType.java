@@ -15,7 +15,7 @@ public final class TileType extends ObjectWithFeatures {
     public static final String OCEAN = "model.tile.ocean";
 	public static final String HIGH_SEAS = "model.tile.highSeas";
 	public static final String LAKE = "model.tile.lake";
-	
+	public static final String ARCTIC = "model.tile.arctic";
 	public static final String HILLS = "model.tile.hills";
     public static final String MOUNTAINS = "model.tile.mountains";
 	
