@@ -19,6 +19,10 @@ public abstract class Settlement extends ObjectWithId {
     public static IndianSettlement createIndianSettlement(Player player, Tile tile, SettlementType settlementType) {
     	String settlmentName = settlmentName(player);
     	
+    	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
+    	tile.addImprovement(tileImprovement);
+    	
 		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
 		indianSettlement.settlementType = settlementType;
 		indianSettlement.setName(settlmentName);

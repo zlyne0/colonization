@@ -295,6 +295,9 @@ public class Player extends ObjectWithId {
 	public boolean revealMapAfterUnitMove(Map map, Unit unit) {
 		Tile unitTileLocation = unit.getTile();
 		
+		setTileAsExplored(unitTileLocation, map);
+		fogOfWar.removeFogOfWar(unitTileLocation);
+		
 		int radius = unit.lineOfSight();
 		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
 		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
@@ -309,7 +312,7 @@ public class Player extends ObjectWithId {
 			if (setTileAsExplored(tile, map)) {
 				unexploredTile = true;
 			}
-			fogOfWar.removeFogOfWar(tile.x, tile.y);
+			fogOfWar.removeFogOfWar(tile);
 		}
 		return unexploredTile;
 	}
@@ -478,6 +481,11 @@ public class Player extends ObjectWithId {
 		return entryLocationY;
 	}
 
+	public void setEntryLocation(int x, int y) {
+		this.entryLocationX = x;
+		this.entryLocationY = y;
+	}
+	
 	public String getNewLandName() {
 		return newLandName;
 	}

@@ -20,9 +20,13 @@ public class PlayerForOfWar {
         
         resetFogOfWar(player);
     }
-    
+
     void removeFogOfWar(int x, int y) {
         fogOfWar.set(x, y, false);
+    }
+
+    void removeFogOfWar(Tile tile) {
+    	fogOfWar.set(tile.x, tile.y, false);
     }
     
     public void removeFogOfWar() {
@@ -59,7 +63,7 @@ public class PlayerForOfWar {
     }
     
     private void initFogOfWarForNeighboursTiles(Tile tile, int radius) {
-        removeFogOfWar(tile.x, tile.y);
+        removeFogOfWar(tile);
         spiralIterator.reset(tile.x, tile.y, true, radius);
         while (spiralIterator.hasNext()) {
             removeFogOfWar(spiralIterator.getX(), spiralIterator.getY());

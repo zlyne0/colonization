@@ -88,6 +88,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         if (unitType.hasAbility(Ability.CARRY_GOODS)) {
         	goodsContainer = new GoodsContainer();
         }
+        roleCount = unitRole.getMaximumCount();
     }
 
 	public String toString() {

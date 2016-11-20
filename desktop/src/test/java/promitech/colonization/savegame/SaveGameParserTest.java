@@ -23,6 +23,7 @@ import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -216,6 +217,9 @@ public class SaveGameParserTest {
         NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
         assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
         assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+        
+        EuropeanNationType buildingNationType = (EuropeanNationType)specification.nationTypes.getById("model.nationType.building");
+        assertEquals(3, buildingNationType.getStartedUnits(true).size());
 	}
 
     private void verifySpecificationUnitTypes(Specification specification) {

@@ -9,15 +9,21 @@ import com.github.czyzby.noise4j.map.generator.cellular.CellularAutomataGenerato
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.map.Region.RegionType;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Consumer;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Initiator;
+import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.EuropeanNationType;
+import net.sf.freecol.common.model.specification.EuropeanStartingAbstractUnit;
+import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
@@ -91,7 +97,82 @@ public class MapGenerator {
 		
 		new IndianSettlementsGenerator(this, game, map).makeNativeSettlements();
 		
+		generatePlayersStartPositions(map, game);
+		
 		game.map = map;
+	}
+
+	private void generatePlayersStartPositions(Map map, Game game) {
+		List<Player> players = new ArrayList<Player>();
+		for (Player p : game.players.entities()) {
+			if (p.isLiveEuropeanPlayer()) {
+				players.add(p);
+			}
+		}
+		
+		// generate entry location
+		int x = -1, i = 0;
+		int startY = Map.POLAR_HEIGHT;
+		int playerDistance = (map.height - 2*Map.POLAR_HEIGHT) / (players.size()+1);
+		for (Player p : players) {
+			startY += playerDistance;
+			x = -1; 
+			i=0;
+			while (x == -1 && i<10) {
+				x = findAllowedEntryLocationX(map, startY+i);
+				if (x != -1) {
+					p.setEntryLocation(x, startY);
+				}
+				i++;
+			}
+			if (x == -1) {
+				throw new IllegalStateException("ERROR: can not find entry location for player " + p + " for startY " + startY);
+			}
+		}
+		
+        List<Unit> carriers = new ArrayList<Unit>(2);
+        List<Unit> passengers = new ArrayList<Unit>(2);
+		
+		boolean expertsUnits = Specification.options.getBoolean(GameOptions.EXPERT_STARTING_UNITS);
+		for (Player player : players) {
+			carriers.clear();
+			passengers.clear();
+			
+			EuropeanNationType pe = ((EuropeanNationType)player.nationType());
+			MapIdEntities<EuropeanStartingAbstractUnit> startedUnits = pe.getStartedUnits(expertsUnits);
+			
+			for (EuropeanStartingAbstractUnit eu : startedUnits.entities()) {
+				Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), eu.getType(), eu.getRole(), player);
+				if (unit.isCarrier()) {
+					unit.setState(Unit.UnitState.ACTIVE);
+					carriers.add(unit);
+				} else {
+					unit.setState(Unit.UnitState.SENTRY);
+					passengers.add(unit);
+				}
+			}
+			if (carriers.size() > 0) {
+				Unit carrier = carriers.get(0);
+				Tile tile = map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
+				carrier.changeUnitLocation(tile);
+				player.revealMapAfterUnitMove(game.map, carrier);
+				
+				for (Unit passengerUnit : passengers) {
+					passengerUnit.changeUnitLocation(carrier);
+				}
+			}
+		}
+	}
+	
+	private int findAllowedEntryLocationX(Map map, int y) {
+		Tile tile;
+		for (int x=map.width-2; x>map.width/2; x--) {
+			tile = map.getTile(x, y);
+			if (!tile.getType().isDirectlyHighSeasConnected()) {
+				return x+1;
+			}
+		}
+		return -1;
 	}
 
 	private void createStandardRegions(Map map) {
