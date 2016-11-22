@@ -94,7 +94,7 @@ public class MapGenerator {
 		generateMountains(map);
 		createHighSea(map);
 		generateRivers(map);
-		
+		new BonusResourcesGenerator(map).generate();
 		new IndianSettlementsGenerator(this, game, map).makeNativeSettlements();
 		
 		generatePlayersStartPositions(map, game);

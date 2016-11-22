@@ -14,6 +14,9 @@ public class TileImprovementType extends ObjectWithFeatures {
 	public static final String PLOWED_IMPROVEMENT_TYPE_ID = "model.improvement.plow";
 	public static final String CLEAR_FOREST_IMPROVEMENT_TYPE_ID = "model.improvement.clearForest";
 	
+	public static final String FISH_BONUS_LAND = "model.improvement.fishBonusLand";
+	public static final String FISH_BONUS_RIVER = "model.improvement.fishBonusRiver";
+	
 	private int addWorkTurns;
 	private int movementCost = 0;
 	private boolean natural = false;
