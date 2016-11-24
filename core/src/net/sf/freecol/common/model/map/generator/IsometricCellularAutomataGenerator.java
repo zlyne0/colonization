@@ -5,7 +5,7 @@ import com.github.czyzby.noise4j.map.generator.cellular.CellularAutomataGenerato
 
 import promitech.colonization.SpiralIterator;
 
-public class MyCellularAutomataGenerator extends CellularAutomataGenerator {
+public class IsometricCellularAutomataGenerator extends CellularAutomataGenerator {
 
 	private SpiralIterator spiralIterator;
 	

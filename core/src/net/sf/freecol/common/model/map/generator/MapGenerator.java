@@ -684,20 +684,40 @@ public class MapGenerator {
 	}
 	
 	private Grid createLandMass(int w, int h) {
+		// very big islands
 		float aliveChance = 0.8f;
 	    int radius = 3;
 	    int birthLimit = 11;
 	    int deathLimit = 11;
 	    int iterationAmount = 3;
-
-	    // big islands, continents
-	    aliveChance = 0.6f;
-	    radius = 2;
-	    birthLimit = 11;
-	    deathLimit = 8;
-	    iterationAmount = 3;	    
+		
+	    int landType = Specification.options.getStringValueAsInt(MapGeneratorOptions.LAND_GENERATOR_TYPE);
+	    landType = MapGeneratorOptions.LAND_GENERATOR_ARCHIPELAGO;
+		switch (landType) {
+			case MapGeneratorOptions.LAND_GENERATOR_CONTINENT: {
+			    aliveChance = 0.6f;
+			    radius = 2;
+			    birthLimit = 10;
+			    deathLimit = 10;
+			    iterationAmount = 5;
+			} break;
+			case MapGeneratorOptions.LAND_GENERATOR_ARCHIPELAGO: {
+				aliveChance = 0.7f;
+				radius = 1;
+				birthLimit = 3;
+				deathLimit = 3;
+				iterationAmount = 4;
+			} break;
+			case MapGeneratorOptions.LAND_GENERATOR_ISLANDS: {
+				aliveChance = 0.6f;
+				radius = 2;
+				birthLimit = 11;
+				deathLimit = 8;
+				iterationAmount = 3;	    
+			} break;
+		}
 	    
-		CellularAutomataGenerator cellularGenerator = new MyCellularAutomataGenerator();
+		CellularAutomataGenerator cellularGenerator = new IsometricCellularAutomataGenerator();
         cellularGenerator.setAliveChance(aliveChance);
         cellularGenerator.setRadius(radius);
         cellularGenerator.setBirthLimit(birthLimit);

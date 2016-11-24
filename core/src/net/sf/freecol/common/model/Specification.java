@@ -52,6 +52,11 @@ public class Specification implements Identifiable {
             return option.getValue();
         }
         
+        public int getStringValueAsInt(String code) {
+            StringOption option = (StringOption)optionValues.getById(code);
+            return Integer.parseInt(option.getValue());
+        }
+        
         public void flattenOptionsEntriesTree(String difficultyLevel) {
             for (OptionGroup og : optionGroupEntities.entities()) {
                 addEntriesInOptionGroup(og);
