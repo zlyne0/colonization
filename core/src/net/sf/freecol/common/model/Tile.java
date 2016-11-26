@@ -20,6 +20,8 @@ public class Tile implements UnitLocation, Identifiable {
 	public final String id;
 	private int connected = 0;
 	private boolean moveToEurope = false;
+	private String owner;
+	private String owningSettlement;
 	
 	protected Settlement settlement;
 	private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
@@ -332,6 +334,15 @@ public class Tile implements UnitLocation, Identifiable {
 		return style;
 	}
 	
+	public void changeOwner(Player player, Settlement settlement) {
+		this.owner = player.getId();
+		this.owningSettlement = settlement.getId();
+	}
+	
+	public boolean hasOwnerOrOwningSettlement() {
+		return owner != null || owningSettlement != null;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 	    
 		public Xml() {
@@ -382,6 +393,8 @@ public class Tile implements UnitLocation, Identifiable {
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
 			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
+			tile.owner = attr.getStrAttribute("owner");
+			tile.owningSettlement = attr.getStrAttribute("owningSettlement");
 			
 			nodeObject = tile;
 		}

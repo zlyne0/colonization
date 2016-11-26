@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
+import promitech.colonization.SpiralIterator;
 
 class IndianSettlementsGenerator {
 
@@ -51,11 +52,14 @@ class IndianSettlementsGenerator {
 	private final MapGenerator mapGenerator;
 	private final Map map;
 	private final Game game;
+	private SpiralIterator spiralIterator;
 	
 	IndianSettlementsGenerator(MapGenerator mapGenerator, Game game, Map map) {
 		this.mapGenerator = mapGenerator;
 		this.map = map;
 		this.game = game;
+		
+		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
 	void makeNativeSettlements() {
@@ -130,7 +134,7 @@ class IndianSettlementsGenerator {
 	        });
         	if (!settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		Settlement.createIndianSettlement(territory.player, tile, capitalType);
+        		changeTileOwner(Settlement.createIndianSettlement(territory.player, tile, capitalType));
         		territory.centerTile = tile;
         		territory.numberOfSettlements--;
         	}
@@ -148,12 +152,27 @@ class IndianSettlementsGenerator {
         	SettlementType settlementRegularType = territory.player.nationType().getSettlementRegularType();
         	while (territory.numberOfSettlements > 0 && !settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		Settlement.createIndianSettlement(territory.player, tile, settlementRegularType);
+        		changeTileOwner(Settlement.createIndianSettlement(territory.player, tile, settlementRegularType));
         		territory.numberOfSettlements--;
         	}
         }
 	}
 
+	private void changeTileOwner(IndianSettlement settlement) {
+		spiralIterator.reset(settlement.tile.x, settlement.tile.y, true, settlement.settlementType.getClaimableRadius());
+		
+		settlement.tile.changeOwner(settlement.getOwner(), settlement);
+		
+		Tile tile;
+		while (spiralIterator.hasNext()) {
+			tile = map.getTile(spiralIterator.getX(), spiralIterator.getX());
+			if (tile != null && !tile.hasOwnerOrOwningSettlement()) {
+				tile.changeOwner(settlement.getOwner(), settlement);
+			}
+			spiralIterator.next();
+		}
+	}
+	
 	public Tile centerOfRegion(Map map, Region region) {
 		int x, y;
 		for (y=0; y<Map.STANDARD_REGION_NAMES.length; y++) {

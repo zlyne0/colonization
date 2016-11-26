@@ -72,12 +72,12 @@ public class BonusResourcesGenerator {
         
         // In Col1, the ocean tile in front of a river mouth would
         // get an additional +1 bonus
-        if (neighbourRivers) {
+        if (!added && neighbourRivers) {
             added = true;
             tile.addImprovement(new TileImprovement(Game.idGenerator, fishBonusRiverType));
         }
         
-        if (added == false && Randomizer.instance().isHappen(bonusPercentProbability) && tile.getType().allowedResourceTypes.isNotEmpty()) {
+        if (!added && Randomizer.instance().isHappen(bonusPercentProbability) && tile.getType().allowedResourceTypes.isNotEmpty()) {
             ResourceType resourceType = tile.getType().exposeResource();
             tile.addResource(new TileResource(Game.idGenerator, resourceType, resourceType.initQuantity()));
         }
