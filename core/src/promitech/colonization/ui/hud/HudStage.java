@@ -130,6 +130,10 @@ public class HudStage extends Stage {
     			}
     			return true;
     		}
+    		if (keycode == Input.Keys.B && buildColonyButton.getParent() != null) {
+    			gameController.buildColony();
+    			return true;
+    		}
     		if (keycode == Input.Keys.Y && europeButton.getParent() != null) {
     			gameController.showEuropeScreen();
     			return true;
@@ -219,6 +223,10 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
+    		if (event.getListenerActor() == buildColonyButton) {
+    			gameController.buildColony();
+    			return true;
+    		}
     		if (event.getListenerActor() == europeButton) {
     			gameController.showEuropeScreen();
     			return true;

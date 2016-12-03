@@ -11,6 +11,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class BuildingType extends BuildableType {
 
+	public static final String TOWN_HALL = "model.building.townHall";
+	
     int level = 1;
     int workplaces = 3;
     private String upgradesFromId;

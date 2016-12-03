@@ -14,6 +14,11 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation {
 		// colonyTile has the same id like tile which it concern 
 		super(id);
 	}
+	
+	public ColonyTile(Tile tile) {
+		super(tile.getId());
+		this.tile = tile;
+	}
 
 	public void moveWorkerTo(ColonyTile destColonyTile) {
 		Unit takenWorker = takeWorker();

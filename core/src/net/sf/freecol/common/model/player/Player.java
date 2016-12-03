@@ -502,6 +502,11 @@ public class Player extends ObjectWithId {
 		return exploredTiles;
 	}
     
+	public void addSettlement(Settlement settlement) {
+		settlements.add(settlement);
+		settlement.setOwner(this);
+	}
+
 	public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {

@@ -3,9 +3,14 @@ package net.sf.freecol.common.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -341,6 +346,40 @@ public class Tile implements UnitLocation, Identifiable {
 	
 	public boolean hasOwnerOrOwningSettlement() {
 		return owner != null || owningSettlement != null;
+	}
+
+	public int getLandPriceForPlayer(Player player, MapIdEntities<Player> players) {
+		if (owner == null || player.equalsId(owner)) {
+			return 0;
+		}
+		if (hasSettlement()) {
+			throw new IllegalStateException("no price for land with settlement");
+		}
+		
+		Player ownerPlayer = players.getById(owner);
+		if (ownerPlayer.isEuropean()) {
+			if (player.equalsId(owningSettlement)) {
+				return 0;
+			} else {
+				throw new IllegalStateException("no price for european settlement tile");
+			}
+		}
+		
+		if (player.getStance(ownerPlayer) == Stance.UNCONTACTED) {
+			return 0;
+		}
+		
+		int price = 0;
+        List<Production> productions = this.getType().productionInfo.getAttendedProductions();
+        for (Production production : productions) {
+            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+            	price += this.applyTileProductionModifier(outputEntry.getKey().getId(), outputEntry.getValue());
+            }
+        }
+        price *= Specification.options.getIntValue(GameOptions.LAND_PRICE_FACTOR);
+        price += 100;
+        price = (int)player.getFeatures().applyModifier(Modifier.LAND_PAYMENT_MODIFIER, price);
+		return price;
 	}
 	
 	public static class Xml extends XmlNodeParser {

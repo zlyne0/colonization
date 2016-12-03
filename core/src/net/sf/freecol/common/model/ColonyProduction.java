@@ -214,7 +214,7 @@ class ColonyProduction {
         return maxProd;
     }
 
-    private GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
+    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {

@@ -14,10 +14,8 @@ public abstract class Settlement extends ObjectWithId {
     public Tile tile;
     protected boolean coastland = false;
     
-    protected MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
-
     public static IndianSettlement createIndianSettlement(Player player, Tile tile, SettlementType settlementType) {
-    	String settlmentName = settlmentName(player);
+    	String settlmentName = generateSettlmentName(player);
     	
     	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
@@ -25,18 +23,34 @@ public abstract class Settlement extends ObjectWithId {
     	
 		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
 		indianSettlement.settlementType = settlementType;
-		indianSettlement.setName(settlmentName);
+		indianSettlement.name = settlmentName;
 		
 		indianSettlement.tile = tile;
 		tile.setSettlement(indianSettlement);
 		
-		indianSettlement.setOwner(player);
-		player.settlements.add(indianSettlement);
+		player.addSettlement(indianSettlement);
 		
 		return indianSettlement;
     }
     
-    private static String settlmentName(Player player) {
+    public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
+    	Colony colony = new Colony(Game.idGenerator);
+    	colony.settlementType = buildByUnit.getOwner().nationType().getSettlementRegularType();
+    	colony.name = name;
+    	
+    	tile.setSettlement(colony);
+    	buildByUnit.getOwner().addSettlement(colony);
+    	
+    	colony.createColonyTiles(map, tile);
+    	
+    	colony.initDefaultBuildings();
+    	colony.updateColonyFeatures();
+    	
+    	colony.initColonyBuilderUnit(buildByUnit);
+    	return colony;
+    }
+    
+    public static String generateSettlmentName(Player player) {
     	String key = "" + player.nation().getId() + ".settlementName." + player.settlements.size();
     	
     	if (!Messages.containsKey(key)) {

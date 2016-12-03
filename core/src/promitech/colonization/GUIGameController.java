@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -25,6 +26,7 @@ import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
@@ -707,6 +709,36 @@ public class GUIGameController {
 		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
 		cheatConsole.addOnCloseListener(mapHudStage.addInputListenerToStageEvent);
 		cheatConsole.show(mapHudStage);
+	}
+
+	public void buildColony() {
+		Unit unit = guiGameModel.getActiveUnit();
+		Tile tile = unit.getTile();
+		
+		if (!tile.getType().canSettle()) {
+			System.out.println("can not settle on tile type " + tile.getType());
+			return;
+		}
+		if (game.map.hasColonyInRange(tile, 1)) {
+			System.out.println("another colony in one tile range");
+			return;
+		}
+		if (!unitCanBuildColony(unit)) {
+			System.out.println("unit can not build colony");
+			return;
+		}
+		
+		String colonyName = Settlement.generateSettlmentName(unit.getOwner());
+		
+		Settlement.buildColony(game.map, unit, tile, colonyName);
+		changeActiveUnit(null);
+		resetMapModel();
+	}
+	
+	private boolean unitCanBuildColony(Unit unit) {
+		return unit.hasMovesPoints() 
+				&& unit.unitType.canBuildColony() 
+				&& (!unit.getOwner().isRebel() || Specification.options.getBoolean(GameOptions.FOUND_COLONY_DURING_REBELLION));
 	}
 	
 }

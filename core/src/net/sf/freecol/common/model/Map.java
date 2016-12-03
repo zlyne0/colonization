@@ -157,15 +157,32 @@ public class Map extends ObjectWithId {
 		if (sourceTile.hasSettlement()) {
 			ll.add(sourceTile.getSettlement());
 		}
+		Tile tile = null;
 		spiralIterator.reset(sourceTile.x, sourceTile.y, true, radius);
 		while (spiralIterator.hasNext()) {
-			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
+			tile = getTile(spiralIterator.getX(), spiralIterator.getY());
 			if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
 				ll.add(tile.settlement);
 			}
 			spiralIterator.next();
 		}
 		return ll;
+	}
+	
+	public boolean hasColonyInRange(Tile tile, int radius) {
+		if (tile.hasSettlement() && tile.getSettlement().isColony()) {
+			return true;
+		}
+		spiralIterator.reset(tile.x, tile.y, true, radius);
+		Tile t;
+		while (spiralIterator.hasNext()) {
+			t = getTile(spiralIterator.getX(), spiralIterator.getY());
+			if (t.hasSettlement() && t.getSettlement().isColony()) {
+				return true;
+			}
+			spiralIterator.next();
+		}
+		return false;
 	}
 	
 	public Tile findFirstMovableHighSeasTile(Unit unit, int x, int y) {

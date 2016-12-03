@@ -112,6 +112,10 @@ public class UnitType extends BuildableType {
     	return hasAbility(Ability.CARRY_UNITS);
     }
     
+    public boolean canBuildColony() {
+        return hasAbility(Ability.FOUND_COLONY);
+    }
+    
     public boolean isWagonTrain() {
         return WAGON_TRAIN.equalsIgnoreCase(id);
     }
