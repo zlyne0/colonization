@@ -7,6 +7,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
+import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -338,10 +339,16 @@ public class Tile implements UnitLocation, Identifiable {
 	public int getStyle() {
 		return style;
 	}
+
+	public void changeOwner(Player player) {
+		changeOwner(player, null);
+	}
 	
 	public void changeOwner(Player player, Settlement settlement) {
 		this.owner = player.getId();
-		this.owningSettlement = settlement.getId();
+		if (settlement != null) {
+			this.owningSettlement = settlement.getId();
+		}
 	}
 	
 	public boolean hasOwnerOrOwningSettlement() {
@@ -380,6 +387,57 @@ public class Tile implements UnitLocation, Identifiable {
         price += 100;
         price = (int)player.getFeatures().applyModifier(Modifier.LAND_PAYMENT_MODIFIER, price);
 		return price;
+	}
+	
+	public void demandTileByPlayer(Player player, MapIdEntities<Player> players) {
+		Player tileOwner = players.getById(getOwnerId());
+		
+		if (getOwningSettlementId() != null) {
+			tileOwner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			
+			if (tileOwner.isIndian()) {
+				for (Settlement settlement : tileOwner.settlements.entities()) {
+					IndianSettlement indianSett = (IndianSettlement)settlement;
+					if (indianSett.settlementType.isCapital() || indianSett.equalsId(getOwningSettlementId())) {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+					} else {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN/2);
+					}
+				}
+			}
+		} else {
+			tileOwner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			
+			if (tileOwner.isIndian()) {
+				for (Settlement settlement : tileOwner.settlements.entities()) {
+					IndianSettlement indianSett = (IndianSettlement)settlement;
+					if (indianSett.hasContact(player)) {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+					}
+				}
+			}
+		}
+	}
+	
+	public boolean buyTileByPlayer(Player player, MapIdEntities<Player> players) {
+		int landPrice = getLandPriceForPlayer(player, players);
+		if (player.hasNotGold(landPrice)) {
+			System.out.println("player " + player + " has not gold to buy land for price " + landPrice);
+			return false;
+		}
+		player.subtractGold(landPrice);
+		Player tileOwner = players.getById(getOwnerId());
+		tileOwner.addGold(landPrice);
+		changeOwner(player);
+		return true;
+	}
+	
+	public String getOwnerId() {
+		return owner;
+	}
+	
+	public String getOwningSettlementId() {
+		return owningSettlement;
 	}
 	
 	public static class Xml extends XmlNodeParser {

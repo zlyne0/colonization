@@ -30,6 +30,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
+import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
@@ -714,7 +715,7 @@ public class GUIGameController {
 	public void buildColony() {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
-		
+	
 		if (!tile.getType().canSettle()) {
 			System.out.println("can not settle on tile type " + tile.getType());
 			return;
@@ -728,7 +729,73 @@ public class GUIGameController {
 			return;
 		}
 		
+		// simplicity - european can be owner only on settlement and neighbour tiles 
+		// so it is not possible settle on european own tile
+		// so check only native owner
+		
+		if (tile.getOwnerId() == null || unit.getOwner().equalsId(tile.getOwnerId())) {
+			buildColonyEnterColonyName();
+			return;
+		}
+		
+		int landPrice = -1;
+		Player tileOwner = game.players.getById(tile.getOwnerId());
+		if (unit.getOwner().hasContacted(tileOwner)) {
+			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner(), game.players);
+		}
+		if (landPrice == 0) {
+			buildColonyEnterColonyName();
+			return;
+		}
+		
+		QuestionDialog.OptionAction<Unit> takeLandAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit colonyBuilder) {
+				Tile tile = colonyBuilder.getTile();
+				tile.demandTileByPlayer(colonyBuilder.getOwner(), game.players);
+				buildColonyEnterColonyName();
+			}
+		};
+		QuestionDialog.OptionAction<Unit> payForLandAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit colonyBuilder) {
+				Tile tile = colonyBuilder.getTile();
+				if (tile.buyTileByPlayer(colonyBuilder.getOwner(), game.players)) {
+					buildColonyEnterColonyName();
+				}
+			}
+		};
+		
+		QuestionDialog questionDialog = new QuestionDialog();
+    	if (unit.getOwner().hasContacted(tileOwner)) {
+    		questionDialog.addQuestion(StringTemplate.template("indianLand.text")
+    			.addStringTemplate("%player%", tileOwner.getNationName())
+    		);
+    		
+    		if (landPrice > 0) {
+    			StringTemplate landPriceStrTemp = StringTemplate.template("indianLand.pay").addAmount("%amount%", landPrice);
+				questionDialog.addAnswer(landPriceStrTemp, payForLandAction, unit);
+    		}
+    	} else {
+    		questionDialog.addQuestion(StringTemplate.template("indianLand.unknown"));
+    	}
+    	questionDialog.addAnswer("indianLand.take", takeLandAction, unit);
+    	questionDialog.addOnlyCloseAnswer("indianLand.cancel");
+    	
+    	mapHudStage.showDialog(questionDialog);
+	}
+
+	public void buildColonyEnterColonyName() {
+		Unit unit = guiGameModel.getActiveUnit();
 		String colonyName = Settlement.generateSettlmentName(unit.getOwner());
+		
+		ColonyNameDialog cnd = new ColonyNameDialog(this, mapHudStage.getWidth() * 0.5f, colonyName);
+		mapHudStage.showDialog(cnd);
+	}
+	
+	public void buildColony(String colonyName) {
+		Unit unit = guiGameModel.getActiveUnit();
+		Tile tile = unit.getTile();
 		
 		Settlement.buildColony(game.map, unit, tile, colonyName);
 		changeActiveUnit(null);

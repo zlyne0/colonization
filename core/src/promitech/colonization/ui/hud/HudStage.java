@@ -27,6 +27,7 @@ import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
 import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.ui.ClosableDialog;
 
 public class HudStage extends Stage {
     private static Direction[][] BUTTON_DIRECTIONS = new Direction[][] { 
@@ -107,6 +108,10 @@ public class HudStage extends Stage {
 
     public void showDialog(Dialog dialog) {
     	dialog.show(this);
+    }
+    
+    public void showDialog(ClosableDialog closableDialog) {
+    	closableDialog.show(this);
     }
     
     public void showChooseUnitsToDisembarkDialog(MoveContext carrierMoveContext) {

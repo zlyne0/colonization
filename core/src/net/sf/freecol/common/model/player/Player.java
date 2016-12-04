@@ -222,7 +222,7 @@ public class Player extends ObjectWithId {
         stance.put(p.getId(), newStance);
     }
     
-    private void modifyTension(Player p, int val) {
+    public void modifyTension(Player p, int val) {
 		if (val == 0) {
     		return;
     	}
