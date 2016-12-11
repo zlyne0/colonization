@@ -29,8 +29,6 @@ import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
 
 public class MapGenerator {
-    public final static int POLAR_HEIGHT = 2;
-	
 	public static final float WATER_CELL = 0f;
 	public static final float LAND_CELL = 1f;
 	public static final String TEMPORARY_LAND_TYPE = "model.tile.grassland";
@@ -408,6 +406,7 @@ public class MapGenerator {
         }
 		
         number = (int) (landTilesCount * randomHillsRatio) / Specification.options.getIntValue(MapGeneratorOptions.MOUNTAIN_NUMBER);
+        System.out.println("max number of random hills : " + number);
         counter = 0;
         
         for (int it=0; it<1000 && counter < number; it++) {
@@ -422,7 +421,7 @@ public class MapGenerator {
         	if (foundNeighbours(map, landTile.x, landTile.y, TileType.MOUNTAINS, 3)) {
         		continue;
         	}
-        	if (foundNeighbours(map, landTile.x, landTile.y, TileType.OCEAN, 2)) {
+        	if (foundNeighbours(map, landTile.x, landTile.y, TileType.OCEAN, 1)) {
         		continue;
         	}
             // 25% mountains, 75% hills
@@ -460,6 +459,7 @@ public class MapGenerator {
 		
 		final int mapHumidity = Specification.options.getIntValue(MapGeneratorOptions.HUMIDITY);
 		final int forestChance = Specification.options.getIntValue(MapGeneratorOptions.FOREST_NUMBER);
+		System.out.println("forest chance: " + forestChance);
 		
 		List<TileType> candidateTileTypes = new ArrayList<TileType>(Specification.instance.tileTypes.size());
 		

@@ -610,6 +610,9 @@ public class Unit extends ObjectWithId implements UnitLocation {
 				case ACTIVE:
 					workLeft = -1;
 					break;
+				case IN_COLONY:
+					movesLeft = 0;
+					break;
 				default:
 					break;
 			}
