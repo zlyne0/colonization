@@ -20,11 +20,6 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation {
 		this.tile = tile;
 	}
 
-	public void moveWorkerTo(ColonyTile destColonyTile) {
-		Unit takenWorker = takeWorker();
-		destColonyTile.worker = takenWorker;
-	}
-    
 	public Unit takeWorker() {
 		Unit takenWorker = worker;
 		worker = null;

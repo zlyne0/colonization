@@ -197,6 +197,7 @@ public class Colony extends Settlement {
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
         destColonyTile.setWorker(unit);
+        destColonyTile.tile.changeOwner(owner, this);
     }
     
     public void removeWorkerFromWorkPlace(Unit worker) {
@@ -1052,6 +1053,27 @@ public class Colony extends Settlement {
 	    return colonyTiles.containsId(tile);
 	}
 	
+	public boolean isTileLocked(Tile tile) {
+		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
+			return true;
+		}
+		if (tile.getOwner() != null) {
+			if (tile.getOwner().isIndian()) {
+				return !owner.foundingFathers.containsId(FoundingFather.PETER_MINUIT);
+			} else {
+				if (tile.getOwningSettlementId() != null) {
+					if (this.equalsId(tile.getOwningSettlementId())) {
+						return false;
+					}
+					if (tile.hasWorkerOnTile()) {
+						return true;
+					}
+				} 
+			}
+		}
+		return false;
+	}
+	
     public static class Xml extends XmlNodeParser {
         public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
@@ -1100,4 +1122,5 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
+
 }

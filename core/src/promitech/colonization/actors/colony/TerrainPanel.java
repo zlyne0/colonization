@@ -144,6 +144,9 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		clear();
 		
+		this.colonyTile = colonyTile;
+		this.colony = (Colony)colonyTile.getSettlement();
+		
 		mapRenderer = new MapRenderer(
 				mapDrawModel, 
 				GameResources.instance, 
@@ -151,9 +154,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		);
 		mapRenderer.setMapRendererSize(PREF_WIDTH, PREF_HEIGHT);
 		mapRenderer.centerCameraOnTileCords(colonyTile.x, colonyTile.y);
-		
-		this.colonyTile = colonyTile;
-		this.colony = (Colony)colonyTile.getSettlement();
+		mapRenderer.showColonyLockedTiles(colony);
 
 		initTerrainsDrawModel();
 		initWorkersActors(dragAndDrop);

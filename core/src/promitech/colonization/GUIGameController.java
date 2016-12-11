@@ -733,15 +733,14 @@ public class GUIGameController {
 		// so it is not possible settle on european own tile
 		// so check only native owner
 		
-		if (tile.getOwnerId() == null || unit.getOwner().equalsId(tile.getOwnerId())) {
+		if (tile.getOwner() == null || unit.getOwner().equalsId(tile.getOwner())) {
 			buildColonyEnterColonyName();
 			return;
 		}
 		
 		int landPrice = -1;
-		Player tileOwner = game.players.getById(tile.getOwnerId());
-		if (unit.getOwner().hasContacted(tileOwner)) {
-			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner(), game.players);
+		if (unit.getOwner().hasContacted(tile.getOwner())) {
+			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner());
 		}
 		if (landPrice == 0) {
 			buildColonyEnterColonyName();
@@ -752,7 +751,7 @@ public class GUIGameController {
 			@Override
 			public void executeAction(Unit colonyBuilder) {
 				Tile tile = colonyBuilder.getTile();
-				tile.demandTileByPlayer(colonyBuilder.getOwner(), game.players);
+				tile.demandTileByPlayer(colonyBuilder.getOwner());
 				buildColonyEnterColonyName();
 			}
 		};
@@ -760,16 +759,16 @@ public class GUIGameController {
 			@Override
 			public void executeAction(Unit colonyBuilder) {
 				Tile tile = colonyBuilder.getTile();
-				if (tile.buyTileByPlayer(colonyBuilder.getOwner(), game.players)) {
+				if (tile.buyTileByPlayer(colonyBuilder.getOwner())) {
 					buildColonyEnterColonyName();
 				}
 			}
 		};
 		
 		QuestionDialog questionDialog = new QuestionDialog();
-    	if (unit.getOwner().hasContacted(tileOwner)) {
+    	if (unit.getOwner().hasContacted(tile.getOwner())) {
     		questionDialog.addQuestion(StringTemplate.template("indianLand.text")
-    			.addStringTemplate("%player%", tileOwner.getNationName())
+    			.addStringTemplate("%player%", tile.getOwner().getNationName())
     		);
     		
     		if (landPrice > 0) {
@@ -806,6 +805,14 @@ public class GUIGameController {
 		return unit.hasMovesPoints() 
 				&& unit.unitType.canBuildColony() 
 				&& (!unit.getOwner().isRebel() || Specification.options.getBoolean(GameOptions.FOUND_COLONY_DURING_REBELLION));
+	}
+
+	public void showTilesOwners() {
+		mapActor.showTileOwners();
+	}
+	
+	public void hideTilesOwners() {
+		mapActor.hideTileOwners();
 	}
 	
 }

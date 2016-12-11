@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
@@ -79,6 +80,8 @@ public class MapRenderer {
     private final RoadsTileDrawer roadsTileDrawer;
     private final ObjectsTileDrawer objectsTileDrawer;
     private final FogOfWarDrawer fogOfWarDrawer;
+    private TileOwnerDrawer tileOwnerDrawer;
+    private ColonyLockedTileDrawer colonyLockedTileDrawer;
 
     private final ShapeRenderer shapeRenderer;
     public final Vector2 cameraPosition = new Vector2();
@@ -162,6 +165,7 @@ public class MapRenderer {
     	drawRoadLayer(batch);
     	drawLayer(batch, objectsTileDrawer);
     	drawFogOfWarLayer(batch);
+    	drawTileOwners(batch);
     	drawPathLayer(batch);
     }
 
@@ -205,6 +209,21 @@ public class MapRenderer {
     	fogOfWarDrawer.polyBatch.end();
     	
     	batch.begin();
+	}
+
+    private void drawTileOwners(Batch batch) {
+    	if (tileOwnerDrawer != null) {
+    		batch.end();
+
+    		tileOwnerDrawer.polyBatch.setProjectionMatrix(batch.getProjectionMatrix());
+    		tileOwnerDrawer.polyBatch.setTransformMatrix(batch.getTransformMatrix());
+    		
+    		tileOwnerDrawer.polyBatch.begin();
+    		tileOwnerDrawer.polyBatch.enableBlending();
+    		drawLayer(batch, tileOwnerDrawer);
+    		tileOwnerDrawer.polyBatch.end();
+    		batch.begin();
+    	}
 	}
 
     private void drawRoadLayer(Batch batch) {
@@ -346,6 +365,7 @@ public class MapRenderer {
     	terrainForegroundTileDrawer.batch = batch;
     	roadsTileDrawer.batch = batch;
     	objectsTileDrawer.batch = batch;
+    	colonyLockedTileDrawer.batch = batch;
 
     	roadsTileDrawer.shapeRenderer = shapeRenderer;
     	objectsTileDrawer.shapeRenderer = shapeRenderer;
@@ -353,12 +373,28 @@ public class MapRenderer {
     	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainBackgroundTileDrawer);
     	drawColonyTilesLayer(colonyTile, screenX, screenY, terrainForegroundTileDrawer);
     	drawColonyTilesRoadLayer(colonyTile, screenX, screenY);
+    	drawColonyLockedTiles(colonyTile, screenX, screenY);
     	drawColonyTilesObjects(colonyTile, screenX, screenY);
+    	
     	if (drawGrids) {
     	    drawColonyTilesGrids(colonyTile, batch, screenX, screenY);
     	}
 	}
 	
+	private void drawColonyLockedTiles(Tile colonyTile, float screenX, float screenY) {
+		colonyLockedTileDrawer.batch.end();
+
+		colonyLockedTileDrawer.polyBatch.setProjectionMatrix(colonyLockedTileDrawer.batch.getProjectionMatrix());
+		colonyLockedTileDrawer.polyBatch.setTransformMatrix(colonyLockedTileDrawer.batch.getTransformMatrix());
+		
+		colonyLockedTileDrawer.polyBatch.begin();
+		colonyLockedTileDrawer.polyBatch.enableBlending();
+		drawColonyTilesLayer(colonyTile, screenX, screenY, colonyLockedTileDrawer);
+		colonyLockedTileDrawer.polyBatch.end();
+		
+		colonyLockedTileDrawer.batch.begin();
+	}
+
 	private void drawColonyTilesGrids(Tile colonyTile, Batch batch, float screenX, float screenY) {
 	    batch.end();
 	    Gdx.gl20.glLineWidth(3);
@@ -437,5 +473,21 @@ public class MapRenderer {
 			}
 		}
 		return null;
+	}
+
+	public void showColonyLockedTiles(Colony colony) {
+		if (colonyLockedTileDrawer == null) {
+			colonyLockedTileDrawer = new ColonyLockedTileDrawer(mapDrawModel);
+		}
+		colonyLockedTileDrawer.update(colony);
+	}
+	
+	public void showTileOwners() {
+		tileOwnerDrawer = new TileOwnerDrawer(mapDrawModel);
+	}
+
+	public void hideTileOwners() {
+		tileOwnerDrawer.dispose();
+		tileOwnerDrawer = null;
 	}
 }

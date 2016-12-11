@@ -88,6 +88,14 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
+		if (cmd.equals("map show owners") || cmd.equals("mso") ) {
+			gameControler.showTilesOwners();
+			hideWithFade();
+		}
+		if (cmd.equals("map hide owners") || cmd.equals("mho")) {
+			gameControler.hideTilesOwners();
+			hideWithFade();
+		}
 	}
 
 	private void addConsoleLine(String line) {

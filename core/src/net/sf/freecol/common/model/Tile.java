@@ -26,7 +26,7 @@ public class Tile implements UnitLocation, Identifiable {
 	public final String id;
 	private int connected = 0;
 	private boolean moveToEurope = false;
-	private String owner;
+	private Player owner;
 	private String owningSettlement;
 	
 	protected Settlement settlement;
@@ -345,7 +345,7 @@ public class Tile implements UnitLocation, Identifiable {
 	}
 	
 	public void changeOwner(Player player, Settlement settlement) {
-		this.owner = player.getId();
+		this.owner = player;
 		if (settlement != null) {
 			this.owningSettlement = settlement.getId();
 		}
@@ -355,7 +355,7 @@ public class Tile implements UnitLocation, Identifiable {
 		return owner != null || owningSettlement != null;
 	}
 
-	public int getLandPriceForPlayer(Player player, MapIdEntities<Player> players) {
+	public int getLandPriceForPlayer(Player player) {
 		if (owner == null || player.equalsId(owner)) {
 			return 0;
 		}
@@ -363,8 +363,7 @@ public class Tile implements UnitLocation, Identifiable {
 			throw new IllegalStateException("no price for land with settlement");
 		}
 		
-		Player ownerPlayer = players.getById(owner);
-		if (ownerPlayer.isEuropean()) {
+		if (owner.isEuropean()) {
 			if (player.equalsId(owningSettlement)) {
 				return 0;
 			} else {
@@ -372,7 +371,7 @@ public class Tile implements UnitLocation, Identifiable {
 			}
 		}
 		
-		if (player.getStance(ownerPlayer) == Stance.UNCONTACTED) {
+		if (player.getStance(owner) == Stance.UNCONTACTED) {
 			return 0;
 		}
 		
@@ -389,14 +388,12 @@ public class Tile implements UnitLocation, Identifiable {
 		return price;
 	}
 	
-	public void demandTileByPlayer(Player player, MapIdEntities<Player> players) {
-		Player tileOwner = players.getById(getOwnerId());
-		
+	public void demandTileByPlayer(Player player) {
 		if (getOwningSettlementId() != null) {
-			tileOwner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
 			
-			if (tileOwner.isIndian()) {
-				for (Settlement settlement : tileOwner.settlements.entities()) {
+			if (owner.isIndian()) {
+				for (Settlement settlement : owner.settlements.entities()) {
 					IndianSettlement indianSett = (IndianSettlement)settlement;
 					if (indianSett.settlementType.isCapital() || indianSett.equalsId(getOwningSettlementId())) {
 						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
@@ -406,10 +403,10 @@ public class Tile implements UnitLocation, Identifiable {
 				}
 			}
 		} else {
-			tileOwner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
 			
-			if (tileOwner.isIndian()) {
-				for (Settlement settlement : tileOwner.settlements.entities()) {
+			if (owner.isIndian()) {
+				for (Settlement settlement : owner.settlements.entities()) {
 					IndianSettlement indianSett = (IndianSettlement)settlement;
 					if (indianSett.hasContact(player)) {
 						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
@@ -419,25 +416,33 @@ public class Tile implements UnitLocation, Identifiable {
 		}
 	}
 	
-	public boolean buyTileByPlayer(Player player, MapIdEntities<Player> players) {
-		int landPrice = getLandPriceForPlayer(player, players);
+	public boolean buyTileByPlayer(Player player) {
+		int landPrice = getLandPriceForPlayer(player);
 		if (player.hasNotGold(landPrice)) {
 			System.out.println("player " + player + " has not gold to buy land for price " + landPrice);
 			return false;
 		}
 		player.subtractGold(landPrice);
-		Player tileOwner = players.getById(getOwnerId());
-		tileOwner.addGold(landPrice);
+		owner.addGold(landPrice);
 		changeOwner(player);
 		return true;
 	}
 	
-	public String getOwnerId() {
+	public Player getOwner() {
 		return owner;
 	}
 	
 	public String getOwningSettlementId() {
 		return owningSettlement;
+	}
+	
+	public boolean hasWorkerOnTile() {
+		if (owner == null || owningSettlement == null) {
+			return false;
+		}
+		Colony tileOwnerColony = (Colony)owner.settlements.getById(owningSettlement);
+		ColonyTile ct = tileOwnerColony.colonyTiles.getById(this.getId());
+		return ct.getWorker() != null;
 	}
 	
 	public static class Xml extends XmlNodeParser {
@@ -490,7 +495,11 @@ public class Tile implements UnitLocation, Identifiable {
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
 			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
-			tile.owner = attr.getStrAttribute("owner");
+			
+			String ownerId = attr.getStrAttribute("owner");
+			if (ownerId != null) {
+				tile.owner = game.players.getById(ownerId);
+			}
 			tile.owningSettlement = attr.getStrAttribute("owningSettlement");
 			
 			nodeObject = tile;

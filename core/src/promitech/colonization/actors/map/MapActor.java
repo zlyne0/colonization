@@ -147,4 +147,12 @@ public class MapActor extends Widget {
 		mapDrawModel.unitDislocationAnimation.init(mapRenderer, moveContext);
 		getStage().addAction(Actions.sequence(mapDrawModel.unitDislocationAnimation, endOfUnitDislocationAnimation));
 	}
+
+	public void showTileOwners() {
+		mapRenderer.showTileOwners();
+	}
+
+	public void hideTileOwners() {
+		mapRenderer.hideTileOwners();
+	}
 }
