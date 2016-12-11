@@ -720,6 +720,10 @@ public class GUIGameController {
 			System.out.println("can not settle on tile type " + tile.getType());
 			return;
 		}
+		if (game.map.isOnMapEdge(tile)) {
+			System.out.println("can not settle on map edge");
+			return;
+		}
 		if (game.map.hasColonyInRange(tile, 1)) {
 			System.out.println("another colony in one tile range");
 			return;

@@ -78,6 +78,10 @@ public class Map extends ObjectWithId {
 	public boolean isPolar(Tile tile) {
 		return tile.y <= POLAR_HEIGHT || tile.y >= height - POLAR_HEIGHT - 1 || tile.getType().equalsId(TileType.ARCTIC);
 	}
+
+	public boolean isOnMapEdge(Tile tile) {
+		return tile.x <= 2 || tile.x >= width-2 || tile.y <= 2 || tile.y >= height-2; 
+	}
 	
 	public Tile getTile(int x, int y, Direction direction) {
 		return getTile(direction.stepX(x, y), direction.stepY(x, y));
