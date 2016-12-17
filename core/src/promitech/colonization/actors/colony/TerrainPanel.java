@@ -101,6 +101,9 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		}
 		if (ct.equalsId(colonyTile)) {
 			return false;
+		}	
+		if (colony.isTileLocked(ct.tile)) {
+			return false;
 		}
 		return ct.getWorker() == null;
 	}

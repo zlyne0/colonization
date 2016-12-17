@@ -224,6 +224,9 @@ class ColonyProduction {
 	        if (colonyTile.tile.getId().equals(colony.tile.getId())) {
 	            continue;
 	        }
+	        if (colony.isTileLocked(colonyTile.tile)) {
+	        	continue;
+	        }
 	        
 	        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
