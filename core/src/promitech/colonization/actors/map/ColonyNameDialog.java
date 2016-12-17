@@ -31,7 +31,6 @@ public class ColonyNameDialog extends ClosableDialog {
 		getContentTable().add(dialogLayout).width(maxWidth).pad(20);
 		
 		colonyNameTextField = new TextField(initialColonyName, skin);
-		colonyNameTextField.setTextFieldFilter(new TextFieldFilter.DigitsOnlyFilter());
 		
 		dialogLayout.add(new Label(Messages.msg("nameColony.text"), skin)).spaceBottom(20).row();
 		dialogLayout.add(colonyNameTextField).fillX().expandX();

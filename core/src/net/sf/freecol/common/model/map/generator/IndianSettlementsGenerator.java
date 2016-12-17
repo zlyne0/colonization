@@ -159,14 +159,14 @@ class IndianSettlementsGenerator {
 	}
 
 	private void changeTileOwner(IndianSettlement settlement) {
-		spiralIterator.reset(settlement.tile.x, settlement.tile.y, true, settlement.settlementType.getClaimableRadius());
+		spiralIterator.reset(settlement.tile.x, settlement.tile.y, true, settlement.settlementType.getClaimableRadius()+1);
 		
 		settlement.tile.changeOwner(settlement.getOwner(), settlement);
 		
 		Tile tile;
 		while (spiralIterator.hasNext()) {
-			tile = map.getTile(spiralIterator.getX(), spiralIterator.getX());
-			if (tile != null && !tile.hasOwnerOrOwningSettlement()) {
+			tile = map.getTile(spiralIterator.getX(), spiralIterator.getY());
+			if (tile != null && !tile.hasOwnerOrOwningSettlement() && !tile.getType().isWater()) {
 				tile.changeOwner(settlement.getOwner(), settlement);
 			}
 			spiralIterator.next();

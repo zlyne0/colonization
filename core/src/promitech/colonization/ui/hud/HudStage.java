@@ -84,6 +84,14 @@ public class HudStage extends Stage {
 		}
 	};
     
+	private final EventListener addInputListenerToStageEvent = new EventListener() {
+		@Override
+		public boolean handle(Event event) {
+			HudStage.this.addListener(inputListener);
+			return true;
+		}
+	};
+
     public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
         super(viewport);
         this.gameController = gameController;
@@ -111,6 +119,8 @@ public class HudStage extends Stage {
     }
     
     public void showDialog(ClosableDialog closableDialog) {
+    	HudStage.this.removeListener(inputListener);    	
+		closableDialog.addOnCloseListener(this.addInputListenerToStageEvent);
     	closableDialog.show(this);
     }
     
@@ -405,18 +415,6 @@ public class HudStage extends Stage {
 		hudInfoPanel.layout();
 	}
 	
-	public final EventListener addInputListenerToStageEvent = new EventListener() {
-		@Override
-		public boolean handle(Event event) {
-			HudStage.this.addListener(inputListener);
-			return true;
-		}
-	};
-	
-	public void removeInputListenerFromStage() {
-		HudStage.this.removeListener(inputListener);
-	}
-
 	private void createDirectionButtons() {
 		for (int y = 0; y < BUTTON_DIRECTIONS.length; y++) {
             for (int x = 0; x < BUTTON_DIRECTIONS[y].length; x++) {
@@ -536,24 +534,20 @@ public class HudStage extends Stage {
 	}
 	
     private void showGotoLocationDialog() {
-    	removeInputListenerFromStage();
 		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
 				gameController,
 				shapeRenderer,
 				HudStage.this.getHeight() * 0.75f
 		);
-		gotoCityDialogList.addOnCloseListener(addInputListenerToStageEvent);
-		gotoCityDialogList.show(HudStage.this);
+		HudStage.this.showDialog(gotoCityDialogList);
     }
 	
 	private void showNotification() {
 		Notification notification = gameController.getFirstNotification();
 		
 		if (notification instanceof MessageNotification) {
-			removeInputListenerFromStage();
 			NotificationDialog dialog = new NotificationDialog(notification);
-			dialog.addOnCloseListener(addInputListenerToStageEvent);
-			dialog.show(HudStage.this);
+			HudStage.this.showDialog(dialog);
 		}
 		
 		if (notification instanceof MonarchActionNotification) {

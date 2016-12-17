@@ -701,15 +701,13 @@ public class GUIGameController {
 	}
 
 	public void showCheatConsoleDialog() {
-		mapHudStage.removeInputListenerFromStage();
 		CheatConsole cheatConsole = new CheatConsole(
-				mapHudStage.getWidth() * 0.75f, 
-				mapHudStage.getHeight() * 0.75f,
-				this
-			);
+			mapHudStage.getWidth() * 0.75f, 
+			mapHudStage.getHeight() * 0.75f,
+			this
+		);
 		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
-		cheatConsole.addOnCloseListener(mapHudStage.addInputListenerToStageEvent);
-		cheatConsole.show(mapHudStage);
+		mapHudStage.showDialog(cheatConsole);
 	}
 
 	public void buildColony() {
