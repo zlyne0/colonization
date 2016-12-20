@@ -749,43 +749,54 @@ public class GUIGameController {
 			return;
 		}
 		
+		final QuestionDialog.OptionAction<Unit> buildColonyEnterColonyNameAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit claimedUnit) {
+				buildColonyEnterColonyName();
+			}
+		};
+    	
+		QuestionDialog questionDialog = createIndianLandDemandQuestions(landPrice, unit, tile, buildColonyEnterColonyNameAction);
+    	mapHudStage.showDialog(questionDialog);
+	}
+
+	public QuestionDialog createIndianLandDemandQuestions(int landPrice, final Unit claimedUnit,
+			final Tile claimedTile, final QuestionDialog.OptionAction<Unit> actionAfterDemand) {
 		QuestionDialog.OptionAction<Unit> takeLandAction = new QuestionDialog.OptionAction<Unit>() {
 			@Override
-			public void executeAction(Unit colonyBuilder) {
-				Tile tile = colonyBuilder.getTile();
-				tile.demandTileByPlayer(colonyBuilder.getOwner());
-				buildColonyEnterColonyName();
+			public void executeAction(Unit claimedUnit) {
+				claimedTile.demandTileByPlayer(claimedUnit.getOwner());
+				
+				actionAfterDemand.executeAction(claimedUnit);
 			}
 		};
 		QuestionDialog.OptionAction<Unit> payForLandAction = new QuestionDialog.OptionAction<Unit>() {
 			@Override
-			public void executeAction(Unit colonyBuilder) {
-				Tile tile = colonyBuilder.getTile();
-				if (tile.buyTileByPlayer(colonyBuilder.getOwner())) {
-					buildColonyEnterColonyName();
+			public void executeAction(Unit claimedUnit) {
+				if (claimedTile.buyTileByPlayer(claimedUnit.getOwner())) {
+					actionAfterDemand.executeAction(claimedUnit);
 				}
 			}
 		};
 		
 		QuestionDialog questionDialog = new QuestionDialog();
-    	if (unit.getOwner().hasContacted(tile.getOwner())) {
-    		questionDialog.addQuestion(StringTemplate.template("indianLand.text")
-    			.addStringTemplate("%player%", tile.getOwner().getNationName())
-    		);
-    		
-    		if (landPrice > 0) {
-    			StringTemplate landPriceStrTemp = StringTemplate.template("indianLand.pay").addAmount("%amount%", landPrice);
-				questionDialog.addAnswer(landPriceStrTemp, payForLandAction, unit);
-    		}
-    	} else {
-    		questionDialog.addQuestion(StringTemplate.template("indianLand.unknown"));
-    	}
-    	questionDialog.addAnswer("indianLand.take", takeLandAction, unit);
-    	questionDialog.addOnlyCloseAnswer("indianLand.cancel");
-    	
-    	mapHudStage.showDialog(questionDialog);
+		if (claimedUnit.getOwner().hasContacted(claimedTile.getOwner())) {
+			questionDialog.addQuestion(StringTemplate.template("indianLand.text")
+				.addStringTemplate("%player%", claimedTile.getOwner().getNationName())
+			);
+			
+			if (landPrice > 0) {
+				StringTemplate landPriceStrTemp = StringTemplate.template("indianLand.pay").addAmount("%amount%", landPrice);
+				questionDialog.addAnswer(landPriceStrTemp, payForLandAction, claimedUnit);
+			}
+		} else {
+			questionDialog.addQuestion(StringTemplate.template("indianLand.unknown"));
+		}
+		questionDialog.addAnswer("indianLand.take", takeLandAction, claimedUnit);
+		questionDialog.addOnlyCloseAnswer("indianLand.cancel");
+		return questionDialog;
 	}
-
+	
 	public void buildColonyEnterColonyName() {
 		Unit unit = guiGameModel.getActiveUnit();
 		String colonyName = Settlement.generateSettlmentName(unit.getOwner());

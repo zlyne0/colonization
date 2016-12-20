@@ -47,6 +47,7 @@ public abstract class Settlement extends ObjectWithId {
     	colony.updateColonyFeatures();
     	
     	colony.initColonyBuilderUnit(buildByUnit);
+    	tile.changeOwner(buildByUnit.getOwner(), colony);
     	return colony;
     }
     

@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.UnitActor;
@@ -20,8 +21,13 @@ import promitech.colonization.actors.UnitDragAndDropTarget;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.QuestionDialog;
 
-public class TerrainPanel extends Table implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
+public class TerrainPanel extends Table implements 
+	DragAndDropSourceContainer<UnitActor>, 
+	DragAndDropTargetContainer<UnitActor>,
+	DragAndDropPreHandlerTargetContainer<UnitActor>
+{
 	private static final int PREF_WIDTH = MapRenderer.TILE_WIDTH * 3 + MapRenderer.TILE_WIDTH/2;
 	private static final int PREF_HEIGHT = MapRenderer.TILE_HEIGHT * 3 + MapRenderer.TILE_HEIGHT/2;
 	
@@ -37,6 +43,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	private final ProductionQuantityDrawer productionQuantityDrawer;
 	private final ChangeColonyStateListener changeColonyStateListener;
 	private final DoubleClickedListener unitActorDoubleClickListener;
+	private final GUIGameController gameController;
 	
 	@Override
 	public float getPrefWidth() {
@@ -48,9 +55,10 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		return PREF_HEIGHT;
 	}
 	
-	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
+	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener, GUIGameController gameController) {
 	    this.changeColonyStateListener = changeColonyStateListener;
 	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
+	    this.gameController = gameController;
 		setWidth(getPrefWidth());
 		setHeight(getPrefHeight());
 		
@@ -86,7 +94,7 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 	
 	@Override
 	public void putPayload(UnitActor worker, float x, float y) {
-		ColonyTile destColonyTile = getColonyTileByScreenCords(x, y);
+		ColonyTile destColonyTile = getColonyTile(x, y);
 		if (destColonyTile == null) {
 			throw new IllegalStateException("can not find dest colony tile by screen cords. Should invoke canPutpayload before");
 		}
@@ -95,16 +103,13 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 
 	@Override
 	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
-		ColonyTile ct = getColonyTileByScreenCords(x, y);
+		ColonyTile ct = getColonyTile(x, y);
 		if (ct == null) {
 			return false;
 		}
 		if (ct.equalsId(colonyTile)) {
 			return false;
 		}	
-		if (colony.isTileLocked(ct.tile)) {
-			return false;
-		}
 		return ct.getWorker() == null;
 	}
 
@@ -129,8 +134,40 @@ public class TerrainPanel extends Table implements DragAndDropSourceContainer<Un
 		}
 		throw new IllegalStateException("can not find colony tile by workerId: " + unitActor.unit.getId());
 	}
+
+	@Override
+	public boolean isPrePutPayload(UnitActor worker, float x, float y) {
+		ColonyTile ct = getColonyTileNotNull(x, y);
+		return colony.isTileLocked(ct.tile);
+	}
+
+	@Override
+	public void prePutPayload(final UnitActor worker, final float x, final float y, final DragAndDropSourceContainer<UnitActor> sourceContainer) {
+		final ColonyTile ct = getColonyTileNotNull(x, y);
+		int landPrice = ct.tile.getLandPriceForPlayer(worker.unit.getOwner());
+		if (landPrice > 0) {			
+			final QuestionDialog.OptionAction<Unit> moveWorkerAction = new QuestionDialog.OptionAction<Unit>() {
+				@Override
+				public void executeAction(Unit claimedUnit) {
+					sourceContainer.takePayload(worker, x, y);
+					putWorkerOnTerrain(worker, ct);
+				}
+			};
+			
+			QuestionDialog questionDialog = gameController.createIndianLandDemandQuestions(landPrice, worker.unit, ct.tile, moveWorkerAction);
+			questionDialog.show(getStage());
+		}
+	}
+
+	private ColonyTile getColonyTileNotNull(float x, float y) {
+		ColonyTile ct = getColonyTile(x, y);
+		if (ct == null) {
+			throw new IllegalStateException("can not find tile by cords [" + x + ", " + y + "]");
+		}
+		return ct;
+	}
 	
-	private ColonyTile getColonyTileByScreenCords(float x, float y) {
+	private ColonyTile getColonyTile(float x, float y) {
 		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)x, (int)y);
 		if (tile == null) {
 			return null;
