@@ -71,5 +71,10 @@ public class UnitIterator implements Iterator<Unit> {
 		}
 		return sb.toString();
 	}
+
+    @Override
+    public void remove() {
+        throw new IllegalStateException("not implemented");
+    }
 }
 

@@ -45,7 +45,7 @@ public class ProductionInfo {
 	public String toString() {
 		String st = "";
 		for (Production p : productions) {
-			st += p + System.lineSeparator();
+			st += p + "\n";
 		}
 		return st;
 	}
