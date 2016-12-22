@@ -78,6 +78,8 @@ public class TerrainPanel extends Table implements
 	}
 	
 	void putWorkerOnTerrain(UnitActor worker, ColonyTile aColonyTile) {
+	    worker.disableFocus();
+	    worker.disableUnitChip();	    
 		worker.dragAndDropSourceContainer = this;
 		
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
