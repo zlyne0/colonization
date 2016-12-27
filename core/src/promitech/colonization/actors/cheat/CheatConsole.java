@@ -25,11 +25,9 @@ public class CheatConsole extends ClosableDialog {
 	private final GUIGameController gameControler;
 	private Tile selectedTile;
 	
-	public CheatConsole(float width, float height, GUIGameController gameControler) {
+	public CheatConsole(GUIGameController gameControler) {
 		super("", GameResources.instance.getUiSkin());
 		this.gameControler = gameControler;
-		
-		dialogLayout.setSize(width, height);
 		
 		label = new Label("", GameResources.instance.getUiSkin());
         label.setAlignment(Align.top | Align.left);
@@ -44,8 +42,7 @@ public class CheatConsole extends ClosableDialog {
 		
 		dialogLayout.add(scrollPane).expand().fill().row();
 		dialogLayout.add(textField).fillX().expandX();
-		
-		getContentTable().add(dialogLayout).width(width).height(height);
+		getContentTable().add(dialogLayout);		
 		
 		dialog.addListener(new InputListener() {
 			public boolean keyDown (InputEvent event, int keycode2) {
@@ -110,6 +107,10 @@ public class CheatConsole extends ClosableDialog {
 	
 	@Override
 	public void show(Stage stage) {
+		getContentTable().getCell(dialogLayout)
+			.width(stage.getWidth() * 0.75f)
+			.height(stage.getHeight() * 0.75f);
+		
 		super.show(stage);
 		stage.setKeyboardFocus(textField);
 	}

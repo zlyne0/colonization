@@ -701,11 +701,7 @@ public class GUIGameController {
 	}
 
 	public void showCheatConsoleDialog() {
-		CheatConsole cheatConsole = new CheatConsole(
-			mapHudStage.getWidth() * 0.75f, 
-			mapHudStage.getHeight() * 0.75f,
-			this
-		);
+		CheatConsole cheatConsole = new CheatConsole(this);
 		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
 		mapHudStage.showDialog(cheatConsole);
 	}
