@@ -8,6 +8,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Specification.Options;
+import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -21,6 +23,7 @@ import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -134,6 +137,9 @@ public class SaveGameParserTest {
 
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
+		
+		verifyOptions(Specification.options);
+		
         assertEquals(42, Specification.instance.unitTypes.size());
         verifyTileTypes(specification);
 
@@ -154,6 +160,11 @@ public class SaveGameParserTest {
         verifySpecificationUnitTypes(specification);
         verifySpecificationFoundingFathers(specification);
     }
+
+	private void verifyOptions(Options options) {
+		int temperature = options.getIntValue(MapGeneratorOptions.TEMPERATURE);
+		assertEquals(2, temperature);
+	}
 
 	private void verifyTileTypes(Specification specification) {
 		assertEquals(23, specification.tileTypes.size());
@@ -206,6 +217,9 @@ public class SaveGameParserTest {
         NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
         assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
         assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+        
+        EuropeanNationType buildingNationType = (EuropeanNationType)specification.nationTypes.getById("model.nationType.building");
+        assertEquals(3, buildingNationType.getStartedUnits(true).size());
 	}
 
     private void verifySpecificationUnitTypes(Specification specification) {

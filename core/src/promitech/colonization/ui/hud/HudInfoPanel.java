@@ -7,10 +7,9 @@ import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
@@ -24,7 +23,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.resources.Messages;
 
-public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
+public class HudInfoPanel extends Widget implements ChangeSelectedUnitListener {
     private static final int GOODS_IMAGE_WIDTH = 32;
     private static final int UNITS_IMAGE_WIDTH = 35;
     
@@ -51,14 +50,13 @@ public class HudInfoPanel extends Actor implements ChangeSelectedUnitListener {
     }
 
     @Override
-    protected void setStage(Stage stage) {
-    	super.setStage(stage);
-    	if (stage == null) {
+    public void layout() {
+    	if (getStage() == null) {
     		return;
     	}
 		setBounds(
-				stage.getWidth() - infoPanelSkin.texture.getRegionWidth(), 0,
-				infoPanelSkin.texture.getRegionWidth(), infoPanelSkin.texture.getRegionHeight()
+			getStage().getWidth() - infoPanelSkin.texture.getRegionWidth(), 0,
+			infoPanelSkin.texture.getRegionWidth(), infoPanelSkin.texture.getRegionHeight()
 		);
     }
     

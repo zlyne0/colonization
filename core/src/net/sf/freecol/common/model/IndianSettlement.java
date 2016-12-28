@@ -1,18 +1,53 @@
 package net.sf.freecol.common.model;
 
+import java.util.HashMap;
+
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Tension;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianSettlement extends Settlement {
     
+    public static enum ContactLevel {
+        UNCONTACTED,     // Nothing known other than location?
+        CONTACTED,       // Name, wanted-goods now visible
+        VISITED,         // Skill now known
+        SCOUTED          // Scouting bonus consumed
+    };
+	
 	/** The missionary at this settlement. */
     protected Unit missionary = null;
+    
+    private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
+    private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
 
+    public IndianSettlement(IdGenerator idGenerator) {
+    	super(idGenerator.nextId(IndianSettlement.class));
+    }
+    
     public IndianSettlement(String id) {
 		super(id);
 	}
 
+    public boolean hasContact(Player player) {
+    	ContactLevel level = contactLevelByPlayer.get(player.getId());
+    	if (level == null) {
+    		return false;
+    	}
+    	return level != ContactLevel.UNCONTACTED;
+    }
+    
+	public void modifyTension(Player player, int tensionValue) {
+		Tension tension = tensionByPlayer.get(player.getId());
+		if (tension == null) {
+			tension = new Tension(tensionValue);
+			tensionByPlayer.put(player.getId(), tension);
+		} else {
+			tension.modify(tensionValue);
+		}
+	}
+    
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;
@@ -60,6 +95,22 @@ public class IndianSettlement extends Settlement {
             nodeObject = is;
         }
 
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+        	if (attr.isQNameEquals("contactLevel")) {
+        		((IndianSettlement)nodeObject).contactLevelByPlayer.put(
+    				attr.getStrAttribute("player"), 
+    				attr.getEnumAttribute(ContactLevel.class, "level")
+        		);
+        	}
+        	if (attr.isQNameEquals("alarm")) {
+        		((IndianSettlement)nodeObject).tensionByPlayer.put(
+        			attr.getStrAttribute("player"), 
+        			new Tension(attr.getIntAttribute("value"))
+        		);
+        	}
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

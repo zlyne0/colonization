@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.BooleanMap;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -27,54 +28,6 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
-
-class BooleanMap {
-	private boolean tab[][];
-	private int width;
-	private int height;
-	
-	public BooleanMap(Map map, boolean defaultVal) {
-		this.width = map.width;
-		this.height = map.height;
-		
-		tab = new boolean[height][width];
-		reset(defaultVal);
-	}
-	
-	public boolean isSet(int x, int y) {
-		if (tab == null) {
-			return false;
-		}
-		if (isCordsValid(x, y)) {
-			return tab[y][x];
-		}
-		return false;
-	}
-
-	public boolean isCordsValid(int x, int y) {
-		return x >= 0 && x < width && y >= 0 && y < height;
-	}
-	
-	/**
-	 * @return return true when value change
-	 */
-	public boolean set(int x, int y, boolean value) {
-		if (isCordsValid(x, y)) {
-			boolean c = tab[y][x] ^ value;
-			tab[y][x] = value;
-			return c;
-		}
-		return false;
-	}
-
-	public void reset(boolean defaultVal) {
-		for (int y=0; y<height; y++) {
-			for (int x=0; x<width; x++) {
-				tab[y][x] = defaultVal;
-			}
-		}
-	}
-}
 
 public class Player extends ObjectWithId {
 	
@@ -269,7 +222,7 @@ public class Player extends ObjectWithId {
         stance.put(p.getId(), newStance);
     }
     
-    private void modifyTension(Player p, int val) {
+    public void modifyTension(Player p, int val) {
 		if (val == 0) {
     		return;
     	}
@@ -342,6 +295,9 @@ public class Player extends ObjectWithId {
 	public boolean revealMapAfterUnitMove(Map map, Unit unit) {
 		Tile unitTileLocation = unit.getTile();
 		
+		setTileAsExplored(unitTileLocation, map);
+		fogOfWar.removeFogOfWar(unitTileLocation);
+		
 		int radius = unit.lineOfSight();
 		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
 		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
@@ -356,7 +312,7 @@ public class Player extends ObjectWithId {
 			if (setTileAsExplored(tile, map)) {
 				unexploredTile = true;
 			}
-			fogOfWar.removeFogOfWar(tile.x, tile.y);
+			fogOfWar.removeFogOfWar(tile);
 		}
 		return unexploredTile;
 	}
@@ -422,6 +378,10 @@ public class Player extends ObjectWithId {
         return !nation.isUnknownEnemy() && !isDead() && isEuropean();
     }
 	
+    public boolean isLiveIndianPlayer() {
+    	return isIndian() && !nation.isUnknownEnemy() && !isDead();
+    }
+    
 	public void endTurn() {
 	}
 
@@ -521,6 +481,11 @@ public class Player extends ObjectWithId {
 		return entryLocationY;
 	}
 
+	public void setEntryLocation(int x, int y) {
+		this.entryLocationX = x;
+		this.entryLocationY = y;
+	}
+	
 	public String getNewLandName() {
 		return newLandName;
 	}
@@ -532,7 +497,16 @@ public class Player extends ObjectWithId {
     public Monarch getMonarch() {
         return monarch;
     }
+
+	public BooleanMap getExploredTiles() {
+		return exploredTiles;
+	}
     
+	public void addSettlement(Settlement settlement) {
+		settlements.add(settlement);
+		settlement.setOwner(this);
+	}
+
 	public static class Xml extends XmlNodeParser {
         public Xml() {
             addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {

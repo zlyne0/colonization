@@ -93,8 +93,7 @@ public final class SpiralIterator implements Iterator<Boolean> {
                     direction = Direction.NE;
                     break;
                 default:
-                    throw new IllegalStateException("i=" + i + ", n=" + n
-                                                    + ", width=" + width);
+                    throw new IllegalStateException("i=" + i + ", n=" + n + ", width=" + width);
                 }
                 x = direction.stepX(x, y);
                 y = direction.stepY(x, y);

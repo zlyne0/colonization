@@ -1,34 +1,19 @@
 package net.sf.freecol.common.model.map;
 
-import net.sf.freecol.common.model.Identifiable;
-import promitech.colonization.savegame.XmlNodeAttributes;
-import promitech.colonization.savegame.XmlNodeParser;
-
-public class LostCityRumour implements Identifiable {
-    private String id;
-    
-    @Override
-    public String getId() {
-        return id;
+public class LostCityRumour {
+	
+    public static enum RumourType {
+        NO_SUCH_RUMOUR,
+        BURIAL_GROUND,
+        EXPEDITION_VANISHES,
+        NOTHING,
+        LEARN,
+        TRIBAL_CHIEF,
+        COLONIST,
+        MOUNDS,
+        RUINS,
+        CIBOLA,
+        FOUNTAIN_OF_YOUTH
     }
-    
-    public static class Xml extends XmlNodeParser {
-
-        @Override
-        public void startElement(XmlNodeAttributes attr) {
-            LostCityRumour lcr = new LostCityRumour();
-            lcr.id = attr.getStrAttribute("id");
-            
-            nodeObject = lcr;
-        }
-
-        @Override
-        public String getTagName() {
-            return tagName();
-        }
-
-        public static String tagName() {
-            return "lostCityRumour";
-        }
-    }
+	
 }

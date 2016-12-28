@@ -19,9 +19,14 @@
 
 package net.sf.freecol.common.model.specification;
 
+import java.util.Collections;
+import java.util.Set;
+
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.SettlementType;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeParser;
 
 /**
  * Represents the type of one of the nations present in the game.
@@ -31,6 +36,9 @@ public abstract class NationType extends ObjectWithFeatures {
 	public static enum SettlementNumber { LOW, AVERAGE, HIGH }
     public static enum AggressionLevel { LOW, AVERAGE, HIGH }
 
+    protected SettlementNumber settlementNumber = SettlementNumber.AVERAGE;
+    protected AggressionLevel aggressionLevel = AggressionLevel.AVERAGE;
+    
     protected boolean european = false;
     public final MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
 
@@ -46,5 +54,44 @@ public abstract class NationType extends ObjectWithFeatures {
     	return "nationType: " + getId();
     }
 
+	public SettlementNumber getSettlementNumber() {
+		return settlementNumber;
+	}
+    
     public abstract boolean isREF();
+    
+	public Set<String> getRegionNames() {
+		return Collections.emptySet();
+	}
+
+	public SettlementType getSettlementRegularType() {
+		for (SettlementType type : settlementTypes.entities()) {
+			if (!type.isCapital()) {
+				return type;
+			}
+		}
+		return null;
+	}
+	
+	public SettlementType getSettlementCapitalType() {
+		for (SettlementType type : settlementTypes.entities()) {
+			if (type.isCapital()) {
+				return type;
+			}
+		}
+		return null;
+	}
+	
+	public static class Xml {
+		
+		public static void abstractAddNodes(XmlNodeParser nodeParser) {
+			nodeParser.addNodeForMapIdEntities("settlementTypes", SettlementType.class);
+		}
+		
+		public static void abstractStartElement(XmlNodeAttributes attr, NationType nt) {
+            nt.settlementNumber = attr.getEnumAttribute(SettlementNumber.class, "number-of-settlements");
+            nt.aggressionLevel = attr.getEnumAttribute(AggressionLevel.class, "aggression");
+		}
+	}
+
 }

@@ -2,12 +2,13 @@ package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
+import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
 import net.sf.freecol.common.model.Game;
@@ -17,12 +18,14 @@ import promitech.colonization.GameResources;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
 
-public class MapActor extends Actor {
+public class MapActor extends Widget {
 
 	private final GameResources gameResources;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
 	private final Game game;
+	private final GridPoint2 mapCenteredToCords = new GridPoint2();
+	private boolean mapCentered = true;
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -75,6 +78,7 @@ public class MapActor extends Actor {
 		
 		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
+		centerCameraOnTile(game.playingPlayer.getEntryLocationX(), game.playingPlayer.getEntryLocationY());
 	}
 	
 	public void resetUnexploredBorders() {
@@ -96,19 +100,32 @@ public class MapActor extends Actor {
         shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
         shapeRenderer.translate(getX(), getY(), 0);
 
+        if (mapCentered == false) {
+			mapCentered = true;
+			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
+		}
         mapRenderer.render(batch);
 	}
 	
 	@Override
-	protected void sizeChanged() {
+	public void layout() {
 		mapRenderer.setMapRendererSize((int)getWidth(), (int)getHeight());
-		mapRenderer.centerCameraOnTileCords(24, 78);
 	}
 
+	public void centerCameraOnTile(int x, int y) {
+		mapCentered = false;
+		mapCenteredToCords.set(x, y);
+	}
+	
 	public void centerCameraOnTile(Tile tile) {
-		mapRenderer.centerCameraOnTileCords(tile.x, tile.y);
+		centerCameraOnTile(tile.x, tile.y);
 	}
 
+	public void centerCameraOnScreenCords(float x, float y) {
+		Point tile = mapRenderer.screenToMapCords((int)x, (int)y);
+		centerCameraOnTile(tile.x, tile.y);
+	}
+	
 	public Point getCenterOfScreen() {
 		return mapRenderer.getCenterOfScreen();
 	}
@@ -129,5 +146,13 @@ public class MapActor extends Actor {
 	{
 		mapDrawModel.unitDislocationAnimation.init(mapRenderer, moveContext);
 		getStage().addAction(Actions.sequence(mapDrawModel.unitDislocationAnimation, endOfUnitDislocationAnimation));
+	}
+
+	public void showTileOwners() {
+		mapRenderer.showTileOwners();
+	}
+
+	public void hideTileOwners() {
+		mapRenderer.hideTileOwners();
 	}
 }

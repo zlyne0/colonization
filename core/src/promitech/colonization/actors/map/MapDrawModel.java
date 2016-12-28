@@ -169,13 +169,13 @@ class TileDrawModelInitializer {
 		tileDrawModel.addBackgroundTerainTexture(frame);
 		
 		// add images for beach
-		if (tile.getType().isWater() && tile.style > 0) {
-			int edgeStyle = tile.style >> 4;
+		if (tile.getType().isWater() && tile.getStyle() > 0) {
+			int edgeStyle = tile.getStyle() >> 4;
     		if (edgeStyle > 0) {
     			frame = gameResources.tileEdge(edgeStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);
     		}
-    		int cornerStyle = tile.style & 15;
+    		int cornerStyle = tile.getStyle() & 15;
     		if (cornerStyle > 0) {
     			frame = gameResources.tileCorner(cornerStyle, x, y, tile.getType().getInsertOrder());
     			tileDrawModel.addBackgroundTerainTexture(frame);

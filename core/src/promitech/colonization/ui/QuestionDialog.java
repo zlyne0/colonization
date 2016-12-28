@@ -50,14 +50,22 @@ public class QuestionDialog extends Dialog {
         lable.setWrap(true);
         dialogLayout.add(lable).fillX().pad(20).space(10).width(500).row();
     }
+
+    public <T> void addAnswer(StringTemplate strTemplate, OptionAction<T> optionAction, T payload) {
+    	addAnswerText(Messages.message(strTemplate), optionAction, payload);
+    }
     
     public <T> void addAnswer(String msgKey, OptionAction<T> optionAction, T payload) {
-        TextButton button = new TextButton(Messages.msg(msgKey), GameResources.instance.getUiSkin());
-        button.addListener(buttonChangeListener);
-        
-        dialogLayout.add(button).fillX().space(10).row();
-        actionByButton.put(button, optionAction);
-        payloadByButton.put(button, payload);
+    	addAnswerText(Messages.msg(msgKey), optionAction, payload);
+    }
+
+    public <T> void addAnswerText(String text, OptionAction<T> optionAction, T payload) {
+    	TextButton button = new TextButton(text, GameResources.instance.getUiSkin());
+    	button.addListener(buttonChangeListener);
+    	
+    	dialogLayout.add(button).fillX().space(10).row();
+    	actionByButton.put(button, optionAction);
+    	payloadByButton.put(button, payload);
     }
     
     public void addOnlyCloseAnswer(String msgKey) {

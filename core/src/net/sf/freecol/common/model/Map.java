@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
@@ -14,11 +15,55 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Map extends ObjectWithId {
 
+	public static final String STANDARD_REGION_NAMES[][] = new String[][] {
+		{ "model.region.northWest", "model.region.north",  "model.region.northEast" },
+		{ "model.region.west",      "model.region.center", "model.region.east" },
+		{ "model.region.southWest", "model.region.south",  "model.region.southEast" }		
+	};
+	
+	
+    public static int distance(Tile a, Tile b) {
+    	return distance(a.x, a.y, b.x, b.y);
+    }
+	
+    /**
+     * Gets the distance in tiles between two map positions.
+     * With an isometric map this is a non-trivial task.
+     * The formula below has been developed largely through trial and
+     * error.  It should cover all cases, but I wouldn't bet my
+     * life on it.
+     *
+     * @param ax The x-coordinate of the first position.
+     * @param ay The y-coordinate of the first position.
+     * @param bx The x-coordinate of the second position.
+     * @param by The y-coordinate of the second position.
+     * @return The distance in tiles between the positions.
+     */
+    public static int distance(int ax, int ay, int bx, int by) {
+        int r = (bx - ax) - (ay - by) / 2;
+
+        if (by > ay && ay % 2 == 0 && by % 2 != 0) {
+            r++;
+        } else if (by < ay && ay % 2 != 0 && by % 2 == 0) {
+            r--;
+        }
+        return Math.max(Math.abs(ay - by + r), Math.abs(r));
+    }
+	
+	
+    /**
+     * The number of tiles from the upper edge that are considered
+     * polar by default.
+     */
+    public final static int POLAR_HEIGHT = 2;
+	
 	public final int width;
 	public final int height;
 	
 	private final Tile[][] tiles;
 	private final SpiralIterator spiralIterator;
+	
+	public final MapIdEntities<Region> regions = new MapIdEntities<Region>();
 	
 	public Map(String id, int width, int height) {
 	    super(id);
@@ -30,8 +75,20 @@ public class Map extends ObjectWithId {
 		spiralIterator = new SpiralIterator(width, height);
 	}
 	
+	public boolean isPolar(Tile tile) {
+		return tile.y <= POLAR_HEIGHT || tile.y >= height - POLAR_HEIGHT - 1 || tile.getType().equalsId(TileType.ARCTIC);
+	}
+
+	public boolean isOnMapEdge(Tile tile) {
+		return tile.x <= 2 || tile.x >= width-2 || tile.y <= 2 || tile.y >= height-2; 
+	}
+	
 	public Tile getTile(int x, int y, Direction direction) {
 		return getTile(direction.stepX(x, y), direction.stepY(x, y));
+	}
+
+	public Tile getTile(Tile source, Direction direction) {
+		return getTile(direction.stepX(source.x, source.y), direction.stepY(source.x, source.y));
 	}
 	
 	public Tile getTile(int x, int y) {
@@ -104,15 +161,32 @@ public class Map extends ObjectWithId {
 		if (sourceTile.hasSettlement()) {
 			ll.add(sourceTile.getSettlement());
 		}
+		Tile tile = null;
 		spiralIterator.reset(sourceTile.x, sourceTile.y, true, radius);
 		while (spiralIterator.hasNext()) {
-			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
+			tile = getTile(spiralIterator.getX(), spiralIterator.getY());
 			if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
 				ll.add(tile.settlement);
 			}
 			spiralIterator.next();
 		}
 		return ll;
+	}
+	
+	public boolean hasColonyInRange(Tile tile, int radius) {
+		if (tile.hasSettlement() && tile.getSettlement().isColony()) {
+			return true;
+		}
+		spiralIterator.reset(tile.x, tile.y, true, radius);
+		Tile t;
+		while (spiralIterator.hasNext()) {
+			t = getTile(spiralIterator.getX(), spiralIterator.getY());
+			if (t.hasSettlement() && t.getSettlement().isColony()) {
+				return true;
+			}
+			spiralIterator.next();
+		}
+		return false;
 	}
 	
 	public Tile findFirstMovableHighSeasTile(Unit unit, int x, int y) {
@@ -148,6 +222,7 @@ public class Map extends ObjectWithId {
                     target.createTile(tile.x, tile.y, tile);
                 }
             });
+			addNodeForMapIdEntities("regions", Region.class);
 		}
 
 		@Override

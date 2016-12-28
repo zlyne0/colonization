@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -22,13 +23,14 @@ import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
-import net.sf.freecol.common.model.player.Monarch.MonarchAction;
-import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
+import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
+import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
@@ -183,24 +185,25 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
+		Tile clickedTile = game.map.getTile(p.x, p.y);
+		if (clickedTile == null) {
+			return;
+		}
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
 		if (guiGameModel.isCreateGotoPathMode()) {
-			Tile tile = game.map.getTile(p.x, p.y);
-			generateGotoPath(tile);
+			generateGotoPath(clickedTile);
 			return;
 		}
 		
 		if (guiGameModel.isViewMode()) {
-			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
+			mapDrawModel.selectedTile = clickedTile;
 			mapDrawModel.setSelectedUnit(null);
 		} else {
 			mapDrawModel.selectedTile = null;
-			Tile tile = game.map.getTile(p.x, p.y);
-
-			if (!tile.hasSettlement()) {
-				Unit newSelectedUnit = tile.getUnits().first();
+			if (!clickedTile.hasSettlement()) {
+				Unit newSelectedUnit = clickedTile.getUnits().first();
 				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
 					changeActiveUnit(newSelectedUnit);
 				}
@@ -693,9 +696,132 @@ public class GUIGameController {
 		this.mapHudStage = hudStage;
 	}
 
-	public void generateMonarchAction() {
-	    //MonarchLogic.handleMonarchAction(getGame(), game.playingPlayer, MonarchAction.HESSIAN_MERCENARIES);
-	    game.playingPlayer.modifyImmigration(150);
+	public void resetMapModel() {
+		mapActor.resetMapModel();
 	}
 
+	public void showCheatConsoleDialog() {
+		CheatConsole cheatConsole = new CheatConsole(this);
+		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
+		mapHudStage.showDialog(cheatConsole);
+	}
+
+	public void buildColony() {
+		Unit unit = guiGameModel.getActiveUnit();
+		Tile tile = unit.getTile();
+	
+		if (!tile.getType().canSettle()) {
+			System.out.println("can not settle on tile type " + tile.getType());
+			return;
+		}
+		if (game.map.isOnMapEdge(tile)) {
+			System.out.println("can not settle on map edge");
+			return;
+		}
+		if (game.map.hasColonyInRange(tile, 1)) {
+			System.out.println("another colony in one tile range");
+			return;
+		}
+		if (!unitCanBuildColony(unit)) {
+			System.out.println("unit can not build colony");
+			return;
+		}
+		
+		// simplicity - european can be owner only on settlement and neighbour tiles 
+		// so it is not possible settle on european own tile
+		// so check only native owner
+		
+		if (tile.getOwner() == null || unit.getOwner().equalsId(tile.getOwner())) {
+			buildColonyEnterColonyName();
+			return;
+		}
+		
+		int landPrice = -1;
+		if (unit.getOwner().hasContacted(tile.getOwner())) {
+			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner());
+		}
+		if (landPrice == 0) {
+			buildColonyEnterColonyName();
+			return;
+		}
+		
+		final QuestionDialog.OptionAction<Unit> buildColonyEnterColonyNameAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit claimedUnit) {
+				buildColonyEnterColonyName();
+			}
+		};
+    	
+		QuestionDialog questionDialog = createIndianLandDemandQuestions(landPrice, unit, tile, buildColonyEnterColonyNameAction);
+    	mapHudStage.showDialog(questionDialog);
+	}
+
+	public QuestionDialog createIndianLandDemandQuestions(int landPrice, final Unit claimedUnit,
+			final Tile claimedTile, final QuestionDialog.OptionAction<Unit> actionAfterDemand) {
+		QuestionDialog.OptionAction<Unit> takeLandAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit claimedUnit) {
+				claimedTile.demandTileByPlayer(claimedUnit.getOwner());
+				
+				actionAfterDemand.executeAction(claimedUnit);
+			}
+		};
+		QuestionDialog.OptionAction<Unit> payForLandAction = new QuestionDialog.OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit claimedUnit) {
+				if (claimedTile.buyTileByPlayer(claimedUnit.getOwner())) {
+					actionAfterDemand.executeAction(claimedUnit);
+				}
+			}
+		};
+		
+		QuestionDialog questionDialog = new QuestionDialog();
+		if (claimedUnit.getOwner().hasContacted(claimedTile.getOwner())) {
+			questionDialog.addQuestion(StringTemplate.template("indianLand.text")
+				.addStringTemplate("%player%", claimedTile.getOwner().getNationName())
+			);
+			
+			if (landPrice > 0) {
+				StringTemplate landPriceStrTemp = StringTemplate.template("indianLand.pay").addAmount("%amount%", landPrice);
+				questionDialog.addAnswer(landPriceStrTemp, payForLandAction, claimedUnit);
+			}
+		} else {
+			questionDialog.addQuestion(StringTemplate.template("indianLand.unknown"));
+		}
+		questionDialog.addAnswer("indianLand.take", takeLandAction, claimedUnit);
+		questionDialog.addOnlyCloseAnswer("indianLand.cancel");
+		return questionDialog;
+	}
+	
+	public void buildColonyEnterColonyName() {
+		Unit unit = guiGameModel.getActiveUnit();
+		String colonyName = Settlement.generateSettlmentName(unit.getOwner());
+		
+		ColonyNameDialog cnd = new ColonyNameDialog(this, mapHudStage.getWidth() * 0.5f, colonyName);
+		mapHudStage.showDialog(cnd);
+	}
+	
+	public void buildColony(String colonyName) {
+		Unit unit = guiGameModel.getActiveUnit();
+		Tile tile = unit.getTile();
+		
+		Settlement.buildColony(game.map, unit, tile, colonyName);
+		changeActiveUnit(null);
+		resetMapModel();
+	}
+	
+	private boolean unitCanBuildColony(Unit unit) {
+		return unit.hasMovesPoints() 
+				&& unit.unitType.canBuildColony() 
+				&& (!unit.getOwner().isRebel() || Specification.options.getBoolean(GameOptions.FOUND_COLONY_DURING_REBELLION));
+	}
+
+	public void showTilesOwners() {
+		mapActor.showTileOwners();
+	}
+	
+	public void hideTilesOwners() {
+		mapActor.hideTileOwners();
+	}
+	
 }

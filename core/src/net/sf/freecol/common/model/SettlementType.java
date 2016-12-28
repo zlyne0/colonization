@@ -26,17 +26,13 @@ import promitech.colonization.savegame.XmlNodeParser;
 /**
  * The various types of settlements in the game.
  */
-public class SettlementType implements Identifiable {
+public class SettlementType extends ObjectWithFeatures {
 
-    private static final int DEFAULT_VISIBLE_RADIUS = 2;
-
-	private String id;
-    
     /** Whether this SettlementType is a capital. */
     private boolean capital = false;
 
     /** How many tiles this SettlementType can see. */
-    private int visibleRadius = DEFAULT_VISIBLE_RADIUS;
+    private int visibleRadius = 2;
 
     /** How many tiles this SettlementType can claim. */
     private int claimableRadius = 1;
@@ -70,6 +66,10 @@ public class SettlementType implements Identifiable {
 
     /** The threshold at which a new convert occurs. */
     private int convertThreshold = 100;
+
+    public SettlementType(String id) {
+		super(id);
+	}
 
     /**
      * Is this a capital settlement type?
@@ -172,19 +172,23 @@ public class SettlementType implements Identifiable {
         return convertThreshold;
     }
 
-    @Override
-    public String getId() {
-        return id;
-    }
-
     public static class Xml extends XmlNodeParser {
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            SettlementType settlementType = new SettlementType();
-            settlementType.id = attr.getStrAttribute("id");
-            settlementType.capital = attr.getBooleanAttribute("capital");
-            settlementType.visibleRadius = attr.getIntAttribute("visibleRadius", DEFAULT_VISIBLE_RADIUS);
+            SettlementType settlementType = new SettlementType(attr.getStrAttribute("id"));
+            
+            settlementType.capital = attr.getBooleanAttribute("capital", false);
+            settlementType.minimumSize = attr.getIntAttribute("minimumSize", 6);
+            settlementType.maximumSize = attr.getIntAttribute("maximumSize", 8);
+            settlementType.visibleRadius = attr.getIntAttribute("visibleRadius", 2); 
+            settlementType.claimableRadius = attr.getIntAttribute("claimableRadius", 1); 
+            settlementType.extraClaimableRadius = attr.getIntAttribute("extraClaimableRadius", 2); 
+            settlementType.wanderingRadius = attr.getIntAttribute("wanderingRadius", 4); 
+            settlementType.minimumGrowth = attr.getIntAttribute("minimumGrowth", 1); 
+            settlementType.maximumGrowth = attr.getIntAttribute("maximumGrowth", 8); 
+            settlementType.tradeBonus = attr.getIntAttribute("tradeBonus", 2); 
+            settlementType.convertThreshold = attr.getIntAttribute("convertThreshold", 100);
             
             nodeObject = settlementType;
         }

@@ -1,6 +1,5 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.map.LostCityRumour;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -9,7 +8,8 @@ public class TileItemContainer implements Identifiable {
     
     public final MapIdEntities<TileImprovement> improvements = new MapIdEntities<TileImprovement>();
     public final MapIdEntities<TileResource> resources = new MapIdEntities<TileResource>();
-    public final MapIdEntities<LostCityRumour> lostCityRumours = new MapIdEntities<LostCityRumour>();
+    
+    private boolean lostCityRumours = false;
     
     @Override
     public String getId() {
@@ -37,21 +37,35 @@ public class TileItemContainer implements Identifiable {
 	}
 	
 	public boolean isEmpty() {
-		return improvements.isEmpty() && resources.isEmpty() && lostCityRumours.isEmpty();
+		return improvements.isEmpty() && resources.isEmpty() && lostCityRumours == false;
 	}
-    
+
+	public boolean isLostCityRumours() {
+		return lostCityRumours;
+	}
+
+	public void setLostCityRumours(boolean lostCityRumours) {
+		this.lostCityRumours = lostCityRumours;
+	}
+
     public static class Xml extends XmlNodeParser {
         
         public Xml() {
             addNodeForMapIdEntities("improvements", TileImprovement.class);
             addNodeForMapIdEntities("resources", TileResource.class);
-            addNodeForMapIdEntities("lostCityRumours", LostCityRumour.class);
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
             TileItemContainer tic = new TileItemContainer();
             nodeObject = tic;
+        }
+
+        @Override
+        public void startReadChildren(XmlNodeAttributes attr) {
+        	if (attr.isQNameEquals("lostCityRumour")) {
+        		((TileItemContainer)nodeObject).lostCityRumours = true;
+        	}
         }
         
         @Override
@@ -64,5 +78,4 @@ public class TileItemContainer implements Identifiable {
         }
         
     }
-
 }

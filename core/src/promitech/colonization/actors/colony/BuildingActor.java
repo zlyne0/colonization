@@ -79,6 +79,8 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 	public void putPayload(UnitActor unitActor, float x, float y) {
 		System.out.println("put unit [" + unitActor.unit + "] to building " + building);
 
+		unitActor.disableFocus();
+		unitActor.disableUnitChip();
 		unitActor.dragAndDropSourceContainer = this;
 		
 		unitActor.setX(0);

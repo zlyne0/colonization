@@ -76,7 +76,12 @@ public class Colony extends Settlement {
     	colonyProduction = new ColonyProduction(this);
     }
 
-    public String toString() {
+    public Colony(IdGenerator idGenerator) {
+		this(idGenerator.nextId(Colony.class));
+    	goodsContainer = new GoodsContainer();
+	}
+
+	public String toString() {
     	return "id=" + getId() + ", name=" + getName();
     }
     
@@ -192,6 +197,7 @@ public class Colony extends Settlement {
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
         destColonyTile.setWorker(unit);
+        destColonyTile.tile.changeOwner(owner, this);
     }
     
     public void removeWorkerFromWorkPlace(Unit worker) {
@@ -626,7 +632,26 @@ public class Colony extends Settlement {
         return (int)membership;
     }
     
-
+    public void createColonyTiles(Map map, Tile centerColonyTile) {
+    	this.tile = centerColonyTile;
+    	
+		ColonyTile centerTile = new ColonyTile(tile);
+		colonyTiles.add(centerTile);
+		initMaxPossibleProductionOnTile(centerTile);
+		
+    	for (Direction d : Direction.allDirections) {
+    		Tile neighbourTile = map.getTile(tile, d);
+    		if (neighbourTile == null) {
+    			continue;
+    		}
+    		colonyTiles.add(new ColonyTile(neighbourTile));
+    		if (neighbourTile.getType().isWater()) {
+    			coastland = true;
+    		}
+    			
+    	}
+    }
+    
     public void initColonyTilesTile(Tile colonyTile, Map map) {
         for (ColonyTile ct : colonyTiles.entities()) {
             boolean foundTileForColonyTile = false; 
@@ -986,9 +1011,67 @@ public class Colony extends Settlement {
 		return requiredTurn;
 	}
 	
+	public void initDefaultBuildings() {
+    	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+    		if (buildingType.doesNotNeedGoodsToBuild() && buildingType.isRoot() || isAutobuildable(buildingType)) {
+    			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+    		}
+    	}
+	}
+	
+    private boolean isAutobuildable(BuildingType buildingType) {
+    	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100);
+    	NoBuildReason noBuildReason = getNoBuildReason(buildingType);
+    	return modified == 0f && noBuildReason == NoBuildReason.NONE;
+    }
+	
+    public void initColonyBuilderUnit(Unit builder) {
+    	updateModelOnWorkerAllocationOrGoodsTransfer();
+    	
+    	GoodMaxProductionLocation maxProd = null;
+        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+            if (gt.isFarmed()) {
+            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder);
+            	if (prod != null && (maxProd == null || maxProd.hasLessProduction(prod.getProduction()))) {
+            		maxProd = prod;
+            	}
+            }
+        }
+    	if (maxProd != null) {
+    		addWorkerToTerrain(maxProd.colonyTile, builder);
+    		initMaxPossibleProductionOnTile(maxProd.colonyTile);
+    	} else {
+    		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
+    		addWorkerToBuilding(townHall, builder);
+    	}
+    	builder.getTile().getUnits().removeId(builder);
+    	updateColonyPopulation();
+    }
+    
 	@Override
 	public boolean isContainsTile(Tile tile) {
 	    return colonyTiles.containsId(tile);
+	}
+	
+	public boolean isTileLocked(Tile tile) {
+		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
+			return true;
+		}
+		if (tile.getOwner() != null) {
+			if (tile.getOwner().isIndian()) {
+				return !owner.foundingFathers.containsId(FoundingFather.PETER_MINUIT);
+			} else {
+				if (tile.getOwningSettlementId() != null) {
+					if (this.equalsId(tile.getOwningSettlementId())) {
+						return false;
+					}
+					if (tile.hasWorkerOnTile()) {
+						return true;
+					}
+				} 
+			}
+		}
+		return false;
 	}
 	
     public static class Xml extends XmlNodeParser {
@@ -1015,7 +1098,6 @@ public class Colony extends Settlement {
             colony.tories = attr.getIntAttribute("tories", 0);
             colony.productionBonus = attr.getIntAttribute("productionBonus", 0);
             colony.liberty = attr.getIntAttribute("liberty", 0);
-            colony.tileId = attr.getStrAttribute("tile");
             colony.owner = owner;
             colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);
@@ -1040,4 +1122,5 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
+
 }

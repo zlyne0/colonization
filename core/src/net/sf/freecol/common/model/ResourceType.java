@@ -16,6 +16,9 @@ public class ResourceType extends ObjectWithFeatures {
 	}
 
 	public int initQuantity() {
+	    if (minValue == UNLIMITED && maxValue == UNLIMITED) {
+	        return UNLIMITED;
+	    }
 		return Randomizer.instance().randomInt(minValue, maxValue);		
 	}
 	

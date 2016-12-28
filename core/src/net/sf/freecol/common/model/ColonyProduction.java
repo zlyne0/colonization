@@ -214,15 +214,18 @@ class ColonyProduction {
         return maxProd;
     }
 
-    private GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
+    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
 	        if (colonyTile.getWorker() != null) {
 	            continue;
 	        }
-	        if (colonyTile.tile.getId().equals(colony.tileId)) {
+	        if (colonyTile.tile.getId().equals(colony.tile.getId())) {
 	            continue;
+	        }
+	        if (colony.isTileLocked(colonyTile.tile)) {
+	        	continue;
 	        }
 	        
 	        List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();

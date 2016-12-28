@@ -6,7 +6,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class StringOption extends ObjectWithId {
 
-    private String value;
+    protected String value;
     
     public StringOption(String id) {
         super(id);

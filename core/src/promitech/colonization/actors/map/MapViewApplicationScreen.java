@@ -1,9 +1,15 @@
 package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
+import com.badlogic.gdx.graphics.OrthographicCamera;
+import com.badlogic.gdx.math.MathUtils;
+import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
-import com.badlogic.gdx.utils.viewport.FitViewport;
+import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
@@ -11,9 +17,10 @@ import promitech.colonization.ui.hud.HudStage;
 
 public class MapViewApplicationScreen extends ApplicationScreen {
 
-    private Stage stage;
+    private Stage mapStage;
     private HudStage hudStage;
     private MapActor mapActor;
+    private ManyStageInputProcessor manyStageInputProcessor;
     
     @Override
     public void create() {
@@ -22,29 +29,51 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         
         gameController.setApplicationScreenManager(this.screenManager);
         
-        hudStage = new HudStage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()), gameController, gameResources, shape);
+        hudStage = new HudStage(new ScreenViewport(), gameController, gameResources);
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
         gameController.setMapHudStage(hudStage);
         
-        //stage = new Stage(new CenterSizableViewport(640, 480, 640, 480));
-        stage = new Stage();
+		mapStage = new Stage(new ScreenViewport(new OrthographicCamera()));
+        mapStage.addListener(new InputListener() {
+        	public boolean scrolled(InputEvent event, float x, float y, int amount) {
+        		OrthographicCamera stageCamera = (OrthographicCamera)mapStage.getCamera();
+        		if (amount > 0) {
+        			stageCamera.zoom *= 1.25;
+        		} else {
+        			stageCamera.zoom *= 0.75;
+        		}
+        		if (stageCamera.zoom < 1f) {
+        			stageCamera.zoom = 1f;
+        			return true;
+        		}
+        		if (stageCamera.zoom >= 6f) {
+        			stageCamera.zoom = 6f;
+        			return true;
+        		}
+        		mapActor.centerCameraOnScreenCords(x, y);
+        				
+        		resizeMapStage();        		
+        		return true;
+        	};
+        });
         
-        Table w = new Table();
-        w.setFillParent(true);
-        w.defaults().fillX();
-        w.defaults().fillY();
-        w.defaults().expandX();
-        w.defaults().expandY();
-        w.add(mapActor);
-        w.pack();
+        Table wl = new Table();
+        wl.setFillParent(true);
+        wl.defaults().fillX();
+        wl.defaults().fillY();
+        wl.defaults().expandX();
+        wl.defaults().expandY();
+        wl.add(mapActor);
+        wl.pack();
+        mapStage.addActor(wl);
         
-        stage.addActor(w);      
+        manyStageInputProcessor = new ManyStageInputProcessor(hudStage, mapStage);
     }
     
     @Override
     public void onShow() {
-        Gdx.input.setInputProcessor(new ManyStageInputProcessor(hudStage, stage));
+        Gdx.input.setInputProcessor(manyStageInputProcessor);
         gameController.onShowGUI();
         hudStage.hudInfoPanel.updateSelectedUnitDescription();
     }
@@ -56,9 +85,10 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     
     @Override
     public void render() {
-        stage.getViewport().apply();
-        stage.act();
-        stage.draw();
+    	Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+        mapStage.getViewport().apply();
+        mapStage.act();
+        mapStage.draw();
         
         hudStage.getViewport().apply();
         hudStage.act();
@@ -67,9 +97,23 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     
     @Override
     public void resize(int width, int height) {
-        stage.getViewport().update(width, height, true);
+    	resizeMapStage();        		
+    	
         hudStage.getViewport().update(width, height, true);
+        hudStage.updateLayout();
     }
+
+	private void resizeMapStage() {
+		OrthographicCamera stageCamera = (OrthographicCamera)mapStage.getViewport().getCamera();
+
+    	int w = (int)(Gdx.graphics.getWidth() * stageCamera.zoom);
+		int h = (int)(Gdx.graphics.getHeight() * stageCamera.zoom);
+		
+		mapStage.getViewport().update(w, h, true);
+		
+		Vector2 v = mapStage.screenToStageCoordinates(new Vector2(0, 0));
+		stageCamera.position.add(-v.x, stageCamera.viewportHeight - v.y, 0);
+	}
     
     @Override
     public void dispose() {

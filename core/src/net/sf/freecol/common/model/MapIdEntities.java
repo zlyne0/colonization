@@ -86,6 +86,10 @@ public class MapIdEntities<T extends Identifiable> {
     	return !entities.isEmpty();
     }
     
+    public boolean containsId(String id) {
+    	return entities.containsKey(id);
+    }
+    
     public boolean containsId(Identifiable element) {
     	return entities.containsKey(element.getId());
     }

@@ -275,7 +275,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
-        terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
+        terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener, gameController);
         outsideUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)

@@ -3,9 +3,15 @@ package net.sf.freecol.common.model;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
+import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
+import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -16,10 +22,12 @@ public class Tile implements UnitLocation, Identifiable {
 	public final int x;
 	public final int y;
 	private TileType type;
-	public final int style;
+	private int style;
 	public final String id;
 	private int connected = 0;
 	private boolean moveToEurope = false;
+	private Player owner;
+	private String owningSettlement;
 	
 	protected Settlement settlement;
 	private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
@@ -69,6 +77,21 @@ public class Tile implements UnitLocation, Identifiable {
 	    return tileItemContainer.improvements.entities();
 	}
 	
+	public void removeTileImprovement(String typeStr) {
+		if (tileItemContainer == null) {
+			return;
+		}
+		for (TileImprovement ti : tileItemContainer.improvements.entities()) {
+			if (ti.type.id.equals(typeStr)) {
+				tileItemContainer.improvements.removeId(ti);
+				break;
+			}
+		}
+		if (tileItemContainer.isEmpty()) {
+			tileItemContainer = null;
+		}
+	}
+	
 	public Collection<TileResource> getTileResources() {
 	    if (tileItemContainer == null) {
 	        return Collections.emptyList();
@@ -110,7 +133,7 @@ public class Tile implements UnitLocation, Identifiable {
         if (tileItemContainer == null) {
             return false;
         }
-        return tileItemContainer.lostCityRumours.size() > 0;
+        return tileItemContainer.isLostCityRumours();
     }
 
     public boolean hasTileResource() {
@@ -162,6 +185,13 @@ public class Tile implements UnitLocation, Identifiable {
 		tileItemContainer.resources.add(resource);
 	}
 	
+	public void addLostCityRumors() {
+		if (tileItemContainer == null) {
+			tileItemContainer = new TileItemContainer();
+		}
+		tileItemContainer.setLostCityRumours(true);
+	}
+	
 	public ResourceType reduceTileResourceQuantity(String resourceTypeId, int quantity) {
 		if (tileItemContainer == null) {
 			return null;
@@ -187,7 +217,7 @@ public class Tile implements UnitLocation, Identifiable {
 		if (hasImprovementType(improvementType.getId())) {
 			return false;
 		}
-		if (!improvementType.canApplyAllScopes(type)) {
+		if (!type.isTileImprovementAllowed(improvementType)) {
 			return false;
 		}
 		return true;
@@ -301,7 +331,119 @@ public class Tile implements UnitLocation, Identifiable {
 			roadImprovement.updateStyle();
 		}
 	}
+
+	public void setStyle(int style) {
+		this.style = style;
+	}
+
+	public int getStyle() {
+		return style;
+	}
+
+	public void changeOwner(Player player) {
+		changeOwner(player, null);
+	}
 	
+	public void changeOwner(Player player, Settlement settlement) {
+		this.owner = player;
+		if (settlement != null) {
+			this.owningSettlement = settlement.getId();
+		}
+	}
+	
+	public boolean hasOwnerOrOwningSettlement() {
+		return owner != null || owningSettlement != null;
+	}
+
+	public int getLandPriceForPlayer(Player player) {
+		if (owner == null || player.equalsId(owner)) {
+			return 0;
+		}
+		if (hasSettlement()) {
+			throw new IllegalStateException("no price for land with settlement");
+		}
+		
+		if (owner.isEuropean()) {
+			if (player.equalsId(owningSettlement)) {
+				return 0;
+			} else {
+				throw new IllegalStateException("no price for european settlement tile");
+			}
+		}
+		
+		if (player.getStance(owner) == Stance.UNCONTACTED) {
+			return 0;
+		}
+		
+		int price = 0;
+        List<Production> productions = this.getType().productionInfo.getAttendedProductions();
+        for (Production production : productions) {
+            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+            	price += this.applyTileProductionModifier(outputEntry.getKey().getId(), outputEntry.getValue());
+            }
+        }
+        price *= Specification.options.getIntValue(GameOptions.LAND_PRICE_FACTOR);
+        price += 100;
+        price = (int)player.getFeatures().applyModifier(Modifier.LAND_PAYMENT_MODIFIER, price);
+		return price;
+	}
+	
+	public void demandTileByPlayer(Player player) {
+		if (getOwningSettlementId() != null) {
+			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			
+			if (owner.isIndian()) {
+				for (Settlement settlement : owner.settlements.entities()) {
+					IndianSettlement indianSett = (IndianSettlement)settlement;
+					if (indianSett.settlementType.isCapital() || indianSett.equalsId(getOwningSettlementId())) {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+					} else {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN/2);
+					}
+				}
+			}
+		} else {
+			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+			
+			if (owner.isIndian()) {
+				for (Settlement settlement : owner.settlements.entities()) {
+					IndianSettlement indianSett = (IndianSettlement)settlement;
+					if (indianSett.hasContact(player)) {
+						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+					}
+				}
+			}
+		}
+	}
+	
+	public boolean buyTileByPlayer(Player player) {
+		int landPrice = getLandPriceForPlayer(player);
+		if (player.hasNotGold(landPrice)) {
+			System.out.println("player " + player + " has not gold to buy land for price " + landPrice);
+			return false;
+		}
+		player.subtractGold(landPrice);
+		owner.addGold(landPrice);
+		changeOwner(player);
+		return true;
+	}
+	
+	public Player getOwner() {
+		return owner;
+	}
+	
+	public String getOwningSettlementId() {
+		return owningSettlement;
+	}
+	
+	public boolean hasWorkerOnTile() {
+		if (owner == null || owningSettlement == null) {
+			return false;
+		}
+		Colony tileOwnerColony = (Colony)owner.settlements.getById(owningSettlement);
+		ColonyTile ct = tileOwnerColony.colonyTiles.getById(this.getId());
+		return ct.getWorker() != null;
+	}
 	
 	public static class Xml extends XmlNodeParser {
 	    
@@ -353,6 +495,12 @@ public class Tile implements UnitLocation, Identifiable {
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
 			tile.connected = attr.getIntAttribute("connected", 0);
 			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
+			
+			String ownerId = attr.getStrAttribute("owner");
+			if (ownerId != null) {
+				tile.owner = game.players.getById(ownerId);
+			}
+			tile.owningSettlement = attr.getStrAttribute("owningSettlement");
 			
 			nodeObject = tile;
 		}
