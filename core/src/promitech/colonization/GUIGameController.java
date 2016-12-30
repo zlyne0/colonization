@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IdGenerator;
+import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -22,6 +24,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.generator.MapGenerator;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
@@ -74,11 +77,40 @@ public class GUIGameController {
         game.playingPlayer = game.players.getById("player:1");
         game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);
-        
-        guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
-        guiGameModel.player = game.playingPlayer;
-        
-        gameLogic = new GameLogic(game);
+
+		postCreateGame();
+	}
+	
+	public void initNewGame() throws IOException, ParserConfigurationException, SAXException {
+		SaveGameParser.loadDefaultSpecification();
+		Specification.instance.updateOptionsFromDifficultyLevel("model.difficulty.medium");
+		
+		Game.idGenerator = new IdGenerator(0);
+		game = new Game();
+		game.activeUnitId = null;
+		
+		game.playingPlayer = Player.newStartingPlayer(Game.idGenerator, Specification.instance.nations.getById("model.nation.french"));
+		game.players.add(game.playingPlayer);
+		
+		for (Nation nation : Specification.instance.nations.entities()) {
+			if (nation.nationType.isEuropean()) {
+				if (!nation.nationType.isREF() && game.playingPlayer.nation().notEqualsId(nation)) {
+					System.out.println("euro " + nation +  " " + nation.nationType);
+				}
+			} else {
+				game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
+				System.out.println("native " + nation + " " + nation.nationType);
+			}
+		}
+		game.map = new MapGenerator().generate(game.players);
+
+		postCreateGame();
+	}
+	
+	private void postCreateGame() {
+		guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+		guiGameModel.player = game.playingPlayer;
+		gameLogic = new GameLogic(game);
 	}
 	
     public void setMapActor(MapActor mapActor) {
@@ -568,11 +600,7 @@ public class GUIGameController {
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
-		for (Player player : players) {
-			if (player.nation().isUnknownEnemy()) {
-				continue;
-			}
-			
+		for (Player player : players) {			
 			endOfTurnPhaseListener.nextAIturn(player);
 			System.out.println("player " + player);
 			

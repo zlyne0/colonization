@@ -21,6 +21,7 @@ public class RangeOption extends ObjectWithId {
 
     private String value;
     private final List<RangeValue> rangeValues = new ArrayList<RangeValue>(5);
+	private String defaultValue;
     
     public RangeOption(String id) {
         super(id);
@@ -39,6 +40,10 @@ public class RangeOption extends ObjectWithId {
         public void startElement(XmlNodeAttributes attr) {
         	RangeOption ro = new RangeOption(attr.getStrAttribute("id"));
         	ro.value = attr.getStrAttribute("value");
+        	ro.defaultValue = attr.getStrAttribute("defaultValue");
+        	if (ro.value == null) {
+        		ro.value = ro.defaultValue;
+        	}
         	nodeObject = ro;
         }
 

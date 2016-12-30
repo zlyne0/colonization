@@ -15,6 +15,10 @@ public class SelectOption extends StringOption {
             String id = attr.getStrAttribute("id");
             SelectOption option = new SelectOption(id);
             option.value = attr.getStrAttribute("value");
+            option.defaultValue = attr.getStrAttribute("defaultValue");
+            if (option.value == null) {
+            	option.value = option.defaultValue;
+            }
             nodeObject = option;
         }
 

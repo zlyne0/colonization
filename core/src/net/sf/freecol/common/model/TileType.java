@@ -121,7 +121,7 @@ public final class TileType extends ObjectWithFeatures {
 			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
 			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
 			tileType.elevation = attr.getBooleanAttribute("is-elevation", false);
-			tileType.canSettle = attr.getBooleanAttribute("can-settle", false);
+			tileType.canSettle = attr.getBooleanAttribute("can-settle", !tileType.isWater());
 			nodeObject = tileType; 
 		}
 

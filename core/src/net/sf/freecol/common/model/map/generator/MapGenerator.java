@@ -52,7 +52,7 @@ public class MapGenerator {
 		riverImprovementType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
 	}
 	
-	public void generate(Game game) {
+	public Map generate(MapIdEntities<Player> players) {
 		// TODO: set players on new game 
 		// TODO: w and h should be as parameters
 		// TODO: clear units and settlements
@@ -60,30 +60,9 @@ public class MapGenerator {
 		int h = 100;
 		
 		mapSpiralIterator = new SpiralIterator(w, h);
-		Grid grid = createLandMass(w, h);
+		Map map = createLandMass(w, h);
+		map.initPlayersMap(players);
 		
-		printMapToConsole(grid);
-		
-		Map map = new Map("map", w, h);
-		
-		Tile tile;
-		TileType tileType;
-		int x, y;
-		float gidValue;
-		for (y=0; y<h; y++) {
-			for (x=0; x<w; x++) {
-				gidValue = grid.get(x, y);
-				if (gidValue == WATER_CELL) {
-					tileType = Specification.instance.tileTypes.getById(TileType.OCEAN);
-				} else {
-					tileType = Specification.instance.tileTypes.getById(TEMPORARY_LAND_TYPE);
-				}
-				tile = new Tile("tile:" + x + "," + y, x, y, tileType, 0);
-				
-				map.createTile(x, y, tile);
-			}
-		}
-		postLandGeneration(map);
 		createStandardRegions(map);
 		generateRandomTileTypes(map);
 		
@@ -93,12 +72,11 @@ public class MapGenerator {
 		createHighSea(map);
 		generateRivers(map);
 		new BonusResourcesGenerator(map).generate();
-		new IndianSettlementsGenerator(this, game, map).makeNativeSettlements();
+		new IndianSettlementsGenerator(this, players, map).makeNativeSettlements();
 		
-		generatePlayersStartPositions(map, game);
+		generatePlayersStartPositions(map, players);
 		generateLostCityRumours(map);
-		
-		game.map = map;
+		return map;
 	}
 
 	private void generateLostCityRumours(Map map) {
@@ -137,9 +115,9 @@ public class MapGenerator {
 		return false;
 	}
 	
-	private void generatePlayersStartPositions(Map map, Game game) {
+	private void generatePlayersStartPositions(Map map, MapIdEntities<Player> gamePlayers) {
 		List<Player> players = new ArrayList<Player>();
-		for (Player p : game.players.entities()) {
+		for (Player p : gamePlayers.entities()) {
 			if (p.isLiveEuropeanPlayer()) {
 				players.add(p);
 			}
@@ -190,7 +168,7 @@ public class MapGenerator {
 				Unit carrier = carriers.get(0);
 				Tile tile = map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
 				carrier.changeUnitLocation(tile);
-				player.revealMapAfterUnitMove(game.map, carrier);
+				player.revealMapAfterUnitMove(map, carrier);
 				
 				for (Unit passengerUnit : passengers) {
 					passengerUnit.changeUnitLocation(carrier);
@@ -562,7 +540,7 @@ public class MapGenerator {
 			}
 		}
 
-		// create beatch
+		// create beach
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
 				tile = map.getTile(x, y);
@@ -683,7 +661,35 @@ public class MapGenerator {
 		System.out.println();
 	}
 	
-	private Grid createLandMass(int w, int h) {
+	private Map createLandMass(int w, int h) {
+		Grid grid = createBinaryLandMass(w, h);
+		
+		printMapToConsole(grid);
+		
+		Map map = new Map("map", w, h);
+		
+		Tile tile;
+		TileType tileType;
+		int x, y;
+		float gidValue;
+		for (y=0; y<h; y++) {
+			for (x=0; x<w; x++) {
+				gidValue = grid.get(x, y);
+				if (gidValue == WATER_CELL) {
+					tileType = Specification.instance.tileTypes.getById(TileType.OCEAN);
+				} else {
+					tileType = Specification.instance.tileTypes.getById(TEMPORARY_LAND_TYPE);
+				}
+				tile = new Tile("tile:" + x + "," + y, x, y, tileType, 0);
+				
+				map.createTile(x, y, tile);
+			}
+		}
+		postLandGeneration(map);
+		return map;
+	}
+
+	private Grid createBinaryLandMass(int w, int h) {
 		// very big islands
 		float aliveChance = 0.8f;
 	    int radius = 3;

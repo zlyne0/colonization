@@ -70,7 +70,8 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             FontResource.load();
             gameResources.load();
             
-            gameController.initGameFromSavegame();
+            //gameController.initGameFromSavegame();
+            gameController.initNewGame();
             long length = System.currentTimeMillis() - s;
             System.out.println("loading timeout: " + length);
 		} catch (Exception e) {

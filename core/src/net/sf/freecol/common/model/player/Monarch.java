@@ -5,6 +5,7 @@ import java.util.Collections;
 import java.util.List;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IdGenerator;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitRole;
@@ -61,7 +62,6 @@ public class Monarch extends ObjectWithId {
     public static final int MINIMUM_TAX_RATE = 20;
 
     private Player player;
-    private String nameKey;
     private boolean supportSea = false;
     private boolean displeasure = false;
     
@@ -69,10 +69,21 @@ public class Monarch extends ObjectWithId {
     public ArmyForce interventionForce;
     public ArmyForce mercenaryForce;
     
+    public static Monarch newStartingMonarch(IdGenerator idGenerator, Player player) {
+    	Monarch m = new Monarch(idGenerator.nextId(Monarch.class));
+    	m.player = player;
+    	
+    	m.expeditionaryForce = new ArmyForce(Specification.options.getUnitListOption(GameOptions.REF_FORCE));
+    	m.interventionForce = new ArmyForce(Specification.options.getUnitListOption(GameOptions.INTERVENTION_FORCE));
+    	m.mercenaryForce = new ArmyForce();
+    	
+    	return m;
+    }
+    
     public Monarch(String id) {
         super(id);
     }
-
+    
     public List<WithProbability<MonarchAction>> getActionChoices(Game game) {
         int dx = 1 + Specification.options.getIntValue(GameOptions.MONARCH_MEDDLING);
         int turn = game.getTurn().getNumber();
@@ -332,10 +343,6 @@ public class Monarch extends ObjectWithId {
 		return price;
 	}
 	
-    protected String getNameKey() {
-        return nameKey;
-    }
-
     protected boolean isSupportSea() {
         return supportSea;
     }
@@ -375,8 +382,6 @@ public class Monarch extends ObjectWithId {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             Monarch monarch = new Monarch(attr.getStrAttribute("id"));
-            
-            monarch.nameKey = attr.getStrAttribute("nameKey");
             monarch.supportSea = attr.getBooleanAttribute("supportSea", false);
             monarch.displeasure = attr.getBooleanAttribute("displeasure", false);
             nodeObject = monarch;
@@ -391,5 +396,4 @@ public class Monarch extends ObjectWithId {
             return "monarch";
         }
     }
-
 }

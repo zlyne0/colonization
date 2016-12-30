@@ -2562,9 +2562,6 @@
   </indian-nation-types>
 
   <nations>
-    <nation id="model.nation.unknownEnemy" color="0x000000"
-            nation-type="model.nationType.default" selectable="false"/>
-
     <nation id="model.nation.dutch" color="0xff9d3c"
             nation-type="model.nationType.trade" selectable="true"
             preferredLatitude="-40" ref="model.nation.dutchREF"/>

@@ -8,9 +8,9 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
@@ -51,13 +51,13 @@ class IndianSettlementsGenerator {
 
 	private final MapGenerator mapGenerator;
 	private final Map map;
-	private final Game game;
+	private final MapIdEntities<Player> players;
 	private SpiralIterator spiralIterator;
 	
-	IndianSettlementsGenerator(MapGenerator mapGenerator, Game game, Map map) {
+	IndianSettlementsGenerator(MapGenerator mapGenerator, MapIdEntities<Player> players, Map map) {
 		this.mapGenerator = mapGenerator;
 		this.map = map;
-		this.game = game;
+		this.players = players;
 		
 		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
@@ -67,8 +67,8 @@ class IndianSettlementsGenerator {
 		
 		java.util.Map<String,Territory> territoryByName = new HashMap<String, IndianSettlementsGenerator.Territory>();
 		
-		List<Player> indians = new ArrayList<Player>(game.players.size());
-		for (Player player : game.players.entities()) {
+		List<Player> indians = new ArrayList<Player>(players.size());
+		for (Player player : players.entities()) {
 			if (!player.isLiveIndianPlayer()) {
 				continue;
 			}
@@ -92,7 +92,7 @@ class IndianSettlementsGenerator {
 				if (territoryByName.get(playerRegionName) == null) {
 					Region region = map.regions.getByIdOrNull(playerRegionName);
 					if (region != null) {
-						territory = new Territory(player, centerOfRegion(map, region));
+						territory = new Territory(player, centerOfRegion(region));
 						territoryByName.put(playerRegionName, territory);
 						System.out.println("Allocated region " + playerRegionName + " for " + player + ".");
 						break;
@@ -113,8 +113,8 @@ class IndianSettlementsGenerator {
 			return;
 		}
 		
-		List<Tile> settlementTiles = generateSuitableSettlementTiles(map);
-		System.out.println("settlementTiles = " + settlementTiles.size());
+		List<Tile> settlementTiles = generateSuitableSettlementTiles();
+		System.out.println("SuitableSettlementTiles : " + settlementTiles.size());
 		float share = settlementTiles.size() / shareSum;
         if (settlementTiles.size() < indians.size()) {
             System.out.println("There are only " + settlementTiles.size() + " settlement sites. This is smaller than " + indians.size() + " the number of tribes.");
@@ -173,7 +173,7 @@ class IndianSettlementsGenerator {
 		}
 	}
 	
-	public Tile centerOfRegion(Map map, Region region) {
+	public Tile centerOfRegion(Region region) {
 		int x, y;
 		for (y=0; y<Map.STANDARD_REGION_NAMES.length; y++) {
 			for (x=0; x<Map.STANDARD_REGION_NAMES[0].length; x++) {
@@ -188,8 +188,9 @@ class IndianSettlementsGenerator {
 		return mapGenerator.getRandomLandTile(map);
 	}
 	
-	private List<Tile> generateSuitableSettlementTiles(Map map) {
+	private List<Tile> generateSuitableSettlementTiles() {
 		int settlementDistance = Specification.options.getIntValue(GameOptions.SETTLEMENT_NUMBER);
+		System.out.println("settlementDistance: " + settlementDistance);
 		
 		List<Tile> settlementTiles = new ArrayList<Tile>(mapGenerator.landTilesCount);
 		boolean tooClose = false;

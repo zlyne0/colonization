@@ -1,5 +1,6 @@
 package promitech.colonization.savegame;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
 import net.sf.freecol.common.model.Building;
@@ -22,11 +23,14 @@ import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
@@ -87,7 +91,7 @@ public class SaveGameParserTest {
         assertNotNull(player.getEurope().getUnits().getById("unit:7095"));
         assertNotNull(player.getHighSeas().getUnits().getById("unit:6437"));
         
-        assertEquals(21, player.market().marketGoods.size());
+        assertEquals(16, player.market().marketGoods.size());
         Object food = player.market().marketGoods.getById("model.goods.food");
         assertNotNull(food);
         
@@ -225,6 +229,15 @@ public class SaveGameParserTest {
     private void verifySpecificationUnitTypes(Specification specification) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
     	assertEquals(1, unitType.requiredAbilities.size());
+    	
+    	UnitType caravel = specification.unitTypes.getById("model.unit.caravel");
+    	assertThat(caravel.getPrice()).isEqualTo(1000);
+    	assertThat(caravel.hasAbility(Ability.NAVAL_UNIT)).isTrue();
+    	assertThat(caravel.applyModifier(Modifier.TRADE_VOLUME_PENALTY, 100)).isEqualTo(25);
+    	
+    	UnitType freeColonist = specification.unitTypes.getById(UnitType.FREE_COLONIST);
+    	assertThat(freeColonist.unitConsumption.getById(GoodsType.FOOD).getQuantity()).isEqualTo(2);
+    	assertThat(freeColonist.unitConsumption.getById(GoodsType.BELLS).getQuantity()).isEqualTo(1);
 	}
 
 	private void verifySpecificationUnitRoles(Specification specification) {

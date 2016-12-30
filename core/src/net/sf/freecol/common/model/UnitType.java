@@ -85,6 +85,8 @@ public class UnitType extends BuildableType {
     private int maximumAttrition = Xml.INFINITY;
     
     public String expertProductionForGoodsId;
+
+	protected String extendsId;
     
     public UnitType(String id) {
     	super(id);
@@ -254,6 +256,12 @@ public class UnitType extends BuildableType {
             ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
             ut.defaultRoleId = UnitRole.DEFAULT_ROLE_ID;
             
+            ut.extendsId = attr.getStrAttribute("extends");
+            if (ut.extendsId != null) {
+            	UnitType parent = Specification.instance.unitTypes.getById(ut.extendsId);
+            	ut.addFeatures(parent);
+            	ut.unitConsumption.addAll(parent.unitConsumption);
+            }
             nodeObject = ut;
         }
 

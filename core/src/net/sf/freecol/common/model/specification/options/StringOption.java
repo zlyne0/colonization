@@ -7,6 +7,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class StringOption extends ObjectWithId {
 
     protected String value;
+	protected String defaultValue;
     
     public StringOption(String id) {
         super(id);
@@ -21,7 +22,11 @@ public class StringOption extends ObjectWithId {
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute("id");
             StringOption option = new StringOption(id);
+            option.defaultValue = attr.getStrAttribute("defaultValue");
             option.value = attr.getStrAttribute("value");
+            if (option.value == null) {
+            	option.value = option.defaultValue;
+            }
             nodeObject = option;
         }
 

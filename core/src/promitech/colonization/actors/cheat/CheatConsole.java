@@ -72,7 +72,7 @@ public class CheatConsole extends ClosableDialog {
 			hideWithFade();
 		}
 		if (cmd.equals("map generate")) {
-			new MapGenerator().generate(gameControler.getGame());
+			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
@@ -81,7 +81,7 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
 			gameControler.resetMapModel();
 			
-			new MapGenerator().generate(gameControler.getGame());
+			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
 			gameControler.resetMapModel();
 			hideWithFade();
 		}

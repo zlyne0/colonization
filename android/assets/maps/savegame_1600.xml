@@ -3461,7 +3461,6 @@
         </indian-nation-type>
       </indian-nation-types>
       <nations>
-        <nation id="model.nation.unknownEnemy" nation-type="model.nationType.default" selectable="false" preferredLatitude="0" startsOnEastCoast="true" color="-16777216"/>
         <nation id="model.nation.dutch" nation-type="model.nationType.trade" selectable="true" preferredLatitude="-40" startsOnEastCoast="true" ref="model.nation.dutchREF" color="-25284"/>
         <nation id="model.nation.french" nation-type="model.nationType.cooperation" selectable="true" preferredLatitude="-53" startsOnEastCoast="true" ref="model.nation.frenchREF" color="-16776961"/>
         <nation id="model.nation.english" nation-type="model.nationType.immigration" selectable="true" preferredLatitude="-37" startsOnEastCoast="true" ref="model.nation.englishREF" color="-65536"/>
@@ -6572,29 +6571,6 @@
           </landUnits>
         </mercenaryForce>
       </monarch>
-    </player>
-    <player id="player:229" username="model.nation.unknownEnemy" nationId="model.nation.unknownEnemy" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="0" gold="0" immigration="0" liberty="0" interventionBells="0" immigrationRequired="0" attackedByPrivateers="false" oldSoL="0" score="0">
-      <market id="market:230" owner="player:229">
-        <marketData id="marketData:231" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:232" goods-type="model.goods.sugar" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:233" goods-type="model.goods.tobacco" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:234" goods-type="model.goods.cotton" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:235" goods-type="model.goods.furs" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:236" goods-type="model.goods.lumber" amount="3000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:237" goods-type="model.goods.ore" amount="2000" initialPrice="4" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:238" goods-type="model.goods.silver" amount="500" initialPrice="16" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:239" goods-type="model.goods.horses" amount="1000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:240" goods-type="model.goods.rum" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:241" goods-type="model.goods.cigars" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:242" goods-type="model.goods.cloth" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:243" goods-type="model.goods.coats" amount="1000" initialPrice="10" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:244" goods-type="model.goods.tradeGoods" amount="3000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:245" goods-type="model.goods.tools" amount="1000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-        <marketData id="marketData:246" goods-type="model.goods.muskets" amount="1000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
-      </market>
-      <tension player="player:1" value="0"/>
-      <foundingFathers xLength="0"/>
-      <offeredFathers xLength="0"/>
     </player>
     <map id="map:247" width="40" height="100" layer="resources" minimumLatitude="-90" maximumLatitude="90">
       <region id="region:4248" nameKey="model.region.arctic" type="land" prediscovered="true" claimable="false" discoverable="false"/>

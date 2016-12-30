@@ -25,6 +25,7 @@ import java.util.Set;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.SettlementType;
+import net.sf.freecol.common.model.Specification;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -41,6 +42,8 @@ public abstract class NationType extends ObjectWithFeatures {
     
     protected boolean european = false;
     public final MapIdEntities<SettlementType> settlementTypes = new MapIdEntities<SettlementType>();
+	protected boolean abstractType = false;
+	protected String parentNationTypeId;
 
     public NationType(String id) {
 		super(id);
@@ -89,8 +92,14 @@ public abstract class NationType extends ObjectWithFeatures {
 		}
 		
 		public static void abstractStartElement(XmlNodeAttributes attr, NationType nt) {
-            nt.settlementNumber = attr.getEnumAttribute(SettlementNumber.class, "number-of-settlements");
+            nt.settlementNumber = attr.getEnumAttribute(SettlementNumber.class, "number-of-settlements", SettlementNumber.AVERAGE);
             nt.aggressionLevel = attr.getEnumAttribute(AggressionLevel.class, "aggression");
+            nt.parentNationTypeId = attr.getStrAttribute("extends");
+            if (nt.parentNationTypeId != null) {
+            	NationType parent = Specification.instance.nationTypes.getById(nt.parentNationTypeId);
+            	nt.settlementTypes.addAll(parent.settlementTypes);
+            	nt.addFeaturesAndOverwriteExisted(parent);
+            }
 		}
 	}
 

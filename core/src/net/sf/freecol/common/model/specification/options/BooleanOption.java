@@ -5,6 +5,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class BooleanOption extends ObjectWithId {
+	private boolean defaultValue;
     private boolean value;
 
     public BooleanOption(String id) {
@@ -20,7 +21,8 @@ public class BooleanOption extends ObjectWithId {
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute("id");
             BooleanOption option = new BooleanOption(id);
-            option.value = attr.getBooleanAttribute("value", false);
+            option.defaultValue = attr.getBooleanAttribute("defaultValue", false);
+            option.value = attr.getBooleanAttribute("value", option.defaultValue);
             nodeObject = option;
         }
 

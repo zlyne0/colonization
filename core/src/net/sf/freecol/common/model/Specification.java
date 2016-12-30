@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import net.sf.freecol.common.model.specification.options.RangeOption;
 import net.sf.freecol.common.model.specification.options.StringOption;
+import net.sf.freecol.common.model.specification.options.UnitListOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -57,12 +58,16 @@ public class Specification implements Identifiable {
             return Integer.parseInt(option.getValue());
         }
         
+        public UnitListOption getUnitListOption(String code) {
+        	return (UnitListOption)optionValues.getById(code);
+        }
+        
         public void flattenOptionsEntriesTree(String difficultyLevel) {
-            for (OptionGroup og : optionGroupEntities.entities()) {
-                addEntriesInOptionGroup(og);
-            }
             if (difficultyLevel == null) {
                 return;
+            }
+            for (OptionGroup og : optionGroupEntities.entities()) {
+            	addEntriesInOptionGroup(og);
             }
             System.out.println("setting specification options for " + difficultyLevel + " game difficulty level");
             
@@ -163,9 +168,6 @@ public class Specification implements Identifiable {
         europeanNations.clear();
         for (Nation nation : nations.entities()) {
             if (nation.nationType.isEuropean()) {
-                if (nation.isUnknownEnemy()) {
-                    continue;
-                }
                 if (nation.nationType.isREF()) {
                     continue;
                 }
@@ -259,8 +261,7 @@ public class Specification implements Identifiable {
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 		    if (qName.equals(getTagName())) {
-		        options.flattenOptionsEntriesTree(Specification.instance.difficultyLevel);
-		        Specification.instance.updateReferences();
+		    	Specification.instance.updateOptionsFromDifficultyLevel();
 		    }
 		}
 		
@@ -269,5 +270,16 @@ public class Specification implements Identifiable {
 			return "freecol-specification";
 		}
 	}
+
+	public void updateOptionsFromDifficultyLevel() {
+		updateOptionsFromDifficultyLevel(Specification.instance.difficultyLevel);
+	}
+	
+	public void updateOptionsFromDifficultyLevel(String difficultyLevel) {
+        options.flattenOptionsEntriesTree(difficultyLevel);
+        Specification.instance.updateReferences();
+	}
+
+	
 }
 
