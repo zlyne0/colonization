@@ -95,11 +95,12 @@ public class GUIGameController {
 		for (Nation nation : Specification.instance.nations.entities()) {
 			if (nation.nationType.isEuropean()) {
 				if (!nation.nationType.isREF() && game.playingPlayer.nation().notEqualsId(nation)) {
-					System.out.println("euro " + nation +  " " + nation.nationType);
+					System.out.println("create european player: " + nation +  " " + nation.nationType);
+					game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
 				}
 			} else {
+				System.out.println("create native player: " + nation + " " + nation.nationType);
 				game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
-				System.out.println("native " + nation + " " + nation.nationType);
 			}
 		}
 		game.map = new MapGenerator().generate(game.players);

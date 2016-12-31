@@ -13,7 +13,7 @@ public class PlayerGoldTaxYearLabel extends Label {
 	private Player player;
 	private Turn turn;
 	
-	private int gold = 0;
+	private int gold = -1;
 	private int tax = 0;
 	private int turnNumber = 0;
 	

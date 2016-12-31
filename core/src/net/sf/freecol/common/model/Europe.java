@@ -40,7 +40,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
 
     public static Europe newStartingEurope(IdGenerator idGenerator, Player player) {
-    	Europe europe = new Europe(idGenerator.nextId(Europe.class));
+    	Europe europe = new Europe();
         europe.addAbility(new Ability(Ability.DRESS_MISSIONARY, true));
         europe.setOwner(player);
     	
@@ -52,10 +52,15 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	return europe;
     }
     
-    public Europe(String id) {
-        super(id);
+    public Europe() {
+        super("no id for europe");
     }
 
+    @Override
+    public String getId() {
+    	throw new IllegalAccessError("no id for object");
+    }
+    
 	@Override
 	public MapIdEntities<Unit> getUnits() {
 		return units;
@@ -283,8 +288,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            Europe eu = new Europe(id);
+            Europe eu = new Europe();
             eu.recruitPrice = attr.getIntAttribute("recruitPrice", RECRUIT_PRICE_INITIAL);
             eu.recruitLowerCap = attr.getIntAttribute("recruitLowerCap", LOWER_CAP_INITIAL);
             nodeObject = eu;

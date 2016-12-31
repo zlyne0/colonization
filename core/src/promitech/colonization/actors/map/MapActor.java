@@ -21,16 +21,16 @@ import promitech.colonization.math.Point;
 public class MapActor extends Widget {
 
 	private final GameResources gameResources;
+	private final GUIGameController gameController;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
-	private final Game game;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	public MapActor(final GUIGameController gameController, GameResources gameResources) {
-		this.game = gameController.getGame();
+		this.gameController = gameController;
 		this.gameResources = gameResources;
 		
 		addListener(new InputListener() {
@@ -76,17 +76,17 @@ public class MapActor extends Widget {
 			}
 		});
 		
-		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
+		mapDrawModel.initialize(gameController.getGame().map, gameController.getGame().playingPlayer, gameResources);
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
-		centerCameraOnTile(game.playingPlayer.getEntryLocationX(), game.playingPlayer.getEntryLocationY());
+		centerCameraOnTile(gameController.getGame().playingPlayer.getEntryLocationX(), gameController.getGame().playingPlayer.getEntryLocationY());
 	}
 	
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(game.map, gameResources);
+		mapDrawModel.resetUnexploredBorders(gameController.getGame().map, gameResources);
 	}
 	
 	public void resetMapModel() {
-		mapDrawModel.initialize(game.map, game.playingPlayer, gameResources);
+		mapDrawModel.initialize(gameController.getGame().map, gameController.getGame().playingPlayer, gameResources);
 	}
 	
 	@Override

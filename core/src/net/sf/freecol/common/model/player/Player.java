@@ -89,7 +89,7 @@ public class Player extends ObjectWithId {
         	player.changePlayerType(PlayerType.COLONIAL);
         	
         	player.europe = Europe.newStartingEurope(idGenerator, player);
-        	player.monarch = Monarch.newStartingMonarch(idGenerator, player);
+        	player.monarch = Monarch.newStartingMonarch(player);
         	player.highSeas = new HighSeas();
         	
         	player.gold = Specification.options.getIntValue(GameOptions.STARTING_MONEY);

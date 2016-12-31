@@ -93,6 +93,16 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.hideTilesOwners();
 			hideWithFade();
 		}
+		if (cmd.equals("new game")) {
+			try {
+				gameControler.initNewGame();
+				gameControler.resetMapModel();
+				gameControler.nextActiveUnit();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+			hideWithFade();
+		}
 	}
 
 	private void addConsoleLine(String line) {

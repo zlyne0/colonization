@@ -83,7 +83,6 @@ public class SaveGameParserTest {
         assertEquals(Stance.WAR, player.getStance(game.players.getById("player:133")));
 		
         assertNotNull(player.getEurope());
-        assertEquals("europe:2", player.getEurope().getId());
         
         assertNotNull(player.getEurope().getUnits().getById("unit:7108"));
         assertNotNull(player.getEurope().getUnits().getById("unit:7109"));
