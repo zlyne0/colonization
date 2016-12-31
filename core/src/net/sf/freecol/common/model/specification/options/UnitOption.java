@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.specification.options;
 
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -22,6 +23,10 @@ public class UnitOption extends ObjectWithId {
 			Specification.instance.unitRoles.getById(roleId), 
 			number
 		);
+	}
+	
+	public UnitType getUnitType() {
+		return Specification.instance.unitTypes.getById(unitTypeId);
 	}
 	
 	public static class Xml extends XmlNodeParser {

@@ -27,9 +27,13 @@ public class HighSeasUnitsPanel extends Table {
 	        .addStringTemplate("%location%", StringTemplate.key(player.nation().getId() + ".europe"));		
 		ingoingUnits.withLabel(Messages.message(st));
 		
+		String landName = player.getNewLandName();
+		if (landName == null) {
+			landName = Messages.msg("NewWorld");
+		}
 		st = StringTemplate.template("goingTo")
 		        .add("%type%", "ship")
-		        .add("%location%", player.getNewLandName());		
+		        .add("%location%", landName);		
 		outgoingUnits.withLabel(Messages.message(st));
 		
 		

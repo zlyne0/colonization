@@ -87,13 +87,23 @@ public class Player extends ObjectWithId {
         player.updatableFeatures.addFeaturesAndOverwriteExisted(nation.nationType);
         if (nation.nationType.isEuropean()) {
         	player.changePlayerType(PlayerType.COLONIAL);
+        	
+        	player.europe = Europe.newStartingEurope(idGenerator, player);
+        	player.monarch = Monarch.newStartingMonarch(idGenerator, player);
+        	player.highSeas = new HighSeas();
+        	
+        	player.gold = Specification.options.getIntValue(GameOptions.STARTING_MONEY);
+        	player.immigrationRequired = (int)player.updatableFeatures.applyModifier(
+    			Modifier.RELIGIOUS_UNREST_BONUS, 
+    			Specification.options.getIntValue(GameOptions.INITIAL_IMMIGRATION)
+        	);
         } else {
         	player.changePlayerType(PlayerType.NATIVE);
         }
+        
         player.market = new Market(idGenerator.nextId(Market.class));
         player.market.initGoods();
         
-        player.monarch = Monarch.newStartingMonarch(idGenerator, player);
     	return player;
     }
     
