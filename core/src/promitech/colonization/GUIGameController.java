@@ -111,6 +111,10 @@ public class GUIGameController {
 		guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
 		guiGameModel.player = game.playingPlayer;
 		gameLogic = new GameLogic(game);
+		
+		for (Player player : game.players.entities()) {
+			player.fogOfWar.resetFogOfWar(player);
+		}
 	}
 	
     public void setMapActor(MapActor mapActor) {

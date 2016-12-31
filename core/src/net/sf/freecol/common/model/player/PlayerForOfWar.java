@@ -17,8 +17,6 @@ public class PlayerForOfWar {
     public void initFromMap(Map map, Player player) {
         fogOfWar = new BooleanMap(map, true);
         spiralIterator = new SpiralIterator(map.width, map.height);
-        
-        resetFogOfWar(player);
     }
 
     void removeFogOfWar(int x, int y) {
