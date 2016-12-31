@@ -587,6 +587,9 @@ public class GUIGameController {
 	}
 	
 	public void onShowGUI() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			logicNextActiveUnit();
+		}
 		guiGameModel.runListeners();
 	}
 
