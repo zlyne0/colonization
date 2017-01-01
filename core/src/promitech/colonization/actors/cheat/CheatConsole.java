@@ -103,6 +103,16 @@ public class CheatConsole extends ClosableDialog {
 			}
 			hideWithFade();
 		}
+		if (cmd.equals("load game")) {
+			try {
+				gameControler.initGameFromSavegame();
+				gameControler.resetMapModel();
+				gameControler.nextActiveUnit();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+			hideWithFade();
+		}
 	}
 
 	private void addConsoleLine(String line) {
