@@ -155,4 +155,8 @@ public class MapActor extends Widget {
 	public void hideTileOwners() {
 		mapRenderer.hideTileOwners();
 	}
+	
+	public void showTileDebugStrings(String strings[][]) {
+		mapRenderer.showTileDebugStrings(strings);
+	}
 }
