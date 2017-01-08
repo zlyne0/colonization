@@ -126,6 +126,9 @@ class NavyCostDecider extends CostDecider {
         for (int i=0; i<Direction.values().length; i++) {
             Direction direction = Direction.values()[i];
             Tile neighbourToMoveTile = map.getTile(moveNode.tile.x, moveNode.tile.y, direction);
+            if (neighbourToMoveTile == null) {
+            	continue;
+            }
             if (neighbourToMoveTile.hasSettlement()) {
                 if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(moveUnit.getOwner(), moveUnitPiracy)) {
                     costMovesLeft = 0;
@@ -213,6 +216,8 @@ public class PathFinder {
 	private Tile endTile;
 	private Unit moveUnit;
 	
+	private boolean findPossibilities = false;
+	
 	public PathFinder() {
 	}
 	
@@ -221,6 +226,7 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
+        this.findPossibilities = false;
         
         Path path = find();
         path.toEurope = true;
@@ -232,10 +238,21 @@ public class PathFinder {
 	    this.startTile = startTile;
 	    this.endTile = endTile;
 	    this.moveUnit = moveUnit;
+        this.findPossibilities = false;
 	    
         Path path = find();
         path.toEurope = false;
 		return path;
+	}
+	
+	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
+        this.map = map;
+        this.startTile = startTile;
+        this.endTile = null;
+        this.moveUnit = moveUnit;
+        this.findPossibilities = true;
+		
+        find();
 	}
 	
 	private Path find() {
@@ -267,6 +284,9 @@ public class PathFinder {
 				Direction moveDirection = Direction.values()[iDirections];
 				
 				Tile moveTile = map.getTile(currentNode.tile.x, currentNode.tile.y, moveDirection);
+				if (moveTile == null) {
+					continue;
+				}
 				Node moveNode = grid[moveTile.y][moveTile.x];
 				if (moveNode.noMove) {
 					continue;
@@ -294,6 +314,10 @@ public class PathFinder {
 			}
 		}
 
+		if (findPossibilities) {
+			return null;
+		}
+		
 		if (reachedGoalNode != null) {
 			return createPath(moveUnit, startTile, reachedGoalNode);
 		} else {
@@ -302,6 +326,9 @@ public class PathFinder {
 	}
 	
 	private boolean isReachedGoal(Node moveNode) {
+		if (findPossibilities) {
+			return false;
+		}
 	    if (endTile == null) {
 	        return moveNode.tile.getType().isHighSea();
 	    } else {
@@ -345,4 +372,32 @@ public class PathFinder {
 		nodes.clear();
 	}
 	
+	public int totalCost(int x, int y) {
+		return grid[y][x].totalCost; 
+	}
+	
+	public int turnsCost(int x, int y) {
+		return grid[y][x].turns;
+	}
+
+	public Direction getDirectionInto(int x, int y) {
+		Node oneBefore = null;
+		Node n = grid[y][x];
+		
+		while (n != null) {
+			if (n.preview != null) { 
+				oneBefore = n;
+			}
+			n = n.preview;
+		}
+		
+		if (oneBefore == null) {
+			return null;
+		}
+		
+		return Direction.fromCoordinates(
+			startTile.x, startTile.y, 
+			oneBefore.tile.x, oneBefore.tile.y
+		);
+	}
 }

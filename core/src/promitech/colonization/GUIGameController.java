@@ -859,5 +859,52 @@ public class GUIGameController {
 	public void hideTilesOwners() {
 		mapActor.hideTileOwners();
 	}
+
+	public void theBestMove() {
+		final Unit unit = guiGameModel.getActiveUnit();
+		if (unit == null) {
+			System.out.println("no unit selected");
+			return;
+		}
+		System.out.println("the best move");
+		
+		final PathFinder pf = new PathFinder();
+		pf.generateRangeMap(game.map, unit.getTile(), unit);
+		
+		MapExplorer mapExplorer = new MapExplorer(game.map.width, game.map.height);
+		mapExplorer.borderCollector.map = game.map;
+		mapExplorer.borderCollector.player = unit.getOwner();
+		mapExplorer.borderCollector.pathFinder = pf;
+		
+		for (int y=0; y<game.map.height; y++) {
+			for (int x=0; x<game.map.width; x++) {
+				Tile t = game.map.getSafeTile(x, y);
+				if (unit.getOwner().isTileExplored(x, y)) {
+					if (t.getType().isHighSea()) {
+						mapExplorer.initializeSource(t.x, t.y);
+					}
+				}
+			}
+		}
+		mapExplorer.generate();
+		
+//		final String tileStrings[][] = new String[game.map.height][game.map.width];
+//		mapExplorer.consume(new MapExplorer.Consumer() {
+//			@Override
+//			public void val(int x, int y, int v) {
+//				if (v != MapExplorer.DEST && v >= 0) {
+//					tileStrings[y][x] = "" + v;
+//				}
+//			}
+//		});
+//		mapActor.showTileDebugStrings(tileStrings);
+		
+		final String tileStrings[][] = new String[game.map.height][game.map.width];
+		mapExplorer.borderCollector.showMax(tileStrings);
+		
+		mapExplorer.borderCollector.directionToExplore();
+		
+		mapActor.showTileDebugStrings(tileStrings);
+	}
 	
 }

@@ -102,6 +102,10 @@ public class Map extends ObjectWithId {
 		return tile;
 	}
 
+	public Tile getSafeTile(int x, int y) {
+		return tiles[y][x];
+	}
+	
 	public boolean isCoordinateValid(int x, int y) {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}

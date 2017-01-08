@@ -19,9 +19,9 @@ class TileDebugStringDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (!mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
-			return;
-		}
+//		if (!mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
+//			return;
+//		}
 		if (tileStrings == null) {
 			return;
 		}
