@@ -400,4 +400,9 @@ public class PathFinder {
 			oneBefore.tile.x, oneBefore.tile.y
 		);
 	}
+
+    public Path getPathInto(int x, int y) {
+        Node node = grid[y][x];
+        return createPath(moveUnit, startTile, node);
+    }
 }

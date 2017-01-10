@@ -36,6 +36,7 @@ import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
+import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
@@ -867,7 +868,7 @@ public class GUIGameController {
 			return;
 		}
 		System.out.println("the best move");
-		
+		{	
 		final PathFinder pf = new PathFinder();
 		pf.generateRangeMap(game.map, unit.getTile(), unit);
 		
@@ -905,6 +906,30 @@ public class GUIGameController {
 		mapExplorer.borderCollector.directionToExplore();
 		
 		mapActor.showTileDebugStrings(tileStrings);
+		}
+        {
+            final PathFinder pathFinder = new PathFinder();
+            pathFinder.generateRangeMap(game.map, unit.getTile(), unit);
+            
+            NavyExplorer navyExplorer = new NavyExplorer(game.map);
+            navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
+            
+            if (navyExplorer.isFoundExploreDestination()) {
+                if (navyExplorer.isExploreDestinationInOneTurn()) {
+                    System.out.println("exploration destination " + navyExplorer.getExploreDestinationAsDirection());
+                } else {
+                    System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
+                }
+            } else {
+                // maybe is everything explored or blocked in some how
+                System.out.println("can not find tile to explore");
+            }
+            
+            final String tileStrings[][] = new String[game.map.height][game.map.width];
+            navyExplorer.toStringsBorderValues(tileStrings);
+            mapActor.showTileDebugStrings(tileStrings);
+        }
+		
 	}
 	
 }
