@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
+import promitech.map.Object2dArray;
 
 // cost for move by civilian unit into foreign settlement is delt by moveType
 // the same case for move to foreign unit
@@ -204,7 +205,7 @@ public class PathFinder {
 		}
 	};
 	
-	private Node grid[][];
+	private Object2dArray<Node> grid; 
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
 	
 	private final CostDecider baseCostDecider = new CostDecider();
@@ -266,7 +267,7 @@ public class PathFinder {
 		}
 		costDecider.init(map, moveUnit);
 		
-		Node currentNode = grid[startTile.y][startTile.x];
+		Node currentNode = grid.get(startTile.x, startTile.y);
 		currentNode.reset(moveUnit.getMovesLeft(), 0);
 		nodes.add(currentNode);
 
@@ -287,7 +288,7 @@ public class PathFinder {
 				if (moveTile == null) {
 					continue;
 				}
-				Node moveNode = grid[moveTile.y][moveTile.x];
+				Node moveNode = grid.get(moveTile.x, moveTile.y);
 				if (moveNode.noMove) {
 					continue;
 				}
@@ -358,31 +359,32 @@ public class PathFinder {
 
 	private void resetFinderBeforeSearching(Map map) {
 		if (grid == null) {
-			grid = new Node[map.height][map.width];
+		    grid = new Object2dArray<Node>(map.width, map.height);
+		    
+		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
+		        Node n = new Node(map.getTile(grid.toX(cellIndex), grid.toY(cellIndex)));
+		        n.reset(0, INFINITY);
+		        grid.set(cellIndex, n);
+		    }		
+		} else {
+            for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
+                grid.get(cellIndex).reset(0, INFINITY);
+            }       
 		}
-		for (int y=0; y<map.height; y++) {
-			for (int x=0; x<map.width; x++) {
-				if (grid[y][x] == null) {
-					grid[y][x] = new Node(map.getTile(x, y));
-				}
-				grid[y][x].reset(0, INFINITY);
-			}
-		}
-		
 		nodes.clear();
 	}
 	
-	public int totalCost(int x, int y) {
-		return grid[y][x].totalCost; 
+	public int totalCost(int cellIndex) {
+		return grid.get(cellIndex).totalCost;
 	}
 	
-	public int turnsCost(int x, int y) {
-		return grid[y][x].turns;
+	public int turnsCost(int cellIndex) {
+	    return grid.get(cellIndex).turns;
 	}
 
-	public Direction getDirectionInto(int x, int y) {
+	public Direction getDirectionInto(int cellIndex) {
 		Node oneBefore = null;
-		Node n = grid[y][x];
+		Node n = grid.get(cellIndex);
 		
 		while (n != null) {
 			if (n.preview != null) { 
@@ -401,8 +403,8 @@ public class PathFinder {
 		);
 	}
 
-    public Path getPathInto(int x, int y) {
-        Node node = grid[y][x];
+    public Path getPathInto(int cellIndex) {
+        Node node = grid.get(cellIndex);
         return createPath(moveUnit, startTile, node);
     }
 }

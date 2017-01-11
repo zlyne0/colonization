@@ -28,8 +28,7 @@ public class NavyExplorer {
     private Player player;
     private PathFinder pathFinder;
     
-    private int theBestX = 0;
-    private int theBestY = 0;
+    private int theBestCellIndex = 0;
     private int theBestCost = -1;
     
     public NavyExplorer(final Map map) {
@@ -46,8 +45,7 @@ public class NavyExplorer {
         highseaInfluenceMap.set(DEST);
         poolIndexes.clear();
         
-        theBestX = 0;
-        theBestY = 0;
+        theBestCellIndex = 0;
         theBestCost = -1;
     }
     
@@ -133,34 +131,32 @@ public class NavyExplorer {
     }
     
     private void determineTheBestTileToExplore() {
-        int x, y, cost, index;
+        int x, y, cost, cellIndex;
         
         for (int i=0; i<exploredBordersIndexes.size; i++) {
-            index = exploredBordersIndexes.get(i);
-            x = exploredBorders.toX(index);
-            y = exploredBorders.toY(index);
-            cost = explorationCost(x, y);
+            cellIndex = exploredBordersIndexes.get(i);
+            x = exploredBorders.toX(cellIndex);
+            y = exploredBorders.toY(cellIndex);
+            cost = explorationCost(x, y, cellIndex);
             if (cost >= theBestCost) {
                 if (cost > theBestCost) {
                     theBestCost = cost;
-                    theBestX = x;
-                    theBestY = y;
+                    theBestCellIndex = cellIndex;
                 } else {
                     // the same cost
                     if (Randomizer.instance().isHappen(50)) {
                         theBestCost = cost;
-                        theBestX = x;
-                        theBestY = y;
+                        theBestCellIndex = cellIndex;
                     }
                 }
             }
         }
     }
     
-    public int explorationCost(int x, int y) {
-        return (100 - pathFinder.turnsCost(x, y)) * 1000 
-                - pathFinder.totalCost(x, y) 
-                + highseaInfluenceMap.get(x, y) 
+    public int explorationCost(int x, int y, int cellIndex) {
+        return (100 - pathFinder.turnsCost(cellIndex)) * 1000 
+                - pathFinder.totalCost(cellIndex) 
+                + highseaInfluenceMap.get(cellIndex) 
                 + numberOfLandNeighbour(x, y);
     }
     
@@ -181,29 +177,30 @@ public class NavyExplorer {
     }
     
     public boolean isExploreDestinationInOneTurn() {
-        return pathFinder.turnsCost(theBestX, theBestY) == 0;
+        return pathFinder.turnsCost(theBestCellIndex) == 0;
     }
     
     public Direction getExploreDestinationAsDirection() {
-        return pathFinder.getDirectionInto(theBestX, theBestY);
+        return pathFinder.getDirectionInto(theBestCellIndex);
     }
     
     public Path getExploreDestinationAsPath() {
-        return pathFinder.getPathInto(theBestX, theBestY);
+        return pathFinder.getPathInto(theBestCellIndex);
     }
     
     public String toString() {
         StringBuilder sb = new StringBuilder();
-        int x, y, v, cost;
+        int x, y, v, cost, cellIndex;
         for (int i=0; i<exploredBordersIndexes.size; i++) {
-            x = exploredBorders.toX(exploredBordersIndexes.get(i));
-            y = exploredBorders.toY(exploredBordersIndexes.get(i));
+            cellIndex = exploredBordersIndexes.get(i);
+            x = exploredBorders.toX(cellIndex);
+            y = exploredBorders.toY(cellIndex);
             v = exploredBorders.get(x, y);
-            cost = explorationCost(x, y);
+            cost = explorationCost(x, y, cellIndex);
             
             sb.append("xy [" + x + "," + y + "] " + v +
-                    ", turns\t" + pathFinder.turnsCost(x, y) +
-                    ", totalC\t" + pathFinder.totalCost(x, y) +
+                    ", turns\t" + pathFinder.turnsCost(cellIndex) +
+                    ", totalC\t" + pathFinder.totalCost(cellIndex) +
                     ", v\t" + v +
                     ", land\t" + numberOfLandNeighbour(x, y) +
                     " = cost " + cost);
@@ -225,11 +222,12 @@ public class NavyExplorer {
     }
     
     public void toStringsBorderValues(String strings[][]) {
-        int x, y, cost;
+        int x, y, cost, cellIndex;
         for (int i=0; i<exploredBordersIndexes.size; i++) {
-            x = exploredBorders.toX(exploredBordersIndexes.get(i));
-            y = exploredBorders.toY(exploredBordersIndexes.get(i));
-            cost = explorationCost(x, y);
+            cellIndex = exploredBordersIndexes.get(i);
+            x = exploredBorders.toX(cellIndex);
+            y = exploredBorders.toY(cellIndex);
+            cost = explorationCost(x, y, cellIndex);
             
             strings[y][x] = Integer.toString(cost);
         }
