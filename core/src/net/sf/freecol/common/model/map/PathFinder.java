@@ -191,6 +191,10 @@ class Node {
 
 public class PathFinder {
 	
+    interface GoalDecider {
+        boolean hasGoalReached(Node moveNode);
+    }
+    
     static final int INFINITY = Integer.MAX_VALUE;
     static final int UNDEFINED = Integer.MIN_VALUE;
 	
@@ -204,6 +208,24 @@ public class PathFinder {
 			}
 		}
 	};
+	private GoalDecider rangeMapGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return false;
+	    }
+	};
+	private GoalDecider pathToEuropeGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return moveNode.tile.getType().isHighSea();
+	    }
+	};
+	private GoalDecider pathToTileGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return endTile.getId().equals(moveNode.tile.getId());
+	    }
+	};
 	
 	private Object2dArray<Node> grid; 
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
@@ -211,6 +233,7 @@ public class PathFinder {
 	private final CostDecider baseCostDecider = new CostDecider();
 	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
 	private CostDecider costDecider;
+	private GoalDecider goalDecider;
 
 	private Map map;
 	private Tile startTile;
@@ -223,6 +246,7 @@ public class PathFinder {
 	}
 	
 	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
+	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
@@ -235,6 +259,7 @@ public class PathFinder {
 	}
 	
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
+	    goalDecider = pathToTileGoalDecider;
 	    this.map = map;
 	    this.startTile = startTile;
 	    this.endTile = endTile;
@@ -247,6 +272,7 @@ public class PathFinder {
 	}
 	
 	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
+	    goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
@@ -294,7 +320,7 @@ public class PathFinder {
 				}
 				
 				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
-				if (isReachedGoal(moveNode)) {
+				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
 					// change moveType to default move. Sometimes goal can be indian settlement 
 					// and moveType should be used only to find path
@@ -324,17 +350,6 @@ public class PathFinder {
 		} else {
 			return createPath(moveUnit, startTile, oneOfTheBest);
 		}
-	}
-	
-	private boolean isReachedGoal(Node moveNode) {
-		if (findPossibilities) {
-			return false;
-		}
-	    if (endTile == null) {
-	        return moveNode.tile.getType().isHighSea();
-	    } else {
-	        return endTile.getId().equals(moveNode.tile.getId());
-	    }
 	}
 	
 	private Path createPath(final Unit moveUnit, final Tile startTile, final Node endPathNode) {
