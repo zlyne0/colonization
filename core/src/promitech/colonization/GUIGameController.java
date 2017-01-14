@@ -36,6 +36,7 @@ import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
+import promitech.colonization.ai.AILogic;
 import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
@@ -608,10 +609,14 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
+		AILogic aiLogic = new AILogic(game, gameLogic);
+		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {			
 			endOfTurnPhaseListener.nextAIturn(player);
-			System.out.println("player " + player);
+			System.out.println("new turn for player " + player);
+			
+			aiLogic.aiNewTurn(player);
 			
 			try {
 				Thread.sleep(100);

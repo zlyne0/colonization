@@ -36,10 +36,9 @@ public class NavyExplorer {
         highseaInfluenceMap = new Int2dArray(map.width, map.height);
         poolIndexes = new IntArray(false, map.width * map.height);
         exploredBorders = new Int2dArray(map.width, map.height);
-        reset();
     }
     
-    public void reset() {
+    private void reset() {
         exploredBorders.set(UNSETED_BORDER_VALUE);
         exploredBordersIndexes.clear();
         highseaInfluenceMap.set(DEST);
@@ -113,6 +112,7 @@ public class NavyExplorer {
     }
     
     public void generateExploreDestination(PathFinder pathFinder, Player player) {
+    	reset();
         for (int y=0; y<map.height; y++) {
             for (int x=0; x<map.width; x++) {
                 Tile t = map.getSafeTile(x, y);
