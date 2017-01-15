@@ -30,6 +30,10 @@ public class PlayerForOfWar {
     public void removeFogOfWar() {
     	fogOfWar.reset(false);
     }
+
+    public boolean hasFogOfWar(Tile tile) {
+        return fogOfWar.isSet(tile.x, tile.y);
+    }
     
     public boolean hasFogOfWar(int x, int y) {
         return fogOfWar.isSet(x, y);

@@ -9,13 +9,15 @@ import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveContext;
 
 public class ExplorerMissionHandler {
+	private final AILogic aiLogic;
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final NavyExplorer navyExplorer;
 	
-	public ExplorerMissionHandler(Game game, PathFinder pathFinder) {
+	public ExplorerMissionHandler(Game game, PathFinder pathFinder, AILogic aiLogic) {
 		this.game = game;
 		this.pathFinder = pathFinder;
+		this.aiLogic = aiLogic;
 		this.navyExplorer = new NavyExplorer(game.map);
 	}
 
@@ -57,6 +59,8 @@ public class ExplorerMissionHandler {
 			if (canHandleMove) {
 				moveContext.handleMove();
 				ship.getOwner().revealMapAfterUnitMove(game.map, ship);
+				
+				aiLogic.startAIUnitDislocationAnimation(moveContext);
 				
 				pathFinder.generateRangeMap(game.map, ship.getTile(), ship);
 				navyExplorer.generateExploreDestination(pathFinder, ship.getOwner());

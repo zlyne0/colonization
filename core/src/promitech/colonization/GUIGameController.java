@@ -55,6 +55,15 @@ public class GUIGameController {
 			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
 		}
 	}
+	private class EndOfAIUnitDislocationAnimationAction extends RunnableAction {
+		MoveContext moveContext;
+		AILogic aiLogic;
+		
+		@Override
+		public void run() {
+			aiLogic.endOfAIUnitDislocationAnimation(moveContext);
+		}
+	}
 
 	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
@@ -67,6 +76,7 @@ public class GUIGameController {
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
 	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
+	private final EndOfAIUnitDislocationAnimationAction endOfAIUnitDislocationAnimationAction = new EndOfAIUnitDislocationAnimationAction();
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
 	
@@ -334,6 +344,26 @@ public class GUIGameController {
 		blockUserInteraction = true;
 		endOfUnitDislocationAnimation.moveContext = moveContext;
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
+	}
+	
+	/**
+	 * 
+	 * @param moveContext
+	 * @param aiLogic
+	 * @return boolean true when should show animation on screen, otherwise return false
+	 */
+	public boolean guiAIMoveInteraction(MoveContext moveContext, AILogic aiLogic) {
+		if (!game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
+				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile)) {
+			if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+				mapActor.centerCameraOnTile(moveContext.destTile);
+			}
+			endOfAIUnitDislocationAnimationAction.moveContext = moveContext;
+			endOfAIUnitDislocationAnimationAction.aiLogic = aiLogic;
+			mapActor.startUnitDislocationAnimation(moveContext, endOfAIUnitDislocationAnimationAction);
+			return true;
+		}
+		return false;
 	}
 	
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
@@ -609,7 +639,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(game, gameLogic);
+		AILogic aiLogic = new AILogic(game, gameLogic, this);
 		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {			
