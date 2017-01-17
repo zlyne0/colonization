@@ -18,7 +18,7 @@ public class AILogic {
 	private final GameLogic gameLogic;
 	private final PathFinder pathFinder = new PathFinder();
 
-	private final Semaphore animationSemaphore = new Semaphore(1);
+	private final Semaphore animationSemaphore = new Semaphore(0);
 	
 	private final ExplorerMissionHandler explorerMissionHandler;
 	

@@ -37,33 +37,32 @@ public class EndOfTurnActor extends Actor {
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
 		if (playerTurn.get() != null) {
+			
+			BitmapFont cityNamesFont = FontResource.getCityNamesFont();
+			Nation nation = playerTurn.get().nation();
+			cityNamesFont.setColor(nation.getColor());
+			StringTemplate t = StringTemplate.template("waitingFor")
+					.addStringTemplate("%nation%", playerTurn.get().getNationName());
+			String st = Messages.message(t);
+			float strWidth = FontResource.strWidth(cityNamesFont, st);
+			float x = getWidth() / 2 - strWidth / 2;
+			float y = 100 - FontResource.fontHeight(cityNamesFont) / 2;
+			
+			Frame coatOfArms = GameResources.instance.coatOfArms(nation);
+			
 			batch.end();
 			
 	        Gdx.gl.glEnable(GL20.GL_BLEND);
 	        Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
 			shapeRenderer.begin(ShapeType.Filled);
 			shapeRenderer.setColor(BACKGROUND_COLOR);
-			shapeRenderer.rect(0, 0, getWidth(), getHeight());
+			shapeRenderer.rect(getWidth() / 2 - 120, y - 40, 240, 150);
 			shapeRenderer.end();
 			
 			batch.begin();
-			
-			Nation nation = playerTurn.get().nation();
-			
-            StringTemplate t = StringTemplate.template("waitingFor")
-                .addStringTemplate("%nation%", playerTurn.get().getNationName());
-            String st = Messages.message(t);
-			
-            BitmapFont cityNamesFont = FontResource.getCityNamesFont();
-            cityNamesFont.setColor(nation.getColor());
             
-			float strWidth = FontResource.strWidth(cityNamesFont, st);
-			float x = getWidth() / 2 - strWidth / 2;
-			float y = getHeight() / 2 - FontResource.fontHeight(cityNamesFont) / 2;
 			cityNamesFont.draw(batch, st, x, y);
 			
-			
-			Frame coatOfArms = GameResources.instance.coatOfArms(nation);
 			batch.draw(
 				coatOfArms.texture, 
 				getWidth()/2 - coatOfArms.texture.getRegionWidth()/2, 
