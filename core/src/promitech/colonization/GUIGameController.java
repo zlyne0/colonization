@@ -37,6 +37,7 @@ import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
+import promitech.colonization.ai.AIMoveDrawer;
 import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
@@ -55,16 +56,7 @@ public class GUIGameController {
 			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
 		}
 	}
-	private class EndOfAIUnitDislocationAnimationAction extends RunnableAction {
-		MoveContext moveContext;
-		AILogic aiLogic;
-		
-		@Override
-		public void run() {
-			aiLogic.endOfAIUnitDislocationAnimation(moveContext);
-		}
-	}
-
+	
 	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
@@ -76,9 +68,10 @@ public class GUIGameController {
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
 	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
-	private final EndOfAIUnitDislocationAnimationAction endOfAIUnitDislocationAnimationAction = new EndOfAIUnitDislocationAnimationAction();
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
+	
+	private AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
 	
 	public GUIGameController() {
 	}
@@ -346,24 +339,16 @@ public class GUIGameController {
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
 	}
 	
-	/**
-	 * 
-	 * @param moveContext
-	 * @param aiLogic
-	 * @return boolean true when should show animation on screen, otherwise return false
-	 */
-	public boolean guiAIMoveInteraction(MoveContext moveContext, AILogic aiLogic) {
-		if (!game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
-				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile)) {
-			if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
-				mapActor.centerCameraOnTile(moveContext.destTile);
-			}
-			endOfAIUnitDislocationAnimationAction.moveContext = moveContext;
-			endOfAIUnitDislocationAnimationAction.aiLogic = aiLogic;
-			mapActor.startUnitDislocationAnimation(moveContext, endOfAIUnitDislocationAnimationAction);
-			return true;
+	public void guiAIMoveInteraction(MoveContext moveContext) {
+		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
-		return false;
+		mapActor.startUnitDislocationAnimation(moveContext, aiMoveDrawer);
+	}
+	
+	public boolean showAIMoveOnPlayerScreen(MoveContext moveContext) {
+		return !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
+				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
 	}
 	
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
@@ -639,7 +624,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(game, gameLogic, this);
+		AILogic aiLogic = new AILogic(game, gameLogic, aiMoveDrawer);
 		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {			
