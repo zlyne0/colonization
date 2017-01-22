@@ -7,7 +7,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.map.Path;
 
 public class MoveContext {
-	public final Unit unit;
+	public Unit unit;
 	public Tile sourceTile;
 	public Tile destTile;
 	private Direction direction;
@@ -18,6 +18,10 @@ public class MoveContext {
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
 
+	public MoveContext() {
+		this.path = null;
+	}
+	
 	public MoveContext(Tile sourceTile, Tile destTile, Unit unit) {
 		this(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));
 	}
@@ -37,6 +41,20 @@ public class MoveContext {
 		this.unit = path.unit;
 	}
 
+	public void init(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
+		this.sourceTile = sourceTile;
+		this.destTile = destTile;
+		this.direction = direction;
+		this.unit = unit;
+		
+		initMoveCostAndType();
+	}
+	
+	public void changeCords(Tile sourceTile, Tile destTile, Direction direction) {
+		
+		initMoveCostAndType();
+	}
+	
 	public void initNextPathStep() {
 		if (path.hasNotTilesToMove()) {
 			endOfPath = true;
@@ -143,4 +161,5 @@ public class MoveContext {
 	public boolean isMoveType(MoveType moveType) {
 		return moveType.equals(this.moveType);
 	}
+
 }
