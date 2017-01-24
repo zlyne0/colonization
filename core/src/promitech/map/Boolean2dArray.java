@@ -1,14 +1,16 @@
 package promitech.map;
 
-import net.sf.freecol.common.model.Map;
-
 public class Boolean2dArray extends AbstractArray2D {
 	private final boolean array[];
 	
-	public Boolean2dArray(Map map, boolean defaultVal) {
-	    super(map.width, map.height);
+	public Boolean2dArray(int width, int height, boolean defaultVal) {
+		this(width, height);
+		set(defaultVal);
+	}
+
+	public Boolean2dArray(int width, int height) {
+	    super(width, height);
 		array = new boolean[width * height];
-		reset(defaultVal);
 	}
 	
 	public boolean get(int x, int y) {
@@ -44,7 +46,7 @@ public class Boolean2dArray extends AbstractArray2D {
         array[cellIndex] = value;
     }
     
-	public void reset(boolean value) {
+	public void set(boolean value) {
 	    for (int i=0; i<array.length; i++) {
 	        array[i] = value;
 	    }
