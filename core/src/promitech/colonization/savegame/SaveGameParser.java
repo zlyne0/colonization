@@ -42,7 +42,7 @@ public class SaveGameParser {
 		return xmlSavedGame.savedGame.game;
 	}
 	
-	private void loadDefaultSpecification() throws IOException, ParserConfigurationException, SAXException {
+	public static void loadDefaultSpecification() throws IOException, ParserConfigurationException, SAXException {
 		FileHandle fh = Gdx.files.internal("rules/classic/specification.xml");
 		//FileHandle fh = Gdx.files.internal("rules/freecol/specification.xml");
 		InputStream read = fh.read();

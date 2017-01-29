@@ -36,7 +36,7 @@ public class GameLogic {
 
 	public void newTurn(Player player) {
 		newTurnContext.restart();
-		System.out.println("newTurn");
+		System.out.println("newTurn for player " + player);
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}

@@ -146,8 +146,17 @@ public class TerrainPanel extends Table implements
 	@Override
 	public void prePutPayload(final UnitActor worker, final float x, final float y, final DragAndDropSourceContainer<UnitActor> sourceContainer) {
 		final ColonyTile ct = getColonyTileNotNull(x, y);
-		int landPrice = ct.tile.getLandPriceForPlayer(worker.unit.getOwner());
-		if (landPrice > 0) {			
+		
+		if (ct.tile.getType().isWater()) {
+			return;
+		}
+		
+		int landPrice = -1;
+		if (worker.unit.getOwner().hasContacted(ct.tile.getOwner())) {
+			landPrice = ct.tile.getLandPriceForPlayer(worker.unit.getOwner());
+		}
+		
+		if (landPrice != 0) {			
 			final QuestionDialog.OptionAction<Unit> moveWorkerAction = new QuestionDialog.OptionAction<Unit>() {
 				@Override
 				public void executeAction(Unit claimedUnit) {

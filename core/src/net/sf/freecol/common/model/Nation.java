@@ -13,9 +13,8 @@ import promitech.colonization.ui.resources.Messages;
 
 public class Nation extends ObjectWithId {
     
-    public static final String UNKNOWN_NATION_ID = "model.nation.unknownEnemy";
-    
-    
+	private static final String RULER_SUFFIX = ".ruler";
+	
     private static final String[] EUROPEAN_NATIONS = {
 		// Original Col1 nations
 		"dutch", "english", "french", "spanish",
@@ -49,6 +48,14 @@ public class Nation extends ObjectWithId {
 		this.nationType = nationType;
 	}
 	
+	public String toString() {
+		return "id = " + id;
+	}
+	
+    public String rulerNameKey() {
+        return id + RULER_SUFFIX;
+    }
+	
 	public Color getColor() {
 		return color;
 	}
@@ -70,10 +77,6 @@ public class Nation extends ObjectWithId {
                 rebelNation = n;
             }
         }
-    }
-    
-    public final boolean isUnknownEnemy() {
-        return UNKNOWN_NATION_ID.equals(getId());
     }
     
 	public static class Xml extends XmlNodeParser {

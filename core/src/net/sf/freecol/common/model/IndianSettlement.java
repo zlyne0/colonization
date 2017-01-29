@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
@@ -21,7 +23,8 @@ public class IndianSettlement extends Settlement {
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
-
+    public final List<Unit> units = new ArrayList<Unit>();
+    
     public IndianSettlement(IdGenerator idGenerator) {
     	super(idGenerator.nextId(IndianSettlement.class));
     }

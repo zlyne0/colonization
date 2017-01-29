@@ -72,7 +72,7 @@ public class CheatConsole extends ClosableDialog {
 			hideWithFade();
 		}
 		if (cmd.equals("map generate")) {
-			new MapGenerator().generate(gameControler.getGame());
+			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
@@ -81,7 +81,7 @@ public class CheatConsole extends ClosableDialog {
 			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
 			gameControler.resetMapModel();
 			
-			new MapGenerator().generate(gameControler.getGame());
+			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
 			gameControler.resetMapModel();
 			hideWithFade();
 		}
@@ -91,6 +91,26 @@ public class CheatConsole extends ClosableDialog {
 		}
 		if (cmd.equals("map hide owners") || cmd.equals("mho")) {
 			gameControler.hideTilesOwners();
+			hideWithFade();
+		}
+		if (cmd.equals("new game")) {
+			try {
+				gameControler.initNewGame();
+				gameControler.resetMapModel();
+				gameControler.nextActiveUnit();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
+			hideWithFade();
+		}
+		if (cmd.equals("load game")) {
+			try {
+				gameControler.initGameFromSavegame();
+				gameControler.resetMapModel();
+				gameControler.nextActiveUnit();
+			} catch (Exception e) {
+				throw new IllegalStateException(e);
+			}
 			hideWithFade();
 		}
 	}

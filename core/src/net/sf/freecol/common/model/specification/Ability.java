@@ -478,7 +478,7 @@ public final class Ability implements Identifiable {
         public void startElement(XmlNodeAttributes attr) {
         	Ability a = new Ability(attr.getStrAttribute("id"));
         	a.source = attr.getStrAttribute("source");
-        	a.value = attr.getBooleanAttribute("value");
+        	a.value = attr.getBooleanAttribute("value", true);
         	nodeObject = a;
         }
 

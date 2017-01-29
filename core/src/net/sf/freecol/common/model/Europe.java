@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.WithProbability;
+import net.sf.freecol.common.model.specification.options.UnitListOption;
+import net.sf.freecol.common.model.specification.options.UnitOption;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -32,15 +34,33 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private static final int LOWER_CAP_INITIAL = 80;
     
     private Player owner;
-    private int recruitPrice;
-    private int recruitLowerCap;
+    private int recruitPrice = RECRUIT_PRICE_INITIAL;
+    private int recruitLowerCap = LOWER_CAP_INITIAL;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     private final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
+
+    public static Europe newStartingEurope(IdGenerator idGenerator, Player player) {
+    	Europe europe = new Europe();
+        europe.addAbility(new Ability(Ability.DRESS_MISSIONARY, true));
+        europe.setOwner(player);
+    	
+        UnitListOption unitsOptions = Specification.options.getUnitListOption(GameOptions.IMMIGRANTS);
+        for (UnitOption uo : unitsOptions.unitOptions.entities()) {
+        	europe.recruitables.add(uo.getUnitType());
+        }
+        europe.generateRecruitablesUnitList();
+    	return europe;
+    }
     
-    public Europe(String id) {
-        super(id);
+    public Europe() {
+        super("no id for europe");
     }
 
+    @Override
+    public String getId() {
+    	throw new IllegalAccessError("no id for object");
+    }
+    
 	@Override
 	public MapIdEntities<Unit> getUnits() {
 		return units;
@@ -136,6 +156,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         int required = owner.getImmigrationRequired();
         int immigration = owner.getImmigration();
         int difference = Math.max(required - immigration, 0);
+        if (required == 0) {
+        	required = 1;
+        }
         return Math.max((recruitPrice * difference) / required, recruitLowerCap);
     }
 
@@ -196,7 +219,8 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 				recruitProbabilities.add(recruitProbability);
 			}
 		}
-		for (int i=0; i<MAX_RECRUITABLE_UNITS - recruitables.size(); i++) {
+		int count = MAX_RECRUITABLE_UNITS - recruitables.size();
+		for (int i=0; i<count; i++) {
 			WithProbability<UnitType> randomOne = Randomizer.instance().randomOne(recruitProbabilities);
 			recruitables.add(randomOne.probabilityObject());
 		}
@@ -264,8 +288,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            Europe eu = new Europe(id);
+            Europe eu = new Europe();
             eu.recruitPrice = attr.getIntAttribute("recruitPrice", RECRUIT_PRICE_INITIAL);
             eu.recruitLowerCap = attr.getIntAttribute("recruitLowerCap", LOWER_CAP_INITIAL);
             nodeObject = eu;

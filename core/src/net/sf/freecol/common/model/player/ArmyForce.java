@@ -2,6 +2,8 @@ package net.sf.freecol.common.model.player;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.specification.options.UnitListOption;
+import net.sf.freecol.common.model.specification.options.UnitOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
@@ -10,6 +12,15 @@ public class ArmyForce implements Identifiable {
     public final MapIdEntities<ArmyForceAbstractUnit> navalUnits = new MapIdEntities<ArmyForceAbstractUnit>();
     public final MapIdEntities<ArmyForceAbstractUnit> landUnits = new MapIdEntities<ArmyForceAbstractUnit>();
 
+    public ArmyForce() {
+	}
+    
+    public ArmyForce(UnitListOption unitListOption) {
+    	for (UnitOption unitOption : unitListOption.unitOptions.entities()) {
+    		addArmy(unitOption.createArmyForce());
+    	}
+    }
+    
     @Override
     public String getId() {
         throw new IllegalStateException("object do not has id");
@@ -36,14 +47,14 @@ public class ArmyForce implements Identifiable {
 	public void addArmy(ArmyForceAbstractUnit army) {
 		ArmyForceAbstractUnit existed;
 		if (army.getUnitType().isNaval()) {
-			existed = navalUnits.getById(army.getUnitRole().getId());
+			existed = navalUnits.getByIdOrNull(army.getUnitRole().getId());
 			if (existed != null) {
 				existed.addAmount(army);
 			} else {
 				navalUnits.add(army);
 			}
 		} else {
-			existed = landUnits.getById(army.getUnitRole().getId());
+			existed = landUnits.getByIdOrNull(army.getUnitRole().getId());
 			if (existed != null) {
 				existed.addAmount(army);
 			} else {

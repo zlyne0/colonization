@@ -81,6 +81,7 @@ public class MapRenderer {
     private final ObjectsTileDrawer objectsTileDrawer;
     private final FogOfWarDrawer fogOfWarDrawer;
     private TileOwnerDrawer tileOwnerDrawer;
+    private TileDebugStringDrawer tileDebugStringDrawer;
     private ColonyLockedTileDrawer colonyLockedTileDrawer;
 
     private final ShapeRenderer shapeRenderer;
@@ -167,6 +168,10 @@ public class MapRenderer {
     	drawFogOfWarLayer(batch);
     	drawTileOwners(batch);
     	drawPathLayer(batch);
+    	
+    	if (tileDebugStringDrawer != null) {
+    		drawLayer(batch, tileDebugStringDrawer);
+    	}
     }
 
     private void drawPathLayer(Batch batch) {
@@ -486,6 +491,13 @@ public class MapRenderer {
 		tileOwnerDrawer = new TileOwnerDrawer(mapDrawModel);
 	}
 
+	public void showTileDebugStrings(String strings[][]) {
+		if (tileDebugStringDrawer == null) {
+			tileDebugStringDrawer = new TileDebugStringDrawer(mapDrawModel);
+		}
+		tileDebugStringDrawer.initStrings(strings);
+	}
+	
 	public void hideTileOwners() {
 		tileOwnerDrawer.dispose();
 		tileOwnerDrawer = null;

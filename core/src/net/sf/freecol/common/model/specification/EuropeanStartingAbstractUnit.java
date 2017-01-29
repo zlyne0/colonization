@@ -38,6 +38,10 @@ public class EuropeanStartingAbstractUnit implements Identifiable {
 		return startingAsExpertUnit;
 	}
 	
+	public String toString() {
+		return "id = " + id + ", type = " + type.getId() + ", role = " + role.getId() + ", startingAsExpertUnit = " + startingAsExpertUnit;
+	}
+	
 	public static class Xml extends XmlNodeParser {
 
 		@Override

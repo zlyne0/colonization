@@ -13,6 +13,8 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IdGenerator;
+import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -22,6 +24,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.generator.MapGenerator;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
@@ -33,6 +36,9 @@ import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
+import promitech.colonization.ai.AILogic;
+import promitech.colonization.ai.AIMoveDrawer;
+import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
@@ -50,7 +56,7 @@ public class GUIGameController {
 			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
 		}
 	}
-
+	
 	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
 	private Game game;
@@ -65,6 +71,8 @@ public class GUIGameController {
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
 	
+	private AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
+	
 	public GUIGameController() {
 	}
 	
@@ -74,11 +82,45 @@ public class GUIGameController {
         game.playingPlayer = game.players.getById("player:1");
         game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);
-        
-        guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
-        guiGameModel.player = game.playingPlayer;
-        
-        gameLogic = new GameLogic(game);
+
+		postCreateGame();
+	}
+	
+	public void initNewGame() throws IOException, ParserConfigurationException, SAXException {
+		SaveGameParser.loadDefaultSpecification();
+		Specification.instance.updateOptionsFromDifficultyLevel("model.difficulty.medium");
+		
+		Game.idGenerator = new IdGenerator(0);
+		game = new Game();
+		game.activeUnitId = null;
+		
+		game.playingPlayer = Player.newStartingPlayer(Game.idGenerator, Specification.instance.nations.getById("model.nation.french"));
+		game.players.add(game.playingPlayer);
+		
+		for (Nation nation : Specification.instance.nations.entities()) {
+			if (nation.nationType.isEuropean()) {
+				if (!nation.nationType.isREF() && game.playingPlayer.nation().notEqualsId(nation)) {
+					System.out.println("create european player: " + nation +  " " + nation.nationType);
+					game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
+				}
+			} else {
+				System.out.println("create native player: " + nation + " " + nation.nationType);
+				game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
+			}
+		}
+		game.map = new MapGenerator().generate(game.players);
+
+		postCreateGame();
+	}
+	
+	private void postCreateGame() {
+		guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
+		guiGameModel.player = game.playingPlayer;
+		gameLogic = new GameLogic(game);
+		
+		for (Player player : game.players.entities()) {
+			player.fogOfWar.resetFogOfWar(player);
+		}
 	}
 	
     public void setMapActor(MapActor mapActor) {
@@ -295,6 +337,18 @@ public class GUIGameController {
 		blockUserInteraction = true;
 		endOfUnitDislocationAnimation.moveContext = moveContext;
 		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
+	}
+	
+	public void guiAIMoveInteraction(MoveContext moveContext) {
+		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+			mapActor.centerCameraOnTile(moveContext.destTile);
+		}
+		mapActor.startUnitDislocationAnimation(moveContext, aiMoveDrawer);
+	}
+	
+	public boolean showAIMoveOnPlayerScreen(MoveContext moveContext) {
+		return !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
+				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
 	}
 	
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
@@ -551,6 +605,9 @@ public class GUIGameController {
 	}
 	
 	public void onShowGUI() {
+		if (guiGameModel.isActiveUnitNotSet()) {
+			logicNextActiveUnit();
+		}
 		guiGameModel.runListeners();
 	}
 
@@ -567,14 +624,14 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
+		AILogic aiLogic = new AILogic(game, gameLogic, aiMoveDrawer);
+		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
-		for (Player player : players) {
-			if (player.nation().isUnknownEnemy()) {
-				continue;
-			}
-			
+		for (Player player : players) {			
 			endOfTurnPhaseListener.nextAIturn(player);
-			System.out.println("player " + player);
+			System.out.println("new turn for player " + player);
+			
+			aiLogic.aiNewTurn(player);
 			
 			try {
 				Thread.sleep(100);
@@ -822,6 +879,40 @@ public class GUIGameController {
 	
 	public void hideTilesOwners() {
 		mapActor.hideTileOwners();
+	}
+
+	public void theBestMove() {
+		final Unit unit = guiGameModel.getActiveUnit();
+		if (unit == null) {
+			System.out.println("no unit selected");
+			return;
+		}
+		System.out.println("the best move");
+
+		
+        final PathFinder pathFinder = new PathFinder();
+        pathFinder.generateRangeMap(game.map, unit.getTile(), unit);
+        
+        NavyExplorer navyExplorer = new NavyExplorer(game.map);
+        navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
+        
+        if (navyExplorer.isFoundExploreDestination()) {
+            if (navyExplorer.isExploreDestinationInOneTurn()) {
+                Direction direction = navyExplorer.getExploreDestinationAsDirection();
+				System.out.println("exploration destination " + direction);
+				pressDirectionKey(direction);
+            } else {
+                System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
+            }
+        } else {
+            // maybe is everything explored or blocked in some how
+            System.out.println("can not find tile to explore");
+        }
+        
+        final String tileStrings[][] = new String[game.map.height][game.map.width];
+        navyExplorer.toStringsBorderValues(tileStrings);
+        mapActor.showTileDebugStrings(tileStrings);
+		
 	}
 	
 }

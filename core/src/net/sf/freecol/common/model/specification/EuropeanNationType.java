@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Specification;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -68,6 +69,12 @@ public class EuropeanNationType extends NationType {
             nationType.ref = attr.getBooleanAttribute("ref");
             
             NationType.Xml.abstractStartElement(attr, nationType);
+            
+            if (nationType.parentNationTypeId != null) {
+            	EuropeanNationType parent = (EuropeanNationType)Specification.instance.nationTypes.getById(nationType.parentNationTypeId);
+            	nationType.startingUnits.addAll(parent.startingUnits);
+            	nationType.expertStartingUnits.addAll(parent.expertStartingUnits);
+            }            
             nodeObject = nationType;
         }
         

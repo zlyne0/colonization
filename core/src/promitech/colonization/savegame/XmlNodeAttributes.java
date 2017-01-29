@@ -59,12 +59,16 @@ public class XmlNodeAttributes {
         return "true".equals(val.toLowerCase());
     }
     
+    public <T extends Enum<T>> T getEnumAttribute(Class<T> enumClass, String name, T defaultValue) {
+    	String val = attributes.getValue(name);
+    	if (val == null) {
+    		return defaultValue;
+    	}
+    	return Enum.valueOf(enumClass, val.toUpperCase());
+    }
+    
     public <T extends Enum<T>> T getEnumAttribute(Class<T> enumClass, String name) {
-        String val = attributes.getValue(name);
-        if (val == null) {
-            return null;
-        }
-        return Enum.valueOf(enumClass, val.toUpperCase());
+    	return getEnumAttribute(enumClass, name, null);
     }
     
     public String toString() {

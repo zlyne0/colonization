@@ -102,6 +102,10 @@ public class Map extends ObjectWithId {
 		return tile;
 	}
 
+	public Tile getSafeTile(int x, int y) {
+		return tiles[y][x];
+	}
+	
 	public boolean isCoordinateValid(int x, int y) {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}
@@ -123,6 +127,13 @@ public class Map extends ObjectWithId {
         }
     }
 
+	public void initPlayersMap(MapIdEntities<Player> players) {
+        for (Player player : players.entities()) {
+            player.fogOfWar.initFromMap(this, player);
+            player.initExploredMap(this);
+        }
+	}
+    
 	public boolean isUnitSeeHostileUnit(Unit unit) {
 		Tile unitTile = unit.getTile();
 		int radius = unit.lineOfSight();
@@ -231,6 +242,8 @@ public class Map extends ObjectWithId {
 			int width = attr.getIntAttribute("width");
 			int height = attr.getIntAttribute("height");
 			Map map = new Map(idStr, width, height);
+			
+			map.initPlayersMap(game.players);
 			game.map = map;
 			nodeObject = map;
 		}
@@ -252,4 +265,5 @@ public class Map extends ObjectWithId {
 		}
 		
 	}
+
 }

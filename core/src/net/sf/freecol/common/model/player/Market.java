@@ -236,6 +236,9 @@ public class Market extends ObjectWithId {
 
     public void initGoods() {
         for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+        	if (!goodsType.isStorable()) {
+        		continue;
+        	}
             MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
             if (marketData == null) {
                 marketData = new MarketData(goodsType);

@@ -451,7 +451,7 @@ public class Tile implements UnitLocation, Identifiable {
 			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
 				@Override
 				public void set(Tile target, CachedTile entity) {
-					entity.getPlayer().setTileAsExplored(target, game.map);
+					entity.getPlayer().setTileAsExplored(target);
 				}
 			});
 		    addNode(TileItemContainer.class, new ObjectFromNodeSetter<Tile,TileItemContainer>() {

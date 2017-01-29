@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
+import promitech.map.Object2dArray;
 
 // cost for move by civilian unit into foreign settlement is delt by moveType
 // the same case for move to foreign unit
@@ -126,6 +127,9 @@ class NavyCostDecider extends CostDecider {
         for (int i=0; i<Direction.values().length; i++) {
             Direction direction = Direction.values()[i];
             Tile neighbourToMoveTile = map.getTile(moveNode.tile.x, moveNode.tile.y, direction);
+            if (neighbourToMoveTile == null) {
+            	continue;
+            }
             if (neighbourToMoveTile.hasSettlement()) {
                 if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(moveUnit.getOwner(), moveUnitPiracy)) {
                     costMovesLeft = 0;
@@ -187,6 +191,10 @@ class Node {
 
 public class PathFinder {
 	
+    interface GoalDecider {
+        boolean hasGoalReached(Node moveNode);
+    }
+    
     static final int INFINITY = Integer.MAX_VALUE;
     static final int UNDEFINED = Integer.MIN_VALUE;
 	
@@ -200,27 +208,50 @@ public class PathFinder {
 			}
 		}
 	};
+	private GoalDecider rangeMapGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return false;
+	    }
+	};
+	private GoalDecider pathToEuropeGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return moveNode.tile.getType().isHighSea();
+	    }
+	};
+	private GoalDecider pathToTileGoalDecider = new GoalDecider() {
+	    @Override
+	    public boolean hasGoalReached(Node moveNode) {
+	        return endTile.getId().equals(moveNode.tile.getId());
+	    }
+	};
 	
-	private Node grid[][];
+	private Object2dArray<Node> grid; 
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
 	
 	private final CostDecider baseCostDecider = new CostDecider();
 	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
 	private CostDecider costDecider;
+	private GoalDecider goalDecider;
 
 	private Map map;
 	private Tile startTile;
 	private Tile endTile;
 	private Unit moveUnit;
 	
+	private boolean findPossibilities = false;
+	
 	public PathFinder() {
 	}
 	
 	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
+	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
+        this.findPossibilities = false;
         
         Path path = find();
         path.toEurope = true;
@@ -228,14 +259,27 @@ public class PathFinder {
 	}
 	
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
+	    goalDecider = pathToTileGoalDecider;
 	    this.map = map;
 	    this.startTile = startTile;
 	    this.endTile = endTile;
 	    this.moveUnit = moveUnit;
+        this.findPossibilities = false;
 	    
         Path path = find();
         path.toEurope = false;
 		return path;
+	}
+	
+	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
+	    goalDecider = rangeMapGoalDecider;
+        this.map = map;
+        this.startTile = startTile;
+        this.endTile = null;
+        this.moveUnit = moveUnit;
+        this.findPossibilities = true;
+		
+        find();
 	}
 	
 	private Path find() {
@@ -249,7 +293,7 @@ public class PathFinder {
 		}
 		costDecider.init(map, moveUnit);
 		
-		Node currentNode = grid[startTile.y][startTile.x];
+		Node currentNode = grid.get(startTile.x, startTile.y);
 		currentNode.reset(moveUnit.getMovesLeft(), 0);
 		nodes.add(currentNode);
 
@@ -267,13 +311,16 @@ public class PathFinder {
 				Direction moveDirection = Direction.values()[iDirections];
 				
 				Tile moveTile = map.getTile(currentNode.tile.x, currentNode.tile.y, moveDirection);
-				Node moveNode = grid[moveTile.y][moveTile.x];
+				if (moveTile == null) {
+					continue;
+				}
+				Node moveNode = grid.get(moveTile.x, moveTile.y);
 				if (moveNode.noMove) {
 					continue;
 				}
 				
 				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
-				if (isReachedGoal(moveNode)) {
+				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
 					// change moveType to default move. Sometimes goal can be indian settlement 
 					// and moveType should be used only to find path
@@ -294,19 +341,15 @@ public class PathFinder {
 			}
 		}
 
+		if (findPossibilities) {
+			return null;
+		}
+		
 		if (reachedGoalNode != null) {
 			return createPath(moveUnit, startTile, reachedGoalNode);
 		} else {
 			return createPath(moveUnit, startTile, oneOfTheBest);
 		}
-	}
-	
-	private boolean isReachedGoal(Node moveNode) {
-	    if (endTile == null) {
-	        return moveNode.tile.getType().isHighSea();
-	    } else {
-	        return endTile.getId().equals(moveNode.tile.getId());
-	    }
 	}
 	
 	private Path createPath(final Unit moveUnit, final Tile startTile, final Node endPathNode) {
@@ -331,18 +374,52 @@ public class PathFinder {
 
 	private void resetFinderBeforeSearching(Map map) {
 		if (grid == null) {
-			grid = new Node[map.height][map.width];
+		    grid = new Object2dArray<Node>(map.width, map.height);
+		    
+		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
+		        Node n = new Node(map.getTile(grid.toX(cellIndex), grid.toY(cellIndex)));
+		        n.reset(0, INFINITY);
+		        grid.set(cellIndex, n);
+		    }		
+		} else {
+            for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
+                grid.get(cellIndex).reset(0, INFINITY);
+            }       
 		}
-		for (int y=0; y<map.height; y++) {
-			for (int x=0; x<map.width; x++) {
-				if (grid[y][x] == null) {
-					grid[y][x] = new Node(map.getTile(x, y));
-				}
-				grid[y][x].reset(0, INFINITY);
-			}
-		}
-		
 		nodes.clear();
 	}
 	
+	public int totalCost(int cellIndex) {
+		return grid.get(cellIndex).totalCost;
+	}
+	
+	public int turnsCost(int cellIndex) {
+	    return grid.get(cellIndex).turns;
+	}
+
+	public Direction getDirectionInto(int cellIndex) {
+		Node oneBefore = null;
+		Node n = grid.get(cellIndex);
+		
+		while (n != null) {
+			if (n.preview != null) { 
+				oneBefore = n;
+			}
+			n = n.preview;
+		}
+		
+		if (oneBefore == null) {
+			return null;
+		}
+		
+		return Direction.fromCoordinates(
+			startTile.x, startTile.y, 
+			oneBefore.tile.x, oneBefore.tile.y
+		);
+	}
+
+    public Path getPathInto(int cellIndex) {
+        Node node = grid.get(cellIndex);
+        return createPath(moveUnit, startTile, node);
+    }
 }

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.Randomizer;
 import promitech.colonization.ui.resources.Messages;
 
 public abstract class Settlement extends ObjectWithId {
@@ -30,8 +31,22 @@ public abstract class Settlement extends ObjectWithId {
 		
 		player.addSettlement(indianSettlement);
 		
+		generateIndianUnits(player, indianSettlement);
 		return indianSettlement;
     }
+
+	private static void generateIndianUnits(Player player, IndianSettlement indianSettlement) {
+		int settlementUnitsNumber = Randomizer.instance().randomInt(
+			indianSettlement.settlementType.getMinimumSize(), 
+			indianSettlement.settlementType.getMaximumSize()
+		);
+		final UnitType brave = Specification.instance.unitTypes.getById("model.unit.brave");
+		for (int i=0; i<settlementUnitsNumber; i++) {
+			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
+			unit.changeUnitLocation(indianSettlement.tile);
+			indianSettlement.units.add(unit);
+		}
+	}
     
     public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
     	Colony colony = new Colony(Game.idGenerator);
