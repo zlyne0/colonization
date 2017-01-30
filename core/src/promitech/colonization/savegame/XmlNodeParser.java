@@ -4,6 +4,8 @@ import java.util.HashMap;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.utils.XmlWriter;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 
@@ -13,7 +15,7 @@ public abstract class XmlNodeParser {
 	public static final int UNLIMITED = -1;
     
     protected XmlTagMetaData xmlNodeMetaData;
-    private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();
+    public final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();
     private final java.util.Map<String, XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
 	public Identifiable nodeObject;
@@ -105,5 +107,8 @@ public abstract class XmlNodeParser {
 	}
 	
 	public abstract String getTagName();
+
+	public void startWriteAttr(XmlWriter xml) {
+	}
 }
 

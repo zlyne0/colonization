@@ -12,7 +12,7 @@ public class XmlTagMetaData {
     
     protected XmlTagMetaData() {
     }
-    
+
     public XmlTagMetaData(Class<? extends Identifiable> entityClass, ObjectFromNodeSetter setter) {
         String tagName = tagNameForEntityClass(entityClass);
         this.tagName = tagName;
@@ -69,6 +69,10 @@ public class XmlTagMetaData {
 
     public String getTagName() {
         return tagName;
+    }
+    
+    public String toString() {
+    	return "tagName = " + tagName + ", entityClass = " + entityClass + ", targetField = " + targetFieldName;
     }
 }
 
