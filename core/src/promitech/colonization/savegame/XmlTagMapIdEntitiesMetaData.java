@@ -33,6 +33,10 @@ public class XmlTagMapIdEntitiesMetaData extends XmlTagMetaData {
         return xmlNodeParser;
     }
 
+    public XmlNodeParser createEntityXmlParser() {
+    	return entityXmlParser(entityClass);
+    }
+    
     public boolean isPossesWrapperTag() {
         return possesWrapperTag;
     }

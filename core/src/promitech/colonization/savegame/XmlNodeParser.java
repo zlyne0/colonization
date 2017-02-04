@@ -1,6 +1,9 @@
 package promitech.colonization.savegame;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.xml.sax.SAXException;
 
@@ -9,13 +12,13 @@ import com.badlogic.gdx.utils.XmlWriter;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 
-public abstract class XmlNodeParser {
+public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
 	public static final int UNLIMITED = -1;
     
     protected XmlTagMetaData xmlNodeMetaData;
-    public final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();
+    private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new LinkedHashMap<String, XmlTagMetaData>();
     private final java.util.Map<String, XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
 	public Identifiable nodeObject;
@@ -24,6 +27,10 @@ public abstract class XmlNodeParser {
 	protected static Game game;
 	
 	public XmlNodeParser() {
+	}
+	
+	public Collection<XmlTagMetaData> childrenNodeParsers() {
+		return nodeMetaData.values();
 	}
 	
 	public void addNode(XmlNodeParser node) {
@@ -108,7 +115,7 @@ public abstract class XmlNodeParser {
 	
 	public abstract String getTagName();
 
-	public void startWriteAttr(XmlWriter xml) {
+	public void startWriteAttr(NODE_ENTITY_CLASS node, XmlWriter xml) throws IOException {
 	}
 }
 

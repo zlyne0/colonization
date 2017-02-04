@@ -1,8 +1,13 @@
 package net.sf.freecol.common.model.x;
 
+import java.io.IOException;
+
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.utils.XmlWriter;
+
 import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Specification;
@@ -21,14 +26,20 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class XSpecification implements Identifiable {
 
+	private final MapIdEntities<XTileType> tileTypes = MapIdEntities.linkedMapIdEntities();
+	
 	@Override
 	public String getId() {
 		throw new IllegalStateException("no id for object");
 	}
+
+	public void addTileType(XTileType tileType) {
+		tileTypes.add(tileType);
+	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<XSpecification> {
 		public Xml() {
-//			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
+			addNodeForMapIdEntities("tile-types", "tileTypes", XTileType.class);
 //            addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
 //            addNodeForMapIdEntities("tileimprovement-types", "tileImprovementTypes", TileImprovementType.class);
 //            addNodeForMapIdEntities("unit-types", "unitTypes", UnitType.class);
