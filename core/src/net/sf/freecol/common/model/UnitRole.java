@@ -88,11 +88,9 @@ public class UnitRole extends ObjectWithFeatures {
 		return maximumCount;
 	}
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<UnitRole> {
 		public Xml() {
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-            addNode("required-ability", Ability.class, "requiredAbilities");
+			ObjectWithFeatures.Xml.abstractAddNodes(this);
 		}
 
 		@Override

@@ -64,9 +64,9 @@ public class Monarch implements Identifiable {
     private boolean supportSea = false;
     private boolean displeasure = false;
     
-    public ArmyForce expeditionaryForce;
-    public ArmyForce interventionForce;
-    public ArmyForce mercenaryForce;
+    private ArmyForce expeditionaryForce;
+    private ArmyForce interventionForce;
+    private ArmyForce mercenaryForce;
     
     public static Monarch newStartingMonarch(Player player) {
     	Monarch m = new Monarch();
@@ -374,7 +374,7 @@ public class Monarch implements Identifiable {
 		return mercenaryForce;
 	}
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Monarch> {
 
         public Xml() {
             addNode("expeditionaryForce", ArmyForce.class, "expeditionaryForce");

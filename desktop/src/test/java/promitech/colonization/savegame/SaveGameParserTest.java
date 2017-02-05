@@ -227,7 +227,7 @@ public class SaveGameParserTest {
 
     private void verifySpecificationUnitTypes(Specification specification) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
-    	assertEquals(1, unitType.requiredAbilities.size());
+    	assertEquals(1, unitType.requiredAbilitiesAmount());
     	
     	UnitType caravel = specification.unitTypes.getById("model.unit.caravel");
     	assertThat(caravel.getPrice()).isEqualTo(1000);
@@ -245,7 +245,7 @@ public class SaveGameParserTest {
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
         assertEquals(3, dragoonUnitRole.modifiersAmount());
         
-        assertEquals(3, dragoonUnitRole.requiredAbilities.size());
+        assertEquals(3, dragoonUnitRole.requiredAbilitiesAmount());
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
@@ -303,7 +303,7 @@ public class SaveGameParserTest {
         
         {
         	BuildingType furFactory = specification.buildingTypes.getById("model.building.furFactory");
-        	assertEquals(1, furFactory.requiredAbilities.size());
+        	assertEquals(1, furFactory.requiredAbilitiesAmount());
         	assertTrue(furFactory.hasRequiredAbility("model.ability.buildFactory", true));
         }
     }

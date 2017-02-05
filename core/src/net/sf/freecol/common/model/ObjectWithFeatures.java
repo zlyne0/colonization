@@ -36,8 +36,14 @@ public class ObjectWithFeatures extends ObjectWithId {
         }
     };
     
+    public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> REQ_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
+        @Override
+        public void set(ObjectWithFeatures target, Ability entity) {
+        	target.requiredAbilities.add(entity);
+        }
+    };
     
-    public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+    protected final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
     private final java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
     private final java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
 	private final List<Scope> scopes = new ArrayList<Scope>();
@@ -52,6 +58,10 @@ public class ObjectWithFeatures extends ObjectWithId {
 	
 	public int abilitiesAmount() {
 	    return abilities.size();
+	}
+	
+	public int requiredAbilitiesAmount() {
+		return requiredAbilities.size();
 	}
 	
 	public void addAbility(Ability ability) {
@@ -215,7 +225,7 @@ public class ObjectWithFeatures extends ObjectWithId {
 		public static void abstractAddNodes(XmlNodeParser nodeParser) {
 			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
 			nodeParser.addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-			nodeParser.addNode("required-ability", Ability.class, "requiredAbilities");
+			nodeParser.addNode("required-ability", Ability.class, ObjectWithFeatures.REQ_ABILITY_NODE_SETTER);
 		}
 		
 		public static void abstractStartElement(XmlNodeAttributes attr, BuildableType bt) {

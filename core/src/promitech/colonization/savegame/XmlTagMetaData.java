@@ -30,6 +30,12 @@ public class XmlTagMetaData {
         this.targetFieldName = targetFieldName;
     }
 
+    public XmlTagMetaData(String entityOverrideTagName, Class<? extends Identifiable> entityClass, ObjectFromNodeSetter setter) {
+        this.tagName = entityOverrideTagName;
+        this.entityClass = entityClass;
+        this.setter = setter;
+    }
+    
     public XmlNodeParser createXmlParser() {
         XmlNodeParser entityXmlParser = entityXmlParser(entityClass);
         entityXmlParser.xmlNodeMetaData = this;

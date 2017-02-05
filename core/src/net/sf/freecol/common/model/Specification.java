@@ -234,7 +234,7 @@ public class Specification implements Identifiable {
         mercenaryTypes.clear();    
     }
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Specification> {
 		public Xml() {
 			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
             addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
