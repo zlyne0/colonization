@@ -18,6 +18,7 @@ import net.sf.freecol.common.model.player.Player.PlayerType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class XPlayer extends ObjectWithId {
@@ -26,7 +27,7 @@ public class XPlayer extends ObjectWithId {
 		super(id);
 	}
 
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<XPlayer> {
         public Xml() {
 //            addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
 //                @Override
@@ -62,9 +63,8 @@ public class XPlayer extends ObjectWithId {
         }
         
         @Override
-        public void startWriteAttr(Object node, XmlWriter xml) throws IOException {
-        	XPlayer entity = (XPlayer)node;
-        	xml.attribute("id", entity.id);
+        public void startWriteAttr(XPlayer player, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(player);
         }        
         
         @Override

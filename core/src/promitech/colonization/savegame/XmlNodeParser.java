@@ -120,7 +120,7 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
 	
 	public abstract String getTagName();
 
-	public void startWriteAttr(NODE_ENTITY_CLASS node, XmlWriter xml) throws IOException {
+	public void startWriteAttr(NODE_ENTITY_CLASS node, XmlNodeAttributesWriter attr) throws IOException {
 	}
 }
 

@@ -1,8 +1,16 @@
 package promitech.colonization.savegame;
 
+import static org.junit.Assert.*;
+
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.SavedGame;
 import net.sf.freecol.common.model.x.XGame;
 import net.sf.freecol.common.model.x.XMap;
 import net.sf.freecol.common.model.x.XPlayer;
@@ -13,6 +21,11 @@ import net.sf.freecol.common.model.x.XTileType;
 public class SaveGameTest {
 
 
+    @BeforeClass
+    public static void beforeClass() {
+        Gdx.files = new LwjglFiles();
+    }
+	
 	@Before
 	public void setup() {
 	}
@@ -38,6 +51,21 @@ public class SaveGameTest {
 		
 		// then
 	}
+
+	@Test
+	public void canCreateXml() throws Exception {
+		// given
+        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
+        Game game = saveGameParser.parse();
+		
+        SavedGame savedGameObj = new SavedGame();
+        savedGameObj.game = game;
+        
+		// when
+        new SaveGameCreator().generateXmlFrom(savedGameObj);
+		
+		// then
 	
+	}
 	
 }

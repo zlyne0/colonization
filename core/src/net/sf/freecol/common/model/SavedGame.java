@@ -11,7 +11,7 @@ public class SavedGame implements Identifiable {
 		throw new IllegalStateException("object without id");
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<SavedGame> {
 		public SavedGame savedGame = new SavedGame();
 
 		public Xml() {

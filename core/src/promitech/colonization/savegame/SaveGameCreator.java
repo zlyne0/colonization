@@ -14,10 +14,12 @@ public class SaveGameCreator {
 
 	private XmlWriter xml;
 	private StringWriter strWriter;
+	private final XmlNodeAttributesWriter attrWriter;
 	
 	public SaveGameCreator() {
 		strWriter = new StringWriter();
 		xml = new XmlWriter(strWriter);
+		attrWriter = new XmlNodeAttributesWriter(xml);
 	}
 
 	public void generateXmlFrom(Object obj) throws IOException {
@@ -35,7 +37,7 @@ public class SaveGameCreator {
 			xmlParser = metaData.createXmlParser();
 		}
 		xml.element(metaData.tagName);
-		xmlParser.startWriteAttr(obj, xml);
+		xmlParser.startWriteAttr(obj, attrWriter);
 		
 		saveChildren(obj, xmlParser);
 		

@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.XmlWriter;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.TileType;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class XTileType extends ObjectWithId {
@@ -44,8 +45,8 @@ public class XTileType extends ObjectWithId {
 		}
 
 		@Override
-		public void startWriteAttr(XTileType node, XmlWriter xml) throws IOException {
-			xml.attribute("id", node.getId());
+		public void startWriteAttr(XTileType node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(node);
 		}
 		
 		@Override
