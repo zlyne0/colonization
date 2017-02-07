@@ -54,7 +54,7 @@ public class XPlayer extends ObjectWithId {
             String nationIdStr = attr.getStrAttribute("nationId");
             String nationTypeStr = attr.getStrAttribute("nationType");
             
-            Player player = new Player(idStr);
+            XPlayer player = new XPlayer(idStr);
             nodeObject = player;
         }
 

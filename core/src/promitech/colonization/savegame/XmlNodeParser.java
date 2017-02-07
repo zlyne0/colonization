@@ -7,8 +7,6 @@ import java.util.LinkedHashMap;
 
 import org.xml.sax.SAXException;
 
-import com.badlogic.gdx.utils.XmlWriter;
-
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 
@@ -21,7 +19,7 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
     private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new LinkedHashMap<String, XmlTagMetaData>();
     private final java.util.Map<String, XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
-	public Identifiable nodeObject;
+	public NODE_ENTITY_CLASS nodeObject;
 	
 	// unique entities
 	protected static Game game;
@@ -37,9 +35,9 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
 		nodeParserByTagName.put(node.getTagName(), node);
 	}
 
-	public void addNode(Class<? extends Identifiable> entityClass, String fieldName) {
-	    XmlTagFieldMetaData xmlTagFieldMetaData = new XmlTagFieldMetaData(entityClass, fieldName);
-	    nodeMetaData.put(xmlTagFieldMetaData.getTagName(), xmlTagFieldMetaData);
+	public <T> void addNode(Class<T> entityClass, String fieldName) {
+		XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, fieldName);
+	    nodeMetaData.put(xmlTagMetaData.getTagName(), xmlTagMetaData);
 	}
 	
     public void addNode(String entityOverrideTagName, Class<? extends Identifiable> entityClass, String targetFieldName) {

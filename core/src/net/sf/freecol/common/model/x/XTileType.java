@@ -36,7 +36,7 @@ public class XTileType extends ObjectWithId {
 			String id = attr.getStrAttribute("id");
 			boolean isForest = attr.getBooleanAttribute("is-forest");
 			
-			TileType tileType = new TileType(id, isForest);
+			XTileType tileType = new XTileType(id);
 //			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
 //			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
 //			tileType.elevation = attr.getBooleanAttribute("is-elevation", false);

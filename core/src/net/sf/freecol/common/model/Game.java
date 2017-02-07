@@ -10,8 +10,9 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
-public class Game implements Identifiable {
+public class Game {
 
+	private Specification specification;
 	public Map map;
 	public Player playingPlayer;
 	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
@@ -22,11 +23,6 @@ public class Game implements Identifiable {
 	
 	public Game() {
 		turn = new Turn(0);
-	}
-	
-	@Override
-	public String getId() {
-		throw new IllegalStateException("no id for object");
 	}
 	
 	public String toString() {
@@ -53,7 +49,7 @@ public class Game implements Identifiable {
 		private static final String ACTIVE_UNIT_ATTR = "activeUnit";
 
 		public Xml() {
-			addNode(new Specification.Xml());
+			addNode(Specification.class, "specification");
 			addNode(Map.class, "map");
 			addNodeForMapIdEntities("players", Player.class);
 		}

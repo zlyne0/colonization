@@ -1,7 +1,5 @@
 package promitech.colonization.savegame;
 
-import net.sf.freecol.common.model.Identifiable;
-
-public interface ObjectFromNodeSetter<T extends Identifiable,R extends Identifiable> {
+public interface ObjectFromNodeSetter<T,R> {
     public void set(T target, R entity);
 }

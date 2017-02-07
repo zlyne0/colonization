@@ -55,7 +55,7 @@ public class XSpecification implements Identifiable {
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-		    Specification specification = Specification.instance;
+		    XSpecification specification = new XSpecification();
 //		    specification.difficultyLevel = attr.getStrAttribute("difficultyLevel");
 //		    specification.clear();
 		    nodeObject = specification;

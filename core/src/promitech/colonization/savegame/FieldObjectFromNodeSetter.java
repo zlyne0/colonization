@@ -2,9 +2,7 @@ package promitech.colonization.savegame;
 
 import java.lang.reflect.Field;
 
-import net.sf.freecol.common.model.Identifiable;
-
-public class FieldObjectFromNodeSetter implements ObjectFromNodeSetter {
+public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R> {
     private String targetFieldName;
     
     public FieldObjectFromNodeSetter(String targetFieldName) {
@@ -12,7 +10,7 @@ public class FieldObjectFromNodeSetter implements ObjectFromNodeSetter {
     }
     
     @Override
-    public void set(Identifiable target, Identifiable entity) {
+    public void set(T target, R entity) {
         try {
             Field field = target.getClass().getDeclaredField(targetFieldName);
             field.setAccessible(true);
