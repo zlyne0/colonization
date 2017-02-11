@@ -122,7 +122,6 @@ public class Modifier implements Identifiable {
 		private static final String INCREMENT_TYPE = "increment";
 		private static final String INCREMENT_TYPE_ATTR = "incrementType";
 		private static final String TYPE_ATTR = "type";
-		private static final String VALUE_ATTR = "value";
 
 		public Xml() {
             addNode(Scope.class, new ObjectFromNodeSetter<Modifier, Scope>() {
@@ -140,8 +139,8 @@ public class Modifier implements Identifiable {
 	    @Override
         public void startElement(XmlNodeAttributes attr) {
 			Modifier modifier = new Modifier();
-			modifier.id = attr.getStrAttribute("id");
-			modifier.value = attr.getFloatAttribute(VALUE_ATTR, 0);
+			modifier.id = attr.getStrAttribute(ATTR_ID);
+			modifier.value = attr.getFloatAttribute(ATTR_VALUE, 0);
 			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, TYPE_ATTR);
 			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, INCREMENT_TYPE_ATTR);
 			if (modifier.incrementType != null) {
@@ -154,7 +153,7 @@ public class Modifier implements Identifiable {
 	    @Override
 	    public void startWriteAttr(Modifier node, XmlNodeAttributesWriter attr) throws IOException {
 	    	attr.setId(node);
-	    	attr.set(VALUE_ATTR, node.value);
+	    	attr.set(ATTR_VALUE, node.value);
 	    	attr.set(TYPE_ATTR, node.modifierType);
 	    	if (node.incrementType != null) {
 	    		attr.set(INCREMENT_TYPE_ATTR, node.incrementType);

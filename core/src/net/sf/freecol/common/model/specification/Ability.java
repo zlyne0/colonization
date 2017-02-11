@@ -468,7 +468,6 @@ public final class Ability implements Identifiable {
     public static class Xml extends XmlNodeParser<Ability> {
         
 		private static final String ATTR_SOURCE = "source";
-		private static final String ATTR_VALUE = "value";
 
 		public Xml() {
     		addNode(Scope.class, new ObjectFromNodeSetter<Ability, Scope>() {
@@ -485,7 +484,7 @@ public final class Ability implements Identifiable {
     	
         @Override
         public void startElement(XmlNodeAttributes attr) {
-        	Ability a = new Ability(attr.getStrAttribute("id"));
+        	Ability a = new Ability(attr.getStrAttribute(ATTR_ID));
         	a.source = attr.getStrAttribute(ATTR_SOURCE);
         	a.value = attr.getBooleanAttribute(ATTR_VALUE, true);
         	nodeObject = a;

@@ -117,7 +117,7 @@ public class TileImprovementType extends ObjectWithFeatures {
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			TileImprovementType entity = new TileImprovementType(id);
 			entity.movementCost = attr.getIntAttribute(ATTR_MOVEMENT_COST, 0);
 			entity.natural = attr.getBooleanAttribute(ATTR_NATURAL);

@@ -1,10 +1,12 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.EnumMap;
 import java.util.Map;
 
 import net.sf.freecol.common.model.Identifiable;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitTypeChange implements Identifiable {
@@ -64,14 +66,17 @@ public class UnitTypeChange implements Identifiable {
 		return getProbability(changeType) > 0;
 	}
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<UnitTypeChange> {
+
+		private static final String ATTR_TURNS_TO_LEARN = "turnsToLearn";
+		private static final String ATTR_UNIT = "unit";
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			UnitTypeChange unitTypeChange = new UnitTypeChange();
-			unitTypeChange.id = attr.getStrAttribute("unit");
+			unitTypeChange.id = attr.getStrAttribute(ATTR_UNIT);
 
-			unitTypeChange.turnsToLearn = attr.getIntAttribute("turnsToLearn", UNDEFINED);
+			unitTypeChange.turnsToLearn = attr.getIntAttribute(ATTR_TURNS_TO_LEARN, UNDEFINED);
 			if (unitTypeChange.turnsToLearn > 0) {
             	unitTypeChange.changeTypes.put(ChangeType.EDUCATION, 100);
             }
@@ -83,6 +88,18 @@ public class UnitTypeChange implements Identifiable {
                 }
             }
 			nodeObject = unitTypeChange;
+		}
+		
+		@Override
+		public void startWriteAttr(UnitTypeChange unitTypeChange, XmlNodeAttributesWriter attr) throws IOException {
+			attr.set(ATTR_UNIT, unitTypeChange.id);
+			attr.set(ATTR_TURNS_TO_LEARN, unitTypeChange.turnsToLearn, UNDEFINED);
+			for (ChangeType type : ChangeType.values()) {
+				int value = unitTypeChange.getProbability(type);
+				if (value > 0) {
+					attr.set(tags.get(type), value);
+				}
+			}
 		}
 
 		@Override

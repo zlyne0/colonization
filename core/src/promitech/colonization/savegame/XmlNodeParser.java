@@ -11,6 +11,10 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 
 public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
+	
+	protected static final String ATTR_VALUE = "value";
+	protected static final String ATTR_ID = "id";
+	
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
 	public static final int UNLIMITED = -1;

@@ -163,7 +163,7 @@ public class GoodsType extends ObjectWithFeatures {
 		
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
+            String id = attr.getStrAttribute(ATTR_ID);
             GoodsType gt = new GoodsType(id);
             gt.farmed = attr.getBooleanAttribute(ATTR_IS_FARMED, false);
             gt.food = attr.getBooleanAttribute(ATTR_IS_FOOD, false);

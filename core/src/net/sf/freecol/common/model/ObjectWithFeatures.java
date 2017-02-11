@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -7,11 +8,11 @@ import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class ObjectWithFeatures extends ObjectWithId {
@@ -245,13 +246,17 @@ public class ObjectWithFeatures extends ObjectWithId {
     }
     
     public static class Xml {
-		public static void abstractAddNodes(XmlNodeParser nodeParser) {
+		public static void abstractAddNodes(XmlNodeParser<? extends ObjectWithFeatures> nodeParser) {
 			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
 			nodeParser.addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
 			nodeParser.addNode("required-ability", Ability.class, ObjectWithFeatures.REQ_ABILITY_NODE_SETTER);
 		}
 		
-		public static void abstractStartElement(XmlNodeAttributes attr, BuildableType bt) {
+		public static void abstractStartElement(XmlNodeAttributes attr, ObjectWithFeatures obj) {
 		}
+
+		public static void abstractStartWriteAttr(ObjectWithFeatures obj, XmlNodeAttributesWriter attr) throws IOException {
+		}
+		
     }
 }

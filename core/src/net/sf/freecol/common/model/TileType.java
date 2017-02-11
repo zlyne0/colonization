@@ -129,7 +129,7 @@ public final class TileType extends ObjectWithFeatures {
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			boolean isForest = attr.getBooleanAttribute(IS_FOREST);
 			
 			TileType tileType = new TileType(id, isForest);

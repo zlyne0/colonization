@@ -37,7 +37,7 @@ public class ResourceType extends ObjectWithFeatures {
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			ResourceType rt = new ResourceType(id);
 			rt.minValue = attr.getIntAttribute(ATTR_MINIMUM_VALUE, UNLIMITED);
 			rt.maxValue = attr.getIntAttribute(ATTR_MAXIMUM_VALUE, UNLIMITED);

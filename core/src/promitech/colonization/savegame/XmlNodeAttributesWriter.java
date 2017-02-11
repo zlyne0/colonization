@@ -14,7 +14,7 @@ public class XmlNodeAttributesWriter {
     }
 
 	public void setId(Identifiable identifiable) throws IOException {
-		xml.attribute("id", identifiable.getId());
+		xml.attribute(XmlNodeParser.ATTR_ID, identifiable.getId());
 	}
 
 	public void set(String attrName, String val) throws IOException {
