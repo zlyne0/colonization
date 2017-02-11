@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.player;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
@@ -63,7 +64,7 @@ public class EventsNotifications implements Identifiable {
         return notifications;
     }
 	
-	public static final class Xml extends XmlNodeParser {
+	public static final class Xml extends XmlNodeParser<EventsNotifications> {
 
 		public Xml() {
 			addNode(MessageNotification.class, new ObjectFromNodeSetter<EventsNotifications, MessageNotification>() {
@@ -71,11 +72,19 @@ public class EventsNotifications implements Identifiable {
 				public void set(EventsNotifications target, MessageNotification entity) {
 					target.notifications.add(entity);
 				}
+				@Override
+				public List<MessageNotification> get(EventsNotifications source) {
+					throw new RuntimeException("not implemented");
+				}
 			});
 			addNode(MonarchActionNotification.class, new ObjectFromNodeSetter<EventsNotifications, MonarchActionNotification>() {
 				@Override
 				public void set(EventsNotifications target, MonarchActionNotification entity) {
 					target.notifications.add(entity);
+				}
+				@Override
+				public List<MonarchActionNotification> get(EventsNotifications source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
 		}

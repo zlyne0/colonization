@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.player;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Unit;
@@ -31,13 +33,17 @@ public class HighSeas implements Identifiable, UnitLocation {
 		return false;
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<HighSeas> {
 
         public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<HighSeas,Unit>() {
                 @Override
                 public void set(HighSeas highSeas, Unit unit) {
                     unit.changeUnitLocation(highSeas);
+                }
+                @Override
+                public List<Unit> get(HighSeas source) {
+					throw new RuntimeException("not implemented");
                 }
             });
         }

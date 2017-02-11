@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.LinkedList;
+import java.util.List;
 
 import org.xml.sax.SAXException;
 
@@ -223,7 +224,7 @@ public class Map extends ObjectWithId {
 	    }
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Map> {
 		
 		public Xml() {
 			addNode(Tile.class, new ObjectFromNodeSetter<Map,Tile>() {
@@ -231,6 +232,10 @@ public class Map extends ObjectWithId {
                 public void set(Map target, Tile entity) {
                     Tile tile = (Tile)entity;
                     target.createTile(tile.x, tile.y, tile);
+                }
+                @Override
+                public List<Tile> get(Map source) {
+					throw new RuntimeException("not implemented");
                 }
             });
 			addNodeForMapIdEntities("regions", Region.class);

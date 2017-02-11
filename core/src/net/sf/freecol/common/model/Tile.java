@@ -445,7 +445,7 @@ public class Tile implements UnitLocation, Identifiable {
 		return ct.getWorker() != null;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Tile> {
 	    
 		public Xml() {
 			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
@@ -453,17 +453,29 @@ public class Tile implements UnitLocation, Identifiable {
 				public void set(Tile target, CachedTile entity) {
 					entity.getPlayer().setTileAsExplored(target);
 				}
+				@Override
+				public List<CachedTile> get(Tile source) {
+					throw new RuntimeException("not implemented");
+				}
 			});
 		    addNode(TileItemContainer.class, new ObjectFromNodeSetter<Tile,TileItemContainer>() {
                 @Override
                 public void set(Tile target, TileItemContainer entity) {
                     target.tileItemContainer = entity;
                 }
+                @Override
+                public List<TileItemContainer> get(Tile source) {
+					throw new RuntimeException("not implemented");
+                }
             });
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
 	                unit.changeUnitLocation(tile);
+	            }
+	            @Override
+	            public List<Unit> get(Tile source) {
+					throw new RuntimeException("not implemented");
 	            }
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {
@@ -472,12 +484,20 @@ public class Tile implements UnitLocation, Identifiable {
                     target.settlement = entity;
                     entity.tile = target;
                 }
+                @Override
+                public List<Colony> get(Tile source) {
+					throw new RuntimeException("not implemented");
+                }
             });
             addNode(IndianSettlement.class, new ObjectFromNodeSetter<Tile,IndianSettlement>() {
                 @Override
                 public void set(Tile target, IndianSettlement entity) {
                     target.settlement = entity;
                     entity.tile = target;
+                }
+                @Override
+                public List<IndianSettlement> get(Tile source) {
+					throw new RuntimeException("not implemented");
                 }
             });
 		}

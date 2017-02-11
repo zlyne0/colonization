@@ -49,9 +49,16 @@ public class SaveGameCreator {
 			if (tagMetaData instanceof XmlTagMapIdEntitiesMetaData) {
 				saveMapEntityObj(obj, (XmlTagMapIdEntitiesMetaData)tagMetaData);
 			} else {
-				Object childObj = getValueByFieldName(obj, tagMetaData.targetFieldName);
-				if (childObj != null) {
-					generateXmlFromObj(childObj, tagMetaData, null);
+				if (tagMetaData.targetFieldName == null && tagMetaData.setter != null) {
+					XmlNodeParser childXmlParser = tagMetaData.createXmlParser();
+					for (Object childObj : tagMetaData.setter.get(obj)) {
+						generateXmlFromObj(childObj, tagMetaData, childXmlParser);
+					}
+				} else {
+					Object childObj = getValueByFieldName(obj, tagMetaData.targetFieldName);
+					if (childObj != null) {
+						generateXmlFromObj(childObj, tagMetaData, null);
+					}
 				}
 			}
 		}

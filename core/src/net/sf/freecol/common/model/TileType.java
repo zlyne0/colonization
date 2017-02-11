@@ -1,11 +1,15 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+import java.util.List;
+
 import net.sf.freecol.common.model.map.GenerationValues;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public final class TileType extends ObjectWithFeatures {
@@ -25,7 +29,7 @@ public final class TileType extends ObjectWithFeatures {
 	private boolean elevation;
 	private int basicMoveCost;
 	private int basicWorkTurns;
-	public ProductionInfo productionInfo = new ProductionInfo();
+	public final ProductionInfo productionInfo = new ProductionInfo();
 	private GenerationValues generationValues;
 	
 	public TileType(String id, boolean isForest) {
@@ -98,33 +102,54 @@ public final class TileType extends ObjectWithFeatures {
 		return allowedResource.resourceType;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<TileType> {
+		private static final String IS_FOREST = "is-forest";
+		private static final String CAN_SETTLE = "can-settle";
+		private static final String IS_ELEVATION = "is-elevation";
+		private static final String BASIC_WORK_TURNS = "basic-work-turns";
+		private static final String BASIC_MOVE_COST = "basic-move-cost";
+
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
+            addNodeForMapIdEntities("allowedResourceTypes", TileTypeAllowedResource.class);
+            
             addNode(Production.class, new ObjectFromNodeSetter<TileType, Production>() {
 				@Override
 				public void set(TileType target, Production entity) {
 					target.productionInfo.addProduction(entity);
 				}
+				@Override
+				public List<Production> get(TileType source) {
+					return source.productionInfo.productions;
+				}
 			});
-            addNodeForMapIdEntities("allowedResourceTypes", TileTypeAllowedResource.class);
             addNode(GenerationValues.class, "generationValues");
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String id = attr.getStrAttribute("id");
-			boolean isForest = attr.getBooleanAttribute("is-forest");
+			boolean isForest = attr.getBooleanAttribute(IS_FOREST);
 			
 			TileType tileType = new TileType(id, isForest);
-			tileType.basicMoveCost = attr.getIntAttribute("basic-move-cost");
-			tileType.basicWorkTurns = attr.getIntAttribute("basic-work-turns");
-			tileType.elevation = attr.getBooleanAttribute("is-elevation", false);
-			tileType.canSettle = attr.getBooleanAttribute("can-settle", !tileType.isWater());
+			tileType.basicMoveCost = attr.getIntAttribute(BASIC_MOVE_COST);
+			tileType.basicWorkTurns = attr.getIntAttribute(BASIC_WORK_TURNS);
+			tileType.elevation = attr.getBooleanAttribute(IS_ELEVATION, false);
+			tileType.canSettle = attr.getBooleanAttribute(CAN_SETTLE, !tileType.isWater());
 			nodeObject = tileType; 
 		}
 
+		@Override
+		public void startWriteAttr(TileType node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(node);
+			attr.set(IS_FOREST, node.isForest);
+			attr.set(BASIC_MOVE_COST, node.basicMoveCost);
+			attr.set(BASIC_WORK_TURNS, node.basicWorkTurns);
+			attr.set(IS_ELEVATION, node.elevation);
+			attr.set(CAN_SETTLE, node.canSettle);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

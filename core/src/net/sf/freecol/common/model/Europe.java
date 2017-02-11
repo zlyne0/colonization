@@ -272,7 +272,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return price * amount;
 	}
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Europe> {
 
         public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -282,6 +282,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
                 @Override
                 public void set(Europe europe, Unit unit) {
                     unit.changeUnitLocation(europe);
+                }
+                @Override
+                public List<Unit> get(Europe source) {
+					throw new RuntimeException("not implemented");
                 }
             });
         }

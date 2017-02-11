@@ -1,11 +1,13 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 import net.sf.freecol.common.model.specification.WithProbability;
-import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileImprovementType extends ObjectWithFeatures {
@@ -97,34 +99,49 @@ public class TileImprovementType extends ObjectWithFeatures {
 		return exposedResourceAfterImprovement;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<TileImprovementType> {
+		private static final String ATTR_EXPOSE_RESOURCE_PERCENT = "exposeResourcePercent";
+		private static final String ATTR_MAGNITUDE = "magnitude";
+		private static final String ATTR_ADD_WORK_TURNS = "add-work-turns";
+		private static final String ATTR_EXPENDED_AMOUNT = "expended-amount";
+		private static final String ATTR_REQUIRED_ROLE = "required-role";
+		private static final String ATTR_NATURAL = "natural";
+		private static final String ATTR_MOVEMENT_COST = "movement-cost";
+
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             addNode(Scope.class, ObjectWithFeatures.OBJECT_SCOPE_NODE_SETTER);
-            addNode(TileTypeTransformation.class, new ObjectFromNodeSetter<TileImprovementType, TileTypeTransformation>() {
-				@Override
-				public void set(TileImprovementType target, TileTypeTransformation entity) {
-					target.tileTypeTransformation.add(entity);
-				}
-			});
+            addNodeForMapIdEntities("tileTypeTransformation", TileTypeTransformation.class);
 		}
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 			String id = attr.getStrAttribute("id");
 			TileImprovementType entity = new TileImprovementType(id);
-			entity.movementCost = attr.getIntAttribute("movement-cost", 0);
-			entity.natural = attr.getBooleanAttribute("natural");
-			entity.requiredRoleId = attr.getStrAttribute("required-role");
-			entity.expendedAmount = attr.getIntAttribute("expended-amount", 0);
-			entity.addWorkTurns = attr.getIntAttribute("add-work-turns", 0);
-			entity.magnitude = attr.getIntAttribute("magnitude", 0); 
-			entity.exposeResourcePercent = attr.getIntAttribute("exposeResourcePercent", 0);
+			entity.movementCost = attr.getIntAttribute(ATTR_MOVEMENT_COST, 0);
+			entity.natural = attr.getBooleanAttribute(ATTR_NATURAL);
+			entity.requiredRoleId = attr.getStrAttribute(ATTR_REQUIRED_ROLE);
+			entity.expendedAmount = attr.getIntAttribute(ATTR_EXPENDED_AMOUNT, 0);
+			entity.addWorkTurns = attr.getIntAttribute(ATTR_ADD_WORK_TURNS, 0);
+			entity.magnitude = attr.getIntAttribute(ATTR_MAGNITUDE, 0); 
+			entity.exposeResourcePercent = attr.getIntAttribute(ATTR_EXPOSE_RESOURCE_PERCENT, 0);
 			
 			nodeObject = entity;
 		}
 
+		@Override
+		public void startWriteAttr(TileImprovementType entity, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(entity);
+			attr.set(ATTR_MOVEMENT_COST, entity.movementCost);
+			attr.set(ATTR_NATURAL, entity.natural);
+			attr.set(ATTR_REQUIRED_ROLE, entity.requiredRoleId);
+			attr.set(ATTR_EXPENDED_AMOUNT, entity.expendedAmount);
+			attr.set(ATTR_ADD_WORK_TURNS, entity.addWorkTurns);
+			attr.set(ATTR_MAGNITUDE, entity.magnitude);
+			attr.set(ATTR_EXPOSE_RESOURCE_PERCENT, entity.exposeResourcePercent);
+		}
+		
 		@Override
 		public String getTagName() {
 		    return tagName();

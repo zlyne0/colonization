@@ -1,6 +1,7 @@
 package promitech.colonization.savegame;
 
 import java.lang.reflect.Field;
+import java.util.List;
 
 public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R> {
     private String targetFieldName;
@@ -19,5 +20,10 @@ public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R>
             throw new IllegalStateException(e);
         }
     }
+
+	@Override
+	public List<R> get(T source) {
+		throw new RuntimeException("not implemented");
+	}
     
 }

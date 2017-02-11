@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -7,9 +8,10 @@ import java.util.Set;
 
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Production implements Identifiable {
+public class Production {
     private boolean unattended = false;
     private final java.util.Map<GoodsType,Integer> input = new HashMap<GoodsType, Integer>(2); 
     private final java.util.Map<GoodsType,Integer> output = new HashMap<GoodsType, Integer>(2); 
@@ -22,11 +24,6 @@ public class Production implements Identifiable {
 		this.unattended = p.unattended;
 		this.input.putAll(p.input);
 		this.output.putAll(p.output);
-	}
-
-	@Override
-	public String getId() {
-		throw new IllegalStateException("production has no id");
 	}
     
 	public Set<Entry<GoodsType, Integer>> inputEntries() {
@@ -148,29 +145,53 @@ public class Production implements Identifiable {
 		return true;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Production> {
+
+		private static final String ATTR_VALUE = "value";
+		private static final String ATTR_GOODS_TYPE = "goods-type";
+		private static final String INPUT_ELEMENT = "input";
+		private static final String OUTPUT_ELEMENT = "output";
+		private static final String ATTR_UNATTENDED = "unattended";
 
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			Production prod = new Production(attr.getBooleanAttribute("unattended", false));
+			Production prod = new Production(attr.getBooleanAttribute(ATTR_UNATTENDED, false));
 			nodeObject = prod;
 		}
 
+		@Override
+		public void startWriteAttr(Production prod, XmlNodeAttributesWriter attr) throws IOException {
+			attr.set(ATTR_UNATTENDED, prod.unattended);
+			
+			for (Entry<GoodsType, Integer> inputEntry : prod.input.entrySet()) {
+				attr.xml.element(INPUT_ELEMENT);
+				attr.set(ATTR_GOODS_TYPE, inputEntry.getKey().getId());
+				attr.set(ATTR_VALUE, inputEntry.getValue().intValue());
+				attr.xml.pop();
+			}
+			for (Entry<GoodsType, Integer> outputEntry : prod.output.entrySet()) {
+				attr.xml.element(OUTPUT_ELEMENT);
+				attr.set(ATTR_GOODS_TYPE, outputEntry.getKey().getId());
+				attr.set(ATTR_VALUE, outputEntry.getValue().intValue());
+				attr.xml.pop();
+			}
+		}
+		
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-            if (attr.isQNameEquals("output")) {
-                String goodsTypeId = attr.getStrAttribute("goods-type");
+            if (attr.isQNameEquals(OUTPUT_ELEMENT)) {
+                String goodsTypeId = attr.getStrAttribute(ATTR_GOODS_TYPE);
                 GoodsType goodType = Specification.instance.goodsTypes.getById(goodsTypeId);
                 
-                int amount = attr.getIntAttribute("value");
-                ((Production)nodeObject).addOutput(goodType, amount);
+                int amount = attr.getIntAttribute(ATTR_VALUE);
+                nodeObject.addOutput(goodType, amount);
             }
-            if (attr.isQNameEquals("input")) {
-                String goodsTypeId = attr.getStrAttribute("goods-type");
+            if (attr.isQNameEquals(INPUT_ELEMENT)) {
+                String goodsTypeId = attr.getStrAttribute(ATTR_GOODS_TYPE);
                 GoodsType goodType = Specification.instance.goodsTypes.getById(goodsTypeId);
                 
-                int amount = attr.getIntAttribute("value");
-                ((Production)nodeObject).addInput(goodType, amount);
+                int amount = attr.getIntAttribute(ATTR_VALUE);
+                nodeObject.addInput(goodType, amount);
             }
         }
 		

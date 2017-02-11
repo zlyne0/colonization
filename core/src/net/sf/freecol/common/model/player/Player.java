@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.player;
 
 import java.util.HashMap;
+import java.util.List;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
@@ -533,7 +534,7 @@ public class Player extends ObjectWithId {
 		settlement.setOwner(this);
 	}
 
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Player> {
         public Xml() {
             addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
                 @Override
@@ -541,12 +542,20 @@ public class Player extends ObjectWithId {
                     target.europe = entity;
                     entity.setOwner(target);
                 }
+                @Override
+                public List<Europe> get(Player source) {
+					throw new RuntimeException("not implemented");
+                }
             });
             addNode(Monarch.class, new ObjectFromNodeSetter<Player, Monarch>() {
                 @Override
                 public void set(Player target, Monarch entity) {
                     target.monarch = entity;
                     entity.setPlayer(target);
+                }
+                @Override
+                public List<Monarch> get(Player source) {
+					throw new RuntimeException("not implemented");
                 }
             });
             addNode(Market.class, "market");

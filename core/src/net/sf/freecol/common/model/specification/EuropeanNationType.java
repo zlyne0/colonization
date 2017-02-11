@@ -47,7 +47,7 @@ public class EuropeanNationType extends NationType {
         return ref;
     }
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<EuropeanNationType> {
         public Xml() {
         	NationType.Xml.abstractAddNodes(this);
 
@@ -58,6 +58,10 @@ public class EuropeanNationType extends NationType {
 				@Override
 				public void set(EuropeanNationType target, EuropeanStartingAbstractUnit entity) {
 					target.addStartingUnit(entity);
+				}
+				@Override
+				public List<EuropeanStartingAbstractUnit> get(EuropeanNationType source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
         }

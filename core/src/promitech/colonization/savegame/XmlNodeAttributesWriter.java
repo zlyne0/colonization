@@ -18,10 +18,32 @@ public class XmlNodeAttributesWriter {
 	}
 
 	public void set(String attrName, String val) throws IOException {
-		xml.attribute(attrName, val);
+		if (val != null) {
+			xml.attribute(attrName, val);
+		}
 	}
 
 	public void set(String attrName, int val) throws IOException {
 		xml.attribute(attrName, Integer.toString(val));
+	}
+
+	public void set(String attrName, int val, int defaultVal) throws IOException {
+		if (val != defaultVal) {
+			xml.attribute(attrName, Integer.toString(val));
+		}
+	}
+	
+	public void set(String attrName, boolean val) throws IOException {
+		xml.attribute(attrName, Boolean.toString(val));
+	}
+
+	public void set(String attrName, float val) throws IOException {
+		xml.attribute(attrName, Float.toString(val));
+	}
+	
+	public <T extends Enum<T>> void set(String attrName, T val) throws IOException {
+		if (val != null) {
+			xml.attribute(attrName, val.name());
+		}
 	}
 }

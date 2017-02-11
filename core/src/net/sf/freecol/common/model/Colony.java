@@ -1074,12 +1074,16 @@ public class Colony extends Settlement {
 		return false;
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Colony> {
         public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
 				@Override
 				public void set(Colony target, ColonyBuildingQueueItem entity) {
 					target.buildingQueue.add(entity);
+				}
+				@Override
+				public List<ColonyBuildingQueueItem> get(Colony source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
             addNode(GoodsContainer.class, "goodsContainer");

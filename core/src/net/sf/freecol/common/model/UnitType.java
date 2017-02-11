@@ -227,7 +227,7 @@ public class UnitType extends BuildableType {
 		};
     }
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<UnitType> {
         public Xml() {
         	BuildableType.Xml.abstractAddNodes(this);
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);

@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -7,6 +8,7 @@ import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Modifier implements Identifiable {
@@ -114,13 +116,23 @@ public class Modifier implements Identifiable {
 	    return "modifier id: " + id + ", modifierType: " + modifierType;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Modifier> {
 
-	    public Xml() {
+		private static final String INDEX_TYPE = "index";
+		private static final String INCREMENT_TYPE = "increment";
+		private static final String INCREMENT_TYPE_ATTR = "incrementType";
+		private static final String TYPE_ATTR = "type";
+		private static final String VALUE_ATTR = "value";
+
+		public Xml() {
             addNode(Scope.class, new ObjectFromNodeSetter<Modifier, Scope>() {
                 @Override
                 public void set(Modifier target, Scope entity) {
                     target.scopes.add(entity);
+                }
+                @Override
+                public List<Scope> get(Modifier source) {
+                	return source.scopes;
                 }
             });
         }
@@ -129,16 +141,28 @@ public class Modifier implements Identifiable {
         public void startElement(XmlNodeAttributes attr) {
 			Modifier modifier = new Modifier();
 			modifier.id = attr.getStrAttribute("id");
-			modifier.value = attr.getFloatAttribute("value", 0);
-			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, "type");
-			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, "incrementType");
+			modifier.value = attr.getFloatAttribute(VALUE_ATTR, 0);
+			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, TYPE_ATTR);
+			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, INCREMENT_TYPE_ATTR);
 			if (modifier.incrementType != null) {
-				modifier.increment = attr.getFloatAttribute("increment");
+				modifier.increment = attr.getFloatAttribute(INCREMENT_TYPE);
 			}
-			modifier.modifierIndex = attr.getIntAttribute("index", DEFAULT_MODIFIER_INDEX);
+			modifier.modifierIndex = attr.getIntAttribute(INDEX_TYPE, DEFAULT_MODIFIER_INDEX);
 			nodeObject = modifier;
 		}
 
+	    @Override
+	    public void startWriteAttr(Modifier node, XmlNodeAttributesWriter attr) throws IOException {
+	    	attr.setId(node);
+	    	attr.set(VALUE_ATTR, node.value);
+	    	attr.set(TYPE_ATTR, node.modifierType);
+	    	if (node.incrementType != null) {
+	    		attr.set(INCREMENT_TYPE_ATTR, node.incrementType);
+	    		attr.set(INCREMENT_TYPE, node.increment);
+	    	}
+	    	attr.set(INDEX_TYPE, node.modifierIndex);
+	    }
+	    
 		@Override
 		public String getTagName() {
 		    return tagName();

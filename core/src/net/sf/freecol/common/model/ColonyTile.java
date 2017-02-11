@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.List;
+
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -39,7 +41,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation {
 	    return "ColonyTile workTileId[" + id + "]";
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<ColonyTile> {
 
     	public Xml() {
     		addNode(Unit.class, "worker");
@@ -47,6 +49,10 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation {
 				@Override
 				public void set(ColonyTile target, Production entity) {
 					target.productionInfo.addProduction(entity);
+				}
+				@Override
+				public List<Production> get(ColonyTile source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
 		}

@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.specification;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Specification;
@@ -79,7 +81,7 @@ public class BuildingType extends BuildableType {
 		return upgradesFrom;
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<BuildingType> {
         public Xml() {
         	BuildableType.Xml.abstractAddNodes(this);
         	
@@ -87,6 +89,10 @@ public class BuildingType extends BuildableType {
 				@Override
 				public void set(BuildingType target, Production entity) {
 					target.productionInfo.addProduction(entity);
+				}
+				@Override
+				public List<Production> get(BuildingType source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
         }

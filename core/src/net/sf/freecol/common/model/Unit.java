@@ -851,13 +851,17 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Unit> {
         
         public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
                     newUnit.changeUnitLocation(actualUnit);
+                }
+                @Override
+                public List<Unit> get(Unit source) {
+					throw new RuntimeException("not implemented");
                 }
             });
             addNode(GoodsContainer.class, "goodsContainer");

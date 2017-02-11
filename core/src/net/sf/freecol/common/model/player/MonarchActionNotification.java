@@ -104,7 +104,7 @@ public class MonarchActionNotification implements Notification, Identifiable {
 				", tax = " + tax;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<MonarchActionNotification> {
 		
 		public Xml() {
 			addNode(ArmyForceAbstractUnit.class, new ObjectFromNodeSetter<MonarchActionNotification, ArmyForceAbstractUnit>() {
@@ -114,6 +114,10 @@ public class MonarchActionNotification implements Notification, Identifiable {
 						target.mercenaries = new ArrayList<ArmyForceAbstractUnit>();
 					}
 					target.mercenaries.add(entity);
+				}
+				@Override
+				public List<ArmyForceAbstractUnit> get(MonarchActionNotification source) {
+					throw new RuntimeException("not implemented");
 				}
 			});
 		}

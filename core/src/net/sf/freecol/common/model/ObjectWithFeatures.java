@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -20,6 +21,14 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Modifier entity) {
             target.addModifier(entity);
         }
+        @Override
+        public List<Modifier> get(ObjectWithFeatures target) {
+        	List<Modifier> modifiers = new ArrayList<Modifier>();
+        	for (Entry<String, List<Modifier>> entry : target.modifiers.entrySet()) {
+        		modifiers.addAll(entry.getValue());
+        	}
+        	return modifiers;
+        }
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> OBJECT_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
@@ -27,6 +36,14 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Ability entity) {
             target.addAbility(entity);
         }
+        @Override
+		public List<Ability> get(ObjectWithFeatures source) {
+        	List<Ability> abilities = new ArrayList<Ability>();
+        	for (Entry<String, List<Ability>> entry : source.abilities.entrySet()) {
+				abilities.addAll(entry.getValue());
+			}
+        	return abilities;
+		};
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Scope> OBJECT_SCOPE_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Scope>() {
@@ -34,6 +51,9 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Scope entity) {
         	target.scopes.add(entity);
         }
+        public java.util.List<Scope> get(ObjectWithFeatures source) {
+        	return source.scopes;
+        };
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> REQ_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
@@ -41,6 +61,9 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Ability entity) {
         	target.requiredAbilities.add(entity);
         }
+		public Collection<Ability> get(ObjectWithFeatures source) {
+			return source.requiredAbilities.entities();
+		};
     };
     
     protected final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
