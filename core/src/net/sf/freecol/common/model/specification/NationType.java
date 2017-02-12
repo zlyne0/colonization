@@ -19,6 +19,8 @@
 
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -26,7 +28,9 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 /**
@@ -34,6 +38,17 @@ import promitech.colonization.savegame.XmlNodeParser;
  */
 public abstract class NationType extends ObjectWithFeatures {
 
+    private static final ObjectFromNodeSetter<NationType, SettlementType> SETTLEMENT_TYPE_NODE_SETTER = new ObjectFromNodeSetter<NationType, SettlementType>() {
+        @Override
+        public void set(NationType target, SettlementType entity) {
+        	target.settlementTypes.add(entity);
+        }
+        @Override
+        public Collection<SettlementType> get(NationType target) {
+        	return target.settlementTypes.entities();
+        }
+    };
+	
 	public static enum SettlementNumber { LOW, AVERAGE, HIGH }
     public static enum AggressionLevel { LOW, AVERAGE, HIGH }
 
@@ -87,19 +102,29 @@ public abstract class NationType extends ObjectWithFeatures {
 	
 	public static class Xml {
 		
-		public static void abstractAddNodes(XmlNodeParser nodeParser) {
-			nodeParser.addNodeForMapIdEntities("settlementTypes", SettlementType.class);
+		private static final String ATTR_EXTENDS = "extends";
+		private static final String ATTR_AGGRESSION = "aggression";
+		private static final String ATTR_NUMBER_OF_SETTLEMENTS = "number-of-settlements";
+
+		public static void abstractAddNodes(XmlNodeParser<? extends NationType> nodeParser) {
+			nodeParser.addNode(SettlementType.class, SETTLEMENT_TYPE_NODE_SETTER);
 		}
 		
 		public static void abstractStartElement(XmlNodeAttributes attr, NationType nt) {
-            nt.settlementNumber = attr.getEnumAttribute(SettlementNumber.class, "number-of-settlements", SettlementNumber.AVERAGE);
-            nt.aggressionLevel = attr.getEnumAttribute(AggressionLevel.class, "aggression");
-            nt.parentNationTypeId = attr.getStrAttribute("extends");
+            nt.settlementNumber = attr.getEnumAttribute(SettlementNumber.class, ATTR_NUMBER_OF_SETTLEMENTS, SettlementNumber.AVERAGE);
+            nt.aggressionLevel = attr.getEnumAttribute(AggressionLevel.class, ATTR_AGGRESSION);
+            nt.parentNationTypeId = attr.getStrAttribute(ATTR_EXTENDS);
             if (nt.parentNationTypeId != null) {
             	NationType parent = Specification.instance.nationTypes.getById(nt.parentNationTypeId);
             	nt.settlementTypes.addAll(parent.settlementTypes);
             	nt.addFeaturesAndOverwriteExisted(parent);
             }
+		}
+		
+		public static void abstractStartWriteAttr(NationType nt, XmlNodeAttributesWriter attr) throws IOException {
+			// do not save extends attribute because is difficulty to distinguish object features from parent and child 
+			attr.set(ATTR_NUMBER_OF_SETTLEMENTS, nt.settlementNumber);
+            attr.set(ATTR_AGGRESSION, nt.aggressionLevel);
 		}
 	}
 

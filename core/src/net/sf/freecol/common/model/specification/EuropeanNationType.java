@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -8,6 +9,7 @@ import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
@@ -48,7 +50,9 @@ public class EuropeanNationType extends NationType {
     }
     
     public static class Xml extends XmlNodeParser<EuropeanNationType> {
-        public Xml() {
+        private static final String ATTR_REF = "ref";
+
+		public Xml() {
         	NationType.Xml.abstractAddNodes(this);
 
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -61,16 +65,19 @@ public class EuropeanNationType extends NationType {
 				}
 				@Override
 				public List<EuropeanStartingAbstractUnit> get(EuropeanNationType source) {
-					throw new RuntimeException("not implemented");
+					List<EuropeanStartingAbstractUnit> l = new ArrayList<EuropeanStartingAbstractUnit>();
+					l.addAll(source.expertStartingUnits);
+					l.addAll(source.startingUnits);
+					return l;
 				}
 			});
         }
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            EuropeanNationType nationType = new EuropeanNationType(attr.getStrAttribute("id"));
+            EuropeanNationType nationType = new EuropeanNationType(attr.getStrAttribute(ATTR_ID));
             nationType.european = true;
-            nationType.ref = attr.getBooleanAttribute("ref");
+            nationType.ref = attr.getBooleanAttribute(ATTR_REF);
             
             NationType.Xml.abstractStartElement(attr, nationType);
             
@@ -80,6 +87,13 @@ public class EuropeanNationType extends NationType {
             	nationType.expertStartingUnits.addAll(parent.expertStartingUnits);
             }            
             nodeObject = nationType;
+        }
+        
+        @Override
+        public void startWriteAttr(EuropeanNationType nationType, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(nationType);
+        	attr.set(ATTR_REF, nationType.ref);
+        	NationType.Xml.abstractStartWriteAttr(nationType, attr);
         }
         
         @Override

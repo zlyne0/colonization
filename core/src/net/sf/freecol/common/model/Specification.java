@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,9 +22,10 @@ import net.sf.freecol.common.model.specification.options.RangeOption;
 import net.sf.freecol.common.model.specification.options.StringOption;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Specification implements Identifiable {
+public class Specification {
 	
     public static class Options {
         public final MapIdEntities<OptionGroup> allOptionGroup = new MapIdEntities<OptionGroup>();
@@ -91,20 +93,22 @@ public class Specification implements Identifiable {
 	public static final Options options = new Options();
 	public static final MapIdEntities<OptionGroup> optionGroupEntities = new MapIdEntities<OptionGroup>();
 	
-	public final MapIdEntities<TileType> tileTypes = new MapIdEntities<TileType>();
-	public final MapIdEntities<TileImprovementType> tileImprovementTypes = new MapIdEntities<TileImprovementType>();
-	public final MapIdEntities<UnitType> unitTypes = new MapIdEntities<UnitType>();
-	public final MapIdEntities<UnitRole> unitRoles = new MapIdEntities<UnitRole>();
-	public final MapIdEntities<ResourceType> resourceTypes = new MapIdEntities<ResourceType>();
-    public final MapIdEntities<NationType> nationTypes = new MapIdEntities<NationType>();
+    public final MapIdEntities<ResourceType> resourceTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<GoodsType> goodsTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<TileType> tileTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<TileImprovementType> tileImprovementTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<UnitType> unitTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<UnitRole> unitRoles = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<BuildingType> buildingTypes = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<NationType> nationTypes = MapIdEntities.linkedMapIdEntities();
+    
     public final MapIdEntities<Nation> nations = new MapIdEntities<Nation>();
-    public final MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>();
-    public final MapIdEntities<BuildingType> buildingTypes = new MapIdEntities<BuildingType>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     public final List<WithProbability<UnitType>> unitTypeRecruitProbabilities = new ArrayList<WithProbability<UnitType>>();
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
+    
     
     public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
     public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
@@ -121,11 +125,6 @@ public class Specification implements Identifiable {
     
     private Specification() {
         options.clear();
-    }
-    
-    @Override
-    public String getId() {
-        return "freecol";
     }
     
     public void updateReferences() {
@@ -235,25 +234,31 @@ public class Specification implements Identifiable {
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {
+		private static final String DIFFICULTY_LEVEL = "difficultyLevel";
+
 		public Xml() {
-			addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
             addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
+            addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
+            addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
             addNodeForMapIdEntities("tileimprovement-types", "tileImprovementTypes", TileImprovementType.class);
             addNodeForMapIdEntities("unit-types", "unitTypes", UnitType.class);
             addNodeForMapIdEntities("roles", "unitRoles", UnitRole.class);
-            addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);
-            addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
-            addNodeForMapIdEntities("nations", "nations", Nation.class);
-            addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
             addNodeForMapIdEntities("building-types", "buildingTypes", BuildingType.class);
-            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
-            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
+            addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);
+            
+            // TODO: 
+            // TODO:
+            
+//            addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
+//            addNodeForMapIdEntities("nations", "nations", Nation.class);
+//            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
+//            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
 		    Specification specification = Specification.instance;
-		    specification.difficultyLevel = attr.getStrAttribute("difficultyLevel");
+		    specification.difficultyLevel = attr.getStrAttribute(DIFFICULTY_LEVEL);
 		    specification.clear();
 		    nodeObject = specification;
 		}
@@ -263,6 +268,11 @@ public class Specification implements Identifiable {
 		    if (qName.equals(getTagName())) {
 		    	Specification.instance.updateOptionsFromDifficultyLevel();
 		    }
+		}
+		
+		@Override
+		public void startWriteAttr(Specification node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.set(DIFFICULTY_LEVEL, node.difficultyLevel);
 		}
 		
 		@Override
@@ -276,7 +286,8 @@ public class Specification implements Identifiable {
 	}
 
 	public void updateOptionsFromDifficultyLevel() {
-		updateOptionsFromDifficultyLevel(Specification.instance.difficultyLevel);
+		// TODO:
+		//updateOptionsFromDifficultyLevel(Specification.instance.difficultyLevel);
 	}
 	
 	public void updateOptionsFromDifficultyLevel(String difficultyLevel) {
