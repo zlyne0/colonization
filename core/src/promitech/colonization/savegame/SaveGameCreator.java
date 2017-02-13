@@ -73,13 +73,17 @@ public class SaveGameCreator {
 				XmlTagMetaData entityMetaData = new XmlTagMetaData(mapEntityMetaData.entityClass);
 				XmlNodeParser entityXmlParser = mapEntityMetaData.createEntityXmlParser();
 				for (Identifiable entity : entityMap.entities()) {
-					generateXmlFromObj(entity, entityMetaData, entityXmlParser);
+					if (entity.getClass().equals(entityMetaData.entityClass)) {
+						generateXmlFromObj(entity, entityMetaData, entityXmlParser);
+					}
 				}
 				xml.pop();
 			} else {
-				XmlNodeParser mapEntityXmlParser = mapEntityMetaData.createEntityXmlParser();
+				XmlNodeParser<?> mapEntityXmlParser = mapEntityMetaData.createEntityXmlParser();
 				for (Identifiable entity : entityMap.entities()) {
-					generateXmlFromObj(entity, mapEntityMetaData, mapEntityXmlParser);
+					if (entity.getClass().equals(mapEntityMetaData.entityClass)) {
+						generateXmlFromObj(entity, mapEntityMetaData, mapEntityXmlParser);
+					}
 				}
 			}
 		}

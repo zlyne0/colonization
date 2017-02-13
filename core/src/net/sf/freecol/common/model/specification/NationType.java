@@ -108,6 +108,9 @@ public abstract class NationType extends ObjectWithFeatures {
 
 		public static void abstractAddNodes(XmlNodeParser<? extends NationType> nodeParser) {
 			nodeParser.addNode(SettlementType.class, SETTLEMENT_TYPE_NODE_SETTER);
+
+			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
+			nodeParser.addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
 		}
 		
 		public static void abstractStartElement(XmlNodeAttributes attr, NationType nt) {

@@ -244,13 +244,13 @@ public class Specification {
             addNodeForMapIdEntities("unit-types", "unitTypes", UnitType.class);
             addNodeForMapIdEntities("roles", "unitRoles", UnitRole.class);
             addNodeForMapIdEntities("building-types", "buildingTypes", BuildingType.class);
-            addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);
+            addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);            
+            addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
+            addNodeForMapIdEntities("nations", "nations", Nation.class);
             
             // TODO: 
             // TODO:
             
-//            addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
-//            addNodeForMapIdEntities("nations", "nations", Nation.class);
 //            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
 //            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
 		}
@@ -286,12 +286,12 @@ public class Specification {
 	}
 
 	public void updateOptionsFromDifficultyLevel() {
-		// TODO:
-		//updateOptionsFromDifficultyLevel(Specification.instance.difficultyLevel);
+		updateOptionsFromDifficultyLevel(Specification.instance.difficultyLevel);
 	}
 	
 	public void updateOptionsFromDifficultyLevel(String difficultyLevel) {
-        options.flattenOptionsEntriesTree(difficultyLevel);
+		// TODO: difficultyLevel
+        //options.flattenOptionsEntriesTree(difficultyLevel);
         Specification.instance.updateReferences();
 	}
 

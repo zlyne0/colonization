@@ -266,6 +266,10 @@ public class GameResources {
 		}
 	}
 
+	public static String colorToStr(Color color) {
+		return "0x" + color.toString();
+	}
+	
 	public Skin getUiSkin() {
 		return uiSkin;
 	}

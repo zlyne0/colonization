@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -54,9 +53,6 @@ public class EuropeanNationType extends NationType {
 
 		public Xml() {
         	NationType.Xml.abstractAddNodes(this);
-
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             
             addNode(EuropeanStartingAbstractUnit.class, new ObjectFromNodeSetter<EuropeanNationType, EuropeanStartingAbstractUnit>() {
 				@Override

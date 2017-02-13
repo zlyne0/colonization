@@ -17,6 +17,12 @@ public class XmlNodeAttributesWriter {
 		xml.attribute(XmlNodeParser.ATTR_ID, identifiable.getId());
 	}
 
+	public void set(String attrName, Identifiable identifiable) throws IOException {
+		if (identifiable != null) {
+			xml.attribute(attrName, identifiable.getId());
+		}
+	}
+	
 	public void set(String attrName, String val) throws IOException {
 		if (val != null) {
 			xml.attribute(attrName, val);

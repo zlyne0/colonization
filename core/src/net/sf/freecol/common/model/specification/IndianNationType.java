@@ -1,9 +1,11 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianNationType extends NationType {
@@ -22,14 +24,16 @@ public class IndianNationType extends NationType {
 		return regionNames;
 	}
 	
-    public static class Xml extends XmlNodeParser {
-        public Xml() {
-        	NationType.Xml.abstractAddNodes(this);
+    public static class Xml extends XmlNodeParser<IndianNationType> {
+        private static final String ATTR_REGION = "region";
+
+		public Xml() {
+			NationType.Xml.abstractAddNodes(this);
         }
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            NationType nationType = new IndianNationType(attr.getStrAttribute("id"));
+        	IndianNationType nationType = new IndianNationType(attr.getStrAttribute(ATTR_ID));
             nationType.european = false;
             
             NationType.Xml.abstractStartElement(attr, nationType);
@@ -38,8 +42,20 @@ public class IndianNationType extends NationType {
         
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("region")) {
-        		((IndianNationType)nodeObject).regionNames.add(attr.getStrAttributeNotNull("id"));
+        	if (attr.isQNameEquals(ATTR_REGION)) {
+        		nodeObject.regionNames.add(attr.getStrAttributeNotNull(ATTR_ID));
+        	}
+        }
+        
+        @Override
+        public void startWriteAttr(IndianNationType nationType, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(nationType);
+        	NationType.Xml.abstractStartWriteAttr(nationType, attr);
+        	
+        	for (String regionName : nationType.regionNames) {
+        		attr.xml.element(ATTR_REGION);
+        		attr.set(ATTR_ID, regionName);
+        		attr.xml.pop();
         	}
         }
         
