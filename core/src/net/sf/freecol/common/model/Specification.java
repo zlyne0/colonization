@@ -247,11 +247,11 @@ public class Specification {
             addNodeForMapIdEntities("european-nation-types", "nationTypes", EuropeanNationType.class);            
             addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
             addNodeForMapIdEntities("nations", "nations", Nation.class);
+            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
             
             // TODO: 
             // TODO:
             
-//            addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
 //            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
 		}
 
