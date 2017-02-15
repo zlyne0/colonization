@@ -91,7 +91,7 @@ public class Specification {
     }
     
 	public static final Options options = new Options();
-	public static final MapIdEntities<OptionGroup> optionGroupEntities = new MapIdEntities<OptionGroup>();
+	public static final MapIdEntities<OptionGroup> optionGroupEntities = MapIdEntities.linkedMapIdEntities();
 	
     public final MapIdEntities<ResourceType> resourceTypes = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<GoodsType> goodsTypes = MapIdEntities.linkedMapIdEntities();
@@ -248,11 +248,7 @@ public class Specification {
             addNodeForMapIdEntities("indian-nation-types", "nationTypes", IndianNationType.class);
             addNodeForMapIdEntities("nations", "nations", Nation.class);
             addNodeForMapIdEntities("founding-fathers", "foundingFathers", FoundingFather.class);
-            
-            // TODO: 
-            // TODO:
-            
-//            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
+            addNodeForMapIdEntities("options", "optionGroupEntities", OptionGroup.class);
 		}
 
 		@Override
@@ -290,8 +286,7 @@ public class Specification {
 	}
 	
 	public void updateOptionsFromDifficultyLevel(String difficultyLevel) {
-		// TODO: difficultyLevel
-        //options.flattenOptionsEntriesTree(difficultyLevel);
+        options.flattenOptionsEntriesTree(difficultyLevel);
         Specification.instance.updateReferences();
 	}
 
