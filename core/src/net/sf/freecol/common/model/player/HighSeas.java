@@ -1,8 +1,7 @@
 package net.sf.freecol.common.model.player;
 
-import java.util.List;
+import java.util.Collection;
 
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLocation;
@@ -10,14 +9,9 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class HighSeas implements Identifiable, UnitLocation {
+public class HighSeas implements UnitLocation {
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     
-    @Override
-    public String getId() {
-        throw new IllegalStateException("object without id");
-    }
-
 	@Override
 	public MapIdEntities<Unit> getUnits() {
 		return units;
@@ -42,8 +36,8 @@ public class HighSeas implements Identifiable, UnitLocation {
                     unit.changeUnitLocation(highSeas);
                 }
                 @Override
-                public List<Unit> get(HighSeas source) {
-					throw new RuntimeException("not implemented");
+                public Collection<Unit> get(HighSeas source) {
+                	return source.units.entities();
                 }
             });
         }

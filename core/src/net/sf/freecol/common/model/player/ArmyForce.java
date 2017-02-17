@@ -1,13 +1,12 @@
 package net.sf.freecol.common.model.player;
 
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
 import net.sf.freecol.common.model.specification.options.UnitOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class ArmyForce implements Identifiable {
+public class ArmyForce {
 
     public final MapIdEntities<ArmyForceAbstractUnit> navalUnits = new MapIdEntities<ArmyForceAbstractUnit>();
     public final MapIdEntities<ArmyForceAbstractUnit> landUnits = new MapIdEntities<ArmyForceAbstractUnit>();
@@ -21,11 +20,6 @@ public class ArmyForce implements Identifiable {
     	}
     }
     
-    @Override
-    public String getId() {
-        throw new IllegalStateException("object do not has id");
-    }
-
     public int spaceRequired() {
         int spaceRequired = 0;
         for (ArmyForceAbstractUnit lu : landUnits.entities()) {
@@ -63,7 +57,7 @@ public class ArmyForce implements Identifiable {
 		}
 	}
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<ArmyForce> {
 
         public Xml() {
             addNodeForMapIdEntities("navalUnits", "navalUnits", ArmyForceAbstractUnit.class);

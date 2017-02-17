@@ -1,7 +1,10 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
 import java.util.HashMap;
-import java.util.List;
+import java.util.Map.Entry;
+
+import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
@@ -25,8 +28,8 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
@@ -534,84 +537,153 @@ public class Player extends ObjectWithId {
 		settlement.setOwner(this);
 	}
 
+	public void afterReadPlayer() {
+		if (europe != null) {
+			europe.setOwner(this);
+		}
+		if (monarch != null) {
+			monarch.setPlayer(this);
+		}
+	}
+
 	public static class Xml extends XmlNodeParser<Player> {
-        public Xml() {
-            addNode(Europe.class, new ObjectFromNodeSetter<Player, Europe>() {
-                @Override
-                public void set(Player target, Europe entity) {
-                    target.europe = entity;
-                    entity.setOwner(target);
-                }
-                @Override
-                public List<Europe> get(Player source) {
-					throw new RuntimeException("not implemented");
-                }
-            });
-            addNode(Monarch.class, new ObjectFromNodeSetter<Player, Monarch>() {
-                @Override
-                public void set(Player target, Monarch entity) {
-                    target.monarch = entity;
-                    entity.setPlayer(target);
-                }
-                @Override
-                public List<Monarch> get(Player source) {
-					throw new RuntimeException("not implemented");
-                }
-            });
+        private static final String ATTR_X_LENGTH = "xLength";
+		private static final String ATTR_PLAYER = "player";
+		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
+		private static final String ELEMENT_TENSION = "tension";
+		private static final String ELEMENT_STANCE = "stance";
+		private static final String ATTR_PLAYER_TYPE = "playerType";
+		private static final String ATTR_ENTRY_LOCATION_Y = "entryLocationY";
+		private static final String ATTR_ENTRY_LOCATION_X = "entryLocationX";
+		private static final String ATTR_INDEPENDENT_NATION_NAME = "independentNationName";
+		private static final String ATTR_IMMIGRATION_REQUIRED = "immigrationRequired";
+		private static final String ATTR_IMMIGRATION = "immigration";
+		private static final String ATTR_INTERVENTION_BELLS = "interventionBells";
+		private static final String ATTR_LIBERTY = "liberty";
+		private static final String ATTR_GOLD = "gold";
+		private static final String ATTR_TAX = "tax";
+		private static final String ATTR_NEW_LAND_NAME = "newLandName";
+		private static final String ATTR_ATTACKED_BY_PRIVATEERS = "attackedByPrivateers";
+		private static final String ATTR_DEAD = "dead";
+		private static final String ATTR_NATION_TYPE = "nationType";
+		private static final String ATTR_NATION_ID = "nationId";
+
+		public Xml() {
+			addNode(EventsNotifications.class, "eventsNotifications");
             addNode(Market.class, "market");
-            addNode(EventsNotifications.class, "eventsNotifications");
             addNode(HighSeas.class, "highSeas");
+            addNode(Europe.class, "europe");
+            addNode(Monarch.class, "monarch");
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String idStr = attr.getStrAttribute("id");
-            String nationIdStr = attr.getStrAttribute("nationId");
-            String nationTypeStr = attr.getStrAttribute("nationType");
+            String idStr = attr.getStrAttribute(ATTR_ID);
             
             Player player = new Player(idStr);
-            player.dead = attr.getBooleanAttribute("dead");
-            player.attackedByPrivateers = attr.getBooleanAttribute("attackedByPrivateers", false);
-            player.newLandName = attr.getStrAttribute("newLandName");
-            player.tax = attr.getIntAttribute("tax", 0);
-            player.gold = attr.getIntAttribute("gold", 0);
-            player.liberty = attr.getIntAttribute("liberty", 0);
-            player.interventionBells = attr.getIntAttribute("interventionBells", 0);
-            player.immigration = attr.getIntAttribute("immigration", 0);
-            player.immigrationRequired = attr.getIntAttribute("immigrationRequired", 0);
+            player.dead = attr.getBooleanAttribute(ATTR_DEAD);
+            player.attackedByPrivateers = attr.getBooleanAttribute(ATTR_ATTACKED_BY_PRIVATEERS, false);
+            player.newLandName = attr.getStrAttribute(ATTR_NEW_LAND_NAME);
+            player.tax = attr.getIntAttribute(ATTR_TAX, 0);
+            player.gold = attr.getIntAttribute(ATTR_GOLD, 0);
+            player.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
+            player.interventionBells = attr.getIntAttribute(ATTR_INTERVENTION_BELLS, 0);
+            player.immigration = attr.getIntAttribute(ATTR_IMMIGRATION, 0);
+            player.immigrationRequired = attr.getIntAttribute(ATTR_IMMIGRATION_REQUIRED, 0);
+            
+            String nationIdStr = attr.getStrAttribute(ATTR_NATION_ID);
             player.nation = Specification.instance.nations.getById(nationIdStr);
+
+            String nationTypeStr = attr.getStrAttribute(ATTR_NATION_TYPE);
             if (nationTypeStr != null) {
                 player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
                 player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
             }
-            player.independentNationName = attr.getStrAttribute("independentNationName");
+            player.independentNationName = attr.getStrAttribute(ATTR_INDEPENDENT_NATION_NAME);
 
-            player.entryLocationX = attr.getIntAttribute("entryLocationX", 1);
-            player.entryLocationY = attr.getIntAttribute("entryLocationY", 1);
+            player.entryLocationX = attr.getIntAttribute(ATTR_ENTRY_LOCATION_X, 1);
+            player.entryLocationY = attr.getIntAttribute(ATTR_ENTRY_LOCATION_Y, 1);
             
-            player.changePlayerType(attr.getEnumAttribute(PlayerType.class, "playerType"));
+            player.changePlayerType(attr.getEnumAttribute(PlayerType.class, ATTR_PLAYER_TYPE));
             nodeObject = player;
         }
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("stance")) {
-        		String playerId = attr.getStrAttribute("player");
-        		Stance stance = Stance.valueOf(attr.getStrAttribute("value").toUpperCase());
-        		((Player)nodeObject).stance.put(playerId, stance);
+        	if (attr.isQNameEquals(ELEMENT_STANCE)) {
+        		String playerId = attr.getStrAttribute(ATTR_PLAYER);
+        		Stance stance = attr.getEnumAttribute(Stance.class, ATTR_VALUE);
+        		nodeObject.stance.put(playerId, stance);
         	}
-        	if (attr.isQNameEquals("tension")) {
-        		String playerId = attr.getStrAttribute("player");
-        		Tension tension = new Tension(attr.getIntAttribute("value"));
-        		((Player)nodeObject).tension.put(playerId, tension);
+        	if (attr.isQNameEquals(ELEMENT_TENSION)) {
+        		String playerId = attr.getStrAttribute(ATTR_PLAYER);
+        		Tension tension = new Tension(attr.getIntAttribute(ATTR_VALUE));
+        		nodeObject.tension.put(playerId, tension);
         	}
-        	if (attr.isQNameEquals("foundingFathers")) {
-        	    int count = attr.getIntAttribute("xLength", 0);
+        	if (attr.isQNameEquals(ELEMENT_FOUNDING_FATHERS)) {
+        	    int count = attr.getIntAttribute(ATTR_X_LENGTH, 0);
         	    for (int i=0; i<count; i++) {
-        	        String fatherId = attr.getStrAttributeNotNull("x" + i);
+        	        String fatherId = attr.getStrAttributeNotNull(foundingFatherAttr(i));
         	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
-        	        ((Player)nodeObject).addFoundingFathers(father);
+        	        nodeObject.addFoundingFathers(father);
         	    }
+        	}
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+		    if (qName.equals(getTagName())) {
+		    	nodeObject.afterReadPlayer();
+		    }
+        }
+        
+		private String foundingFatherAttr(int index) {
+			return "x" + index;
+		}
+        
+        @Override
+        public void startWriteAttr(Player player, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(player);
+        	
+        	attr.set(ATTR_DEAD, player.dead);
+        	attr.set(ATTR_ATTACKED_BY_PRIVATEERS, player.attackedByPrivateers);
+        	attr.set(ATTR_NEW_LAND_NAME, player.newLandName);
+        	attr.set(ATTR_TAX, player.tax);
+        	attr.set(ATTR_GOLD, player.gold);
+        	attr.set(ATTR_LIBERTY, player.liberty);
+        	attr.set(ATTR_INTERVENTION_BELLS, player.interventionBells);
+        	attr.set(ATTR_IMMIGRATION, player.immigration);
+        	attr.set(ATTR_IMMIGRATION_REQUIRED, player.immigrationRequired);
+
+        	attr.set(ATTR_NATION_ID, player.nation);
+        	attr.set(ATTR_NATION_TYPE, player.nationType);
+        	attr.set(ATTR_INDEPENDENT_NATION_NAME, player.independentNationName);
+        	attr.set(ATTR_ENTRY_LOCATION_X, player.entryLocationX);
+        	attr.set(ATTR_ENTRY_LOCATION_Y, player.entryLocationY);
+        	attr.set(ATTR_PLAYER_TYPE, player.playerType);
+        	
+        	for (Entry<String, Stance> stance : player.stance.entrySet()) {
+				attr.xml.element(ELEMENT_STANCE);
+				attr.set(ATTR_PLAYER, stance.getKey());
+				attr.set(ATTR_VALUE, stance.getValue());
+				attr.xml.pop();
+			}
+        	for (Entry<String, Tension> tensionEntry : player.tension.entrySet()) {
+				attr.xml.element(ELEMENT_TENSION);
+				attr.set(ATTR_PLAYER, tensionEntry.getKey());
+				attr.set(ATTR_VALUE, tensionEntry.getValue().getValue());
+				attr.xml.pop();
+			}
+        	
+        	if (player.foundingFathers.isNotEmpty()) {
+        		attr.xml.element(ELEMENT_FOUNDING_FATHERS);
+        		attr.set(ATTR_X_LENGTH, player.foundingFathers.size());
+        		int ffIndex = 0;
+        		for (FoundingFather foundingFather : player.foundingFathers.entities()) {
+        			attr.set(foundingFatherAttr(ffIndex), foundingFather);
+        			ffIndex++;
+        		}
+        		attr.xml.pop();
         	}
         }
         

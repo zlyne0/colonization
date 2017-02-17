@@ -15,7 +15,7 @@ public class Game {
 	private Specification specification;
 	public Map map;
 	public Player playingPlayer;
-	public final MapIdEntities<Player> players = new MapIdEntities<Player>();
+	public final MapIdEntities<Player> players = MapIdEntities.linkedMapIdEntities();
 
 	public static IdGenerator idGenerator;
 	public String activeUnitId;
@@ -50,8 +50,8 @@ public class Game {
 
 		public Xml() {
 			addNode(Specification.class, "specification");
+			addNodeForMapIdEntities("players", Player.class);
 //			addNode(Map.class, "map");
-//			addNodeForMapIdEntities("players", Player.class);
 		}
 		
 		@Override
