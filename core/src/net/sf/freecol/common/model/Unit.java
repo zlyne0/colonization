@@ -2,8 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 
@@ -880,13 +878,12 @@ public class Unit extends ObjectWithId implements UnitLocation {
                 public void set(Unit actualUnit, Unit newUnit) {
                     newUnit.changeUnitLocation(actualUnit);
                 }
-                @Override
-                public Collection<Unit> get(Unit source) {
-                	if (source.unitContainer != null) {
-                		return source.unitContainer.getUnits().entities();
-                	}
-                	return Collections.emptyList();
-                }
+				@Override
+				public void generateXml(Unit source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					if (source.unitContainer != null) {
+						xmlGenerator.generateXmlFromCollection(source.unitContainer.getUnits().entities());
+					}
+				}
             });
             addNode(GoodsContainer.class, "goodsContainer");
         }

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
-import java.util.List;
 
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
@@ -101,8 +100,8 @@ public class BuildingType extends BuildableType {
 					target.productionInfo.addProduction(entity);
 				}
 				@Override
-				public List<Production> get(BuildingType source) {
-					return source.productionInfo.productions;
+				public void generateXml(BuildingType source, ChildObject2XmlCustomeHandler<Production> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.productionInfo.productions);
 				}
 			});
         }

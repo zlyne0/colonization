@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
-import java.util.List;
 
 import net.sf.freecol.common.model.map.GenerationValues;
 import net.sf.freecol.common.model.specification.Ability;
@@ -120,8 +119,8 @@ public final class TileType extends ObjectWithFeatures {
 					target.productionInfo.addProduction(entity);
 				}
 				@Override
-				public List<Production> get(TileType source) {
-					return source.productionInfo.productions;
+				public void generateXml(TileType source, ChildObject2XmlCustomeHandler<Production> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.productionInfo.productions);
 				}
 			});
             addNode(GenerationValues.class, "generationValues");

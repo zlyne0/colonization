@@ -1,8 +1,7 @@
 package net.sf.freecol.common.model.player;
 
-import java.util.ArrayList;
+import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
 
 import net.sf.freecol.common.model.Game;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -68,14 +67,12 @@ public class EventsNotifications {
 					target.notifications.add(entity);
 				}
 				@Override
-				public List<MessageNotification> get(EventsNotifications source) {
-					List<MessageNotification> l = new ArrayList<MessageNotification>(source.notifications.size());
+				public void generateXml(EventsNotifications source, ChildObject2XmlCustomeHandler<MessageNotification> xmlGenerator) throws IOException {
 					for (Notification mn : source.notifications) {
 						if (mn instanceof MessageNotification) {
-							l.add((MessageNotification)mn);
+							xmlGenerator.generateXml((MessageNotification)mn);
 						}
 					}
-					return l;
 				}
 			});
 			addNode(MonarchActionNotification.class, new ObjectFromNodeSetter<EventsNotifications, MonarchActionNotification>() {
@@ -84,14 +81,12 @@ public class EventsNotifications {
 					target.notifications.add(entity);
 				}
 				@Override
-				public List<MonarchActionNotification> get(EventsNotifications source) {
-					List<MonarchActionNotification> l = new ArrayList<MonarchActionNotification>(source.notifications.size());
+				public void generateXml(EventsNotifications source, ChildObject2XmlCustomeHandler<MonarchActionNotification> xmlGenerator) throws IOException {
 					for (Notification mn : source.notifications) {
 						if (mn instanceof MonarchActionNotification) {
-							l.add((MonarchActionNotification)mn);
+							xmlGenerator.generateXml((MonarchActionNotification)mn);
 						}
 					}
-					return l;
 				}
 			});
 		}

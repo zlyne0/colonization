@@ -2,7 +2,6 @@ package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import net.sf.freecol.common.model.Game;
@@ -127,11 +126,10 @@ public class MonarchActionNotification implements Notification, Identifiable {
 					target.mercenaries.add(entity);
 				}
 				@Override
-				public List<ArmyForceAbstractUnit> get(MonarchActionNotification source) {
-					if (source.mercenaries == null) {
-						return Collections.emptyList();
+				public void generateXml(MonarchActionNotification source, ChildObject2XmlCustomeHandler<ArmyForceAbstractUnit> xmlGenerator) throws IOException {
+					if (source.mercenaries != null) {
+						xmlGenerator.generateXmlFromCollection(source.mercenaries);
 					}
-					return source.mercenaries;
 				}
 			});
 		}

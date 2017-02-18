@@ -1,7 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.LinkedList;
-import java.util.List;
 
 import org.xml.sax.SAXException;
 
@@ -233,10 +233,10 @@ public class Map extends ObjectWithId {
                     Tile tile = (Tile)entity;
                     target.createTile(tile.x, tile.y, tile);
                 }
-                @Override
-                public List<Tile> get(Map source) {
+				@Override
+				public void generateXml(Map source, ChildObject2XmlCustomeHandler<Tile> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
-                }
+				}
             });
 			addNodeForMapIdEntities("regions", Region.class);
 		}

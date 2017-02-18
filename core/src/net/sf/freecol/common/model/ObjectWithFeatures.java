@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -22,14 +21,13 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Modifier entity) {
             target.addModifier(entity);
         }
-        @Override
-        public List<Modifier> get(ObjectWithFeatures target) {
-        	List<Modifier> modifiers = new ArrayList<Modifier>();
-        	for (Entry<String, List<Modifier>> entry : target.modifiers.entrySet()) {
-        		modifiers.addAll(entry.getValue());
+
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Modifier> xmlGenerator) throws IOException {
+        	for (Entry<String, List<Modifier>> entry : source.modifiers.entrySet()) {
+        		xmlGenerator.generateXmlFromCollection(entry.getValue());
         	}
-        	return modifiers;
-        }
+		}
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> OBJECT_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
@@ -37,13 +35,11 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Ability entity) {
             target.addAbility(entity);
         }
-        @Override
-		public List<Ability> get(ObjectWithFeatures source) {
-        	List<Ability> abilities = new ArrayList<Ability>();
-        	for (Entry<String, List<Ability>> entry : source.abilities.entrySet()) {
-				abilities.addAll(entry.getValue());
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Ability> xmlGenerator) throws IOException {
+			for (Entry<String, List<Ability>> entry : source.abilities.entrySet()) {
+				xmlGenerator.generateXmlFromCollection(entry.getValue());
 			}
-        	return abilities;
 		};
     };
     
@@ -52,9 +48,10 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Scope entity) {
         	target.scopes.add(entity);
         }
-        public java.util.List<Scope> get(ObjectWithFeatures source) {
-        	return source.scopes;
-        };
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Scope> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.scopes);
+		};
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> REQ_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
@@ -62,8 +59,9 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Ability entity) {
         	target.requiredAbilities.add(entity);
         }
-		public Collection<Ability> get(ObjectWithFeatures source) {
-			return source.requiredAbilities.entities();
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Ability> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.requiredAbilities.entities());
 		};
     };
     

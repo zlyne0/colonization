@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model.player;
 
-import java.util.Collection;
+import java.io.IOException;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Unit;
@@ -35,10 +35,10 @@ public class HighSeas implements UnitLocation {
                 public void set(HighSeas highSeas, Unit unit) {
                     unit.changeUnitLocation(highSeas);
                 }
-                @Override
-                public Collection<Unit> get(HighSeas source) {
-                	return source.units.entities();
-                }
+				@Override
+				public void generateXml(HighSeas source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.units.entities());
+				}
             });
         }
         

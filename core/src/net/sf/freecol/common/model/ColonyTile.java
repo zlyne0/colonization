@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model;
 
-import java.util.List;
+import java.io.IOException;
 
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -51,7 +51,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation {
 					target.productionInfo.addProduction(entity);
 				}
 				@Override
-				public List<Production> get(ColonyTile source) {
+				public void generateXml(ColonyTile source, ChildObject2XmlCustomeHandler<Production> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
 				}
 			});

@@ -476,8 +476,8 @@ public final class Ability implements Identifiable {
 					target.scopes.add(entity);
 				}
 				@Override
-				public List<Scope> get(Ability source) {
-					return source.scopes;
+				public void generateXml(Ability source, ChildObject2XmlCustomeHandler<Scope> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.scopes);
 				}
 			});
 		}

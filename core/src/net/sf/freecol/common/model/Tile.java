@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -454,7 +455,7 @@ public class Tile implements UnitLocation, Identifiable {
 					entity.getPlayer().setTileAsExplored(target);
 				}
 				@Override
-				public List<CachedTile> get(Tile source) {
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<CachedTile> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
 				}
 			});
@@ -463,20 +464,20 @@ public class Tile implements UnitLocation, Identifiable {
                 public void set(Tile target, TileItemContainer entity) {
                     target.tileItemContainer = entity;
                 }
-                @Override
-                public List<TileItemContainer> get(Tile source) {
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<TileItemContainer> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
-                }
+				}
             });
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
 	                unit.changeUnitLocation(tile);
 	            }
-	            @Override
-	            public List<Unit> get(Tile source) {
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
-	            }
+				}
 	        });
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {
                 @Override
@@ -484,10 +485,10 @@ public class Tile implements UnitLocation, Identifiable {
                     target.settlement = entity;
                     entity.tile = target;
                 }
-                @Override
-                public List<Colony> get(Tile source) {
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<Colony> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
-                }
+				}
             });
             addNode(IndianSettlement.class, new ObjectFromNodeSetter<Tile,IndianSettlement>() {
                 @Override
@@ -495,10 +496,10 @@ public class Tile implements UnitLocation, Identifiable {
                     target.settlement = entity;
                     entity.tile = target;
                 }
-                @Override
-                public List<IndianSettlement> get(Tile source) {
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<IndianSettlement> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
-                }
+				}
             });
 		}
 

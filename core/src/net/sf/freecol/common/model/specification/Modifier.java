@@ -129,10 +129,10 @@ public class Modifier implements Identifiable {
                 public void set(Modifier target, Scope entity) {
                     target.scopes.add(entity);
                 }
-                @Override
-                public List<Scope> get(Modifier source) {
-                	return source.scopes;
-                }
+				@Override
+				public void generateXml(Modifier source, ChildObject2XmlCustomeHandler<Scope> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.scopes);
+				}
             });
         }
 

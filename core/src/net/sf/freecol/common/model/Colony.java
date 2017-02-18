@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -1082,7 +1083,7 @@ public class Colony extends Settlement {
 					target.buildingQueue.add(entity);
 				}
 				@Override
-				public List<ColonyBuildingQueueItem> get(Colony source) {
+				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<ColonyBuildingQueueItem> xmlGenerator) throws IOException {
 					throw new RuntimeException("not implemented");
 				}
 			});

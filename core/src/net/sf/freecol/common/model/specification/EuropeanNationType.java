@@ -60,11 +60,9 @@ public class EuropeanNationType extends NationType {
 					target.addStartingUnit(entity);
 				}
 				@Override
-				public List<EuropeanStartingAbstractUnit> get(EuropeanNationType source) {
-					List<EuropeanStartingAbstractUnit> l = new ArrayList<EuropeanStartingAbstractUnit>();
-					l.addAll(source.expertStartingUnits);
-					l.addAll(source.startingUnits);
-					return l;
+				public void generateXml(EuropeanNationType source, ChildObject2XmlCustomeHandler<EuropeanStartingAbstractUnit> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.expertStartingUnits);
+					xmlGenerator.generateXmlFromCollection(source.startingUnits);
 				}
 			});
         }

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.List;
 
 import net.sf.freecol.common.model.MapIdEntities;
@@ -18,10 +17,10 @@ public abstract class BuildableType extends ObjectWithFeatures {
         public void set(BuildableType target, RequiredGoods entity) {
         	target.requiredGoods.add(entity);
         }
-        @Override
-        public Collection<RequiredGoods> get(BuildableType target) {
-        	return target.requiredGoods.entities();
-        }
+		@Override
+		public void generateXml(BuildableType source, ChildObject2XmlCustomeHandler<RequiredGoods> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.requiredGoods.entities());
+		}
     };
 	
 	

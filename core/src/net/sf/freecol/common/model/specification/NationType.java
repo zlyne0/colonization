@@ -20,7 +20,6 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Set;
 
@@ -43,10 +42,10 @@ public abstract class NationType extends ObjectWithFeatures {
         public void set(NationType target, SettlementType entity) {
         	target.settlementTypes.add(entity);
         }
-        @Override
-        public Collection<SettlementType> get(NationType target) {
-        	return target.settlementTypes.entities();
-        }
+		@Override
+		public void generateXml(NationType source, ChildObject2XmlCustomeHandler<SettlementType> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.settlementTypes.entities());
+		}
     };
 	
 	public static enum SettlementNumber { LOW, AVERAGE, HIGH }

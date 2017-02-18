@@ -1,7 +1,7 @@
 package promitech.colonization.savegame;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
 
 public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R> {
     private String targetFieldName;
@@ -22,7 +22,7 @@ public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R>
     }
 
 	@Override
-	public List<R> get(T source) {
+	public void generateXml(T source, ChildObject2XmlCustomeHandler<R> xmlGenerator) throws IOException {
 		throw new RuntimeException("not implemented");
 	}
     

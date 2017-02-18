@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
@@ -290,10 +289,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
                 public void set(Europe europe, Unit unit) {
                     unit.changeUnitLocation(europe);
                 }
-                @Override
-                public Collection<Unit> get(Europe source) {
-                	return source.units.entities();
-                }
+				@Override
+				public void generateXml(Europe source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.units.entities());
+				}
             });
         }
         

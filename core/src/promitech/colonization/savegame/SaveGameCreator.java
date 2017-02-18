@@ -6,12 +6,44 @@ import java.lang.reflect.Field;
 import java.util.Collection;
 
 import com.badlogic.gdx.utils.XmlWriter;
+import com.badlogic.gdx.utils.Pool;
+import com.badlogic.gdx.utils.Pool.Poolable;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 
 public class SaveGameCreator {
 
+	class ChildObjectXmlGenerator implements ObjectFromNodeSetter.ChildObject2XmlCustomeHandler<Object>, Poolable {
+		XmlNodeParser childXmlParser;
+		XmlTagMetaData tagMetaData;
+		
+		@Override
+		public void generateXml(Object obj) throws IOException {
+			generateXmlFromObj(obj, tagMetaData, childXmlParser);
+		}
+		@Override
+		public void generateXmlFromCollection(Collection<Object> objs) throws IOException {
+			for (Object obj : objs) {
+				generateXmlFromObj(obj, tagMetaData, childXmlParser);
+			}
+		}
+
+		@Override
+		public void reset() {
+			this.childXmlParser = null;
+			this.tagMetaData = null;
+		}
+
+	}
+	
+	private final Pool<ChildObjectXmlGenerator> customeXmlGeneratorPool = new Pool<SaveGameCreator.ChildObjectXmlGenerator>() {
+		@Override
+		protected ChildObjectXmlGenerator newObject() {
+			return new ChildObjectXmlGenerator();
+		}
+	};
+	
 	private XmlWriter xml;
 	private StringWriter strWriter;
 	private final XmlNodeAttributesWriter attrWriter;
@@ -25,6 +57,7 @@ public class SaveGameCreator {
 	public void generateXmlFrom(Object obj) throws IOException {
 		generateXmlFromObj(obj, null, null);
 		
+		customeXmlGeneratorPool.clear();
 		System.out.println("xml = \n" + strWriter);
 	}
 	
@@ -44,18 +77,20 @@ public class SaveGameCreator {
 		xml.pop();
 	}
 	
-	protected void saveChildren(Object obj, XmlNodeParser xmlParser) throws IOException {
+	protected void saveChildren(Object objWithChildren, XmlNodeParser xmlParser) throws IOException {
 		for (XmlTagMetaData tagMetaData : (Collection<XmlTagMetaData>)xmlParser.childrenNodeParsers()) {
 			if (tagMetaData instanceof XmlTagMapIdEntitiesMetaData) {
-				saveMapEntityObj(obj, (XmlTagMapIdEntitiesMetaData)tagMetaData);
+				saveMapEntityObj(objWithChildren, (XmlTagMapIdEntitiesMetaData)tagMetaData);
 			} else {
 				if (tagMetaData.targetFieldName == null && tagMetaData.setter != null) {
 					XmlNodeParser childXmlParser = tagMetaData.createXmlParser();
-					for (Object childObj : tagMetaData.setter.get(obj)) {
-						generateXmlFromObj(childObj, tagMetaData, childXmlParser);
-					}
+					ChildObjectXmlGenerator childObjectXmlGenerator = customeXmlGeneratorPool.obtain();
+					childObjectXmlGenerator.childXmlParser = childXmlParser;
+					childObjectXmlGenerator.tagMetaData = tagMetaData;
+					tagMetaData.setter.generateXml(objWithChildren, childObjectXmlGenerator);
+					customeXmlGeneratorPool.free(childObjectXmlGenerator);
 				} else {
-					Object childObj = getValueByFieldName(obj, tagMetaData.targetFieldName);
+					Object childObj = getValueByFieldName(objWithChildren, tagMetaData.targetFieldName);
 					if (childObj != null) {
 						generateXmlFromObj(childObj, tagMetaData, null);
 					}

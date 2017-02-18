@@ -1,7 +1,7 @@
 package promitech.colonization.savegame;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
-import java.util.List;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -36,12 +36,12 @@ public class MapIdEntitySetter<T, R extends Identifiable> implements ObjectFromN
         }
     }
     
-	@Override
-	public List<R> get(T source) {
-		throw new RuntimeException("not implemented");
-	}
-    
     public String toString() {
         return "MapIdEntitySetter.targetFieldName = " + targetFieldName;
     }
+
+	@Override
+	public void generateXml(T source, ChildObject2XmlCustomeHandler<R> xmlGenerator) throws IOException {
+		throw new RuntimeException("not implemented");
+	}
 }
