@@ -461,6 +461,17 @@ public class Tile implements UnitLocation, Identifiable {
 		private static final String ATTR_STYLE = "style";
 
 		public Xml() {
+			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
+				@Override
+				public void set(Tile target, CachedTile entity) {
+					entity.getPlayer().setTileAsExplored(target);
+				}
+				@Override
+				public void generateXml(Tile tile, ChildObject2XmlCustomeHandler<CachedTile> xmlGenerator) throws IOException {
+					// it's written in startWriteAttr, because easier
+				}
+			});
+			
 			addNode(TileItemContainer.class, "tileItemContainer");
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
@@ -524,15 +535,6 @@ public class Tile implements UnitLocation, Identifiable {
 			nodeObject = tile;
 		}
 
-		@Override
-		public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals(ELEMENT_CACHED_TILE)) {
-				String playerId = attr.getStrAttribute(ATTR_PLAYER);
-				Player player = game.players.getById(playerId);
-				player.setTileAsExplored(nodeObject);
-			}
-		}
-		
 		@Override
 		public void startWriteAttr(Tile tile, XmlNodeAttributesWriter attr) throws IOException {
 			attr.setId(tile);
