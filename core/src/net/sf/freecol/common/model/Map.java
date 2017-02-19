@@ -12,6 +12,7 @@ import promitech.colonization.SpiralIterator;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Map extends ObjectWithId {
@@ -226,7 +227,11 @@ public class Map extends ObjectWithId {
 	
 	public static class Xml extends XmlNodeParser<Map> {
 		
+		private static final String ATTR_HEIGHT = "height";
+		private static final String ATTR_WIDTH = "width";
+
 		public Xml() {
+			addNodeForMapIdEntities("regions", Region.class);
 			addNode(Tile.class, new ObjectFromNodeSetter<Map,Tile>() {
                 @Override
                 public void set(Map target, Tile entity) {
@@ -235,17 +240,20 @@ public class Map extends ObjectWithId {
                 }
 				@Override
 				public void generateXml(Map source, ChildObject2XmlCustomeHandler<Tile> xmlGenerator) throws IOException {
-					throw new RuntimeException("not implemented");
+					for (int y=0; y<source.height; y++) {
+						for (int x=0; x<source.width; x++) {
+							xmlGenerator.generateXml(source.tiles[y][x]);
+						}
+					}
 				}
             });
-			addNodeForMapIdEntities("regions", Region.class);
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-		    String idStr = attr.getStrAttribute("id");
-			int width = attr.getIntAttribute("width");
-			int height = attr.getIntAttribute("height");
+		    String idStr = attr.getStrAttribute(ATTR_ID);
+			int width = attr.getIntAttribute(ATTR_WIDTH);
+			int height = attr.getIntAttribute(ATTR_HEIGHT);
 			Map map = new Map(idStr, width, height);
 			
 			map.initPlayersMap(game.players);
@@ -258,6 +266,13 @@ public class Map extends ObjectWithId {
 		    if (qName.equals(getTagName())) {
 		        ((Map)nodeObject).afterReadMap();
 		    }
+		}
+		
+		@Override
+		public void startWriteAttr(Map map, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(map);
+			attr.set(ATTR_WIDTH, map.width);
+			attr.set(ATTR_HEIGHT, map.height);
 		}
 		
 		@Override

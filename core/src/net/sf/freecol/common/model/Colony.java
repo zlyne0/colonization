@@ -30,6 +30,7 @@ import promitech.colonization.Direction;
 import promitech.colonization.NewTurnContext;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
@@ -1076,7 +1077,15 @@ public class Colony extends Settlement {
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
-        public Xml() {
+        private static final String ATTR_LIBERTY = "liberty";
+		private static final String ATTR_PRODUCTION_BONUS = "productionBonus";
+		private static final String ATTR_TORIES = "tories";
+		private static final String ATTR_SONS_OF_LIBERTY = "sonsOfLiberty";
+		private static final String ATTR_NAME = "name";
+		private static final String ATTR_OWNER = "owner";
+		private static final String ATTR_SETTLEMENT_TYPE = "settlementType";
+
+		public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
 				@Override
 				public void set(Colony target, ColonyBuildingQueueItem entity) {
@@ -1084,9 +1093,10 @@ public class Colony extends Settlement {
 				}
 				@Override
 				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<ColonyBuildingQueueItem> xmlGenerator) throws IOException {
-					throw new RuntimeException("not implemented");
+					xmlGenerator.generateXmlFromCollection(source.buildingQueue);
 				}
 			});
+        	
             addNode(GoodsContainer.class, "goodsContainer");
             addNodeForMapIdEntities("buildings", Building.class);
             addNodeForMapIdEntities("colonyTiles", ColonyTile.class);
@@ -1094,15 +1104,15 @@ public class Colony extends Settlement {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String strAttribute = attr.getStrAttribute("settlementType");
-            Player owner = game.players.getById(attr.getStrAttribute("owner"));
+            String strAttribute = attr.getStrAttribute(ATTR_SETTLEMENT_TYPE);
+            Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             
-            Colony colony = new Colony(attr.getStrAttribute("id"));
-            colony.name = attr.getStrAttribute("name");
-            colony.sonsOfLiberty = attr.getIntAttribute("sonsOfLiberty", 0);
-            colony.tories = attr.getIntAttribute("tories", 0);
-            colony.productionBonus = attr.getIntAttribute("productionBonus", 0);
-            colony.liberty = attr.getIntAttribute("liberty", 0);
+            Colony colony = new Colony(attr.getStrAttribute(ATTR_ID));
+            colony.name = attr.getStrAttribute(ATTR_NAME);
+            colony.sonsOfLiberty = attr.getIntAttribute(ATTR_SONS_OF_LIBERTY, 0);
+            colony.tories = attr.getIntAttribute(ATTR_TORIES, 0);
+            colony.productionBonus = attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0);
+            colony.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             colony.owner = owner;
             colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);
@@ -1113,9 +1123,23 @@ public class Colony extends Settlement {
         @Override
         public void endElement(String uri, String localName, String qName) throws SAXException {
         	if (qName.equals(tagName())) {
-        		((Colony)nodeObject).updateColonyPopulation();
-        		((Colony)nodeObject).updateColonyFeatures();
+        		nodeObject.updateColonyPopulation();
+        		nodeObject.updateColonyFeatures();
         	}
+        }
+        
+        @Override
+        public void startWriteAttr(Colony colony, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(colony);
+        	
+        	attr.set(ATTR_SETTLEMENT_TYPE, colony.settlementType);
+        	attr.set(ATTR_OWNER, colony.owner);
+            
+        	attr.set(ATTR_NAME, colony.name);
+        	attr.set(ATTR_SONS_OF_LIBERTY, colony.sonsOfLiberty, 0);
+        	attr.set(ATTR_TORIES, colony.tories, 0);
+        	attr.set(ATTR_PRODUCTION_BONUS, colony.productionBonus);
+        	attr.set(ATTR_LIBERTY, colony.liberty, 0);
         }
         
         @Override

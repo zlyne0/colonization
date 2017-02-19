@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.HashSet;
 import java.util.List;
 
@@ -9,6 +10,7 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Building extends ObjectWithId implements ProductionLocation {
@@ -165,21 +167,29 @@ public class Building extends ObjectWithId implements ProductionLocation {
 		this.buildingType = aBuildingType;
 	}
 	
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Building> {
 
-        public Xml() {
+        private static final String ATTR_BUILDING_TYPE = "buildingType";
+
+		public Xml() {
             addNodeForMapIdEntities("workers", Unit.class);
         }
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            String buildingTypeId = attr.getStrAttributeNotNull("buildingType");
+            String id = attr.getStrAttribute(ATTR_ID);
+            String buildingTypeId = attr.getStrAttributeNotNull(ATTR_BUILDING_TYPE);
             BuildingType buildingType = Specification.instance.buildingTypes.getById(buildingTypeId);
             Building b = new Building(id, buildingType);
             nodeObject = b;
         }
 
+        @Override
+        public void startWriteAttr(Building n, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(n);
+        	attr.set(ATTR_BUILDING_TYPE, n.buildingType);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

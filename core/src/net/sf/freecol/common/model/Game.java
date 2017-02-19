@@ -51,7 +51,7 @@ public class Game {
 		public Xml() {
 			addNode(Specification.class, "specification");
 			addNodeForMapIdEntities("players", Player.class);
-//			addNode(Map.class, "map");
+			addNode(Map.class, "map");
 		}
 		
 		@Override
