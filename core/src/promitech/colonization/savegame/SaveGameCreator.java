@@ -2,6 +2,7 @@ package promitech.colonization.savegame;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
@@ -45,12 +46,11 @@ public class SaveGameCreator {
 	};
 	
 	private XmlWriter xml;
-	private StringWriter strWriter;
 	private final XmlNodeAttributesWriter attrWriter;
 	
-	public SaveGameCreator() {
-		strWriter = new StringWriter();
-		xml = new XmlWriter(strWriter);
+	
+	public SaveGameCreator(Writer writer) {
+		xml = new XmlWriter(writer);
 		attrWriter = new XmlNodeAttributesWriter(xml);
 	}
 
@@ -58,7 +58,6 @@ public class SaveGameCreator {
 		generateXmlFromObj(obj, null, null);
 		
 		customeXmlGeneratorPool.clear();
-		System.out.println("xml = \n" + strWriter);
 	}
 	
 	protected void generateXmlFromObj(Object obj, XmlTagMetaData metaData, XmlNodeParser xmlParser) throws IOException {

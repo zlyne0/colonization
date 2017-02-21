@@ -35,10 +35,29 @@ public class SaveGameParser {
 
 		final SavedGame.Xml xmlSavedGame = new SavedGame.Xml();
 		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlSavedGame);
+
+		try {
+			saxParser.parse(read, df);
+		} finally {
+			read.close();
+		}
+		return xmlSavedGame.savedGame.game;
+	}
+	
+	public Game parse(InputStream is) throws IOException, ParserConfigurationException, SAXException {
+		loadDefaultSpecification();
+        
+		SAXParserFactory factory = SAXParserFactory.newInstance();
+		SAXParser saxParser = factory.newSAXParser();
+
+		final SavedGame.Xml xmlSavedGame = new SavedGame.Xml();
+		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlSavedGame);
 		
-		saxParser.parse(read, df);
-		read.close();
-		
+		try {
+			saxParser.parse(is, df);
+		} finally {
+			is.close();
+		}
 		return xmlSavedGame.savedGame.game;
 	}
 	

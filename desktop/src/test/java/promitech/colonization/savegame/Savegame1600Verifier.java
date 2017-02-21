@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
-import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -18,6 +17,7 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
@@ -35,28 +35,9 @@ import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+public class Savegame1600Verifier {
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-
-public class SaveGameParserTest {
-
-    @BeforeClass
-    public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
-    }
-    
-    @Test
-    public void canLoadSaveGame() throws Exception {
-        // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        
-        // when
-        Game game = saveGameParser.parse();
-
-        // then
+	public void verify(Game game) {
         verifySpecification(game);
         
         assertEquals("unit:6781", game.activeUnitId); 
@@ -75,8 +56,8 @@ public class SaveGameParserTest {
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
-    }
-
+	}
+	
 	private void verifyPlayer(Game game) {
 		Player player = game.players.getById("player:1");
 
@@ -324,6 +305,6 @@ public class SaveGameParserTest {
         assertNotNull(building.workers.getById("unit:6765"));
         assertNotNull(building.workers.getById("unit:6439"));
     }
-
-    
+	
+	
 }

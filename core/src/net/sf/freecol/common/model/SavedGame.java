@@ -3,13 +3,8 @@ package net.sf.freecol.common.model;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class SavedGame implements Identifiable {
+public class SavedGame {
 	public Game game;
-	
-	@Override
-	public String getId() {
-		throw new IllegalStateException("object without id");
-	}
 	
 	public static class Xml extends XmlNodeParser<SavedGame> {
 		public SavedGame savedGame = new SavedGame();
