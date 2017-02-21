@@ -2,25 +2,30 @@ package promitech.colonization.savegame;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.PrintWriter;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.TemporaryFolder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.SavedGame;
-import net.sf.freecol.common.model.x.XGame;
-import net.sf.freecol.common.model.x.XMap;
-import net.sf.freecol.common.model.x.XPlayer;
-import net.sf.freecol.common.model.x.XSavedGame;
-import net.sf.freecol.common.model.x.XSpecification;
-import net.sf.freecol.common.model.x.XTileType;
 
 public class SaveGameTest {
 
-
+	@Rule
+	public TemporaryFolder tempFolder = new TemporaryFolder();
+	
+	
     @BeforeClass
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
@@ -29,43 +34,39 @@ public class SaveGameTest {
 	@Before
 	public void setup() {
 	}
-	
-	@Test
-	public void canCreateSaveGameXml() throws Exception {
-		// given
-		
-		XSpecification xSpecification = new XSpecification();
-		xSpecification.addTileType(new XTileType("tileType:1"));
-		xSpecification.addTileType(new XTileType("tileType:2"));
-		xSpecification.addTileType(new XTileType("tileType:3"));
-		
-		XSavedGame savedGame = new XSavedGame();
-		savedGame.game = new XGame();
-		savedGame.game.setMap(new XMap());
-		savedGame.game.setSpecification(xSpecification);
-		savedGame.game.addPlayer(new XPlayer("player:1"));
-		savedGame.game.addPlayer(new XPlayer("player:2"));
-		
-		// when
-		new SaveGameCreator().generateXmlFrom(savedGame); 
-		
-		// then
-	}
 
 	@Test
-	public void canCreateXml() throws Exception {
+	public void canCreateXmlAndLoadIt() throws Exception {
 		// given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
-		
+		SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
+        Game jUnitGame = saveGameParser.parse();
         SavedGame savedGameObj = new SavedGame();
-        savedGameObj.game = game;
+        savedGameObj.game = jUnitGame;
+        
+        File tmpSaveFile = tempFolder.newFile();
+        System.out.println("tmp file " + tmpSaveFile);
         
 		// when
-        new SaveGameCreator().generateXmlFrom(savedGameObj);
-		
+        FileWriter saveXmlWriter = new FileWriter(tmpSaveFile);
+        new SaveGameCreator(saveXmlWriter).generateXmlFrom(savedGameObj);
+        saveXmlWriter.close();
+        
+        Game loadedGame = new SaveGameParser("bla bla bla").parse(new FileInputStream(tmpSaveFile));
 		// then
 	
+        new Savegame1600Verifier().verify(loadedGame);
 	}
+	
+    @Test
+    public void canLoadSaveGame() throws Exception {
+        // given
+        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
+        
+        // when
+        Game game = saveGameParser.parse();
+
+        // then
+        new Savegame1600Verifier().verify(game);
+    }
 	
 }
