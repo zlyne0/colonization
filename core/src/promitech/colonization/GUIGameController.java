@@ -78,8 +78,7 @@ public class GUIGameController {
 	}
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
-        game = saveGameParser.parse();
+        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600.xml");
         game.playingPlayer = game.players.getById("player:1");
         game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);

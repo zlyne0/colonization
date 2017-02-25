@@ -127,7 +127,7 @@ public class SaveGameList {
 		FileHandle sgfh = Gdx.files.local(lastElement.fileName);
 		
 		try {
-			return new SaveGameParser("").parse(sgfh.read());
+			return SaveGameParser.loadGameFromFile(sgfh.file());
 		} catch (Exception e) {
 			throw new IllegalStateException(e);
 		}

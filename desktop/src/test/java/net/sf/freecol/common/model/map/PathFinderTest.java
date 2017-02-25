@@ -31,8 +31,7 @@ public class PathFinderTest {
 
     @Before
     public void setup() throws Exception {
-    	SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-    	game = saveGameParser.parse();
+    	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
     
 	@Test

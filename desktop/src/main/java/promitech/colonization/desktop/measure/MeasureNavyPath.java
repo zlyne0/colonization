@@ -31,8 +31,7 @@ public class MeasureNavyPath implements MeasureTask {
     
     public void before() throws Exception {
         Gdx.files = new LwjglFiles();
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        game = saveGameParser.parse();
+        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 
         // init map
         startTile = game.map.getTile(12, 79);

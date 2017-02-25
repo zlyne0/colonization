@@ -1,5 +1,8 @@
 package promitech.colonization.savegame;
 
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -18,33 +21,21 @@ import net.sf.freecol.common.model.Specification;
 
 public class SaveGameParser {
 
-	private String saveGameFileName;
+	public static Game loadGameFormClassPath(String classPathFileName) throws IOException, ParserConfigurationException, SAXException {
+		FileHandle fh = Gdx.files.internal(classPathFileName);
+		InputStream read = fh.read();
+		
+		SaveGameParser s = new SaveGameParser();
+		
+		return s.parse(read);
+	}
 	
-	public SaveGameParser(String saveGameFileName) {
-	    this.saveGameFileName = saveGameFileName;
+	public static Game loadGameFromFile(File saveFile) throws FileNotFoundException, IOException, ParserConfigurationException, SAXException {
+		SaveGameParser s = new SaveGameParser();
+		return s.parse(new FileInputStream(saveFile));
 	}
 	
 	public SaveGameParser() {
-	}
-	
-	public Game parse() throws IOException, ParserConfigurationException, SAXException {
-		loadDefaultSpecification();
-        FileHandle fh = Gdx.files.internal(saveGameFileName);
-        
-		InputStream read = fh.read();
-		
-		SAXParserFactory factory = SAXParserFactory.newInstance();
-		SAXParser saxParser = factory.newSAXParser();
-
-		final SavedGame.Xml xmlSavedGame = new SavedGame.Xml();
-		SaveGameSaxXmlDefaultHandler df = new SaveGameSaxXmlDefaultHandler(xmlSavedGame);
-
-		try {
-			saxParser.parse(read, df);
-		} finally {
-			read.close();
-		}
-		return xmlSavedGame.savedGame.game;
 	}
 	
 	public Game parse(InputStream is) throws IOException, ParserConfigurationException, SAXException {

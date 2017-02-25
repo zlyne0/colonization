@@ -1,12 +1,7 @@
 package promitech.colonization.savegame;
 
-import static org.junit.Assert.*;
-
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.FileWriter;
-import java.io.PrintWriter;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,8 +33,7 @@ public class SaveGameTest {
 	@Test
 	public void canCreateXmlAndLoadIt() throws Exception {
 		// given
-		SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game jUnitGame = saveGameParser.parse();
+        Game jUnitGame = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         SavedGame savedGameObj = new SavedGame();
         savedGameObj.game = jUnitGame;
         
@@ -51,7 +45,7 @@ public class SaveGameTest {
         new SaveGameCreator(saveXmlWriter).generateXmlFrom(savedGameObj);
         saveXmlWriter.close();
         
-        Game loadedGame = new SaveGameParser("bla bla bla").parse(new FileInputStream(tmpSaveFile));
+        Game loadedGame = SaveGameParser.loadGameFromFile(tmpSaveFile);
 		// then
 	
         new Savegame1600Verifier().verify(loadedGame);
@@ -60,10 +54,9 @@ public class SaveGameTest {
     @Test
     public void canLoadSaveGame() throws Exception {
         // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        
-        // when
-        Game game = saveGameParser.parse();
+
+    	// when
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 
         // then
         new Savegame1600Verifier().verify(game);

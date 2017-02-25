@@ -24,8 +24,7 @@ public class HighSeasTest {
     @Test
     public void canCalculateSailTurnsWithoutFerdinandMagellan() throws Exception {
         // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         
         Player player = game.players.getById("player:1");
         assertNull("should not have father", player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN));
@@ -42,8 +41,7 @@ public class HighSeasTest {
     @Test
     public void canCalculateSailTurnsWithFerdinandMagellan() throws Exception {
         // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 
         Player player = game.players.getById("player:1");
         if (player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN) == null) {
