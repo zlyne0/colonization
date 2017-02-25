@@ -1,17 +1,17 @@
 package promitech.colonization.savegame;
 
 import java.io.IOException;
-import java.io.StringWriter;
 import java.io.Writer;
 import java.lang.reflect.Field;
 import java.util.Collection;
 
-import com.badlogic.gdx.utils.XmlWriter;
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pool.Poolable;
+import com.badlogic.gdx.utils.XmlWriter;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.SavedGame;
 
 public class SaveGameCreator {
 
@@ -54,8 +54,10 @@ public class SaveGameCreator {
 		attrWriter = new XmlNodeAttributesWriter(xml);
 	}
 
-	public void generateXmlFrom(Object obj) throws IOException {
-		generateXmlFromObj(obj, null, null);
+	public void generateXmlFrom(SavedGame savedGame) throws IOException {
+		XmlNodeParser.game = savedGame.game;
+		generateXmlFromObj(savedGame, null, null);
+		XmlNodeParser.game = null;
 		
 		customeXmlGeneratorPool.clear();
 	}

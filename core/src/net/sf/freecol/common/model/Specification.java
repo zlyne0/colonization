@@ -286,6 +286,7 @@ public class Specification {
 	}
 	
 	public void updateOptionsFromDifficultyLevel(String difficultyLevel) {
+		Specification.instance.difficultyLevel = difficultyLevel;
         options.flattenOptionsEntriesTree(difficultyLevel);
         Specification.instance.updateReferences();
 	}

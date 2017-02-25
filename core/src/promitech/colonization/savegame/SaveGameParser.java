@@ -24,6 +24,9 @@ public class SaveGameParser {
 	    this.saveGameFileName = saveGameFileName;
 	}
 	
+	public SaveGameParser() {
+	}
+	
 	public Game parse() throws IOException, ParserConfigurationException, SAXException {
 		loadDefaultSpecification();
         FileHandle fh = Gdx.files.internal(saveGameFileName);

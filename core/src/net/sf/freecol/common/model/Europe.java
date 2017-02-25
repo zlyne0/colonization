@@ -86,6 +86,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         this.owner = owner;
     }
 	
+    public boolean hasOwner() {
+    	return owner != null;
+    }
+    
     public int getNextImmigrantTurns() {
         int production = penalizedImmigration(owner.getImmigrationProduction());
         int turns = 100;

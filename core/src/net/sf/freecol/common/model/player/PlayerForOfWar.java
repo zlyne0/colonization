@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model.player;
 
-import java.util.Collection;
-
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -42,33 +40,35 @@ public class PlayerForOfWar {
     public void resetFogOfWar(Player player) {
         fogOfWar.reset(true);
         
-        fogOfWarForUnits(player.units.entities());
-        fogOfWarForSettlements(player.settlements.entities());
+        fogOfWarForUnits(player);
+        fogOfWarForSettlements(player);
     }
 
-    private void fogOfWarForSettlements(Collection<Settlement> settlements) {
-        for (Settlement settlement : settlements) {
+    private void fogOfWarForSettlements(Player player) {
+        for (Settlement settlement : player.settlements.entities()) {
             int visibleRadius = settlement.settlementType.getVisibleRadius();
-            initFogOfWarForNeighboursTiles(settlement.tile, visibleRadius);
+            initFogOfWarForNeighboursTiles(player, settlement.tile, visibleRadius);
         }
     }
 
-    private void fogOfWarForUnits(Collection<Unit> units) {
-        for (Unit unit : units) {
+    private void fogOfWarForUnits(Player player) {
+        for (Unit unit : player.units.entities()) {
         	Tile unitTile = unit.getTileLocationOrNull();
         	if (unitTile == null) {
         		continue;
         	}
             int radius = unit.lineOfSight();
-            initFogOfWarForNeighboursTiles(unitTile, radius);
+            initFogOfWarForNeighboursTiles(player, unitTile, radius);
         }
     }
     
-    private void initFogOfWarForNeighboursTiles(Tile tile, int radius) {
+    private void initFogOfWarForNeighboursTiles(Player player, Tile tile, int radius) {
         removeFogOfWar(tile);
         spiralIterator.reset(tile.x, tile.y, true, radius);
         while (spiralIterator.hasNext()) {
-            removeFogOfWar(spiralIterator.getX(), spiralIterator.getY());
+        	if (player.isTileExplored(spiralIterator.getX(), spiralIterator.getY())) {
+        		removeFogOfWar(spiralIterator.getX(), spiralIterator.getY());
+        	}
             spiralIterator.next();
         }
     }

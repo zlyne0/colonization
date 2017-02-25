@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -15,6 +17,7 @@ public class Game {
 	private Specification specification;
 	public Map map;
 	public Player playingPlayer;
+	private String currentPlayerStr;
 	public final MapIdEntities<Player> players = MapIdEntities.linkedMapIdEntities();
 
 	public static IdGenerator idGenerator;
@@ -43,7 +46,16 @@ public class Game {
 		return nationsIds;
 	}
     
+	private void setPlayingPlayer() {
+		this.playingPlayer = players.getById(currentPlayerStr);
+	}
+
+	public void setSpecification(Specification specification) {
+		this.specification = specification;
+	}
+	
 	public static class Xml extends XmlNodeParser<Game> {
+		private static final String ATTR_CURRENT_PLAYER = "currentPlayer";
 		private static final String NEXT_ID_ATTR = "nextId";
 		private static final String TURN_ATTR = "turn";
 		private static final String ACTIVE_UNIT_ATTR = "activeUnit";
@@ -61,6 +73,7 @@ public class Game {
 			Game game = new Game();
 			game.activeUnitId = attr.getStrAttribute(ACTIVE_UNIT_ATTR);
 			game.turn = new Turn(attr.getIntAttribute(TURN_ATTR));
+			game.currentPlayerStr = attr.getStrAttribute(ATTR_CURRENT_PLAYER);
 			
 			XmlNodeParser.game = game;
 			
@@ -72,6 +85,14 @@ public class Game {
 			attr.set(ACTIVE_UNIT_ATTR, game.activeUnitId);
 			attr.set(TURN_ATTR, game.turn.getNumber());
 			attr.set(NEXT_ID_ATTR, Game.idGenerator.idSequence);
+			attr.set(ATTR_CURRENT_PLAYER, game.playingPlayer);
+		}
+		
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if (getTagName().equals(qName)) {
+				nodeObject.setPlayingPlayer(); 
+			}
 		}
 		
 		@Override

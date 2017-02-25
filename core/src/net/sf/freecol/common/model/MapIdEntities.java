@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 
+import org.xml.sax.SAXException;
+
 import promitech.colonization.savegame.MapIdEntitySetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -175,6 +177,16 @@ public class MapIdEntities<T extends Identifiable> {
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
             entityXmlParser.startReadChildren(attr);
+        }
+        
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+        	entityXmlParser.endElement(uri, localName, qName);
+        }
+        
+        @Override
+        public void endReadChildren(String qName) {
+        	entityXmlParser.endReadChildren(qName);
         }
         
         public void setMap(XmlNodeParser parentXmlParser) {

@@ -40,8 +40,8 @@ public class Savegame1600Verifier {
 	public void verify(Game game) {
         verifySpecification(game);
         
-        assertEquals("unit:6781", game.activeUnitId); 
-        assertEquals(13, game.players.size());
+        assertEquals("unit:6781", game.activeUnitId);
+        verifyPlayers(game);
         
         Tile tile = game.map.getTile(31, 23);
         Unit tileUnit = tile.getUnits().getById("unit:6449");
@@ -58,6 +58,15 @@ public class Savegame1600Verifier {
         verifySettlementBuildingWorker(game);
 	}
 	
+	private void verifyPlayers(Game game) {
+        assertEquals(12, game.players.size());
+        for (Player player : game.players.entities()) {
+        	if (player.isColonial()) {
+        		assertThat(player.getEurope().hasOwner()).isTrue();
+        	}
+        }
+	}
+
 	private void verifyPlayer(Game game) {
 		Player player = game.players.getById("player:1");
 

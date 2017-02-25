@@ -3,6 +3,7 @@ package promitech.colonization.ui.hud;
 import java.util.EnumMap;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Event;
@@ -73,6 +74,8 @@ public class HudStage extends Stage {
 
     private ButtonActor acceptActionButton;
     private ButtonActor cancelActionButton;
+    
+    private ButtonActor exitActionButton;
     
     private final Group buttonsGroup = new Group();
     private boolean needUpdateButtonVisibility = true;
@@ -316,7 +319,11 @@ public class HudStage extends Stage {
     			gameController.centerOnActiveUnit();
     			return true;
     		}
-    		
+    		if (event.getListenerActor() == exitActionButton) {
+    			gameController.quickSaveGame();
+    			Gdx.app.exit();
+    			return true;
+    		}
     		return false;
     	}
     };	
@@ -371,7 +378,9 @@ public class HudStage extends Stage {
 
         cancelActionButton = new ButtonActor(shapeRenderer, "cancel");
         cancelActionButton.addListener(buttonsInputListener);
-        
+    
+        exitActionButton = new ButtonActor(shapeRenderer, "ESC");
+        exitActionButton.addListener(buttonsInputListener);
 	}
 
 	public void updateLayout() {
@@ -415,6 +424,9 @@ public class HudStage extends Stage {
 		acceptActionButton.setPosition(0, getHeight() / 2);
 		cancelActionButton.setSize(bw, bw);
 		cancelActionButton.setPosition(getWidth() - bw, getHeight() / 2);
+
+		exitActionButton.setSize(bw, bw);
+		exitActionButton.setPosition(0, getHeight() - bw);
 		
 		hudInfoPanel.layout();
 	}
@@ -529,6 +541,8 @@ public class HudStage extends Stage {
 			}
 			buttonsGroup.addActor(viewButton);
 			buttonsGroup.addActor(europeButton);
+			
+			buttonsGroup.addActor(exitActionButton);
         }
 		
         if (model.isCreateGotoPathMode()) {
