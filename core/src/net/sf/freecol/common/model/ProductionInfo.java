@@ -5,7 +5,7 @@ import java.util.Collection;
 import java.util.List;
 
 public class ProductionInfo {
-	private final List<Production> productions = new ArrayList<Production>();
+	public final List<Production> productions = new ArrayList<Production>();
     private final List<Production> unattendedProductions = new ArrayList<Production>();
     private final List<Production> attendedProductions = new ArrayList<Production>();
 	

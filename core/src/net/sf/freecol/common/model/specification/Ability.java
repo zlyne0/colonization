@@ -19,6 +19,7 @@
 
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,7 @@ import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
@@ -463,25 +465,38 @@ public final class Ability implements Identifiable {
         return sb.toString();
     }
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Ability> {
         
-    	public Xml() {
+		private static final String ATTR_SOURCE = "source";
+
+		public Xml() {
     		addNode(Scope.class, new ObjectFromNodeSetter<Ability, Scope>() {
 				@Override
 				public void set(Ability target, Scope entity) {
 					target.scopes.add(entity);
+				}
+				@Override
+				public void generateXml(Ability source, ChildObject2XmlCustomeHandler<Scope> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.scopes);
 				}
 			});
 		}
     	
         @Override
         public void startElement(XmlNodeAttributes attr) {
-        	Ability a = new Ability(attr.getStrAttribute("id"));
-        	a.source = attr.getStrAttribute("source");
-        	a.value = attr.getBooleanAttribute("value", true);
+        	Ability a = new Ability(attr.getStrAttribute(ATTR_ID));
+        	a.source = attr.getStrAttribute(ATTR_SOURCE);
+        	a.value = attr.getBooleanAttribute(ATTR_VALUE, true);
         	nodeObject = a;
         }
 
+        @Override
+        public void startWriteAttr(Ability a, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(a);
+        	attr.set(ATTR_SOURCE, a.source);
+        	attr.set(ATTR_VALUE, a.value);
+        }
+        
 		@Override
 		public String getTagName() {
 		    return tagName();

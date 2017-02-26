@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -14,6 +15,7 @@ import promitech.colonization.Direction;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Unit extends ObjectWithId implements UnitLocation {
@@ -851,48 +853,71 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Unit> {
         
-        public Xml() {
+        private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
+		private static final String ATTR_WORK_LEFT = "workLeft";
+		private static final String ATTR_DESTINATION_Y = "destinationY";
+		private static final String ATTR_DESTINATION_X = "destinationX";
+		private static final String ATTR_DESTINATION_TYPE = "destinationType";
+		private static final String ATTR_EXPERIENCE = "experience";
+		private static final String ATTR_NAME = "name";
+		private static final String ATTR_ROLE_COUNT = "roleCount";
+		private static final String ATTR_TREASURE_AMOUNT = "treasureAmount";
+		private static final String ATTR_VISIBLE_GOODS_COUNT = "visibleGoodsCount";
+		private static final String ATTR_HIT_POINTS = "hitPoints";
+		private static final String ATTR_MOVES_LEFT = "movesLeft";
+		private static final String ATTR_STATE = "state";
+		private static final String ATTR_OWNER = "owner";
+		private static final String ATTR_ROLE = "role";
+		private static final String ATTR_UNIT_TYPE = "unitType";
+
+		public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<Unit,Unit>() {
                 @Override
                 public void set(Unit actualUnit, Unit newUnit) {
                     newUnit.changeUnitLocation(actualUnit);
                 }
+				@Override
+				public void generateXml(Unit source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					if (source.unitContainer != null) {
+						xmlGenerator.generateXmlFromCollection(source.unitContainer.getUnits().entities());
+					}
+				}
             });
             addNode(GoodsContainer.class, "goodsContainer");
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String unitTypeStr = attr.getStrAttribute("unitType");
-            String unitRoleStr = attr.getStrAttribute("role");
-            String ownerStr = attr.getStrAttribute("owner");
+            String unitTypeStr = attr.getStrAttribute(ATTR_UNIT_TYPE);
+            String unitRoleStr = attr.getStrAttribute(ATTR_ROLE);
+            String ownerStr = attr.getStrAttribute(ATTR_OWNER);
             
             Unit unit = new Unit(
-        		attr.getStrAttribute("id"),
+        		attr.getStrAttribute(ATTR_ID),
         		Specification.instance.unitTypes.getById(unitTypeStr),
         		Specification.instance.unitRoles.getById(unitRoleStr),
         		game.players.getById(ownerStr)
             );
             
-            unit.state = attr.getEnumAttribute(UnitState.class, "state");
-            unit.movesLeft = attr.getIntAttribute("movesLeft");
-            unit.hitPoints = attr.getIntAttribute("hitPoints");
-            unit.visibleGoodsCount = attr.getIntAttribute("visibleGoodsCount", -1);
-            unit.treasureAmount = attr.getIntAttribute("treasureAmount", 0);
-            unit.roleCount = attr.getIntAttribute("roleCount", -1);
-            unit.name = attr.getStrAttribute("name");
-            unit.experience = attr.getIntAttribute("experience", 0);
+            unit.state = attr.getEnumAttribute(UnitState.class, ATTR_STATE);
+            unit.movesLeft = attr.getIntAttribute(ATTR_MOVES_LEFT);
+            unit.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS);
+            unit.visibleGoodsCount = attr.getIntAttribute(ATTR_VISIBLE_GOODS_COUNT, -1);
+            unit.treasureAmount = attr.getIntAttribute(ATTR_TREASURE_AMOUNT, 0);
+            unit.roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT, -1);
+            unit.name = attr.getStrAttribute(ATTR_NAME);
+            unit.experience = attr.getIntAttribute(ATTR_EXPERIENCE, 0);
             
-            unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, "destinationType");
+            unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, ATTR_DESTINATION_TYPE);
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {
-            	unit.destinationX = attr.getIntAttribute("destinationX");
-            	unit.destinationY = attr.getIntAttribute("destinationY");
+            	unit.destinationX = attr.getIntAttribute(ATTR_DESTINATION_X);
+            	unit.destinationY = attr.getIntAttribute(ATTR_DESTINATION_Y);
             }
             
-            unit.workLeft = attr.getIntAttribute("workLeft", -1);
-            String tileImprovementTypeId = attr.getStrAttribute("tileImprovementTypeId");
+            unit.workLeft = attr.getIntAttribute(ATTR_WORK_LEFT, -1);
+            String tileImprovementTypeId = attr.getStrAttribute(ATTR_TILE_IMPROVEMENT_TYPE_ID);
             if (tileImprovementTypeId != null) {
             	unit.tileImprovementType = Specification.instance.tileImprovementTypes.getById(tileImprovementTypeId);
             }
@@ -900,6 +925,33 @@ public class Unit extends ObjectWithId implements UnitLocation {
             nodeObject = unit;
         }
 
+        @Override
+        public void startWriteAttr(Unit unit, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(unit);
+
+        	attr.set(ATTR_UNIT_TYPE, unit.unitType);
+        	attr.set(ATTR_ROLE, unit.unitRole);
+        	attr.set(ATTR_OWNER, unit.owner);
+            
+        	attr.set(ATTR_STATE, unit.state);
+        	attr.set(ATTR_MOVES_LEFT, unit.movesLeft);
+        	attr.set(ATTR_HIT_POINTS, unit.hitPoints);
+        	attr.set(ATTR_VISIBLE_GOODS_COUNT, unit.visibleGoodsCount);
+        	attr.set(ATTR_TREASURE_AMOUNT, unit.treasureAmount);
+        	attr.set(ATTR_ROLE_COUNT, unit.roleCount);
+        	attr.set(ATTR_NAME, unit.name);
+        	attr.set(ATTR_EXPERIENCE, unit.experience);
+            
+        	attr.set(ATTR_DESTINATION_TYPE, unit.destinationType);
+            if (MoveDestinationType.TILE.equals(unit.destinationType)) {
+            	attr.set(ATTR_DESTINATION_X, unit.destinationX);
+            	attr.set(ATTR_DESTINATION_Y, unit.destinationY);
+            }
+            
+        	attr.set(ATTR_WORK_LEFT, unit.workLeft);
+        	attr.set(ATTR_TILE_IMPROVEMENT_TYPE_ID, unit.tileImprovementType);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

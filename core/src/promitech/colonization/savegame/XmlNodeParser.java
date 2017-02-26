@@ -1,22 +1,29 @@
 package promitech.colonization.savegame;
 
+import java.io.IOException;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 
-public abstract class XmlNodeParser {
+public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
+	
+	protected static final String ATTR_VALUE = "value";
+	protected static final String ATTR_ID = "id";
+	
     public static final int INFINITY = Integer.MAX_VALUE;
     public static final int UNDEFINED = Integer.MIN_VALUE;
 	public static final int UNLIMITED = -1;
     
     protected XmlTagMetaData xmlNodeMetaData;
-    private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new HashMap<String, XmlTagMetaData>();
+    private final java.util.Map<String, XmlTagMetaData> nodeMetaData = new LinkedHashMap<String, XmlTagMetaData>();
     private final java.util.Map<String, XmlNodeParser> nodeParserByTagName = new HashMap<String, XmlNodeParser>();
 	
-	public Identifiable nodeObject;
+	public NODE_ENTITY_CLASS nodeObject;
 	
 	// unique entities
 	protected static Game game;
@@ -24,21 +31,30 @@ public abstract class XmlNodeParser {
 	public XmlNodeParser() {
 	}
 	
+	public Collection<XmlTagMetaData> childrenNodeParsers() {
+		return nodeMetaData.values();
+	}
+	
 	public void addNode(XmlNodeParser node) {
 		nodeParserByTagName.put(node.getTagName(), node);
 	}
 
-	public void addNode(Class<? extends Identifiable> entityClass, String fieldName) {
-	    XmlTagFieldMetaData xmlTagFieldMetaData = new XmlTagFieldMetaData(entityClass, fieldName);
-	    nodeMetaData.put(xmlTagFieldMetaData.getTagName(), xmlTagFieldMetaData);
+	public <T> void addNode(Class<T> entityClass, String fieldName) {
+		XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, fieldName);
+	    nodeMetaData.put(xmlTagMetaData.getTagName(), xmlTagMetaData);
 	}
 	
-    public void addNode(String entityOverrideTagName, Class<? extends Identifiable> entityClass, String targetFieldName) {
+    public <T> void addNode(String entityOverrideTagName, Class<T> entityClass, String targetFieldName) {
         XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityOverrideTagName, entityClass, targetFieldName);
         nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
     }
+
+	public <T extends Identifiable> void addNode(String entityOverrideTagName, Class<? extends Identifiable> entityClass, ObjectFromNodeSetter<?,T> setter) {
+		XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityOverrideTagName, entityClass, setter);
+		nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
+	}	
 	
-	public <T extends Identifiable> void addNode(Class<T> entityClass, ObjectFromNodeSetter<?,T> setter) {
+	public <T> void addNode(Class<T> entityClass, ObjectFromNodeSetter<?,T> setter) {
 	    XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, setter);
 	    nodeMetaData.put(xmlTagMetaData.getTagName(), xmlTagMetaData);
 	}
@@ -105,5 +121,8 @@ public abstract class XmlNodeParser {
 	}
 	
 	public abstract String getTagName();
+
+	public void startWriteAttr(NODE_ENTITY_CLASS node, XmlNodeAttributesWriter attr) throws IOException {
+	}
 }
 

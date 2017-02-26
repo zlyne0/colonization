@@ -25,9 +25,7 @@ public class PlayerTest {
 	@Test
 	public void canDetermineWhetherRecruitUnitWithWilliamBrewster() throws Exception {
 		// given
-		
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 		
         Player player = game.players.getById("player:1");
         player.getFeatures().clear();
@@ -51,8 +49,7 @@ public class PlayerTest {
 	@Test
 	public void canDetermineWhetherRecruitUnitWithoutWilliamBrewster() throws Exception {
 		// given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 		
         Player player = game.players.getById("player:1");
         player.getFeatures().clear();

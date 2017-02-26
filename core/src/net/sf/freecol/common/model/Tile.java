@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -15,6 +16,7 @@ import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Tile implements UnitLocation, Identifiable {
@@ -445,33 +447,55 @@ public class Tile implements UnitLocation, Identifiable {
 		return ct.getWorker() != null;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Tile> {
 	    
+		private static final String ATTR_PLAYER = "player";
+		private static final String ELEMENT_CACHED_TILE = "cachedTile";
+		private static final String ATTR_OWNING_SETTLEMENT = "owningSettlement";
+		private static final String ATTR_OWNER = "owner";
+		private static final String ATTR_MOVE_TO_EUROPE = "moveToEurope";
+		private static final String ATTR_CONNECTED = "connected";
+		private static final String ATTR_Y = "y";
+		private static final String ATTR_X = "x";
+		private static final String ATTR_TYPE = "type";
+		private static final String ATTR_STYLE = "style";
+
 		public Xml() {
 			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
 				@Override
 				public void set(Tile target, CachedTile entity) {
 					entity.getPlayer().setTileAsExplored(target);
 				}
+				@Override
+				public void generateXml(Tile tile, ChildObject2XmlCustomeHandler<CachedTile> xmlGenerator) throws IOException {
+					// it's written in startWriteAttr, because easier
+				}
 			});
-		    addNode(TileItemContainer.class, new ObjectFromNodeSetter<Tile,TileItemContainer>() {
-                @Override
-                public void set(Tile target, TileItemContainer entity) {
-                    target.tileItemContainer = entity;
-                }
-            });
+			
+			addNode(TileItemContainer.class, "tileItemContainer");
 			addNode(Unit.class, new ObjectFromNodeSetter<Tile,Unit>() {
 	            @Override
 	            public void set(Tile tile, Unit unit) {
 	                unit.changeUnitLocation(tile);
 	            }
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.units.entities());
+				}
 	        });
+			
 			addNode(Colony.class, new ObjectFromNodeSetter<Tile,Colony>() {
                 @Override
                 public void set(Tile target, Colony entity) {
                     target.settlement = entity;
                     entity.tile = target;
                 }
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<Colony> xmlGenerator) throws IOException {
+					if (source.hasSettlement() && source.settlement.isColony()) {
+						xmlGenerator.generateXml((Colony)source.settlement);
+					}
+				}
             });
             addNode(IndianSettlement.class, new ObjectFromNodeSetter<Tile,IndianSettlement>() {
                 @Override
@@ -479,32 +503,61 @@ public class Tile implements UnitLocation, Identifiable {
                     target.settlement = entity;
                     entity.tile = target;
                 }
+				@Override
+				public void generateXml(Tile source, ChildObject2XmlCustomeHandler<IndianSettlement> xmlGenerator) throws IOException {
+					if (source.hasSettlement() && !source.settlement.isColony()) {
+						xmlGenerator.generateXml((IndianSettlement)source.settlement);
+					}
+				}
             });
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			int x = attr.getIntAttribute("x");
-			int y = attr.getIntAttribute("y");
+			int x = attr.getIntAttribute(ATTR_X);
+			int y = attr.getIntAttribute(ATTR_Y);
 			
-			String tileTypeStr = attr.getStrAttribute("type");
-			int tileStyle = attr.getIntAttribute("style");
-			String idStr = attr.getStrAttribute("id");
+			String tileTypeStr = attr.getStrAttribute(ATTR_TYPE);
+			int tileStyle = attr.getIntAttribute(ATTR_STYLE);
+			String idStr = attr.getStrAttribute(ATTR_ID);
 			
 			TileType tileType = Specification.instance.tileTypes.getById(tileTypeStr);
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
-			tile.connected = attr.getIntAttribute("connected", 0);
-			tile.moveToEurope = attr.getBooleanAttribute("moveToEurope", false);
+			tile.connected = attr.getIntAttribute(ATTR_CONNECTED, 0);
+			tile.moveToEurope = attr.getBooleanAttribute(ATTR_MOVE_TO_EUROPE, false);
 			
-			String ownerId = attr.getStrAttribute("owner");
+			String ownerId = attr.getStrAttribute(ATTR_OWNER);
 			if (ownerId != null) {
 				tile.owner = game.players.getById(ownerId);
 			}
-			tile.owningSettlement = attr.getStrAttribute("owningSettlement");
+			tile.owningSettlement = attr.getStrAttribute(ATTR_OWNING_SETTLEMENT);
 			
 			nodeObject = tile;
 		}
 
+		@Override
+		public void startWriteAttr(Tile tile, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(tile);
+
+			attr.set(ATTR_X, tile.x);
+			attr.set(ATTR_Y, tile.y);
+			attr.set(ATTR_TYPE, tile.type);
+			attr.set(ATTR_STYLE, tile.style);
+			
+			attr.set(ATTR_CONNECTED, tile.connected);
+			attr.set(ATTR_MOVE_TO_EUROPE, tile.moveToEurope);
+			attr.set(ATTR_OWNER, tile.owner);
+			attr.set(ATTR_OWNING_SETTLEMENT, tile.owningSettlement);
+			
+			for (Player player : game.players.entities()) {
+				if (player.isTileExplored(tile.x, tile.y)) {
+					attr.xml.element(ELEMENT_CACHED_TILE);
+					attr.set(ATTR_PLAYER, player);
+					attr.xml.pop();
+				}
+			}
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

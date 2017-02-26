@@ -1,10 +1,13 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitRole extends ObjectWithFeatures {
@@ -27,7 +30,7 @@ public class UnitRole extends ObjectWithFeatures {
 	
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
-	public final MapIdEntities<Goods> requiredGoods = new MapIdEntities<Goods>();
+	public final MapIdEntities<Goods> requiredGoods = MapIdEntities.linkedMapIdEntities();
 	private String downgradeRoleId;
 	private int maximumCount = DEFAULT_UNIT_ROLE_COUNT;
 	
@@ -88,28 +91,48 @@ public class UnitRole extends ObjectWithFeatures {
 		return maximumCount;
 	}
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<UnitRole> {
+		private static final String ELEMENT_REQUIRED_GOODS = "required-goods";
+		private static final String ATTR_MAXIMUM_COUNT = "maximumCount";
+		private static final String ATTR_DOWNGRADE = "downgrade";
+		private static final String ATTR_EXPERT_UNIT = "expertUnit";
+
 		public Xml() {
-            addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
-            addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-            addNode("required-ability", Ability.class, "requiredAbilities");
+			ObjectWithFeatures.Xml.abstractAddNodes(this);
 		}
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String idStr = attr.getStrAttribute("id");
-			UnitRole ur = new UnitRole(idStr);
-			ur.expertUnitTypeId = attr.getStrAttribute("expertUnit");
-			ur.downgradeRoleId = attr.getStrAttribute("downgrade");
-			ur.maximumCount = attr.getIntAttribute("maximumCount", DEFAULT_UNIT_ROLE_COUNT);
+			UnitRole ur = new UnitRole(attr.getStrAttribute(ATTR_ID));
+			ur.expertUnitTypeId = attr.getStrAttribute(ATTR_EXPERT_UNIT);
+			ur.downgradeRoleId = attr.getStrAttribute(ATTR_DOWNGRADE);
+			ur.maximumCount = attr.getIntAttribute(ATTR_MAXIMUM_COUNT, DEFAULT_UNIT_ROLE_COUNT);
 			nodeObject = ur;
 		}
 
 		@Override
 		public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals("required-goods")) {
-				Goods goods = new Goods(attr.getStrAttribute("id"), attr.getIntAttribute("value"));
-				((UnitRole)nodeObject).requiredGoods.add(goods);
+			if (attr.isQNameEquals(ELEMENT_REQUIRED_GOODS)) {
+				Goods goods = new Goods(attr.getStrAttribute(ATTR_ID), attr.getIntAttribute(ATTR_VALUE));
+				nodeObject.requiredGoods.add(goods);
+			}
+		}
+		
+		@Override
+		public void startWriteAttr(UnitRole ur, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(ur);
+
+			attr.set(ATTR_EXPERT_UNIT, ur.expertUnitTypeId);
+			attr.set(ATTR_DOWNGRADE, ur.downgradeRoleId);
+			attr.set(ATTR_MAXIMUM_COUNT, ur.maximumCount);
+			
+			if (ur.requiredGoods.isNotEmpty()) {
+				for (Goods reqGoods : ur.requiredGoods.entities()) {
+					attr.xml.element(ELEMENT_REQUIRED_GOODS);
+					attr.set(ATTR_ID, reqGoods.getId());
+					attr.set(ATTR_VALUE, reqGoods.getAmount());
+					attr.xml.pop();
+				}
 			}
 		}
 		

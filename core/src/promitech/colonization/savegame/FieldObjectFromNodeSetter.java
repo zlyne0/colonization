@@ -1,10 +1,9 @@
 package promitech.colonization.savegame;
 
+import java.io.IOException;
 import java.lang.reflect.Field;
 
-import net.sf.freecol.common.model.Identifiable;
-
-public class FieldObjectFromNodeSetter implements ObjectFromNodeSetter {
+public class FieldObjectFromNodeSetter<T,R> implements ObjectFromNodeSetter<T,R> {
     private String targetFieldName;
     
     public FieldObjectFromNodeSetter(String targetFieldName) {
@@ -12,7 +11,7 @@ public class FieldObjectFromNodeSetter implements ObjectFromNodeSetter {
     }
     
     @Override
-    public void set(Identifiable target, Identifiable entity) {
+    public void set(T target, R entity) {
         try {
             Field field = target.getClass().getDeclaredField(targetFieldName);
             field.setAccessible(true);
@@ -21,5 +20,10 @@ public class FieldObjectFromNodeSetter implements ObjectFromNodeSetter {
             throw new IllegalStateException(e);
         }
     }
+
+	@Override
+	public void generateXml(T source, ChildObject2XmlCustomeHandler<R> xmlGenerator) throws IOException {
+		throw new RuntimeException("not implemented");
+	}
     
 }

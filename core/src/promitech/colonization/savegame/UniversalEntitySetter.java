@@ -7,14 +7,20 @@ import net.sf.freecol.common.model.MapIdEntities;
 
 public class UniversalEntitySetter {
 
-    public static void set(Object targetObject, String targetFieldName, Identifiable entity) {
+    public static void set(Object targetObject, String targetFieldName, Object entity) {
         
         try {
-            Field field = targetObject.getClass().getField(targetFieldName);
+        	// it gets fields from superclasses but only public
+            //Field field = targetObject.getClass().getField(targetFieldName);
+            
+        	// getDeclaredField does not get fields from superclasses 
+        	Field field = targetObject.getClass().getDeclaredField(targetFieldName);
+            field.setAccessible(true);
+            
             
             if (MapIdEntities.class.equals(field.getType())) {
                 MapIdEntities map = (MapIdEntities)field.get(targetObject);
-                map.add(entity);
+                map.add((Identifiable)entity);
             } else {
             	if (entity.getClass().equals(field.getType())) {
             		field.set(targetObject, entity);

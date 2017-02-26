@@ -1,12 +1,15 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianSettlement extends Settlement {
@@ -83,15 +86,23 @@ public class IndianSettlement extends Settlement {
         return missionary != null;
     }
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<IndianSettlement> {
 
-        @Override
+        private static final String ATTR_LEVEL = "level";
+		private static final String ATTR_PLAYER = "player";
+		private static final String ELEMENT_ALARM = "alarm";
+		private static final String ELEMENT_CONTACT_LEVEL = "contactLevel";
+		private static final String ATTR_SETTLEMENT_TYPE = "settlementType";
+		private static final String ATTR_OWNER = "owner";
+		private static final String ATTR_NAME = "name";
+
+		@Override
         public void startElement(XmlNodeAttributes attr) {
-            IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull("id"));
-            is.name = attr.getStrAttribute("name");
-            Player owner = game.players.getById(attr.getStrAttribute("owner"));
+            IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull(ATTR_ID));
+            is.name = attr.getStrAttribute(ATTR_NAME);
+            Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             is.owner = owner;
-            is.settlementType = owner.nationType().settlementTypes.getById(attr.getStrAttribute("settlementType"));
+            is.settlementType = owner.nationType().settlementTypes.getById(attr.getStrAttribute(ATTR_SETTLEMENT_TYPE));
             
             owner.settlements.add(is);
             
@@ -100,18 +111,39 @@ public class IndianSettlement extends Settlement {
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("contactLevel")) {
-        		((IndianSettlement)nodeObject).contactLevelByPlayer.put(
-    				attr.getStrAttribute("player"), 
-    				attr.getEnumAttribute(ContactLevel.class, "level")
+        	if (attr.isQNameEquals(ELEMENT_CONTACT_LEVEL)) {
+        		nodeObject.contactLevelByPlayer.put(
+    				attr.getStrAttribute(ATTR_PLAYER), 
+    				attr.getEnumAttribute(ContactLevel.class, ATTR_LEVEL)
         		);
         	}
-        	if (attr.isQNameEquals("alarm")) {
-        		((IndianSettlement)nodeObject).tensionByPlayer.put(
-        			attr.getStrAttribute("player"), 
-        			new Tension(attr.getIntAttribute("value"))
+        	if (attr.isQNameEquals(ELEMENT_ALARM)) {
+        		nodeObject.tensionByPlayer.put(
+        			attr.getStrAttribute(ATTR_PLAYER), 
+        			new Tension(attr.getIntAttribute(ATTR_VALUE))
         		);
         	}
+        }
+        
+        @Override
+        public void startWriteAttr(IndianSettlement is, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(is);
+        	attr.set(ATTR_NAME, is.name);
+        	attr.set(ATTR_OWNER, is.owner);
+        	attr.set(ATTR_SETTLEMENT_TYPE, is.settlementType);
+        	
+        	for (Entry<String, ContactLevel> contactEntry : is.contactLevelByPlayer.entrySet()) {
+				attr.xml.element(ELEMENT_CONTACT_LEVEL);
+				attr.set(ATTR_PLAYER, contactEntry.getKey());
+				attr.set(ATTR_LEVEL, contactEntry.getValue());
+				attr.xml.pop();
+			}
+        	for (Entry<String, Tension> tensionEntry : is.tensionByPlayer.entrySet()) {
+				attr.xml.element(ELEMENT_ALARM);
+				attr.set(ATTR_PLAYER, tensionEntry.getKey());
+				attr.set(ATTR_VALUE, tensionEntry.getValue().getValue());
+				attr.xml.pop();
+			}
         }
         
         @Override

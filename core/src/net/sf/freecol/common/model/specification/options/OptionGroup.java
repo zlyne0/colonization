@@ -1,14 +1,17 @@
 package net.sf.freecol.common.model.specification.options;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class OptionGroup extends ObjectWithId {
 
-    public final MapIdEntities<OptionGroup> optionsGroup = new MapIdEntities<OptionGroup>();
-    public final MapIdEntities<ObjectWithId> abstractOptions = new MapIdEntities<ObjectWithId>();
+    public final MapIdEntities<OptionGroup> optionsGroup = MapIdEntities.linkedMapIdEntities();
+    public final MapIdEntities<ObjectWithId> abstractOptions = MapIdEntities.linkedMapIdEntities();
     
     private boolean editable = false;
     
@@ -26,27 +29,36 @@ public class OptionGroup extends ObjectWithId {
         return option.getValue();
     }
     
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<OptionGroup> {
         
-        public Xml() {
-            addNodeForMapIdEntities("optionsGroup", OptionGroup.class);
+        private static final String ATTR_EDITABLE = "editable";
 
+		public Xml() {
+            addNodeForMapIdEntities("optionsGroup", OptionGroup.class);
+            
             addNodeForMapIdEntities("abstractOptions", IntegerOption.class);
             addNodeForMapIdEntities("abstractOptions", StringOption.class);
             addNodeForMapIdEntities("abstractOptions", BooleanOption.class);
             addNodeForMapIdEntities("abstractOptions", RangeOption.class);
+            addNodeForMapIdEntities("abstractOptions", PercentageOption.class);
             addNodeForMapIdEntities("abstractOptions", SelectOption.class);
             addNodeForMapIdEntities("abstractOptions", UnitListOption.class);
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
+            String id = attr.getStrAttribute(ATTR_ID);
             OptionGroup optionGroup = new OptionGroup(id);
-            optionGroup.editable = attr.getBooleanAttribute("editable", false);
+            optionGroup.editable = attr.getBooleanAttribute(ATTR_EDITABLE, false);
             nodeObject = optionGroup;
         }
 
+        @Override
+        public void startWriteAttr(OptionGroup og, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(og);
+        	attr.set(ATTR_EDITABLE, og.editable);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

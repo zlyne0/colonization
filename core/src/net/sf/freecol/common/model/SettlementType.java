@@ -19,7 +19,10 @@
 
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 
@@ -172,27 +175,59 @@ public class SettlementType extends ObjectWithFeatures {
         return convertThreshold;
     }
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<SettlementType> {
 
+    	private static final String ATTR_CONVERT_THRESHOLD = "convertThreshold";
+		private static final String ATTR_TRADE_BONUS = "tradeBonus";
+		private static final String ATTR_MAXIMUM_GROWTH = "maximumGrowth";
+		private static final String ATTR_MINIMUM_GROWTH = "minimumGrowth";
+		private static final String ATTR_WANDERING_RADIUS = "wanderingRadius";
+		private static final String ATTR_EXTRA_CLAIMABLE_RADIUS = "extraClaimableRadius";
+		private static final String ATTR_CLAIMABLE_RADIUS = "claimableRadius";
+		private static final String ATTR_VISIBLE_RADIUS = "visibleRadius";
+		private static final String ATTR_MAXIMUM_SIZE = "maximumSize";
+		private static final String ATTR_MINIMUM_SIZE = "minimumSize";
+		private static final String ATTR_CAPITAL = "capital";
+
+		public Xml() {
+    	}
+    	
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            SettlementType settlementType = new SettlementType(attr.getStrAttribute("id"));
+            SettlementType settlementType = new SettlementType(attr.getStrAttribute(ATTR_ID));
             
-            settlementType.capital = attr.getBooleanAttribute("capital", false);
-            settlementType.minimumSize = attr.getIntAttribute("minimumSize", 6);
-            settlementType.maximumSize = attr.getIntAttribute("maximumSize", 8);
-            settlementType.visibleRadius = attr.getIntAttribute("visibleRadius", 2); 
-            settlementType.claimableRadius = attr.getIntAttribute("claimableRadius", 1); 
-            settlementType.extraClaimableRadius = attr.getIntAttribute("extraClaimableRadius", 2); 
-            settlementType.wanderingRadius = attr.getIntAttribute("wanderingRadius", 4); 
-            settlementType.minimumGrowth = attr.getIntAttribute("minimumGrowth", 1); 
-            settlementType.maximumGrowth = attr.getIntAttribute("maximumGrowth", 8); 
-            settlementType.tradeBonus = attr.getIntAttribute("tradeBonus", 2); 
-            settlementType.convertThreshold = attr.getIntAttribute("convertThreshold", 100);
+            settlementType.capital = attr.getBooleanAttribute(ATTR_CAPITAL, false);
+            settlementType.minimumSize = attr.getIntAttribute(ATTR_MINIMUM_SIZE, 6);
+            settlementType.maximumSize = attr.getIntAttribute(ATTR_MAXIMUM_SIZE, 8);
+            settlementType.visibleRadius = attr.getIntAttribute(ATTR_VISIBLE_RADIUS, 2); 
+            settlementType.claimableRadius = attr.getIntAttribute(ATTR_CLAIMABLE_RADIUS, 1); 
+            settlementType.extraClaimableRadius = attr.getIntAttribute(ATTR_EXTRA_CLAIMABLE_RADIUS, 2); 
+            settlementType.wanderingRadius = attr.getIntAttribute(ATTR_WANDERING_RADIUS, 4); 
+            settlementType.minimumGrowth = attr.getIntAttribute(ATTR_MINIMUM_GROWTH, 1); 
+            settlementType.maximumGrowth = attr.getIntAttribute(ATTR_MAXIMUM_GROWTH, 8); 
+            settlementType.tradeBonus = attr.getIntAttribute(ATTR_TRADE_BONUS, 2); 
+            settlementType.convertThreshold = attr.getIntAttribute(ATTR_CONVERT_THRESHOLD, 100);
             
             nodeObject = settlementType;
         }
 
+        @Override
+        public void startWriteAttr(SettlementType settlementType, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(settlementType);
+
+        	attr.set(ATTR_CAPITAL, settlementType.capital);
+        	attr.set(ATTR_MINIMUM_SIZE, settlementType.minimumSize);
+        	attr.set(ATTR_MAXIMUM_SIZE, settlementType.maximumSize);
+        	attr.set(ATTR_VISIBLE_RADIUS, settlementType.visibleRadius);
+        	attr.set(ATTR_CLAIMABLE_RADIUS, settlementType.claimableRadius);
+        	attr.set(ATTR_EXTRA_CLAIMABLE_RADIUS, settlementType.extraClaimableRadius);
+        	attr.set(ATTR_WANDERING_RADIUS, settlementType.wanderingRadius);
+        	attr.set(ATTR_MINIMUM_GROWTH, settlementType.minimumGrowth);
+        	attr.set(ATTR_MAXIMUM_GROWTH, settlementType.maximumGrowth);
+        	attr.set(ATTR_TRADE_BONUS, settlementType.tradeBonus);
+        	attr.set(ATTR_CONVERT_THRESHOLD, settlementType.convertThreshold);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

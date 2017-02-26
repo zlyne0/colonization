@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -9,7 +8,6 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
-import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class ProductionSummary {

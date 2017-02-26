@@ -42,6 +42,7 @@ import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
+import promitech.colonization.savegame.SaveGameList;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;
@@ -77,8 +78,7 @@ public class GUIGameController {
 	}
 	
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600.xml");
-        game = saveGameParser.parse();
+        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600.xml");
         game.playingPlayer = game.players.getById("player:1");
         game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("game = " + game);
@@ -92,6 +92,7 @@ public class GUIGameController {
 		
 		Game.idGenerator = new IdGenerator(0);
 		game = new Game();
+		game.setSpecification(Specification.instance);
 		game.activeUnitId = null;
 		
 		game.playingPlayer = Player.newStartingPlayer(Game.idGenerator, Specification.instance.nations.getById("model.nation.french"));
@@ -111,6 +112,22 @@ public class GUIGameController {
 		game.map = new MapGenerator().generate(game.players);
 
 		postCreateGame();
+	}
+	
+	public void loadLastGame() throws IOException, ParserConfigurationException, SAXException {
+		SaveGameList saveGameList = new SaveGameList();
+		
+        game = saveGameList.loadLast();
+        if (game != null) {
+        	game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
+        	postCreateGame();
+        } else {
+        	initNewGame();
+        }
+	}
+	
+	public void quickSaveGame() {
+		new SaveGameList().saveAsQuick(game);
 	}
 	
 	private void postCreateGame() {
@@ -914,5 +931,4 @@ public class GUIGameController {
         mapActor.showTileDebugStrings(tileStrings);
 		
 	}
-	
 }

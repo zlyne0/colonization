@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -14,6 +15,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Monarch implements Identifiable {
@@ -64,9 +66,9 @@ public class Monarch implements Identifiable {
     private boolean supportSea = false;
     private boolean displeasure = false;
     
-    public ArmyForce expeditionaryForce;
-    public ArmyForce interventionForce;
-    public ArmyForce mercenaryForce;
+    private ArmyForce expeditionaryForce;
+    private ArmyForce interventionForce;
+    private ArmyForce mercenaryForce;
     
     public static Monarch newStartingMonarch(Player player) {
     	Monarch m = new Monarch();
@@ -374,9 +376,12 @@ public class Monarch implements Identifiable {
 		return mercenaryForce;
 	}
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Monarch> {
 
-        public Xml() {
+        private static final String ATTR_DISPLEASURE = "displeasure";
+		private static final String ATTR_SUPPORT_SEA = "supportSea";
+
+		public Xml() {
             addNode("expeditionaryForce", ArmyForce.class, "expeditionaryForce");
             addNode("interventionForce", ArmyForce.class, "interventionForce");
             addNode("mercenaryForce", ArmyForce.class, "mercenaryForce");
@@ -385,11 +390,17 @@ public class Monarch implements Identifiable {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             Monarch monarch = new Monarch();
-            monarch.supportSea = attr.getBooleanAttribute("supportSea", false);
-            monarch.displeasure = attr.getBooleanAttribute("displeasure", false);
+            monarch.supportSea = attr.getBooleanAttribute(ATTR_SUPPORT_SEA, false);
+            monarch.displeasure = attr.getBooleanAttribute(ATTR_DISPLEASURE, false);
             nodeObject = monarch;
         }
 
+        @Override
+        public void startWriteAttr(Monarch monarch, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.set(ATTR_SUPPORT_SEA, monarch.supportSea);
+        	attr.set(ATTR_DISPLEASURE, monarch.displeasure);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

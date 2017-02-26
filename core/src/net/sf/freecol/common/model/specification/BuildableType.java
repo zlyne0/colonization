@@ -1,14 +1,29 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
 import java.util.List;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public abstract class BuildableType extends ObjectWithFeatures {
 
+    private static final ObjectFromNodeSetter<BuildableType, RequiredGoods> REQUIRED_GOODS_NODE_SETTER = new ObjectFromNodeSetter<BuildableType, RequiredGoods>() {
+        @Override
+        public void set(BuildableType target, RequiredGoods entity) {
+        	target.requiredGoods.add(entity);
+        }
+		@Override
+		public void generateXml(BuildableType source, ChildObject2XmlCustomeHandler<RequiredGoods> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.requiredGoods.entities());
+		}
+    };
+	
+	
     /** The required population for an ordinary buildable. */
     private static final int DEFAULT_REQUIRED_POPULATION = 1;
 
@@ -45,17 +60,21 @@ public abstract class BuildableType extends ObjectWithFeatures {
 	}
 	
 	public static class Xml {
-		public static final String TAG_REQUIRED_POPULATION = "required-population";
+		protected static final String TAG_REQUIRED_POPULATION = "required-population";
 
-		public static void abstractAddNodes(XmlNodeParser nodeParser) {
+		public static void abstractAddNodes(XmlNodeParser<? extends BuildableType> nodeParser) {
         	ObjectWithFeatures.Xml.abstractAddNodes(nodeParser);
-			
-			nodeParser.addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
+        	nodeParser.addNode(RequiredGoods.class, REQUIRED_GOODS_NODE_SETTER);
 		}
 		
 		public static void abstractStartElement(XmlNodeAttributes attr, BuildableType bt) {
 			ObjectWithFeatures.Xml.abstractStartElement(attr, bt);
             bt.requiredPopulation = attr.getIntAttribute(TAG_REQUIRED_POPULATION, DEFAULT_REQUIRED_POPULATION);
+		}
+		
+		public static void abstractStartWriteAttr(BuildableType bt, XmlNodeAttributesWriter attr) throws IOException {
+			ObjectWithFeatures.Xml.abstractStartWriteAttr(bt, attr);
+			attr.set(TAG_REQUIRED_POPULATION, bt.requiredPopulation);
 		}
 	}
 }

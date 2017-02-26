@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
-import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
@@ -18,6 +17,7 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
@@ -35,32 +35,13 @@ import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+public class Savegame1600Verifier {
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-
-public class SaveGameParserTest {
-
-    @BeforeClass
-    public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
-    }
-    
-    @Test
-    public void canLoadSaveGame() throws Exception {
-        // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        
-        // when
-        Game game = saveGameParser.parse();
-
-        // then
+	public void verify(Game game) {
         verifySpecification(game);
         
-        assertEquals("unit:6781", game.activeUnitId); 
-        assertEquals(13, game.players.size());
+        assertEquals("unit:6781", game.activeUnitId);
+        verifyPlayers(game);
         
         Tile tile = game.map.getTile(31, 23);
         Unit tileUnit = tile.getUnits().getById("unit:6449");
@@ -75,7 +56,16 @@ public class SaveGameParserTest {
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
-    }
+	}
+	
+	private void verifyPlayers(Game game) {
+        assertEquals(12, game.players.size());
+        for (Player player : game.players.entities()) {
+        	if (player.isColonial()) {
+        		assertThat(player.getEurope().hasOwner()).isTrue();
+        	}
+        }
+	}
 
 	private void verifyPlayer(Game game) {
 		Player player = game.players.getById("player:1");
@@ -227,7 +217,7 @@ public class SaveGameParserTest {
 
     private void verifySpecificationUnitTypes(Specification specification) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
-    	assertEquals(1, unitType.requiredAbilities.size());
+    	assertEquals(1, unitType.requiredAbilitiesAmount());
     	
     	UnitType caravel = specification.unitTypes.getById("model.unit.caravel");
     	assertThat(caravel.getPrice()).isEqualTo(1000);
@@ -245,7 +235,7 @@ public class SaveGameParserTest {
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
         assertEquals(3, dragoonUnitRole.modifiersAmount());
         
-        assertEquals(3, dragoonUnitRole.requiredAbilities.size());
+        assertEquals(3, dragoonUnitRole.requiredAbilitiesAmount());
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
@@ -273,6 +263,9 @@ public class SaveGameParserTest {
         
         assertEquals(1000, other.getIntValue(GameOptions.STARTING_MONEY));
         assertEquals("veryHigh", other.getStringValue(GameOptions.TILE_PRODUCTION));
+    	
+        assertThat(Specification.options.getIntValue(GameOptions.BAD_RUMOUR)).isEqualTo(23);
+        assertThat(Specification.options.getIntValue(GameOptions.GOOD_RUMOUR)).isEqualTo(48);
     }
 
     private void verifyShipGoods(Game game, Specification specification) {
@@ -303,7 +296,7 @@ public class SaveGameParserTest {
         
         {
         	BuildingType furFactory = specification.buildingTypes.getById("model.building.furFactory");
-        	assertEquals(1, furFactory.requiredAbilities.size());
+        	assertEquals(1, furFactory.requiredAbilitiesAmount());
         	assertTrue(furFactory.hasRequiredAbility("model.ability.buildFactory", true));
         }
     }
@@ -324,6 +317,6 @@ public class SaveGameParserTest {
         assertNotNull(building.workers.getById("unit:6765"));
         assertNotNull(building.workers.getById("unit:6439"));
     }
-
-    
+	
+	
 }

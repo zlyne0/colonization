@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -10,6 +11,7 @@ import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class MonarchActionNotification implements Notification, Identifiable {
@@ -104,8 +106,16 @@ public class MonarchActionNotification implements Notification, Identifiable {
 				", tax = " + tax;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<MonarchActionNotification> {
 		
+		private static final String ATTR_PRICE = "price";
+		private static final String ATTR_MSG_BODY = "msgBody";
+		private static final String ATTR_TAX = "tax";
+		private static final String ATTR_GOODS_AMOUNT = "goodsAmount";
+		private static final String ATTR_GOODS_TYPE = "goodsType";
+		private static final String ATTR_COLONY_ID = "colonyId";
+		private static final String ATTR_ACTION = "action";
+
 		public Xml() {
 			addNode(ArmyForceAbstractUnit.class, new ObjectFromNodeSetter<MonarchActionNotification, ArmyForceAbstractUnit>() {
 				@Override
@@ -115,6 +125,12 @@ public class MonarchActionNotification implements Notification, Identifiable {
 					}
 					target.mercenaries.add(entity);
 				}
+				@Override
+				public void generateXml(MonarchActionNotification source, ChildObject2XmlCustomeHandler<ArmyForceAbstractUnit> xmlGenerator) throws IOException {
+					if (source.mercenaries != null) {
+						xmlGenerator.generateXmlFromCollection(source.mercenaries);
+					}
+				}
 			});
 		}
 		
@@ -122,25 +138,38 @@ public class MonarchActionNotification implements Notification, Identifiable {
 		public void startElement(XmlNodeAttributes attr) {
 			
 			MonarchActionNotification man = new MonarchActionNotification(
-				attr.getStrAttribute("id"),
-				attr.getEnumAttribute(MonarchAction.class, "action")
+				attr.getStrAttribute(ATTR_ID),
+				attr.getEnumAttribute(MonarchAction.class, ATTR_ACTION)
 			);
-			man.setColonyId(attr.getStrAttribute("colonyId"));
+			man.setColonyId(attr.getStrAttribute(ATTR_COLONY_ID));
 			
-			String goodsTypeId = attr.getStrAttribute("goodsType");
+			String goodsTypeId = attr.getStrAttribute(ATTR_GOODS_TYPE);
 			if (goodsTypeId != null) {
 				GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsTypeId);
 				man.setGoodsType(goodsType);
 			}
 			
-			man.setGoodsAmount(attr.getIntAttribute("goodsAmount", 0));
-			man.setTax(attr.getIntAttribute("tax", 0));
-			man.setMsgBody(attr.getStrAttribute("msgBody"));
-			man.price = attr.getIntAttribute("price", 0);
+			man.setGoodsAmount(attr.getIntAttribute(ATTR_GOODS_AMOUNT, 0));
+			man.setTax(attr.getIntAttribute(ATTR_TAX, 0));
+			man.setMsgBody(attr.getStrAttribute(ATTR_MSG_BODY));
+			man.price = attr.getIntAttribute(ATTR_PRICE, 0);
 			
 			nodeObject = man;
 		}
 
+		@Override
+		public void startWriteAttr(MonarchActionNotification man, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(man);
+			
+			attr.set(ATTR_ACTION, man.action);
+			attr.set(ATTR_COLONY_ID, man.colonyId);
+			attr.set(ATTR_GOODS_TYPE, man.goodsType);
+			attr.set(ATTR_GOODS_AMOUNT, man.goodsAmount);
+			attr.set(ATTR_TAX, man.tax);
+			attr.set(ATTR_MSG_BODY, man.msgBody);
+			attr.set(ATTR_PRICE, man.price);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

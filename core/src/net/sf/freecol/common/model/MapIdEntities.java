@@ -4,7 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+
+import org.xml.sax.SAXException;
 
 import promitech.colonization.savegame.MapIdEntitySetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -12,8 +15,21 @@ import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
 public class MapIdEntities<T extends Identifiable> {
-    protected java.util.Map<String,T> entities = new HashMap<String,T>();
+	
+    protected final java.util.Map<String,T> entities;
     protected List<T> sortedEntities; 
+
+    public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities() {
+    	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
+    }
+    
+    public MapIdEntities() {
+    	entities = new HashMap<String,T>();
+    }
+    
+    private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
+    	this.entities = entitiesMapImplementation;
+    }
     
     public void add(T entity) {
         if (entity instanceof ObjectWithId) {
@@ -126,7 +142,7 @@ public class MapIdEntities<T extends Identifiable> {
         public Xml(String wrapperTagName, String targetFieldName, Class<? extends Identifiable> entityClass) {
             this.withWrapperTag = true;
 
-            entityXmlParser = new XmlTagMetaData(entityClass, null).createXmlParser();
+            entityXmlParser = new XmlTagMetaData(entityClass).createXmlParser();
             this.tagName = wrapperTagName;
             
             entitySetter = new MapIdEntitySetter(targetFieldName);
@@ -137,7 +153,7 @@ public class MapIdEntities<T extends Identifiable> {
         public Xml(String targetFieldName, Class<? extends Identifiable> entityClass) {
             this.withWrapperTag = false;
             
-            entityXmlParser = new XmlTagMetaData(entityClass, null).createXmlParser();
+            entityXmlParser = new XmlTagMetaData(entityClass).createXmlParser();
             this.tagName = entityXmlParser.getTagName();
             
             entitySetter = new MapIdEntitySetter(targetFieldName);
@@ -161,6 +177,16 @@ public class MapIdEntities<T extends Identifiable> {
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
             entityXmlParser.startReadChildren(attr);
+        }
+        
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+        	entityXmlParser.endElement(uri, localName, qName);
+        }
+        
+        @Override
+        public void endReadChildren(String qName) {
+        	entityXmlParser.endReadChildren(qName);
         }
         
         public void setMap(XmlNodeParser parentXmlParser) {

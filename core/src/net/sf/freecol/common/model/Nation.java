@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
@@ -8,6 +9,7 @@ import net.sf.freecol.common.model.specification.NationType;
 import promitech.colonization.GameResources;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -79,21 +81,33 @@ public class Nation extends ObjectWithId {
         }
     }
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Nation> {
 		
+		private static final String ATTR_REF = "ref";
+		private static final String ATTR_COLOR = "color";
+		private static final String ATTR_NATION_TYPE = "nation-type";
+
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String nationTypeStr = attr.getStrAttribute("nation-type");
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
+			String nationTypeStr = attr.getStrAttribute(ATTR_NATION_TYPE);
 			NationType type = Specification.instance.nationTypes.getById(nationTypeStr);
 			
-			String colorStrVal = attr.getStrAttribute("color");
+			String colorStrVal = attr.getStrAttribute(ATTR_COLOR);
 			
             Nation nation = new Nation(id, type);
 			nation.color = GameResources.colorFromValue(colorStrVal);
-			nation.refId = attr.getStrAttribute("ref");
+			nation.refId = attr.getStrAttribute(ATTR_REF);
 			
 			nodeObject = nation;
+		}
+		
+		@Override
+		public void startWriteAttr(Nation nation, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(nation);
+			attr.set(ATTR_NATION_TYPE, nation.nationType);
+			attr.set(ATTR_COLOR, GameResources.colorToStr(nation.color));
+			attr.set(ATTR_REF, nation.refId);
 		}
 		
 		@Override

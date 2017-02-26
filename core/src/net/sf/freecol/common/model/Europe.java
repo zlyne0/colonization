@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -20,6 +21,7 @@ import net.sf.freecol.common.model.specification.options.UnitOption;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -84,6 +86,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         this.owner = owner;
     }
 	
+    public boolean hasOwner() {
+    	return owner != null;
+    }
+    
     public int getNextImmigrantTurns() {
         int production = penalizedImmigration(owner.getImmigrationProduction());
         int turns = 100;
@@ -272,9 +278,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		return price * amount;
 	}
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<Europe> {
 
-        public Xml() {
+        private static final String ELEMENT_RECRUIT = "recruit";
+		private static final String ATTR_RECRUIT_LOWER_CAP = "recruitLowerCap";
+		private static final String ATTR_RECRUIT_PRICE = "recruitPrice";
+
+		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
             addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
             
@@ -283,22 +293,38 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
                 public void set(Europe europe, Unit unit) {
                     unit.changeUnitLocation(europe);
                 }
+				@Override
+				public void generateXml(Europe source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+					xmlGenerator.generateXmlFromCollection(source.units.entities());
+				}
             });
         }
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
             Europe eu = new Europe();
-            eu.recruitPrice = attr.getIntAttribute("recruitPrice", RECRUIT_PRICE_INITIAL);
-            eu.recruitLowerCap = attr.getIntAttribute("recruitLowerCap", LOWER_CAP_INITIAL);
+            eu.recruitPrice = attr.getIntAttribute(ATTR_RECRUIT_PRICE, RECRUIT_PRICE_INITIAL);
+            eu.recruitLowerCap = attr.getIntAttribute(ATTR_RECRUIT_LOWER_CAP, LOWER_CAP_INITIAL);
             nodeObject = eu;
         }
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("recruit")) {
-        		UnitType unitType = Specification.instance.unitTypes.getById(attr.getStrAttribute("id"));
-        		((Europe)nodeObject).recruitables.add(unitType);
+        	if (attr.isQNameEquals(ELEMENT_RECRUIT)) {
+        		UnitType unitType = Specification.instance.unitTypes.getById(attr.getStrAttribute(ATTR_ID));
+        		nodeObject.recruitables.add(unitType);
+        	}
+        }
+        
+        @Override
+        public void startWriteAttr(Europe eu, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.set(ATTR_RECRUIT_PRICE, eu.recruitPrice);
+        	attr.set(ATTR_RECRUIT_LOWER_CAP, eu.recruitLowerCap);
+        	
+        	for (UnitType ut : eu.recruitables) {
+        		attr.xml.element(ELEMENT_RECRUIT);
+        		attr.set(ATTR_ID, ut);
+        		attr.xml.pop();
         	}
         }
         

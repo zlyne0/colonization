@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
+
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Colony;
@@ -15,6 +17,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Market extends ObjectWithId {
@@ -24,7 +27,7 @@ public class Market extends ObjectWithId {
 		void logPurchase(TransactionEffectOnMarket transaction);
 	}
 	
-	public final MapIdEntities<MarketData> marketGoods = new MapIdEntities<MarketData>();
+	public final MapIdEntities<MarketData> marketGoods = MapIdEntities.linkedMapIdEntities();
 	
 	// Propagate 5-30% of the original change.
 	private static final int PROPAGATED_GOODS_LOWER_BOUND = 5; 
@@ -248,18 +251,23 @@ public class Market extends ObjectWithId {
         }
     }
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<Market> {
 		public Xml() {
 			addNodeForMapIdEntities("marketGoods", MarketData.class);
 		}
 		
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			Market market = new Market(id);
 			nodeObject = market;
 		}
 
+		@Override
+		public void startWriteAttr(Market node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(node);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

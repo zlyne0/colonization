@@ -1,9 +1,12 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Market;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class GoodsType extends ObjectWithFeatures {
@@ -137,7 +140,19 @@ public class GoodsType extends ObjectWithFeatures {
         return food;
     }
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<GoodsType> {
+		private static final String MARKET_ELEMENT = "market";
+		private static final String ATTR_MADE_FROM = "made-from";
+		private static final String ATTR_PRICE = "price";
+		private static final String ATTR_BREEDING_NUMBER = "breeding-number";
+		private static final String ATTR_STORED_AS = "stored-as";
+		private static final String ATTR_STORABLE = "storable";
+		private static final String ATTR_TRADE_GOODS = "trade-goods";
+		private static final String ATTR_NEW_WORLD_GOODS = "new-world-goods";
+		private static final String ATTR_IGNORE_LIMIT = "ignore-limit";
+		private static final String ATTR_IS_MILITARY = "is-military";
+		private static final String ATTR_IS_FOOD = "is-food";
+		private static final String ATTR_IS_FARMED = "is-farmed";
 		private static final String PRICE_DIFFERENCE_TAG = "price-difference";
 		private static final String INITIAL_AMOUNT_TAG = "initial-amount";
 		private static final String INITIAL_PRICE_TAG = "initial-price";
@@ -148,20 +163,20 @@ public class GoodsType extends ObjectWithFeatures {
 		
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
+            String id = attr.getStrAttribute(ATTR_ID);
             GoodsType gt = new GoodsType(id);
-            gt.farmed = attr.getBooleanAttribute("is-farmed", false);
-            gt.food = attr.getBooleanAttribute("is-food", false);
-            gt.military = attr.getBooleanAttribute("is-military", false);
-            gt.ignoreLimit = attr.getBooleanAttribute("ignore-limit", false);
-            gt.newWorldGoods = attr.getBooleanAttribute("new-world-goods", false);
-            gt.tradeGoods = attr.getBooleanAttribute("trade-goods", false);
-            gt.storable = attr.getBooleanAttribute("storable", true);
-            gt.storedAs = attr.getStrAttribute("stored-as");
-            gt.breedingNumber = attr.getIntAttribute("breeding-number", 0);
-            gt.price = attr.getIntAttribute("price", 0);
+            gt.farmed = attr.getBooleanAttribute(ATTR_IS_FARMED, false);
+            gt.food = attr.getBooleanAttribute(ATTR_IS_FOOD, false);
+            gt.military = attr.getBooleanAttribute(ATTR_IS_MILITARY, false);
+            gt.ignoreLimit = attr.getBooleanAttribute(ATTR_IGNORE_LIMIT, false);
+            gt.newWorldGoods = attr.getBooleanAttribute(ATTR_NEW_WORLD_GOODS, false);
+            gt.tradeGoods = attr.getBooleanAttribute(ATTR_TRADE_GOODS, false);
+            gt.storable = attr.getBooleanAttribute(ATTR_STORABLE, true);
+            gt.storedAs = attr.getStrAttribute(ATTR_STORED_AS);
+            gt.breedingNumber = attr.getIntAttribute(ATTR_BREEDING_NUMBER, 0);
+            gt.price = attr.getIntAttribute(ATTR_PRICE, 0);
             
-            String madeFromStr = attr.getStrAttribute("made-from");
+            String madeFromStr = attr.getStrAttribute(ATTR_MADE_FROM);
             if (madeFromStr != null) {
             	gt.madeFrom = Specification.instance.goodsTypes.getById(madeFromStr);
             }
@@ -170,8 +185,35 @@ public class GoodsType extends ObjectWithFeatures {
         }
 
         @Override
+        public void startWriteAttr(GoodsType gt, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(gt);
+
+        	attr.set(ATTR_IS_FARMED, gt.farmed);
+        	attr.set(ATTR_IS_FOOD, gt.food);
+        	attr.set(ATTR_IS_MILITARY, gt.military);
+        	attr.set(ATTR_IGNORE_LIMIT, gt.ignoreLimit);
+        	attr.set(ATTR_NEW_WORLD_GOODS, gt.newWorldGoods);
+        	attr.set(ATTR_TRADE_GOODS, gt.tradeGoods);
+        	attr.set(ATTR_STORABLE, gt.storable);
+        	attr.set(ATTR_STORED_AS, gt.storedAs);
+        	attr.set(ATTR_BREEDING_NUMBER, gt.breedingNumber, 0);
+        	attr.set(ATTR_PRICE, gt.price, 0);
+        	if (gt.madeFrom != null) {
+        		attr.set(ATTR_MADE_FROM, gt.madeFrom.getId());
+        	}
+        	
+        	if (gt.initialAmount != 0 || gt.initialPrice != 1 || gt.priceDiff != 1) {
+        		attr.xml.element(MARKET_ELEMENT);
+        		attr.set(INITIAL_AMOUNT_TAG, gt.initialAmount);
+                attr.set(INITIAL_PRICE_TAG, gt.initialPrice);
+                attr.set(PRICE_DIFFERENCE_TAG, gt.priceDiff);
+        		attr.xml.pop();
+        	}
+        }
+        
+        @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("market")) {
+        	if (attr.isQNameEquals(MARKET_ELEMENT)) {
                 GoodsType gt = (GoodsType)nodeObject;
                 gt.initialAmount = attr.getIntAttribute(INITIAL_AMOUNT_TAG, 0);
                 gt.initialPrice = attr.getIntAttribute(INITIAL_PRICE_TAG, 1);

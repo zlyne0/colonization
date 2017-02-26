@@ -1,9 +1,12 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class MarketData extends ObjectWithId {
@@ -217,27 +220,48 @@ public class MarketData extends ObjectWithId {
 		return goodsType;
 	}
     
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<MarketData> {
+
+		private static final String ATTR_TRADED = "traded";
+		private static final String ATTR_INCOME_BEFORE_TAXES = "incomeBeforeTaxes";
+		private static final String ATTR_INCOME_AFTER_TAXES = "incomeAfterTaxes";
+		private static final String ATTR_SALES = "sales";
+		private static final String ATTR_ARREARS = "arrears";
+		private static final String ATTR_INITIAL_PRICE = "initialPrice";
+		private static final String ATTR_AMOUNT = "amount";
+		private static final String ATTR_GOODS_TYPE = "goods-type";
 
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			String goodsTypeStr = attr.getStrAttribute("goods-type");
+			String goodsTypeStr = attr.getStrAttribute(ATTR_GOODS_TYPE);
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsTypeStr);
 		
 			MarketData md = new MarketData(goodsType);
-			md.amountInMarket = attr.getIntAttribute("amount", 0);
-			md.initialPrice = attr.getIntAttribute("initialPrice", -1);
-			md.arrears = attr.getIntAttribute("arrears", 0);
-			md.sales = attr.getIntAttribute("sales", 0);
-			md.incomeAfterTaxes = attr.getIntAttribute("incomeAfterTaxes", 0);
-			md.incomeBeforeTaxes = attr.getIntAttribute("incomeBeforeTaxes", 0);
-			md.traded = attr.getBooleanAttribute("traded", md.sales != 0);
+			md.amountInMarket = attr.getIntAttribute(ATTR_AMOUNT, 0);
+			md.initialPrice = attr.getIntAttribute(ATTR_INITIAL_PRICE, -1);
+			md.arrears = attr.getIntAttribute(ATTR_ARREARS, 0);
+			md.sales = attr.getIntAttribute(ATTR_SALES, 0);
+			md.incomeAfterTaxes = attr.getIntAttribute(ATTR_INCOME_AFTER_TAXES, 0);
+			md.incomeBeforeTaxes = attr.getIntAttribute(ATTR_INCOME_BEFORE_TAXES, 0);
+			md.traded = attr.getBooleanAttribute(ATTR_TRADED, md.sales != 0);
 			
 	        md.update();
 			
 			nodeObject = md;
 		}
 
+		@Override
+		public void startWriteAttr(MarketData md, XmlNodeAttributesWriter attr) throws IOException {
+			attr.set(ATTR_GOODS_TYPE, md.goodsType);
+			attr.set(ATTR_AMOUNT, md.amountInMarket);
+			attr.set(ATTR_INITIAL_PRICE, md.initialPrice);
+			attr.set(ATTR_ARREARS, md.arrears);
+			attr.set(ATTR_SALES, md.sales);
+			attr.set(ATTR_INCOME_AFTER_TAXES, md.incomeAfterTaxes);
+			attr.set(ATTR_INCOME_BEFORE_TAXES, md.incomeBeforeTaxes);
+			attr.set(ATTR_TRADED, md.traded);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

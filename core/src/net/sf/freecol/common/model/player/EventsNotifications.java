@@ -1,16 +1,16 @@
 package net.sf.freecol.common.model.player;
 
+import java.io.IOException;
 import java.util.LinkedList;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Identifiable;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class EventsNotifications implements Identifiable {
+public class EventsNotifications {
 
     public static interface AddNotificationListener {
         public void onAddNotification(Notification notification);
@@ -19,11 +19,6 @@ public class EventsNotifications implements Identifiable {
 	private final LinkedList<Notification> notifications = new LinkedList<Notification>();
 	private AddNotificationListener addNotificationListener;
     
-	@Override
-	public String getId() {
-		throw new IllegalStateException("there is no id");
-	}
-
     public void addMessageNotificationAsFirst(Notification notification) {
         notifications.addFirst(notification);
         if (addNotificationListener != null) {
@@ -63,7 +58,7 @@ public class EventsNotifications implements Identifiable {
         return notifications;
     }
 	
-	public static final class Xml extends XmlNodeParser {
+	public static final class Xml extends XmlNodeParser<EventsNotifications> {
 
 		public Xml() {
 			addNode(MessageNotification.class, new ObjectFromNodeSetter<EventsNotifications, MessageNotification>() {
@@ -71,11 +66,27 @@ public class EventsNotifications implements Identifiable {
 				public void set(EventsNotifications target, MessageNotification entity) {
 					target.notifications.add(entity);
 				}
+				@Override
+				public void generateXml(EventsNotifications source, ChildObject2XmlCustomeHandler<MessageNotification> xmlGenerator) throws IOException {
+					for (Notification mn : source.notifications) {
+						if (mn instanceof MessageNotification) {
+							xmlGenerator.generateXml((MessageNotification)mn);
+						}
+					}
+				}
 			});
 			addNode(MonarchActionNotification.class, new ObjectFromNodeSetter<EventsNotifications, MonarchActionNotification>() {
 				@Override
 				public void set(EventsNotifications target, MonarchActionNotification entity) {
 					target.notifications.add(entity);
+				}
+				@Override
+				public void generateXml(EventsNotifications source, ChildObject2XmlCustomeHandler<MonarchActionNotification> xmlGenerator) throws IOException {
+					for (Notification mn : source.notifications) {
+						if (mn instanceof MonarchActionNotification) {
+							xmlGenerator.generateXml((MonarchActionNotification)mn);
+						}
+					}
 				}
 			});
 		}

@@ -1,7 +1,10 @@
 package net.sf.freecol.common.model.specification;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.ObjectWithId;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 class FoundingFatherEvent extends ObjectWithId {
@@ -12,15 +15,21 @@ class FoundingFatherEvent extends ObjectWithId {
         super(id);
     }
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<FoundingFatherEvent> {
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            FoundingFatherEvent ffe = new FoundingFatherEvent(attr.getStrAttributeNotNull("id"));
-            ffe.value = attr.getStrAttribute("value");
+            FoundingFatherEvent ffe = new FoundingFatherEvent(attr.getStrAttributeNotNull(ATTR_ID));
+            ffe.value = attr.getStrAttribute(ATTR_VALUE);
             nodeObject = ffe;
         }
 
+        @Override
+        public void startWriteAttr(FoundingFatherEvent ffe, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(ffe);
+        	attr.set(ATTR_VALUE, ffe.value);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

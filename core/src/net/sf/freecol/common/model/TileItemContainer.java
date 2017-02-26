@@ -1,20 +1,18 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class TileItemContainer implements Identifiable {
+public class TileItemContainer {
     
     public final MapIdEntities<TileImprovement> improvements = new MapIdEntities<TileImprovement>();
     public final MapIdEntities<TileResource> resources = new MapIdEntities<TileResource>();
     
     private boolean lostCityRumours = false;
-    
-    @Override
-    public String getId() {
-    	throw new IllegalStateException("object without id");
-    }
     
     public int getMoveCost(Direction moveDirection, int basicMoveCost) {
         int moveCost = basicMoveCost;
@@ -48,9 +46,11 @@ public class TileItemContainer implements Identifiable {
 		this.lostCityRumours = lostCityRumours;
 	}
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<TileItemContainer> {
         
-        public Xml() {
+        private static final String ELEMENT_LOST_CITY_RUMOUR = "lostCityRumour";
+
+		public Xml() {
             addNodeForMapIdEntities("improvements", TileImprovement.class);
             addNodeForMapIdEntities("resources", TileResource.class);
         }
@@ -63,8 +63,16 @@ public class TileItemContainer implements Identifiable {
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("lostCityRumour")) {
-        		((TileItemContainer)nodeObject).lostCityRumours = true;
+        	if (attr.isQNameEquals(ELEMENT_LOST_CITY_RUMOUR)) {
+        		nodeObject.lostCityRumours = true;
+        	}
+        }
+        
+        @Override
+        public void startWriteAttr(TileItemContainer tic, XmlNodeAttributesWriter attr) throws IOException {
+        	if (tic.lostCityRumours) {
+        		attr.xml.element(ELEMENT_LOST_CITY_RUMOUR)
+        			.pop();
         	}
         }
         

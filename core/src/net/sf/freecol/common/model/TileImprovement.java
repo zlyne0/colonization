@@ -1,9 +1,11 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.List;
 
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileImprovement implements Identifiable {
@@ -129,21 +131,36 @@ public class TileImprovement implements Identifiable {
         return sb.toString();
     }
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<TileImprovement> {
+
+		private static final String ATTR_TURNS = "turns";
+		private static final String ATTR_MAGNITUDE = "magnitude";
+		private static final String ATTR_STYLE = "style";
+		private static final String ATTR_TYPE = "type";
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String typeStr = attr.getStrAttribute("type");
-			String style = attr.getStrAttribute("style");
-			String id = attr.getStrAttribute("id");
+			String typeStr = attr.getStrAttribute(ATTR_TYPE);
+			String style = attr.getStrAttribute(ATTR_STYLE);
+			String id = attr.getStrAttribute(ATTR_ID);
 			TileImprovementType type = Specification.instance.tileImprovementTypes.getById(typeStr);
 			TileImprovement tileImprovement = new TileImprovement(id, type, style);
-			tileImprovement.magnitude = attr.getIntAttribute("magnitude", 0);
-			tileImprovement.turns = attr.getIntAttribute("turns");
+			tileImprovement.magnitude = attr.getIntAttribute(ATTR_MAGNITUDE, 0);
+			tileImprovement.turns = attr.getIntAttribute(ATTR_TURNS);
 			
 			nodeObject = tileImprovement;
 		}
 
+		@Override
+		public void startWriteAttr(TileImprovement ti, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(ti);
+
+			attr.set(ATTR_TYPE, ti.type);
+			attr.set(ATTR_STYLE, ti.style);
+			attr.set(ATTR_MAGNITUDE, ti.magnitude, 0);
+			attr.set(ATTR_TURNS, ti.turns);
+		}
+		
 		@Override
 		public String getTagName() {
 		    return tagName();

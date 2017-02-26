@@ -1,16 +1,17 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class ObjectWithFeatures extends ObjectWithId {
@@ -20,6 +21,13 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Modifier entity) {
             target.addModifier(entity);
         }
+
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Modifier> xmlGenerator) throws IOException {
+        	for (Entry<String, List<Modifier>> entry : source.modifiers.entrySet()) {
+        		xmlGenerator.generateXmlFromCollection(entry.getValue());
+        	}
+		}
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> OBJECT_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
@@ -27,6 +35,12 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Ability entity) {
             target.addAbility(entity);
         }
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Ability> xmlGenerator) throws IOException {
+			for (Entry<String, List<Ability>> entry : source.abilities.entrySet()) {
+				xmlGenerator.generateXmlFromCollection(entry.getValue());
+			}
+		};
     };
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Scope> OBJECT_SCOPE_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Scope>() {
@@ -34,10 +48,24 @@ public class ObjectWithFeatures extends ObjectWithId {
         public void set(ObjectWithFeatures target, Scope entity) {
         	target.scopes.add(entity);
         }
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Scope> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.scopes);
+		};
     };
     
+    public static final ObjectFromNodeSetter<ObjectWithFeatures, Ability> REQ_ABILITY_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Ability>() {
+        @Override
+        public void set(ObjectWithFeatures target, Ability entity) {
+        	target.requiredAbilities.add(entity);
+        }
+		@Override
+		public void generateXml(ObjectWithFeatures source, ChildObject2XmlCustomeHandler<Ability> xmlGenerator) throws IOException {
+			xmlGenerator.generateXmlFromCollection(source.requiredAbilities.entities());
+		};
+    };
     
-    public final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+    protected final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
     private final java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
     private final java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
 	private final List<Scope> scopes = new ArrayList<Scope>();
@@ -52,6 +80,10 @@ public class ObjectWithFeatures extends ObjectWithId {
 	
 	public int abilitiesAmount() {
 	    return abilities.size();
+	}
+	
+	public int requiredAbilitiesAmount() {
+		return requiredAbilities.size();
 	}
 	
 	public void addAbility(Ability ability) {
@@ -212,13 +244,17 @@ public class ObjectWithFeatures extends ObjectWithId {
     }
     
     public static class Xml {
-		public static void abstractAddNodes(XmlNodeParser nodeParser) {
+		public static void abstractAddNodes(XmlNodeParser<? extends ObjectWithFeatures> nodeParser) {
 			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
 			nodeParser.addNode(Ability.class, ObjectWithFeatures.OBJECT_ABILITY_NODE_SETTER);
-			nodeParser.addNode("required-ability", Ability.class, "requiredAbilities");
+			nodeParser.addNode("required-ability", Ability.class, ObjectWithFeatures.REQ_ABILITY_NODE_SETTER);
 		}
 		
-		public static void abstractStartElement(XmlNodeAttributes attr, BuildableType bt) {
+		public static void abstractStartElement(XmlNodeAttributes attr, ObjectWithFeatures obj) {
 		}
+
+		public static void abstractStartWriteAttr(ObjectWithFeatures obj, XmlNodeAttributesWriter attr) throws IOException {
+		}
+		
     }
 }

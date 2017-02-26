@@ -1,9 +1,12 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class ResourceType extends ObjectWithFeatures {
@@ -22,7 +25,10 @@ public class ResourceType extends ObjectWithFeatures {
 		return Randomizer.instance().randomInt(minValue, maxValue);		
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<ResourceType> {
+
+		private static final String ATTR_MINIMUM_VALUE = "minimum-value";
+		private static final String ATTR_MAXIMUM_VALUE = "maximum-value";
 
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -31,13 +37,20 @@ public class ResourceType extends ObjectWithFeatures {
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			ResourceType rt = new ResourceType(id);
-			rt.minValue = attr.getIntAttribute("minimum-value", UNLIMITED);
-			rt.maxValue = attr.getIntAttribute("maximum-value", UNLIMITED);
+			rt.minValue = attr.getIntAttribute(ATTR_MINIMUM_VALUE, UNLIMITED);
+			rt.maxValue = attr.getIntAttribute(ATTR_MAXIMUM_VALUE, UNLIMITED);
 			nodeObject = rt;
 		}
 
+		@Override
+		public void startWriteAttr(ResourceType rt, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(rt);
+			attr.set(ATTR_MINIMUM_VALUE, rt.minValue, UNLIMITED);
+			attr.set(ATTR_MAXIMUM_VALUE, rt.maxValue, UNLIMITED);
+		}
+		
 		@Override
 		public String getTagName() {
 		    return tagName();

@@ -1,7 +1,11 @@
 package net.sf.freecol.common.model.specification;
 
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+
+import java.io.IOException;
+
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Specification;
 
@@ -15,18 +19,24 @@ public class RequiredGoods extends ObjectWithId {
         this.amount = amount;
     }
 
-    public static class Xml extends XmlNodeParser {
+    public static class Xml extends XmlNodeParser<RequiredGoods> {
 
-        @Override
+		@Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
-            int amount = attr.getIntAttribute("value");
+            String id = attr.getStrAttribute(ATTR_ID);
+            int amount = attr.getIntAttribute(ATTR_VALUE);
             
             GoodsType goodsType = Specification.instance.goodsTypes.getById(id);
             RequiredGoods rg = new RequiredGoods(goodsType, amount);
             nodeObject = rg;
         }
 
+        @Override
+        public void startWriteAttr(RequiredGoods rg, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(rg);
+        	attr.set(ATTR_VALUE, rg.amount);
+        }
+        
         @Override
         public String getTagName() {
             return tagName();

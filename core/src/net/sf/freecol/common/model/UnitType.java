@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.Comparator;
 
 import net.sf.freecol.common.model.specification.Ability;
@@ -9,6 +10,7 @@ import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType extends BuildableType {
@@ -76,7 +78,7 @@ public class UnitType extends BuildableType {
 
     /** The default role for a unit of this type. */
     private UnitRole defaultRole = null;
-    private String defaultRoleId = null;
+    private String defaultRoleId = UnitRole.DEFAULT_ROLE_ID;
     
     /**
      * The maximum attrition this UnitType can accumulate without
@@ -227,8 +229,24 @@ public class UnitType extends BuildableType {
 		};
     }
     
-    public static class Xml extends XmlNodeParser {
-        public Xml() {
+    public static class Xml extends XmlNodeParser<UnitType> {
+        private static final String ELEMENT_DEFAULT_ROLE = "default-role";
+		private static final String ATTR_EXTENDS = "extends";
+		private static final String ATTR_PRICE = "price";
+		private static final String ATTR_SKILL = "skill";
+		private static final String ATTR_EXPERT_PRODUCTION = "expert-production";
+		private static final String ATTR_RECRUIT_PROBABILITY = "recruitProbability";
+		private static final String ATTR_MAXIMUM_EXPERIENCE = "maximumExperience";
+		private static final String ATTR_HIT_POINTS = "hitPoints";
+		private static final String ATTR_SPACE_TAKEN = "spaceTaken";
+		private static final String ATTR_SPACE = "space";
+		private static final String ATTR_SCORE_VALUE = "scoreValue";
+		private static final String ATTR_LINE_OF_SIGHT = "lineOfSight";
+		private static final String ATTR_MOVEMENT = "movement";
+		private static final String ATTR_DEFENCE = "defence";
+		private static final String ATTR_OFFENCE = "offence";
+
+		public Xml() {
         	BuildableType.Xml.abstractAddNodes(this);
             addNodeForMapIdEntities("unitTypeChanges", UnitTypeChange.class);
             addNodeForMapIdEntities("unitConsumption", UnitConsumption.class);
@@ -236,27 +254,27 @@ public class UnitType extends BuildableType {
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String id = attr.getStrAttribute("id");
+            String id = attr.getStrAttribute(ATTR_ID);
             
             UnitType ut = new UnitType(id);
             BuildableType.Xml.abstractStartElement(attr, ut);
             
-            ut.offence = attr.getIntAttribute("offence", DEFAULT_OFFENCE);
-            ut.defence = attr.getIntAttribute("defence", DEFAULT_DEFENCE);
-            ut.movement = attr.getIntAttribute("movement", DEFAULT_MOVEMENT);
-            ut.lineOfSight = attr.getIntAttribute("lineOfSight", DEFAULT_LINE_OF_SIGHT);
-            ut.scoreValue = attr.getIntAttribute("scoreValue", 0);
-            ut.space = attr.getIntAttribute("space", 0);
-            ut.spaceTaken = attr.getIntAttribute("spaceTaken", 1);
-            ut.hitPoints = attr.getIntAttribute("hitPoints", 0);
-            ut.maximumExperience = attr.getIntAttribute("maximumExperience", 0);
-            ut.recruitProbability = attr.getIntAttribute("recruitProbability", 0);
-            ut.expertProductionForGoodsId = attr.getStrAttribute("expert-production");
-            ut.skill = attr.getIntAttribute("skill", Xml.UNDEFINED);
-            ut.price = attr.getIntAttribute("price", Xml.UNDEFINED);
+            ut.offence = attr.getIntAttribute(ATTR_OFFENCE, DEFAULT_OFFENCE);
+            ut.defence = attr.getIntAttribute(ATTR_DEFENCE, DEFAULT_DEFENCE);
+            ut.movement = attr.getIntAttribute(ATTR_MOVEMENT, DEFAULT_MOVEMENT);
+            ut.lineOfSight = attr.getIntAttribute(ATTR_LINE_OF_SIGHT, DEFAULT_LINE_OF_SIGHT);
+            ut.scoreValue = attr.getIntAttribute(ATTR_SCORE_VALUE, 0);
+            ut.space = attr.getIntAttribute(ATTR_SPACE, 0);
+            ut.spaceTaken = attr.getIntAttribute(ATTR_SPACE_TAKEN, 1);
+            ut.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS, 0);
+            ut.maximumExperience = attr.getIntAttribute(ATTR_MAXIMUM_EXPERIENCE, 0);
+            ut.recruitProbability = attr.getIntAttribute(ATTR_RECRUIT_PROBABILITY, 0);
+            ut.expertProductionForGoodsId = attr.getStrAttribute(ATTR_EXPERT_PRODUCTION);
+            ut.skill = attr.getIntAttribute(ATTR_SKILL, Xml.UNDEFINED);
+            ut.price = attr.getIntAttribute(ATTR_PRICE, Xml.UNDEFINED);
             ut.defaultRoleId = UnitRole.DEFAULT_ROLE_ID;
             
-            ut.extendsId = attr.getStrAttribute("extends");
+            ut.extendsId = attr.getStrAttribute(ATTR_EXTENDS);
             if (ut.extendsId != null) {
             	UnitType parent = Specification.instance.unitTypes.getById(ut.extendsId);
             	ut.addFeatures(parent);
@@ -266,9 +284,39 @@ public class UnitType extends BuildableType {
         }
 
         @Override
+        public void startWriteAttr(UnitType ut, XmlNodeAttributesWriter attr) throws IOException {
+        	attr.setId(ut);
+        	BuildableType.Xml.abstractStartWriteAttr(ut, attr);
+
+        	attr.set(ATTR_OFFENCE, ut.offence);
+        	attr.set(ATTR_DEFENCE, ut.defence);
+        	attr.set(ATTR_MOVEMENT, ut.movement);
+        	attr.set(ATTR_LINE_OF_SIGHT, ut.lineOfSight);
+        	attr.set(ATTR_SCORE_VALUE, ut.scoreValue);
+        	attr.set(ATTR_SPACE, ut.space);
+        	attr.set(ATTR_SPACE_TAKEN, ut.spaceTaken);
+        	attr.set(ATTR_HIT_POINTS, ut.hitPoints);
+        	attr.set(ATTR_MAXIMUM_EXPERIENCE, ut.maximumExperience);
+        	attr.set(ATTR_RECRUIT_PROBABILITY, ut.recruitProbability);
+        	attr.set(ATTR_EXPERT_PRODUCTION, ut.expertProductionForGoodsId);
+        	attr.set(ATTR_SKILL, ut.skill);
+        	attr.set(ATTR_PRICE, ut.price);
+
+        	// "extends" (ATTR_EXTENDS) attribute there is only on reading in order to avoid save ObjectFeatures twice
+        	// While saving ObjectFeatures it's difficulty to distinguish futures form parent and main object.
+        	// extends attribute is used only in specification.xml not directly in save xml        	
+        	
+        	if (ut.defaultRoleId != null && !UnitRole.DEFAULT_ROLE_ID.equals(ut.defaultRoleId)) {
+        		attr.xml.element(ELEMENT_DEFAULT_ROLE);
+        		attr.set(ATTR_ID, ut.defaultRoleId);
+        		attr.xml.pop();
+        	}
+        }
+        
+        @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-        	if (attr.isQNameEquals("default-role")) {
-        		((UnitType)nodeObject).defaultRoleId = attr.getStrAttributeNotNull("id");
+        	if (attr.isQNameEquals(ELEMENT_DEFAULT_ROLE)) {
+        		nodeObject.defaultRoleId = attr.getStrAttributeNotNull(ATTR_ID);
         	}
         }
         

@@ -4,20 +4,15 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class CachedTile implements Identifiable {
+public class CachedTile {
 
 	private Player player;
-	
-	@Override
-	public String getId() {
-		throw new IllegalStateException("should not be invoked");
-	}
 	
 	public Player getPlayer() {
 		return player;
 	}
 
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<CachedTile> {
 
 		private CachedTile cachedTileObject; 
 		

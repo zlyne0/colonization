@@ -1,8 +1,11 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class ColonyBuildingQueueItem implements Identifiable {
@@ -33,11 +36,11 @@ public class ColonyBuildingQueueItem implements Identifiable {
 		return st + getId();
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<ColonyBuildingQueueItem> {
 
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			String id = attr.getStrAttribute("id");
+			String id = attr.getStrAttribute(ATTR_ID);
 			BuildableType item = null;
 			
 			BuildingType buildingType = Specification.instance.buildingTypes.getByIdOrNull(id);
@@ -55,6 +58,11 @@ public class ColonyBuildingQueueItem implements Identifiable {
 			nodeObject = qitem;
 		}
 
+		@Override
+		public void startWriteAttr(ColonyBuildingQueueItem node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(node);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

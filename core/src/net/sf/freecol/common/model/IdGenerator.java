@@ -3,7 +3,7 @@ package net.sf.freecol.common.model;
 import java.lang.reflect.Method;
 
 public class IdGenerator {
-	private int idSequence;
+	protected int idSequence;
 	
 	public IdGenerator(int initId) {
 		idSequence = initId;

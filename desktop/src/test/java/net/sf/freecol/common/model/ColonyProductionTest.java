@@ -34,8 +34,7 @@ public class ColonyProductionTest {
     
     @Before
     public void setup() throws IOException, ParserConfigurationException, SAXException {
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        game = saveGameParser.parse();
+        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         player = game.players.getById("player:1");
         colony = (Colony)player.settlements.getById("colony:6528");
     }
@@ -299,8 +298,7 @@ public class ColonyProductionTest {
     @Test
     public void testName() throws Exception {
         // given
-        SaveGameParser saveGameParser = new SaveGameParser("maps/savegame_1600_for_jtests.xml");
-        Game game = saveGameParser.parse();
+        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 
         Player player = game.players.getById("player:1");
         

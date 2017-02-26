@@ -1,6 +1,9 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class TileResource extends ObjectWithId {
@@ -36,17 +39,27 @@ public class TileResource extends ObjectWithId {
 		return false;
 	}
 	
-	public static class Xml extends XmlNodeParser {
+	public static class Xml extends XmlNodeParser<TileResource> {
+
+		private static final String ATTR_QUANTITY = "quantity";
+		private static final String ATTR_TYPE = "type";
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-			String resourceTypeStr = attr.getStrAttribute("type");
-			int quantity = attr.getIntAttribute("quantity", UNLIMITED);
+			String resourceTypeStr = attr.getStrAttribute(ATTR_TYPE);
+			int quantity = attr.getIntAttribute(ATTR_QUANTITY, UNLIMITED);
 			ResourceType resourceType = Specification.instance.resourceTypes.getById(resourceTypeStr);
-			TileResource tileResource = new TileResource(attr.getStrAttribute("id"), resourceType, quantity);
+			TileResource tileResource = new TileResource(attr.getStrAttribute(ATTR_ID), resourceType, quantity);
 			nodeObject = tileResource;
 		}
 
+		@Override
+		public void startWriteAttr(TileResource n, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(n);
+			attr.set(ATTR_TYPE, n.resourceType);
+			attr.set(ATTR_QUANTITY, n.quantity);
+		}
+		
 		@Override
 		public String getTagName() {
 		    return tagName();

@@ -1,14 +1,18 @@
 package net.sf.freecol.common.model;
 
+import java.io.IOException;
 import java.util.List;
+
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class GoodsContainer implements Identifiable {
+public class GoodsContainer {
 
     private final ProductionSummary goods = new ProductionSummary();
     private int cargoSpaceTaken = 0;
@@ -16,11 +20,6 @@ public class GoodsContainer implements Identifiable {
     public GoodsContainer() {
     }
 
-    @Override
-    public String getId() {
-        throw new IllegalStateException("goodsContainer does not has id");
-    }
-    
 	public int goodsAmount(String id) {
         return goods.getQuantity(id);
 	}
@@ -111,8 +110,12 @@ public class GoodsContainer implements Identifiable {
         return goods.cloneGoods();
     }
     
-    public static class Xml extends XmlNodeParser {
-        @Override
+    public static class Xml extends XmlNodeParser<GoodsContainer> {
+        private static final String ATTR_AMOUNT = "amount";
+		private static final String ATTR_TYPE = "type";
+		private static final String ELEMENT_GOODS = "goods";
+
+		@Override
         public void startElement(XmlNodeAttributes attr) {
             GoodsContainer goodsContainer = new GoodsContainer();
             nodeObject = goodsContainer;
@@ -120,13 +123,23 @@ public class GoodsContainer implements Identifiable {
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
-            if (attr.isQNameEquals("goods")) {
-                String typeStr = attr.getStrAttribute("type");
-                int amount = attr.getIntAttribute("amount", 0);
+            if (attr.isQNameEquals(ELEMENT_GOODS)) {
+                String typeStr = attr.getStrAttribute(ATTR_TYPE);
+                int amount = attr.getIntAttribute(ATTR_AMOUNT, 0);
                 
-                ((GoodsContainer)nodeObject).goods.addGoods(typeStr, amount);
-                ((GoodsContainer)nodeObject).updateTakenCargoSlots();
+                nodeObject.goods.addGoods(typeStr, amount);
+                nodeObject.updateTakenCargoSlots();
             }
+        }
+        
+        @Override
+        public void startWriteAttr(GoodsContainer gc, XmlNodeAttributesWriter attr) throws IOException {
+        	for (Entry<String> goodEntry : gc.goods.entries()) {
+				attr.xml.element(ELEMENT_GOODS);
+				attr.set(ATTR_TYPE, goodEntry.key);
+				attr.set(ATTR_AMOUNT, goodEntry.value);
+				attr.xml.pop();
+			}
         }
         
         @Override
