@@ -18,6 +18,7 @@ import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
+import net.sf.freecol.common.model.specification.options.PercentageOption;
 import net.sf.freecol.common.model.specification.options.RangeOption;
 import net.sf.freecol.common.model.specification.options.StringOption;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
@@ -46,6 +47,9 @@ public class Specification {
         	ObjectWithId option = optionValues.getById(code);
         	if (option instanceof RangeOption) {
                 return ((RangeOption)option).getValueAsInt();
+        	}
+        	if (option instanceof PercentageOption) {
+        		return ((PercentageOption)option).getValue();
         	}
             return ((IntegerOption)option).getValue();
         }

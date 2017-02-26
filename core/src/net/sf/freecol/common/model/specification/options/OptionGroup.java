@@ -40,6 +40,7 @@ public class OptionGroup extends ObjectWithId {
             addNodeForMapIdEntities("abstractOptions", StringOption.class);
             addNodeForMapIdEntities("abstractOptions", BooleanOption.class);
             addNodeForMapIdEntities("abstractOptions", RangeOption.class);
+            addNodeForMapIdEntities("abstractOptions", PercentageOption.class);
             addNodeForMapIdEntities("abstractOptions", SelectOption.class);
             addNodeForMapIdEntities("abstractOptions", UnitListOption.class);
         }

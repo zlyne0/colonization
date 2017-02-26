@@ -263,6 +263,9 @@ public class Savegame1600Verifier {
         
         assertEquals(1000, other.getIntValue(GameOptions.STARTING_MONEY));
         assertEquals("veryHigh", other.getStringValue(GameOptions.TILE_PRODUCTION));
+    	
+        assertThat(Specification.options.getIntValue(GameOptions.BAD_RUMOUR)).isEqualTo(23);
+        assertThat(Specification.options.getIntValue(GameOptions.GOOD_RUMOUR)).isEqualTo(48);
     }
 
     private void verifyShipGoods(Game game, Specification specification) {
