@@ -55,7 +55,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
     
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
-    protected int treasureAmount = 0;
+    private int treasureAmount = 0;
     private int experience = 0;
     private MoveDestinationType destinationType;
     private int destinationX;
@@ -145,6 +145,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
 			disembarkUnitsToLocation(newUnitLocation);
 		}
 		location = newUnitLocation;
+	}
+	
+	public void remove() {
+		location.getUnits().removeId(this);
+		location = null;
 	}
 	
     public boolean canAddUnit(Unit unit) {
@@ -707,6 +712,13 @@ public class Unit extends ObjectWithId implements UnitLocation {
             throw new IllegalStateException("Unit can not carry treasure");
         }
         return treasureAmount;
+    }
+    
+    public void setTreasureAmount(int treasureAmount) {
+        if (!canCarryTreasure()) {
+            throw new IllegalStateException("Unit can not carry treasure");
+        }
+    	this.treasureAmount = treasureAmount;
     }
     
 	public boolean isExpert() {

@@ -46,6 +46,7 @@ public class Player extends ObjectWithId {
     private Europe europe;
     private Market market;
     private boolean dead = false;
+    private boolean ai;
     private int tax = 0;
     private int gold = 0;
     private int liberty = 0;
@@ -486,6 +487,11 @@ public class Player extends ObjectWithId {
 		settlements.removeId(settlement.getId());
 	}
 
+	public void removeUnit(Unit unit) {
+		units.removeId(unit);
+		unit.remove();
+	}
+	
     public HighSeas getHighSeas() {
         return highSeas;
     }
@@ -546,8 +552,13 @@ public class Player extends ObjectWithId {
 		}
 	}
 
+	public boolean isAi() {
+		return ai;
+	}
+
 	public static class Xml extends XmlNodeParser<Player> {
-        private static final String ATTR_X_LENGTH = "xLength";
+        private static final String ATTR_AI = "ai";
+		private static final String ATTR_X_LENGTH = "xLength";
 		private static final String ATTR_PLAYER = "player";
 		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
@@ -582,6 +593,7 @@ public class Player extends ObjectWithId {
             
             Player player = new Player(idStr);
             player.dead = attr.getBooleanAttribute(ATTR_DEAD);
+            player.ai = attr.getBooleanAttribute(ATTR_AI);
             player.attackedByPrivateers = attr.getBooleanAttribute(ATTR_ATTACKED_BY_PRIVATEERS, false);
             player.newLandName = attr.getStrAttribute(ATTR_NEW_LAND_NAME);
             player.tax = attr.getIntAttribute(ATTR_TAX, 0);
@@ -646,6 +658,7 @@ public class Player extends ObjectWithId {
         	attr.setId(player);
         	
         	attr.set(ATTR_DEAD, player.dead);
+        	attr.set(ATTR_AI, player.ai);
         	attr.set(ATTR_ATTACKED_BY_PRIVATEERS, player.attackedByPrivateers);
         	attr.set(ATTR_NEW_LAND_NAME, player.newLandName);
         	attr.set(ATTR_TAX, player.tax);

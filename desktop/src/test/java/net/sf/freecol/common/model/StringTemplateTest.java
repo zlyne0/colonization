@@ -25,6 +25,25 @@ public class StringTemplateTest {
     }
 	
     @Test
+	public void lostCityRumourLearnLabel() throws Exception {
+		// given
+    	String unitName = "Col123";
+    	String typeId = "model.unit.seasonedScout";
+    	
+    	ObjectWithId type = new ObjectWithId(typeId) {
+    	};
+    	
+    	StringTemplate st2 = StringTemplate.template("lostCityRumour.learn")
+    			.add("%unit%", unitName)
+    			.addName("%type%", type);
+    	// when
+    	String message = Messages.message(st2);
+    	
+    	// then
+    	assertEquals("Your Col123 has gained experience and is now a Seasoned Scout!", message);
+	}
+    
+    @Test
 	public void unitEquipmentLabel() throws Exception {
 		// given
     	Unit unit = new Unit("unit:1");

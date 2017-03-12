@@ -232,6 +232,21 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
 	}
 	
+	public void emigrantsFountainOfYoung(int colNumber) {
+		List<WithProbability<UnitType>> recruitProbabilities = new ArrayList<WithProbability<UnitType>>(Specification.instance.unitTypeRecruitProbabilities.size());
+		for (WithProbability<UnitType> recruitProbability : Specification.instance.unitTypeRecruitProbabilities) { 
+			if (owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, recruitProbability.probabilityObject())) {
+				recruitProbabilities.add(recruitProbability);
+			}
+		}
+		for (int i=0; i<colNumber; i++) {
+			UnitType unitType = Randomizer.instance()
+				.randomOne(recruitProbabilities)
+				.probabilityObject();
+			createUnit(unitType);
+		}
+	}
+	
 	public boolean isNoNavyInPort() {
 		for (Unit unit : units.entities()) {
 			if (unit.isNaval()) {

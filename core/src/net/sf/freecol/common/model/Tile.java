@@ -138,6 +138,16 @@ public class Tile implements UnitLocation, Identifiable {
         return tileItemContainer.isLostCityRumours();
     }
 
+    public void removeLostCityRumour() {
+        if (tileItemContainer == null) {
+        	return;
+        }
+        tileItemContainer.setLostCityRumours(false);
+		if (tileItemContainer.isEmpty()) {
+			tileItemContainer = null;
+		}
+    }
+    
     public boolean hasTileResource() {
     	if (tileItemContainer == null) {
     		return false;

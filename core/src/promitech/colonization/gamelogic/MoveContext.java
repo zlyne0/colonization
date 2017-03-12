@@ -99,6 +99,7 @@ public class MoveContext {
 	public void handleMove() {
 		switch (moveType) {
 		    case MOVE_HIGH_SEAS:
+		    case EXPLORE_LOST_CITY_RUMOUR:
 			case MOVE: {
 				if (path != null) {
 					path.removeFirst();
@@ -147,7 +148,13 @@ public class MoveContext {
 	}
 
 	public boolean isRequireUserInteraction() {
-		return MoveType.DISEMBARK.equals(moveType);
+		switch (moveType) {
+		case DISEMBARK:
+		case EXPLORE_LOST_CITY_RUMOUR:
+			return true;
+		default:
+			return false;
+		}
 	}
 	
 	public boolean isMoveViaPath() {

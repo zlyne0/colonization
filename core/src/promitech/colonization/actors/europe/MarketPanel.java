@@ -50,7 +50,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
     	if (marketData.hasArrears()) {
     		if (player.hasNotGold(marketData.getArrears())) {
     			SimpleMessageDialog okDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
-    			okDialog.withContant(StringTemplate.template("model.europe.cantPayArrears")
+    			okDialog.withContent(StringTemplate.template("model.europe.cantPayArrears")
 					.addAmount("%amount%", marketData.getArrears())
 				);
     			okDialog.withButton("ok");

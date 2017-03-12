@@ -234,17 +234,18 @@ class BuildingQueueDialog extends ClosableDialog {
 		StringTemplate st = StringTemplate.template("payForBuilding.text")
 				.addAmount("%amount%", price);
 		
-		final SimpleMessageDialog confirmationDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
+		SimpleMessageDialog confirmationDialog = new SimpleMessageDialog();
 		this.addChildDialog(confirmationDialog);
-		confirmationDialog.withContant(st)
+		confirmationDialog.withContent(st)
 			.withButton("payForBuilding.no")
-			.withButton("payForBuilding.yes", new ChangeListener() {
+			.withButton("payForBuilding.yes", new SimpleMessageDialog.ButtonActionListener() {
 				@Override
-				public void changed(ChangeEvent event, Actor actor) {
+				public void buttonPressed(SimpleMessageDialog dialog) {
 					buyItem();
-					confirmationDialog.hide();
+					dialog.hide();
 				}
 			});
+			
 		confirmationDialog.show(getStage());
 	}
 	

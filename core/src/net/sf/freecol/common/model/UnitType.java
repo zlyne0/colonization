@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.List;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
@@ -30,7 +32,7 @@ public class UnitType extends BuildableType {
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
-    public final MapIdEntities<UnitTypeChange> unitTypeChanges = new MapIdEntities<UnitTypeChange>();
+    public final MapIdEntities<UnitTypeChange> unitTypeChanges = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     
     /**
@@ -160,6 +162,16 @@ public class UnitType extends BuildableType {
             }
         }
         return false;
+    }
+    
+    public List<String> getUpgradesUnitTypeIds(ChangeType changeType) {
+    	List<String> changeTypeUnitTypes = new ArrayList<String>();
+        for (UnitTypeChange change : unitTypeChanges.entities()) {
+        	if (change.isPositiveProbability(changeType)) {
+        		changeTypeUnitTypes.add(change.getNewUnitTypeId());
+        	}
+        }
+        return changeTypeUnitTypes;
     }
 
     public int getSpaceTaken() {

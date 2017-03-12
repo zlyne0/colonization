@@ -199,6 +199,16 @@ public class Specification {
     	return types;
     }
 
+    public List<UnitType> getUnitTypesWithAbility(String abilityCode) {
+    	List<UnitType> types = new ArrayList<UnitType>();
+    	for (UnitType ut : unitTypes.entities()) {
+    		if (ut.hasAbility(abilityCode)) {
+    			types.add(ut);
+    		}
+    	}
+    	return types;
+    }
+    
     private void createSupportUnitLists() {
 		for (UnitType unitType : unitTypes.entities()) {
 			if (unitType.hasAbility(Ability.SUPPORT_UNIT)) {
