@@ -149,8 +149,8 @@ public class MoveContext {
 
 	public boolean isRequireUserInteraction() {
 		switch (moveType) {
-		case DISEMBARK:
-		case EXPLORE_LOST_CITY_RUMOUR:
+		case DISEMBARK: // ask which units disembark
+		case EXPLORE_LOST_CITY_RUMOUR: // ask for sure
 			return true;
 		default:
 			return false;
