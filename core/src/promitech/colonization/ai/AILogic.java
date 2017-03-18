@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameLogic;
+import promitech.colonization.MoveDrawerSemaphore;
 
 public class AILogic {
 
@@ -18,12 +19,12 @@ public class AILogic {
 	private final ExplorerMissionHandler explorerMissionHandler;
 	private final WanderMissionHandler wanderMissionHandler;
 	
-	public AILogic(Game game, GameLogic gameLogic, AIMoveDrawer aiMoveDrawer) {
+	public AILogic(Game game, GameLogic gameLogic, MoveDrawerSemaphore moveDrawerSemaphore) {
 		this.game = game;
 		this.gameLogic = gameLogic;
 		
-		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, aiMoveDrawer);
-		wanderMissionHandler = new WanderMissionHandler(game, aiMoveDrawer);
+		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveDrawerSemaphore);
+		wanderMissionHandler = new WanderMissionHandler(game, moveDrawerSemaphore);
 	}
 	
 	public void aiNewTurn(Player player) {

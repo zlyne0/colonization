@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
+import promitech.colonization.MoveDrawerSemaphore;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.gamelogic.MoveContext;
@@ -19,14 +20,14 @@ public class WanderMissionHandler {
 	private final Boolean2dArray settlementWanderRange; 	
 	
 	private final Game game;
-	private final AIMoveDrawer aiMoveDrawer;
+	private final MoveDrawerSemaphore moveDrawerSemaphore;
 	
 	private final List<Direction> allowedDirections = new ArrayList<Direction>(Direction.allDirections);
 	private final MoveContext moveContext = new MoveContext();
 	
-	public WanderMissionHandler(Game game, AIMoveDrawer aiMoveDrawer) {
+	public WanderMissionHandler(Game game, MoveDrawerSemaphore moveDrawerSemaphore) {
 		this.game = game;
-		this.aiMoveDrawer = aiMoveDrawer;
+		this.moveDrawerSemaphore = moveDrawerSemaphore;
 		this.settlementWanderRange = new Boolean2dArray(game.map.width, game.map.height);
 	}
 
@@ -74,7 +75,7 @@ public class WanderMissionHandler {
 				mission.unit.getOwner().revealMapAfterUnitMove(game.map, mission.unit);
 				mission.previewDirection = moveDirection;					
 				
-				aiMoveDrawer.startAIUnitDislocationAnimation(moveContext);
+				moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
 				
 				if (mission.unit.hasMovesPoints()) {
 					canMove = true;

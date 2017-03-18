@@ -45,7 +45,6 @@ import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
-import promitech.colonization.ai.AIMoveDrawer;
 import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
@@ -82,7 +81,6 @@ public class GUIGameController {
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
 	
-	private final AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
 	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
 	
 	public GUIGameController() {
@@ -378,13 +376,6 @@ public class GUIGameController {
 		mapActor.startUnitDislocationAnimation(moveContext, moveDrawerSemaphore);
 	}
 	
-	public void guiAIMoveInteraction(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
-			mapActor.centerCameraOnTile(moveContext.destTile);
-		}
-		mapActor.startUnitDislocationAnimation(moveContext, aiMoveDrawer);
-	}
-	
 	public boolean showMoveOnPlayerScreen(MoveContext moveContext) {
 		return !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
 				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
@@ -663,7 +654,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(game, gameLogic, aiMoveDrawer);
+		AILogic aiLogic = new AILogic(game, gameLogic, moveDrawerSemaphore);
 		
 		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
 		for (Player player : players) {			
