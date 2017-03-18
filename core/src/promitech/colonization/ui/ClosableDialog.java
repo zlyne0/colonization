@@ -14,7 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class ClosableDialog {
+public class ClosableDialog<T extends ClosableDialog<?>> {
     private static final long CLOSE_AFTER_CREATE_TIMEOUT = 1000;
 
     protected final Dialog dialog;
@@ -118,8 +118,10 @@ public class ClosableDialog {
     	dialog.pack();
     }
     
-    public void addOnCloseListener(EventListener onCloseListener) {
+    @SuppressWarnings("unchecked")
+	public T addOnCloseListener(EventListener onCloseListener) {
     	onCloseListeners.add(onCloseListener);
+    	return (T)this;
     }
     
     private boolean canCloseBecauseClickOutsideDialog(float x, float y) {

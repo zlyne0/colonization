@@ -1,13 +1,8 @@
 package promitech.colonization;
 
 import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.infrastructure.ThreadsResources;
-
-class MoveDrawer {
-	public void startAIUnitDislocationAnimation(MoveContext moveContext) {
-		// TODO: analogia jak w AIMoveDrawer - uwspolnienie
-	}
-}
 
 public class MoveLogic {
 	private class RunnableMoveContext implements Runnable {
@@ -19,36 +14,59 @@ public class MoveLogic {
 		}
 	}
 	
-	private final MoveDrawer moveDrawer;
+	private final MoveDrawerSemaphore moveDrawerSemaphore;
 	private final GUIGameController guiGameController;
 	private final RunnableMoveContext moveBackgroundThread = new RunnableMoveContext();
 	
-	public MoveLogic(GUIGameController guiGameController, MoveDrawer moveDrawer) {
+	public MoveLogic(GUIGameController guiGameController, MoveDrawerSemaphore moveDrawerSemaphore) {
 		this.guiGameController = guiGameController;
-		this.moveDrawer = moveDrawer;
+		this.moveDrawerSemaphore = moveDrawerSemaphore;
 	}
 	
 	protected void handleMoveContext(MoveContext moveContext) {
-		// TODO: przeniesienie logiki z moveContext.handleMove do tej klasy
-		// wraz z logika odkrywania mapy 
 		moveContext.handleMove();
-		moveDrawer.startAIUnitDislocationAnimation(moveContext);
+		moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
 		
-		/*
-
-		if (gui.player moze zobaczyc ruch jednostki)
-			guiMoveInteraction
-		moveDrawer.startMoveAnimation
-
-		 */
+		boolean exloredNewTiles = false;
+		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
+			exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameController.getGame().map, moveContext.unit);
+		}
+		
+		if (moveContext.unit.getOwner().isHuman()) {
+			if (exloredNewTiles) {
+				guiGameController.resetUnexploredBorders();
+			}
+			if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
+				guiGameController.logicNextActiveUnit();
+			}
+		}
 	}
 
-	public void fromAiMove(MoveContext moveContext) {
+	public void forAiMove(MoveContext moveContext) {
 		handleMoveContext(moveContext);
 	}
 	
-	public void fromGuiMoveViaDirection(MoveContext moveContext) {
+	public void forGuiMove(MoveContext moveContext) {
+		if (moveContext.isRequireUserInteraction()) {
+			switch (moveContext.moveType) {
+				case EXPLORE_LOST_CITY_RUMOUR:
+					new LostCityRumourLogic(guiGameController, this)
+						.handle(moveContext);
+				break;
+			default:
+				throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
+			}
+		} else {
+			if (!moveContext.canHandleMove()) {
+				return;
+			}
+			forGuiMoveWithUserInteractionApproved(moveContext);
+		}
+	}
+	
+	public void forGuiMoveWithUserInteractionApproved(MoveContext moveContext) {
 		moveBackgroundThread.moveContext = moveContext;
+		// it's run handleMoveContext(moveContext); in thread
 		ThreadsResources.instance.executeAImovement(moveBackgroundThread);
 	}
 }

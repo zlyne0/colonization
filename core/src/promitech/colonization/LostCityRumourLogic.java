@@ -2,6 +2,9 @@ package promitech.colonization;
 
 import java.util.List;
 
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -19,20 +22,19 @@ import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.SimpleMessageDialog;
-import promitech.colonization.ui.hud.HudStage;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class LostCityRumourLogic {
 
-	private final HudStage mapHudStage;
 	private final Game game;
 	private final GUIGameController guiGameController;
+	private final MoveLogic moveLogic;
 
-	public LostCityRumourLogic(GUIGameController guiGameController, HudStage mapHudStage, Game game) {
-		this.mapHudStage = mapHudStage;
-		this.game = game;
+	public LostCityRumourLogic(GUIGameController guiGameController, MoveLogic moveLogic) {
+		this.game = guiGameController.getGame();
 		this.guiGameController = guiGameController;
+		this.moveLogic = moveLogic;
 	}
 	
 	void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
@@ -51,15 +53,10 @@ public class LostCityRumourLogic {
 			if (unit.getOwner().isHuman()) {
 				StringTemplate st = StringTemplate.template("lostCityRumour.burialGround")
 					.addStringTemplate("%nation%", destTile.getOwner().getNationName());
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(st)
-					.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -68,15 +65,10 @@ public class LostCityRumourLogic {
 			mc.setUnitKilled();
 			
 			if (unit.getOwner().isHuman()) {
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.expeditionVanishes")
-					.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -87,17 +79,12 @@ public class LostCityRumourLogic {
 
 			if (unit.getOwner().isHuman()) {
 				String oldName = Messages.message(UnitLabel.getPlainUnitLabel(unit));
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(StringTemplate.template("lostCityRumour.learn")
 						.add("%unit%", oldName)
 						.addName("%type%", newUnitType)
-					).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					).withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -108,16 +95,11 @@ public class LostCityRumourLogic {
 			
 			if (unit.getOwner().isHuman()) {
 				String msgKey = (mounds) ? "lostCityRumour.moundsTrinkets" : "lostCityRumour.tribalChief";
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(StringTemplate.template(msgKey)
 							.addAmount("%money%", gold)
-					).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					).withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -134,15 +116,10 @@ public class LostCityRumourLogic {
             newColonistUnit.changeUnitLocation(destTile);
 
             if (unit.getOwner().isHuman()) {
-				mapHudStage.showDialog(new SimpleMessageDialog()
+            	guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.colonist")
-					.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
             }
 		} break;
@@ -163,17 +140,12 @@ public class LostCityRumourLogic {
             newTreasureUnit.setTreasureAmount(treasureAmount);
 			
             if (unit.getOwner().isHuman()) {
-				mapHudStage.showDialog(new SimpleMessageDialog()
+            	guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(StringTemplate.template("lostCityRumour.cibola")
 						.addKey("%city%", cityOfCibolaName)
 						.addAmount("%money%", treasureAmount)
-					).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					).withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
             }
 		} break;
@@ -198,16 +170,11 @@ public class LostCityRumourLogic {
 
 			if (unit.getOwner().isHuman()) {
 				String msgKey = ((mounds) ? "lostCityRumour.moundsTreasure" : "lostCityRumour.ruins");
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(StringTemplate.template(msgKey)
 						.addAmount("%money%", treasureAmount)
-					).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					).withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -216,15 +183,10 @@ public class LostCityRumourLogic {
 			unit.getOwner().getEurope().emigrantsFountainOfYoung(dx);
 			
 			if (unit.getOwner().isHuman()) {			
-				mapHudStage.showDialog(new SimpleMessageDialog()
+				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.fountainOfYouth")
-					.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-						@Override
-						public void buttonPressed(SimpleMessageDialog dialog) {
-							endOfExploration(mc, type);
-							dialog.hide();
-						}
-					})
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -234,29 +196,19 @@ public class LostCityRumourLogic {
 		default: {
 			if (unit.getOwner().isHuman()) {
 				if (mounds) {
-					mapHudStage.showDialog(new SimpleMessageDialog()
+					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.moundsNothing")
-						.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-							@Override
-							public void buttonPressed(SimpleMessageDialog dialog) {
-								endOfExploration(mc, type);
-								dialog.hide();
-							}
-						})
+						.withButton("ok")
+						.addOnCloseListener(createOnCloseActionListener(mc, type))
 					);
 				} else {
 					int keyMessagePrefixCount = Messages.keyMessagePrefixCount("lostCityRumour.nothing.");
 					int msgIdx = Randomizer.instance().randomInt(keyMessagePrefixCount);
 					
-					mapHudStage.showDialog(new SimpleMessageDialog()
+					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.nothing." + msgIdx)
-						.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-							@Override
-							public void buttonPressed(SimpleMessageDialog dialog) {
-								endOfExploration(mc, type);
-								dialog.hide();
-							}
-						})
+						.withButton("ok")
+						.addOnCloseListener(createOnCloseActionListener(mc, type))
 					);
 				}
 			}
@@ -268,12 +220,17 @@ public class LostCityRumourLogic {
 		}
 	}
 
+	private EventListener createOnCloseActionListener(final MoveContext mc, final RumourType type) {
+		return new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				endOfExploration(mc, type);
+				return true;
+			}
+		};
+	}	
+	
 	private void endOfExploration(MoveContext mc, RumourType type) {
-		//guiGameController.log
-		// logic nextunit
-		
-		mc.destTile.removeLostCityRumour();
-		guiGameController.resetMapModelOnTile(mc.destTile);
 	}
 
 	public LostCityRumourLogic handle(MoveContext moveContext) {
@@ -281,36 +238,34 @@ public class LostCityRumourLogic {
 			handleApprovedExploration(moveContext);
 			return this;
 		}
+		
 		QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
 			public void executeAction(MoveContext mc) {
 				handleApprovedExploration(mc);
 			}
 		}; 
-		
         QuestionDialog questionDialog = new QuestionDialog();
         questionDialog.addQuestion(StringTemplate.label("exploreLostCityRumour.text"));
         questionDialog.addAnswer("exploreLostCityRumour.yes", exploreLostCityRumourYesAnswer, moveContext);
         questionDialog.addAnswer("exploreLostCityRumour.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
-        mapHudStage.showDialog(questionDialog);
-		
+        guiGameController.showDialog(questionDialog);
 		return this;
 	}
 	
 	private void handleApprovedExploration(MoveContext mc) {
-		mc.handleMove();
-		guiGameController.startAnimateMove(mc);
-		// TODO: wywolanie moveLogic
-		// gdy koniec animacji obsluga typu ruin i wtedy ewentualne usuniecie jednostki
+		if (mc.unit.getOwner().isAi()) {
+			moveLogic.forAiMove(mc);
+		} else {
+			moveLogic.forGuiMoveWithUserInteractionApproved(mc);
+		}
 		
+		mc.destTile.removeLostCityRumour();
+		guiGameController.resetMapModelOnTile(mc.destTile);
 		
 		LostCityRumour lostCityRumour = new LostCityRumour();
 		RumourType type = lostCityRumour.type(game, mc.unit, mc.destTile);
 		System.out.println("EXPLORE_LOST_CITY_RUMOUR RumourType.type " + type);
-		
-		// TODO: usuniecie
-		type = RumourType.EXPEDITION_VANISHES;
-		//type = RumourType.BURIAL_GROUND;
 		
 		handleLostCityRumourType(mc, type);
 	}

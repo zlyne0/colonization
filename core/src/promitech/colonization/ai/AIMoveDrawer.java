@@ -21,7 +21,7 @@ public class AIMoveDrawer extends RunnableAction {
     }
     
     public void startAIUnitDislocationAnimation(MoveContext moveContext) {
-        if (guiGameController.showAIMoveOnPlayerScreen(moveContext)) {
+        if (guiGameController.showMoveOnPlayerScreen(moveContext)) {
             guiGameController.guiAIMoveInteraction(moveContext);
             
             try {

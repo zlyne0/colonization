@@ -82,7 +82,8 @@ public class GUIGameController {
 	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
 	private Unit disembarkCarrier;
 	
-	private AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
+	private final AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
+	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
 	
 	public GUIGameController() {
 	}
@@ -180,7 +181,7 @@ public class GUIGameController {
 		}
 	}
 	
-	private void logicNextActiveUnit() {
+	protected void logicNextActiveUnit() {
 		if (guiGameModel.unitIterator.hasNext()) {
 			Unit nextUnit = guiGameModel.unitIterator.next();
 			changeActiveUnit(nextUnit);
@@ -297,7 +298,7 @@ public class GUIGameController {
 	}
 	
 	public void pressDirectionKey(Direction direction) {
-		if (blockUserInteraction) {
+		if (moveDrawerSemaphore.isDrawing()) {
 			return;
 		}
 		
@@ -325,34 +326,38 @@ public class GUIGameController {
 			selectedUnit.clearDestination();
 			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
-			if (moveContext.isRequireUserInteraction()) {
-				switch (moveContext.moveType) {
-				case DISEMBARK:
-					if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
-						disembarkUnitToLocation(
-							moveContext.unit, 
-							moveContext.unit.getUnitContainer().getUnits().first(), 
-							destTile
-						);
-					} else {
-						mapHudStage.showChooseUnitsToDisembarkDialog(moveContext);
-					}
-					break;
-				case EXPLORE_LOST_CITY_RUMOUR:
-					
-					new LostCityRumourLogic(this, mapHudStage, game)
-						.handle(moveContext);
-					
-					break;
-				default:
-					throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
-				}
-			} else {
-				if (moveContext.canHandleMove()) {
-					moveContext.handleMove();
-					startAnimateMove(moveContext);
-				}
-			}
+			
+//			if (moveContext.isRequireUserInteraction()) {
+//				switch (moveContext.moveType) {
+//				case DISEMBARK:
+//					if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
+//						disembarkUnitToLocation(
+//							moveContext.unit, 
+//							moveContext.unit.getUnitContainer().getUnits().first(), 
+//							destTile
+//						);
+//					} else {
+//						mapHudStage.showChooseUnitsToDisembarkDialog(moveContext);
+//					}
+//					break;
+//				case EXPLORE_LOST_CITY_RUMOUR:
+//					
+//					new LostCityRumourLogic(this, mapHudStage, game)
+//						.handle(moveContext);
+//					
+//					break;
+//				default:
+//					throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
+//				}
+//			} else {
+//				if (moveContext.canHandleMove()) {
+//					moveContext.handleMove();
+//					startAnimateMove(moveContext);
+//				}
+//			}
+			
+			MoveLogic moveLogic = new MoveLogic(this, moveDrawerSemaphore);
+			moveLogic.forGuiMove(moveContext);
 		}
 	}
 
@@ -369,9 +374,8 @@ public class GUIGameController {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
-		blockUserInteraction = true;
 		endOfUnitDislocationAnimation.moveContext = moveContext;
-		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
+		mapActor.startUnitDislocationAnimation(moveContext, moveDrawerSemaphore);
 	}
 	
 	public void guiAIMoveInteraction(MoveContext moveContext) {
@@ -381,7 +385,7 @@ public class GUIGameController {
 		mapActor.startUnitDislocationAnimation(moveContext, aiMoveDrawer);
 	}
 	
-	public boolean showAIMoveOnPlayerScreen(MoveContext moveContext) {
+	public boolean showMoveOnPlayerScreen(MoveContext moveContext) {
 		return !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
 				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
 	}
@@ -952,5 +956,17 @@ public class GUIGameController {
         navyExplorer.toStringsBorderValues(tileStrings);
         mapActor.showTileDebugStrings(tileStrings);
 		
+	}
+
+	public void resetUnexploredBorders() {
+		mapActor.resetUnexploredBorders();
+	}
+
+	public void showDialog(SimpleMessageDialog dialog) {
+		mapHudStage.showDialog(dialog);
+	}
+
+	public void showDialog(QuestionDialog dialog) {
+		mapHudStage.showDialog(dialog);
 	}
 }
