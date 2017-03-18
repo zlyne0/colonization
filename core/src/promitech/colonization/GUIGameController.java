@@ -339,30 +339,9 @@ public class GUIGameController {
 					}
 					break;
 				case EXPLORE_LOST_CITY_RUMOUR:
-					QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
-						@Override
-						public void executeAction(MoveContext mc) {
-							
-							LostCityRumour lostCityRumour = new LostCityRumour();
-							RumourType type = lostCityRumour.type(game, mc.unit, mc.destTile);
-							System.out.println("EXPLORE_LOST_CITY_RUMOUR RumourType.type " + type);
-							
-							exploreLostCityRumourHandler(type, mc.unit, mc.destTile);
-							mc.destTile.removeLostCityRumour();
-							resetMapModel();
-							
-							if (type.moveUnit) {
-								mc.handleMove();
-								guiMoveInteraction(mc);
-							}
-						}
-					}; 
 					
-			        QuestionDialog questionDialog = new QuestionDialog();
-			        questionDialog.addQuestion(StringTemplate.label("exploreLostCityRumour.text"));
-			        questionDialog.addAnswer("exploreLostCityRumour.yes", exploreLostCityRumourYesAnswer, moveContext);
-			        questionDialog.addAnswer("exploreLostCityRumour.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
-			        mapHudStage.showDialog(questionDialog);
+					new LostCityRumourLogic(this, mapHudStage, game)
+						.handle(moveContext);
 					
 					break;
 				default:
@@ -371,211 +350,22 @@ public class GUIGameController {
 			} else {
 				if (moveContext.canHandleMove()) {
 					moveContext.handleMove();
-					guiMoveInteraction(moveContext);
+					startAnimateMove(moveContext);
 				}
 			}
 		}
 	}
 
-	private void exploreLostCityRumourHandler(RumourType type, Unit unit, Tile destTile) {
-		boolean mounds = Randomizer.instance().isHappen(50);
-        int difficulty = Specification.options.getIntValue(GameOptions.RUMOUR_DIFFICULTY);
-        int dx = 10 - difficulty;
-		
-		switch (type) {
-		case BURIAL_GROUND:
-			destTile.getOwner().modifyTension(unit.getOwner(), Tension.Level.HATEFUL.getLimit());
-			unit.getOwner().changeStance(destTile.getOwner(), Stance.WAR);
-			
-			StringTemplate st = StringTemplate.template("lostCityRumour.burialGround")
-				.addStringTemplate("%nation%", destTile.getOwner().getNationName());
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent(st)
-				.withButton("ok")
-			);
-			break;
-		case EXPEDITION_VANISHES:
-			unit.getOwner().removeUnit(unit);
-			
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent("lostCityRumour.expeditionVanishes")
-				.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-			break;
-		case LEARN:
-			String newUnitTypeId = Randomizer.instance().randomMember(unit.unitType.getUpgradesUnitTypeIds(ChangeType.LOST_CITY));
-			UnitType newUnitType = Specification.instance.unitTypes.getById(newUnitTypeId);
-			unit.changeUnitType(newUnitType);
-
-			String oldName = Messages.message(UnitLabel.getPlainUnitLabel(unit));
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent(StringTemplate.template("lostCityRumour.learn")
-					.add("%unit%", oldName)
-					.addName("%type%", newUnitType)
-				).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-			break;
-		
-		case TRIBAL_CHIEF: {
-	        int gold = Randomizer.instance().randomInt(dx*10) + dx * 5;
-			unit.getOwner().addGold(gold);
-			
-			String msgKey = (mounds) ? "lostCityRumour.moundsTrinkets" : "lostCityRumour.tribalChief";
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent(StringTemplate.template(msgKey)
-						.addAmount("%money%", gold)
-				).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-		} break;
-		
-		case COLONIST: {
-			List<UnitType> unitTypes = Specification.instance.getUnitTypesWithAbility(Ability.FOUND_IN_LOST_CITY);
-			UnitType unitType = Randomizer.instance().randomMember(unitTypes);
-			Unit newColonistUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                unitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-            newColonistUnit.changeUnitLocation(destTile);
-
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent("lostCityRumour.colonist")
-				.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-		} break;
-		
-		case CIBOLA: {
-			String cityOfCibolaName = game.getNextCityOfCibola();
-			int treasureAmount = Randomizer.instance().randomInt(dx * 600) + dx * 300;
-			List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-			UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
-			
-			Unit newTreasureUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                treasureUnitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-            newTreasureUnit.changeUnitLocation(destTile);
-            newTreasureUnit.setTreasureAmount(treasureAmount);
-			
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent(StringTemplate.template("lostCityRumour.cibola")
-					.addKey("%city%", cityOfCibolaName)
-					.addAmount("%money%", treasureAmount)
-				).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-		} break;
-		
-		case RUINS: {
-			int treasureAmount = Randomizer.instance().randomInt(dx * 2) * 300 + 50;
-			if (treasureAmount < 500) {
-				unit.getOwner().addGold(treasureAmount);
-			} else {
-				List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-				UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
-				
-				Unit newTreasureUnit = new Unit(
-	                Game.idGenerator.nextId(Unit.class), 
-	                treasureUnitType,
-	                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-	                unit.getOwner()
-	            );
-	            newTreasureUnit.changeUnitLocation(destTile);
-	            newTreasureUnit.setTreasureAmount(treasureAmount);
-			}
-
-			String msgKey = ((mounds) ? "lostCityRumour.moundsTreasure" : "lostCityRumour.ruins");
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent(StringTemplate.template(msgKey)
-					.addAmount("%money%", treasureAmount)
-				).withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-		} break;
-		
-		case FOUNTAIN_OF_YOUTH: {
-			unit.getOwner().getEurope().emigrantsFountainOfYoung(dx);
-			
-			mapHudStage.showDialog(new SimpleMessageDialog()
-				.withContent("lostCityRumour.fountainOfYouth")
-				.withButton("ok", new SimpleMessageDialog.ButtonActionListener() {
-					@Override
-					public void buttonPressed(SimpleMessageDialog dialog) {
-						logicNextActiveUnit();
-						dialog.hide();
-					}
-				})
-			);
-		} break;
-		
-		case NO_SUCH_RUMOUR:
-		case NOTHING:
-		default: {
-			if (mounds) {
-				mapHudStage.showDialog(new SimpleMessageDialog()
-					.withContent("lostCityRumour.moundsNothing")
-					.withButton("ok")
-				);
-			} else {
-				int keyMessagePrefixCount = Messages.keyMessagePrefixCount("lostCityRumour.nothing.");
-				int msgIdx = Randomizer.instance().randomInt(keyMessagePrefixCount);
-				
-				mapHudStage.showDialog(new SimpleMessageDialog()
-					.withContent("lostCityRumour.nothing." + msgIdx)
-					.withButton("ok")
-				);
-			}
-		} break;
-		}
-	}
-	
-	private void guiMoveInteraction() {
+	private void startAnimateMove() {
 		if (movesToAnimate.isEmpty()) {
 			return;
 		}
 		MoveContext mc = movesToAnimate.removeFirst();
 		mc.handleMove();
-		guiMoveInteraction(mc);
+		startAnimateMove(mc);
 	}
 	
-	private void guiMoveInteraction(MoveContext moveContext) {
+	protected void startAnimateMove(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
@@ -621,7 +411,7 @@ public class GUIGameController {
 			System.out.println("moveContext.isMoveViaPath = " + moveContext);
 			if (moveContext.canHandleMove()) {
 				moveContext.handleMove();
-				guiMoveInteraction(moveContext);
+				startAnimateMove(moveContext);
 			} else {
 				if (moveContext.isEndOfPath()) {
 					if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
@@ -652,10 +442,10 @@ public class GUIGameController {
 					disembarkCarrier = null;
 					blockUserInteraction = false;
 				} else {
-					guiMoveInteraction();
+					startAnimateMove();
 				}
 			} else {
-				if (!moveContext.unit.couldMove()) {
+				if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
 					logicNextActiveUnit();
 					blockUserInteraction = false;
 				} else {
@@ -801,7 +591,7 @@ public class GUIGameController {
 //				guiGameModel.setActiveUnit(null);
 //				mapActor.mapDrawModel().setSelectedUnit(null);
 //			}
-			guiMoveInteraction(moveContext);
+			startAnimateMove(moveContext);
 		} else {
             moveContext.unit.clearDestination();
             mapActor.mapDrawModel().unitPath = null;
@@ -978,7 +768,7 @@ public class GUIGameController {
 		
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
 		mc.handleMove();
-		guiMoveInteraction(mc);
+		startAnimateMove(mc);
 	}
 	
 	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
@@ -991,13 +781,17 @@ public class GUIGameController {
 				movesToAnimate.add(mc);
 			}
 		}
-		guiMoveInteraction();
+		startAnimateMove();
 	}
 
 	public void setMapHudStage(HudStage hudStage) {
 		this.mapHudStage = hudStage;
 	}
 
+	public void resetMapModelOnTile(Tile tile) {
+		mapActor.resetMapModel();
+	}
+	
 	public void resetMapModel() {
 		mapActor.resetMapModel();
 	}

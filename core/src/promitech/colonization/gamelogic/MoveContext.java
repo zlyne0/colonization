@@ -17,6 +17,7 @@ public class MoveContext {
 	private final Path path;
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
+	private boolean unitKilled = false;
 
 	public MoveContext() {
 		this.path = null;
@@ -167,6 +168,14 @@ public class MoveContext {
 
 	public boolean isMoveType(MoveType moveType) {
 		return moveType.equals(this.moveType);
+	}
+
+	public void setUnitKilled() {
+		unitKilled = true;
+	}
+	
+	public boolean isUnitKilled() {
+		return unitKilled;
 	}
 
 }

@@ -20,23 +20,17 @@ public class LostCityRumour {
 	public static final String CIBOLA_CITY_NAME_KEY_PREFIX = "lostCityRumour.cityName.";
 	
     public static enum RumourType {
-        NO_SUCH_RUMOUR(true),
-        BURIAL_GROUND(true),
-        EXPEDITION_VANISHES(false),
-        NOTHING(true),
-        LEARN(true),
-        TRIBAL_CHIEF(true),
-        COLONIST(true),
-        MOUNDS(true),
-        RUINS(true),
-        CIBOLA(true),
-        FOUNTAIN_OF_YOUTH(true);
-
-    	public final boolean moveUnit;
-        
-        private RumourType(boolean moveUnit) {
-        	this.moveUnit = moveUnit;
-        }
+        NO_SUCH_RUMOUR,
+        BURIAL_GROUND,
+        EXPEDITION_VANISHES,
+        NOTHING,
+        LEARN,
+        TRIBAL_CHIEF,
+        COLONIST,
+        MOUNDS,
+        RUINS,
+        CIBOLA,
+        FOUNTAIN_OF_YOUTH;
     }
 	
     public RumourType type(Game game, Unit unit, Tile tile) {

@@ -63,7 +63,7 @@ public class Game {
 		return citiesOfCibola;
 	}
 	
-	public String getNextCityOfCibola() {
+	public String removeNextCityOfCibola() {
 		return citiesOfCibola.remove(0);
 	}
 	

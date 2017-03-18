@@ -555,6 +555,10 @@ public class Player extends ObjectWithId {
 	public boolean isAi() {
 		return ai;
 	}
+	
+	public boolean isHuman() {
+		return !ai;
+	}
 
 	public static class Xml extends XmlNodeParser<Player> {
         private static final String ATTR_AI = "ai";
