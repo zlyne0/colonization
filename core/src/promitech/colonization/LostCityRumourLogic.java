@@ -214,10 +214,6 @@ public class LostCityRumourLogic {
 			}
 		} break;
 		}
-		
-		if (unit.getOwner().isAi()) {
-			endOfExploration(mc, type);
-		}
 	}
 
 	private EventListener createOnCloseActionListener(final MoveContext mc, final RumourType type) {
@@ -231,18 +227,31 @@ public class LostCityRumourLogic {
 	}	
 	
 	private void endOfExploration(MoveContext mc, RumourType type) {
+		if (mc.isHuman()) {
+			moveLogic.endOfGuiMove(mc);
+		}
 	}
 
+	public LostCityRumourLogic aiHandle(MoveContext moveContext) {
+		moveLogic.forAiMoveOnlyReallocation(moveContext);
+		processExploration(moveContext);
+		return this;
+	}
+	
 	public LostCityRumourLogic handle(MoveContext moveContext) {
-		if (moveContext.unit.getOwner().isAi()) {
-			handleApprovedExploration(moveContext);
-			return this;
+		if (moveContext.isAi()) {
+			throw new IllegalStateException("can run only by gui");
 		}
 		
 		QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
-			public void executeAction(MoveContext mc) {
-				handleApprovedExploration(mc);
+			public void executeAction(final MoveContext mc) {
+				moveLogic.forGuiMoveOnlyReallocation(mc, new MoveLogic.AfterMoveProcessor() {
+					@Override
+					public void afterMove(final MoveContext mc) {
+						processExploration(mc);
+					}
+				});
 			}
 		}; 
         QuestionDialog questionDialog = new QuestionDialog();
@@ -253,13 +262,7 @@ public class LostCityRumourLogic {
 		return this;
 	}
 	
-	private void handleApprovedExploration(MoveContext mc) {
-		if (mc.unit.getOwner().isAi()) {
-			moveLogic.forAiMove(mc);
-		} else {
-			moveLogic.forGuiMoveWithUserInteractionApproved(mc);
-		}
-		
+	private void processExploration(MoveContext mc) {
 		mc.destTile.removeLostCityRumour();
 		guiGameController.resetMapModelOnTile(mc.destTile);
 		

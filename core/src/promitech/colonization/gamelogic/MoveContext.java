@@ -42,6 +42,14 @@ public class MoveContext {
 		this.unit = path.unit;
 	}
 
+	public boolean isAi() {
+		return unit.getOwner().isAi();
+	}
+	
+	public boolean isHuman() {
+		return unit.getOwner().isHuman();
+	}
+	
 	public void init(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
 		this.sourceTile = sourceTile;
 		this.destTile = destTile;
@@ -145,7 +153,12 @@ public class MoveContext {
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.MOVE_HIGH_SEAS.equals(moveType) || MoveType.EMBARK.equals(moveType));
+		return hasMovePoints && !endOfPath && (
+				MoveType.MOVE.equals(moveType) || 
+				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
+				MoveType.EMBARK.equals(moveType) ||
+				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType)
+		);
 	}
 
 	public boolean isRequireUserInteraction() {
