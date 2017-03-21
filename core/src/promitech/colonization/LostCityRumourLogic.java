@@ -220,17 +220,11 @@ public class LostCityRumourLogic {
 		return new EventListener() {
 			@Override
 			public boolean handle(Event event) {
-				endOfExploration(mc, type);
+				moveLogic.guiNextActiveUnit(mc);
 				return true;
 			}
 		};
 	}	
-	
-	private void endOfExploration(MoveContext mc, RumourType type) {
-		if (mc.isHuman()) {
-			moveLogic.guiNextActiveUnit(mc);
-		}
-	}
 
 	public LostCityRumourLogic aiHandle(MoveContext moveContext) {
 		moveLogic.forAiMoveOnlyReallocation(moveContext);
