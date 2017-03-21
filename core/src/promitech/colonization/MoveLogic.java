@@ -1,5 +1,6 @@
 package promitech.colonization;
 
+import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -46,6 +47,49 @@ public class MoveLogic {
 	}
 
 	private void gui_handlePathMoveContext(MoveContext moveContext) {
+		boolean processMoveViaPath = true;
+		while (processMoveViaPath) {
+			
+			if (!moveContext.canHandleMove()) {
+				// move via path but no move points so next unit
+				moveContext.unit.setState(UnitState.SKIPPED);
+				guiNextActiveUnitForActiveUnit();
+				
+				processMoveViaPath = false;
+				break;
+			}
+
+			handleOnlyReallocation(moveContext, null);
+			moveContext.initNextPathStep();
+			
+			if (guiGameController.getGame().map.isUnitSeeHostileUnit(moveContext.unit)) {
+				System.out.println("unit: " + moveContext.unit + " see hostile unit");
+				processMoveViaPath = false;
+				break;
+			}
+				
+			if (moveContext.isEndOfPath()) {
+				if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
+					moveContext.unit.moveUnitToHighSea();
+					guiNextActiveUnitForActiveUnit();
+				} else {
+					moveContext.unit.clearDestination();
+					guiGameController.removeDrawableUnitPath();
+				}
+				
+				// no move points so next unit
+				if (!moveContext.unit.couldMove()) {
+					guiNextActiveUnitForActiveUnit();
+				}
+				// dest tile and carrier so show colony screen
+				if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+					guiGameController.showColonyScreen(moveContext.destTile);
+				}
+				processMoveViaPath = false;
+				break;
+			}
+			
+		}
 	}
 	
 	private void gui_handleOneTileMoveContext(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
@@ -87,7 +131,13 @@ public class MoveLogic {
 		}
 	}
 	
-	public void endOfGuiMove(MoveContext moveContext) {
+	public void guiNextActiveUnitForActiveUnit() {
+		guiGameController.logicNextActiveUnit();
+	}
+	public void guiNextActiveUnit(MoveContext moveContext) {
+		if (moveContext.isAi()) {
+			throw new IllegalStateException("should not run by ai");
+		}
 		if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
 			guiGameController.logicNextActiveUnit();
 		}
@@ -95,7 +145,7 @@ public class MoveLogic {
 	private final AfterMoveProcessor oneStepGuiAfterMoveProcessor = new AfterMoveProcessor() {
 		@Override
 		public void afterMove(MoveContext moveContext) {
-			endOfGuiMove(moveContext);
+			guiNextActiveUnit(moveContext);
 		}
 	};
 	private final AfterMoveProcessor doNothingAfterMoveProcessor = new AfterMoveProcessor() {
