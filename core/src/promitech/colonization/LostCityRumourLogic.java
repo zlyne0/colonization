@@ -228,7 +228,7 @@ public class LostCityRumourLogic {
 	
 	private void endOfExploration(MoveContext mc, RumourType type) {
 		if (mc.isHuman()) {
-			moveLogic.endOfGuiMove(mc);
+			moveLogic.guiNextActiveUnit(mc);
 		}
 	}
 
