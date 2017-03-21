@@ -37,7 +37,7 @@ public class LostCityRumourLogic {
 		this.moveLogic = moveLogic;
 	}
 	
-	void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
+	void handleLostCityRumourType(final MoveContext mc, final RumourType type) {sdf
 		final Unit unit = mc.unit;
 		final Tile destTile = mc.destTile;
 		
