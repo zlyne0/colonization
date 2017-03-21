@@ -521,6 +521,10 @@ public class GUIGameController {
 		setDrawableUnitPath(unit);
 	}
 	
+	public void removeDrawableUnitPath() {
+		mapActor.mapDrawModel().unitPath = null;
+	}
+	
 	private void setDrawableUnitPath(Unit unit) {
 		mapActor.mapDrawModel().unitPath = null;
 		
@@ -580,6 +584,10 @@ public class GUIGameController {
 
 		System.out.println("path.moveContext = " + moveContext);
 
+		MoveLogic moveLogic = new MoveLogic(this, moveDrawerSemaphore);
+		moveLogic.forGuiMove(moveContext);
+
+/*		
 		if (moveContext.canHandleMove()) {
 			moveContext.handleMove();
 //			if (moveContext.isMoveType(MoveType.EMBARK)) {
@@ -591,6 +599,7 @@ public class GUIGameController {
             moveContext.unit.clearDestination();
             mapActor.mapDrawModel().unitPath = null;
 		}
+*/		
 	}
 	
 	private void generateGotoPath(Tile destinationTile) {
