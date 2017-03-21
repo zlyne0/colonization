@@ -56,7 +56,7 @@ public class LostCityRumourLogic {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(st)
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -68,7 +68,7 @@ public class LostCityRumourLogic {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.expeditionVanishes")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -84,7 +84,7 @@ public class LostCityRumourLogic {
 						.add("%unit%", oldName)
 						.addName("%type%", newUnitType)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 			break;
@@ -99,7 +99,7 @@ public class LostCityRumourLogic {
 					.withContent(StringTemplate.template(msgKey)
 							.addAmount("%money%", gold)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -119,7 +119,7 @@ public class LostCityRumourLogic {
             	guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.colonist")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
             }
 		} break;
@@ -145,7 +145,7 @@ public class LostCityRumourLogic {
 						.addKey("%city%", cityOfCibolaName)
 						.addAmount("%money%", treasureAmount)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
             }
 		} break;
@@ -174,7 +174,7 @@ public class LostCityRumourLogic {
 					.withContent(StringTemplate.template(msgKey)
 						.addAmount("%money%", treasureAmount)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -186,7 +186,7 @@ public class LostCityRumourLogic {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.fountainOfYouth")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener(mc, type))
 				);
 			}
 		} break;
@@ -199,7 +199,7 @@ public class LostCityRumourLogic {
 					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.moundsNothing")
 						.withButton("ok")
-						.addOnCloseListener(createOnCloseActionListener(mc))
+						.addOnCloseListener(createOnCloseActionListener(mc, type))
 					);
 				} else {
 					int keyMessagePrefixCount = Messages.keyMessagePrefixCount("lostCityRumour.nothing.");
@@ -208,7 +208,7 @@ public class LostCityRumourLogic {
 					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.nothing." + msgIdx)
 						.withButton("ok")
-						.addOnCloseListener(createOnCloseActionListener(mc))
+						.addOnCloseListener(createOnCloseActionListener(mc, type))
 					);
 				}
 			}
@@ -216,7 +216,7 @@ public class LostCityRumourLogic {
 		}
 	}
 
-	private EventListener createOnCloseActionListener(final MoveContext mc) {
+	private EventListener createOnCloseActionListener(final MoveContext mc, final RumourType type) {
 		return new EventListener() {
 			@Override
 			public boolean handle(Event event) {
