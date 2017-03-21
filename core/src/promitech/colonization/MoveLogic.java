@@ -59,6 +59,12 @@ public class MoveLogic {
 				break;
 			}
 
+			if (moveContext.isRequireUserInteraction()) {
+				requiredUserInterationProcessor(moveContext);
+				processMoveViaPath = false;
+				break;
+			}
+			
 			handleOnlyReallocation(moveContext, null);
 			moveContext.initNextPathStep();
 			
