@@ -10,6 +10,7 @@ import javax.xml.parsers.ParserConfigurationException;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 
 import net.sf.freecol.common.model.Colony;
@@ -245,10 +246,15 @@ public class GUIGameController {
 		}
 	}
 	
-	public void showColonyScreen(Tile tile) {
-		ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-		colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
-		screenManager.setScreen(ApplicationScreenType.COLONY);
+	public void showColonyScreen(final Tile tile) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				screenManager.setScreen(ApplicationScreenType.COLONY);
+			}
+    	});
 	}
 	
 	public void clickOnTile(Point p) {
