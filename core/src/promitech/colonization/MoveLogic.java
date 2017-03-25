@@ -1,19 +1,26 @@
 package promitech.colonization;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.infrastructure.ThreadsResources;
+import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 
 public class MoveLogic {
 	
-	public static interface AfterMoveProcessor {
-		void afterMove(MoveContext moveContext);
+	public static abstract class AfterMoveProcessor {
+		void afterMove(MoveContext moveContext) {
+		}
+		void afterMove(List<MoveContext> moveContextList) {
+		}
 	}
 	
 	private abstract class RunnableMoveContext implements Runnable {
 		protected MoveContext moveContext;
 		protected AfterMoveProcessor afterMovePorcessor;
+		protected List<MoveContext> moveContextList;
 	}
 	
 	private final MoveDrawerSemaphore moveDrawerSemaphore;
@@ -25,13 +32,19 @@ public class MoveLogic {
 			gui_handleMoveContext(moveContext, afterMovePorcessor);
 		}
 	};
-	
 	private final RunnableMoveContext moveHandlerOnlyReallocation = new RunnableMoveContext() {
 		@Override
 		public void run() {
 			handleOnlyReallocation(moveContext, afterMovePorcessor);
 		}
 	};
+	private final RunnableMoveContext multipleMoveContextHandlerForOnlyReallocation = new RunnableMoveContext() {
+		@Override
+		public void run() {
+			handleOnlyReallocation(moveContextList, afterMovePorcessor);
+		}
+	};
+	
 	
 	public MoveLogic(GUIGameController guiGameController, MoveDrawerSemaphore moveDrawerSemaphore) {
 		this.guiGameController = guiGameController;
@@ -108,15 +121,28 @@ public class MoveLogic {
 	
 	private void requiredUserInterationProcessor(MoveContext moveContext) {
 		switch (moveContext.moveType) {
-			case EXPLORE_LOST_CITY_RUMOUR:
+			case EXPLORE_LOST_CITY_RUMOUR: {
 				new LostCityRumourLogic(guiGameController, this)
 					.handle(moveContext);
-				break;
+			} break;
+			case DISEMBARK: {
+				if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
+					MoveContext mc = new MoveContext(
+						moveContext.unit.getTileLocationOrNull(), 
+						moveContext.destTile, 
+						moveContext.unit.getUnitContainer().getUnits().first()
+					);
+					handleOnlyReallocation(mc, null);
+				} else {
+			    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, guiGameController);
+			    	guiGameController.showDialog(chooseUnitsDialog);
+				}
+			} break;
 			default:
 				throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
 		}
 	}
-	
+
 	private void handleOnlyReallocation(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
 		moveContext.handleMove();
 		moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
@@ -134,6 +160,15 @@ public class MoveLogic {
 		
 		if (afterMovePorcessor != null) {
 			afterMovePorcessor.afterMove(moveContext);
+		}
+	}
+	
+	private void handleOnlyReallocation(List<MoveContext> moveContextList, AfterMoveProcessor afterMovePorcessor) {
+		for (MoveContext mc : moveContextList) {
+			handleOnlyReallocation(mc, null);
+		}
+		if (afterMovePorcessor != null) {
+			afterMovePorcessor.afterMove(moveContextList);
 		}
 	}
 	
@@ -164,10 +199,10 @@ public class MoveLogic {
 		if (!moveContext.canHandleMove()) {
 			return;
 		}
-		if (moveContext.isRequireUserInteraction()) {
-			requiredUserInterationProcessor(moveContext);
-			return;
-		}
+//		if (moveContext.isRequireUserInteraction()) {
+//			requiredUserInterationProcessor(moveContext);
+//			return;
+//		}
 		
 		moveHandlerThread.moveContext = moveContext;
 		moveHandlerThread.afterMovePorcessor = oneStepGuiAfterMoveProcessor;
@@ -183,6 +218,12 @@ public class MoveLogic {
 		ThreadsResources.instance.executeAImovement(moveHandlerOnlyReallocation);
 	}
 
+	public void forGuiMoveOnlyReallocation(List<MoveContext> moveContextList, AfterMoveProcessor afterMovePorcessor) {
+		multipleMoveContextHandlerForOnlyReallocation.moveContextList = moveContextList;
+		multipleMoveContextHandlerForOnlyReallocation.afterMovePorcessor = afterMovePorcessor;
+		ThreadsResources.instance.executeAImovement(multipleMoveContextHandlerForOnlyReallocation);
+	}
+	
 	public void forAiMoveOnlyReallocation(MoveContext moveContext) {
 		handleOnlyReallocation(moveContext, doNothingAfterMoveProcessor);
 	}

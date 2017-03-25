@@ -3,6 +3,7 @@ package promitech.colonization.ui;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
@@ -43,6 +44,9 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
         };
     }
 
+	public void init(ShapeRenderer shapeRenderer) {
+	}
+    
     public ClosableDialog withHidingOnEsc() {
     	dialog.addListener(new InputListener() {
             public boolean keyDown (InputEvent event, int keycode2) {

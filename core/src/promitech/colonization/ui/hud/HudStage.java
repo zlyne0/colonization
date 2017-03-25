@@ -27,7 +27,6 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
-import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.ui.ClosableDialog;
 
 public class HudStage extends Stage {
@@ -117,19 +116,25 @@ public class HudStage extends Stage {
 		endOfTurnActor.setHeight(getHeight());
     }
 
-    public void showDialog(Dialog dialog) {
-    	dialog.show(this);
+    public void showDialog(final Dialog dialog) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				dialog.show(HudStage.this);
+			}
+    	});
     }
     
-    public void showDialog(ClosableDialog closableDialog) {
-    	HudStage.this.removeListener(inputListener);    	
-		closableDialog.addOnCloseListener(this.addInputListenerToStageEvent);
-    	closableDialog.show(this);
-    }
-    
-    public void showChooseUnitsToDisembarkDialog(MoveContext carrierMoveContext) {
-    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, carrierMoveContext, gameController);
-    	chooseUnitsDialog.show(this);
+    public void showDialog(final ClosableDialog<?> closableDialog) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				HudStage.this.removeListener(inputListener);    	
+				closableDialog.addOnCloseListener(HudStage.this.addInputListenerToStageEvent);
+				closableDialog.init(shapeRenderer);
+				closableDialog.show(HudStage.this);
+			}
+		});
     }
     
     private final InputListener inputListener = new InputListener() {

@@ -19,18 +19,21 @@ import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 
-public class ChooseUnitsToDisembarkDialog extends ClosableDialog {
+public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDisembarkDialog> {
 
-	private final STable unitTable;
+	private STable unitTable;
 	private final GUIGameController guiGameController;
 	private final MoveContext moveContext;
 	
-	public ChooseUnitsToDisembarkDialog(ShapeRenderer shape, MoveContext moveContext, GUIGameController guiGameController) {
+	public ChooseUnitsToDisembarkDialog(MoveContext moveContext, GUIGameController guiGameController) {
 		super("", GameResources.instance.getUiSkin());
 		this.guiGameController = guiGameController;
 		this.moveContext = moveContext;
-		
-		unitTable = new STable(shape);
+	}
+
+	@Override
+	public void init(ShapeRenderer shapeRenderer) {
+		unitTable = new STable(shapeRenderer);
 		
 		UnitActor carrierUnitActor = new UnitActor(moveContext.unit, null); 
 		Label disembarkLabel = new Label(Messages.msg("disembark.text"), GameResources.instance.getUiSkin());

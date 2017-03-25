@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedList;
 import java.util.List;
@@ -51,6 +52,7 @@ import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
 import promitech.colonization.savegame.SaveGameList;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.hud.HudStage;
@@ -58,14 +60,14 @@ import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
-	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
-		MoveContext moveContext;
-		
-		@Override
-		public void run() {
-			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
-		}
-	}
+//	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
+//		MoveContext moveContext;
+//		
+//		@Override
+//		public void run() {
+//			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
+//		}
+//	}
 	
 	private GameLogic gameLogic;
 	private final GUIGameModel guiGameModel = new GUIGameModel();
@@ -77,9 +79,9 @@ public class GUIGameController {
 	
 	private boolean blockUserInteraction = false;
 	private PathFinder finder = new PathFinder();
-	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
-	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
-	private Unit disembarkCarrier;
+	//private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
+	//private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
+	//private Unit disembarkCarrier;
 	
 	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
 	
@@ -359,20 +361,19 @@ public class GUIGameController {
 		}
 	}
 
-	private void startAnimateMove() {
-		if (movesToAnimate.isEmpty()) {
-			return;
-		}
-		MoveContext mc = movesToAnimate.removeFirst();
-		mc.handleMove();
-		startAnimateMove(mc);
-	}
+//	private void startAnimateMove() {
+//		if (movesToAnimate.isEmpty()) {
+//			return;
+//		}
+//		MoveContext mc = movesToAnimate.removeFirst();
+//		mc.handleMove();
+//		startAnimateMove(mc);
+//	}
 	
 	protected void startAnimateMove(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
-		endOfUnitDislocationAnimation.moveContext = moveContext;
 		mapActor.startUnitDislocationAnimation(moveContext, moveDrawerSemaphore);
 	}
 	
@@ -381,6 +382,7 @@ public class GUIGameController {
 				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
 	}
 	
+	/*		
 	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
 		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
 			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, moveContext.unit);
@@ -457,6 +459,7 @@ public class GUIGameController {
 			
 		}
 	}
+	 */		
 
 	private final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
         @Override
@@ -768,24 +771,25 @@ public class GUIGameController {
 	}
 
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
-		disembarkCarrier = carrier;
-		
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
-		mc.handleMove();
-		startAnimateMove(mc);
+		
+		MoveLogic moveLogic = new MoveLogic(this, moveDrawerSemaphore);
+		moveLogic.forGuiMoveOnlyReallocation(mc, null);
 	}
 	
 	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
-		disembarkCarrier = carrier;
+		List<MoveContext> disembarkMoves = new ArrayList<MoveContext>(unitsToDisembark.size()); 
 		
 		for (Unit u : unitsToDisembark) {
 			MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, u);
-			System.out.println("try disembark " + mc.toString());
-			if (mc.canHandleMove()) {
-				movesToAnimate.add(mc);
+			System.out.println("disembark unit move: " + mc);
+			if (mc.isMoveType()) {
+				disembarkMoves.add(mc);
 			}
 		}
-		startAnimateMove();
+		
+		MoveLogic moveLogic = new MoveLogic(this, moveDrawerSemaphore);
+		moveLogic.forGuiMoveOnlyReallocation(disembarkMoves, null);
 	}
 
 	public void setMapHudStage(HudStage hudStage) {
@@ -962,7 +966,7 @@ public class GUIGameController {
 		mapActor.resetUnexploredBorders();
 	}
 
-	public void showDialog(SimpleMessageDialog dialog) {
+	public void showDialog(ClosableDialog<?> dialog) {
 		mapHudStage.showDialog(dialog);
 	}
 

@@ -157,8 +157,13 @@ public class MoveContext {
 				MoveType.MOVE.equals(moveType) || 
 				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
 				MoveType.EMBARK.equals(moveType) ||
+				MoveType.DISEMBARK.equals(moveType) ||
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType)
 		);
+	}
+
+	public boolean isMoveType() {
+		return MoveType.MOVE.equals(moveType);
 	}
 
 	public boolean isRequireUserInteraction() {
