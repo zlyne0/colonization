@@ -1,5 +1,6 @@
 package promitech.colonization;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.player.EventsNotifications.AddNotificationListener;
@@ -22,6 +23,7 @@ public class GUIGameModel implements AddNotificationListener {
 	Player player;
 	Unit previewViewModeUnit = null;
 	UnitIterator unitIterator = null;
+	public Game game;
 
 	public boolean isActiveUnitSet() {
 		return activeUnit != null;
@@ -89,4 +91,11 @@ public class GUIGameModel implements AddNotificationListener {
     public void onAddNotification(Notification notification) {
         runListeners();
     }
+    
+	public void throwExceptionWhenActiveUnitNotSet() {
+		if (isActiveUnitNotSet()) {
+			throw new IllegalStateException("active unit not set");
+		}
+	}
+    
 }

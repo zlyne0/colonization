@@ -27,14 +27,14 @@ import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
 class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
-	private java.util.Map<String, MarketGoodsActor> goodActorByType = new HashMap<String, MarketGoodsActor>();
+	private final java.util.Map<String, MarketGoodsActor> goodActorByType = new HashMap<String, MarketGoodsActor>();
 	private final DragAndDrop goodsDragAndDrop;
-	private ShapeRenderer shapeRenderer;
+	private final ShapeRenderer shapeRenderer;
+	private final MarketLog marketLog;
+	private final ChangeColonyStateListener changeColonyStateListener;
+	
 	private Player player;
 	private Game game;
-	
-	private MarketLog marketLog;
-	private ChangeColonyStateListener changeColonyStateListener;
 	
     private final DoubleClickedListener marketGoodsDoubleClickListener = new DoubleClickedListener() {
         public void doubleClicked(InputEvent event, float x, float y) {
@@ -76,8 +76,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
     	}
     }
 	
-	MarketPanel(Game game, ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener, MarketLog marketLog) {
-		this.game = game;
+	MarketPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener, MarketLog marketLog) {
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		this.marketLog = marketLog;
 		this.changeColonyStateListener = changeColonyStateListener;
@@ -88,9 +87,14 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 		goodsDragAndDrop.addTarget(new MarketGoodsActor.GoodsDragAndDropTarget(this, this));
 	}
 	
-	void init(Player player) {
+	public void init(Player player, Game game) {
 		this.player = player;
+		this.game = game;
 		
+		updatePrices();
+	}
+	
+	private void updatePrices() {
         for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {
         	if (!goodsType.isStorable()) {
         		continue;
@@ -135,7 +139,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 					" to " + transaction.sellPriceAfterTransaction
 			);
 			changeColonyStateListener.addNotification(MessageNotification.createGoodsPriceChangeNotification(player, transaction));
-			init(player);
+			updatePrices();
 		}
 	}
 
@@ -164,7 +168,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 						" to " + transaction.buyPriceAfterTransaction
 						);
 				changeColonyStateListener.addNotification(MessageNotification.createGoodsPriceChangeNotification(player, transaction));
-				init(player);
+				updatePrices();
 			}
 		}
 	}

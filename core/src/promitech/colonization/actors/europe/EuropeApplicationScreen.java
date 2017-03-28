@@ -26,6 +26,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.PlayerGoldTaxYearLabel;
@@ -49,7 +50,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			case SAIL_TO_NEW_WORLD:
 				unitActor.unit.sailUnitToNewWorld();
 				if (player.getEurope().isNoNavyInPort()) {
-	        		gameController.showMapScreenAndActiveNextUnit();
+					guiGameController.showMapScreenAndActiveNextUnit();
 				} else {
 					changeColonyStateListener.changeUnitAllocation();
 				}
@@ -123,10 +124,12 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private Game game;
 	private Player player;
 	
+	private GUIGameController guiGameController;
+	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
 		@Override
 		public void changeUnitAllocation() {
-			marketPanel.init(player);
+			marketPanel.init(player, game);
 			carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
 			outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
 			highSeasUnitsPanel.initUnits(player);
@@ -156,6 +159,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void create() {
+		guiGameController = di.guiGameController;
+		
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
         unitsDragAndDrop.setTapSquareSize(3);
@@ -167,7 +172,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		
 		stage = new Stage();		
 		marketLog = new MarketLog();
-        marketPanel = new MarketPanel(gameController.getGame(), shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
+        marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
         carrierUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
@@ -299,7 +304,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		this.player = player;
 		this.game = game;
 		
-		marketPanel.init(player);
+		marketPanel.init(player, game);
 		carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
 		outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
 		highSeasUnitsPanel.initUnits(player);

@@ -83,7 +83,7 @@ class BuildItemDescActor extends Table {
     }
 }
 
-class BuildingQueueDialog extends ClosableDialog {
+class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 
 	private ShapeRenderer shape;
 	private final Colony colony;

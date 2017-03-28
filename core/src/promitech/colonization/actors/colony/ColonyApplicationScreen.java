@@ -29,6 +29,8 @@ import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.GUIGameController;
+import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.UnitsPanel;
@@ -81,17 +83,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    	}
 	    	if (ActionTypes.FORTIFY.equals(item.actionType)) {
 	    		unit.setState(UnitState.FORTIFYING);
-	    		gameController.nextActiveUnitWhenActive(unit);
+	    		guiGameController.nextActiveUnitWhenActive(unit);
 	    	}
 	    	if (ActionTypes.CLEAR_ORDERS.equals(item.actionType)) {
 	    		unit.setState(UnitState.ACTIVE);
 	    	}
 	    	if (ActionTypes.SENTRY.equals(item.actionType)) {
 	    		unit.setState(UnitState.SENTRY);
-	    		gameController.nextActiveUnitWhenActive(unit);
+	    		guiGameController.nextActiveUnitWhenActive(unit);
 	    	}
 	    	if (ActionTypes.ACTIVATE.equals(item.actionType)) {
-	    		gameController.closeColonyViewAndActiveUnit(colony, unit);
+	    		guiGameController.closeColonyViewAndActiveUnit(colony, unit);
 	    	}
 	    	if (ActionTypes.ASSIGN_TO_PRODUCTION.equals(item.actionType)) {
 	    		DragAndDropSourceContainer<UnitActor> source = (DragAndDropSourceContainer<UnitActor>)unitActor.dragAndDropSourceContainer;
@@ -202,6 +204,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 
     private Colony colony;
     private Tile colonyTile;
+    private GUIGameController guiGameController;
+    private GUIGameModel guiGameModel;
     
     private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
 	
@@ -246,6 +250,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 
 	@Override
 	public void create() {
+		guiGameController = di.guiGameController;
+		guiGameModel = di.guiGameModel;
+		
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
         stage = new Stage();
         
@@ -267,7 +274,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		closeButton.addListener(new InputListener() {
         	@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-        		gameController.closeColonyView(colony);
+        		guiGameController.closeColonyView(colony);
         		return true;
         	}
         });
@@ -275,7 +282,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener);
-        terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener, gameController);
+        terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
         outsideUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)
@@ -332,7 +339,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 			public void clicked(InputEvent event, float x, float y) {
 				BuildingQueueDialog dialog = new BuildingQueueDialog(
 						stage.getHeight() * 0.75f,
-						shape, gameController.getGame(), 
+						shape, guiGameModel.game, 
 						colony, changeColonyStateListener
 				);
 				dialog.show(stage);

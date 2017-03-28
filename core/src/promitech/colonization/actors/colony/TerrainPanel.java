@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.actors.UnitDragAndDropSource;
 import promitech.colonization.actors.UnitDragAndDropTarget;
@@ -43,7 +44,6 @@ public class TerrainPanel extends Table implements
 	private final ProductionQuantityDrawer productionQuantityDrawer;
 	private final ChangeColonyStateListener changeColonyStateListener;
 	private final DoubleClickedListener unitActorDoubleClickListener;
-	private final GUIGameController gameController;
 	
 	@Override
 	public float getPrefWidth() {
@@ -55,10 +55,9 @@ public class TerrainPanel extends Table implements
 		return PREF_HEIGHT;
 	}
 	
-	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener, GUIGameController gameController) {
+	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 	    this.changeColonyStateListener = changeColonyStateListener;
 	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
-	    this.gameController = gameController;
 		setWidth(getPrefWidth());
 		setHeight(getPrefHeight());
 		
@@ -165,7 +164,7 @@ public class TerrainPanel extends Table implements
 				}
 			};
 			
-			QuestionDialog questionDialog = gameController.createIndianLandDemandQuestions(landPrice, worker.unit, ct.tile, moveWorkerAction);
+			QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, worker.unit, ct.tile, moveWorkerAction);
 			questionDialog.show(getStage());
 		}
 	}

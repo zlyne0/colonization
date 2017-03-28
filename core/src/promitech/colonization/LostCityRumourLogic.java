@@ -31,8 +31,8 @@ public class LostCityRumourLogic {
 	private final GUIGameController guiGameController;
 	private final MoveLogic moveLogic;
 
-	public LostCityRumourLogic(GUIGameController guiGameController, MoveLogic moveLogic) {
-		this.game = guiGameController.getGame();
+	public LostCityRumourLogic(GUIGameController guiGameController, MoveLogic moveLogic, Game game) {
+		this.game = game;
 		this.guiGameController = guiGameController;
 		this.moveLogic = moveLogic;
 	}

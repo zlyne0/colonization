@@ -23,8 +23,10 @@ public class MoveLogic {
 		protected List<MoveContext> moveContextList;
 	}
 	
-	private final MoveDrawerSemaphore moveDrawerSemaphore;
-	private final GUIGameController guiGameController;
+	private MoveDrawerSemaphore moveDrawerSemaphore;
+	private GUIGameController guiGameController;
+	private MoveController moveController;
+	private GUIGameModel guiGameModel;
 	
 	private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
 		@Override
@@ -45,10 +47,14 @@ public class MoveLogic {
 		}
 	};
 	
+	public MoveLogic() {
+	}
 	
-	public MoveLogic(GUIGameController guiGameController, MoveDrawerSemaphore moveDrawerSemaphore) {
+	public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel) {
 		this.guiGameController = guiGameController;
-		this.moveDrawerSemaphore = moveDrawerSemaphore;
+		this.moveDrawerSemaphore = moveController.getMoveDrawerSemaphore();
+		this.moveController = moveController;
+		this.guiGameModel = guiGameModel;
 	}
 	
 	private void gui_handleMoveContext(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
@@ -81,7 +87,7 @@ public class MoveLogic {
 			handleOnlyReallocation(moveContext, null);
 			moveContext.initNextPathStep();
 			
-			if (guiGameController.getGame().map.isUnitSeeHostileUnit(moveContext.unit)) {
+			if (guiGameModel.game.map.isUnitSeeHostileUnit(moveContext.unit)) {
 				System.out.println("unit: " + moveContext.unit + " see hostile unit");
 				processMoveViaPath = false;
 				break;
@@ -93,7 +99,7 @@ public class MoveLogic {
 					guiNextActiveUnitForActiveUnit();
 				} else {
 					moveContext.unit.clearDestination();
-					guiGameController.removeDrawableUnitPath();
+					moveController.removeDrawableUnitPath();
 				}
 				
 				// no move points so next unit
@@ -122,7 +128,7 @@ public class MoveLogic {
 	private void requiredUserInterationProcessor(MoveContext moveContext) {
 		switch (moveContext.moveType) {
 			case EXPLORE_LOST_CITY_RUMOUR: {
-				new LostCityRumourLogic(guiGameController, this)
+				new LostCityRumourLogic(guiGameController, this, guiGameModel.game)
 					.handle(moveContext);
 			} break;
 			case DISEMBARK: {
@@ -134,7 +140,7 @@ public class MoveLogic {
 					);
 					handleOnlyReallocation(mc, null);
 				} else {
-			    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, guiGameController);
+			    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, moveController);
 			    	guiGameController.showDialog(chooseUnitsDialog);
 				}
 			} break;
@@ -149,7 +155,7 @@ public class MoveLogic {
 		
 		boolean exloredNewTiles = false;
 		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
-			exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameController.getGame().map, moveContext.unit);
+			exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
 		}
 		
 		if (moveContext.isHuman()) {

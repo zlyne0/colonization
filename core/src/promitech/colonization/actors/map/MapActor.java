@@ -11,9 +11,9 @@ import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GUIGameController;
+import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
@@ -21,7 +21,7 @@ import promitech.colonization.math.Point;
 public class MapActor extends Widget {
 
 	private final GameResources gameResources;
-	private final GUIGameController gameController;
+	private final GUIGameModel guiGameModel;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
@@ -29,9 +29,9 @@ public class MapActor extends Widget {
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
-	public MapActor(final GUIGameController gameController, GameResources gameResources) {
-		this.gameController = gameController;
+	public MapActor(final GUIGameController gameController, GameResources gameResources, GUIGameModel guiGameModel) {
 		this.gameResources = gameResources;
+		this.guiGameModel = guiGameModel;
 		
 		addListener(new InputListener() {
 			private boolean pressed = false;
@@ -76,17 +76,17 @@ public class MapActor extends Widget {
 			}
 		});
 		
-		mapDrawModel.initialize(gameController.getGame().map, gameController.getGame().playingPlayer, gameResources);
+		mapDrawModel.initialize(guiGameModel.game.map, guiGameModel.game.playingPlayer, gameResources);
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
-		centerCameraOnTile(gameController.getGame().playingPlayer.getEntryLocationX(), gameController.getGame().playingPlayer.getEntryLocationY());
+		centerCameraOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
 	}
 	
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(gameController.getGame().map, gameResources);
+		mapDrawModel.resetUnexploredBorders(guiGameModel.game.map, gameResources);
 	}
 	
 	public void resetMapModel() {
-		mapDrawModel.initialize(gameController.getGame().map, gameController.getGame().playingPlayer, gameResources);
+		mapDrawModel.initialize(guiGameModel.game.map, guiGameModel.game.playingPlayer, gameResources);
 	}
 	
 	@Override

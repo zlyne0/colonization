@@ -17,8 +17,9 @@ import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameController;
+import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
+import promitech.colonization.MoveController;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.ui.ClosableDialog;
@@ -26,20 +27,21 @@ import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 
-public class GoToCityDialogList extends ClosableDialog {
+public class GoToCityDialogList extends ClosableDialog<GoToCityDialogList> {
     
-    private final GUIGameController guiGameController;
+    private final MoveController moveController;
     private STable locationList;
 	private final Table dialogLayout = new Table();
 	
 	private LabelStyle cityNameLabelStyle;
 	
-	public GoToCityDialogList(final GUIGameController guiGameController, ShapeRenderer shape, float maxHeight) {
+	public GoToCityDialogList(final MoveController moveController, ShapeRenderer shape, float maxHeight, GUIGameModel guiGameModel) {
 		super("", GameResources.instance.getUiSkin(), maxHeight);
-		this.guiGameController = guiGameController;
+		this.moveController = moveController;
+		
 		locationList = new STable(shape);
 		locationList.rowsPad(10, 0, 10, 0);
-		populateWithLocations(guiGameController.getGame().playingPlayer, guiGameController.getActiveUnit());
+		populateWithLocations(guiGameModel.game.playingPlayer, guiGameModel.getActiveUnit());
 		
         locationList.addSelectListener(onSelectListener);
 		
@@ -64,11 +66,11 @@ public class GoToCityDialogList extends ClosableDialog {
 	        GoToCityDialogList.this.hide();
 	        
 	        if (payload instanceof Europe) {
-	            guiGameController.acceptPathToEuropeDestination();
+	            moveController.acceptPathToEuropeDestination();
 	        }
 	        if (payload instanceof Settlement) {
 	            Settlement settlement = (Settlement)payload;
-	            guiGameController.acceptPathToDestination(settlement.tile);
+	            moveController.acceptPathToDestination(settlement.tile);
 	        }
 	    }
 	};

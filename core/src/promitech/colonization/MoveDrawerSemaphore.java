@@ -10,17 +10,17 @@ import promitech.colonization.gamelogic.MoveContext;
 /**
  * Class extends RunnableAction because its use with libgdx {@link Actions.sequence} to catch moment when 
  * action is finish. 
- * If animation is necessary startUnitDislocationAnimation is blocking until animation will finished. 
+ * If animation is necessary waitForUnitDislocationAnimation is blocking until animation will finished. 
  *  
  */
 public class MoveDrawerSemaphore extends RunnableAction {
-    private final GUIGameController guiGameController;
+    private final MoveController moveController;
     private final Semaphore animationSemaphore = new Semaphore(0);
     
     private boolean drawing = false;
 
-    public MoveDrawerSemaphore(GUIGameController guiGameController) {
-        this.guiGameController = guiGameController;
+    public MoveDrawerSemaphore(MoveController moveController) {
+        this.moveController = moveController;
     }
     
     @Override
@@ -30,9 +30,9 @@ public class MoveDrawerSemaphore extends RunnableAction {
     }
     
     public void waitForUnitDislocationAnimation(MoveContext moveContext) {
-        if (guiGameController.showMoveOnPlayerScreen(moveContext)) {
+        if (moveController.showMoveOnPlayerScreen(moveContext)) {
         	drawing = true;
-            guiGameController.startAnimateMove(moveContext);
+            moveController.startAnimateMove(moveContext);
             
             try {
                 animationSemaphore.acquire(1);

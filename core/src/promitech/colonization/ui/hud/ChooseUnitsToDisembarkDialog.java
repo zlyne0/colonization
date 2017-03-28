@@ -10,8 +10,8 @@ import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLabel;
-import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
+import promitech.colonization.MoveController;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.ui.ClosableDialog;
@@ -22,12 +22,12 @@ import promitech.colonization.ui.resources.Messages;
 public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDisembarkDialog> {
 
 	private STable unitTable;
-	private final GUIGameController guiGameController;
+	private final MoveController moveController;
 	private final MoveContext moveContext;
 	
-	public ChooseUnitsToDisembarkDialog(MoveContext moveContext, GUIGameController guiGameController) {
+	public ChooseUnitsToDisembarkDialog(MoveContext moveContext, MoveController moveController) {
 		super("", GameResources.instance.getUiSkin());
-		this.guiGameController = guiGameController;
+		this.moveController = moveController;
 		this.moveContext = moveContext;
 	}
 
@@ -60,7 +60,7 @@ public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDi
 			public void onSelect(Object payload) {
 				hideWithoutFade();
 				
-				guiGameController.disembarkUnitToLocation(
+				moveController.disembarkUnitToLocation(
 					moveContext.unit, 
 					(Unit)payload, 
 					moveContext.destTile
@@ -81,7 +81,7 @@ public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDi
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				hideWithoutFade();
-				guiGameController.disembarkUnitsToLocation(moveContext.unit, moveContext.unit.getUnitContainer().getUnits().entities(), moveContext.destTile);
+				moveController.disembarkUnitsToLocation(moveContext.unit, moveContext.unit.getUnitContainer().getUnits().entities(), moveContext.destTile);
 			}
 		});
 		noneUnitsButton.addListener(new ChangeListener() {
