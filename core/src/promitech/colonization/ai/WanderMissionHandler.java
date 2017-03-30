@@ -9,7 +9,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
-import promitech.colonization.MoveDrawerSemaphore;
+import promitech.colonization.MoveLogic;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.gamelogic.MoveContext;
@@ -20,14 +20,14 @@ public class WanderMissionHandler {
 	private final Boolean2dArray settlementWanderRange; 	
 	
 	private final Game game;
-	private final MoveDrawerSemaphore moveDrawerSemaphore;
+	private final MoveLogic moveLogic;
 	
 	private final List<Direction> allowedDirections = new ArrayList<Direction>(Direction.allDirections);
 	private final MoveContext moveContext = new MoveContext();
 	
-	public WanderMissionHandler(Game game, MoveDrawerSemaphore moveDrawerSemaphore) {
+	public WanderMissionHandler(Game game, MoveLogic moveLogic) {
 		this.game = game;
-		this.moveDrawerSemaphore = moveDrawerSemaphore;
+		this.moveLogic = moveLogic;
 		this.settlementWanderRange = new Boolean2dArray(game.map.width, game.map.height);
 	}
 
@@ -71,11 +71,9 @@ public class WanderMissionHandler {
 			moveContext.init(sourceTile, destTile, mission.unit, moveDirection);
 			
 			if (moveContext.canHandleMove()) {
-				moveContext.handleMove();
-				mission.unit.getOwner().revealMapAfterUnitMove(game.map, mission.unit);
-				mission.previewDirection = moveDirection;					
+				moveLogic.forAiMoveOnlyReallocation(moveContext);
 				
-				moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+				mission.previewDirection = moveDirection;					
 				
 				if (mission.unit.hasMovesPoints()) {
 					canMove = true;

@@ -35,6 +35,7 @@ public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
 	private GameLogic gameLogic;
+	private MoveLogic moveLogic;
 	
 	private MapActor mapActor;
 	private HudStage mapHudStage;
@@ -45,10 +46,11 @@ public class GUIGameController {
 	public GUIGameController() {
 	}
 	
-	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic) {
+	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveLogic moveLogic) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.gameLogic = gameLogic;
+		this.moveLogic = moveLogic;
 	}
 	
 	public void quickSaveGame() {
@@ -263,7 +265,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveController.getMoveDrawerSemaphore());
+		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveLogic);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			

@@ -60,6 +60,8 @@ public class Unit extends ObjectWithId implements UnitLocation {
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
+    
+    private String indianSettlement;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -865,9 +867,23 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
+	public void addIndianUnitToSettlement() {
+		if (indianSettlement != null) {
+			IndianSettlement settlement = (IndianSettlement)(owner.settlements.getByIdOrNull(indianSettlement));
+			if (settlement != null) {
+				settlement.units.add(this);
+			}
+		}
+	}
+
+	public void setIndianSettlement(IndianSettlement settlement) {
+		this.indianSettlement = settlement.getId();
+	}
+	
     public static class Xml extends XmlNodeParser<Unit> {
         
-        private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
+        private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
+		private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
 		private static final String ATTR_WORK_LEFT = "workLeft";
 		private static final String ATTR_DESTINATION_Y = "destinationY";
 		private static final String ATTR_DESTINATION_X = "destinationX";
@@ -921,6 +937,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
             unit.roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT, -1);
             unit.name = attr.getStrAttribute(ATTR_NAME);
             unit.experience = attr.getIntAttribute(ATTR_EXPERIENCE, 0);
+            unit.indianSettlement = attr.getStrAttribute(ATTR_INDIAN_SETTLEMENT);
             
             unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, ATTR_DESTINATION_TYPE);
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {
@@ -953,6 +970,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         	attr.set(ATTR_ROLE_COUNT, unit.roleCount);
         	attr.set(ATTR_NAME, unit.name);
         	attr.set(ATTR_EXPERIENCE, unit.experience);
+        	attr.set(ATTR_INDIAN_SETTLEMENT, unit.indianSettlement);
             
         	attr.set(ATTR_DESTINATION_TYPE, unit.destinationType);
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {

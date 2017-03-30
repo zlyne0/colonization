@@ -18,7 +18,7 @@ public class DI {
 		moveController.inject(moveLogic, guiGameModel, guiGameController);
 		moveLogic.inject(guiGameController, moveController, guiGameModel);
 		
-		guiGameController.inject(guiGameModel, moveController, gameLogic);
+		guiGameController.inject(guiGameModel, moveController, gameLogic, moveLogic);
 	}
 	
 }

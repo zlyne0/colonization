@@ -6,19 +6,19 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
-import promitech.colonization.MoveDrawerSemaphore;
+import promitech.colonization.MoveLogic;
 import promitech.colonization.gamelogic.MoveContext;
 
 public class ExplorerMissionHandler {
-	private final MoveDrawerSemaphore moveDrawerSemaphore;
+	private final MoveLogic moveLogic;
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final NavyExplorer navyExplorer;
 	
-	public ExplorerMissionHandler(Game game, PathFinder pathFinder, MoveDrawerSemaphore moveDrawerSemaphore) {
+	public ExplorerMissionHandler(Game game, PathFinder pathFinder, MoveLogic moveLogic) {
 		this.game = game;
 		this.pathFinder = pathFinder;
-		this.moveDrawerSemaphore = moveDrawerSemaphore;
+		this.moveLogic = moveLogic;
 		this.navyExplorer = new NavyExplorer(game.map);
 	}
 
@@ -58,10 +58,7 @@ public class ExplorerMissionHandler {
            
 			canHandleMove = moveContext.canHandleMove();
 			if (canHandleMove) {
-				moveContext.handleMove();
-				ship.getOwner().revealMapAfterUnitMove(game.map, ship);
-				
-				moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+				moveLogic.forAiMoveOnlyReallocation(moveContext);
 				
 				pathFinder.generateRangeMap(game.map, ship.getTile(), ship);
 				navyExplorer.generateExploreDestination(pathFinder, ship.getOwner());
