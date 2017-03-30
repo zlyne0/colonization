@@ -15,9 +15,10 @@ public class DI {
 		
 		GameLogic gameLogic = new GameLogic(guiGameModel);
 		
-		moveController.inject(moveLogic, guiGameModel);
-		guiGameController.inject(guiGameModel, moveController, gameLogic);
+		moveController.inject(moveLogic, guiGameModel, guiGameController);
 		moveLogic.inject(guiGameController, moveController, guiGameModel);
+		
+		guiGameController.inject(guiGameModel, moveController, gameLogic);
 	}
 	
 }

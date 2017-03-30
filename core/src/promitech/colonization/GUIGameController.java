@@ -26,12 +26,10 @@ import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
 import promitech.colonization.ai.NavyExplorer;
-import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.math.Point;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;
-import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
@@ -202,33 +200,6 @@ public class GUIGameController {
             System.out.println("drawmodel = " + tileDrawModel.toString());
         }
 	}
-
-	private final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
-        @Override
-        public void executeAction(MoveContext payload) {
-            payload.unit.moveUnitToHighSea();
-            logicNextActiveUnit();
-            blockUserInteraction = false;
-        }
-    };
-
-    private final QuestionDialog.OptionAction<MoveContext> sailHighSeasNoAnswer = new QuestionDialog.OptionAction<MoveContext>() {
-        @Override
-        public void executeAction(MoveContext payload) {
-            blockUserInteraction = false;
-        }
-    };
-    
-    private void createHighSeasQuestion(MoveContext moveContext) {
-        QuestionDialog questionDialog = new QuestionDialog();
-        questionDialog.addQuestion(StringTemplate.template("highseas.text")
-            .addAmount("%number%", moveContext.unit.getSailTurns())
-        );
-        questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
-        questionDialog.addAnswer("highseas.no", sailHighSeasNoAnswer, moveContext);
-        
-        mapHudStage.showDialog(questionDialog);
-    }
 	
     public void showMapScreenAndActiveNextUnit() {
     	screenManager.setScreen(ApplicationScreenType.MAP_VIEW);

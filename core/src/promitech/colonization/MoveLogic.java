@@ -144,6 +144,9 @@ public class MoveLogic {
 			    	guiGameController.showDialog(chooseUnitsDialog);
 				}
 			} break;
+			case MOVE_HIGH_SEAS: {
+				moveController.showHighSeasQuestion(moveContext);
+			} break;
 			default:
 				throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
 		}

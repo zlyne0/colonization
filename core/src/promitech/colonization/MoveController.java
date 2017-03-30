@@ -11,6 +11,8 @@ import net.sf.freecol.common.model.map.PathFinder;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
 
@@ -19,15 +21,17 @@ public class MoveController {
 	private MapActor mapActor;
 	private MoveLogic moveLogic;
 	private GUIGameModel guiGameModel;
+	private GUIGameController guiGameController;
 
 	private final PathFinder finder = new PathFinder();
 	
 	public MoveController() {
 	}
 	
-	public void inject(MoveLogic moveLogic, GUIGameModel guiGameModel) {
+	public void inject(MoveLogic moveLogic, GUIGameModel guiGameModel, GUIGameController guiGameController) {
 		this.moveLogic = moveLogic;
 		this.guiGameModel = guiGameModel;
+		this.guiGameController = guiGameController;
 	}
 	
 	public void pressDirectionKey(Direction direction) {
@@ -181,6 +185,30 @@ public class MoveController {
 		}
 	}
 
+	public void showHighSeasQuestion(MoveContext moveContext) {
+		final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+			@Override
+			public void executeAction(MoveContext payload) {
+				moveLogic.forGuiMoveOnlyReallocation(payload, new MoveLogic.AfterMoveProcessor() {
+					@Override
+					void afterMove(MoveContext moveContext) {
+						moveContext.unit.moveUnitToHighSea();
+						guiGameController.logicNextActiveUnit();
+					}
+				});
+			}
+		};
+		
+        QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.addQuestion(StringTemplate.template("highseas.text")
+            .addAmount("%number%", moveContext.unit.getSailTurns())
+        );
+        questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
+        questionDialog.addAnswer("highseas.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
+        
+        guiGameController.showDialog(questionDialog);
+	}
+	
 	public MoveDrawerSemaphore getMoveDrawerSemaphore() {
 		return moveDrawerSemaphore;
 	}

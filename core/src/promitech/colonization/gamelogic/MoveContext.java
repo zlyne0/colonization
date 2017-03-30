@@ -171,6 +171,14 @@ public class MoveContext {
 		case DISEMBARK: // ask which units disembark
 		case EXPLORE_LOST_CITY_RUMOUR: // ask for sure
 			return true;
+		case MOVE_HIGH_SEAS: {
+			// show question dialog are you sure
+			if (isMoveViaPath() && path.isPathToEurope()) {
+				return false;
+			} else {
+				return true;
+			}
+		} 
 		default:
 			return false;
 		}
