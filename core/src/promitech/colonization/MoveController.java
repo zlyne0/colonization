@@ -46,11 +46,11 @@ public class MoveController {
 				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
 			}
 		} else {
-			if (mapDrawModel.getSelectedUnit() == null) {
+			if (guiGameModel.isActiveUnitNotSet()) {
 				return;
 			}
 			
-			Unit selectedUnit = mapDrawModel.getSelectedUnit();
+			Unit selectedUnit = guiGameModel.getActiveUnit();
 			Tile sourceTile = selectedUnit.getTile();
 			
 			Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);

@@ -256,6 +256,11 @@ class TileDrawModelInitializer {
 }
 
 public class MapDrawModel {
+	
+	public static interface ChangeSelectedUnitListener {
+		void changeSelectedUnitAction(Unit newSelectedUnit);
+	}
+	
 	private int width;
 	private int height;
 	
@@ -265,7 +270,7 @@ public class MapDrawModel {
 	public Tile selectedTile;
 	private Unit selectedUnit;
 	public Player playingPlayer;
-	public Map map;
+	protected Map map;
 	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	public Path unitPath;
 	
@@ -325,7 +330,7 @@ public class MapDrawModel {
 		this.changeSelectedUnitListeners.add(listener);
 	}
 
-	public Unit getSelectedUnit() {
+	Unit getSelectedUnit() {
 		return selectedUnit;
 	}
 	

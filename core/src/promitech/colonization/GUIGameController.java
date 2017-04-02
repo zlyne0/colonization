@@ -104,8 +104,8 @@ public class GUIGameController {
 		System.out.println("enterInViewMode");
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (mapDrawModel.getSelectedUnit() != null) {
-			mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
+		if (guiGameModel.isActiveUnitSet()) {
+			mapDrawModel.selectedTile = guiGameModel.getActiveUnit().getTile();
 		} else {
 			Point p = mapActor.getCenterOfScreen();
 			mapDrawModel.selectedTile = guiGameModel.game.map.getTile(p.x, p.y);
