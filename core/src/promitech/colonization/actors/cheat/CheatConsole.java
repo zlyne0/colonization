@@ -11,7 +11,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.generator.MapGenerator;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameCreator;
@@ -24,13 +27,13 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 	private final Label label;
 	private final TextField textField;
 	private final ScrollPane scrollPane;
-	private final GUIGameController gameControler;
+	private final GUIGameController gameController;
 	private final GUIGameModel guiGameModel;
 	private Tile selectedTile;
 	
 	public CheatConsole(GUIGameController gameControler, GUIGameModel guiGameModel) {
 		super("", GameResources.instance.getUiSkin());
-		this.gameControler = gameControler;
+		this.gameController = gameControler;
 		this.guiGameModel = guiGameModel;
 		
 		label = new Label("", GameResources.instance.getUiSkin());
@@ -72,36 +75,36 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 		if (cmd.equals("map show")) {
 			guiGameModel.game.playingPlayer.getExploredTiles().reset(true);
 			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
-			gameControler.resetMapModel();
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("map generate")) {
 			guiGameModel.game.map = new MapGenerator().generate(guiGameModel.game.players);
-			gameControler.resetMapModel();
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("m")) {
 			guiGameModel.game.playingPlayer.getExploredTiles().reset(true);
 			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
-			gameControler.resetMapModel();
+			gameController.resetMapModel();
 			
 			guiGameModel.game.map = new MapGenerator().generate(guiGameModel.game.players);
-			gameControler.resetMapModel();
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("map show owners") || cmd.equals("mso") ) {
-			gameControler.showTilesOwners();
+			gameController.showTilesOwners();
 			hideWithFade();
 		}
 		if (cmd.equals("map hide owners") || cmd.equals("mho")) {
-			gameControler.hideTilesOwners();
+			gameController.hideTilesOwners();
 			hideWithFade();
 		}
 		if (cmd.equals("new game")) {
 			try {
 				new GameCreator(guiGameModel).initNewGame();
-				gameControler.resetMapModel();
-				gameControler.nextActiveUnit();
+				gameController.resetMapModel();
+				gameController.nextActiveUnit();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
@@ -110,11 +113,30 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 		if (cmd.equals("load game")) {
 			try {
 				new GameCreator(guiGameModel).initGameFromSavegame();
-				gameControler.resetMapModel();
-				gameControler.nextActiveUnit();
+				gameController.resetMapModel();
+				gameController.nextActiveUnit();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
+			hideWithFade();
+		}
+		
+		if (cmd.equals("sp")) {
+			guiGameModel.game.playingPlayer.setAi(true);
+			
+			Player newHumanPlayer = guiGameModel.game.players.getById("player:112");
+			guiGameModel.game.setCurrentPlayer(newHumanPlayer);
+			
+			guiGameModel.unitIterator = new UnitIterator(guiGameModel.game.playingPlayer, new Unit.ActivePredicate());
+			guiGameModel.game.playingPlayer.setAi(false);
+			
+			gameController.resetUnexploredBorders();
+			gameController.resetMapModel();
+			
+			gameController.centerOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
+
+			gameController.nextActiveUnit();
+			
 			hideWithFade();
 		}
 	}

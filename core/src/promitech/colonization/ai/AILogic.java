@@ -39,7 +39,7 @@ public class AILogic {
 			// create missions
 			MapIdEntities<ExplorerMission> missions = new MapIdEntities<ExplorerMission>();
 			for (Unit unit : player.units.entities()) {
-				if (unit.isNaval()) {
+				if (unit.isNaval() && unit.getTileLocationOrNull() != null) {
 					missions.add(new ExplorerMission(unit));
 				}
 			}

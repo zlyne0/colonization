@@ -55,6 +55,11 @@ public class Game {
 		this.playingPlayer = players.getById(currentPlayerStr);
 	}
 
+	public void setCurrentPlayer(Player player) {
+		this.playingPlayer = player;
+		this.currentPlayerStr = player.getId();
+	}
+	
 	public void setSpecification(Specification specification) {
 		this.specification = specification;
 	}

@@ -80,7 +80,6 @@ public class GameCreator {
 	
 	private void postCreateGame() {
 		guiGameModel.unitIterator = new UnitIterator(guiGameModel.game.playingPlayer, new Unit.ActivePredicate());
-		guiGameModel.player = guiGameModel.game.playingPlayer;
 		
 		for (Player player : guiGameModel.game.players.entities()) {
 			player.fogOfWar.resetFogOfWar(player);

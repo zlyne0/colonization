@@ -356,6 +356,10 @@ public class GUIGameController {
 			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
 		}
 	}
+	
+	public void centerOnTile(int x, int y) {
+		mapActor.centerCameraOnTile(x, y);
+	}
 
 	public Notification getFirstNotification() {
 		Notification firstNotification = guiGameModel.game.playingPlayer.eventsNotifications.firstNotification();

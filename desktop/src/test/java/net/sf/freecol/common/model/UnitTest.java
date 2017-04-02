@@ -60,7 +60,7 @@ public class UnitTest {
     }
 
     @Test
-	public void canNotExploreRuinsWhenThereIsUnitOnIt() throws Exception {
+	public void europeanCanNotExploreRuinsWhenThereIsEnemyUnitOnIt() throws Exception {
 		// given
     	Player player = game.players.getById("player:1");
     	
@@ -79,6 +79,30 @@ public class UnitTest {
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
     	
 		// then
-    	assertFalse(MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType));
+    	assertEquals(MoveType.MOVE_NO_ATTACK_CIVILIAN, moveType);
+	}
+    
+    @Test
+	public void indianShouldSimpleMoveToRuins() throws Exception {
+		// given
+    	Player indian = game.players.getById("player:22");
+    	
+    	Tile srcTile = game.map.getSafeTile(23, 78);
+    	Tile destTile = game.map.getSafeTile(22, 79);
+    	destTile.addLostCityRumors();
+    	destTile.getUnits().clear();
+
+    	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
+    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
+    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+    		indian
+    	);
+    	unit.changeUnitLocation(srcTile);;
+    	
+    	// when
+    	MoveType moveType = unit.getMoveType(srcTile, destTile);
+    	
+		// then
+		assertEquals(MoveType.MOVE, moveType);
 	}
 }
