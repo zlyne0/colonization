@@ -29,13 +29,13 @@ class ObjectsTileDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (mapDrawModel.playingPlayer.isTileUnExplored(tile)) {
+		if (tileDrawModel.isNotExplored()) {
 			return;
 		}
 		
 		drawSettlement();
 		drawTerrainFocus();
-		if (mapDrawModel.playingPlayer.fogOfWar.hasFogOfWar(tile.x, tile.y)) {
+		if (tileDrawModel.hasFogOfWar()) {
 			return;
 		}
 		

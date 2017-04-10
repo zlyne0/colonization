@@ -156,12 +156,15 @@ public class MoveLogic {
 		moveContext.handleMove();
 		moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
 		
-		boolean exloredNewTiles = false;
-		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
-			exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
-		}
-		
-		if (moveContext.isHuman()) {
+		if (moveContext.isAi()) {
+			if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
+				moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+			}
+		} else {
+			boolean exloredNewTiles = false;
+			if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
+				exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+			}
 			if (exloredNewTiles) {
 				guiGameController.resetUnexploredBorders();
 			}
