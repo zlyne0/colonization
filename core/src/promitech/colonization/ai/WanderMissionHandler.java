@@ -79,7 +79,9 @@ public class WanderMissionHandler {
 					canMove = true;
 					sourceTile = destTile;
 				}
-			} 
+			} else {
+				canMove = false;
+			}
 		} while (canMove);
 	}
 	

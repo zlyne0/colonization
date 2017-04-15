@@ -44,6 +44,7 @@ public class GameCreator {
 		guiGameModel.game.activeUnitId = null;
 		
 		guiGameModel.game.playingPlayer = Player.newStartingPlayer(Game.idGenerator, Specification.instance.nations.getById("model.nation.french"));
+		guiGameModel.game.playingPlayer.setHuman();
 		guiGameModel.game.players.add(guiGameModel.game.playingPlayer);
 		
 		for (Nation nation : Specification.instance.nations.entities()) {

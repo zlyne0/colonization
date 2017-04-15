@@ -300,8 +300,8 @@ public class HudStage extends Stage {
     		}
     		
     		if (event.getListenerActor() == endTurnButton) {
-    			endOfTurnActor.start(gameController);
     			HudStage.this.addActor(endOfTurnActor);
+    			endOfTurnActor.start(gameController);
     			return true;
     		}
     		

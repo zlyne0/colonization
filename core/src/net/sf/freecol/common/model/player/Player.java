@@ -87,6 +87,7 @@ public class Player extends ObjectWithId {
 
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
     	Player player = new Player(idGenerator.nextId(Player.class));
+    	player.ai = true; 
         player.nation = nation;
         player.nationType = nation.nationType;
         player.updatableFeatures.addFeaturesAndOverwriteExisted(nation.nationType);
@@ -562,6 +563,10 @@ public class Player extends ObjectWithId {
 	
 	public void setAi(boolean ai) {
 		this.ai = ai;
+	}
+	
+	public void setHuman() {
+		this.ai = false; 
 	}
 
 	public static class Xml extends XmlNodeParser<Player> {

@@ -496,13 +496,19 @@ public class GUIGameController {
 		
 	}
 
+	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mapActor.resetUnexploredBorders();
+		}
+		
+		public String toString() {
+			return "postRunnable.resetUnexploredBorders";
+		}
+	};
+	
 	public void resetUnexploredBorders() {
-		Gdx.app.postRunnable(new Runnable() {
-			@Override
-			public void run() {
-				mapActor.resetUnexploredBorders();
-			}
-		});
+		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
 
 	public void showDialog(ClosableDialog<?> dialog) {
