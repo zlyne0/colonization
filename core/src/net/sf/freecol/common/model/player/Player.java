@@ -20,7 +20,6 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.BooleanMap;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -33,6 +32,7 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
+import promitech.map.Boolean2dArray;
 
 public class Player extends ObjectWithId {
 	
@@ -80,7 +80,7 @@ public class Player extends ObjectWithId {
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
     public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
-    private BooleanMap exploredTiles;
+    private Boolean2dArray exploredTiles;
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
@@ -306,7 +306,11 @@ public class Player extends ObjectWithId {
 	 * @return boolean - return true when set some tile as explored 
 	 */
 	public boolean setTileAsExplored(Tile tile) {
-		return exploredTiles.set(tile.x, tile.y, true);
+		return exploredTiles.setAndReturnDifference(tile.x, tile.y, true);
+	}
+	
+	public boolean setTileAsExplored(int coordsIndex) {
+		return exploredTiles.setAndReturnDifference(coordsIndex, true);
 	}
 	
 	public boolean isTileUnExplored(Tile tile) {
@@ -314,15 +318,19 @@ public class Player extends ObjectWithId {
 	}
 	
 	public boolean isTileExplored(int x, int y) {
-		return exploredTiles.isSet(x, y);
+		return exploredTiles.get(x, y);
+	}
+	
+	public boolean isTileExplored(int coordsIndex) {
+		return exploredTiles.get(coordsIndex);
 	}
 	
 	public void initExploredMap(Map map) {
-		exploredTiles = new BooleanMap(map, false);
+		exploredTiles = new Boolean2dArray(map.width, map.height, false);
 	}
 	
-	public BooleanMap getExploredTiles() {
-		return exploredTiles;
+	public void explorAllTiles() {
+		exploredTiles.set(true);
 	}
     
 	/**
@@ -340,15 +348,15 @@ public class Player extends ObjectWithId {
 		
 		boolean unexploredTile = false;
 		while (spiralIterator.hasNext()) {
-			Tile tile = map.getTile(spiralIterator.getX(), spiralIterator.getY());
+			int coordsIndex = spiralIterator.getCoordsIndex();
 			spiralIterator.next();
-			if (tile == null) {
-				continue;
-			}
-			if (setTileAsExplored(tile)) {
+			
+			if (setTileAsExplored(coordsIndex)) {
 				unexploredTile = true;
 			}
-			fogOfWar.removeFogOfWar(tile);
+			if (fogOfWar.removeFogOfWar(coordsIndex)) {
+				unexploredTile = true;
+			}
 		}
 		return unexploredTile;
 	}

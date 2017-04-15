@@ -3,12 +3,14 @@ package promitech.colonization;
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
+import promitech.map.AbstractArray2D;
+
 /**
  * An iterator returning positions in a spiral starting at a given
  * center tile.  The center tile is never included in the returned
  * tiles, and all returned tiles are valid.
  */
-public final class SpiralIterator implements Iterator<Boolean> {
+public final class SpiralIterator extends AbstractArray2D implements Iterator<Boolean> {
 	public static final int UNDEFINED = Integer.MIN_VALUE;
 	
     /** The maximum radius. */
@@ -20,12 +22,8 @@ public final class SpiralIterator implements Iterator<Boolean> {
     /** The current position in the circle. */
     private int x, y;
 
-    private final int width;
-    private final int height;
-
 	public SpiralIterator(int width, int height) {
-		this.width = width;
-		this.height = height;
+		super(width, height);
 	}
 
     public void reset(int centerX, int centerY, boolean isFilled, int radius) {
@@ -114,6 +112,10 @@ public final class SpiralIterator implements Iterator<Boolean> {
     
     public int getY() {
     	return y;
+    }
+
+    public int getCoordsIndex() {
+    	return toIndex(x, y);
     }
     
     /**

@@ -287,6 +287,7 @@ public class GUIGameController {
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
+		resetUnexploredBorders();
 		
 		logicNextActiveUnit();
 		

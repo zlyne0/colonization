@@ -73,7 +73,7 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 //		}
 
 		if (cmd.equals("map show")) {
-			guiGameModel.game.playingPlayer.getExploredTiles().reset(true);
+			guiGameModel.game.playingPlayer.explorAllTiles();
 			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 			gameController.resetMapModel();
 			hideWithFade();
@@ -84,7 +84,7 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 			hideWithFade();
 		}
 		if (cmd.equals("m")) {
-			guiGameModel.game.playingPlayer.getExploredTiles().reset(true);
+			guiGameModel.game.playingPlayer.explorAllTiles();
 			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 			gameController.resetMapModel();
 			
