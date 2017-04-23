@@ -153,8 +153,8 @@ public class MoveLogic {
 	}
 
 	private void handleOnlyReallocation(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
-		moveContext.handleMove();
 		moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+		moveContext.handleMove();
 		
 		if (moveContext.isAi()) {
 			if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {

@@ -2,18 +2,9 @@ package promitech.colonization;
 
 import java.util.concurrent.Semaphore;
 
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
-
 import promitech.colonization.gamelogic.MoveContext;
 
-/**
- * Class extends RunnableAction because its use with libgdx {@link Actions.sequence} to catch moment when 
- * action is finish. 
- * If animation is necessary waitForUnitDislocationAnimation is blocking until animation will finished. 
- *  
- */
-public class MoveDrawerSemaphore extends RunnableAction {
+public class MoveDrawerSemaphore implements Runnable {
     private final MoveController moveController;
     private final Semaphore animationSemaphore = new Semaphore(0);
     

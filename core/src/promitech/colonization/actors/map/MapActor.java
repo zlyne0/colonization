@@ -7,7 +7,6 @@ import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
@@ -26,6 +25,7 @@ public class MapActor extends Widget {
 	private final MapRenderer mapRenderer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
+	private MoveContext unitDislocationAnimationMoveContext;
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -104,6 +104,11 @@ public class MapActor extends Widget {
 			mapCentered = true;
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
 		}
+        if (unitDislocationAnimationMoveContext != null) {
+        	mapDrawModel.unitDislocationAnimation.init(mapRenderer, unitDislocationAnimationMoveContext);
+        	getStage().addAction(mapDrawModel.unitDislocationAnimation);
+        	unitDislocationAnimationMoveContext = null;
+        }
         mapRenderer.render(batch);
 	}
 	
@@ -142,10 +147,8 @@ public class MapActor extends Widget {
 		return mapDrawModel;
 	}
 
-	public void startUnitDislocationAnimation(final MoveContext moveContext, final RunnableAction endOfUnitDislocationAnimation) 
-	{
-		mapDrawModel.unitDislocationAnimation.init(mapRenderer, moveContext);
-		getStage().addAction(Actions.sequence(mapDrawModel.unitDislocationAnimation, endOfUnitDislocationAnimation));
+	public void startUnitDislocationAnimation(final MoveContext moveContext) {
+		this.unitDislocationAnimationMoveContext = moveContext;
 	}
 
 	public void showTileOwners() {
