@@ -274,11 +274,11 @@ public class GUIGameController {
 			
 			aiLogic.aiNewTurn(player);
 			
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 		}
 		
 		gameLogic.comparePrices(guiGameModel.game.playingPlayer, marketSnapshoot);
