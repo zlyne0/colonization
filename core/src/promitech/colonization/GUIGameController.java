@@ -25,6 +25,7 @@ import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
+import promitech.colonization.ai.BuildColony;
 import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.math.Point;
 import promitech.colonization.ui.ClosableDialog;
@@ -495,6 +496,14 @@ public class GUIGameController {
         navyExplorer.toStringsBorderValues(tileStrings);
         mapActor.showTileDebugStrings(tileStrings);
 		
+	}
+	
+	public void theBestPlaceToBuildColony() {
+		BuildColony buildColony = new BuildColony(guiGameModel.game.map);
+		buildColony.generateWeights(guiGameModel.game.playingPlayer);
+		final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
+		buildColony.toStringValues(tileStrings);
+		mapActor.showTileDebugStrings(tileStrings);
 	}
 
 	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {

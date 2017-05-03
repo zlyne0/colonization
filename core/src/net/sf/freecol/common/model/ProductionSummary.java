@@ -85,6 +85,10 @@ public class ProductionSummary {
         }
     }
     
+    public void setZero(String goodsId) {
+    	goods.put(goodsId, 0);
+    }
+    
     public boolean decreaseIfHas(String goodsId, int quantity) {
     	int q = goods.get(goodsId, 0);
     	if (q < quantity) {

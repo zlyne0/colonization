@@ -148,7 +148,8 @@ public class HudStage extends Stage {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.NUM_1) {
-    			gameController.theBestMove();
+    			//gameController.theBestMove();
+    			gameController.theBestPlaceToBuildColony();
     			return true;
     		}
     		if (keycode == Input.Keys.GRAVE) {

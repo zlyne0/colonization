@@ -17,6 +17,10 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String CROSSES = "model.goods.crosses";
     public static final String BELLS = "model.goods.bells";
     
+    private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
+    private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;
+    private static final float DEFAULT_ZERO_PRODUCTION_FACTOR = 1.0f;
+    
     public static boolean isFoodGoodsType(String goodsTypeId) {
         return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId);
     }
@@ -39,6 +43,22 @@ public class GoodsType extends ObjectWithFeatures {
     private int initialAmount = 0;
     /** The initial <em>minimum</em> sales price for this type of goods. */
     private int initialPrice = 1;
+    
+    /**
+     * A weight for the potential production of this goods type at a colony site.
+     */
+    private float productionWeight = DEFAULT_PRODUCTION_WEIGHT;
+    /**
+     * A threshold amount of potential production of this goods type
+     * at a colony site, below which the score for the site is reduced.
+     */
+    private float lowProductionThreshold = DEFAULT_LOW_PRODUCTION_THRESHOLD;
+    /**
+     * The multiplicative factor with which to penalize a colony site
+     * with zero production of this goods type, scaling linearly to
+     * unity when the amount reaches lowResourceThreshold.
+     */
+    private float zeroProductionFactor = DEFAULT_ZERO_PRODUCTION_FACTOR;
     
     public boolean isStorable() {
         return storable;
@@ -140,7 +160,22 @@ public class GoodsType extends ObjectWithFeatures {
         return food;
     }
     
+	public float getProductionWeight() {
+		return productionWeight;
+	}
+    
+	public float getLowProductionThreshold() {
+		return lowProductionThreshold;
+	}
+
+	public float getZeroProductionFactor() {
+		return zeroProductionFactor;
+	}
+	
 	public static class Xml extends XmlNodeParser<GoodsType> {
+		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
+		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";
+		private static final String ATTR_PRODUCTION_WEIGHT = "production-weight";
 		private static final String MARKET_ELEMENT = "market";
 		private static final String ATTR_MADE_FROM = "made-from";
 		private static final String ATTR_PRICE = "price";
@@ -180,6 +215,9 @@ public class GoodsType extends ObjectWithFeatures {
             if (madeFromStr != null) {
             	gt.madeFrom = Specification.instance.goodsTypes.getById(madeFromStr);
             }
+            gt.productionWeight = attr.getFloatAttribute(ATTR_PRODUCTION_WEIGHT, DEFAULT_PRODUCTION_WEIGHT);
+            gt.lowProductionThreshold = attr.getFloatAttribute(ATTR_LOW_PRODUCTION_THRESHOLD, DEFAULT_LOW_PRODUCTION_THRESHOLD);
+            gt.zeroProductionFactor = attr.getFloatAttribute(ATTR_ZERO_PRODUCTION_FACTOR, DEFAULT_ZERO_PRODUCTION_FACTOR);
             
             nodeObject = gt;
         }
@@ -201,6 +239,9 @@ public class GoodsType extends ObjectWithFeatures {
         	if (gt.madeFrom != null) {
         		attr.set(ATTR_MADE_FROM, gt.madeFrom.getId());
         	}
+        	attr.set(ATTR_PRODUCTION_WEIGHT, gt.productionWeight, DEFAULT_PRODUCTION_WEIGHT);
+            attr.set(ATTR_LOW_PRODUCTION_THRESHOLD, gt.lowProductionThreshold, DEFAULT_LOW_PRODUCTION_THRESHOLD);
+            attr.set(ATTR_ZERO_PRODUCTION_FACTOR, gt.zeroProductionFactor, DEFAULT_ZERO_PRODUCTION_FACTOR);
         	
         	if (gt.initialAmount != 0 || gt.initialPrice != 1 || gt.priceDiff != 1) {
         		attr.xml.element(MARKET_ELEMENT);
