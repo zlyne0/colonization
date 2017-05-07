@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
@@ -11,17 +13,28 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.QuantityGoodActor;
+import promitech.colonization.ui.KnobResizeableScrollPane;
 
-class WarehousePanel extends Table implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
+class WarehousePanel extends Container<ScrollPane> implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
     private java.util.Map<String, WarehouseGoodsActor> goodActorByType = new HashMap<String, WarehouseGoodsActor>();
     
     private Colony colony;
     private final ChangeColonyStateListener changeColonyStateListener;
+    private final Table scrollPaneContent = new Table();
     
     WarehousePanel(ChangeColonyStateListener changeColonyStateListener) {
         this.changeColonyStateListener = changeColonyStateListener;
+        
+		ScrollPane scrollPane = new KnobResizeableScrollPane(scrollPaneContent, GameResources.instance.getUiSkin());
+		scrollPane.setForceScroll(false, false);
+		scrollPane.setFadeScrollBars(false);
+		scrollPane.setOverscroll(true, true);
+		scrollPane.setScrollBarPositions(true, true);
+		scrollPane.setScrollingDisabled(false, true);
+		setActor(scrollPane);
     }
 
     int capacity() {
@@ -62,8 +75,8 @@ class WarehousePanel extends Table implements DragAndDropSourceContainer<Abstrac
             warehouseGoodActor = new WarehouseGoodsActor(goodsType, goodsAmount);
             warehouseGoodActor.dragAndDropSourceContainer = this;
             goodActorByType.put(goodsType.getId(), warehouseGoodActor);
-            add(warehouseGoodActor)
-				.width(warehouseGoodActor.getPrefWidth() + 20)
+            scrollPaneContent.add(warehouseGoodActor)
+				.width(warehouseGoodActor.getPrefWidth() + 20 + 10)
 				.height(warehouseGoodActor.getPrefHeight() + 20);
         }
         warehouseGoodActor.setQuantity(goodsAmount);

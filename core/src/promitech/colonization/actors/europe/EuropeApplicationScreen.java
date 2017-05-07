@@ -198,16 +198,16 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         
         Table rowGroup2 = new Table();
         rowGroup2.add(highSeasUnitsPanel).expandX().fillX();
-        rowGroup2.add(marketLog).expandX().fillX();
-        rowGroup2.add(buttonsLayout);
-        tableLayout.add(rowGroup2).expandX().fillX().row();
+        rowGroup2.add(marketLog).expandX().fillX().top();
+        rowGroup2.add(buttonsLayout).expandY().fillY();
+        tableLayout.add(rowGroup2).expandX().fill().row();
         
         Table unitsPanel = new Table();
         unitsPanel.add(carrierUnitsPanel).fillX().expandX().row();
         unitsPanel.add(outsideUnitsPanel).expandX().fillX();
         
         tableLayout.add(unitsPanel).fillX().expandX().row();
-        tableLayout.add(marketPanel);
+        tableLayout.add(marketPanel).fillY().expandY();
 
         stage.addActor(tableLayout);
         stage.setDebugAll(true);
@@ -290,13 +290,19 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		});
 
 		Table buttonsLayout = new Table();
-		buttonsLayout.align(Align.top | Align.right);
-		buttonsLayout.defaults().space(0).pad(10, 10, 0, 10).size(bw, bw);
+		buttonsLayout.top();
 		
-		buttonsLayout.add(closeButton).spaceBottom(bw).row();
-		buttonsLayout.add(recruitButton).row();
-		buttonsLayout.add(purchaseButton).row();
-		buttonsLayout.add(trainButton).row();
+		buttonsLayout.add(closeButton).row();
+		
+		Table buyButtons = new Table();
+		buyButtons.bottom();
+		buyButtons.add(recruitButton).row();
+		buyButtons.add(purchaseButton).row();
+		buyButtons.add(trainButton).row();
+		buttonsLayout.add(buyButtons)
+			.fillY()
+			.expandY()
+			.row();
 		return buttonsLayout;
 	}
 	

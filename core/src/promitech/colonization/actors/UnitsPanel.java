@@ -294,11 +294,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	}
 	
 	@Override
-	public float getPrefWidth() {
-		return MapRenderer.TILE_WIDTH*3;
-	}
-	
-	@Override
 	public float getPrefHeight() {
 		return MapRenderer.TILE_HEIGHT*2;
 	}

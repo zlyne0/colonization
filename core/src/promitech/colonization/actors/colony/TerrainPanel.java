@@ -61,7 +61,7 @@ public class TerrainPanel extends Table implements
 		setWidth(getPrefWidth());
 		setHeight(getPrefHeight());
 		
-		for (int i=0; i<9; i++) {
+		for (int i=0; i<productionQuantityDrawModels.length; i++) {
 			productionQuantityDrawModels[i] = new ProductionQuantityDrawModel();
 		}
 		productionQuantityDrawer = new ProductionQuantityDrawer(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);

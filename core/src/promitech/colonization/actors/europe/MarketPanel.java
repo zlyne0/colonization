@@ -2,9 +2,10 @@ package promitech.colonization.actors.europe;
 
 import java.util.HashMap;
 
-import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
+import com.badlogic.gdx.scenes.scene2d.ui.Container;
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
@@ -21,12 +22,13 @@ import promitech.colonization.actors.ChangeColonyStateListener;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.KnobResizeableScrollPane;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
+class MarketPanel extends Container<ScrollPane> implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
 	private final java.util.Map<String, MarketGoodsActor> goodActorByType = new HashMap<String, MarketGoodsActor>();
 	private final DragAndDrop goodsDragAndDrop;
 	private final ShapeRenderer shapeRenderer;
@@ -35,6 +37,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 	
 	private Player player;
 	private Game game;
+	private final Table scrollPaneContent = new Table();
 	
     private final DoubleClickedListener marketGoodsDoubleClickListener = new DoubleClickedListener() {
         public void doubleClicked(InputEvent event, float x, float y) {
@@ -82,9 +85,15 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
 		this.changeColonyStateListener = changeColonyStateListener;
 		this.shapeRenderer = shapeRenderer;
 		
-		defaults().space(0, 0, 0, 0);
-		
 		goodsDragAndDrop.addTarget(new MarketGoodsActor.GoodsDragAndDropTarget(this, this));
+		
+		ScrollPane scrollPane = new KnobResizeableScrollPane(scrollPaneContent, GameResources.instance.getUiSkin());
+		scrollPane.setForceScroll(false, false);
+		scrollPane.setFadeScrollBars(false);
+		scrollPane.setOverscroll(true, true);
+		scrollPane.setScrollBarPositions(true, true);
+		scrollPane.setScrollingDisabled(false, true);
+		setActor(scrollPane);
 	}
 	
 	public void init(Player player, Game game) {
@@ -104,7 +113,7 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
         	if (marketGoodsActor == null) {
         		marketGoodsActor = new MarketGoodsActor(goodsType, shapeRenderer, this);
         		goodActorByType.put(goodsType.getId(), marketGoodsActor);
-        		add(marketGoodsActor)
+        		scrollPaneContent.add(marketGoodsActor)
         			.width(marketGoodsActor.getPrefWidth() + 20)
         			.height(marketGoodsActor.getPrefHeight() + 20);
         		
@@ -116,14 +125,6 @@ class MarketPanel extends Table implements DragAndDropTargetContainer<AbstractGo
         }
 	}
 
-	@Override
-	public void draw(Batch batch, float parentAlpha) {
-        shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
-        shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
-        
-		super.draw(batch, parentAlpha);
-	}
-	
 	@Override
 	public void putPayload(AbstractGoods payload, float x, float y) {
 		System.out.println("sell goods " + payload);
