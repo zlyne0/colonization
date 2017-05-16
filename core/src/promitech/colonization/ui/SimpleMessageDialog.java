@@ -70,7 +70,7 @@ public class SimpleMessageDialog extends ClosableDialog<SimpleMessageDialog> {
 		} else {
 			button.addListener(hideChangeListener);
 		}
-		getButtonTable().add(button).center();
+		getButtonTable().add(button);
 		return this;
 	}
 }

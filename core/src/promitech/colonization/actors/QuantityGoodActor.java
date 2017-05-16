@@ -126,4 +126,8 @@ public class QuantityGoodActor extends LabelGoodActor {
 		return anAbstractGood.getQuantity() <= quantity;
 	}
 
+	public int getQuantity() {
+		return quantity;
+	}
+
 }

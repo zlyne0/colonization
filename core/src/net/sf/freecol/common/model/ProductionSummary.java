@@ -147,6 +147,28 @@ public class ProductionSummary {
         return slots;
     }
     
+    public int maxGoodsAmountToFillFreeSlots(String goodsId, final int freeSlots) {
+    	int fs = freeSlots;
+    	if (fs <= 0) {
+    		return 0;
+    	}
+    	int goodsIdAmount = 0;
+    	for (Entry<String> gsEntry : goods.entries()) {
+    		if (goodsId.equals(gsEntry.key)) {
+    			goodsIdAmount = gsEntry.value;
+    		} else {
+    			fs -= slotsForQuantity(gsEntry.value);
+    		}
+    		if (fs <= 0) {
+    			return 0;
+    		}
+    	}
+    	if (fs <= 0) {
+    		return 0;
+    	}
+    	return Math.max(fs * CARRIER_SLOT_MAX_QUANTITY - goodsIdAmount, 0);
+    }
+    
     private int slotsForQuantity(int quantity) {
         if (quantity <= 0) {
             return 0;

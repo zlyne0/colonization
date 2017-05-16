@@ -15,7 +15,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
@@ -34,6 +33,7 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.GoodTransferActorBridge;
 import promitech.colonization.actors.UnitActor;
 import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.map.MapViewApplicationScreen;
@@ -42,7 +42,6 @@ import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.UnitActionOrdersDialog;
 import promitech.colonization.ui.UnitActionOrdersDialog.ActionTypes;
 import promitech.colonization.ui.UnitActionOrdersDialog.UnitActionOrderItem;
-import promitech.colonization.ui.hud.ButtonActor;
 import promitech.colonization.ui.resources.Messages;
 
 public class ColonyApplicationScreen extends ApplicationScreen {
@@ -264,8 +263,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         goodsDragAndDrop.setDragActorPosition(0, 0);
         goodsDragAndDrop.setTapSquareSize(3);
         
+        GoodTransferActorBridge goodTransferActorBridge = new GoodTransferActorBridge();
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
-        warehousePanel = new WarehousePanel(changeColonyStateListener);
+        warehousePanel = new WarehousePanel(changeColonyStateListener, goodTransferActorBridge);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
         outsideUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
@@ -283,6 +283,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         productionPanel = new ProductionPanel();
         actualBuildableItemActor = new ActualBuildableItemActor();
         
+        goodTransferActorBridge.set(carrierUnitsPanel);
+        goodTransferActorBridge.set(warehousePanel);
         
         Frame paperBackground = gameResources.getFrame("Paper");
         

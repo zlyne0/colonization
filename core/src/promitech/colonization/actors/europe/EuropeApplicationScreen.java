@@ -28,6 +28,7 @@ import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.GoodTransferActorBridge;
 import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.PlayerGoldTaxYearLabel;
 import promitech.colonization.actors.UnitActor;
@@ -170,9 +171,11 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         goodsDragAndDrop.setTapSquareSize(3);
 		
 		
+        GoodTransferActorBridge goodTransferActorBridge = new GoodTransferActorBridge();
+        
 		stage = new Stage();		
 		marketLog = new MarketLog();
-        marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
+        marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog, goodTransferActorBridge);
         carrierUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
@@ -185,6 +188,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         		.withLabel(Messages.msg("docks"));
         highSeasUnitsPanel = new HighSeasUnitsPanel();
         
+		goodTransferActorBridge.set(marketPanel);
+		goodTransferActorBridge.set(carrierUnitsPanel);
         
         Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();

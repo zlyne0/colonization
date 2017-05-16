@@ -211,6 +211,17 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return space <= unitType.getSpace();
     }
     
+	public int maxGoodsAmountToFillFreeSlots(String goodsTypeId) {
+		int unitSpace = unitType.getSpace();
+		if (unitContainer != null) {
+			unitSpace -= unitContainer.getSpaceTakenByUnits();
+		}
+		if (goodsContainer == null) {
+			return 0;
+		}
+		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, unitSpace);
+	}
+    
     public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
     }

@@ -27,6 +27,9 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     public ClosableDialog(String title, Skin skin) {
     	createTime = System.currentTimeMillis();
     	dialog = new Dialog(title, skin);
+    	
+    	dialog.getCell(dialog.getButtonTable()).expandX().fillX().bottom();
+    	dialog.getButtonTable().defaults().pad(0, 10, 5, 10).fillX().expandX().bottom();
     }
     
     public ClosableDialog(String title, Skin skin, final float maxHeight) {

@@ -93,7 +93,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 	private STable buildableItemsLayout;
     private STable buildQueueLayout;
 	private final ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
-	private final Table dialogLayout = new Table();
 	private TextButton buyButton;
     private int[] buildQueueItemsAligment = new int[] { Align.center, Align.left };
 	
@@ -151,6 +150,7 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		buildQueueScrollPane.setOverscroll(true, true);
 		buildQueueScrollPane.setScrollBarPositions(false, true);
 		
+		Table dialogLayout = new Table();
 		dialogLayout.add(actualBuildableItemActor)
 			.expandX()
 			.colspan(2)
@@ -187,7 +187,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		});
 		
 		Table panel = new Table();
-		panel.setFillParent(true);
 		panel.add(buyButton).left().pad(0, 20, 20, 20);
 		panel.add(okButton).right().pad(0, 20, 20, 20);
 		return panel;

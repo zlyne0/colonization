@@ -148,6 +148,13 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
         widgets.space(15);
 	}
 	
+	public UnitActor getSelectedCarrierUnit() {
+		if (cargoPanel == null) {
+			return null;
+		}
+		return selectedActor;
+	}
+	
 	public UnitsPanel withDragAndDrop(DragAndDrop unitDragAndDrop, ChangeColonyStateListener changeColonyStateListener) {
 		this.changeColonyStateListener = changeColonyStateListener;
 		this.unitDragAndDrop = unitDragAndDrop;
@@ -247,6 +254,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 			unitDragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		}
 		widgets.clear();
+		selectedActor = null;
 
 		boolean first = true;
 		for (Unit unit : aUnitLocation.getUnits().entities()) {

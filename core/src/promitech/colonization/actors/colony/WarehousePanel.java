@@ -15,18 +15,31 @@ import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.GoodTransferActorBridge;
 import promitech.colonization.actors.QuantityGoodActor;
+import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.KnobResizeableScrollPane;
 
-class WarehousePanel extends Container<ScrollPane> implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
+public class WarehousePanel extends Container<ScrollPane> implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
     private java.util.Map<String, WarehouseGoodsActor> goodActorByType = new HashMap<String, WarehouseGoodsActor>();
     
+    private final GoodTransferActorBridge goodTransferActorBridge;
     private Colony colony;
     private final ChangeColonyStateListener changeColonyStateListener;
     private final Table scrollPaneContent = new Table();
+
+    private DoubleClickedListener warehouseGoodsDoubleClickListener = new DoubleClickedListener() {
+    	public void doubleClicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
+    		final WarehouseGoodsActor warehouseGoodsActor = (WarehouseGoodsActor)event.getListenerActor();
+    		if (!warehouseGoodsActor.isEmpty()) {
+    			goodTransferActorBridge.transferFromWarehouse(warehouseGoodsActor.getGoodsType().getId(), warehouseGoodsActor.getQuantity());
+    		}
+    	};
+    };
     
-    WarehousePanel(ChangeColonyStateListener changeColonyStateListener) {
+    WarehousePanel(ChangeColonyStateListener changeColonyStateListener, GoodTransferActorBridge goodTransferActorBridge) {
         this.changeColonyStateListener = changeColonyStateListener;
+        this.goodTransferActorBridge = goodTransferActorBridge;
         
 		ScrollPane scrollPane = new KnobResizeableScrollPane(scrollPaneContent, GameResources.instance.getUiSkin());
 		scrollPane.setForceScroll(false, false);
@@ -73,11 +86,14 @@ class WarehousePanel extends Container<ScrollPane> implements DragAndDropSourceC
     	WarehouseGoodsActor warehouseGoodActor = goodActorByType.get(goodsType.getId());
         if (warehouseGoodActor == null) {
             warehouseGoodActor = new WarehouseGoodsActor(goodsType, goodsAmount);
+            warehouseGoodActor.addListener(warehouseGoodsDoubleClickListener);
             warehouseGoodActor.dragAndDropSourceContainer = this;
+            
             goodActorByType.put(goodsType.getId(), warehouseGoodActor);
             scrollPaneContent.add(warehouseGoodActor)
 				.width(warehouseGoodActor.getPrefWidth() + 20 + 10)
 				.height(warehouseGoodActor.getPrefHeight() + 20);
+            
         }
         warehouseGoodActor.setQuantity(goodsAmount);
     }

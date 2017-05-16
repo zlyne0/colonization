@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.GoodTransferActorBridge;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
 import promitech.colonization.ui.DoubleClickedListener;
@@ -28,7 +29,7 @@ import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class MarketPanel extends Container<ScrollPane> implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
+public class MarketPanel extends Container<ScrollPane> implements DragAndDropTargetContainer<AbstractGoods>, DragAndDropSourceContainer<AbstractGoods> {
 	private final java.util.Map<String, MarketGoodsActor> goodActorByType = new HashMap<String, MarketGoodsActor>();
 	private final DragAndDrop goodsDragAndDrop;
 	private final ShapeRenderer shapeRenderer;
@@ -39,51 +40,60 @@ class MarketPanel extends Container<ScrollPane> implements DragAndDropTargetCont
 	private Game game;
 	private final Table scrollPaneContent = new Table();
 	
+	private final GoodTransferActorBridge goodTransferActorBridge;
+	
     private final DoubleClickedListener marketGoodsDoubleClickListener = new DoubleClickedListener() {
         public void doubleClicked(InputEvent event, float x, float y) {
         	final MarketGoodsActor marketGoodsActor = (MarketGoodsActor)event.getListenerActor();
         	
-        	payArrearsDoubleClickListener(marketGoodsActor);
+        	MarketData marketData = player.market().marketGoods.getById(marketGoodsActor.getGoodsType().getId());
+        	if (marketData.hasArrears()) {
+        		payArrearsDoubleClickListener(marketData, marketGoodsActor);
+        	} else {
+        		goodTransferActorBridge.transferFromMarket(marketGoodsActor.getGoodsType().getId());
+        	}
         }
     };
     
-    private void payArrearsDoubleClickListener(final MarketGoodsActor marketGoodsActor) {
-    	MarketData marketData = player.market().marketGoods.getById(marketGoodsActor.getGoodsType().getId());
-    	
-    	if (marketData.hasArrears()) {
-    		if (player.hasNotGold(marketData.getArrears())) {
-    			SimpleMessageDialog okDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
-    			okDialog.withContent(StringTemplate.template("model.europe.cantPayArrears")
-					.addAmount("%amount%", marketData.getArrears())
-				);
-    			okDialog.withButton("ok");
-    			okDialog.show(getStage());
-    		} else {
-    			QuestionDialog payConfirmationDialog = new QuestionDialog();
-    			payConfirmationDialog.addQuestion(StringTemplate.template("model.europe.payArrears")
-    				.addAmount("%amount%", marketData.getArrears())
-				);
-    			
-    			OptionAction<MarketGoodsActor> paidYesAnswer = new OptionAction<MarketGoodsActor>() {
-    				@Override
-    				public void executeAction(final MarketGoodsActor marketGoodsActorPayload) {
-    					MarketData md = player.market().payArrears(player, marketGoodsActor.getGoodsType());
-    					marketGoodsActor.initData(md);
-    				}
-    			};
-    			
-    			payConfirmationDialog.addAnswer("ok", paidYesAnswer, marketGoodsActor);
-    			payConfirmationDialog.addOnlyCloseAnswer("cancel");
-    			payConfirmationDialog.show(getStage());
-    		}
-    	}
+    private void payArrearsDoubleClickListener(final MarketData marketData, final MarketGoodsActor marketGoodsActor) {
+		if (player.hasNotGold(marketData.getArrears())) {
+			SimpleMessageDialog okDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
+			okDialog.withContent(StringTemplate.template("model.europe.cantPayArrears")
+				.addAmount("%amount%", marketData.getArrears())
+			);
+			okDialog.withButton("ok");
+			okDialog.show(getStage());
+		} else {
+			QuestionDialog payConfirmationDialog = new QuestionDialog();
+			payConfirmationDialog.addQuestion(StringTemplate.template("model.europe.payArrears")
+				.addAmount("%amount%", marketData.getArrears())
+			);
+			
+			OptionAction<MarketGoodsActor> paidYesAnswer = new OptionAction<MarketGoodsActor>() {
+				@Override
+				public void executeAction(final MarketGoodsActor marketGoodsActorPayload) {
+					MarketData md = player.market().payArrears(player, marketGoodsActor.getGoodsType());
+					marketGoodsActor.initData(md);
+				}
+			};
+			
+			payConfirmationDialog.addAnswer("ok", paidYesAnswer, marketGoodsActor);
+			payConfirmationDialog.addOnlyCloseAnswer("cancel");
+			payConfirmationDialog.show(getStage());
+		}
     }
 	
-	MarketPanel(ShapeRenderer shapeRenderer, DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener, MarketLog marketLog) {
+	MarketPanel(ShapeRenderer shapeRenderer, 
+			DragAndDrop goodsDragAndDrop, 
+			ChangeColonyStateListener changeColonyStateListener, 
+			MarketLog marketLog, 
+			GoodTransferActorBridge goodTransferActorBridge
+	) {
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		this.marketLog = marketLog;
 		this.changeColonyStateListener = changeColonyStateListener;
 		this.shapeRenderer = shapeRenderer;
+		this.goodTransferActorBridge = goodTransferActorBridge;
 		
 		goodsDragAndDrop.addTarget(new MarketGoodsActor.GoodsDragAndDropTarget(this, this));
 		
@@ -112,12 +122,13 @@ class MarketPanel extends Container<ScrollPane> implements DragAndDropTargetCont
         	MarketGoodsActor marketGoodsActor = goodActorByType.get(goodsType.getId());
         	if (marketGoodsActor == null) {
         		marketGoodsActor = new MarketGoodsActor(goodsType, shapeRenderer, this);
+        		marketGoodsActor.addListener(marketGoodsDoubleClickListener);
+        		
         		goodActorByType.put(goodsType.getId(), marketGoodsActor);
         		scrollPaneContent.add(marketGoodsActor)
         			.width(marketGoodsActor.getPrefWidth() + 20)
         			.height(marketGoodsActor.getPrefHeight() + 20);
         		
-        		marketGoodsActor.addListener(marketGoodsDoubleClickListener);
         		goodsDragAndDrop.addSource(new MarketGoodsActor.GoodsDragAndDropSource(marketGoodsActor));
         	}
         	MarketData marketData = player.market().marketGoods.getById(goodsType.getId());
