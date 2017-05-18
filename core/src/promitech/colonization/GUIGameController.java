@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
 import promitech.colonization.actors.cheat.CheatConsole;
+import promitech.colonization.actors.cheat.DebugConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.ColonyNameDialog;
@@ -378,9 +379,13 @@ public class GUIGameController {
 	}
 
 	public void showCheatConsoleDialog() {
-		CheatConsole cheatConsole = new CheatConsole(this, guiGameModel);
-		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
-		mapHudStage.showDialog(cheatConsole);
+	    DebugConsole debugConsole = new DebugConsole(this, guiGameModel);
+	    debugConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
+	    mapHudStage.showDialog(debugConsole);
+	    
+//		CheatConsole cheatConsole = new CheatConsole(this, guiGameModel);
+//		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
+//		mapHudStage.showDialog(cheatConsole);
 	}
 
 	public void buildColony() {
