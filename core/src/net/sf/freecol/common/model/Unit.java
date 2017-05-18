@@ -55,11 +55,13 @@ public class Unit extends ObjectWithId implements UnitLocation {
     
     private boolean disposed = false;
     private int visibleGoodsCount = -1;
-    protected int treasureAmount = 0;
+    private int treasureAmount = 0;
     private int experience = 0;
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
+    
+    private String indianSettlement;
 
     /**
      * The amount of role-equipment this unit carries, subject to
@@ -147,6 +149,11 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		location = newUnitLocation;
 	}
 	
+	public void remove() {
+		location.getUnits().removeId(this);
+		location = null;
+	}
+	
     public boolean canAddUnit(Unit unit) {
     	if (unitContainer == null) {
     		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
@@ -203,6 +210,17 @@ public class Unit extends ObjectWithId implements UnitLocation {
         }
         return space <= unitType.getSpace();
     }
+    
+	public int maxGoodsAmountToFillFreeSlots(String goodsTypeId) {
+		int unitSpace = unitType.getSpace();
+		if (unitContainer != null) {
+			unitSpace -= unitContainer.getSpaceTakenByUnits();
+		}
+		if (goodsContainer == null) {
+			return 0;
+		}
+		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, unitSpace);
+	}
     
     public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
@@ -709,6 +727,13 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return treasureAmount;
     }
     
+    public void setTreasureAmount(int treasureAmount) {
+        if (!canCarryTreasure()) {
+            throw new IllegalStateException("Unit can not carry treasure");
+        }
+    	this.treasureAmount = treasureAmount;
+    }
+    
 	public boolean isExpert() {
 		return unitType.getMaximumExperience() == 0;
 	}
@@ -853,9 +878,23 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
+	public void addIndianUnitToSettlement() {
+		if (indianSettlement != null) {
+			IndianSettlement settlement = (IndianSettlement)(owner.settlements.getByIdOrNull(indianSettlement));
+			if (settlement != null) {
+				settlement.units.add(this);
+			}
+		}
+	}
+
+	public void setIndianSettlement(IndianSettlement settlement) {
+		this.indianSettlement = settlement.getId();
+	}
+	
     public static class Xml extends XmlNodeParser<Unit> {
         
-        private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
+        private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
+		private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
 		private static final String ATTR_WORK_LEFT = "workLeft";
 		private static final String ATTR_DESTINATION_Y = "destinationY";
 		private static final String ATTR_DESTINATION_X = "destinationX";
@@ -909,6 +948,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
             unit.roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT, -1);
             unit.name = attr.getStrAttribute(ATTR_NAME);
             unit.experience = attr.getIntAttribute(ATTR_EXPERIENCE, 0);
+            unit.indianSettlement = attr.getStrAttribute(ATTR_INDIAN_SETTLEMENT);
             
             unit.destinationType = attr.getEnumAttribute(MoveDestinationType.class, ATTR_DESTINATION_TYPE);
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {
@@ -941,6 +981,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         	attr.set(ATTR_ROLE_COUNT, unit.roleCount);
         	attr.set(ATTR_NAME, unit.name);
         	attr.set(ATTR_EXPERIENCE, unit.experience);
+        	attr.set(ATTR_INDIAN_SETTLEMENT, unit.indianSettlement);
             
         	attr.set(ATTR_DESTINATION_TYPE, unit.destinationType);
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {

@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameLogic;
+import promitech.colonization.MoveLogic;
 
 public class AILogic {
 
@@ -18,12 +19,12 @@ public class AILogic {
 	private final ExplorerMissionHandler explorerMissionHandler;
 	private final WanderMissionHandler wanderMissionHandler;
 	
-	public AILogic(Game game, GameLogic gameLogic, AIMoveDrawer aiMoveDrawer) {
+	public AILogic(Game game, GameLogic gameLogic, MoveLogic moveLogic) {
 		this.game = game;
 		this.gameLogic = gameLogic;
 		
-		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, aiMoveDrawer);
-		wanderMissionHandler = new WanderMissionHandler(game, aiMoveDrawer);
+		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveLogic);
+		wanderMissionHandler = new WanderMissionHandler(game, moveLogic);
 	}
 	
 	public void aiNewTurn(Player player) {
@@ -38,7 +39,7 @@ public class AILogic {
 			// create missions
 			MapIdEntities<ExplorerMission> missions = new MapIdEntities<ExplorerMission>();
 			for (Unit unit : player.units.entities()) {
-				if (unit.isNaval()) {
+				if (unit.isNaval() && unit.getTileLocationOrNull() != null) {
 					missions.add(new ExplorerMission(unit));
 				}
 			}

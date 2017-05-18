@@ -43,6 +43,7 @@ public abstract class Settlement extends ObjectWithId {
 		final UnitType brave = Specification.instance.unitTypes.getById("model.unit.brave");
 		for (int i=0; i<settlementUnitsNumber; i++) {
 			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
+			unit.setIndianSettlement(indianSettlement);
 			unit.changeUnitLocation(indianSettlement.tile);
 			indianSettlement.units.add(unit);
 		}

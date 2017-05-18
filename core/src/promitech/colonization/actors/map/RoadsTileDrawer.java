@@ -87,7 +87,7 @@ class RoadsTileDrawer extends TileDrawer {
 
 	@Override
 	public void draw() {
-		if (mapDrawModel.playingPlayer.isTileUnExplored(tile) || !tile.hasRoad()) {
+		if (tileDrawModel.isNotExplored() || !tile.hasRoad()) {
 			return;
 		}
 		borderRoadCount = 0;

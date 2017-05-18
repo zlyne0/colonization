@@ -61,7 +61,8 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		batch = new SpriteBatch();
 		shape = new ShapeRenderer();
 		
-		GUIGameController gameController = new GUIGameController();
+		DI di = new DI();
+		di.createBeans();
 		gameResources = new GameResources();
 		GameResources.instance = gameResources;
 		try {
@@ -72,7 +73,9 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             
             //gameController.initGameFromSavegame();
             //gameController.initNewGame();
-            gameController.loadLastGame();
+            new GameCreator(di.guiGameModel)
+            	.loadLastGame();
+            
             long length = System.currentTimeMillis() - s;
             System.out.println("loading timeout: " + length);
 		} catch (Exception e) {
@@ -87,7 +90,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 			screen.shape = shape;
 			screen.gameResources = gameResources;
 			screen.screenManager = this;
-			screen.gameController = gameController;
+			screen.di = di;
 			screen.create();
 		}
 		

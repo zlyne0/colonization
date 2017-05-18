@@ -26,7 +26,9 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.ApplicationScreen;
 import promitech.colonization.ApplicationScreenType;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.actors.ChangeColonyStateListener;
+import promitech.colonization.actors.GoodTransferActorBridge;
 import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.actors.PlayerGoldTaxYearLabel;
 import promitech.colonization.actors.UnitActor;
@@ -49,7 +51,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			case SAIL_TO_NEW_WORLD:
 				unitActor.unit.sailUnitToNewWorld();
 				if (player.getEurope().isNoNavyInPort()) {
-	        		gameController.showMapScreenAndActiveNextUnit();
+					guiGameController.showMapScreenAndActiveNextUnit();
 				} else {
 					changeColonyStateListener.changeUnitAllocation();
 				}
@@ -123,10 +125,12 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	private Game game;
 	private Player player;
 	
+	private GUIGameController guiGameController;
+	
 	private final ChangeColonyStateListener changeColonyStateListener = new ChangeColonyStateListener() {
 		@Override
 		public void changeUnitAllocation() {
-			marketPanel.init(player);
+			marketPanel.init(player, game);
 			carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
 			outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
 			highSeasUnitsPanel.initUnits(player);
@@ -156,6 +160,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void create() {
+		guiGameController = di.guiGameController;
+		
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
         unitsDragAndDrop.setTapSquareSize(3);
@@ -165,9 +171,11 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         goodsDragAndDrop.setTapSquareSize(3);
 		
 		
+        GoodTransferActorBridge goodTransferActorBridge = new GoodTransferActorBridge();
+        
 		stage = new Stage();		
 		marketLog = new MarketLog();
-        marketPanel = new MarketPanel(gameController.getGame(), shape, goodsDragAndDrop, changeColonyStateListener, marketLog);
+        marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog, goodTransferActorBridge);
         carrierUnitsPanel = new UnitsPanel()
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
@@ -180,6 +188,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         		.withLabel(Messages.msg("docks"));
         highSeasUnitsPanel = new HighSeasUnitsPanel();
         
+		goodTransferActorBridge.set(marketPanel);
+		goodTransferActorBridge.set(carrierUnitsPanel);
         
         Frame paperBackground = gameResources.getFrame("Paper");
         Table tableLayout = new Table();
@@ -193,16 +203,16 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         
         Table rowGroup2 = new Table();
         rowGroup2.add(highSeasUnitsPanel).expandX().fillX();
-        rowGroup2.add(marketLog).expandX().fillX();
-        rowGroup2.add(buttonsLayout);
-        tableLayout.add(rowGroup2).expandX().fillX().row();
+        rowGroup2.add(marketLog).expandX().fillX().top();
+        rowGroup2.add(buttonsLayout).expandY().fillY();
+        tableLayout.add(rowGroup2).expandX().fill().row();
         
         Table unitsPanel = new Table();
         unitsPanel.add(carrierUnitsPanel).fillX().expandX().row();
         unitsPanel.add(outsideUnitsPanel).expandX().fillX();
         
         tableLayout.add(unitsPanel).fillX().expandX().row();
-        tableLayout.add(marketPanel);
+        tableLayout.add(marketPanel).fillY().expandY();
 
         stage.addActor(tableLayout);
         stage.setDebugAll(true);
@@ -285,13 +295,19 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		});
 
 		Table buttonsLayout = new Table();
-		buttonsLayout.align(Align.top | Align.right);
-		buttonsLayout.defaults().space(0).pad(10, 10, 0, 10).size(bw, bw);
+		buttonsLayout.top();
 		
-		buttonsLayout.add(closeButton).spaceBottom(bw).row();
-		buttonsLayout.add(recruitButton).row();
-		buttonsLayout.add(purchaseButton).row();
-		buttonsLayout.add(trainButton).row();
+		buttonsLayout.add(closeButton).row();
+		
+		Table buyButtons = new Table();
+		buyButtons.bottom();
+		buyButtons.add(recruitButton).row();
+		buyButtons.add(purchaseButton).row();
+		buyButtons.add(trainButton).row();
+		buttonsLayout.add(buyButtons)
+			.fillY()
+			.expandY()
+			.row();
 		return buttonsLayout;
 	}
 	
@@ -299,7 +315,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		this.player = player;
 		this.game = game;
 		
-		marketPanel.init(player);
+		marketPanel.init(player, game);
 		carrierUnitsPanel.initUnits(player.getEurope(), Unit.CARRIER_UNIT_PREDICATE);
 		outsideUnitsPanel.initUnits(player.getEurope(), Unit.NOT_CARRIER_UNIT_PREDICATE);
 		highSeasUnitsPanel.initUnits(player);

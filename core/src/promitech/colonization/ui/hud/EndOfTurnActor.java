@@ -36,13 +36,14 @@ public class EndOfTurnActor extends Actor {
 
 	@Override
 	public void draw(Batch batch, float parentAlpha) {
-		if (playerTurn.get() != null) {
+		Player player = playerTurn.get();
+		if (player != null) {
 			
 			BitmapFont cityNamesFont = FontResource.getCityNamesFont();
-			Nation nation = playerTurn.get().nation();
+			Nation nation = player.nation();
 			cityNamesFont.setColor(nation.getColor());
 			StringTemplate t = StringTemplate.template("waitingFor")
-					.addStringTemplate("%nation%", playerTurn.get().getNationName());
+					.addStringTemplate("%nation%", player.getNationName());
 			String st = Messages.message(t);
 			float strWidth = FontResource.strWidth(cityNamesFont, st);
 			float x = getWidth() / 2 - strWidth / 2;
@@ -78,12 +79,17 @@ public class EndOfTurnActor extends Actor {
 			Gdx.graphics.requestRendering();
 		}
 
+		private final Runnable removeEndOfTurnActor = new Runnable() {
+			@Override
+			public void run() {
+				EndOfTurnActor.this.remove();
+				playerTurn.set(null);
+			}
+		};
+		
 		@Override
 		public void endOfAIturns() {
-			EndOfTurnActor.this.remove();
-			
-			playerTurn.set(null);
-			Gdx.graphics.requestRendering();
+			Gdx.app.postRunnable(removeEndOfTurnActor);
 		}
 	};
 	

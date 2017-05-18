@@ -18,6 +18,8 @@ class UnitDislocationAnimation extends TemporalAction {
 	private final Vector2 dest = new Vector2();
 	private final Vector2 v = new Vector2();
 	
+	private Runnable endActionListener;
+	
 	public UnitDislocationAnimation() {
 	}
 
@@ -33,13 +35,14 @@ class UnitDislocationAnimation extends TemporalAction {
 		mapRenderer.mapToScreenCords(moveContext.sourceTile.x, moveContext.sourceTile.y, source);
 		mapRenderer.mapToScreenCords(moveContext.destTile.x, moveContext.destTile.y, dest);
 		
+		v.set(source);
+		
 		restart();
 		setDuration(UPDATE_DURATION);
 	}
 	
 	@Override
 	protected void begin() {
-		v.set(0, 0);
 	}
 	
 	@Override
@@ -47,6 +50,10 @@ class UnitDislocationAnimation extends TemporalAction {
 		unit = null;
 		sourceTile = null;
 		destTile = null;
+		
+		if (endActionListener != null) {
+			endActionListener.run();
+		}
 	}
 	
 	@Override
@@ -74,5 +81,8 @@ class UnitDislocationAnimation extends TemporalAction {
 		}
 	}
 
+	public void setEndActionListener(Runnable endActionListener) {
+		this.endActionListener = endActionListener;
+	}
 }
 

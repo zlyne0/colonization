@@ -85,6 +85,10 @@ public class ProductionSummary {
         }
     }
     
+    public void setZero(String goodsId) {
+    	goods.put(goodsId, 0);
+    }
+    
     public boolean decreaseIfHas(String goodsId, int quantity) {
     	int q = goods.get(goodsId, 0);
     	if (q < quantity) {
@@ -141,6 +145,28 @@ public class ProductionSummary {
             slots += additionalCargo.takenCargoSlot();
         }
         return slots;
+    }
+    
+    public int maxGoodsAmountToFillFreeSlots(String goodsId, final int freeSlots) {
+    	int fs = freeSlots;
+    	if (fs <= 0) {
+    		return 0;
+    	}
+    	int goodsIdAmount = 0;
+    	for (Entry<String> gsEntry : goods.entries()) {
+    		if (goodsId.equals(gsEntry.key)) {
+    			goodsIdAmount = gsEntry.value;
+    		} else {
+    			fs -= slotsForQuantity(gsEntry.value);
+    		}
+    		if (fs <= 0) {
+    			return 0;
+    		}
+    	}
+    	if (fs <= 0) {
+    		return 0;
+    	}
+    	return Math.max(fs * CARRIER_SLOT_MAX_QUANTITY - goodsIdAmount, 0);
     }
     
     private int slotsForQuantity(int quantity) {

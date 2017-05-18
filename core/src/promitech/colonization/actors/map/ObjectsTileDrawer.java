@@ -29,13 +29,13 @@ class ObjectsTileDrawer extends TileDrawer {
 	
 	@Override
 	public void draw() {
-		if (mapDrawModel.playingPlayer.isTileUnExplored(tile)) {
+		if (tileDrawModel.isNotExplored()) {
 			return;
 		}
 		
 		drawSettlement();
 		drawTerrainFocus();
-		if (mapDrawModel.playingPlayer.fogOfWar.hasFogOfWar(tile.x, tile.y)) {
+		if (tileDrawModel.hasFogOfWar()) {
 			return;
 		}
 		
@@ -51,7 +51,10 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 		if (drawRestOfUnits && tile.getUnits().size() > 0 && !tile.hasSettlement()) {
 			Unit firstUnit = tile.getUnits().first();
-			if (!mapDrawModel.unitDislocationAnimation.isUnitAnimated(firstUnit)) {
+			
+			if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(firstUnit)) {
+				mapDrawModel.unitDislocationAnimation.drawUnit(this);
+			} else {
 				drawUnit(firstUnit);
 			}
 		}

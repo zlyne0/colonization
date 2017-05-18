@@ -17,6 +17,7 @@ public class MoveContext {
 	private final Path path;
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
+	private boolean unitKilled = false;
 
 	public MoveContext() {
 		this.path = null;
@@ -41,6 +42,14 @@ public class MoveContext {
 		this.unit = path.unit;
 	}
 
+	public boolean isAi() {
+		return unit.getOwner().isAi();
+	}
+	
+	public boolean isHuman() {
+		return unit.getOwner().isHuman();
+	}
+	
 	public void init(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
 		this.sourceTile = sourceTile;
 		this.destTile = destTile;
@@ -99,6 +108,7 @@ public class MoveContext {
 	public void handleMove() {
 		switch (moveType) {
 		    case MOVE_HIGH_SEAS:
+		    case EXPLORE_LOST_CITY_RUMOUR:
 			case MOVE: {
 				if (path != null) {
 					path.removeFirst();
@@ -137,17 +147,41 @@ public class MoveContext {
 	private void moveUnit() {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
-		System.out.println("unit: " + unit + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
+		//System.out.println("moveUnit: " + unit + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		unit.reduceMovesLeft(moveCost);
 		unit.changeUnitLocation(destTile);
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (MoveType.MOVE.equals(moveType) || MoveType.MOVE_HIGH_SEAS.equals(moveType) || MoveType.EMBARK.equals(moveType));
+		return hasMovePoints && !endOfPath && (
+				MoveType.MOVE.equals(moveType) || 
+				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
+				MoveType.EMBARK.equals(moveType) ||
+				MoveType.DISEMBARK.equals(moveType) ||
+				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType)
+		);
+	}
+
+	public boolean isMoveType() {
+		return MoveType.MOVE.equals(moveType);
 	}
 
 	public boolean isRequireUserInteraction() {
-		return MoveType.DISEMBARK.equals(moveType);
+		switch (moveType) {
+		case DISEMBARK: // ask which units disembark
+		case EXPLORE_LOST_CITY_RUMOUR: // ask for sure
+			return true;
+		case MOVE_HIGH_SEAS: {
+			// show question dialog are you sure
+			if (isMoveViaPath() && path.isPathToEurope()) {
+				return false;
+			} else {
+				return true;
+			}
+		} 
+		default:
+			return false;
+		}
 	}
 	
 	public boolean isMoveViaPath() {
@@ -160,6 +194,14 @@ public class MoveContext {
 
 	public boolean isMoveType(MoveType moveType) {
 		return moveType.equals(this.moveType);
+	}
+
+	public void setUnitKilled() {
+		unitKilled = true;
+	}
+	
+	public boolean isUnitKilled() {
+		return unitKilled;
 	}
 
 }

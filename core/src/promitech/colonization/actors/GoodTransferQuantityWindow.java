@@ -4,7 +4,6 @@ import com.badlogic.gdx.Input.Keys;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
@@ -17,9 +16,10 @@ import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
 import promitech.colonization.actors.colony.DragAndDropSourceContainer;
 import promitech.colonization.actors.colony.DragAndDropTargetContainer;
+import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.resources.Messages;
 
-public class GoodTransferQuantityWindow extends Dialog {
+public class GoodTransferQuantityWindow extends ClosableDialog<GoodTransferQuantityWindow> {
 
 	private final Skin skin;
 	private TextField numberTextField;
@@ -40,6 +40,8 @@ public class GoodTransferQuantityWindow extends Dialog {
 		this.targetContainer = targetContainer;
 		this.goodTypeId = abstractGoods.getTypeId();
 		skin = GameResources.instance.getUiSkin();
+
+		withHidingOnEsc();
 		
 		this.minVal = 1;
 		this.maxVal = abstractGoods.getQuantity();
@@ -47,9 +49,10 @@ public class GoodTransferQuantityWindow extends Dialog {
 		numberTextField = new TextField(Integer.toString(abstractGoods.getQuantity()), skin);
 		numberTextField.setTextFieldFilter(new TextFieldFilter.DigitsOnlyFilter());
 		
+		getContentTable().defaults().pad(10, 10, 0, 10);
 		getContentTable().add(new Label(Messages.msg("goodsTransfer.text"), skin)).row();
 		getContentTable().add(numberTextField).row();
-		getContentTable().add(new Image(GameResources.instance.resource(abstractGoods.getTypeId()).texture));
+		getContentTable().add(new Image(GameResources.instance.resource(abstractGoods.getTypeId()).texture)).row();
 		
 		TextButton okButton = new TextButton(Messages.msg("ok"), skin);
 		okButton.addListener(new ChangeListener() {
@@ -58,7 +61,6 @@ public class GoodTransferQuantityWindow extends Dialog {
 				pressedOk();
 			}
 		});
-		getButtonTable().add(okButton);
 		
 		TextButton cancelButton = new TextButton(Messages.msg("cancel"), skin);
 		cancelButton.addListener(new ChangeListener() {
@@ -67,21 +69,20 @@ public class GoodTransferQuantityWindow extends Dialog {
 				pressedCancel();
 			}
 		});
-		getButtonTable().add(cancelButton);
 		
-		addListener(new InputListener() {
+		getButtonTable().add(cancelButton).row();
+		getButtonTable().add(okButton).row();
+		
+		dialog.addListener(new InputListener() {
 			public boolean keyDown (InputEvent event, int keycode2) {
 				if (Keys.ENTER == keycode2) {
 					pressedOk();
-				}
-				if (Keys.ESCAPE == keycode2) {
-					pressedCancel();
 				}
 				return false;
 			}
 		});
 	}
-
+	
 	private void pressedOk() {
 		int cur = Integer.parseInt(numberTextField.getText());
 		if (cur < minVal || cur > maxVal) {

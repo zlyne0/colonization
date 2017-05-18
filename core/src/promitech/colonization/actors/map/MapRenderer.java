@@ -51,7 +51,7 @@ public class MapRenderer {
 		
 		@Override
 		public void draw() {
-			if (mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
+			if (tileDrawModel.isExplored()) {
 				tileDrawModel.draw(batch, screenPoint.x, screenPoint.y);
 			} else {
 				batch.draw(unexploredFrame.texture, screenPoint.x, screenPoint.y);
@@ -66,7 +66,7 @@ public class MapRenderer {
 		
 		@Override
 		public void draw() {
-			if (mapDrawModel.playingPlayer.isTileExplored(mapx, mapy)) {
+			if (tileDrawModel.isExplored()) {
 				tileDrawModel.drawOverlay(batch, screenPoint.x, screenPoint.y);
 			}
 		}

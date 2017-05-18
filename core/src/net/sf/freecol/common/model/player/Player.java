@@ -20,7 +20,6 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.BooleanMap;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -33,6 +32,7 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
+import promitech.map.Boolean2dArray;
 
 public class Player extends ObjectWithId {
 	
@@ -46,6 +46,7 @@ public class Player extends ObjectWithId {
     private Europe europe;
     private Market market;
     private boolean dead = false;
+    private boolean ai;
     private int tax = 0;
     private int gold = 0;
     private int liberty = 0;
@@ -79,13 +80,14 @@ public class Player extends ObjectWithId {
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
     public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
-    private BooleanMap exploredTiles;
+    private Boolean2dArray exploredTiles;
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
 
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
     	Player player = new Player(idGenerator.nextId(Player.class));
+    	player.ai = true; 
         player.nation = nation;
         player.nationType = nation.nationType;
         player.updatableFeatures.addFeaturesAndOverwriteExisted(nation.nationType);
@@ -304,7 +306,11 @@ public class Player extends ObjectWithId {
 	 * @return boolean - return true when set some tile as explored 
 	 */
 	public boolean setTileAsExplored(Tile tile) {
-		return exploredTiles.set(tile.x, tile.y, true);
+		return exploredTiles.setAndReturnDifference(tile.x, tile.y, true);
+	}
+	
+	public boolean setTileAsExplored(int coordsIndex) {
+		return exploredTiles.setAndReturnDifference(coordsIndex, true);
 	}
 	
 	public boolean isTileUnExplored(Tile tile) {
@@ -312,15 +318,19 @@ public class Player extends ObjectWithId {
 	}
 	
 	public boolean isTileExplored(int x, int y) {
-		return exploredTiles.isSet(x, y);
+		return exploredTiles.get(x, y);
+	}
+	
+	public boolean isTileExplored(int coordsIndex) {
+		return exploredTiles.get(coordsIndex);
 	}
 	
 	public void initExploredMap(Map map) {
-		exploredTiles = new BooleanMap(map, false);
+		exploredTiles = new Boolean2dArray(map.width, map.height, false);
 	}
 	
-	public BooleanMap getExploredTiles() {
-		return exploredTiles;
+	public void explorAllTiles() {
+		exploredTiles.set(true);
 	}
     
 	/**
@@ -338,15 +348,15 @@ public class Player extends ObjectWithId {
 		
 		boolean unexploredTile = false;
 		while (spiralIterator.hasNext()) {
-			Tile tile = map.getTile(spiralIterator.getX(), spiralIterator.getY());
+			int coordsIndex = spiralIterator.getCoordsIndex();
 			spiralIterator.next();
-			if (tile == null) {
-				continue;
-			}
-			if (setTileAsExplored(tile)) {
+			
+			if (setTileAsExplored(coordsIndex)) {
 				unexploredTile = true;
 			}
-			fogOfWar.removeFogOfWar(tile);
+			if (fogOfWar.removeFogOfWar(coordsIndex)) {
+				unexploredTile = true;
+			}
 		}
 		return unexploredTile;
 	}
@@ -486,6 +496,11 @@ public class Player extends ObjectWithId {
 		settlements.removeId(settlement.getId());
 	}
 
+	public void removeUnit(Unit unit) {
+		units.removeId(unit);
+		unit.remove();
+	}
+	
     public HighSeas getHighSeas() {
         return highSeas;
     }
@@ -546,8 +561,25 @@ public class Player extends ObjectWithId {
 		}
 	}
 
+	public boolean isAi() {
+		return ai;
+	}
+	
+	public boolean isHuman() {
+		return !ai;
+	}
+	
+	public void setAi(boolean ai) {
+		this.ai = ai;
+	}
+	
+	public void setHuman() {
+		this.ai = false; 
+	}
+
 	public static class Xml extends XmlNodeParser<Player> {
-        private static final String ATTR_X_LENGTH = "xLength";
+        private static final String ATTR_AI = "ai";
+		private static final String ATTR_X_LENGTH = "xLength";
 		private static final String ATTR_PLAYER = "player";
 		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
@@ -582,6 +614,7 @@ public class Player extends ObjectWithId {
             
             Player player = new Player(idStr);
             player.dead = attr.getBooleanAttribute(ATTR_DEAD);
+            player.ai = attr.getBooleanAttribute(ATTR_AI);
             player.attackedByPrivateers = attr.getBooleanAttribute(ATTR_ATTACKED_BY_PRIVATEERS, false);
             player.newLandName = attr.getStrAttribute(ATTR_NEW_LAND_NAME);
             player.tax = attr.getIntAttribute(ATTR_TAX, 0);
@@ -646,6 +679,7 @@ public class Player extends ObjectWithId {
         	attr.setId(player);
         	
         	attr.set(ATTR_DEAD, player.dead);
+        	attr.set(ATTR_AI, player.ai);
         	attr.set(ATTR_ATTACKED_BY_PRIVATEERS, player.attackedByPrivateers);
         	attr.set(ATTR_NEW_LAND_NAME, player.newLandName);
         	attr.set(ATTR_TAX, player.tax);

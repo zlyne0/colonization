@@ -9,7 +9,7 @@ public abstract class ApplicationScreen {
 	protected SpriteBatch batch;
 	protected ShapeRenderer shape;	
 	protected GameResources gameResources;
-	protected GUIGameController gameController;
+	protected DI di;
 	
 	public void create() {
 	}

@@ -22,7 +22,7 @@ class TileOwnerDrawer extends TileDrawer {
 
 	@Override
 	public void draw() {
-		if (!mapDrawModel.playingPlayer.fogOfWar.hasFogOfWar(mapx, mapy) && tile.getOwner() != null) {
+		if (!tileDrawModel.hasFogOfWar() && tile.getOwner() != null) {
 			IsometricTilePolygonSprite isometricTilePolygonSprite = tilePolygonSpriteByPlayerId.get(tile.getOwner().getId());
 			if (isometricTilePolygonSprite == null) {
 				

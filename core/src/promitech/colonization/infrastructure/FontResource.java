@@ -10,6 +10,9 @@ import com.badlogic.gdx.utils.ObjectFloatMap;
 
 public class FontResource {
 
+	// ó and Ó is already added
+	public static final String POLISH_CHARS = "ęąśłżźćńĘĄŚŁŻŹĆŃ";
+	
 	private static final FontResource instance = new FontResource();
 	
 	private BitmapFont cityNamesFont;
@@ -41,12 +44,14 @@ public class FontResource {
 		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("base/resources/fonts/LiberationSerif-Regular.ttf"));
 		
 		FreeTypeFontParameter params = new FreeTypeFontParameter();
-		params.size = (int)(32 * Gdx.graphics.getDensity());
+		params.characters = FreeTypeFontGenerator.DEFAULT_CHARS + POLISH_CHARS;
+		params.size = 19;
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
 		cityNamesFont = generator.generateFont(params);
 		
 		params = new FreeTypeFontParameter();
+		params.characters = FreeTypeFontGenerator.DEFAULT_CHARS + POLISH_CHARS;
 		params.size = (int)(32 * Gdx.graphics.getDensity());
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
@@ -54,13 +59,15 @@ public class FontResource {
 
 		
 		params = new FreeTypeFontParameter(); 
-		params.size = (int)(32 * Gdx.graphics.getDensity());
+		params.characters = FreeTypeFontGenerator.DEFAULT_CHARS + POLISH_CHARS;
+		params.size = 19;
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 1;
 		params.color = Color.WHITE;
 		goodsQuantityFont = generator.generateFont(params);
 
         params = new FreeTypeFontParameter(); 
+		params.characters = FreeTypeFontGenerator.DEFAULT_CHARS + POLISH_CHARS;
         params.size = (int)(32 * Gdx.graphics.getDensity());
         params.borderColor = Color.BLACK;
         params.borderWidth = 1;
@@ -79,9 +86,10 @@ public class FontResource {
 	private void initFromFont2() {
 		FreeTypeFontParameter params = null;
 		
-		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("base/resources/fonts/Imperator.ttf"));
+		FreeTypeFontGenerator generator = new FreeTypeFontGenerator(Gdx.files.internal("base/resources/fonts/LiberationSerif-Bold.ttf"));
 		params = new FreeTypeFontParameter();
-		params.size = (int)(24 * Gdx.graphics.getDensity());
+		params.characters = FreeTypeFontGenerator.DEFAULT_CHARS + POLISH_CHARS;
+		params.size = 16;
 		params.borderColor = Color.BLACK;
 		params.borderWidth = 0;
 		infoPanelTileFont = generator.generateFont(params);

@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
 import promitech.colonization.ApplicationScreen;
+import promitech.colonization.GUIGameController;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.ui.hud.HudStage;
 
@@ -21,17 +22,27 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     private MapActor mapActor;
     private ManyStageInputProcessor manyStageInputProcessor;
     
+    private GUIGameController guiGameController;
+    
     @Override
     public void create() {
-        mapActor = new MapActor(gameController, gameResources);
-        gameController.setMapActor(mapActor);
+    	guiGameController = di.guiGameController;
+    	
+        mapActor = new MapActor(guiGameController, gameResources, di.guiGameModel);
+        di.guiGameController.setMapActor(mapActor);
+        di.guiGameController.setApplicationScreenManager(this.screenManager);
+        di.moveController.setMapActor(mapActor);
         
-        gameController.setApplicationScreenManager(this.screenManager);
-        
-        hudStage = new HudStage(new ScreenViewport(), gameController, gameResources);
+        hudStage = new HudStage(
+    		new ScreenViewport(), 
+    		guiGameController,
+    		di.moveController,
+    		gameResources,
+    		di.guiGameModel
+        );
         hudStage.hudInfoPanel.setMapActor(mapActor);
         
-        gameController.setMapHudStage(hudStage);
+        guiGameController.setMapHudStage(hudStage);
         
 		mapStage = new Stage(new ScreenViewport(new OrthographicCamera()));
         mapStage.addListener(new InputListener() {
@@ -73,7 +84,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     @Override
     public void onShow() {
         Gdx.input.setInputProcessor(manyStageInputProcessor);
-        gameController.onShowGUI();
+        guiGameController.onShowGUI();
         hudStage.hudInfoPanel.updateSelectedUnitDescription();
     }
     
@@ -116,7 +127,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     
     @Override
     public void dispose() {
-    	gameController.setMapHudStage(null);
+    	guiGameController.setMapHudStage(null);
     }
 
 	public MapActor getMapActor() {

@@ -27,11 +27,11 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
 
-	private final Game game;
+	private final GUIGameModel guiGameModel;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
 	
-	public GameLogic(Game game) {
-		this.game = game;
+	public GameLogic(GUIGameModel guiGameModel) {
+		this.guiGameModel = guiGameModel;
 	}
 
 	public void newTurn(Player player) {
@@ -63,7 +63,7 @@ public class GameLogic {
 		}
         
         if (player.isColonial()) {
-        	MonarchLogic.generateMonarchAction(game, player);
+        	MonarchLogic.generateMonarchAction(guiGameModel.game, player);
         	player.getEurope().handleImmigrationOnNewTurn();
         }
         
@@ -104,7 +104,7 @@ public class GameLogic {
             }
             
             if (unit.isDestinationTile()) {
-                Tile tile = game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
+                Tile tile = guiGameModel.game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
                 unit.clearDestination();
                 unit.changeUnitLocation(tile);
             }
@@ -116,7 +116,7 @@ public class GameLogic {
 			Tile improvingTile = unit.getTile();
 			TileImprovementType improvementType = unit.getTileImprovementType();
 			
-			LinkedList<Settlement> neighbouringSettlements = game.map.findSettlements(improvingTile, unit.getOwner(), 2);
+			LinkedList<Settlement> neighbouringSettlements = guiGameModel.game.map.findSettlements(improvingTile, unit.getOwner(), 2);
 			
 			TileTypeTransformation changedTileType = improvementType.changedTileType(improvingTile.getType());
 			if (changedTileType != null) {
@@ -136,7 +136,7 @@ public class GameLogic {
 				TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, improvementType);
 				improvingTile.addImprovement(tileImprovement);
 				if (improvementType.isRoad()) {
-					improvingTile.updateRoadConnections(game.map);
+					improvingTile.updateRoadConnections(guiGameModel.game.map);
 				}
 			}
 			

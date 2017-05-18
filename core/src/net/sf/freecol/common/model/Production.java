@@ -63,15 +63,7 @@ public class Production {
 	
 	public void applyTileImprovementsModifiers(Tile aTile) {
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
-			int quantity = outputEntry.getValue();
-			String goodId = outputEntry.getKey().getId();
-
-			for (TileImprovement ti : aTile.getTileImprovements()) {
-				quantity = (int)ti.type.applyModifier(goodId, quantity);
-			}
-			for (TileResource tileResource : aTile.getTileResources()) {
-				quantity = (int)tileResource.getResourceType().applyModifier(goodId, quantity);
-			}
+			int quantity = aTile.applyTileProductionModifier(outputEntry.getKey().getId(), outputEntry.getValue());
 			outputEntry.setValue(quantity);
 		}
 	}

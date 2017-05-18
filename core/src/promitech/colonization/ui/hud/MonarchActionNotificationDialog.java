@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameController;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.Messages;
@@ -16,8 +15,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class MonarchActionNotificationDialog extends QuestionDialog {
 
-	public MonarchActionNotificationDialog(final GUIGameController guiGameController, final MonarchActionNotification ntfhy) {
-		Game game = guiGameController.getGame();
+	public MonarchActionNotificationDialog(final Game game, final MonarchActionNotification ntfhy) {
 		final Player player = game.playingPlayer;
 		
 		switch (ntfhy.getAction()) {

@@ -83,7 +83,7 @@ class BuildItemDescActor extends Table {
     }
 }
 
-class BuildingQueueDialog extends ClosableDialog {
+class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 
 	private ShapeRenderer shape;
 	private final Colony colony;
@@ -93,7 +93,6 @@ class BuildingQueueDialog extends ClosableDialog {
 	private STable buildableItemsLayout;
     private STable buildQueueLayout;
 	private final ActualBuildableItemActor actualBuildableItemActor = new ActualBuildableItemActor();
-	private final Table dialogLayout = new Table();
 	private TextButton buyButton;
     private int[] buildQueueItemsAligment = new int[] { Align.center, Align.left };
 	
@@ -151,6 +150,7 @@ class BuildingQueueDialog extends ClosableDialog {
 		buildQueueScrollPane.setOverscroll(true, true);
 		buildQueueScrollPane.setScrollBarPositions(false, true);
 		
+		Table dialogLayout = new Table();
 		dialogLayout.add(actualBuildableItemActor)
 			.expandX()
 			.colspan(2)
@@ -187,7 +187,6 @@ class BuildingQueueDialog extends ClosableDialog {
 		});
 		
 		Table panel = new Table();
-		panel.setFillParent(true);
 		panel.add(buyButton).left().pad(0, 20, 20, 20);
 		panel.add(okButton).right().pad(0, 20, 20, 20);
 		return panel;
@@ -234,17 +233,18 @@ class BuildingQueueDialog extends ClosableDialog {
 		StringTemplate st = StringTemplate.template("payForBuilding.text")
 				.addAmount("%amount%", price);
 		
-		final SimpleMessageDialog confirmationDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
+		SimpleMessageDialog confirmationDialog = new SimpleMessageDialog();
 		this.addChildDialog(confirmationDialog);
-		confirmationDialog.withContant(st)
+		confirmationDialog.withContent(st)
 			.withButton("payForBuilding.no")
-			.withButton("payForBuilding.yes", new ChangeListener() {
+			.withButton("payForBuilding.yes", new SimpleMessageDialog.ButtonActionListener() {
 				@Override
-				public void changed(ChangeEvent event, Actor actor) {
+				public void buttonPressed(SimpleMessageDialog dialog) {
 					buyItem();
-					confirmationDialog.hide();
+					dialog.hide();
 				}
 			});
+			
 		confirmationDialog.show(getStage());
 	}
 	

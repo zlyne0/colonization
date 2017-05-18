@@ -46,6 +46,12 @@ public class XmlNodeAttributesWriter {
 	public void set(String attrName, float val) throws IOException {
 		xml.attribute(attrName, Float.toString(val));
 	}
+
+	public void set(String attrName, float val, float defaultVal) throws IOException {
+		if (val != defaultVal) {
+			xml.attribute(attrName, Float.toString(val));
+		}
+	}
 	
 	public <T extends Enum<T>> void set(String attrName, T val) throws IOException {
 		if (val != null) {

@@ -1,24 +1,38 @@
 package promitech.colonization.actors.europe;
 
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.GameResources;
 import promitech.colonization.actors.UnitsPanel;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class HighSeasUnitsPanel extends Table {
+public class HighSeasUnitsPanel extends ScrollPane {
 	private final UnitsPanel ingoingUnits;
 	private final UnitsPanel outgoingUnits;
 	
+	private final Table content = new Table();
+	
 	public HighSeasUnitsPanel() {
+		super(null, GameResources.instance.getUiSkin());
+		super.setWidget(content);
+
+        setForceScroll(false, false);
+        setFadeScrollBars(false);
+        setOverscroll(true, true);
+        setScrollBarPositions(true, true);
+        setScrollingDisabled(false, false);
+		
+		
 		ingoingUnits = new UnitsPanel();
 		outgoingUnits = new UnitsPanel();
-		
-		defaults().fillX().expandX();
-		add(ingoingUnits).row();
-		add(outgoingUnits);
+
+		content.defaults().fillX().expandX();
+		content.add(ingoingUnits).row();
+		content.add(outgoingUnits);
 	}
 
 	public void initUnits(Player player) {

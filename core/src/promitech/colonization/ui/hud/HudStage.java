@@ -27,7 +27,7 @@ import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.MoveController;
 import promitech.colonization.ui.ClosableDialog;
 
 public class HudStage extends Stage {
@@ -52,6 +52,9 @@ public class HudStage extends Stage {
     private final ShapeRenderer shapeRenderer;
     public final HudInfoPanel hudInfoPanel; 
     private final GUIGameController gameController;
+    private final MoveController moveController;
+    private final GUIGameModel guiGameModel;
+    
     private final EndOfTurnActor endOfTurnActor; 
     
     private final EnumMap<Direction, ButtonActor> directionButtons = new EnumMap<Direction, ButtonActor>(Direction.class);
@@ -95,9 +98,11 @@ public class HudStage extends Stage {
 		}
 	};
 
-    public HudStage(Viewport viewport, final GUIGameController gameController, GameResources gameResources) {
+    public HudStage(Viewport viewport, final GUIGameController gameController, MoveController moveController, GameResources gameResources, GUIGameModel guiGameModel) {
         super(viewport);
         this.gameController = gameController;
+        this.moveController = moveController;
+        this.guiGameModel = guiGameModel;
         this.shapeRenderer = new ShapeRenderer();
 
         hudInfoPanel = new HudInfoPanel(gameResources);
@@ -110,26 +115,32 @@ public class HudStage extends Stage {
         
 		addListener(inputListener);
         
-		gameController.getGuiGameModel().addChangeListener(guiGameModelChangeListener);
+		guiGameModel.addChangeListener(guiGameModelChangeListener);
         
 		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
 		endOfTurnActor.setWidth(getWidth());
 		endOfTurnActor.setHeight(getHeight());
     }
 
-    public void showDialog(Dialog dialog) {
-    	dialog.show(this);
+    public void showDialog(final Dialog dialog) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				dialog.show(HudStage.this);
+			}
+    	});
     }
     
-    public void showDialog(ClosableDialog closableDialog) {
-    	HudStage.this.removeListener(inputListener);    	
-		closableDialog.addOnCloseListener(this.addInputListenerToStageEvent);
-    	closableDialog.show(this);
-    }
-    
-    public void showChooseUnitsToDisembarkDialog(MoveContext carrierMoveContext) {
-    	ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(shapeRenderer, carrierMoveContext, gameController);
-    	chooseUnitsDialog.show(this);
+    public void showDialog(final ClosableDialog<?> closableDialog) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				HudStage.this.removeListener(inputListener);    	
+				closableDialog.addOnCloseListener(HudStage.this.addInputListenerToStageEvent);
+				closableDialog.init(shapeRenderer);
+				closableDialog.show(HudStage.this);
+			}
+		});
     }
     
     private final InputListener inputListener = new InputListener() {
@@ -137,7 +148,8 @@ public class HudStage extends Stage {
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
     		if (keycode == Input.Keys.NUM_1) {
-    			gameController.theBestMove();
+    			//gameController.theBestMove();
+    			gameController.theBestPlaceToBuildColony();
     			return true;
     		}
     		if (keycode == Input.Keys.GRAVE) {
@@ -166,7 +178,7 @@ public class HudStage extends Stage {
     		}
     		
     		if (keycode == Input.Keys.G && gotoTileButton.getParent() != null) {
-    			gameController.enterIntoCreateGotoPathMode();
+    			moveController.enterIntoCreateGotoPathMode();
     			return true;
     		}
     		
@@ -176,7 +188,7 @@ public class HudStage extends Stage {
     		}
     		
     		if (keycode == Input.Keys.ENTER) {
-    			gameController.acceptAction();
+    			moveController.acceptAction();
     			return true;
     		}
     		
@@ -217,7 +229,7 @@ public class HudStage extends Stage {
     		if (direction != null) {
     			ButtonActor button = directionButtons.get(direction);
     			if (button.getParent() != null) {
-    				gameController.pressDirectionKey(direction);
+    				moveController.pressDirectionKey(direction);
     				return true;
     			}
     		}
@@ -231,7 +243,7 @@ public class HudStage extends Stage {
     		
     		for (Entry<Direction, ButtonActor> directionButton : directionButtons.entrySet()) {
     			if (directionButton.getValue() == event.getListenerActor()) {
-    				gameController.pressDirectionKey(directionButton.getKey());
+    				moveController.pressDirectionKey(directionButton.getKey());
     				return true;
     			}
     		}
@@ -266,9 +278,9 @@ public class HudStage extends Stage {
     		
     		if (event.getListenerActor() == gotoTileButton) {
     			if (gotoTileButton.isChecked()) {
-    				gameController.leaveCreateGotoPathMode();
+    				moveController.leaveCreateGotoPathMode();
     			} else {
-    				gameController.enterIntoCreateGotoPathMode();
+    				moveController.enterIntoCreateGotoPathMode();
     			}
     			return true;
     		}
@@ -279,7 +291,7 @@ public class HudStage extends Stage {
     		}
     		
     		if (event.getListenerActor() == acceptActionButton) {
-    			gameController.acceptAction();
+    			moveController.acceptAction();
     			return true;
     		}
     		
@@ -289,8 +301,8 @@ public class HudStage extends Stage {
     		}
     		
     		if (event.getListenerActor() == endTurnButton) {
-    			endOfTurnActor.start(gameController);
     			HudStage.this.addActor(endOfTurnActor);
+    			endOfTurnActor.start(gameController);
     			return true;
     		}
     		
@@ -442,7 +454,7 @@ public class HudStage extends Stage {
                 button.addListener(new InputListener() {
                     @Override
                     public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-            			gameController.pressDirectionKey(direction);
+                    	moveController.pressDirectionKey(direction);
                         return true;
                     }
                 });
@@ -477,7 +489,7 @@ public class HudStage extends Stage {
     	shapeRenderer.translate(getViewport().getScreenX(), getViewport().getScreenY(), 0);
     	
     	if (needUpdateButtonVisibility) {
-    	    resetButtonVisibility(gameController.getGuiGameModel());
+    	    resetButtonVisibility(guiGameModel);
     	}
         super.act();
     }
@@ -553,9 +565,10 @@ public class HudStage extends Stage {
 	
     private void showGotoLocationDialog() {
 		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
-				gameController,
+				moveController,
 				shapeRenderer,
-				HudStage.this.getHeight() * 0.75f
+				HudStage.this.getHeight() * 0.75f,
+				guiGameModel
 		);
 		HudStage.this.showDialog(gotoCityDialogList);
     }
@@ -570,7 +583,7 @@ public class HudStage extends Stage {
 		
 		if (notification instanceof MonarchActionNotification) {
 			MonarchActionNotificationDialog dialog = new MonarchActionNotificationDialog(
-				gameController,
+				guiGameModel.game,
 				(MonarchActionNotification)notification
 			);
 			dialog.show(HudStage.this);

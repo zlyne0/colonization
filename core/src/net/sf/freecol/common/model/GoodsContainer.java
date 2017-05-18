@@ -106,6 +106,10 @@ public class GoodsContainer {
         return goods.allCargoSlotsWithAdditionalCargo(additionalCargo);
     }
 
+    public int maxGoodsAmountToFillFreeSlots(String goodsId, int freeSlots) {
+    	return goods.maxGoodsAmountToFillFreeSlots(goodsId, freeSlots);
+    }
+    
     public ProductionSummary cloneGoods() {
         return goods.cloneGoods();
     }

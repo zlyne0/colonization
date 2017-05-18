@@ -24,6 +24,25 @@ class TileDrawModel {
 	private final LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
 	private final LinkedList<Frame> unexploredBorders = new LinkedList<Frame>();
 	Frame settlementImage;
+	private boolean explored = false;
+	private boolean fogOfWar = true;
+	
+	public boolean isExplored() {
+		return explored;
+	}
+	
+	public boolean isNotExplored() {
+		return !explored;
+	}
+	
+	public void setTileVisibility(boolean explored, boolean fogOfWar) {
+		this.explored = explored;
+		this.fogOfWar = fogOfWar;
+	}
+
+	public boolean hasFogOfWar() {
+		return fogOfWar;
+	}
 	
 	public void draw(Batch batch, float rx, float ry) {
 		for (Frame frame : backgroundTerainTextures) {
@@ -77,8 +96,6 @@ class TileDrawModel {
 		}
 		return sb.toString() + ", foregroundTerains: " + foregroundTerainTextures.size();
 	}
-
-
 }
 
 class TileDrawModelInitializer {
@@ -148,6 +165,10 @@ class TileDrawModelInitializer {
 				tile = map.getTile(x, y);
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				tileDrawModel.resetUnexploredBorders();
+				tileDrawModel.setTileVisibility(
+					player.isTileExplored(x, y),
+					player.fogOfWar.hasFogOfWar(x, y)
+				);
 				
 				for (Direction direction : Direction.values()) {
 					borderTile = map.getTile(x, y, direction);
@@ -256,6 +277,11 @@ class TileDrawModelInitializer {
 }
 
 public class MapDrawModel {
+	
+	public static interface ChangeSelectedUnitListener {
+		void changeSelectedUnitAction(Unit newSelectedUnit);
+	}
+	
 	private int width;
 	private int height;
 	
@@ -265,7 +291,7 @@ public class MapDrawModel {
 	public Tile selectedTile;
 	private Unit selectedUnit;
 	public Player playingPlayer;
-	public Map map;
+	protected Map map;
 	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
 	public Path unitPath;
 	
@@ -325,8 +351,12 @@ public class MapDrawModel {
 		this.changeSelectedUnitListeners.add(listener);
 	}
 
-	public Unit getSelectedUnit() {
+	Unit getSelectedUnit() {
 		return selectedUnit;
+	}
+	
+	public void setEndOfUnitDislocationAnimationListener(Runnable listener) {
+		unitDislocationAnimation.setEndActionListener(listener);
 	}
 	
 	public void setSelectedUnit(Unit selectedUnit) {

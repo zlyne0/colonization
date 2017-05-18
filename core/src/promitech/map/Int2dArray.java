@@ -32,4 +32,17 @@ public class Int2dArray extends AbstractArray2D {
         }
         return this;
     }
+    
+    public void set(Int2dArray src) {
+    	if (src.size() != size()) {
+    		throw new IllegalArgumentException("different source array size. Actual " + size() + ", source " + src.size());
+    	}
+    	for (int i=0; i<array.length; i++) {
+    		array[i] = src.array[i];
+    	}
+    }
+    
+    public int size() {
+    	return array.length;
+    }
 }

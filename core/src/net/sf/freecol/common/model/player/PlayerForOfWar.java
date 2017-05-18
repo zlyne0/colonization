@@ -4,41 +4,45 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.BooleanMap;
 import promitech.colonization.SpiralIterator;
+import promitech.map.Boolean2dArray;
 
 public class PlayerForOfWar {
+	private Boolean2dArray fogOfWar;
     
-    private BooleanMap fogOfWar;
     private SpiralIterator spiralIterator;
 
     public void initFromMap(Map map, Player player) {
-        fogOfWar = new BooleanMap(map, true);
+        fogOfWar = new Boolean2dArray(map.width, map.height, true);
         spiralIterator = new SpiralIterator(map.width, map.height);
     }
 
     void removeFogOfWar(int x, int y) {
-        fogOfWar.set(x, y, false);
+    	fogOfWar.set(x, y, false);
     }
 
-    void removeFogOfWar(Tile tile) {
-    	fogOfWar.set(tile.x, tile.y, false);
+    boolean removeFogOfWar(Tile tile) {
+    	return fogOfWar.setAndReturnDifference(tile.x, tile.y, false);
+    }
+    
+    boolean removeFogOfWar(int tileCoordsIndex) {
+    	return fogOfWar.setAndReturnDifference(tileCoordsIndex, false);
     }
     
     public void removeFogOfWar() {
-    	fogOfWar.reset(false);
+    	fogOfWar.set(false);
     }
 
     public boolean hasFogOfWar(Tile tile) {
-        return fogOfWar.isSet(tile.x, tile.y);
+    	return fogOfWar.get(tile.x, tile.y);
     }
     
     public boolean hasFogOfWar(int x, int y) {
-        return fogOfWar.isSet(x, y);
+    	return fogOfWar.get(x, y);
     }
     
     public void resetFogOfWar(Player player) {
-        fogOfWar.reset(true);
+        fogOfWar.set(true);
         
         fogOfWarForUnits(player);
         fogOfWarForSettlements(player);
@@ -65,9 +69,11 @@ public class PlayerForOfWar {
     private void initFogOfWarForNeighboursTiles(Player player, Tile tile, int radius) {
         removeFogOfWar(tile);
         spiralIterator.reset(tile.x, tile.y, true, radius);
+        int coordsIndex;
         while (spiralIterator.hasNext()) {
-        	if (player.isTileExplored(spiralIterator.getX(), spiralIterator.getY())) {
-        		removeFogOfWar(spiralIterator.getX(), spiralIterator.getY());
+        	coordsIndex = spiralIterator.getCoordsIndex();
+        	if (player.isTileExplored(coordsIndex)) {
+        		removeFogOfWar(coordsIndex);
         	}
             spiralIterator.next();
         }

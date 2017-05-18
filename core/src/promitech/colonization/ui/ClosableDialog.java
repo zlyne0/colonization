@@ -3,6 +3,7 @@ package promitech.colonization.ui;
 import java.util.LinkedList;
 
 import com.badlogic.gdx.Input.Keys;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
@@ -14,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
-public class ClosableDialog {
+public class ClosableDialog<T extends ClosableDialog<?>> {
     private static final long CLOSE_AFTER_CREATE_TIMEOUT = 1000;
 
     protected final Dialog dialog;
@@ -26,6 +27,9 @@ public class ClosableDialog {
     public ClosableDialog(String title, Skin skin) {
     	createTime = System.currentTimeMillis();
     	dialog = new Dialog(title, skin);
+    	
+    	dialog.getCell(dialog.getButtonTable()).expandX().fillX().bottom();
+    	dialog.getButtonTable().defaults().pad(0, 10, 5, 10).fillX().expandX().bottom();
     }
     
     public ClosableDialog(String title, Skin skin, final float maxHeight) {
@@ -43,6 +47,9 @@ public class ClosableDialog {
         };
     }
 
+	public void init(ShapeRenderer shapeRenderer) {
+	}
+    
     public ClosableDialog withHidingOnEsc() {
     	dialog.addListener(new InputListener() {
             public boolean keyDown (InputEvent event, int keycode2) {
@@ -118,8 +125,10 @@ public class ClosableDialog {
     	dialog.pack();
     }
     
-    public void addOnCloseListener(EventListener onCloseListener) {
+    @SuppressWarnings("unchecked")
+	public T addOnCloseListener(EventListener onCloseListener) {
     	onCloseListeners.add(onCloseListener);
+    	return (T)this;
     }
     
     private boolean canCloseBecauseClickOutsideDialog(float x, float y) {

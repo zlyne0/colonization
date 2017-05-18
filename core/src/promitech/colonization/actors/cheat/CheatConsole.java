@@ -11,23 +11,30 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField;
 import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.generator.MapGenerator;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameController;
+import promitech.colonization.GUIGameModel;
+import promitech.colonization.GameCreator;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 
-public class CheatConsole extends ClosableDialog {
+public class CheatConsole extends ClosableDialog<CheatConsole> {
 
 	private final Table dialogLayout = new Table();
 	private final Label label;
 	private final TextField textField;
 	private final ScrollPane scrollPane;
-	private final GUIGameController gameControler;
+	private final GUIGameController gameController;
+	private final GUIGameModel guiGameModel;
 	private Tile selectedTile;
 	
-	public CheatConsole(GUIGameController gameControler) {
+	public CheatConsole(GUIGameController gameControler, GUIGameModel guiGameModel) {
 		super("", GameResources.instance.getUiSkin());
-		this.gameControler = gameControler;
+		this.gameController = gameControler;
+		this.guiGameModel = guiGameModel;
 		
 		label = new Label("", GameResources.instance.getUiSkin());
         label.setAlignment(Align.top | Align.left);
@@ -66,38 +73,38 @@ public class CheatConsole extends ClosableDialog {
 //		}
 
 		if (cmd.equals("map show")) {
-			gameControler.getGame().playingPlayer.getExploredTiles().reset(true);
-			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
-			gameControler.resetMapModel();
+			guiGameModel.game.playingPlayer.explorAllTiles();
+			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("map generate")) {
-			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
-			gameControler.resetMapModel();
+			guiGameModel.game.map = new MapGenerator().generate(guiGameModel.game.players);
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("m")) {
-			gameControler.getGame().playingPlayer.getExploredTiles().reset(true);
-			gameControler.getGame().playingPlayer.fogOfWar.removeFogOfWar();
-			gameControler.resetMapModel();
+			guiGameModel.game.playingPlayer.explorAllTiles();
+			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
+			gameController.resetMapModel();
 			
-			gameControler.getGame().map = new MapGenerator().generate(gameControler.getGame().players);
-			gameControler.resetMapModel();
+			guiGameModel.game.map = new MapGenerator().generate(guiGameModel.game.players);
+			gameController.resetMapModel();
 			hideWithFade();
 		}
 		if (cmd.equals("map show owners") || cmd.equals("mso") ) {
-			gameControler.showTilesOwners();
+			gameController.showTilesOwners();
 			hideWithFade();
 		}
 		if (cmd.equals("map hide owners") || cmd.equals("mho")) {
-			gameControler.hideTilesOwners();
+			gameController.hideTilesOwners();
 			hideWithFade();
 		}
 		if (cmd.equals("new game")) {
 			try {
-				gameControler.initNewGame();
-				gameControler.resetMapModel();
-				gameControler.nextActiveUnit();
+				new GameCreator(guiGameModel).initNewGame();
+				gameController.resetMapModel();
+				gameController.nextActiveUnit();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
@@ -105,12 +112,31 @@ public class CheatConsole extends ClosableDialog {
 		}
 		if (cmd.equals("load game")) {
 			try {
-				gameControler.initGameFromSavegame();
-				gameControler.resetMapModel();
-				gameControler.nextActiveUnit();
+				new GameCreator(guiGameModel).initGameFromSavegame();
+				gameController.resetMapModel();
+				gameController.nextActiveUnit();
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
+			hideWithFade();
+		}
+		
+		if (cmd.equals("sp")) {
+			guiGameModel.game.playingPlayer.setAi(true);
+			
+			Player newHumanPlayer = guiGameModel.game.players.getById("player:112");
+			guiGameModel.game.setCurrentPlayer(newHumanPlayer);
+			
+			guiGameModel.unitIterator = new UnitIterator(guiGameModel.game.playingPlayer, new Unit.ActivePredicate());
+			guiGameModel.game.playingPlayer.setAi(false);
+			
+			gameController.resetUnexploredBorders();
+			gameController.resetMapModel();
+			
+			gameController.centerOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
+
+			gameController.nextActiveUnit();
+			
 			hideWithFade();
 		}
 	}

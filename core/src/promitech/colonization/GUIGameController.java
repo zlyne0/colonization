@@ -1,35 +1,23 @@
 package promitech.colonization;
 
-import java.io.IOException;
-import java.util.Collection;
-import java.util.LinkedList;
 import java.util.List;
 
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.xml.sax.SAXException;
-
-import com.badlogic.gdx.scenes.scene2d.actions.RunnableAction;
+import com.badlogic.gdx.Gdx;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.IdGenerator;
-import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.UnitIterator;
-import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
-import net.sf.freecol.common.model.map.generator.MapGenerator;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
+import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
 import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
@@ -37,118 +25,45 @@ import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
-import promitech.colonization.ai.AIMoveDrawer;
+import promitech.colonization.ai.BuildColony;
 import promitech.colonization.ai.NavyExplorer;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.math.Point;
-import promitech.colonization.savegame.SaveGameList;
-import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;
-import promitech.colonization.ui.resources.StringTemplate;
 
 public class GUIGameController {
-	private class EndOfUnitDislocationAnimationAction extends RunnableAction {
-		MoveContext moveContext;
-		
-		@Override
-		public void run() {
-			GUIGameController.this.onEndOfUnitDislocationAnimation(moveContext);
-		}
-	}
-	
+	private GUIGameModel guiGameModel;
+	private MoveController moveController;
 	private GameLogic gameLogic;
-	private final GUIGameModel guiGameModel = new GUIGameModel();
-	private Game game;
+	private MoveLogic moveLogic;
 	
 	private MapActor mapActor;
 	private HudStage mapHudStage;
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
-	private PathFinder finder = new PathFinder();
-	private final EndOfUnitDislocationAnimationAction endOfUnitDislocationAnimation = new EndOfUnitDislocationAnimationAction();
-	private final LinkedList<MoveContext> movesToAnimate = new LinkedList<MoveContext>();
-	private Unit disembarkCarrier;
-	
-	private AIMoveDrawer aiMoveDrawer = new AIMoveDrawer(this);
 	
 	public GUIGameController() {
 	}
 	
-	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
-        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600.xml");
-        game.playingPlayer = game.players.getById("player:1");
-        game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
-        System.out.println("game = " + game);
-
-		postCreateGame();
-	}
-	
-	public void initNewGame() throws IOException, ParserConfigurationException, SAXException {
-		SaveGameParser.loadDefaultSpecification();
-		Specification.instance.updateOptionsFromDifficultyLevel("model.difficulty.medium");
-		
-		Game.idGenerator = new IdGenerator(0);
-		game = new Game();
-		game.setSpecification(Specification.instance);
-		game.activeUnitId = null;
-		
-		game.playingPlayer = Player.newStartingPlayer(Game.idGenerator, Specification.instance.nations.getById("model.nation.french"));
-		game.players.add(game.playingPlayer);
-		
-		for (Nation nation : Specification.instance.nations.entities()) {
-			if (nation.nationType.isEuropean()) {
-				if (!nation.nationType.isREF() && game.playingPlayer.nation().notEqualsId(nation)) {
-					System.out.println("create european player: " + nation +  " " + nation.nationType);
-					game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
-				}
-			} else {
-				System.out.println("create native player: " + nation + " " + nation.nationType);
-				game.players.add(Player.newStartingPlayer(Game.idGenerator, nation));
-			}
-		}
-		game.map = new MapGenerator().generate(game.players);
-
-		postCreateGame();
-	}
-	
-	public void loadLastGame() throws IOException, ParserConfigurationException, SAXException {
-		SaveGameList saveGameList = new SaveGameList();
-		
-        game = saveGameList.loadLast();
-        if (game != null) {
-        	game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
-        	postCreateGame();
-        } else {
-        	initNewGame();
-        }
+	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveLogic moveLogic) {
+		this.guiGameModel = guiGameModel;
+		this.moveController = moveController;
+		this.gameLogic = gameLogic;
+		this.moveLogic = moveLogic;
 	}
 	
 	public void quickSaveGame() {
-		new SaveGameList().saveAsQuick(game);
+		new GameCreator(guiGameModel)
+			.quickSaveGame();
 	}
-	
-	private void postCreateGame() {
-		guiGameModel.unitIterator = new UnitIterator(game.playingPlayer, new Unit.ActivePredicate());
-		guiGameModel.player = game.playingPlayer;
-		gameLogic = new GameLogic(game);
-		
-		for (Player player : game.players.entities()) {
-			player.fogOfWar.resetFogOfWar(player);
-		}
-	}
-	
-    public void setMapActor(MapActor mapActor) {
-        this.mapActor = mapActor;
-    }
 	
     public void skipUnit() {
     	if (blockUserInteraction) {
     		return;
     	}
-    	throwExceptionWhenActiveUnitNotSet();
+    	guiGameModel.throwExceptionWhenActiveUnitNotSet();
     	Unit unit = guiGameModel.getActiveUnit();
     	unit.setState(UnitState.SKIPPED);
     	
@@ -168,13 +83,13 @@ public class GUIGameController {
 		}
 	}
 	
-	private void logicNextActiveUnit() {
+	protected void logicNextActiveUnit() {
 		if (guiGameModel.unitIterator.hasNext()) {
 			Unit nextUnit = guiGameModel.unitIterator.next();
 			changeActiveUnit(nextUnit);
 			centerOnActiveUnit();
 			if (nextUnit.isDestinationSet()) {
-				logicAcceptGotoPath();
+				moveController.logicAcceptGotoPath();
 			}
 		} else {
 			mapActor.mapDrawModel().setSelectedUnit(null);
@@ -190,11 +105,11 @@ public class GUIGameController {
 		System.out.println("enterInViewMode");
 		
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (mapDrawModel.getSelectedUnit() != null) {
-			mapDrawModel.selectedTile = mapDrawModel.getSelectedUnit().getTile();
+		if (guiGameModel.isActiveUnitSet()) {
+			mapDrawModel.selectedTile = guiGameModel.getActiveUnit().getTile();
 		} else {
 			Point p = mapActor.getCenterOfScreen();
-			mapDrawModel.selectedTile = game.map.getTile(p.x, p.y);
+			mapDrawModel.selectedTile = guiGameModel.game.map.getTile(p.x, p.y);
 		}
 		guiGameModel.previewViewModeUnit = guiGameModel.getActiveUnit();
 		guiGameModel.setActiveUnit(null);
@@ -221,7 +136,7 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
-		Tile tile = game.map.getTile(mapPoint.x, mapPoint.y);
+		Tile tile = guiGameModel.game.map.getTile(mapPoint.x, mapPoint.y);
 		if (tile == null) {
 			return;
 		}
@@ -232,10 +147,15 @@ public class GUIGameController {
 		}
 	}
 	
-	public void showColonyScreen(Tile tile) {
-		ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-		colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
-		screenManager.setScreen(ApplicationScreenType.COLONY);
+	public void showColonyScreen(final Tile tile) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				screenManager.setScreen(ApplicationScreenType.COLONY);
+			}
+    	});
 	}
 	
 	public void clickOnTile(Point p) {
@@ -244,7 +164,7 @@ public class GUIGameController {
 		if (blockUserInteraction) {
 			return;
 		}
-		Tile clickedTile = game.map.getTile(p.x, p.y);
+		Tile clickedTile = guiGameModel.game.map.getTile(p.x, p.y);
 		if (clickedTile == null) {
 			return;
 		}
@@ -252,7 +172,7 @@ public class GUIGameController {
 		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		
 		if (guiGameModel.isCreateGotoPathMode()) {
-			generateGotoPath(clickedTile);
+			moveController.generateGotoPath(clickedTile);
 			return;
 		}
 		
@@ -263,7 +183,7 @@ public class GUIGameController {
 			mapDrawModel.selectedTile = null;
 			if (!clickedTile.hasSettlement()) {
 				Unit newSelectedUnit = clickedTile.getUnits().first();
-				if (newSelectedUnit != null && newSelectedUnit.isOwner(game.playingPlayer)) {
+				if (newSelectedUnit != null && newSelectedUnit.isOwner(guiGameModel.game.playingPlayer)) {
 					changeActiveUnit(newSelectedUnit);
 				}
 			}
@@ -271,7 +191,7 @@ public class GUIGameController {
 	}
 
 	private void clickOnTileDebugInfo(Point p) {
-        Tile tile = game.map.getTile(p.x, p.y);
+        Tile tile = guiGameModel.game.map.getTile(p.x, p.y);
         System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
             System.out.println("tile: " + tile);
@@ -284,194 +204,6 @@ public class GUIGameController {
         }
 	}
 	
-	public void pressDirectionKey(Direction direction) {
-		if (blockUserInteraction) {
-			return;
-		}
-		
-		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
-		if (guiGameModel.isViewMode()) {
-			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			mapDrawModel.selectedTile = game.map.getTile(x, y);
-			
-			if (mapActor.isTileOnScreenEdge(mapDrawModel.selectedTile)) {
-				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
-			}
-		} else {
-			if (mapDrawModel.getSelectedUnit() == null) {
-				return;
-			}
-			
-			Unit selectedUnit = mapDrawModel.getSelectedUnit();
-			Tile sourceTile = selectedUnit.getTile();
-			
-			Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
-			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
-			
-			mapActor.mapDrawModel().unitPath = null;
-			selectedUnit.clearDestination();
-			System.out.println("moveContext.pressDirectionKey = " + moveContext);
-			
-			if (moveContext.isRequireUserInteraction()) {
-				switch (moveContext.moveType) {
-				case DISEMBARK:
-					if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
-						disembarkUnitToLocation(
-							moveContext.unit, 
-							moveContext.unit.getUnitContainer().getUnits().first(), 
-							destTile
-						);
-					} else {
-						mapHudStage.showChooseUnitsToDisembarkDialog(moveContext);
-					}
-					break;
-				default:
-					break;
-				}
-			} else {
-				if (moveContext.canHandleMove()) {
-					moveContext.handleMove();
-					guiMoveInteraction(moveContext);
-				}
-			}
-		}
-	}
-
-	private void guiMoveInteraction() {
-		if (movesToAnimate.isEmpty()) {
-			return;
-		}
-		MoveContext mc = movesToAnimate.removeFirst();
-		mc.handleMove();
-		guiMoveInteraction(mc);
-	}
-	
-	private void guiMoveInteraction(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
-			mapActor.centerCameraOnTile(moveContext.destTile);
-		}
-		blockUserInteraction = true;
-		endOfUnitDislocationAnimation.moveContext = moveContext;
-		mapActor.startUnitDislocationAnimation(moveContext, endOfUnitDislocationAnimation);
-	}
-	
-	public void guiAIMoveInteraction(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
-			mapActor.centerCameraOnTile(moveContext.destTile);
-		}
-		mapActor.startUnitDislocationAnimation(moveContext, aiMoveDrawer);
-	}
-	
-	public boolean showAIMoveOnPlayerScreen(MoveContext moveContext) {
-		return !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
-				|| !game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
-	}
-	
-	private void onEndOfUnitDislocationAnimation(MoveContext moveContext) {
-		if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
-			boolean exloredNewTiles = game.playingPlayer.revealMapAfterUnitMove(game.map, moveContext.unit);
-			if (exloredNewTiles) {
-				mapActor.resetUnexploredBorders();
-			}
-		}
-		
-		if (moveContext.isMoveType(MoveType.EMBARK)) {
-			System.out.println("XXX onEndOfUnitDislocationAnimation.embark");
-			mapActor.mapDrawModel().setSelectedUnit(null);
-			guiGameModel.setActiveUnit(null);
-		}
-		
-		if (moveContext.isMoveViaPath()) {
-			if (game.map.isUnitSeeHostileUnit(moveContext.unit)) {
-				blockUserInteraction = false;
-				System.out.println("unit: " + moveContext.unit + " see hostile unit");
-				return;
-			}
-			
-			moveContext.initNextPathStep();
-			System.out.println("moveContext.isMoveViaPath = " + moveContext);
-			if (moveContext.canHandleMove()) {
-				moveContext.handleMove();
-				guiMoveInteraction(moveContext);
-			} else {
-				if (moveContext.isEndOfPath()) {
-					if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
-			            moveContext.unit.moveUnitToHighSea();
-			            logicNextActiveUnit();
-					} else {
-	                    moveContext.unit.clearDestination();
-	                    mapActor.mapDrawModel().unitPath = null;
-					}
-					
-					if (!moveContext.unit.couldMove()) {
-						logicNextActiveUnit();
-						blockUserInteraction = false;
-					}					
-					if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
-						showColonyScreen(moveContext.destTile);
-					}
-				} else {
-                    moveContext.unit.setState(UnitState.SKIPPED);
-					logicNextActiveUnit();
-				}
-				blockUserInteraction = false;
-			}
-		} else {
-			
-			if (disembarkCarrier != null) {
-				if (movesToAnimate.isEmpty()) {
-					disembarkCarrier = null;
-					blockUserInteraction = false;
-				} else {
-					guiMoveInteraction();
-				}
-			} else {
-				if (!moveContext.unit.couldMove()) {
-					logicNextActiveUnit();
-					blockUserInteraction = false;
-				} else {
-				    if (moveContext.unit.getTile().getType().isHighSea()) {
-				        createHighSeasQuestion(moveContext);
-				    } else {
-		                blockUserInteraction = false;
-				    }
-				}
-				if (moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
-					showColonyScreen(moveContext.destTile);
-				}
-			}
-			
-		}
-	}
-
-	private final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
-        @Override
-        public void executeAction(MoveContext payload) {
-            payload.unit.moveUnitToHighSea();
-            logicNextActiveUnit();
-            blockUserInteraction = false;
-        }
-    };
-
-    private final QuestionDialog.OptionAction<MoveContext> sailHighSeasNoAnswer = new QuestionDialog.OptionAction<MoveContext>() {
-        @Override
-        public void executeAction(MoveContext payload) {
-            blockUserInteraction = false;
-        }
-    };
-    
-    private void createHighSeasQuestion(MoveContext moveContext) {
-        QuestionDialog questionDialog = new QuestionDialog();
-        questionDialog.addQuestion(StringTemplate.template("highseas.text")
-            .addAmount("%number%", moveContext.unit.getSailTurns())
-        );
-        questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
-        questionDialog.addAnswer("highseas.no", sailHighSeasNoAnswer, moveContext);
-        
-        mapHudStage.showDialog(questionDialog);
-    }
-	
     public void showMapScreenAndActiveNextUnit() {
     	screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
     	logicNextActiveUnit();
@@ -479,7 +211,7 @@ public class GUIGameController {
     
 	public void showEuropeScreen() {
         EuropeApplicationScreen screen = screenManager.getApplicationScreen(ApplicationScreenType.EUROPE);
-        screen.init(game.playingPlayer, game);
+        screen.init(guiGameModel.game.playingPlayer, guiGameModel.game);
 		screenManager.setScreen(ApplicationScreenType.EUROPE);		
 	}
 	
@@ -505,119 +237,12 @@ public class GUIGameController {
 		if (unit == null) {
 			return;
 		}
-		setDrawableUnitPath(unit);
-	}
-	
-	private void setDrawableUnitPath(Unit unit) {
-		mapActor.mapDrawModel().unitPath = null;
-		
-		if (unit.isDestinationTile()) {
-			Tile startTile = unit.getTile();
-			Tile endTile = game.map.getTile(unit.getDestinationX(), unit.getDestinationY());
-			mapActor.mapDrawModel().unitPath = finder.findToTile(game.map, startTile, endTile, unit);
-		}
-		if (unit.isDestinationEurope()) {
-			Tile startTile = unit.getTile();
-			mapActor.mapDrawModel().unitPath = finder.findToEurope(game.map, startTile, unit);
-		}
-	}
-	
-    public Game getGame() {
-        return game;
-    }
-
-    public GUIGameModel getGuiGameModel() {
-        return guiGameModel;
-    }
-    
-	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
-		this.screenManager = screenManager;
-	}
-
-	public void enterIntoCreateGotoPathMode() {
-		if (guiGameModel.isCreateGotoPathMode()) {
-			return;
-		}
-		if (guiGameModel.isActiveUnitNotSet()) {
-			return;
-		}
-		guiGameModel.setCreateGotoPathMode(true);
-		setDrawableUnitPath(guiGameModel.getActiveUnit());		
-	}
-	
-	public void leaveCreateGotoPathMode() {
-		guiGameModel.setCreateGotoPathMode(false);
-		mapActor.mapDrawModel().unitPath = null;
-	}
-
-	private void logicAcceptGotoPath() {
-		Path unitPath = mapActor.mapDrawModel().unitPath;
-		if (unitPath == null) {
-			throw new IllegalStateException("path not generated");
-		}
-		guiGameModel.setCreateGotoPathMode(false);
-		
-		MoveContext moveContext = new MoveContext(unitPath);
-		moveContext.initNextPathStep();
-		if (unitPath.isPathToEurope()) {
-			moveContext.unit.setDestinationEurope();
-		} else {
-			moveContext.unit.setDestination(unitPath.endTile);
-		}
-
-		System.out.println("moveContext = " + moveContext);
-
-		if (moveContext.canHandleMove()) {
-			moveContext.handleMove();
-//			if (moveContext.isMoveType(MoveType.EMBARK)) {
-//				guiGameModel.setActiveUnit(null);
-//				mapActor.mapDrawModel().setSelectedUnit(null);
-//			}
-			guiMoveInteraction(moveContext);
-		} else {
-            moveContext.unit.clearDestination();
-            mapActor.mapDrawModel().unitPath = null;
-		}
-	}
-	
-	private void generateGotoPath(Tile destinationTile) {
-		throwExceptionWhenActiveUnitNotSet();
-		
-		Tile startTile = guiGameModel.getActiveUnit().getTile();
-		
-		Path path = finder.findToTile(game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
-		System.out.println("found path: " + path);
-		mapActor.mapDrawModel().unitPath = path;
-	}
-
-	public void acceptPathToDestination(Tile tile) {
-		generateGotoPath(tile);
-		logicAcceptGotoPath();
-	}
-	
-	public void acceptPathToEuropeDestination() {
-		mapActor.mapDrawModel().unitPath = finder.findToEurope(
-				game.map, 
-				guiGameModel.getActiveUnit().getTile(), 
-				guiGameModel.getActiveUnit()
-		);
-		logicAcceptGotoPath();
-	}
-	
-	public void acceptAction() {
-		if (guiGameModel.isCreateGotoPathMode()) {
-			if (!guiGameModel.isCreateGotoPathMode()) {
-				throw new IllegalStateException("should be in find path mode");
-			}
-			throwExceptionWhenActiveUnitNotSet();
-			logicAcceptGotoPath();
-			return;
-		}
+		moveController.setDrawableUnitPath(unit);
 	}
 	
 	public void cancelAction() {
 		if (guiGameModel.isCreateGotoPathMode()) {
-			leaveCreateGotoPathMode();
+			moveController.leaveCreateGotoPathMode();
 		}
 	}
 	
@@ -637,32 +262,33 @@ public class GUIGameController {
 		guiGameModel.setAiMove(true);
 		System.out.println("end turn");
 
-		game.playingPlayer.endTurn();
+		guiGameModel.game.playingPlayer.endTurn();
 		
-		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(game.playingPlayer.market());
+		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(game, gameLogic, aiMoveDrawer);
+		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveLogic);
 		
-		List<Player> players = game.players.allToProcessedOrder(game.playingPlayer);
+		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
 			endOfTurnPhaseListener.nextAIturn(player);
 			System.out.println("new turn for player " + player);
 			
 			aiLogic.aiNewTurn(player);
 			
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
+//			try {
+//				Thread.sleep(100);
+//			} catch (InterruptedException e) {
+//				e.printStackTrace();
+//			}
 		}
 		
-		gameLogic.comparePrices(game.playingPlayer, marketSnapshoot);
+		gameLogic.comparePrices(guiGameModel.game.playingPlayer, marketSnapshoot);
 		
-		gameLogic.newTurn(game.playingPlayer);
+		gameLogic.newTurn(guiGameModel.game.playingPlayer);
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
+		resetUnexploredBorders();
 		
 		logicNextActiveUnit();
 		
@@ -672,7 +298,7 @@ public class GUIGameController {
 	}
 
 	public void buildRoad() {
-		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.throwExceptionWhenActiveUnitNotSet();
 		Tile tile = guiGameModel.getActiveUnit().getTile();
 		Unit unit = guiGameModel.getActiveUnit();
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
@@ -683,7 +309,7 @@ public class GUIGameController {
 	}
 
 	public void plowOrClearForestImprovement() {
-		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.throwExceptionWhenActiveUnitNotSet();
 		Tile tile = guiGameModel.getActiveUnit().getTile();
 		Unit unit = guiGameModel.getActiveUnit();
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
@@ -715,67 +341,44 @@ public class GUIGameController {
 	}
 
 	public void fortify() {
-		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.throwExceptionWhenActiveUnitNotSet();
 		Unit activeUnit = guiGameModel.getActiveUnit();
 		activeUnit.setState(UnitState.FORTIFYING);
 		logicNextActiveUnit();
 	}
 	
 	public void activeUnit() {
-		throwExceptionWhenActiveUnitNotSet();
+		guiGameModel.throwExceptionWhenActiveUnitNotSet();
 		guiGameModel.getActiveUnit().setState(UnitState.ACTIVE);
 		guiGameModel.runListeners();
 	}
 	
-	private void throwExceptionWhenActiveUnitNotSet() {
-		if (guiGameModel.isActiveUnitNotSet()) {
-			throw new IllegalStateException("active unit not set");
-		}
-	}
-
 	public void centerOnActiveUnit() {
 		if (guiGameModel.isActiveUnitSet()) {
 			mapActor.centerCameraOnTile(guiGameModel.getActiveUnit().getTile());
 		}
 	}
+	
+	public void centerOnTile(int x, int y) {
+		mapActor.centerCameraOnTile(x, y);
+	}
 
 	public Notification getFirstNotification() {
-		Notification firstNotification = game.playingPlayer.eventsNotifications.firstNotification();
+		Notification firstNotification = guiGameModel.game.playingPlayer.eventsNotifications.firstNotification();
 		guiGameModel.runListeners();
 		return firstNotification;
 	}
 
-	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
-		disembarkCarrier = carrier;
-		
-		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
-		mc.handleMove();
-		guiMoveInteraction(mc);
+	public void resetMapModelOnTile(Tile tile) {
+		mapActor.resetMapModel();
 	}
 	
-	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
-		disembarkCarrier = carrier;
-		
-		for (Unit u : unitsToDisembark) {
-			MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, u);
-			System.out.println("try disembark " + mc.toString());
-			if (mc.canHandleMove()) {
-				movesToAnimate.add(mc);
-			}
-		}
-		guiMoveInteraction();
-	}
-
-	public void setMapHudStage(HudStage hudStage) {
-		this.mapHudStage = hudStage;
-	}
-
 	public void resetMapModel() {
 		mapActor.resetMapModel();
 	}
 
 	public void showCheatConsoleDialog() {
-		CheatConsole cheatConsole = new CheatConsole(this);
+		CheatConsole cheatConsole = new CheatConsole(this, guiGameModel);
 		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
 		mapHudStage.showDialog(cheatConsole);
 	}
@@ -788,11 +391,11 @@ public class GUIGameController {
 			System.out.println("can not settle on tile type " + tile.getType());
 			return;
 		}
-		if (game.map.isOnMapEdge(tile)) {
+		if (guiGameModel.game.map.isOnMapEdge(tile)) {
 			System.out.println("can not settle on map edge");
 			return;
 		}
-		if (game.map.hasColonyInRange(tile, 1)) {
+		if (guiGameModel.game.map.hasColonyInRange(tile, 1)) {
 			System.out.println("another colony in one tile range");
 			return;
 		}
@@ -826,45 +429,8 @@ public class GUIGameController {
 			}
 		};
     	
-		QuestionDialog questionDialog = createIndianLandDemandQuestions(landPrice, unit, tile, buildColonyEnterColonyNameAction);
+		QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, unit, tile, buildColonyEnterColonyNameAction);
     	mapHudStage.showDialog(questionDialog);
-	}
-
-	public QuestionDialog createIndianLandDemandQuestions(int landPrice, final Unit claimedUnit,
-			final Tile claimedTile, final QuestionDialog.OptionAction<Unit> actionAfterDemand) {
-		QuestionDialog.OptionAction<Unit> takeLandAction = new QuestionDialog.OptionAction<Unit>() {
-			@Override
-			public void executeAction(Unit claimedUnit) {
-				claimedTile.demandTileByPlayer(claimedUnit.getOwner());
-				
-				actionAfterDemand.executeAction(claimedUnit);
-			}
-		};
-		QuestionDialog.OptionAction<Unit> payForLandAction = new QuestionDialog.OptionAction<Unit>() {
-			@Override
-			public void executeAction(Unit claimedUnit) {
-				if (claimedTile.buyTileByPlayer(claimedUnit.getOwner())) {
-					actionAfterDemand.executeAction(claimedUnit);
-				}
-			}
-		};
-		
-		QuestionDialog questionDialog = new QuestionDialog();
-		if (claimedUnit.getOwner().hasContacted(claimedTile.getOwner())) {
-			questionDialog.addQuestion(StringTemplate.template("indianLand.text")
-				.addStringTemplate("%player%", claimedTile.getOwner().getNationName())
-			);
-			
-			if (landPrice > 0) {
-				StringTemplate landPriceStrTemp = StringTemplate.template("indianLand.pay").addAmount("%amount%", landPrice);
-				questionDialog.addAnswer(landPriceStrTemp, payForLandAction, claimedUnit);
-			}
-		} else {
-			questionDialog.addQuestion(StringTemplate.template("indianLand.unknown"));
-		}
-		questionDialog.addAnswer("indianLand.take", takeLandAction, claimedUnit);
-		questionDialog.addOnlyCloseAnswer("indianLand.cancel");
-		return questionDialog;
 	}
 	
 	public void buildColonyEnterColonyName() {
@@ -879,7 +445,7 @@ public class GUIGameController {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
 		
-		Settlement.buildColony(game.map, unit, tile, colonyName);
+		Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
 		changeActiveUnit(null);
 		resetMapModel();
 	}
@@ -908,16 +474,16 @@ public class GUIGameController {
 
 		
         final PathFinder pathFinder = new PathFinder();
-        pathFinder.generateRangeMap(game.map, unit.getTile(), unit);
+        pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit);
         
-        NavyExplorer navyExplorer = new NavyExplorer(game.map);
+        NavyExplorer navyExplorer = new NavyExplorer(guiGameModel.game.map);
         navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
         
         if (navyExplorer.isFoundExploreDestination()) {
             if (navyExplorer.isExploreDestinationInOneTurn()) {
                 Direction direction = navyExplorer.getExploreDestinationAsDirection();
 				System.out.println("exploration destination " + direction);
-				pressDirectionKey(direction);
+				moveController.pressDirectionKey(direction);
             } else {
                 System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
             }
@@ -926,9 +492,53 @@ public class GUIGameController {
             System.out.println("can not find tile to explore");
         }
         
-        final String tileStrings[][] = new String[game.map.height][game.map.width];
+        final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
         navyExplorer.toStringsBorderValues(tileStrings);
         mapActor.showTileDebugStrings(tileStrings);
 		
 	}
+	
+	public void theBestPlaceToBuildColony() {
+		BuildColony buildColony = new BuildColony(guiGameModel.game.map);
+		buildColony.generateWeights(guiGameModel.game.playingPlayer);
+		final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
+		buildColony.toStringValues(tileStrings);
+		mapActor.showTileDebugStrings(tileStrings);
+	}
+
+	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mapActor.resetUnexploredBorders();
+		}
+		
+		public String toString() {
+			return "postRunnable.resetUnexploredBorders";
+		}
+	};
+	
+	public void resetUnexploredBorders() {
+		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
+	}
+
+	public void showDialog(ClosableDialog<?> dialog) {
+		mapHudStage.showDialog(dialog);
+	}
+
+	public void showDialog(QuestionDialog dialog) {
+		mapHudStage.showDialog(dialog);
+	}
+	
+    public void setMapActor(MapActor mapActor) {
+        this.mapActor = mapActor;
+    }
+    
+	public void setApplicationScreenManager(ApplicationScreenManager screenManager) {
+		this.screenManager = screenManager;
+	}
+	
+	public void setMapHudStage(HudStage hudStage) {
+		this.mapHudStage = hudStage;
+	}
+	
 }

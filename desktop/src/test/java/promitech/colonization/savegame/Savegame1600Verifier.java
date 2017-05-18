@@ -40,7 +40,7 @@ public class Savegame1600Verifier {
 	public void verify(Game game) {
         verifySpecification(game);
         
-        assertEquals("unit:6781", game.activeUnitId);
+        verifyGame(game);
         verifyPlayers(game);
         
         Tile tile = game.map.getTile(31, 23);
@@ -56,6 +56,15 @@ public class Savegame1600Verifier {
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
+	}
+
+	private void verifyGame(Game game) {
+		assertEquals("unit:6781", game.activeUnitId);
+		
+		assertThat(game.getCitiesOfCibola()).hasSize(6);
+		for (int i=0; i<6; i++) {
+			assertThat(game.getCitiesOfCibola()).contains("lostCityRumour.cityName." + i);
+		}
 	}
 	
 	private void verifyPlayers(Game game) {

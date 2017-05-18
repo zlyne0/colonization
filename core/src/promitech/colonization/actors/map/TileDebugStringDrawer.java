@@ -31,7 +31,7 @@ class TileDebugStringDrawer extends TileDrawer {
 		}
 		
 		BitmapFont unitBoxFont = FontResource.getUnitBoxFont();
-		unitBoxFont.setColor(Color.GREEN);
+		unitBoxFont.setColor(Color.RED);
 		unitBoxFont.draw(batch, str, 
 			screenPoint.x + MapRenderer.TILE_WIDTH/2 - FontResource.strWidth(unitBoxFont, str)/2, 
 			screenPoint.y + MapRenderer.TILE_HEIGHT/2 + FontResource.fontHeight(unitBoxFont)/2
