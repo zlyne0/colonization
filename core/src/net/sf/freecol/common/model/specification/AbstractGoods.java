@@ -41,4 +41,8 @@ public class AbstractGoods {
     public String toString() {
     	return "type[" + typeId + "], quantity[" + quantity + "]";
     }
+
+	public void setQuantity(int quantity) {
+		this.quantity = quantity;
+	}
 }
