@@ -66,9 +66,13 @@ public class UnitDrawer {
 		shapeRenderer.end();
 		
 		batch.begin();
-		
 		String occupationKey = unit.getOccupationKey(currentPlayer);
-		String text = Messages.msg(occupationKey);
+		String text;
+		if (occupationKey.length() == 1) {
+			text = occupationKey;
+		} else {
+			text = Messages.msg(occupationKey);
+		}
 		
 		BitmapFont unitBoxFont = FontResource.getUnitBoxFont();
 		unitBoxFont.setColor(Color.BLACK);
