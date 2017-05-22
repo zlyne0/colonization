@@ -20,79 +20,6 @@ import promitech.colonization.GameCreator
 import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
 
-class CommandExecutor(var gameController: GUIGameController, var guiGameModel: GUIGameModel) {
-	
-	fun execute(cmd: String) : Boolean {
-		if (cmd.equals("map show")) {
-			guiGameModel.game.playingPlayer.explorAllTiles();
-			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
-			gameController.resetMapModel();
-			return true
-		}
-		
-		if (cmd.equals("map generate")) {
-			guiGameModel.game.map = MapGenerator().generate(guiGameModel.game.players);
-			gameController.resetMapModel();
-			return true
-		}
-		
-		if (cmd.equals("m")) {
-			guiGameModel.game.playingPlayer.explorAllTiles();
-			guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
-			gameController.resetMapModel();
-			
-			guiGameModel.game.map = MapGenerator().generate(guiGameModel.game.players);
-			gameController.resetMapModel();
-			return true
-		}
-		
-		if (cmd.equals("map show owners") || cmd.equals("mso") ) {
-			gameController.showTilesOwners();
-			return true
-		}
-		
-		if (cmd.equals("map hide owners") || cmd.equals("mho")) {
-			gameController.hideTilesOwners();
-			return true
-		}
-		
-		if (cmd.equals("new game")) {
-		    GameCreator(guiGameModel).initNewGame();
-		    gameController.resetMapModel();
-		    gameController.nextActiveUnit();
-			return true
-		}
-		
-		if (cmd.equals("load game")) {
-		    GameCreator(guiGameModel).initGameFromSavegame();
-		    gameController.resetMapModel();
-		    gameController.nextActiveUnit();
-			return true
-		}
-		
-		if (cmd.equals("sp")) {
-			guiGameModel.game.playingPlayer.setAi(true);
-			
-			var newHumanPlayer = guiGameModel.game.players.getById("player:112");
-			guiGameModel.game.setCurrentPlayer(newHumanPlayer);
-			
-			guiGameModel.unitIterator = UnitIterator(guiGameModel.game.playingPlayer, Unit.ActivePredicate());
-			guiGameModel.game.playingPlayer.setAi(false);
-			
-			gameController.resetUnexploredBorders();
-			gameController.resetMapModel();
-			
-			gameController.centerOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
-
-			gameController.nextActiveUnit();
-			
-			return true
-		}
-		
-		return false
-	}
-}
-
 class DebugConsole : ClosableDialog<DebugConsole> {
 	private val dialogLayout = Table()
 	private val textField = TextField("", GameResources.instance.getUiSkin())
@@ -123,6 +50,10 @@ class DebugConsole : ClosableDialog<DebugConsole> {
 					executeCommand();
 					return true;
 				}
+				if (keycode == Keys.TAB) {
+					hintCommand();
+					return true;
+				}
 				return false;
 			}
 		})
@@ -138,6 +69,18 @@ class DebugConsole : ClosableDialog<DebugConsole> {
 		
 		if (commandExecutor.execute(cmd)) {
 			hideWithFade();
+		}
+	}
+	
+	fun hintCommand() {
+		var enteredCmd = textField.getText();
+		addConsoleLine("  hints: ")
+		commandExecutor.filterTasksForHint(enteredCmd).forEach { task ->
+			if (task is Alias) {
+				addConsoleLine(task.cmd + " -> " + task.task.cmd)
+			} else {
+			    addConsoleLine(task.cmd)
+			}
 		}
 	}
 	
