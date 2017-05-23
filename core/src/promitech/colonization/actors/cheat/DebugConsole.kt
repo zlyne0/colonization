@@ -20,7 +20,9 @@ import promitech.colonization.GameCreator
 import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
 
-class DebugConsole : ClosableDialog<DebugConsole> {
+class DebugConsole(gameController: GUIGameController, guiGameModel: GUIGameModel)
+	: ClosableDialog<DebugConsole>("", GameResources.instance.getUiSkin())
+{
 	private val dialogLayout = Table()
 	private val textField = TextField("", GameResources.instance.getUiSkin())
 	private val label = Label("", GameResources.instance.getUiSkin())
@@ -30,7 +32,7 @@ class DebugConsole : ClosableDialog<DebugConsole> {
 	
 	var commandExecutor : CommandExecutor
 	
-	constructor(gameController: GUIGameController, guiGameModel: GUIGameModel) : super("", GameResources.instance.getUiSkin()) {
+	init {
 		label.setAlignment(Align.top or Align.left);
 		label.setFillParent(true)
 		

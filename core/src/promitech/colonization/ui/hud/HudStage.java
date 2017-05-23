@@ -22,10 +22,13 @@ import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.DI;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
+import promitech.colonization.actors.cheat.DebugShortcutsKeys;
+import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.GameResources;
 import promitech.colonization.MoveController;
 import promitech.colonization.ui.ClosableDialog;
@@ -54,6 +57,7 @@ public class HudStage extends Stage {
     private final GUIGameController gameController;
     private final MoveController moveController;
     private final GUIGameModel guiGameModel;
+    private final DebugShortcutsKeys debugShortcutsKeys;
     
     private final EndOfTurnActor endOfTurnActor; 
     
@@ -98,14 +102,17 @@ public class HudStage extends Stage {
 		}
 	};
 
-    public HudStage(Viewport viewport, final GUIGameController gameController, MoveController moveController, GameResources gameResources, GUIGameModel guiGameModel) {
+    public HudStage(Viewport viewport, DI di, MapActor mapActor) {
         super(viewport);
-        this.gameController = gameController;
-        this.moveController = moveController;
-        this.guiGameModel = guiGameModel;
+        this.gameController = di.guiGameController;
+        this.moveController = di.moveController;
+        this.guiGameModel = di.guiGameModel;
         this.shapeRenderer = new ShapeRenderer();
 
-        hudInfoPanel = new HudInfoPanel(gameResources);
+        debugShortcutsKeys = new DebugShortcutsKeys(this, di, mapActor);
+        
+        hudInfoPanel = new HudInfoPanel(GameResources.instance);
+        hudInfoPanel.setMapActor(mapActor);
         
         addActor(buttonsGroup);
         addActor(hudInfoPanel);
@@ -147,15 +154,6 @@ public class HudStage extends Stage {
     	
     	@Override
     	public boolean keyDown(InputEvent event, int keycode) {
-    		if (keycode == Input.Keys.NUM_1) {
-    			//gameController.theBestMove();
-    			gameController.theBestPlaceToBuildColony();
-    			return true;
-    		}
-    		if (keycode == Input.Keys.GRAVE) {
-    			gameController.showCheatConsoleDialog();
-    			return true;
-    		}
     		if (keycode == Input.Keys.V && viewButton.getParent() != null) {
     			if (viewButton.isChecked()) {
     				gameController.leaveViewMode();
@@ -224,6 +222,10 @@ public class HudStage extends Stage {
     			gameController.centerOnActiveUnit();
     			return true;
     		}
+            if (debugShortcutsKeys.canHandleKey(keycode)) {
+                debugShortcutsKeys.handleKey(keycode);
+                return true;
+            }
     		
     		Direction direction = directionByKeyCode.get(keycode);
     		if (direction != null) {
