@@ -19,8 +19,9 @@ import net.sf.freecol.common.model.map.generator.MapGenerator
 import promitech.colonization.GameCreator
 import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
+import promitech.colonization.DI
 
-class DebugConsole(gameController: GUIGameController, guiGameModel: GUIGameModel)
+class DebugConsole(val commandExecutor : CommandExecutor)
 	: ClosableDialog<DebugConsole>("", GameResources.instance.getUiSkin())
 {
 	private val dialogLayout = Table()
@@ -29,8 +30,6 @@ class DebugConsole(gameController: GUIGameController, guiGameModel: GUIGameModel
 	private val scrollPane = ScrollPane(label)
 			
 	var selectedTile: Tile? = null
-	
-	var commandExecutor : CommandExecutor
 	
 	init {
 		label.setAlignment(Align.top or Align.left);
@@ -61,7 +60,6 @@ class DebugConsole(gameController: GUIGameController, guiGameModel: GUIGameModel
 		})
 				
 		withHidingOnEsc();
-		commandExecutor = CommandExecutor(gameController, guiGameModel)
 	}
 	
 	fun executeCommand() {
