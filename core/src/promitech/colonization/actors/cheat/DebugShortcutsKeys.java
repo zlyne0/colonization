@@ -20,9 +20,9 @@ public class DebugShortcutsKeys {
         
         commandExecutor = new CommandExecutor(di, mapActor);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "ai settlements");
-        commandByKeycode.put(Input.Keys.NUM_2, "ai explore");
-        commandByKeycode.put(Input.Keys.NUM_3, "map show");
+        commandByKeycode.put(Input.Keys.NUM_1, "ai move");
+        //commandByKeycode.put(Input.Keys.NUM_2, "ai explore");
+        //commandByKeycode.put(Input.Keys.NUM_3, "map show");
     }
 
     public boolean canHandleKey(int keycode) {

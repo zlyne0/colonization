@@ -7,8 +7,10 @@ import net.sf.freecol.common.model.map.generator.MapGenerator
 import promitech.colonization.DI
 import promitech.colonization.GameCreator
 import promitech.colonization.actors.map.MapActor
+import promitech.colonization.ai.AILogicDebugRun
 import promitech.colonization.ai.BuildColony
 import promitech.colonization.ai.NavyExplorer
+import promitech.colonization.infrastructure.ThreadsResources
 
 abstract class Task(var cmd: String) {
 	abstract fun run()
@@ -107,6 +109,11 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			override fun run() {
 				theBestMove()
 			}
+		},
+		object : Task("ai move") {
+			override fun run() {
+				aiMove()
+			}
 		}
 	);
 
@@ -190,4 +197,17 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
         navyExplorer.toStringsBorderValues(tileStrings);
         mapActor.showTileDebugStrings(tileStrings);
     }
+	
+	fun aiMove() {
+		if (di.guiGameModel.isActiveUnitNotSet()) {
+			System.out.println("no active unit");
+			return
+		}
+		
+		ThreadsResources.instance.executeAImovement(object : Runnable {
+			override fun run() {
+				AILogicDebugRun(di.guiGameModel, di.moveLogic).run()
+			}
+		})
+	}
 }
