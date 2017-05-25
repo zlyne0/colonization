@@ -2,12 +2,13 @@ package promitech.colonization.actors.cheat
 
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitIterator
+import net.sf.freecol.common.model.map.PathFinder
 import net.sf.freecol.common.model.map.generator.MapGenerator
-import promitech.colonization.GUIGameController
-import promitech.colonization.GUIGameModel
-import promitech.colonization.GameCreator
 import promitech.colonization.DI
+import promitech.colonization.GameCreator
+import promitech.colonization.actors.map.MapActor
 import promitech.colonization.ai.BuildColony
+import promitech.colonization.ai.NavyExplorer
 
 abstract class Task(var cmd: String) {
 	abstract fun run()
@@ -27,7 +28,7 @@ class Alias(cmd: String, val task: Task) : Task(cmd) {
 	}
 }
 
-class CommandExecutor(var di: DI) {
+class CommandExecutor(var di: DI, val mapActor: MapActor) {
     var gameController = di.guiGameController
 	var guiGameModel = di.guiGameModel
 		
@@ -142,53 +143,51 @@ class CommandExecutor(var di: DI) {
     fun theBestPlaceToBuildColony() {
 		System.out.println("theBestPlaceToBuildColony")
 		
-//        guiGameModel = di.guiGameModel;
+        guiGameModel = di.guiGameModel;
         
-//        var buildColony = BuildColony(guiGameModel.game.map);
-//        buildColony.generateWeights(guiGameModel.game.playingPlayer);
+        var buildColony = BuildColony(guiGameModel.game.map);
+        buildColony.generateWeights(guiGameModel.game.playingPlayer);
 		
-//        final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
-//        buildColony.toStringValues(tileStrings);
-//        mapActor.showTileDebugStrings(tileStrings);
+		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+		buildColony.toStringValues(tileStrings)
+		mapActor.showTileDebugStrings(tileStrings)
     }
 
     fun theBestMove() {
 		System.out.println("theBestMove")
 		
-//        GUIGameModel guiGameModel = di.guiGameModel;
-//        MoveController moveController = di.moveController;
-//        
-//        final Unit unit = guiGameModel.getActiveUnit();
-//        if (unit == null) {
-//            System.out.println("no unit selected");
-//            return;
-//        }
-//        System.out.println("the best move");
-//
-//        
-//        final PathFinder pathFinder = new PathFinder();
-//        pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit);
-//        
-//        NavyExplorer navyExplorer = new NavyExplorer(guiGameModel.game.map);
-//        navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
-//        
-//        if (navyExplorer.isFoundExploreDestination()) {
-//            if (navyExplorer.isExploreDestinationInOneTurn()) {
-//                Direction direction = navyExplorer.getExploreDestinationAsDirection();
-//                System.out.println("exploration destination " + direction);
-//                moveController.pressDirectionKey(direction);
-//            } else {
-//                System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
-//            }
-//        } else {
-//            // maybe is everything explored or blocked in some how
-//            System.out.println("can not find tile to explore");
-//        }
-//        
-//        final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
-//        navyExplorer.toStringsBorderValues(tileStrings);
-//        mapActor.showTileDebugStrings(tileStrings);
+        var guiGameModel = di.guiGameModel
+        var moveController = di.moveController
+        
+        var unit = guiGameModel.getActiveUnit();
+        if (unit == null) {
+            System.out.println("no unit selected");
+            return;
+        }
+        System.out.println("the best move");
+
+        
+        var pathFinder = PathFinder()
+        pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit);
+        
+        var navyExplorer = NavyExplorer(guiGameModel.game.map);
+        navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
+        
+        if (navyExplorer.isFoundExploreDestination()) {
+            if (navyExplorer.isExploreDestinationInOneTurn()) {
+                var direction = navyExplorer.getExploreDestinationAsDirection();
+                System.out.println("exploration destination " + direction);
+                moveController.pressDirectionKey(direction);
+            } else {
+                System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
+            }
+        } else {
+            // maybe is everything explored or blocked in some how
+            System.out.println("can not find tile to explore");
+        }
+        
+		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+        navyExplorer.toStringsBorderValues(tileStrings);
+        mapActor.showTileDebugStrings(tileStrings);
     }
-	
-		
 }

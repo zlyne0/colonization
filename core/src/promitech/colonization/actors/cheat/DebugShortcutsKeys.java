@@ -18,7 +18,7 @@ public class DebugShortcutsKeys {
         this.hudStage = hudStage;
         this.mapActor = mapActor;
         
-        commandExecutor = new CommandExecutor(di);
+        commandExecutor = new CommandExecutor(di, mapActor);
         
         commandByKeycode.put(Input.Keys.NUM_1, "ai settlements");
         commandByKeycode.put(Input.Keys.NUM_2, "ai explore");
