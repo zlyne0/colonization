@@ -18,7 +18,9 @@ public class AILogicDebugRun {
     
     public void run() {
         Unit unit = gameModel.getActiveUnit();
-        ExplorerMission explorerMission = new ExplorerMission(unit);
-        explorerMissionHandler.executeMission(explorerMission);
+//        ExplorerMission explorerMission = new ExplorerMission(unit);
+//        explorerMissionHandler.executeMission(explorerMission);
+//        explorerMissionHandler.exploreByOneMove(unit);
+        explorerMissionHandler.exploreByAllMoves(unit);
     }
 }
