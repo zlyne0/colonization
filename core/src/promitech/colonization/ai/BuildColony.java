@@ -1,13 +1,14 @@
 package promitech.colonization.ai;
 
 import java.util.Map.Entry;
+import java.util.Set;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -108,6 +109,11 @@ class TilePlayer {
 
 public class BuildColony {
 
+    public static enum TileSelection {
+        WITHOUT_UNEXPLORED,
+        ONLY_SEASIDE
+    }
+    
     public static enum ColonyValueCategory {
         A_OVERRIDE, // override slot containing showstopper NoValueType values
         A_PROD,     // general production level
@@ -206,7 +212,7 @@ public class BuildColony {
 		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
-	public void generateWeights(Player player) {
+	public void generateWeights(Player player, Set<TileSelection> tileFilter) {
 		this.player = player;
 		this.foodGoodsType = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
 		
@@ -220,6 +226,8 @@ public class BuildColony {
         // Penalize certain problems more in the initial colonies.
         development = Math.min(LOW_SETTLEMENT_NUMBER, settlementCount) / (double)LOW_SETTLEMENT_NUMBER;
 		
+        boolean withoutUnexplored = tileFilter.contains(TileSelection.WITHOUT_UNEXPLORED);
+        boolean onlySeaside = tileFilter.contains(TileSelection.ONLY_SEASIDE);
         int x, y, i;
         for (y=0; y<map.height; y++) {
             for (x=0; x<map.width; x++) {
@@ -227,13 +235,17 @@ public class BuildColony {
                 if (tile.getType().isWater()) {
                 	continue;
                 }
-                
+                if (withoutUnexplored && player.isTileUnExplored(tile)) {
+                    continue;
+                }
+                if (onlySeaside && !tile.isOnSeaSide()) {
+                    continue;
+                }
                 tileWeight(tile);
                 double v = 1;
         		for (i=0; i<values.length; i++) {
         			v *= values[i];
         		}
-                
                 tileWeights.set(x, y, (int)(v * 100));
             }
         }

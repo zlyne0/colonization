@@ -153,7 +153,10 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
         guiGameModel = di.guiGameModel;
         
         var buildColony = BuildColony(guiGameModel.game.map);
-        buildColony.generateWeights(guiGameModel.game.playingPlayer);
+        buildColony.generateWeights(
+			guiGameModel.game.playingPlayer,
+			setOf(BuildColony.TileSelection.ONLY_SEASIDE, BuildColony.TileSelection.WITHOUT_UNEXPLORED)
+        );
 		
 		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
 		buildColony.toStringValues(tileStrings)

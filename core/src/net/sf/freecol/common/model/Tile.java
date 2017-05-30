@@ -20,13 +20,23 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Tile implements UnitLocation, Identifiable {
-	
+
+    public static final int ALL_NEIGHBOUR_WATER_BITS_VALUE = 0;
+    public static final int ALL_NEIGHBOUR_LAND_BITS_VALUE = allNeighbourLandBits();
+    private static int allNeighbourLandBits() {
+        int v = ALL_NEIGHBOUR_WATER_BITS_VALUE;
+        for (Direction d : Direction.allDirections) {
+            v |= 1 << d.ordinal();
+        }
+        return v;
+    }
+    
+    
 	public final int x;
 	public final int y;
 	private TileType type;
 	private int style;
 	public final String id;
-	private int connected = 0;
 	private boolean moveToEurope = false;
 	private Player owner;
 	private String owningSettlement;
@@ -35,6 +45,7 @@ public class Tile implements UnitLocation, Identifiable {
 	private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	private TileItemContainer tileItemContainer;
+	protected int tileConnected = 0;
 	
 	public Tile(String id, int x, int y, TileType type, int style) {
 		this.id = id;
@@ -457,6 +468,10 @@ public class Tile implements UnitLocation, Identifiable {
 		return ct.getWorker() != null;
 	}
 	
+	public boolean isOnSeaSide() {
+	    return getType().isLand() && tileConnected != ALL_NEIGHBOUR_LAND_BITS_VALUE; 
+	}
+	
 	public static class Xml extends XmlNodeParser<Tile> {
 	    
 		private static final String ATTR_PLAYER = "player";
@@ -464,7 +479,6 @@ public class Tile implements UnitLocation, Identifiable {
 		private static final String ATTR_OWNING_SETTLEMENT = "owningSettlement";
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_MOVE_TO_EUROPE = "moveToEurope";
-		private static final String ATTR_CONNECTED = "connected";
 		private static final String ATTR_Y = "y";
 		private static final String ATTR_X = "x";
 		private static final String ATTR_TYPE = "type";
@@ -533,7 +547,6 @@ public class Tile implements UnitLocation, Identifiable {
 			
 			TileType tileType = Specification.instance.tileTypes.getById(tileTypeStr);
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
-			tile.connected = attr.getIntAttribute(ATTR_CONNECTED, 0);
 			tile.moveToEurope = attr.getBooleanAttribute(ATTR_MOVE_TO_EUROPE, false);
 			
 			String ownerId = attr.getStrAttribute(ATTR_OWNER);
@@ -554,7 +567,6 @@ public class Tile implements UnitLocation, Identifiable {
 			attr.set(ATTR_TYPE, tile.type);
 			attr.set(ATTR_STYLE, tile.style);
 			
-			attr.set(ATTR_CONNECTED, tile.connected);
 			attr.set(ATTR_MOVE_TO_EUROPE, tile.moveToEurope);
 			attr.set(ATTR_OWNER, tile.owner);
 			attr.set(ATTR_OWNING_SETTLEMENT, tile.owningSettlement);

@@ -125,10 +125,24 @@ public class Map extends ObjectWithId {
                     Colony colony = t.getSettlement().getColony();
                     colony.initColonyTilesTile(t, this);
                 }
+                tileLandConnection(t);
             }
         }
     }
 
+    private void tileLandConnection(Tile tile) {
+        tile.tileConnected = Tile.ALL_NEIGHBOUR_WATER_BITS_VALUE;
+        
+        for (Direction direction : Direction.allDirections) {
+            Tile neighbourTile = getTile(tile, direction);
+            if (neighbourTile != null) {
+                if (neighbourTile.getType().isLand()) {
+                    tile.tileConnected |= 1 << direction.ordinal();
+                }
+            }
+        }
+    }
+    
 	public void initPlayersMap(MapIdEntities<Player> players) {
         for (Player player : players.entities()) {
             player.fogOfWar.initFromMap(this, player);
