@@ -141,6 +141,15 @@ public class UnitActor extends Widget implements DragAndDropTargetContainer<Abst
 
 	@Override
 	public boolean canPutPayload(AbstractGoods anAbstractGood, float x, float y) {
-		return unit.hasSpaceForAdditionalCargo(anAbstractGood);
+		boolean canPut = unit.hasSpaceForAdditionalCargo(anAbstractGood);
+		if (canPut) {
+			return true;
+		}
+		int maxGoodsAmountToFillFreeSlots = unit.maxGoodsAmountToFillFreeSlots(anAbstractGood.getTypeId());
+		if (maxGoodsAmountToFillFreeSlots <= 0) {
+			return false;
+		}
+		anAbstractGood.setQuantity(Math.min(anAbstractGood.getQuantity(), maxGoodsAmountToFillFreeSlots));
+		return true;
 	}
 }

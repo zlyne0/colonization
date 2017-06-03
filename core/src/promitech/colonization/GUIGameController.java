@@ -11,22 +11,18 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.map.PathFinder;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
-import promitech.colonization.actors.cheat.CheatConsole;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
 import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
-import promitech.colonization.ai.BuildColony;
-import promitech.colonization.ai.NavyExplorer;
 import promitech.colonization.math.Point;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
@@ -377,12 +373,6 @@ public class GUIGameController {
 		mapActor.resetMapModel();
 	}
 
-	public void showCheatConsoleDialog() {
-		CheatConsole cheatConsole = new CheatConsole(this, guiGameModel);
-		cheatConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
-		mapHudStage.showDialog(cheatConsole);
-	}
-
 	public void buildColony() {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
@@ -463,49 +453,7 @@ public class GUIGameController {
 	public void hideTilesOwners() {
 		mapActor.hideTileOwners();
 	}
-
-	public void theBestMove() {
-		final Unit unit = guiGameModel.getActiveUnit();
-		if (unit == null) {
-			System.out.println("no unit selected");
-			return;
-		}
-		System.out.println("the best move");
-
-		
-        final PathFinder pathFinder = new PathFinder();
-        pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit);
-        
-        NavyExplorer navyExplorer = new NavyExplorer(guiGameModel.game.map);
-        navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
-        
-        if (navyExplorer.isFoundExploreDestination()) {
-            if (navyExplorer.isExploreDestinationInOneTurn()) {
-                Direction direction = navyExplorer.getExploreDestinationAsDirection();
-				System.out.println("exploration destination " + direction);
-				moveController.pressDirectionKey(direction);
-            } else {
-                System.out.println("exploration path " + navyExplorer.getExploreDestinationAsPath());
-            }
-        } else {
-            // maybe is everything explored or blocked in some how
-            System.out.println("can not find tile to explore");
-        }
-        
-        final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
-        navyExplorer.toStringsBorderValues(tileStrings);
-        mapActor.showTileDebugStrings(tileStrings);
-		
-	}
 	
-	public void theBestPlaceToBuildColony() {
-		BuildColony buildColony = new BuildColony(guiGameModel.game.map);
-		buildColony.generateWeights(guiGameModel.game.playingPlayer);
-		final String tileStrings[][] = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
-		buildColony.toStringValues(tileStrings);
-		mapActor.showTileDebugStrings(tileStrings);
-	}
-
 	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
 		@Override
 		public void run() {
