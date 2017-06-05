@@ -54,6 +54,7 @@ class CostDecider {
 		    moveNode.totalCost = newTotalPathCost;
 	        moveNode.unitMovesLeft = costMovesLeft;
 	        moveNode.turns = currentNode.turns + costNewTurns;
+            moveNode.preview = currentNode;
 	        return true;
 	    }
 	    return false;
@@ -100,8 +101,15 @@ class CostDecider {
 
 class NavyCostDecider extends CostDecider {
     
+    private boolean moveToSeaside = false;
+    
     @Override
     boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+        moveToSeaside = false;
+        if ((moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
+            moveType = MoveType.MOVE;
+            moveToSeaside = true;
+        }
         // check whether tile accessible
         // if moveNode.tile is land moveType == MoveType.MOVE_NO_ACCESS_LAND
         if (isMoveIllegal(moveNode.tile, moveType)) {
@@ -115,7 +123,12 @@ class NavyCostDecider extends CostDecider {
             // tile is not bombarded so use common move cost
             getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
         }
-        return improveMove(currentNode, moveNode);
+        boolean improveMove = improveMove(currentNode, moveNode);
+        if (moveToSeaside) {
+            // return false so no process other tiles from source tile (currentNode)
+            return false;
+        }
+        return improveMove;
     }
 
     private boolean isTileThreatForUnit(Node moveNode) {
@@ -126,7 +139,7 @@ class NavyCostDecider extends CostDecider {
         
         for (int i=0; i<Direction.values().length; i++) {
             Direction direction = Direction.values()[i];
-            Tile neighbourToMoveTile = map.getTile(moveNode.tile.x, moveNode.tile.y, direction);
+            Tile neighbourToMoveTile = map.getTile(moveNode.tile, direction);
             if (neighbourToMoveTile == null) {
             	continue;
             }
@@ -310,7 +323,7 @@ public class PathFinder {
 			for (iDirections=0; iDirections<nDirections; iDirections++) {
 				Direction moveDirection = Direction.values()[iDirections];
 				
-				Tile moveTile = map.getTile(currentNode.tile.x, currentNode.tile.y, moveDirection);
+				Tile moveTile = map.getTile(currentNode.tile, moveDirection);
 				if (moveTile == null) {
 					continue;
 				}
@@ -331,7 +344,6 @@ public class PathFinder {
 					if (oneOfTheBest == null || moveNode.hasBetterCostThen(oneOfTheBest)) {
 						oneOfTheBest = moveNode;
 					}
-					moveNode.preview = currentNode;
 					nodes.add(moveNode);
 				} else {
 					if (costDecider.isMoveIllegal()) {
@@ -397,6 +409,12 @@ public class PathFinder {
 	    return grid.get(cellIndex).turns;
 	}
 
+	public void totalCostToStringArrays(String[][] strTab) {
+	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
+	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+	    }
+	}
+	
 	public Direction getDirectionInto(int cellIndex) {
 		Node oneBefore = null;
 		Node n = grid.get(cellIndex);
