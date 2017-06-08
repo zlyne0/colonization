@@ -61,6 +61,8 @@ public class GameCreator {
 		guiGameModel.game.map = new MapGenerator().generate(guiGameModel.game.players);
 
 		postCreateGame();
+		// TODO: move to postCreateGame and remove from map xml parser
+		guiGameModel.game.map.afterReadMap();
 	}
 	
 	public void loadLastGame() throws IOException, ParserConfigurationException, SAXException {

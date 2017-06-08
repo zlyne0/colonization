@@ -472,6 +472,10 @@ public class Tile implements UnitLocation, Identifiable {
 	    return getType().isLand() && tileConnected != ALL_NEIGHBOUR_LAND_BITS_VALUE; 
 	}
 	
+	public boolean isNextToLand() {
+		return getType().isWater() && tileConnected != ALL_NEIGHBOUR_WATER_BITS_VALUE;
+	}
+	
 	public static class Xml extends XmlNodeParser<Tile> {
 	    
 		private static final String ATTR_PLAYER = "player";

@@ -44,9 +44,12 @@ class TilePlayer {
     	this.landPaymentModifier = player.getFeatures().hasModifier(Modifier.LAND_PAYMENT_MODIFIER);
     }
     
-    NoClaimReason canClaimToFoundSettlement(Tile tile) {
+    NoClaimReason terrainClaim(Tile tile) {
     	if (!tile.getType().canSettle()) {
     		return NoClaimReason.TERRAIN;
+    	}
+    	if (tile.getType().isWater()) {
+    		return NoClaimReason.WATER;
     	}
     	if (map.isPolar(tile)) {
     		return NoClaimReason.TERRAIN;
@@ -54,17 +57,30 @@ class TilePlayer {
     	if (map.isOnMapEdge(tile)) {
     		return NoClaimReason.TERRAIN;
     	}
+    	if (tile.hasSettlement()) {
+    		return NoClaimReason.SETTLEMENT;
+    	}
     	if (map.hasColonyInRange(tile, 1)) {
     		return NoClaimReason.SETTLEMENT;
     	}
-    	
-    	NoClaimReason reason = canOwnTile(tile);
-    	if (reason == NoClaimReason.NATIVES) {
-    		if (canClaimFreeCenterTile(tile)) {
-    			return NoClaimReason.NONE;
-    		}
+    	return NoClaimReason.NONE;
+    }
+    
+    NoClaimReason canOwnTileToFoundSettlement(Tile tile) {
+    	if (tile.getOwner() == null) {
+    		return NoClaimReason.NONE;
     	}
-    	return reason;
+    	if (tile.getOwner().isEuropean()) {
+    		return NoClaimReason.EUROPEANS;
+    	} 
+    	if (landPaymentModifier) {
+    		return NoClaimReason.NONE;
+    	}
+    	// tile is owned by natives
+		if (canClaimFreeCenterTile(tile)) {
+			return NoClaimReason.NONE;
+		}
+    	return NoClaimReason.NATIVES;
     }
     
     private boolean canClaimFreeCenterTile(Tile tile) {
@@ -78,31 +94,12 @@ class TilePlayer {
 			);
     }
     
-    NoClaimReason canOwnTile(Tile tile) {
-		if (tile.getUnits().isEmpty()) {
-			return NoClaimReason.NONE;
-		}
-		Unit tileUnit = tile.getUnits().first();
-		if (tileUnit.getOwner().equalsId(player)) {
-			return NoClaimReason.NONE;
-		}
-		if (player.atWarWith(tileUnit.getOwner()) && tileUnit.isOffensiveUnit()) {
-			return NoClaimReason.OCCUPIED;
-		}
-    	if (tile.getType().isWater()) {
-    		return NoClaimReason.WATER;
+    boolean hasEnemyUnits(Tile tile) {
+    	if (tile.getUnits().isEmpty()) {
+    		return false;
     	}
-    	
-    	if (tile.getOwner() == null) {
-    		return NoClaimReason.NONE;
-    	}
-    	if (tile.getOwner().isEuropean()) {
-    		return NoClaimReason.EUROPEANS;
-    	} 
-		if (landPaymentModifier) {
-			return NoClaimReason.NONE;
-		}
-		return NoClaimReason.NATIVES;
+    	Unit tileUnit = tile.getUnits().first();
+    	return tileUnit.getOwner().notEqualsId(player);
     }
     
 }
@@ -114,21 +111,21 @@ public class BuildColony {
         ONLY_SEASIDE
     }
     
-    public static enum ColonyValueCategory {
-        A_OVERRIDE, // override slot containing showstopper NoValueType values
-        A_PROD,     // general production level
-        A_TILE,     // strangeness with the tile
-        A_EUROPE,   // proximity to Europe
-        A_RESOURCE, // penalize building on top of a resource
-        A_ADJACENT, // penalize adjacent units and settlement-owned-tiles
-        A_FOOD,     // penalize food shortage
-        A_LEVEL,    // reward high production potential
-        A_NEARBY,   // penalize nearby units and settlements
-        A_GOODS;    // check sufficient critical goods available (e.g. lumber)
-        // A_GOODS must be last, the spec is entitled to require checks on
-        // as many goods types as it likes
-
-    }
+//    public static enum ColonyValueCategory {
+//        A_OVERRIDE, // override slot containing showstopper NoValueType values
+//        A_PROD,     // general production level
+//        A_TILE,     // strangeness with the tile
+//        A_EUROPE,   // proximity to Europe
+//        A_RESOURCE, // penalize building on top of a resource
+//        A_ADJACENT, // penalize adjacent units and settlement-owned-tiles
+//        A_FOOD,     // penalize food shortage
+//        A_LEVEL,    // reward high production potential
+//        A_NEARBY,   // penalize nearby units and settlements
+//        A_GOODS;    // check sufficient critical goods available (e.g. lumber)
+//        // A_GOODS must be last, the spec is entitled to require checks on
+//        // as many goods types as it likes
+//
+//    }
 	
     /** Special return values for showstopper getColonyValue fail. */
 	public static enum NoValueType {
@@ -145,6 +142,66 @@ public class BuildColony {
 		}
 	}    
     
+	public class TileBCWeight {
+		public double resource;
+		public double override;
+		public double stealLand;
+		
+		public double nearby;
+		public double europe;
+		public double prod;
+		public double adjacent;
+		public double level;
+		public double food;
+		public double goods;
+
+		public int foodProduction = 0;
+		public boolean unitOccupied;
+		public int weight = 0;
+		public NoClaimReason terrainClaim;
+
+		public void reset() {
+			resource = 1;
+			override = 1;
+			stealLand = 1;
+			nearby = 1;
+			europe = 1;
+			prod = 1;
+			adjacent = 1;
+			level = 1;
+			food = 1;
+			goods = 1;
+			
+			foodProduction = 0;
+			unitOccupied = false;
+			weight = 0;
+			terrainClaim = null;
+		}
+		
+		public void calculate() {
+			weight = (int)(values.weight() * 100);			
+		}
+		
+		private double weight() {
+			return (
+				resource *
+				override *
+				stealLand *
+				nearby *
+				europe *
+				prod *
+				adjacent *
+				level *
+				food *
+				goods
+			);
+		}
+
+		public boolean isWithoutUnits() {
+			return !unitOccupied;
+		}
+	}
+	
     // Want a few settlements before taking risks
     final int LOW_SETTLEMENT_NUMBER = 3;
 
@@ -158,6 +215,7 @@ public class BuildColony {
     final double MOD_FOOD_LOW               = 0.75;
     final double MOD_INITIAL_FOOD           = 2.0;
     final double MOD_STEAL                  = 0.5;
+    final double MOD_STEAL_NEXT_SETTLEMENT  = 0.25;
     final double MOD_INLAND                 = 0.5;
 
     // Applied per surrounding tile
@@ -186,7 +244,7 @@ public class BuildColony {
 
 	private final Map map;
 	private final Int2dArray tileWeights;
-	private final double[] values = new double[ColonyValueCategory.values().length];
+	private final TileBCWeight values = new TileBCWeight();
 	
 	private final HighSeaDistanceGenerator highSeaDistance;
 	private final ColonyLandDistance colonyLandDistance;
@@ -210,25 +268,29 @@ public class BuildColony {
 		highSeaDistance = new HighSeaDistanceGenerator(map);
 		colonyLandDistance = new ColonyLandDistance(map);
 		spiralIterator = new SpiralIterator(map.width, map.height);
+		
+		foodGoodsType = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
+		
+		highSeaDistance.generate();
+	}
+	
+	public void init(Player player) {
+		this.player = player;
+		
+		colonyLandDistance.generate(player);
+		tilePlayer = new TilePlayer(map, player);
+		settlementCount = player.settlements.size();
+		
+		// Penalize certain problems more in the initial colonies.
+		development = Math.min(LOW_SETTLEMENT_NUMBER, settlementCount) / (double)LOW_SETTLEMENT_NUMBER;
 	}
 	
 	public void generateWeights(Player player, Set<TileSelection> tileFilter) {
-		this.player = player;
-		this.foodGoodsType = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
-		
-		highSeaDistance.generate();
-		colonyLandDistance.generate(player);
-		
-		
-		tilePlayer = new TilePlayer(map, player);
-		settlementCount = player.settlements.size();
-
-        // Penalize certain problems more in the initial colonies.
-        development = Math.min(LOW_SETTLEMENT_NUMBER, settlementCount) / (double)LOW_SETTLEMENT_NUMBER;
+		init(player);
 		
         boolean withoutUnexplored = tileFilter.contains(TileSelection.WITHOUT_UNEXPLORED);
         boolean onlySeaside = tileFilter.contains(TileSelection.ONLY_SEASIDE);
-        int x, y, i;
+        int x, y;
         for (y=0; y<map.height; y++) {
             for (x=0; x<map.width; x++) {
                 Tile tile = map.getSafeTile(x, y);
@@ -241,20 +303,21 @@ public class BuildColony {
                 if (onlySeaside && !tile.isOnSeaSide()) {
                     continue;
                 }
-                tileWeight(tile);
-                double v = 1;
-        		for (i=0; i<values.length; i++) {
-        			v *= values[i];
-        		}
-                tileWeights.set(x, y, (int)(v * 100));
+                tileWeightCalculation(tile);
+                values.calculate();
+                tileWeights.set(x, y, values.weight);
             }
         }
 	}
+
+	public TileBCWeight tileWeight(Tile tile) {
+		tileWeightCalculation(tile);
+		values.calculate();
+		return values;
+	}
 	
-	void tileWeight(Tile tile) {
-		for (int i=0; i<values.length; i++) {
-			values[i] = 1;
-		}
+	private void tileWeightCalculation(Tile tile) {
+		values.reset();
 		
 		if (tileClaims(tile)) {
 			return;
@@ -274,41 +337,43 @@ public class BuildColony {
         
         // Penalty for building on a resource tile, because production
         // can not be improved much.
-        values[ColonyValueCategory.A_RESOURCE.ordinal()] = tile.hasTileResource() ? MOD_HAS_RESOURCE : 1.0;
+        values.resource = tile.hasTileResource() ? MOD_HAS_RESOURCE : 1.0;
         
         productionWeight(tile);
         nearbySettlementsAndUnits(tile);
-        
-		return;
 	}
 
-	public boolean tileClaims(Tile tile) {
-		NoClaimReason claimReason = tilePlayer.canClaimToFoundSettlement(tile);
-		switch (claimReason) {
-		case TERRAIN:
-		case WATER:
-            values[ColonyValueCategory.A_OVERRIDE.ordinal()] = NoValueType.TERRAIN.getDouble();
-            return true;
-        case OCCUPIED: // transient we hope
-        	values[ColonyValueCategory.A_TILE.ordinal()] = MOD_ENEMY_UNIT[0];
-            break;
-        case SETTLEMENT: 
-        case WORKED: 
-        case EUROPEANS:
-        	values[ColonyValueCategory.A_OVERRIDE.ordinal()] = NoValueType.SETTLED.getDouble();
-            return true;
-        case NATIVES: // If we have no ports, we are desperate enough to steal
-        	// indian settlement in range
-        	for (Direction d : Direction.allDirections) {
-        		Tile neighbourTile = map.getTile(tile, d);
-        		if (neighbourTile != null && neighbourTile.hasSettlement() && !neighbourTile.getSettlement().isColony()) {
-        			values[ColonyValueCategory.A_OVERRIDE.ordinal()] = NoValueType.SETTLED.getDouble();
-        			return true;
-        		}
-        	}
-        	values[ColonyValueCategory.A_TILE.ordinal()] = MOD_STEAL;
-		default:
-			break;
+	private boolean tileClaims(Tile tile) {
+		values.terrainClaim = tilePlayer.terrainClaim(tile);
+		
+		if (tilePlayer.hasEnemyUnits(tile)) {
+			values.unitOccupied = true;
+		}
+		
+		NoClaimReason claimReason = tilePlayer.canOwnTileToFoundSettlement(tile);
+		if (NoClaimReason.NATIVES == claimReason) {
+			if (isNextToNativeSettlement(tile)) {
+				values.stealLand = MOD_STEAL;
+				//values.terrainClaim = NoClaimReason.SETTLEMENT;
+			} else {
+				values.stealLand = MOD_STEAL; 
+			}
+		}
+		
+		if (values.terrainClaim != NoClaimReason.NONE) {
+			values.override = NoValueType.TERRAIN.getDouble();
+			return true;
+		}
+		
+		return false;
+	}
+	
+	private boolean isNextToNativeSettlement(Tile tile) {
+		for (Direction d : Direction.allDirections) {
+			Tile neighbourTile = map.getTile(tile, d);
+			if (neighbourTile != null && neighbourTile.hasSettlement() && !neighbourTile.getSettlement().isColony()) {
+				return true;
+			}
 		}
 		return false;
 	}
@@ -323,20 +388,20 @@ public class BuildColony {
 					if (nTile.getSettlement().getOwner().equalsId(player)) {
 						if (!supportingColony) {
 							supportingColony = true;
-							values[ColonyValueCategory.A_NEARBY.ordinal()] *= MOD_OWN_COLONY[radius];
+							values.nearby *= MOD_OWN_COLONY[radius];
 						}
 					} else {
 						if (nTile.getSettlement().getOwner().atWarWith(player)) {
-							values[ColonyValueCategory.A_NEARBY.ordinal()] *= MOD_ENEMY_COLONY[radius];
+							values.nearby *= MOD_ENEMY_COLONY[radius];
 						} else {
-							values[ColonyValueCategory.A_NEARBY.ordinal()] *= MOD_NEUTRAL_COLONY[radius];
+							values.nearby *= MOD_NEUTRAL_COLONY[radius];
 						}
 					}
 				}
 				if (nTile.getUnits().isNotEmpty()) {
 					Unit unit = nTile.getUnits().first();
 					if (unit.getOwner().notEqualsId(player) && unit.isOffensiveUnit() && player.atWarWith(unit.getOwner())) {
-						values[ColonyValueCategory.A_NEARBY.ordinal()] *= MOD_ENEMY_UNIT[radius];
+						values.nearby *= MOD_ENEMY_UNIT[radius];
 					}
 				}
 				spiralIterator.next();
@@ -352,19 +417,19 @@ public class BuildColony {
 		if (highseaDistance == HighSeaDistanceGenerator.LACK_CONNECTION) {
 			int inlandColonyDistance = colonyLandDistance.getDistance(tile);
 			if (inlandColonyDistance > LONG_INLAND_PATH) {
-				values[ColonyValueCategory.A_OVERRIDE.ordinal()] = NoValueType.INLAND.getDouble();
+				values.override = NoValueType.INLAND.getDouble();
 				return true;
 			}
-			values[ColonyValueCategory.A_EUROPE.ordinal()] = MOD_INLAND;
+			values.europe = MOD_INLAND;
 		} else {
 			if (highseaDistance >= LONG_PATH_TILES) {
 	            // Normally penalize in direct proportion to length of
 	            // path, but scale up to penalizing by the square of the
 	            // path length for the first colony.
 	            double trip = (double)LONG_PATH_TILES / highseaDistance;
-	            values[ColonyValueCategory.A_EUROPE.ordinal()] = Math.pow(trip, 2.0 - development);
+	            values.europe = Math.pow(trip, 2.0 - development);
 			} else {
-				values[ColonyValueCategory.A_EUROPE.ordinal()] = 1.0 + 0.25 * ((double)LONG_PATH_TILES / (LONG_PATH_TILES - highseaDistance));
+				values.europe = 1.0 + 0.25 * ((double)LONG_PATH_TILES / (LONG_PATH_TILES - highseaDistance));
 			}
 		}
 		return false;
@@ -388,11 +453,10 @@ public class BuildColony {
 		}
 		
         if (initialFood <= FOOD_VERY_LOW) {
-            values[ColonyValueCategory.A_OVERRIDE.ordinal()] = NoValueType.FOOD.getDouble();
+            values.override = NoValueType.FOOD.getDouble();
             return true;
         }
-        GoodsType primaryFoodType = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
-        values[ColonyValueCategory.A_PROD.ordinal()] = (float)initialFood * primaryFoodType.getProductionWeight();
+        values.prod = ((float)initialFood) * foodGoodsType.getProductionWeight();
         return false;
 	}
 	
@@ -405,7 +469,7 @@ public class BuildColony {
 			double pf = 1.0;
 			if (nTile.getOwner() != null && nTile.getOwner().notEqualsId(player)) {
 				if (nTile.getOwner().isEuropean()) {
-                    values[ColonyValueCategory.A_ADJACENT.ordinal()] *= MOD_OWNED_EUROPEAN * development;
+                    values.adjacent *= MOD_OWNED_EUROPEAN * development;
                     continue; // Always ignore production from this tile 
 				} else {
 					pf = MOD_OWNED_NATIVE;
@@ -425,7 +489,7 @@ public class BuildColony {
 					}
 					
 					potentialColonyProduction.addGoods(goodsType.getId(), amount);
-					values[ColonyValueCategory.A_PROD.ordinal()] += amount * goodsType.getProductionWeight() * pf;
+					values.prod += amount * goodsType.getProductionWeight() * pf;
 					
 					if (amount > HIGH_PRODUCTION) {
 						potentialHighProduction.addGoods(goodsType.getId(), amount);
@@ -437,7 +501,7 @@ public class BuildColony {
 				}
 			}
 			for (com.badlogic.gdx.utils.ObjectIntMap.Entry<String> highProd : potentialHighProduction.entries()) {
-				values[ColonyValueCategory.A_LEVEL.ordinal()] *= MOD_HIGH_PRODUCTION;
+				values.level *= MOD_HIGH_PRODUCTION;
 				potentialGoodProduction.setZero(highProd.key);
 			}
 			int goodSizeAmount = 0;
@@ -447,12 +511,12 @@ public class BuildColony {
 				}
 			}
 			if (goodSizeAmount > 0) {
-				values[ColonyValueCategory.A_LEVEL.ordinal()] *= MOD_GOOD_PRODUCTION * goodSizeAmount;
+				values.level *= MOD_GOOD_PRODUCTION * goodSizeAmount;
 			}
 		}
 		
         if (potentialColonyProduction.getQuantity(GoodsType.FOOD) < FOOD_LOW) {
-            values[ColonyValueCategory.A_FOOD.ordinal()] *= MOD_FOOD_LOW;
+            values.food *= MOD_FOOD_LOW;
         }
 		
 		for (com.badlogic.gdx.utils.ObjectIntMap.Entry<String> prodEntry : potentialColonyProduction.entries()) {
@@ -460,7 +524,7 @@ public class BuildColony {
 			if (goodsType.getLowProductionThreshold() > 0 && prodEntry.value < goodsType.getLowProductionThreshold()) {
                 float fraction = (float)prodEntry.value / goodsType.getLowProductionThreshold();
                 double zeroValue = goodsType.getZeroProductionFactor();
-				values[ColonyValueCategory.A_GOODS.ordinal()] *= (1.0 - fraction) * zeroValue + fraction;
+				values.goods *= (1.0 - fraction) * zeroValue + fraction;
 			}
 		}
 	}
@@ -472,12 +536,15 @@ public class BuildColony {
             y = tileWeights.toY(i);
             cost = tileWeights.get(i);
             
-            if (cost != 0 && cost != Integer.MAX_VALUE) {
+            if (cost > 0 && cost != Integer.MAX_VALUE) {
             	tileStrings[y][x] = Integer.toString(cost);
             }
         }
 		
 	}
 
+	public Int2dArray getTileWeights() {
+		return tileWeights;
+	}
 
 }

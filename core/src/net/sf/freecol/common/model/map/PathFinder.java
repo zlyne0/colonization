@@ -28,6 +28,7 @@ class CostDecider {
 	
 	protected int moveCost;
 	private int newTotalPathCost;
+	protected boolean avoidUnexploredTiles = true;
 
     void init(Map map, Unit moveUnit) {
         this.map = map;
@@ -58,6 +59,10 @@ class CostDecider {
 	        return true;
 	    }
 	    return false;
+	}
+	
+	boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
+		return isMoveIllegal();
 	}
 	
 	boolean isMoveIllegal() {
@@ -91,7 +96,8 @@ class CostDecider {
 				return true;
 			}
 		}
-	    if (moveUnit.getOwner().isTileUnExplored(newTile)) {
+		
+	    if (avoidUnexploredTiles && moveUnit.getOwner().isTileUnExplored(newTile)) {
 	        moveCost = ILLEGAL_MOVE_COST;
 	        return true;
 	    }
@@ -131,6 +137,13 @@ class NavyCostDecider extends CostDecider {
         return improveMove;
     }
 
+	boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
+		if (moveType == MoveType.MOVE_NO_ACCESS_LAND && source.tile.hasSettlement() && dest.tile.getType().isLand()) {
+			return false;
+		}
+		return isMoveIllegal();
+	}
+    
     private boolean isTileThreatForUnit(Node moveNode) {
         if (moveNode.tileBombardedMetaData) {
             return moveNode.tileBombarded;
@@ -188,7 +201,7 @@ class Node {
 	
 	void reset(int unitMovesLeft, int totalCost) {
 		this.totalCost = totalCost;
-		turns = 0;
+		turns = Integer.MAX_VALUE;
 		this.unitMovesLeft = unitMovesLeft;
 		this.noMove = false;
 		this.preview = null;
@@ -265,6 +278,8 @@ public class PathFinder {
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
+        this.navyCostDecider.avoidUnexploredTiles = true;
+        this.baseCostDecider.avoidUnexploredTiles = true;
         
         Path path = find();
         path.toEurope = true;
@@ -278,6 +293,8 @@ public class PathFinder {
 	    this.endTile = endTile;
 	    this.moveUnit = moveUnit;
         this.findPossibilities = false;
+        this.navyCostDecider.avoidUnexploredTiles = true;
+        this.baseCostDecider.avoidUnexploredTiles = true;
 	    
         Path path = find();
         path.toEurope = false;
@@ -285,12 +302,18 @@ public class PathFinder {
 	}
 	
 	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
+		generateRangeMap(map, startTile, moveUnit, true);
+	}
+	
+	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
 	    goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = true;
+        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
 		
         find();
 	}
@@ -308,6 +331,7 @@ public class PathFinder {
 		
 		Node currentNode = grid.get(startTile.x, startTile.y);
 		currentNode.reset(moveUnit.getMovesLeft(), 0);
+		currentNode.turns = 0;
 		nodes.add(currentNode);
 
 		Node oneOfTheBest = null;
@@ -346,7 +370,7 @@ public class PathFinder {
 					}
 					nodes.add(moveNode);
 				} else {
-					if (costDecider.isMoveIllegal()) {
+					if (costDecider.isMarkDestTileAsUnaccessible(currentNode, moveNode, moveType)) {
 						moveNode.noMove = true;
 					}
 				}
@@ -412,6 +436,12 @@ public class PathFinder {
 	public void totalCostToStringArrays(String[][] strTab) {
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
 	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+	    }
+	}
+
+	public void turnCostToStringArrays(String[][] strTab) {
+	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
+	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(turnsCost(i));
 	    }
 	}
 	

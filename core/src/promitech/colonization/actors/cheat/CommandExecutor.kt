@@ -155,7 +155,8 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
         var buildColony = BuildColony(guiGameModel.game.map);
         buildColony.generateWeights(
 			guiGameModel.game.playingPlayer,
-			setOf(BuildColony.TileSelection.ONLY_SEASIDE, BuildColony.TileSelection.WITHOUT_UNEXPLORED)
+			setOf(BuildColony.TileSelection.WITHOUT_UNEXPLORED)
+			//setOf(BuildColony.TileSelection.ONLY_SEASIDE, BuildColony.TileSelection.WITHOUT_UNEXPLORED)
         );
 		
 		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
@@ -209,7 +210,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		
 		ThreadsResources.instance.executeAImovement(object : Runnable {
 			override fun run() {
-				AILogicDebugRun(di.guiGameModel, di.moveLogic).run()
+				AILogicDebugRun(di.guiGameModel, di.moveLogic, mapActor).run()
 			}
 		})
 	}
