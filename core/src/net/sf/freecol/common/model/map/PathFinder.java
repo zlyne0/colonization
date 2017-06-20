@@ -470,4 +470,8 @@ public class PathFinder {
         Node node = grid.get(cellIndex);
         return createPath(moveUnit, startTile, node);
     }
+
+	public Path getPathInto(Tile dest) {
+		return getPathInto(grid.toIndex(dest.x, dest.y));
+	}
 }

@@ -23,6 +23,8 @@ import promitech.colonization.actors.map.ColonyNameDialog;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
+import promitech.colonization.gamelogic.BuildColonyOrder;
+import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 import promitech.colonization.math.Point;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
@@ -377,20 +379,11 @@ public class GUIGameController {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
 	
-		if (!tile.getType().canSettle()) {
-			System.out.println("can not settle on tile type " + tile.getType());
-			return;
-		}
-		if (guiGameModel.game.map.isOnMapEdge(tile)) {
-			System.out.println("can not settle on map edge");
-			return;
-		}
-		if (guiGameModel.game.map.hasColonyInRange(tile, 1)) {
-			System.out.println("another colony in one tile range");
-			return;
-		}
-		if (!unitCanBuildColony(unit)) {
-			System.out.println("unit can not build colony");
+		BuildColonyOrder buildColonyOrder = new BuildColonyOrder(guiGameModel.game.map);
+		
+		OrderStatus orderStatus = buildColonyOrder.check(unit, tile);
+		if (orderStatus != OrderStatus.OK) {
+			System.out.println("can not build colony status[" + orderStatus + "] tile[" + tile + "], unit[" + unit + "]");
 			return;
 		}
 		
@@ -440,12 +433,6 @@ public class GUIGameController {
 		resetMapModel();
 	}
 	
-	private boolean unitCanBuildColony(Unit unit) {
-		return unit.hasMovesPoints() 
-				&& unit.unitType.canBuildColony() 
-				&& (!unit.getOwner().isRebel() || Specification.options.getBoolean(GameOptions.FOUND_COLONY_DURING_REBELLION));
-	}
-
 	public void showTilesOwners() {
 		mapActor.showTileOwners();
 	}

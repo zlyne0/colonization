@@ -60,7 +60,9 @@ class TileDrawModel {
 	}
 
 	public void drawSettlementImage(Batch batch, float rx, float ry) {
-		batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
+		if (settlementImage != null) {
+			batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
+		}
 	}
 	
 	public void addBackgroundTerainTexture(Frame texture) {
