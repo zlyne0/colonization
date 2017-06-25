@@ -30,10 +30,10 @@ public class AILogic {
 	public void aiNewTurn(Player player) {
 		gameLogic.newTurn(player);
 		
-		if (player.isIndian()) {
-			prepareIndianWanderMissions(player);
-			return;
-		}
+//		if (player.isIndian()) {
+//			prepareIndianWanderMissions(player);
+//			return;
+//		}
 		if (player.isLiveEuropeanPlayer()) {
 			
 			// create missions

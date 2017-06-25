@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.Path;
 import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.t.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GUIGameModel;
@@ -123,13 +124,35 @@ public class AILogicDebugRun {
     }
     
     public void run() {
-        Unit unit = gameModel.getActiveUnit();
+        //Unit unit = gameModel.getActiveUnit();
 //        ExplorerMission explorerMission = new ExplorerMission(unit);
 //        explorerMissionHandler.executeMission(explorerMission);
 //        explorerMissionHandler.exploreByOneMove(unit);
         //explorerMissionHandler.exploreByAllMoves(unit);
         
-        Player player = unit.getOwner();
+        Player player = gameModel.game.players.getById("player:1");
+        Unit unit = player.units.getById("unit:810");
+        Unit potentialTransporter = player.units.getById("unit:811");
+        
+        Tile sourceTile = unit.getTile();
+        
+        Tile destTile = gameModel.game.map.getSafeTile(32,40);
+        
+        //ai(unit);
+        TransportPathFinder transportPath = new TransportPathFinder();
+        Path findToTile = transportPath.findToTile(gameModel.game.map, sourceTile, destTile, unit, potentialTransporter);
+        
+        mapActor.mapDrawModel().unitPath = findToTile;
+
+        String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
+        transportPath.totalCostToStringArrays(debugPathRange);
+        //transportPath.turnCostToStringArrays(debugPathRange);
+		mapActor.showTileDebugStrings(debugPathRange);
+        
+    }
+
+	private void ai(Unit unit) {
+		Player player = unit.getOwner();
         
         if (missionsContainer == null) {
 			createStartGameMissions(player);
@@ -151,7 +174,7 @@ public class AILogicDebugRun {
         missionsContainer.clearDoneMissions();
         
 		mapActor.resetMapModel();
-    }
+	}
 
     private void foundColonyMissionHandler(FoundColonyMission mission) {
     	if (!mission.isUnitInDestination()) {
