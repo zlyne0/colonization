@@ -18,6 +18,7 @@ public class MoveContext {
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
 	private boolean unitKilled = false;
+	private boolean moveViaHighSea = false;
 
 	public MoveContext() {
 		this.path = null;
@@ -173,7 +174,7 @@ public class MoveContext {
 			return true;
 		case MOVE_HIGH_SEAS: {
 			// show question dialog are you sure
-			if (isMoveViaPath() && path.isPathToEurope()) {
+			if (moveViaHighSea || isMoveViaPath() && path.isPathToEurope()) {
 				return false;
 			} else {
 				return true;
@@ -202,6 +203,10 @@ public class MoveContext {
 	
 	public boolean isUnitKilled() {
 		return unitKilled;
+	}
+	
+	public void setMoveViaHighSea() {
+	    moveViaHighSea = true;
 	}
 
 }

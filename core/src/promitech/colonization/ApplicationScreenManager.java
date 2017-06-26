@@ -74,8 +74,8 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             //gameController.initGameFromSavegame();
             //gameController.initNewGame();
             new GameCreator(di.guiGameModel)
-            	//.initGameFromSavegame();
-            	.loadLastGame();
+            	.initGameFromSavegame();
+            	//.loadLastGame();
             
             long length = System.currentTimeMillis() - s;
             System.out.println("loading timeout: " + length);

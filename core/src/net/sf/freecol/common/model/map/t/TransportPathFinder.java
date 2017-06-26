@@ -26,7 +26,7 @@ class CostDecider {
 	protected int unitInitialMoves;
 	protected boolean moveUnitPiracy = false;
 
-	protected int costNewTurns;
+	protected int costNewTurns; // in range sense
 	protected int costMovesLeft;
 	
 	protected int moveCost;
@@ -53,7 +53,7 @@ class CostDecider {
 	
 	protected boolean improveMove(Node currentNode, Node moveNode) {
 	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost + currentNode.totalCost;
-	    if (moveNode.totalCost > newTotalPathCost) {
+	    if (moveNode.totalCost > newTotalPathCost) { 
 		    moveNode.totalCost = newTotalPathCost;
 	        moveNode.unitMovesLeft = costMovesLeft;
 	        moveNode.turns = currentNode.turns + costNewTurns;
@@ -283,11 +283,18 @@ public class TransportPathFinder {
 		Node reachedGoalNode = null;
 		
 		int iterationDebug = 0;
-		Direction[] dirDebug = new Direction[] {
-			Direction.W,
-			Direction.SW,
-			Direction.S
-		};
+//		Direction[] dirDebug = new Direction[] {
+//			Direction.W,
+//			Direction.SW,
+//			Direction.S
+//		};
+        Direction[] dirDebug = new Direction[] {
+            Direction.S,
+            Direction.S,
+            Direction.S,
+            Direction.S,
+            Direction.S
+        };
 		while (true) {
 			currentNode = nodes.pollFirst();
 			if (currentNode == null) {
@@ -334,7 +341,11 @@ public class TransportPathFinder {
 				if (moveType == MoveType.EMBARK || moveType == MoveType.MOVE_NO_ACCESS_EMBARK) {
 					costDecider.getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
 					costDecider.costMovesLeft = navyCostDecider.unitInitialMoves;
-					costDecider.costNewTurns = 0;
+					if (currentNode.unitMovesLeft == 0) {
+                        costDecider.costNewTurns = 1;
+					} else {
+					    costDecider.costNewTurns = 0;
+					}
 					if (costDecider.improveMove(currentNode, moveNode)) {
 						nodes.add(moveNode);
 					}
@@ -425,5 +436,25 @@ public class TransportPathFinder {
 	    	}
 	    }
 	}
+	
+	public void toStringArrays(String[][] strTab) {
+	    int v;
+        for (int i=0; i<grid.getMaxCellIndex(); i++) {
+            v = turnsCost(i);
+            if (v != Integer.MAX_VALUE) {
+                strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(v) + " - " + Integer.toString(totalCost(i)) + " - " + Integer.toString(grid.get(i).unitMovesLeft);
+            }
+        }
+	}
+
+    public void toStringArrays(String[][] strTab, Path path) {
+        for (int i=0; i<path.tiles.size; i++) {
+            int x = path.tiles.get(i).x;
+            int y = path.tiles.get(i).y;
+            
+            Node node = grid.get(x, y);
+            strTab[y][x] = Integer.toString(node.turns) + " - " + Integer.toString(node.totalCost) + " - " + Integer.toString(node.unitMovesLeft);
+        }
+    }
 
 }

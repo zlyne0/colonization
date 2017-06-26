@@ -498,6 +498,10 @@ public class MapRenderer {
 		tileDebugStringDrawer.initStrings(strings);
 	}
 	
+	public void hideTileDebugStrings() {
+	    tileDebugStringDrawer = null;
+	}
+	
 	public void hideTileOwners() {
 		tileOwnerDrawer.dispose();
 		tileOwnerDrawer = null;

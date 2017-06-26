@@ -162,4 +162,8 @@ public class MapActor extends Widget {
 	public void showTileDebugStrings(String strings[][]) {
 		mapRenderer.showTileDebugStrings(strings);
 	}
+	
+	public void hideTileDebugStrings() {
+	    mapRenderer.hideTileDebugStrings();
+	}
 }

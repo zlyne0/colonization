@@ -145,8 +145,7 @@ public class AILogicDebugRun {
         mapActor.mapDrawModel().unitPath = findToTile;
 
         String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
-        transportPath.totalCostToStringArrays(debugPathRange);
-        //transportPath.turnCostToStringArrays(debugPathRange);
+        transportPath.toStringArrays(debugPathRange);
 		mapActor.showTileDebugStrings(debugPathRange);
         
     }
