@@ -171,7 +171,7 @@ public class MoveController {
 		
 		Unit potentialTransporter = null;
 		for (Unit unit : guiGameModel.getActiveUnit().getOwner().units.entities()) {
-            if (unit.isCarrier()) {
+            if (unit.unitType.getId().equals("model.unit.caravel") || unit.unitType.getId().equals("model.unit.merchantman")) {
                 potentialTransporter = unit;
             }
         }
