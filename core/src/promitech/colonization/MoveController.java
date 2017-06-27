@@ -6,9 +6,9 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.Path;
-import net.sf.freecol.common.model.map.PathFinder;
-import net.sf.freecol.common.model.map.t.TransportPathFinder;
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;

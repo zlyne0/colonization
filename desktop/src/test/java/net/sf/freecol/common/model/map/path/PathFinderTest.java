@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.map;
+package net.sf.freecol.common.model.map.path;
 
 import static org.junit.Assert.*;
 
@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
 

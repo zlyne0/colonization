@@ -3,7 +3,7 @@ package promitech.colonization.ai;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.Direction;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.gamelogic.MoveContext;

@@ -4,7 +4,7 @@ import promitech.colonization.Direction;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.map.Path;
+import net.sf.freecol.common.model.map.path.Path;
 
 public class MoveContext {
 	public Unit unit;

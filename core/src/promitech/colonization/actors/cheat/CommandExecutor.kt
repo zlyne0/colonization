@@ -2,7 +2,7 @@ package promitech.colonization.actors.cheat
 
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitIterator
-import net.sf.freecol.common.model.map.PathFinder
+import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import promitech.colonization.DI
 import promitech.colonization.GameCreator

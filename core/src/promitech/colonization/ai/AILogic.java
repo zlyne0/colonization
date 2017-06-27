@@ -5,7 +5,7 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameLogic;
 import promitech.colonization.MoveLogic;
