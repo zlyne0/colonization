@@ -156,6 +156,21 @@ public class GUIGameController {
     	});
 	}
 	
+	public void rightClickOnTile(Point p) {
+		// TODO: remove 
+		if (guiGameModel.isActiveUnitNotSet()) {
+			System.out.println("no unit selected");
+			return;
+		}
+		Unit unit = guiGameModel.getActiveUnit();
+		
+		Tile clickTile = guiGameModel.game.map.getTile(p.x, p.y);
+		
+		unit.changeUnitLocation(clickTile);
+		unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, unit);
+		resetUnexploredBorders();
+	}
+	
 	public void clickOnTile(Point p) {
 	    clickOnTileDebugInfo(p);
 	    

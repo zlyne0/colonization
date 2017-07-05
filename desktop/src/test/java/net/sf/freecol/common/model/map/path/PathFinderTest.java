@@ -51,14 +51,15 @@ public class PathFinderTest {
 		
 		assertEquals(7, path.tiles.size);
         assertEquals(7, path.turns.size);
-		
-        assertPathStep(0, 0, 24, 78);
-        assertPathStep(1, 0, 23, 78);
-        assertPathStep(2, 0, 23, 76);
-        assertPathStep(3, 0, 22, 75);
-        assertPathStep(4, 1, 22, 74);
-        assertPathStep(5, 1, 22, 72);
-        assertPathStep(6, 2, 21, 72);
+
+        PathAssert.assertThat(path)
+	        .assertPathStep(0, 0, 24, 78)
+	        .assertPathStep(1, 0, 23, 78)
+	        .assertPathStep(2, 0, 23, 76)
+	        .assertPathStep(3, 0, 22, 75)
+	        .assertPathStep(4, 1, 22, 74)
+	        .assertPathStep(5, 1, 22, 72)
+	        .assertPathStep(6, 2, 21, 72);
         
         assertTrue(path.startTile.equalsCoordinates(24, 78));
         assertTrue(path.endTile.equalsCoordinates(21, 72));
@@ -80,9 +81,10 @@ public class PathFinderTest {
 		assertEquals(3, path.tiles.size);
         assertEquals(3, path.turns.size);
 		
-        assertPathStep(0, 0, 12, 79);
-        assertPathStep(1, 0, 12, 81);
-        assertPathStep(2, 0, 12, 83);
+        PathAssert.assertThat(path)
+	        .assertPathStep(0, 0, 12, 79)
+	        .assertPathStep(1, 0, 12, 81)
+	        .assertPathStep(2, 0, 12, 83);
 	}
 	
 	@Test
@@ -117,14 +119,15 @@ public class PathFinderTest {
         assertEquals(8, path.tiles.size);
         assertEquals(8, path.turns.size);
 
-        assertPathStep(0, 0, 26, 77);
-        assertPathStep(1, 0, 27, 78);
-        assertPathStep(2, 0, 28, 78);
-        assertPathStep(3, 0, 29, 78);
-        assertPathStep(4, 0, 29, 76);
-        assertPathStep(5, 0, 29, 74);
-        assertPathStep(6, 0, 28, 73);
-        assertPathStep(7, 0, 28, 72);
+        PathAssert.assertThat(path)        
+	        .assertPathStep(0, 0, 26, 77)
+	        .assertPathStep(1, 0, 27, 78)
+	        .assertPathStep(2, 0, 28, 78)
+	        .assertPathStep(3, 0, 29, 78)
+	        .assertPathStep(4, 0, 29, 76)
+	        .assertPathStep(5, 0, 29, 74)
+	        .assertPathStep(6, 0, 28, 73)
+	        .assertPathStep(7, 0, 28, 72);
     }
 	
 	@Test
@@ -147,11 +150,12 @@ public class PathFinderTest {
         assertEquals(5, path.tiles.size);
         assertEquals(5, path.turns.size);
         
-        assertPathStep(0, 0, 26, 77);
-        assertPathStep(1, 0, 27, 77);
-        assertPathStep(2, 0, 28, 76);
-        assertPathStep(3, 0, 28, 74);
-        assertPathStep(4, 0, 28, 72);
+        PathAssert.assertThat(path)
+	        .assertPathStep(0, 0, 26, 77)
+	        .assertPathStep(1, 0, 27, 77)
+	        .assertPathStep(2, 0, 28, 76)
+	        .assertPathStep(3, 0, 28, 74)
+	        .assertPathStep(4, 0, 28, 72);
     }
 	
 	@Test
@@ -165,36 +169,32 @@ public class PathFinderTest {
         // then
 	    System.out.println("path = " + path);
 
-        assertPathStep(0, 0, 12, 79);
-        assertPathStep(1, 0, 12, 81);
-        assertPathStep(2, 0, 12, 83);
-        assertPathStep(3, 0, 12, 85);
-        assertPathStep(4, 0, 12, 87);
-        assertPathStep(5, 0, 12, 89);
-        assertPathStep(6, 0, 13, 89);
-        assertPathStep(7, 0, 14, 89);
-        assertPathStep(8, 0, 15, 89);
-        assertPathStep(9, 1, 16, 89);
-        assertPathStep(10, 1, 17, 89);
-        assertPathStep(11, 1, 18, 89);
-        assertPathStep(12, 1, 19, 89);
-        assertPathStep(13, 1, 20, 89);
-        assertPathStep(14, 1, 21, 89);
-        assertPathStep(15, 1, 22, 89);
-        assertPathStep(16, 1, 23, 90);
-        assertPathStep(17, 2, 24, 90);
-        assertPathStep(18, 2, 25, 90);
-        assertPathStep(19, 2, 26, 90);
-        assertPathStep(20, 2, 27, 90);
-        assertPathStep(21, 2, 28, 90);
-        assertPathStep(22, 2, 29, 90);
-        assertPathStep(23, 2, 30, 90);
-        assertPathStep(24, 2, 30, 88);    
+        PathAssert.assertThat(path)
+	        .assertPathStep(0, 0, 12, 79)
+	        .assertPathStep(1, 0, 12, 81)
+	        .assertPathStep(2, 0, 12, 83)
+	        .assertPathStep(3, 0, 12, 85)
+	        .assertPathStep(4, 0, 12, 87)
+	        .assertPathStep(5, 0, 12, 89)
+	        .assertPathStep(6, 0, 13, 89)
+	        .assertPathStep(7, 0, 14, 89)
+	        .assertPathStep(8, 0, 15, 89)
+	        .assertPathStep(9, 1, 16, 89)
+	        .assertPathStep(10, 1, 17, 89)
+	        .assertPathStep(11, 1, 18, 89)
+	        .assertPathStep(12, 1, 19, 89)
+	        .assertPathStep(13, 1, 20, 89)
+	        .assertPathStep(14, 1, 21, 89)
+	        .assertPathStep(15, 1, 22, 89)
+	        .assertPathStep(16, 1, 23, 90)
+	        .assertPathStep(17, 2, 24, 90)
+	        .assertPathStep(18, 2, 25, 90)
+	        .assertPathStep(19, 2, 26, 90)
+	        .assertPathStep(20, 2, 27, 90)
+	        .assertPathStep(21, 2, 28, 90)
+	        .assertPathStep(22, 2, 29, 90)
+	        .assertPathStep(23, 2, 30, 90)
+	        .assertPathStep(24, 2, 30, 88);    
     }
-	
-	private void assertPathStep(int stepIndex, int turns, int x, int y) {
-	    assertEquals(turns, path.turns.get(stepIndex));
-	    assertTrue(path.tiles.get(stepIndex).equalsCoordinates(x, y));
-	}
 	
 }

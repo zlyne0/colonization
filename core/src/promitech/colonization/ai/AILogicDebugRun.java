@@ -136,16 +136,36 @@ public class AILogicDebugRun {
         
         Tile sourceTile = unit.getTile();
         
-        Tile destTile = gameModel.game.map.getSafeTile(32,40);
+		Tile destTile = gameModel.game.map.getSafeTile(32, 40);
         
         //ai(unit);
+        
+        pathFinder.generateRangeMap(gameModel.game.map, potentialTransporter.getTile(), potentialTransporter, false);
+        
         TransportPathFinder transportPath = new TransportPathFinder();
-        Path findToTile = transportPath.findToTile(gameModel.game.map, sourceTile, destTile, unit, potentialTransporter);
+        Path findToTile = transportPath.findToTile(gameModel.game.map, sourceTile, destTile, unit, potentialTransporter, pathFinder);
+        
+        if (findToTile.tiles.size > 1) {
+        	Tile preview = findToTile.tiles.get(0);
+        	for (int i = 1; i < findToTile.tiles.size; i++) {
+        		Tile t = findToTile.tiles.get(i);
+        		if (preview.getType().isLand() && t.getType().isWater()) {
+        			System.out.println("  wait for ship");
+        		}
+        		if (preview.getType().isWater() && t.getType().isLand()) {
+        			System.out.println("  disembark");
+        		}
+        		System.out.println("t = " + t);
+        		preview = t;
+        	}
+        }
         
         mapActor.mapDrawModel().unitPath = findToTile;
 
         String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
         transportPath.toStringArrays(debugPathRange);
+        //pathFinder.totalCostToStringArrays(debugPathRange);
+        
 		mapActor.showTileDebugStrings(debugPathRange);
         
     }

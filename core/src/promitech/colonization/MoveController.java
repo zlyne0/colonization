@@ -169,19 +169,14 @@ public class MoveController {
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
-		Unit potentialTransporter = null;
-		for (Unit unit : guiGameModel.getActiveUnit().getOwner().units.entities()) {
-            if (unit.unitType.getId().equals("model.unit.caravel") || unit.unitType.getId().equals("model.unit.merchantman")) {
-                potentialTransporter = unit;
-            }
-        }
-		if (potentialTransporter == null) {
-		    throw new IllegalStateException("can not find potential transporter");
-		}
+		Unit carrier = guiGameModel.getActiveUnit().getOwner().units.getById("unit:6900");
 		
 		// TODO: remove transportPathFinder
+		PathFinder carrierRange = new PathFinder();
+		carrierRange.generateRangeMap(guiGameModel.game.map, carrier.getTile(), carrier, false);
+		
 		TransportPathFinder transportPathFinder = new TransportPathFinder();
-		Path path = transportPathFinder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit(), potentialTransporter);
+		Path path = transportPathFinder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit(), carrier, carrierRange);
 		
 //		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
 		System.out.println("found path: " + path);

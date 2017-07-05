@@ -48,7 +48,14 @@ public class TransportPathFinder {
 	public TransportPathFinder() {
 	}
 	
-	public Path findToTile(Map map, Tile sourceTile, Tile findDestTile, Unit landUnit, Unit potentialTransporter) {
+	public Path findToTile(
+			Map map, 
+			Tile sourceTile, 
+			Tile findDestTile, 
+			Unit landUnit, 
+			Unit potentialTransporter, 
+			PathFinder transporterRangeMap) 
+	{
 	    this.map = map;
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
@@ -57,6 +64,7 @@ public class TransportPathFinder {
         this.baseCostDecider.avoidUnexploredTiles = false;
 	
 		resetFinderBeforeSearching(map);
+		lowerGridIntegerMaxValue(transporterRangeMap.grid);
 		
 		navyCostDecider.init(map, potentialTransporter);
 		baseCostDecider.init(map, landUnit);
@@ -127,7 +135,7 @@ public class TransportPathFinder {
 				}
 				
 				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
-				if (moveType == MoveType.EMBARK || moveType == MoveType.MOVE_NO_ACCESS_EMBARK) {
+				if (moveType == MoveType.MOVE_NO_ACCESS_EMBARK || moveType == MoveType.EMBARK) {
 					costDecider.getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
 					costDecider.costMovesLeft = navyCostDecider.unitInitialMoves;
 					if (currentNode.unitMovesLeft == 0) {
@@ -135,7 +143,9 @@ public class TransportPathFinder {
 					} else {
 					    costDecider.costNewTurns = 0;
 					}
-					if (costDecider.improveMove(currentNode, moveNode)) {
+					
+					Node carrierRangeNode = transporterRangeMap.grid.get(moveTile.x, moveTile.y);
+					if (costDecider.improveMove(currentNode, moveNode, carrierRangeNode.totalCost, carrierRangeNode.turns)) {
 						nodes.add(moveNode);
 					}
 				} else {
@@ -158,6 +168,15 @@ public class TransportPathFinder {
 			return createPath(landUnit, sourceTile, grid.get(sourceTile.x, sourceTile.y));
 		} else {
 			return createPath(landUnit, sourceTile, reachedGoalNode);
+		}
+	}
+
+	private void lowerGridIntegerMaxValue(Object2dArray<Node> grid) {
+		for (int i = 0; i < grid.getMaxCellIndex(); i++) {
+			Node node = grid.get(i);
+			if (node.totalCost == Integer.MAX_VALUE) {
+				node.totalCost = Integer.MAX_VALUE / 2;
+			}
 		}
 	}
 	

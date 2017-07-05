@@ -1,5 +1,6 @@
 package promitech.colonization.actors.map;
 
+import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.GridPoint2;
@@ -73,6 +74,17 @@ public class MapActor extends Widget {
 				} else {
 					gameController.clickOnTile(tmpPoint);
 				}
+			}
+		});
+		addListener(new ClickListener(Buttons.RIGHT) {
+			private final Point tmpPoint = new Point();
+			
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				System.out.println("screenPoint: " + x + ", " + y);
+				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
+				
+				gameController.rightClickOnTile(tmpPoint);
 			}
 		});
 		

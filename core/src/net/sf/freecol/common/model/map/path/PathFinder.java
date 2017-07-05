@@ -44,7 +44,7 @@ public class PathFinder {
 	    }
 	};
 	
-	private Object2dArray<Node> grid; 
+	protected Object2dArray<Node> grid; 
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
 	
 	private final CostDecider baseCostDecider = new CostDecider();

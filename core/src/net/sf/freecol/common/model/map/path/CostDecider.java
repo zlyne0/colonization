@@ -56,6 +56,19 @@ class CostDecider {
 	    }
 	    return false;
 	}
+
+	protected boolean improveMove(Node currentNode, Node moveNode, int additionalCost, int additionalTurnsCost) {
+	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns + additionalTurnsCost) + moveCost + currentNode.totalCost + additionalCost;
+	    
+	    if (moveNode.totalCost > newTotalPathCost) {
+		    moveNode.totalCost = newTotalPathCost;
+	        moveNode.unitMovesLeft = costMovesLeft;
+	        moveNode.turns = currentNode.turns + costNewTurns + additionalTurnsCost;
+            moveNode.preview = currentNode;
+	        return true;
+	    }
+	    return false;
+	}
 	
 	boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
 		return isMoveIllegal();
