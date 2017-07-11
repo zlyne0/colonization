@@ -59,7 +59,11 @@ public class TransportPathFinder {
 	    this.map = map;
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
-	    this.moveUnit = landUnit;
+	    if (sourceTile.getType().isWater()) {
+	    	this.moveUnit = potentialTransporter;
+	    } else {
+	    	this.moveUnit = landUnit;
+	    }
         this.navyCostDecider.avoidUnexploredTiles = false;
         this.baseCostDecider.avoidUnexploredTiles = false;
 	
@@ -68,7 +72,6 @@ public class TransportPathFinder {
 		
 		navyCostDecider.init(map, potentialTransporter);
 		baseCostDecider.init(map, landUnit);
-		costDecider = baseCostDecider;
 		
 		int iDirections = 0, nDirections = Direction.values().length;
 		
@@ -149,7 +152,7 @@ public class TransportPathFinder {
 						nodes.add(moveNode);
 					}
 				} else {
-					if (moveType == MoveType.MOVE_NO_ACCESS_LAND) {
+					if (moveType == MoveType.MOVE_NO_ACCESS_LAND || moveType == MoveType.DISEMBARK) {
 						costDecider.getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
 						costDecider.costMovesLeft = 0;
 						costDecider.costNewTurns = 1;

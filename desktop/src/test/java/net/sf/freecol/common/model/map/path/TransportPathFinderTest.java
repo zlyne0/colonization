@@ -39,7 +39,8 @@ public class TransportPathFinderTest {
     }
 	
     @Test
-	public void canFindTransportPath() throws Exception {
+	public void canFindTransportPathFromIslandToIsland() throws Exception {
+    	// carrier is next to unit
 		// given
     	PathFinder carrierRangeMap = new PathFinder();
     	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
@@ -66,6 +67,7 @@ public class TransportPathFinderTest {
 
     @Test
 	public void canFindTransportPathWhenCarrierChangeInitialPosition() throws Exception {
+    	// carrier is far from unit
     	// given
     	Tile carrierSourceTile = game.map.getTile(27, 25);
     	carrier.changeUnitLocation(carrierSourceTile);
@@ -87,6 +89,37 @@ public class TransportPathFinderTest {
 			.assertPathStep(1, 31, 30)
 			.assertPathStep(1, 31, 32)
 			.assertPathStep(2, 31, 34)
+			.assertPathStep(2, 31, 35)
+			.assertPathStep(2, 32, 36)
+			.assertPathStep(3, 32, 38)
+			.assertPathStep(4, 32, 40);
+	}
+    
+    @Test
+	public void canFindTransportPathWhenUnitIsOnCarrier() throws Exception {
+		// given
+    	Tile carrierSourceTile = game.map.getTile(27, 25);
+    	carrier.changeUnitLocation(carrierSourceTile);
+    	unit.changeUnitLocation(carrier);
+
+    	PathFinder carrierRangeMap = new PathFinder();
+    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
+    	
+		// when
+    	TransportPathFinder sut = new TransportPathFinder();
+    	Path path = sut.findToTile(game.map, carrier.getTile(), destTile, unit, carrier, carrierRangeMap);
+    	
+		// then
+    	PathAssert.assertThat(path)
+			.assertPathStep(0, 27, 25)
+			.assertPathStep(0, 27, 27)
+			.assertPathStep(0, 27, 29)
+			.assertPathStep(0, 28, 29)
+			.assertPathStep(0, 29, 29)
+			.assertPathStep(1, 29, 31)
+			.assertPathStep(1, 30, 31)
+			.assertPathStep(1, 30, 33)
+			.assertPathStep(1, 31, 33)
 			.assertPathStep(2, 31, 35)
 			.assertPathStep(2, 32, 36)
 			.assertPathStep(3, 32, 38)
