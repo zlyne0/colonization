@@ -9,6 +9,7 @@ import java.util.Set;
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 
+import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -76,6 +77,120 @@ class FoundColonyMission extends AbstractMission {
 	}
 }
 
+class RellocationMission extends AbstractMission {
+	Tile rellocationDestination;
+	
+	Unit unit;
+	Tile unitDestination;
+	
+	Unit carrier;
+	Tile carrierDestination;
+
+	public boolean isUnitOnCarrier() {
+		return carrier.getUnits().containsId(unit);
+	}
+	
+	public boolean isUnitOnRellocationDestination() {
+		Tile tile = unit.getTileLocationOrNull();
+		return tile != null && tile.equalsCoordinates(rellocationDestination);
+	}
+	
+	public boolean isUnitOnStepDestination() {
+		Tile tile = unit.getTileLocationOrNull();
+		return tile != null && tile.equalsCoordinates(unitDestination);
+	}
+	
+	public boolean isCarrierOnStepDestination() {
+		if (carrier == null || carrierDestination == null) {
+			return false;
+		}
+		Tile tile = carrier.getTileLocationOrNull();
+		return tile != null && tile.equalsCoordinates(carrierDestination);
+	}
+	
+	public boolean needCarrierMove() {
+		if (carrier == null || carrierDestination == null) {
+			return false;
+		}
+		Tile carrierTile = carrier.getTileLocationOrNull();
+		if (carrierTile == null) {
+			// carrier can be in europe
+			return false;
+		}
+		if (carrierTile.equalsCoordinates(carrierDestination)) {
+			return false;
+		}
+		return carrier.hasMovesPoints();
+	}
+	
+	public boolean needUnitMove() {
+		Tile unitTile = unit.getTileLocationOrNull();
+		if (unitTile == null) {
+			// maybe in carrier
+			return false;
+		}
+		if (unitTile.equalsCoordinates(unitDestination)) {
+			return false;
+		}
+		return true;
+	}
+	
+	public String toString() {
+		return "RellocationMission";
+	}
+
+	public void initNextStepDestinationFromPath(Path path) {
+		unitDestination = null;
+		carrierDestination = null;
+		
+		boolean unitOnLand = unit.getTileLocationOrNull() != null;
+		
+    	Tile preview = path.tiles.get(0);
+    	for (int i = 1; i < path.tiles.size; i++) {
+    		Tile t = path.tiles.get(i);
+    		if (preview.getType().isLand() && t.getType().isWater()) {
+    			//System.out.println("  wait for ship");
+    			if (unitOnLand) {
+    				unitDestination = preview;
+    				carrierDestination = t;
+    				return;
+    			}
+    		}
+    		if (preview.getType().isWater() && t.getType().isLand()) {
+    			//System.out.println("  disembark");
+    			if (!unitOnLand) {
+    				unitDestination = t;
+    				carrierDestination = preview;
+    				return;
+    			}
+    		}
+    		//System.out.println("t = " + t);
+    		preview = t;
+    	}
+    	
+    	// all path tiles are on the same land type
+    	if (unitOnLand && unitDestination == null && carrierDestination == null) {
+    		unitDestination = path.tiles.get(path.tiles.size-1);
+    	} else {
+    		carrierDestination = path.tiles.get(path.tiles.size-1);
+    	}
+	}
+
+	public void showDebugOnMap(String[][] tilesStr) {
+		tilesStr[rellocationDestination.y][rellocationDestination.x] = "DEST";
+		if (unitDestination != null) {
+			tilesStr[unitDestination.y][unitDestination.x] = "UNIT dest";
+		}
+		if (carrierDestination != null) {
+			tilesStr[carrierDestination.y][carrierDestination.x] = "CARRIER dest";
+		}
+	}
+
+	public boolean requireCarrierToHandleMission() {
+		return carrierDestination != null;
+	}
+}
+
 class TransportUnitMission extends AbstractMission {
 	Unit carrier;
 	Tile dest;
@@ -124,59 +239,92 @@ public class AILogicDebugRun {
     }
     
     public void run() {
-        //Unit unit = gameModel.getActiveUnit();
+        Unit unit = gameModel.getActiveUnit();
 //        ExplorerMission explorerMission = new ExplorerMission(unit);
 //        explorerMissionHandler.executeMission(explorerMission);
 //        explorerMissionHandler.exploreByOneMove(unit);
         //explorerMissionHandler.exploreByAllMoves(unit);
         
-        Player player = gameModel.game.players.getById("player:1");
+        if (missionsContainer == null) {
+        	staticSimulation();
+        	
+			//createStartGameMissions(unit.getOwner());
+        }
+        
+    	executeMissions(unit);
+    }
+
+	private void staticSimulation() {
+		Player player = gameModel.game.players.getById("player:1");
         Unit unit = player.units.getById("unit:810");
         Unit potentialTransporter = player.units.getById("unit:811");
         
-        Tile sourceTile = unit.getTile();
-        
-		Tile destTile = gameModel.game.map.getSafeTile(32, 40);
-        
-        //ai(unit);
-        
-        pathFinder.generateRangeMap(gameModel.game.map, potentialTransporter.getTile(), potentialTransporter, false);
-        
-        TransportPathFinder transportPath = new TransportPathFinder();
-        Path findToTile = transportPath.findToTile(gameModel.game.map, sourceTile, destTile, unit, potentialTransporter, pathFinder);
-        
-        if (findToTile.tiles.size > 1) {
-        	Tile preview = findToTile.tiles.get(0);
-        	for (int i = 1; i < findToTile.tiles.size; i++) {
-        		Tile t = findToTile.tiles.get(i);
-        		if (preview.getType().isLand() && t.getType().isWater()) {
-        			System.out.println("  wait for ship");
-        		}
-        		if (preview.getType().isWater() && t.getType().isLand()) {
-        			System.out.println("  disembark");
-        		}
-        		System.out.println("t = " + t);
-        		preview = t;
-        	}
+        if (!potentialTransporter.getUnits().containsId(unit)) {
+        	unit.changeUnitLocation(potentialTransporter);
+        }
+        Tile destTile = gameModel.game.map.getSafeTile(32, 40);
+
+        RellocationMission rellocationMission = new RellocationMission();
+        rellocationMission.rellocationDestination = destTile;
+        rellocationMission.unit = unit;
+
+        Path pathToDestination = generatePath(rellocationMission, potentialTransporter);
+        if (rellocationMission.requireCarrierToHandleMission()) {
+        	rellocationMission.carrier = potentialTransporter;
         }
         
-        mapActor.mapDrawModel().unitPath = findToTile;
-
+		missionsContainer = new AIMissionsContainer();
+		missionsContainer.addMission(rellocationMission);
+        
+        mapActor.mapDrawModel().unitPath = pathToDestination;
         String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
-        transportPath.toStringArrays(debugPathRange);
+        //transportPath.toStringArrays(debugPathRange);
         //pathFinder.totalCostToStringArrays(debugPathRange);
         
+        rellocationMission.showDebugOnMap(debugPathRange);
+        
 		mapActor.showTileDebugStrings(debugPathRange);
-        
-    }
+	}
 
-	private void ai(Unit unit) {
-		Player player = unit.getOwner();
-        
-        if (missionsContainer == null) {
-			createStartGameMissions(player);
+	/**
+	 * {@link RellocationMission} should have already set unit and destination
+	 * @param mission {@link RellocationMission}
+	 * @param carrier {@link Unit}
+	 */
+	private Path generatePath(RellocationMission mission, Unit carrier) {
+        Tile sourceTile = null;
+        if (mission.unit.getTileLocationOrNull() == null) {
+        	sourceTile = carrier.getTile();
+        } else {
+        	sourceTile = mission.unit.getTile();
         }
         
+        pathFinder.generateRangeMap(
+    		gameModel.game.map, 
+    		carrier.getTile(), 
+    		carrier, 
+    		false
+		);
+        TransportPathFinder transportPath = new TransportPathFinder();
+        Path pathToDestination = transportPath.findToTile(
+    		gameModel.game.map, 
+    		sourceTile, 
+    		mission.rellocationDestination, 
+    		mission.unit, 
+    		carrier, 
+    		pathFinder
+		);
+        
+        // assumption start from land 
+        if (pathToDestination.tiles.size <= 1) {
+        	throw new IllegalStateException("can not find path do destination " + mission.rellocationDestination);
+        }
+        mission.initNextStepDestinationFromPath(pathToDestination);
+        
+        return pathToDestination;
+	}
+	
+	private void executeMissions(Unit unit) {
         for (AbstractMission am : missionsContainer.missions) {
         	if (am.isDone() || am.hasDependMissions()) {
         		continue;
@@ -186,8 +334,11 @@ public class AILogicDebugRun {
         	if (am instanceof FoundColonyMission) {
         		foundColonyMissionHandler((FoundColonyMission)am);
         	}
-        	if (am instanceof TransportUnitMission) {
-        		transportUnitMissionHandler((TransportUnitMission)am);
+//        	if (am instanceof TransportUnitMission) {
+//        		transportUnitMissionHandler((TransportUnitMission)am);
+//        	}
+        	if (am instanceof RellocationMission) {
+        		rellocationMissionHandler((RellocationMission)am);
         	}
         }
         missionsContainer.clearDoneMissions();
@@ -195,7 +346,7 @@ public class AILogicDebugRun {
 		mapActor.resetMapModel();
 	}
 
-    private void foundColonyMissionHandler(FoundColonyMission mission) {
+	private void foundColonyMissionHandler(FoundColonyMission mission) {
     	if (!mission.isUnitInDestination()) {
     		// TODO: go to destination, exacly reallocation
     		return;
@@ -235,7 +386,7 @@ public class AILogicDebugRun {
     		if (unit.isColonist()) {
     			colonists.add(unit);
     		}
-    		if (unit.isCarrier()) {
+    		if (unit.isNaval() && unit.isCarrier()) {
     			ship = unit;
     		}
     	}
@@ -249,34 +400,105 @@ public class AILogicDebugRun {
     	
     	Tile tileToBuildColony = findTileToBuildColony(ship);
 
-		TransportUnitMission tm = new TransportUnitMission();
-		tm.carrier = ship;
-		tm.dest = tileToBuildColony;
-		tm.units.addAll(colonists);
-		missionsContainer.addMission(tm);
-    	
     	for (Unit colonist : colonists.entities()) {
-			FoundColonyMission m = new FoundColonyMission();
-			m.destTile = findTileToBuildColony(ship);
-			m.unit = colonist;
-			missionsContainer.addMission(m);
-			m.addDependMission(tm);
+    		RellocationMission rellocationMission = new RellocationMission();
+    		rellocationMission.unit = colonist;
+    		rellocationMission.carrier = ship;
+    		missionsContainer.addMission(rellocationMission);
+    		
+    		FoundColonyMission foundColonyMission = new FoundColonyMission();
+    		foundColonyMission.destTile = tileToBuildColony;
+    		foundColonyMission.unit = colonist;
+    		foundColonyMission.addDependMission(rellocationMission);
+    		missionsContainer.addMission(foundColonyMission);
     	}
+    	
+//		TransportUnitMission tm = new TransportUnitMission();
+//		tm.carrier = ship;
+//		tm.dest = tileToBuildColony;
+//		tm.units.addAll(colonists);
+//		missionsContainer.addMission(tm);
+//    	
+//    	for (Unit colonist : colonists.entities()) {
+//			FoundColonyMission m = new FoundColonyMission();
+//			m.destTile = findTileToBuildColony(ship);
+//			m.unit = colonist;
+//			missionsContainer.addMission(m);
+//			m.addDependMission(tm);
+//    	}
     }
-    
-    public void transportUnitMissionHandler(TransportUnitMission m) {
-    	Path path = pathFinder.findToTile(gameModel.game.map, m.carrier.getTile(), m.dest, m.carrier);
+	
+    private void rellocationMissionHandler(RellocationMission mission) {
+    	// unit and carrier can move in parallel. Sometimes it's necessary 
+    	
+    	if (mission.needCarrierMove()) {
+    		Path path = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier);
+    		MoveContext moveContext = new MoveContext(path);
+    		moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+    	}
+
+    	if (mission.isCarrierOnStepDestination()) {
+    		if (mission.isUnitOnCarrier()) {
+    			// disembark
+    			if (mission.unit.hasMovesPoints()) {
+    				MoveContext mc = new MoveContext(
+						mission.carrier.getTile(), 
+						mission.unitDestination, 
+						mission.unit
+					);
+					moveLogic.forAiMoveOnlyReallocation(mc);
+					
+					if (!mission.isUnitOnRellocationDestination()) {
+						generatePath(mission, mission.carrier);
+						if (!mission.requireCarrierToHandleMission()) {
+							mission.carrier = null;
+							mission.carrierDestination = null;
+						}
+					}
+    			}
+    		} else {
+    			// do nothing, wait for unit
+    		}
+    	}
+    	
+    	if (mission.needUnitMove()) {
+    		Path path = pathFinder.findToTile(gameModel.game.map, mission.unit.getTile(), mission.unitDestination, mission.unit);
+    		MoveContext moveContext = new MoveContext(path);
+    		moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+    	}
+    	if (mission.isUnitOnRellocationDestination()) {
+    		mission.setDone();
+    	} else {
+    		if (mission.isUnitOnStepDestination()) {
+    			if (mission.isCarrierOnStepDestination()) {
+    				// embark
+    				MoveContext moveContext = MoveContext.embarkUnit(mission.unit, mission.carrier);
+    				moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+    				
+    				generatePath(mission, mission.carrier);
+    				if (!mission.requireCarrierToHandleMission()) {
+    					mission.carrier = null;
+    				}
+    			} else {
+    				// do nothing, wait for carrier
+    			}
+    		}
+    	}
+	}
+
+    public void transportUnitMissionHandler(TransportUnitMission mission) {
+    	Path path = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.dest, mission.carrier);
     	
     	MoveContext moveContext = new MoveContext(path);
     	
     	moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
     	
 		if (moveContext.isMoveType(MoveType.DISEMBARK)) {
-			m.setDone();
-			for (Unit unitToDisembark : m.units.entities()) {
+			mission.setDone();
+			for (Unit unitToDisembark : mission.units.entities()) {
 				MoveContext mc = new MoveContext(
-					m.carrier.getTile(), 
-					m.dest, 
+					mission.carrier.getTile(), 
+					mission.dest, 
 					unitToDisembark
 				);
 				moveLogic.forAiMoveOnlyReallocation(mc);

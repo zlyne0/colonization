@@ -13,6 +13,7 @@ public class MoveContext {
 	private Direction direction;
 	public MoveType moveType;
 	private int moveCost;
+	private Unit carrierToEmbark = null;
 	
 	private final Path path;
 	private boolean endOfPath = false;
@@ -20,6 +21,12 @@ public class MoveContext {
 	private boolean unitKilled = false;
 	private boolean moveViaHighSea = false;
 
+	public static MoveContext embarkUnit(Unit unit, Unit carrier) {
+		MoveContext moveContext = new MoveContext(unit.getTile(), carrier.getTile(), unit);
+		moveContext.carrierToEmbark = carrier;
+		return moveContext;
+	}
+	
 	public MoveContext() {
 		this.path = null;
 	}
@@ -129,15 +136,17 @@ public class MoveContext {
 	}
 	
 	private void embarkUnit() {
-		Unit carrier = null;
-		for (Unit u : destTile.getUnits().entities()) {
-			if (u.canAddUnit(unit)) {
-				carrier = u;
-				break;
-			}
-		}
+		Unit carrier = carrierToEmbark;
 		if (carrier == null) {
-			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
+			for (Unit u : destTile.getUnits().entities()) {
+				if (u.canAddUnit(unit)) {
+					carrier = u;
+					break;
+				}
+			}
+			if (carrier == null) {
+				throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
+			}
 		}
 		System.out.println("moveContext.embarkUnit = " + this);
 		unit.setState(UnitState.SKIPPED);

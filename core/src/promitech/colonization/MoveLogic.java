@@ -242,7 +242,7 @@ public class MoveLogic {
 
 	public MoveType forAiMoveViaPathOnlyReallocation(MoveContext moveContext) {
 		moveContext.initNextPathStep();
-		while (moveContext.isMoveType() && moveContext.canHandleMove()) {
+		while (moveContext.canHandleMove()) {
 			handleOnlyReallocation(moveContext, null);
 			moveContext.initNextPathStep();
 		}

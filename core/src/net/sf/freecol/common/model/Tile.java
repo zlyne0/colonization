@@ -79,6 +79,10 @@ public class Tile implements UnitLocation, Identifiable {
         return this.x == x && this.y == y;
     }
 	
+    public boolean equalsCoordinates(Tile t) {
+    	return this.x == t.x && this.y == t.y;
+    }
+    
 	public String toString() {
 		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}
