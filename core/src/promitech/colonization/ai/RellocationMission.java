@@ -109,7 +109,7 @@ class RellocationMission extends AbstractMission {
     	}
 	}
 
-	public void showDebugOnMap(String[][] tilesStr) {
+	public void toStringDebugTileTab(String[][] tilesStr) {
 		tilesStr[rellocationDestination.y][rellocationDestination.x] = "DEST";
 		if (unitDestination != null) {
 			tilesStr[unitDestination.y][unitDestination.x] = "UNIT dest";

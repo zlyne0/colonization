@@ -78,19 +78,23 @@ public class PathFinder {
 	}
 	
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
-	    goalDecider = pathToTileGoalDecider;
-	    this.map = map;
-	    this.startTile = startTile;
-	    this.endTile = endTile;
-	    this.moveUnit = moveUnit;
+	    return findToTile(map, startTile, endTile, moveUnit, true);
+	}
+
+    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
+        goalDecider = pathToTileGoalDecider;
+        this.map = map;
+        this.startTile = startTile;
+        this.endTile = endTile;
+        this.moveUnit = moveUnit;
         this.findPossibilities = false;
-        this.navyCostDecider.avoidUnexploredTiles = true;
-        this.baseCostDecider.avoidUnexploredTiles = true;
-	    
+        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        
         Path path = find();
         path.toEurope = false;
-		return path;
-	}
+        return path;
+    }
 	
 	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
 		generateRangeMap(map, startTile, moveUnit, true);

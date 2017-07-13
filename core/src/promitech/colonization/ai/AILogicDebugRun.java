@@ -1,32 +1,13 @@
 package promitech.colonization.ai;
 
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
-
-import com.badlogic.gdx.utils.Array;
-import com.badlogic.gdx.utils.IntArray;
-
-import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
-import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.Direction;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.actors.map.MapActor;
-import promitech.colonization.ai.BuildColony.TileBCWeight;
-import promitech.colonization.ai.BuildColony.TileSelection;
-import promitech.colonization.ai.ExplorerMissionHandler.ExploreStatus;
-import promitech.colonization.gamelogic.BuildColonyOrder;
-import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveType;
 
 public class AILogicDebugRun {
 
@@ -51,7 +32,7 @@ public class AILogicDebugRun {
 
         tileDebugView = new TileDebugView(mapActor, gameModel);
         foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, gameModel, tileDebugView);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, gameModel, moveLogic);
+        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, gameModel, moveLogic, tileDebugView);
     }
     
     public void run() {
@@ -62,9 +43,9 @@ public class AILogicDebugRun {
         //explorerMissionHandler.exploreByAllMoves(unit);
         
         if (missionsContainer == null) {
-        	staticSimulation();
+        	//staticSimulation();
         	
-			//createStartGameMissions(unit.getOwner());
+			createStartGameMissions(unit.getOwner());
         }
         
     	executeMissions(unit);
@@ -106,10 +87,14 @@ public class AILogicDebugRun {
         	System.out.println("execute mission: " + am);
         	
         	if (am instanceof FoundColonyMission) {
-        	    foundColonyMissionHandler.handle((FoundColonyMission)am);
+        	    FoundColonyMission foundColonyMission = (FoundColonyMission)am;
+        	    foundColonyMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
+                foundColonyMissionHandler.handle(foundColonyMission);
         	}
         	if (am instanceof RellocationMission) {
-        	    rellocationMissionHandler.handle((RellocationMission)am);
+        	    RellocationMission rellocationMission = (RellocationMission)am;
+        	    rellocationMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
+                rellocationMissionHandler.handle(rellocationMission);
         	}
         }
         missionsContainer.clearDoneMissions();

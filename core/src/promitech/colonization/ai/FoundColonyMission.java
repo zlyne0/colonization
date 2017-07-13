@@ -17,6 +17,10 @@ class FoundColonyMission extends AbstractMission {
 		return ut != null && destTile != null && ut.equalsCoordinates(destTile.x, destTile.y);
 	}
 	
+	public void toStringDebugTileTab(String[][] tilesTab) {
+	    tilesTab[destTile.y][destTile.x] = "build colony dest";
+	}
+	
 	public String toString() {
 		return "FoundColonyMission";
 	}

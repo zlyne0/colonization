@@ -96,7 +96,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             }
         }
         
-        //showBestTileWeights(theBestTiles, theBestWeights);
+        debugShowBestTileWeights(theBestTiles, theBestWeights);
         
         for (Tile tile : theBestTiles) {
             if (tile != null) {
@@ -107,7 +107,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
         
     }
     
-    private void showBestTileWeights(Tile[] theBestTiles, int[] theBestWeights) {
+    private void debugShowBestTileWeights(Tile[] theBestTiles, int[] theBestWeights) {
         if (!tileDebugView.isDebug()) {
             return;
         }
