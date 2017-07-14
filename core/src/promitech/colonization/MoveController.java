@@ -175,8 +175,8 @@ public class MoveController {
 		PathFinder carrierRange = new PathFinder();
 		carrierRange.generateRangeMap(guiGameModel.game.map, carrier.getTile(), carrier, false);
 		
-		TransportPathFinder transportPathFinder = new TransportPathFinder();
-		Path path = transportPathFinder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit(), carrier, carrierRange);
+		TransportPathFinder transportPathFinder = new TransportPathFinder(guiGameModel.game.map);
+		Path path = transportPathFinder.findToTile(startTile, destinationTile, guiGameModel.getActiveUnit(), carrier, carrierRange);
 		
 //		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
 		System.out.println("found path: " + path);

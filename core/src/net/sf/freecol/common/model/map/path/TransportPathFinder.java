@@ -45,18 +45,17 @@ public class TransportPathFinder {
 	private Tile endTile;
 	private Unit moveUnit;
 	
-	public TransportPathFinder() {
+	public TransportPathFinder(Map map) {
+	    this.map = map;
 	}
 	
 	public Path findToTile(
-			Map map, 
 			Tile sourceTile, 
 			Tile findDestTile, 
 			Unit landUnit, 
 			Unit potentialTransporter, 
 			PathFinder transporterRangeMap) 
 	{
-	    this.map = map;
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
 	    if (sourceTile.getType().isWater()) {
@@ -82,19 +81,6 @@ public class TransportPathFinder {
 
 		Node reachedGoalNode = null;
 		
-		int iterationDebug = 0;
-//		Direction[] dirDebug = new Direction[] {
-//			Direction.W,
-//			Direction.SW,
-//			Direction.S
-//		};
-        Direction[] dirDebug = new Direction[] {
-            Direction.S,
-            Direction.S,
-            Direction.S,
-            Direction.S,
-            Direction.S
-        };
 		while (true) {
 			currentNode = nodes.pollFirst();
 			if (currentNode == null) {
@@ -111,18 +97,8 @@ public class TransportPathFinder {
 				costDecider = baseCostDecider;
 			}
 			
-//			if (iterationDebug >= dirDebug.length) {
-//				break;
-//			} else {
-//				iterationDebug++;
-//			}
-			
 			for (iDirections=0; iDirections<nDirections; iDirections++) {
 				Direction moveDirection = Direction.values()[iDirections];
-				
-//				if (dirDebug[iterationDebug-1] != moveDirection) {
-//					continue;
-//				}
 				
 				Tile moveTile = map.getTile(currentNode.tile, moveDirection);
 				if (moveTile == null) {

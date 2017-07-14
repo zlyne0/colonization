@@ -46,8 +46,8 @@ public class TransportPathFinderTest {
     	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
     	
 		// when
-    	TransportPathFinder sut = new TransportPathFinder();
-    	Path path = sut.findToTile(game.map, unit.getTile(), destTile, unit, carrier, carrierRangeMap);
+    	TransportPathFinder sut = new TransportPathFinder(game.map);
+    	Path path = sut.findToTile(unit.getTile(), destTile, unit, carrier, carrierRangeMap);
     	
 		// then
     	PathAssert.assertThat(path)
@@ -76,8 +76,8 @@ public class TransportPathFinderTest {
     	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
     	
 		// when
-    	TransportPathFinder sut = new TransportPathFinder();
-    	Path path = sut.findToTile(game.map, unit.getTile(), destTile, unit, carrier, carrierRangeMap);
+    	TransportPathFinder sut = new TransportPathFinder(game.map);
+    	Path path = sut.findToTile(unit.getTile(), destTile, unit, carrier, carrierRangeMap);
     	
 		// then
     	PathAssert.assertThat(path)
@@ -106,8 +106,8 @@ public class TransportPathFinderTest {
     	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
     	
 		// when
-    	TransportPathFinder sut = new TransportPathFinder();
-    	Path path = sut.findToTile(game.map, carrier.getTile(), destTile, unit, carrier, carrierRangeMap);
+    	TransportPathFinder sut = new TransportPathFinder(game.map);
+    	Path path = sut.findToTile(carrier.getTile(), destTile, unit, carrier, carrierRangeMap);
     	
 		// then
     	PathAssert.assertThat(path)

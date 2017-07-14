@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.MoveLogic;
@@ -12,6 +13,7 @@ import promitech.colonization.actors.map.MapActor;
 public class AILogicDebugRun {
 
     private final PathFinder pathFinder = new PathFinder();
+    private final TransportPathFinder transportPathFinder;
     private final ExplorerMissionHandler explorerMissionHandler;
     private GUIGameModel gameModel;
     private final MoveLogic moveLogic;
@@ -28,11 +30,12 @@ public class AILogicDebugRun {
         this.gameModel = gameModel;
         this.mapActor = mapActor;
         
+        transportPathFinder = new TransportPathFinder(gameModel.game.map);
         explorerMissionHandler = new ExplorerMissionHandler(gameModel.game, pathFinder, moveLogic);
 
         tileDebugView = new TileDebugView(mapActor, gameModel);
         foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, gameModel, tileDebugView);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, gameModel, moveLogic, tileDebugView);
+        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, gameModel, moveLogic, tileDebugView);
     }
     
     public void run() {

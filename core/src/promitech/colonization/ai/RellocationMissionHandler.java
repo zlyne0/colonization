@@ -12,12 +12,14 @@ import promitech.colonization.gamelogic.MoveContext;
 public class RellocationMissionHandler implements MissionHandler<RellocationMission> {
     
     private final PathFinder pathFinder;
+    private final TransportPathFinder transportPathFinder;
     private final MoveLogic moveLogic;
     private final GUIGameModel gameModel;
     private final TileDebugView tileDebugView;
     
-    public RellocationMissionHandler(PathFinder pathFinder, GUIGameModel gameModel, MoveLogic moveLogic, TileDebugView tileDebugView) {
+    public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, GUIGameModel gameModel, MoveLogic moveLogic, TileDebugView tileDebugView) {
         this.pathFinder = pathFinder;
+        this.transportPathFinder = transportPathFinder;
         this.moveLogic = moveLogic;
         this.gameModel = gameModel;
         this.tileDebugView = tileDebugView;
@@ -107,9 +109,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             carrier, 
             false
         );
-        TransportPathFinder transportPath = new TransportPathFinder();
-        Path pathToDestination = transportPath.findToTile(
-            gameModel.game.map, 
+        Path pathToDestination = transportPathFinder.findToTile(
             sourceTile, 
             mission.rellocationDestination, 
             mission.unit, 
