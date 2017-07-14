@@ -4,7 +4,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 
 class FoundColonyMission extends AbstractMission {
-	final Tile destTile;
+	Tile destTile;
 	final Unit unit;
 	
 	public FoundColonyMission(Tile destTile, Unit unit) {

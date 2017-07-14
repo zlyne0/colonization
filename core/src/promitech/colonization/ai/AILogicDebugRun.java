@@ -1,5 +1,8 @@
 package promitech.colonization.ai;
 
+import java.util.HashSet;
+import java.util.LinkedList;
+
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -46,9 +49,11 @@ public class AILogicDebugRun {
         //explorerMissionHandler.exploreByAllMoves(unit);
         
         if (missionsContainer == null) {
-        	//staticSimulation();
+            missionsContainer = new AIMissionsContainer();
+            
+        	staticSimulation();
         	
-			createStartGameMissions(unit.getOwner());
+			//createStartGameMissions(unit.getOwner());
         }
         
     	executeMissions(unit);
@@ -57,21 +62,31 @@ public class AILogicDebugRun {
 	private void staticSimulation() {
 		Player player = gameModel.game.players.getById("player:1");
         Unit unit = player.units.getById("unit:810");
+        Unit unit2 = player.units.getById("unit:812");
         Unit potentialCarrier = player.units.getById("unit:811");
         
-        if (!potentialCarrier.getUnits().containsId(unit)) {
-        	unit.changeUnitLocation(potentialCarrier);
-        }
+        potentialCarrier.clearDestination();
+//        if (!potentialCarrier.getUnits().containsId(unit)) {
+//        	unit.changeUnitLocation(potentialCarrier);
+//        }
         Tile destTile = gameModel.game.map.getSafeTile(32, 40);
 
         RellocationMission rellocationMission = new RellocationMission(destTile, unit, potentialCarrier);
+        GlobalStrategyPlaner.blockUnitsForMission(rellocationMission);
+
+        RellocationMission rellocationMission2 = new RellocationMission(destTile, unit2, potentialCarrier);
+        GlobalStrategyPlaner.blockUnitsForMission(rellocationMission2);
         
         FoundColonyMission foundColonyMission = new FoundColonyMission(destTile, unit);
+        GlobalStrategyPlaner.blockUnitsForMission(foundColonyMission);
         foundColonyMission.addDependMission(rellocationMission);
+
+        FoundColonyMission foundColonyMission2 = new FoundColonyMission(destTile, unit2);
+        GlobalStrategyPlaner.blockUnitsForMission(foundColonyMission2);
+        foundColonyMission2.addDependMission(rellocationMission2);
         
-		missionsContainer = new AIMissionsContainer();
-		missionsContainer.addMission(rellocationMission);
 		missionsContainer.addMission(foundColonyMission);
+        missionsContainer.addMission(foundColonyMission2);
         
         //mapActor.mapDrawModel().unitPath = pathToDestination;
         //String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
@@ -82,32 +97,65 @@ public class AILogicDebugRun {
 	}
 	
 	private void executeMissions(Unit unit) {
-	    
         for (AbstractMission am : missionsContainer.missions) {
-        	if (am.isDone() || am.hasDependMissions()) {
+        	if (am.isDone()) {
         		continue;
         	}
-        	System.out.println("execute mission: " + am);
-        	
-        	if (am instanceof FoundColonyMission) {
-        	    FoundColonyMission foundColonyMission = (FoundColonyMission)am;
-        	    foundColonyMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
-                foundColonyMissionHandler.handle(foundColonyMission);
-        	}
-        	if (am instanceof RellocationMission) {
-        	    RellocationMission rellocationMission = (RellocationMission)am;
-        	    rellocationMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
-                rellocationMissionHandler.handle(rellocationMission);
-        	}
+        	executedAllLeafs(am);
         }
         missionsContainer.clearDoneMissions();
         
 		mapActor.resetMapModel();
 	}
 
+    private void executedAllLeafs(AbstractMission am) {
+        if (!am.hasDependMissions()) {
+            executeSingleMission(am);
+            return;
+        }
+
+        HashSet<AbstractMission> executedMissions = new HashSet<AbstractMission>();
+        HashSet<AbstractMission> leafMissionToExecute = new HashSet<AbstractMission>();
+
+        leafMissionToExecute.addAll(am.getLeafMissionToExecute());
+        while (!leafMissionToExecute.isEmpty()) {
+            boolean foundDoneMission = false;
+            for (AbstractMission abs : leafMissionToExecute) {
+                if (!executedMissions.contains(abs)) {
+                    executeSingleMission(abs);
+                    executedMissions.add(abs);
+                    if (abs.isDone()) {
+                        foundDoneMission = true;
+                    }
+                }
+            }
+            leafMissionToExecute.clear();
+            if (foundDoneMission) {
+                leafMissionToExecute.addAll(am.getLeafMissionToExecute());
+
+                for (AbstractMission executedMission : executedMissions) {
+                    leafMissionToExecute.remove(executedMission);
+                }
+            }
+        }
+    }
+	
+    private void executeSingleMission(AbstractMission am) {
+        System.out.println("execute mission: " + am);
+        
+        if (am instanceof FoundColonyMission) {
+            FoundColonyMission foundColonyMission = (FoundColonyMission)am;
+            foundColonyMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
+            foundColonyMissionHandler.handle(foundColonyMission);
+        }
+        if (am instanceof RellocationMission) {
+            RellocationMission rellocationMission = (RellocationMission)am;
+            rellocationMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
+            rellocationMissionHandler.handle(rellocationMission);
+        }
+    }
+	
 	private void createStartGameMissions(Player player) {
-    	missionsContainer = new AIMissionsContainer();
-    	
     	Unit ship = null;
     	MapIdEntities<Unit> colonists = new MapIdEntities<Unit>();
     	for (Unit unit : player.units.entities()) {
@@ -125,14 +173,16 @@ public class AILogicDebugRun {
     		throw new IllegalStateException("can not find colonists to build colony");
     	}
     	
-    	Tile tileToBuildColony = foundColonyMissionHandler.findTileToBuildColony(ship);
+    	Tile tileToBuildColony = foundColonyMissionHandler.findTileToBuildColony(ship.getOwner(), ship, ship.getTile());
 
     	for (Unit colonist : colonists.entities()) {
     		RellocationMission rellocationMission = new RellocationMission(tileToBuildColony, colonist, ship);
-    		missionsContainer.addMission(rellocationMission);
-    		
+            GlobalStrategyPlaner.blockUnitsForMission(rellocationMission);
+            
     		FoundColonyMission foundColonyMission = new FoundColonyMission(tileToBuildColony, colonist);
     		foundColonyMission.addDependMission(rellocationMission);
+    		GlobalStrategyPlaner.blockUnitsForMission(foundColonyMission);
+    		
     		missionsContainer.addMission(foundColonyMission);
     	}
     }

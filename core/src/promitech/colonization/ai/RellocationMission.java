@@ -18,6 +18,11 @@ class RellocationMission extends AbstractMission {
 	    this.unit = unit;
 	    this.carrier = carrier;
 	}
+
+    public RellocationMission(Tile rellocationDestination, Unit unit) {
+        this.rellocationDestination = rellocationDestination;
+        this.unit = unit;
+    }
 	
 	public boolean isUnitOnCarrier() {
 		return carrier.getUnits().containsId(unit);
@@ -119,7 +124,11 @@ class RellocationMission extends AbstractMission {
 		}
 	}
 
-	public boolean requireCarrierToHandleMission() {
+	public boolean isRequireCarrierToHandleMission() {
 		return carrierDestination != null;
 	}
+
+    public boolean isRequireGeneratePath() {
+        return carrierDestination == null && unitDestination == null;
+    }
 }

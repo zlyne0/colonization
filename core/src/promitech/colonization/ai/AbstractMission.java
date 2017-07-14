@@ -1,6 +1,7 @@
 package promitech.colonization.ai;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 
 abstract class AbstractMission {
@@ -17,6 +18,22 @@ abstract class AbstractMission {
 
 	public boolean isDone() {
 		return done;
+	}
+	
+	public LinkedList<AbstractMission> getLeafMissionToExecute() {
+	    LinkedList<AbstractMission> leafs = new LinkedList<AbstractMission>();
+	    
+	    for (AbstractMission am : dependMissions) {
+	        if (am.isDone()) {
+	            continue;
+	        }
+	        if (am.hasDependMissions()) {
+	            leafs.addAll(am.getLeafMissionToExecute());
+	        } else {
+	            leafs.add(am);
+	        }
+	    }
+	    return leafs;
 	}
 	
 	public boolean hasDependMissions() {

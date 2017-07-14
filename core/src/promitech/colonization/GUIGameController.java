@@ -157,7 +157,7 @@ public class GUIGameController {
 	}
 	
 	public void rightClickOnTile(Point p) {
-		// TODO: remove 
+		// TODO: remove right click action because it is for test  
 		if (guiGameModel.isActiveUnitNotSet()) {
 			System.out.println("no unit selected");
 			return;

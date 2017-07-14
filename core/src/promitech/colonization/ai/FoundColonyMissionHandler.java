@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.ai.BuildColony.TileSelection;
 import promitech.colonization.gamelogic.BuildColonyOrder;
@@ -38,27 +39,26 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             String colonyName = Settlement.generateSettlmentName(mission.unit.getOwner());
             Settlement.buildColony(gameModel.game.map, mission.unit, mission.destTile, colonyName);
             
+            GlobalStrategyPlaner.unblockUnitsFromMission(mission);
             mission.setDone();
         } else {
             if (check == OrderStatus.NO_MOVE_POINTS) {
                 // do nothing wait on next turn for move points
             } else {
-                // TODO: move to global strategy manager
-                Unit ship = null;
-                for (Unit u : mission.unit.getOwner().units.entities()) {
-                    if (u.isCarrier()) {
-                        ship = u;
-                    }
+                Tile tileToBuildColony = findTileToBuildColony(mission.unit.getOwner(), mission.unit, mission.unit.getTile());
+                if (tileToBuildColony != null) {
+                    mission.destTile = tileToBuildColony;
+                    RellocationMission rellocationMission = new RellocationMission(tileToBuildColony, mission.unit);
+                    mission.addDependMission(rellocationMission);
+                } else {
+                    // can not find tile to build colony, do nothing
+                    GlobalStrategyPlaner.unblockUnitsFromMission(mission);
                 }
-                Tile tileToBuildColony = findTileToBuildColony(ship);
-                // TODO: find other tile to build colony
-                // arg ship to transport goods,
-                // arg source 
             }
         }
     }
  
-    public Tile findTileToBuildColony(Unit unit) {
+    public Tile findTileToBuildColony(Player player, Unit unit, Tile rangeFromTile) {
         pathFinder.generateRangeMap(gameModel.game.map, unit.getTile(), unit, false);
         
         int maxTurnsRange = 5;

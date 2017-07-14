@@ -27,8 +27,22 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 
     @Override
     public void handle(RellocationMission mission) {
-        if (mission.carrierDestination == null && mission.unitDestination == null) {
-            Path generatePath = generatePath(mission, mission.carrier);
+        if (mission.isRequireGeneratePath()) {
+            Unit potentialCarrier = mission.carrier;
+            if (potentialCarrier == null) {
+                potentialCarrier = GlobalStrategyPlaner.findCarrierToRellocateUnit(mission.unit);
+            }
+            if (potentialCarrier == null) {
+                System.out.println("can not find carrier to rellocate unit[" + mission.unit + "] for player " + mission.unit.getOwner());
+                return;
+            }
+            
+            Path generatePath = generatePath(mission, potentialCarrier);
+            if (mission.isRequireCarrierToHandleMission()) {
+                GlobalStrategyPlaner.blockUnitForMission(potentialCarrier, mission);
+                mission.carrier = potentialCarrier;
+            }
+            
             if (tileDebugView.isDebug()) {
                 tileDebugView.showPath(generatePath);
             }
@@ -54,7 +68,8 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
                     
                     if (!mission.isUnitOnRellocationDestination()) {
                         generatePath(mission, mission.carrier);
-                        if (!mission.requireCarrierToHandleMission()) {
+                        if (!mission.isRequireCarrierToHandleMission()) {
+                            GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
                             mission.carrier = null;
                             mission.carrierDestination = null;
                         }
@@ -71,16 +86,20 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
         }
         if (mission.isUnitOnRellocationDestination()) {
+            GlobalStrategyPlaner.unblockUnitsFromMission(mission);
             mission.setDone();
         } else {
             if (mission.isUnitOnStepDestination()) {
                 if (mission.isCarrierOnStepDestination()) {
                     // embark
                     MoveContext moveContext = MoveContext.embarkUnit(mission.unit, mission.carrier);
-                    moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+                    moveLogic.forAiMoveOnlyReallocation(moveContext);
+                    //moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
                     
                     generatePath(mission, mission.carrier);
-                    if (!mission.requireCarrierToHandleMission()) {
+                    if (!mission.isRequireCarrierToHandleMission()) {
+                        GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
+                        
                         mission.carrier = null;
                     }
                 } else {
