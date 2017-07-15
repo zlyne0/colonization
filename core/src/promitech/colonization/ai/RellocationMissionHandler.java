@@ -16,6 +16,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
     private final MoveLogic moveLogic;
     private final GUIGameModel gameModel;
     private final TileDebugView tileDebugView;
+    private Path carrierPath = null;
     
     public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, GUIGameModel gameModel, MoveLogic moveLogic, TileDebugView tileDebugView) {
         this.pathFinder = pathFinder;
@@ -24,61 +25,24 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         this.gameModel = gameModel;
         this.tileDebugView = tileDebugView;
     }
-
+    
     @Override
     public void handle(RellocationMission mission) {
         if (mission.isRequireGeneratePath()) {
-            Unit potentialCarrier = mission.carrier;
-            if (potentialCarrier == null) {
-                potentialCarrier = GlobalStrategyPlaner.findCarrierToRellocateUnit(mission.unit);
-            }
-            if (potentialCarrier == null) {
-                System.out.println("can not find carrier to rellocate unit[" + mission.unit + "] for player " + mission.unit.getOwner());
-                return;
-            }
-            
-            Path generatePath = generatePath(mission, potentialCarrier);
-            if (mission.isRequireCarrierToHandleMission()) {
-                GlobalStrategyPlaner.blockUnitForMission(potentialCarrier, mission);
-                mission.carrier = potentialCarrier;
-            }
-            
-            if (tileDebugView.isDebug()) {
-                tileDebugView.showPath(generatePath);
-            }
+            generatePathToRellocate(mission);
         }
         // unit and carrier can move in parallel. Sometimes it's necessary 
-        
+
+        carrierPath = null;
         if (mission.needCarrierMove()) {
-            Path path = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
-            MoveContext moveContext = new MoveContext(path);
-            moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+        	moveCarrier(mission);
         }
 
-        if (mission.isCarrierOnStepDestination()) {
+        if (mission.isCarrierOnStepDestination() && mission.isUnitOnCarrier()) {
             if (mission.isUnitOnCarrier()) {
-                // disembark
-                if (mission.unit.hasMovesPoints()) {
-                    MoveContext mc = new MoveContext(
-                        mission.carrier.getTile(), 
-                        mission.unitDestination, 
-                        mission.unit
-                    );
-                    moveLogic.forAiMoveOnlyReallocation(mc);
-                    
-                    if (!mission.isUnitOnRellocationDestination()) {
-                        generatePath(mission, mission.carrier);
-                        if (!mission.isRequireCarrierToHandleMission()) {
-                            GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
-                            mission.carrier = null;
-                            mission.carrierDestination = null;
-                        }
-                    }
-                }
-            } else {
-                // do nothing, wait for unit
+                disembarkUnit(mission);
             }
-        }
+        } // else do nothing, wait until carrier will be on destination
         
         if (mission.needUnitMove()) {
             Path path = pathFinder.findToTile(gameModel.game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, false);
@@ -90,17 +54,17 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             mission.setDone();
         } else {
             if (mission.isUnitOnStepDestination()) {
-                if (mission.isCarrierOnStepDestination()) {
+                if (mission.isCarrierOnStepDestination() && mission.unit.hasMovesPoints()) {
                     // embark
                     MoveContext moveContext = MoveContext.embarkUnit(mission.unit, mission.carrier);
                     moveLogic.forAiMoveOnlyReallocation(moveContext);
-                    //moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+
+                    // after embark generate path for carrier
+                    generatePathToRellocate(mission);
                     
-                    generatePath(mission, mission.carrier);
-                    if (!mission.isRequireCarrierToHandleMission()) {
-                        GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
-                        
-                        mission.carrier = null;
+                    // move carrier after embark
+                    if (mission.needCarrierMove()) {
+                    	moveCarrier(mission);
                     }
                 } else {
                     // do nothing, wait for carrier
@@ -108,6 +72,49 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             }
         }
     }
+
+	private void moveCarrier(RellocationMission mission) {
+		// after embark unit carrier use the same path like before embark
+		if (carrierPath == null) {
+			carrierPath = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
+		}
+		MoveContext moveContext = new MoveContext(carrierPath);
+		moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+	}
+
+	private void disembarkUnit(RellocationMission mission) {
+		if (mission.unit.hasMovesPoints()) {
+		    MoveContext mc = new MoveContext(
+		        mission.carrier.getTile(), 
+		        mission.unitDestination, 
+		        mission.unit
+		    );
+		    moveLogic.forAiMoveOnlyReallocation(mc);
+		    
+		    generatePathToRellocate(mission);
+		}
+	}
+
+	private void generatePathToRellocate(RellocationMission mission) {
+		Unit potentialCarrier = mission.carrier;
+		if (potentialCarrier == null) {
+		    potentialCarrier = GlobalStrategyPlaner.findCarrierToRellocateUnit(mission.unit);
+		}
+		if (potentialCarrier == null) {
+		    System.out.println("can not find carrier to rellocate unit[" + mission.unit + "] for player " + mission.unit.getOwner());
+		    return;
+		}
+		
+		generatePath(mission, potentialCarrier);
+		if (mission.isRequireCarrierToHandleMission()) {
+		    GlobalStrategyPlaner.blockUnitForMission(potentialCarrier, mission);
+		    mission.carrier = potentialCarrier;
+		} else {
+			GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
+			mission.carrier = null;
+			mission.carrierDestination = null;
+		}
+	}
 
     /**
      * {@link RellocationMission} should have already set unit and destination
