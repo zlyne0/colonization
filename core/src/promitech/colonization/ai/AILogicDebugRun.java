@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel;
+import promitech.colonization.GameLogic;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.actors.map.MapActor;
 
@@ -21,8 +22,6 @@ public class AILogicDebugRun {
     private GUIGameModel gameModel;
     private final MoveLogic moveLogic;
     private final MapActor mapActor;
-    
-    public static AIMissionsContainer missionsContainer;
     
     private final TileDebugView tileDebugView;
     private final FoundColonyMissionHandler foundColonyMissionHandler;
@@ -37,8 +36,8 @@ public class AILogicDebugRun {
         explorerMissionHandler = new ExplorerMissionHandler(gameModel.game, pathFinder, moveLogic);
 
         tileDebugView = new TileDebugView(mapActor, gameModel);
-        foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, gameModel, tileDebugView);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, gameModel, moveLogic, tileDebugView);
+        foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, gameModel.game);
+        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, gameModel.game, moveLogic);
     }
     
     public void run() {
@@ -48,15 +47,22 @@ public class AILogicDebugRun {
 //        explorerMissionHandler.exploreByOneMove(unit);
         //explorerMissionHandler.exploreByAllMoves(unit);
         
-        if (missionsContainer == null) {
-            missionsContainer = new AIMissionsContainer();
-            
-        	staticSimulation();
-        	
-			//createStartGameMissions(unit.getOwner());
-        }
+        Player aiNativePlayer = gameModel.game.players.getById("player:3");
+        aiNativePlayer = gameModel.game.players.getById("player:11");
         
-    	executeMissions(unit);
+//        if (missionsContainer == null) {
+//            missionsContainer = new AIMissionsContainer();
+//            
+//        	staticSimulation();
+//        	
+//			//createStartGameMissions(unit.getOwner());
+//        }
+        
+        GameLogic gameLogic = new GameLogic(gameModel);
+        AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveLogic);
+        aiLogic.aiNewTurn(aiNativePlayer);
+        
+    	//executeMissions(unit);
     }
 
 	private void staticSimulation() {
@@ -85,8 +91,8 @@ public class AILogicDebugRun {
         GlobalStrategyPlaner.blockUnitsForMission(foundColonyMission2);
         foundColonyMission2.addDependMission(rellocationMission2);
         
-		missionsContainer.addMission(foundColonyMission);
-        missionsContainer.addMission(foundColonyMission2);
+//		missionsContainer.addMission(foundColonyMission);
+//        missionsContainer.addMission(foundColonyMission2);
         
         //mapActor.mapDrawModel().unitPath = pathToDestination;
         //String[][] debugPathRange = new String[gameModel.game.map.height][gameModel.game.map.width];
@@ -95,65 +101,6 @@ public class AILogicDebugRun {
         //rellocationMission.showDebugOnMap(debugPathRange);
 		//mapActor.showTileDebugStrings(debugPathRange);
 	}
-	
-	private void executeMissions(Unit unit) {
-        for (AbstractMission am : missionsContainer.missions) {
-        	if (am.isDone()) {
-        		continue;
-        	}
-        	executedAllLeafs(am);
-        }
-        missionsContainer.clearDoneMissions();
-        
-		mapActor.resetMapModel();
-	}
-
-    private void executedAllLeafs(AbstractMission am) {
-        if (!am.hasDependMissions()) {
-            executeSingleMission(am);
-            return;
-        }
-
-        HashSet<AbstractMission> executedMissions = new HashSet<AbstractMission>();
-        HashSet<AbstractMission> leafMissionToExecute = new HashSet<AbstractMission>();
-
-        leafMissionToExecute.addAll(am.getLeafMissionToExecute());
-        while (!leafMissionToExecute.isEmpty()) {
-            boolean foundDoneMission = false;
-            for (AbstractMission abs : leafMissionToExecute) {
-                if (!executedMissions.contains(abs)) {
-                    executeSingleMission(abs);
-                    executedMissions.add(abs);
-                    if (abs.isDone()) {
-                        foundDoneMission = true;
-                    }
-                }
-            }
-            leafMissionToExecute.clear();
-            if (foundDoneMission) {
-                leafMissionToExecute.addAll(am.getLeafMissionToExecute());
-
-                for (AbstractMission executedMission : executedMissions) {
-                    leafMissionToExecute.remove(executedMission);
-                }
-            }
-        }
-    }
-	
-    private void executeSingleMission(AbstractMission am) {
-        System.out.println("execute mission: " + am);
-        
-        if (am instanceof FoundColonyMission) {
-            FoundColonyMission foundColonyMission = (FoundColonyMission)am;
-            foundColonyMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
-            foundColonyMissionHandler.handle(foundColonyMission);
-        }
-        if (am instanceof RellocationMission) {
-            RellocationMission rellocationMission = (RellocationMission)am;
-            rellocationMission.toStringDebugTileTab(tileDebugView.getDebugTileStrTab());
-            rellocationMissionHandler.handle(rellocationMission);
-        }
-    }
 	
 	private void createStartGameMissions(Player player) {
     	Unit ship = null;
@@ -183,7 +130,7 @@ public class AILogicDebugRun {
     		foundColonyMission.addDependMission(rellocationMission);
     		GlobalStrategyPlaner.blockUnitsForMission(foundColonyMission);
     		
-    		missionsContainer.addMission(foundColonyMission);
+    		//missionsContainer.addMission(foundColonyMission);
     	}
     }
 

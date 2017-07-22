@@ -17,7 +17,8 @@ import promitech.map.Boolean2dArray;
 
 public class WanderMissionHandler {
 
-	private final Boolean2dArray settlementWanderRange; 	
+	private final Boolean2dArray settlementWanderRange;
+	private Player wanderRangeForPlayer;
 	
 	private final Game game;
 	private final MoveLogic moveLogic;
@@ -43,6 +44,10 @@ public class WanderMissionHandler {
 	}
 
 	private void prepareSettlementWanderRange(Player player) {
+		if (wanderRangeForPlayer != null && wanderRangeForPlayer.equalsId(player)) {
+			return;
+		}
+		wanderRangeForPlayer = player;
 		settlementWanderRange.set(false);
 		SpiralIterator spiral = new SpiralIterator(game.map.width, game.map.height);
 		for (Settlement s : player.settlements.entities()) {
@@ -55,6 +60,8 @@ public class WanderMissionHandler {
 	}
 	
 	public void executeMission(final WanderMission mission) {
+		prepareSettlementWanderRange(mission.unit.getOwner());
+		
 		Tile sourceTile = mission.unit.getTile();
 		
 		boolean canMove = false;

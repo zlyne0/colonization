@@ -3,12 +3,12 @@ package promitech.colonization.ai;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.ai.BuildColony.TileSelection;
 import promitech.colonization.gamelogic.BuildColonyOrder;
 import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
@@ -16,15 +16,13 @@ import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     
     private final PathFinder pathFinder;
-    private final GUIGameModel gameModel;
+    private final Game game;
     private final BuildColony buildColony;
-    private final TileDebugView tileDebugView;
     
-    public FoundColonyMissionHandler(PathFinder pathFinder, GUIGameModel gameModel, TileDebugView tileDebugView) {
+    public FoundColonyMissionHandler(PathFinder pathFinder, Game game) {
         this.pathFinder = pathFinder;
-        this.gameModel = gameModel;
-        this.tileDebugView = tileDebugView;
-        this.buildColony = new BuildColony(this.gameModel.game.map);
+        this.game = game;
+        this.buildColony = new BuildColony(this.game.map);
     }
     
     @Override
@@ -33,11 +31,11 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             // do nothing, wait when unit will be on destination
             return;
         }
-        BuildColonyOrder buildColonyOrder = new BuildColonyOrder(gameModel.game.map);
+        BuildColonyOrder buildColonyOrder = new BuildColonyOrder(game.map);
         OrderStatus check = buildColonyOrder.check(mission.unit, mission.destTile);
         if (check == OrderStatus.OK) {
             String colonyName = Settlement.generateSettlmentName(mission.unit.getOwner());
-            Settlement.buildColony(gameModel.game.map, mission.unit, mission.destTile, colonyName);
+            Settlement.buildColony(game.map, mission.unit, mission.destTile, colonyName);
             
             GlobalStrategyPlaner.unblockUnitsFromMission(mission);
             mission.setDone();
@@ -59,7 +57,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     }
  
     public Tile findTileToBuildColony(Player player, Unit unit, Tile rangeFromTile) {
-        pathFinder.generateRangeMap(gameModel.game.map, unit.getTile(), unit, false);
+        pathFinder.generateRangeMap(game.map, unit.getTile(), unit, false);
         
         int maxTurnsRange = 5;
         int[] theBestWeights = new int[maxTurnsRange+1];
@@ -89,14 +87,14 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             }
             if (tileWeight > theBestWeights[turnCost]) {
                 theBestWeights[turnCost] = tileWeight;
-                theBestTiles[turnCost] = gameModel.game.map.getSafeTile(
+                theBestTiles[turnCost] = game.map.getSafeTile(
                     buildColony.getTileWeights().toX(cellIndex), 
                     buildColony.getTileWeights().toY(cellIndex)
                 );
             }
         }
         
-        debugShowBestTileWeights(theBestTiles, theBestWeights);
+        //debugShowBestTileWeights(theBestTiles, theBestWeights);
         
         for (Tile tile : theBestTiles) {
             if (tile != null) {
@@ -107,6 +105,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
         
     }
     
+    /*
     private void debugShowBestTileWeights(Tile[] theBestTiles, int[] theBestWeights) {
         if (!tileDebugView.isDebug()) {
             return;
@@ -123,5 +122,5 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             tileDebugView.debug(t.x, t.y, "t" + i + " " + Integer.toString(buildColony.getTileWeights().get(t.x, t.y)));
         }
     }
-    
+    */
 }

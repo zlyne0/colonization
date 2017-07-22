@@ -6,12 +6,16 @@ import java.util.LinkedList;
 
 import org.junit.Test;
 
+import net.sf.freecol.common.model.ai.AbstractMission;
+import net.sf.freecol.common.model.ai.UnitMissionsMapping;
+
 public class AbstractMissionTest {
 
     class TestMission extends AbstractMission {
         private String name;
 
         public TestMission(String name) {
+        	super(name);
             this.name = name;
         }
 
@@ -19,6 +23,14 @@ public class AbstractMissionTest {
         public String toString() {
             return "TestMission [name=" + name + "]";
         }
+
+		@Override
+		public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
+		}
+
+		@Override
+		public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
+		}
     }
 
     @Test

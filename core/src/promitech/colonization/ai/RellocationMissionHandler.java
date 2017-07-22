@@ -1,11 +1,11 @@
 package promitech.colonization.ai;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.gamelogic.MoveContext;
 
@@ -14,16 +14,14 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
     private final PathFinder pathFinder;
     private final TransportPathFinder transportPathFinder;
     private final MoveLogic moveLogic;
-    private final GUIGameModel gameModel;
-    private final TileDebugView tileDebugView;
+    private final Game game;
     private Path carrierPath = null;
     
-    public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, GUIGameModel gameModel, MoveLogic moveLogic, TileDebugView tileDebugView) {
+    public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, Game game, MoveLogic moveLogic) {
         this.pathFinder = pathFinder;
         this.transportPathFinder = transportPathFinder;
         this.moveLogic = moveLogic;
-        this.gameModel = gameModel;
-        this.tileDebugView = tileDebugView;
+        this.game = game;
     }
     
     @Override
@@ -45,7 +43,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         } // else do nothing, wait until carrier will be on destination
         
         if (mission.needUnitMove()) {
-            Path path = pathFinder.findToTile(gameModel.game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, false);
+            Path path = pathFinder.findToTile(game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, false);
             MoveContext moveContext = new MoveContext(path);
             moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
         }
@@ -76,7 +74,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 	private void moveCarrier(RellocationMission mission) {
 		// after embark unit carrier use the same path like before embark
 		if (carrierPath == null) {
-			carrierPath = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
+			carrierPath = pathFinder.findToTile(game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
 		}
 		MoveContext moveContext = new MoveContext(carrierPath);
 		moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
@@ -130,7 +128,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         }
         
         pathFinder.generateRangeMap(
-            gameModel.game.map, 
+            game.map, 
             carrier.getTile(), 
             carrier, 
             false

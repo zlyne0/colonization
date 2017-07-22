@@ -32,4 +32,8 @@ public class GlobalStrategyPlaner {
     public static void unblockUnitsFromMission(FoundColonyMission mission) {
     }
 
+	public static void blockUnitsForMission(WanderMission wanderMission) {
+		
+	}
+
 }

@@ -1,12 +1,21 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-abstract class AbstractMission {
+import net.sf.freecol.common.model.ObjectWithId;
+
+public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
 	private List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
+	
+	public AbstractMission(String id) {
+		super(id);
+	}
+
+	public abstract void blockUnits(UnitMissionsMapping unitMissionsMapping);
+	public abstract void unblockUnits(UnitMissionsMapping unitMissionsMapping);
 	
 	public void addDependMission(AbstractMission m) {
 		dependMissions.add(m);
