@@ -102,6 +102,10 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 		    System.out.println("can not find carrier to rellocate unit[" + mission.unit + "] for player " + mission.unit.getOwner());
 		    return;
 		}
+		if (mission.isUnitOnRellocationDestination()) {
+			mission.unitDestination = mission.rellocationDestination;
+			return;
+		}
 		
 		generatePath(mission, potentialCarrier);
 		if (mission.isRequireCarrierToHandleMission()) {

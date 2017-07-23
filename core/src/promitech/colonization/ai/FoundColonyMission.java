@@ -39,7 +39,7 @@ public class FoundColonyMission extends AbstractMission {
 	}
 	
 	public String toString() {
-		return "FoundColonyMission";
+		return "FoundColonyMission[destTile: " + destTile.toStringCords() + ", unit: " + unit + "]";
 	}
 	
 	public static class Xml extends XmlNodeParser<Player> {

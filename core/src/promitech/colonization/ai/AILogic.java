@@ -24,6 +24,7 @@ public class AILogic {
 	private final RellocationMissionHandler rellocationMissionHandler;
 	
 	private final NativeMissionPlaner nativeMissionPlaner = new NativeMissionPlaner();
+	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
 	public AILogic(Game game, GameLogic gameLogic, MoveLogic moveLogic) {
 		this.game = game;
@@ -36,23 +37,26 @@ public class AILogic {
         foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, game);
         rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveLogic);
 		
+        europeanMissionPlaner = new EuropeanMissionPlaner(foundColonyMissionHandler);
+        
 	}
 	
 	public void aiNewTurn(Player player) {
 		gameLogic.newTurn(player);
 		
-		if (player.isIndian()) {
+//		if (player.isIndian()) {
+//			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
+//			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
+//			
+//			executeMissions(playerMissionContainer);
+//		}
+		if (player.isLiveEuropeanPlayer()) {
 			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
-			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
 			
+			europeanMissionPlaner.prepareMissions(player, playerMissionContainer);
+
 			executeMissions(playerMissionContainer);
 		}
-//		if (player.isLiveEuropeanPlayer()) {
-//			// execute missions
-//			for (ExplorerMission explorerMission : missions.entities()) {
-//				explorerMissionHandler.executeMission(explorerMission);
-//			}
-//		}
 		
         System.out.println("end of newTurn");
 	}

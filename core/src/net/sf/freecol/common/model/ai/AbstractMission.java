@@ -60,4 +60,19 @@ public abstract class AbstractMission extends ObjectWithId {
 		return hasDepend;
 	}
 
+	public boolean hasDependMissionsType(Class<? extends AbstractMission> clazz) {
+		if (dependMissions.isEmpty()) {
+			return false;
+		}
+		for (AbstractMission am : dependMissions) {
+			if (am.getClass() == clazz) {
+				return true;
+			}
+			if (am.hasDependMissionsType(clazz)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

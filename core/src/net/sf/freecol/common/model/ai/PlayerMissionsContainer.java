@@ -32,6 +32,18 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 	}
 
+	public boolean hasMissionType(Class<? extends AbstractMission> clazz) {
+		for (AbstractMission am : missions.entities()) {
+			if (am.getClass() == clazz) {
+				return true;
+			}
+			if (am.hasDependMissionsType(clazz)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public MapIdEntities<AbstractMission> getMissions() {
 		return missions;
 	}
