@@ -7,6 +7,9 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.ai.BuildColony.TileSelection;
@@ -26,7 +29,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     }
     
     @Override
-    public void handle(FoundColonyMission mission) {
+    public void handle(PlayerMissionsContainer playerMissionsContainer, FoundColonyMission mission) {
         if (!mission.isUnitInDestination()) {
             // do nothing, wait when unit will be on destination
             return;
@@ -37,7 +40,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             String colonyName = Settlement.generateSettlmentName(mission.unit.getOwner());
             Settlement.buildColony(game.map, mission.unit, mission.destTile, colonyName);
             
-            GlobalStrategyPlaner.unblockUnitsFromMission(mission);
+            playerMissionsContainer.unblockUnitsFromMission(mission);
             mission.setDone();
         } else {
             if (check == OrderStatus.NO_MOVE_POINTS) {
@@ -50,7 +53,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
                     mission.addDependMission(rellocationMission);
                 } else {
                     // can not find tile to build colony, do nothing
-                    GlobalStrategyPlaner.unblockUnitsFromMission(mission);
+                	playerMissionsContainer.unblockUnitsFromMission(mission);
                 }
             }
         }

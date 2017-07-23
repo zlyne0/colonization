@@ -4,9 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.MoveLogic;
@@ -15,7 +16,7 @@ import promitech.colonization.SpiralIterator;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.map.Boolean2dArray;
 
-public class WanderMissionHandler {
+public class WanderMissionHandler implements MissionHandler<WanderMission> {
 
 	private final Boolean2dArray settlementWanderRange;
 	private Player wanderRangeForPlayer;
@@ -30,17 +31,6 @@ public class WanderMissionHandler {
 		this.game = game;
 		this.moveLogic = moveLogic;
 		this.settlementWanderRange = new Boolean2dArray(game.map.width, game.map.height);
-	}
-
-	public void executeMission(Player player, MapIdEntities<WanderMission> missions) {
-		if (missions.isEmpty()) {
-			return;
-		}
-		prepareSettlementWanderRange(player);
-		
-		for (WanderMission wanderMission : missions.entities()) {
-			executeMission(wanderMission);
-		}
 	}
 
 	private void prepareSettlementWanderRange(Player player) {
@@ -59,7 +49,8 @@ public class WanderMissionHandler {
 		}
 	}
 	
-	public void executeMission(final WanderMission mission) {
+	@Override
+	public void handle(PlayerMissionsContainer playerMissionsContainer, WanderMission mission) {
 		prepareSettlementWanderRange(mission.unit.getOwner());
 		
 		Tile sourceTile = mission.unit.getTile();

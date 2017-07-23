@@ -1,8 +1,7 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.AbstractMission;
 import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
@@ -11,8 +10,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class WanderMission extends AbstractMission {
 
-	final Unit unit;
-	Direction previewDirection;
+	public final Unit unit;
+	public Direction previewDirection;
 	
 	public WanderMission(Unit unit) {
 		super(Game.idGenerator.nextId(WanderMission.class));

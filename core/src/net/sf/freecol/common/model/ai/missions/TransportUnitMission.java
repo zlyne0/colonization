@@ -1,16 +1,15 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.AbstractMission;
 import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 
 public class TransportUnitMission extends AbstractMission {
-	Unit carrier;
-	Tile dest;
-	final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
+	public Unit carrier;
+	public Tile dest;
+	public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
 	public TransportUnitMission() {
 		super(Game.idGenerator.nextId(TransportUnitMission.class));

@@ -3,6 +3,8 @@ package promitech.colonization.ai;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
@@ -17,6 +19,8 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
     private final Game game;
     private Path carrierPath = null;
     
+    private PlayerMissionsContainer playerMissionsContainer;
+    
     public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, Game game, MoveLogic moveLogic) {
         this.pathFinder = pathFinder;
         this.transportPathFinder = transportPathFinder;
@@ -25,7 +29,9 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
     }
     
     @Override
-    public void handle(RellocationMission mission) {
+    public void handle(PlayerMissionsContainer playerMissionsContainer, RellocationMission mission) {
+    	this.playerMissionsContainer = playerMissionsContainer;
+    	
         if (mission.isRequireGeneratePath()) {
             generatePathToRellocate(mission);
         }
@@ -48,7 +54,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
         }
         if (mission.isUnitOnRellocationDestination()) {
-            GlobalStrategyPlaner.unblockUnitsFromMission(mission);
+        	playerMissionsContainer.unblockUnitsFromMission(mission);
             mission.setDone();
         } else {
             if (mission.isUnitOnStepDestination()) {
@@ -109,10 +115,10 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 		
 		generatePath(mission, potentialCarrier);
 		if (mission.isRequireCarrierToHandleMission()) {
-		    GlobalStrategyPlaner.blockUnitForMission(potentialCarrier, mission);
+			playerMissionsContainer.blockUnitForMission(potentialCarrier, mission);
 		    mission.carrier = potentialCarrier;
 		} else {
-			GlobalStrategyPlaner.unblockUnitFromMission(mission.carrier, mission);
+			playerMissionsContainer.unblockUnitFromMission(mission.carrier, mission);
 			mission.carrier = null;
 			mission.carrierDestination = null;
 		}

@@ -14,26 +14,4 @@ public class GlobalStrategyPlaner {
         return ship;
     }
 
-    public static void blockUnitForMission(Unit potentialCarrier, RellocationMission mission) {
-    }
-
-    public static void blockUnitsForMission(RellocationMission rellocationMission) {
-    }
-
-    public static void blockUnitsForMission(FoundColonyMission foundColonyMission) {
-    }
-
-    public static void unblockUnitFromMission(Unit carrier, RellocationMission mission) {
-    }
-    
-    public static void unblockUnitsFromMission(RellocationMission mission) {
-    }
-
-    public static void unblockUnitsFromMission(FoundColonyMission mission) {
-    }
-
-	public static void blockUnitsForMission(WanderMission wanderMission) {
-		
-	}
-
 }

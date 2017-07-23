@@ -3,8 +3,12 @@ package promitech.colonization.ai;
 import java.util.HashSet;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.ai.AbstractMission;
 import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.ExplorerMission;
+import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -66,14 +70,14 @@ public class AILogic {
         	if (am.isDone()) {
         		continue;
         	}
-        	executedAllLeafs(am);
+        	executedAllLeafs(missionsContainer, am);
         }
         missionsContainer.clearDoneMissions();
 	}
 
-    private void executedAllLeafs(AbstractMission am) {
+    private void executedAllLeafs(PlayerMissionsContainer missionsContainer, AbstractMission am) {
         if (!am.hasDependMissions()) {
-            executeSingleMission(am);
+            executeSingleMission(missionsContainer, am);
             return;
         }
 
@@ -85,7 +89,7 @@ public class AILogic {
             boolean foundDoneMission = false;
             for (AbstractMission abs : leafMissionToExecute) {
                 if (!executedMissions.contains(abs)) {
-                    executeSingleMission(abs);
+                    executeSingleMission(missionsContainer, abs);
                     executedMissions.add(abs);
                     if (abs.isDone()) {
                         foundDoneMission = true;
@@ -103,21 +107,23 @@ public class AILogic {
         }
     }
 	
-    private void executeSingleMission(AbstractMission am) {
+    private void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
         System.out.println("execute mission: " + am);
         
         if (am instanceof FoundColonyMission) {
             FoundColonyMission foundColonyMission = (FoundColonyMission)am;
-            foundColonyMissionHandler.handle(foundColonyMission);
+            foundColonyMissionHandler.handle(missionsContainer, foundColonyMission);
         }
         if (am instanceof RellocationMission) {
             RellocationMission rellocationMission = (RellocationMission)am;
-            rellocationMissionHandler.handle(rellocationMission);
+            rellocationMissionHandler.handle(missionsContainer, rellocationMission);
         }
         if (am instanceof WanderMission) {
-        	wanderMissionHandler.executeMission((WanderMission)am);
+        	wanderMissionHandler.handle(missionsContainer, (WanderMission)am);
         }
-        // TODO: explore mission handler
+        if (am instanceof ExplorerMission) {
+        	explorerMissionHandler.handle(missionsContainer, (ExplorerMission)am);
+        }
     }
 	
 	

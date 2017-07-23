@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
 
 public class NativeMissionPlaner {

@@ -6,6 +6,7 @@ import java.util.List;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.player.Player;
 
 public class PlayerMissionsContainer extends ObjectWithId {
@@ -47,9 +48,20 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	public MapIdEntities<AbstractMission> getMissions() {
 		return missions;
 	}
+
+	public void blockUnitForMission(Unit unit, AbstractMission mission) {
+		unitMissionsMapping.blockUnit(unit, mission);
+	}
 	
 	public void blockUnitsForMission(AbstractMission mission) {
 		mission.blockUnits(unitMissionsMapping);
+	}
+
+	public void unblockUnitFromMission(Unit unit, AbstractMission mission) {
+		if (unit == null) {
+			return;
+		}
+		unitMissionsMapping.unblockUnitFromMission(unit, mission);
 	}
 	
 	public void unblockUnitsFromMission(AbstractMission mission) {
@@ -58,5 +70,12 @@ public class PlayerMissionsContainer extends ObjectWithId {
 
 	public boolean isUnitBlockedForMission(Unit unit) {
 		return unitMissionsMapping.isUnitInMission(unit);
+	}
+
+	public void interruptMission(Unit unit) {
+		for (AbstractMission mission : unitMissionsMapping.getUnitMission(unit)) {
+			mission.setDone();
+			unitMissionsMapping.unblockUnitFromMission(unit, mission);
+		}
 	}
 }

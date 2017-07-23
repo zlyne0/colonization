@@ -8,8 +8,8 @@ import java.util.LinkedList;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.sf.freecol.common.model.ai.AbstractMission;
 import net.sf.freecol.common.model.ai.UnitMissionsMapping;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
 
 class TestingAbstractMission extends AbstractMission {
     private String name;

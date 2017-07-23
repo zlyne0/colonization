@@ -3,12 +3,14 @@ package promitech.colonization.ai;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.Direction;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.gamelogic.MoveContext;
 
-public class ExplorerMissionHandler {
+public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
     public static enum ExploreStatus {
         NO_MOVE_POINTS,
         NO_DESTINATION,
@@ -28,8 +30,9 @@ public class ExplorerMissionHandler {
 		this.navyExplorer = new NavyExplorer(game.map);
 	}
 
-	public void executeMission(ExplorerMission mission) {
-	    exploreByAllMoves(mission.unit);
+	@Override
+	public void handle(PlayerMissionsContainer playerMissionsContainer, ExplorerMission mission) {
+		exploreByAllMoves(mission.unit);
 	}
 
 	private ExploreStatus prepareExploration(Unit ship) {
@@ -48,7 +51,7 @@ public class ExplorerMissionHandler {
         return ExploreStatus.OK;
 	}
 
-	public ExploreStatus exploreByAllMoves(Unit ship) {
+	private ExploreStatus exploreByAllMoves(Unit ship) {
 	    ExploreStatus exploreStatus = ExploreStatus.OK;
 	    
 	    do {
@@ -98,5 +101,4 @@ public class ExplorerMissionHandler {
         }
         return exploreStatus;
 	}
-	
 }

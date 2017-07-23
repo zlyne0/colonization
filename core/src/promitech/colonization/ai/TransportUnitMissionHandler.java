@@ -1,6 +1,7 @@
 package promitech.colonization.ai;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.GUIGameModel;

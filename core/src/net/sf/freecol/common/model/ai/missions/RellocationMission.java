@@ -1,9 +1,8 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.AbstractMission;
 import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.player.Player;
@@ -11,13 +10,13 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class RellocationMission extends AbstractMission {
-	final Tile rellocationDestination;
+	public final Tile rellocationDestination;
 	
-	final Unit unit;
-	Tile unitDestination;
+	public final Unit unit;
+	public Tile unitDestination;
 	
-	Unit carrier;
-	Tile carrierDestination;
+	public Unit carrier;
+	public Tile carrierDestination;
 
 	public RellocationMission(Tile rellocationDestination, Unit unit, Unit carrier) {
 		super(Game.idGenerator.nextId(RellocationMission.class));
