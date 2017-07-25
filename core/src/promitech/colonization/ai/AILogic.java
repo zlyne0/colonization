@@ -19,7 +19,7 @@ import promitech.colonization.MoveLogic;
 
 public class AILogic {
 
-    private final Map<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>> mapping = 
+    private final Map<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>> missionHandlerMapping = 
     		new HashMap<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>>();
     
 	private final Game game;
@@ -48,10 +48,10 @@ public class AILogic {
 		
         europeanMissionPlaner = new EuropeanMissionPlaner(foundColonyMissionHandler);
 
-        mapping.put(FoundColonyMission.class, foundColonyMissionHandler);
-        mapping.put(RellocationMission.class, rellocationMissionHandler);
-        mapping.put(WanderMission.class, wanderMissionHandler);
-        mapping.put(ExplorerMission.class, explorerMissionHandler);
+        missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
+        missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
+        missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
+        missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
 	}
 	
 	public void aiNewTurn(Player player) {
@@ -117,7 +117,7 @@ public class AILogic {
     @SuppressWarnings({ "unchecked", "rawtypes" })
     private void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
         //System.out.println("execute mission: " + am);
-        MissionHandler missionHandler = mapping.get(am.getClass());
+        MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
 		missionHandler.handle(missionsContainer, am);
     }
 	
