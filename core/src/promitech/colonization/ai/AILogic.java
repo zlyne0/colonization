@@ -1,6 +1,8 @@
 package promitech.colonization.ai;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
@@ -17,6 +19,9 @@ import promitech.colonization.MoveLogic;
 
 public class AILogic {
 
+    private final Map<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>> mapping = 
+    		new HashMap<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>>();
+    
 	private final Game game;
 	private final GameLogic gameLogic;
 	private final PathFinder pathFinder = new PathFinder();
@@ -42,23 +47,25 @@ public class AILogic {
         rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveLogic);
 		
         europeanMissionPlaner = new EuropeanMissionPlaner(foundColonyMissionHandler);
-        
+
+        mapping.put(FoundColonyMission.class, foundColonyMissionHandler);
+        mapping.put(RellocationMission.class, rellocationMissionHandler);
+        mapping.put(WanderMission.class, wanderMissionHandler);
+        mapping.put(ExplorerMission.class, explorerMissionHandler);
 	}
 	
 	public void aiNewTurn(Player player) {
 		gameLogic.newTurn(player);
 		
-//		if (player.isIndian()) {
-//			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
-//			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
-//			
-//			executeMissions(playerMissionContainer);
-//		}
+		if (player.isIndian()) {
+			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
+			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
+			executeMissions(playerMissionContainer);
+		}
+		
 		if (player.isLiveEuropeanPlayer()) {
 			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
-			
 			europeanMissionPlaner.prepareMissions(player, playerMissionContainer);
-
 			executeMissions(playerMissionContainer);
 		}
 		
@@ -106,24 +113,12 @@ public class AILogic {
             }
         }
     }
-	
+
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
-        System.out.println("execute mission: " + am);
-        
-        if (am instanceof FoundColonyMission) {
-            FoundColonyMission foundColonyMission = (FoundColonyMission)am;
-            foundColonyMissionHandler.handle(missionsContainer, foundColonyMission);
-        }
-        if (am instanceof RellocationMission) {
-            RellocationMission rellocationMission = (RellocationMission)am;
-            rellocationMissionHandler.handle(missionsContainer, rellocationMission);
-        }
-        if (am instanceof WanderMission) {
-        	wanderMissionHandler.handle(missionsContainer, (WanderMission)am);
-        }
-        if (am instanceof ExplorerMission) {
-        	explorerMissionHandler.handle(missionsContainer, (ExplorerMission)am);
-        }
+        //System.out.println("execute mission: " + am);
+        MissionHandler missionHandler = mapping.get(am.getClass());
+		missionHandler.handle(missionsContainer, am);
     }
 	
 	
