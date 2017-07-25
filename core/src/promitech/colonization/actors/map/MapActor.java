@@ -1,5 +1,6 @@
 package promitech.colonization.actors.map;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input.Buttons;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
@@ -7,7 +8,6 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
@@ -161,6 +161,7 @@ public class MapActor extends Widget {
 
 	public void startUnitDislocationAnimation(final MoveContext moveContext) {
 		this.unitDislocationAnimationMoveContext = moveContext;
+		Gdx.graphics.requestRendering();
 	}
 
 	public void showTileOwners() {
