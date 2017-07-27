@@ -1,13 +1,25 @@
 package net.sf.freecol.common.model.ai;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.ExplorerMission;
+import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
+import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.options.IntegerOption;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class PlayerMissionsContainer extends ObjectWithId {
 
@@ -78,4 +90,51 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			unitMissionsMapping.unblockUnitFromMission(unit, mission);
 		}
 	}
+	
+    public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
+        // TODO: move playermissioncontainser to missions package and set default scope
+        public static Player player;
+        
+        private static final String ATTR_PLAYER = "player";
+
+        public Xml() {
+            addNodeForMapIdEntities("missions", WanderMission.class);
+//            addNodeForMapIdEntities("missions", TransportUnitMission.class);
+//            addNodeForMapIdEntities("missions", RellocationMission.class);
+//            addNodeForMapIdEntities("missions", FoundColonyMission.class);
+//            addNodeForMapIdEntities("missions", ExplorerMission.class);
+        }
+        
+        @Override
+        public void startElement(XmlNodeAttributes attr) {
+            Player player = game.players.getById(attr.getStrAttributeNotNull(ATTR_PLAYER));
+            PlayerMissionsContainer pmc = new PlayerMissionsContainer(player);
+            nodeObject = pmc;
+            
+            PlayerMissionsContainer.Xml.player = player;
+        }
+
+        @Override
+        public void startWriteAttr(PlayerMissionsContainer node, XmlNodeAttributesWriter attr) throws IOException {
+            attr.set(ATTR_PLAYER, node.player);
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+            if (getTagName().equals(qName)) {
+                PlayerMissionsContainer.Xml.player = null;
+            }
+        }
+        
+        @Override
+        public String getTagName() {
+            return tagName();
+        }
+
+        public static String tagName() {
+            return "playerMissions";
+        }
+        
+    }
+	
 }

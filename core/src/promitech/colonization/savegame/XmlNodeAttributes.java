@@ -1,6 +1,7 @@
 package promitech.colonization.savegame;
 
 import org.xml.sax.Attributes;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class XmlNodeAttributes {
     String qName; 
@@ -69,6 +70,10 @@ public class XmlNodeAttributes {
     
     public <T extends Enum<T>> T getEnumAttribute(Class<T> enumClass, String name) {
     	return getEnumAttribute(enumClass, name, null);
+    }
+    
+    public String getId() {
+        return getStrAttributeNotNull(XmlNodeParser.ATTR_ID);
     }
     
     public String toString() {

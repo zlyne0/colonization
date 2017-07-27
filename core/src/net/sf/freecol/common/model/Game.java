@@ -30,7 +30,7 @@ public class Game {
 	private Turn turn;
 	private final List<String> citiesOfCibola = new ArrayList<String>(7);
 	
-	public final AIContainer aiContainer = new AIContainer();
+	public AIContainer aiContainer = new AIContainer();
 	
 	public Game() {
 		turn = new Turn(0);
@@ -93,6 +93,7 @@ public class Game {
 			addNode(Specification.class, "specification");
 			addNodeForMapIdEntities("players", Player.class);
 			addNode(Map.class, "map");
+			addNode(AIContainer.class, "aiContainer");
 		}
 		
 		@Override
