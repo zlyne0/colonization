@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,9 +7,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
 
-public class UnitMissionsMapping {
+class UnitMissionsMapping {
 	private final Map<String, Set<AbstractMission>> unitMissions = new HashMap<String, Set<AbstractMission>>();
 
 	public void blockUnit(Unit unit, AbstractMission mission) {

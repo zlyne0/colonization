@@ -5,6 +5,8 @@ import java.util.LinkedList;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.math.GridPoint2;
+
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
@@ -106,6 +108,10 @@ public class Map extends ObjectWithId {
 
 	public Tile getSafeTile(int x, int y) {
 		return tiles[y][x];
+	}
+	
+	public Tile getSafeTile(GridPoint2 p) {
+		return tiles[p.y][p.x];
 	}
 	
 	public boolean isCoordinateValid(int x, int y) {

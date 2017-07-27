@@ -1,12 +1,13 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import net.sf.freecol.common.model.map.path.Path;
-import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class RellocationMission extends AbstractMission {
@@ -18,18 +19,24 @@ public class RellocationMission extends AbstractMission {
 	public Unit carrier;
 	public Tile carrierDestination;
 
-	public RellocationMission(Tile rellocationDestination, Unit unit, Unit carrier) {
-		super(Game.idGenerator.nextId(RellocationMission.class));
+	public RellocationMission(String id, Tile rellocationDestination, Unit unit, Unit carrier) {
+		super(id);
 		
 	    this.rellocationDestination = rellocationDestination;
 	    this.unit = unit;
 	    this.carrier = carrier;
 	}
+	
+	public RellocationMission(Tile rellocationDestination, Unit unit, Unit carrier) {
+		this(Game.idGenerator.nextId(RellocationMission.class), rellocationDestination, unit, carrier);
+	}
 
+    public RellocationMission(String id, Tile rellocationDestination, Unit unit) {
+		this(id, rellocationDestination, unit, null);
+    }
+    
     public RellocationMission(Tile rellocationDestination, Unit unit) {
-    	super(Game.idGenerator.nextId(RellocationMission.class));
-        this.rellocationDestination = rellocationDestination;
-        this.unit = unit;
+		this(Game.idGenerator.nextId(RellocationMission.class), rellocationDestination, unit, null);
     }
 	
 	@Override
@@ -156,12 +163,51 @@ public class RellocationMission extends AbstractMission {
         return carrierDestination == null && unitDestination == null;
     }
     
-	public static class Xml extends XmlNodeParser<Player> {
+	public static class Xml extends XmlNodeParser<RellocationMission> {
+
+		private static final String CARRIER_DEST = "carrierDest";
+		private static final String CARRIER = "carrier";
+		private static final String UNIT_DEST = "unitDest";
+		private static final String UNIT = "unit";
+		private static final String DEST = "dest";
 
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
+			RellocationMission m = new RellocationMission(
+				attr.getId(),
+				game.map.getSafeTile(attr.getPoint(DEST)), 
+				PlayerMissionsContainer.Xml.player.units.getById(attr.getStrAttribute(UNIT))
+			);
+			if (attr.hasAttr(UNIT_DEST)) {
+				m.unitDestination = game.map.getSafeTile(attr.getPoint(UNIT_DEST));
+			}
+			if (attr.hasAttr(CARRIER)) {
+				m.carrier = PlayerMissionsContainer.Xml.player.units.getById(attr.getStrAttribute(CARRIER));
+			}
+			if (attr.hasAttr(CARRIER_DEST)) {
+				m.carrierDestination = game.map.getSafeTile(attr.getPoint(CARRIER_DEST));
+			}
+			nodeObject = m;
 		}
 
+		@Override
+		public void startWriteAttr(RellocationMission node, XmlNodeAttributesWriter attr) throws IOException {
+			attr.setId(node);
+			attr.setPoint(DEST, node.rellocationDestination.x, node.rellocationDestination.y);
+			
+			attr.set(UNIT, node.unit);
+			if (node.unitDestination != null) {
+				attr.setPoint(UNIT_DEST, node.unitDestination.x, node.unitDestination.y);
+			}
+			
+			if (node.carrier != null) {
+				attr.set(CARRIER, node.carrier);
+			}
+			if (node.carrierDestination != null) {
+				attr.setPoint(CARRIER_DEST, node.carrierDestination.x, node.carrierDestination.y);
+			}
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

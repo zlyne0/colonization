@@ -6,8 +6,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -59,6 +57,8 @@ public class TransportUnitMission extends AbstractMission {
             
             TransportUnitMission m = new TransportUnitMission(attr.getId());
             m.carrier = player.units.getById(attr.getStrAttribute(ATTR_CARRIER));
+            // TODO: refactoring to getPoint
+            // TODO: method to get unit from playerMissionContext
             m.dest = game.map.getTile(
                 attr.getIntAttribute(ATTR_DEST_X), 
                 attr.getIntAttribute(ATTR_DEST_Y)

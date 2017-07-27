@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -9,14 +9,7 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
-import net.sf.freecol.common.model.ai.missions.ExplorerMission;
-import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
-import net.sf.freecol.common.model.ai.missions.RellocationMission;
-import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
-import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.options.IntegerOption;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -61,6 +54,11 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return missions;
 	}
 
+	@SuppressWarnings("unchecked")
+	public <T extends AbstractMission> T getMission(String id) {
+		return (T)missions.getById(id);
+	}
+	
 	public void blockUnitForMission(Unit unit, AbstractMission mission) {
 		unitMissionsMapping.blockUnit(unit, mission);
 	}
@@ -92,15 +90,14 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 	
     public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
-        // TODO: move playermissioncontainser to missions package and set default scope
-        public static Player player;
+        static Player player;
         
         private static final String ATTR_PLAYER = "player";
 
         public Xml() {
             addNodeForMapIdEntities("missions", WanderMission.class);
-//            addNodeForMapIdEntities("missions", TransportUnitMission.class);
-//            addNodeForMapIdEntities("missions", RellocationMission.class);
+            addNodeForMapIdEntities("missions", TransportUnitMission.class);
+            addNodeForMapIdEntities("missions", RellocationMission.class);
 //            addNodeForMapIdEntities("missions", FoundColonyMission.class);
 //            addNodeForMapIdEntities("missions", ExplorerMission.class);
         }

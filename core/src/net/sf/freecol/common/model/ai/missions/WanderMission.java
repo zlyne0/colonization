@@ -4,8 +4,6 @@ import java.io.IOException;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;

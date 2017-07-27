@@ -5,10 +5,10 @@ import java.util.HashSet;
 import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.ai.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.PathFinder;

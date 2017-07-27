@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
@@ -8,7 +8,6 @@ import java.util.LinkedList;
 import org.junit.Before;
 import org.junit.Test;
 
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 
 class TestingAbstractMission extends AbstractMission {

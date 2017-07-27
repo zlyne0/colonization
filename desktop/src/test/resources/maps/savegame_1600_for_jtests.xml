@@ -21006,7 +21006,20 @@
       <tile id="tile:4246" x="38" y="99" type="model.tile.arctic" style="0" region="region:4249" contiguity="6"/>
       <tile id="tile:4247" x="39" y="99" type="model.tile.arctic" style="0" region="region:4249" contiguity="6"/>
     </map>
+    
+	  <aiContainer>
+	      <playerMissions player="player:1">
+	          <transportUnitMission id="transportUnitMission:2" destX="10" destY="12" carrier="unit:6437">
+	              <unit id="unit:7095"/>
+              </transportUnitMission>
+              <rellocationMission id="rellocationMission:3" dest="20,22" unit="unit:7095" unitDest="25,27" carrier="unit:6437" carrierDest="30,32" />
+	      </playerMissions>
+  	      <playerMissions player="player:22">
+	          <wanderMission id="wanderMission:1" unit="unit:6706"/>
+	      </playerMissions>
+	  </aiContainer>
   </game>
+  
   <aiMain nextId="430">
     <aiColony id="colony:6452">
       <aiGoodsListElement id="aiGoods:am316"/>

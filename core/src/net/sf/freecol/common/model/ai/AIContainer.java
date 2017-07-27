@@ -1,15 +1,19 @@
 package net.sf.freecol.common.model.ai;
 
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class AIContainer {
-	public final MapIdEntities<PlayerMissionsContainer> playerMissions = new MapIdEntities<PlayerMissionsContainer>();
+	private final MapIdEntities<PlayerMissionsContainer> playerMissions = new MapIdEntities<PlayerMissionsContainer>();
 
+	public PlayerMissionsContainer getMissionContainer(String playerId) {
+		return playerMissions.getByIdOrNull(playerId);
+	}
+	
 	public PlayerMissionsContainer getMissionContainer(Player player) {
-		
 		PlayerMissionsContainer missionsContainer = playerMissions.getByIdOrNull(player.getId());
 		if (missionsContainer == null) {
 			missionsContainer = new PlayerMissionsContainer(player);

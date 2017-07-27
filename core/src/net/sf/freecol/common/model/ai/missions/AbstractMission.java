@@ -5,7 +5,6 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.ObjectWithId;
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 
 public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;

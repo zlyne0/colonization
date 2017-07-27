@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.ai.missions;
 
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.UnitMissionsMapping;
 
 public class ExplorerMission extends AbstractMission {
 
