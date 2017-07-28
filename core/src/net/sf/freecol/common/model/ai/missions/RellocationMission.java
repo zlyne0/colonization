@@ -176,13 +176,13 @@ public class RellocationMission extends AbstractMission {
 			RellocationMission m = new RellocationMission(
 				attr.getId(),
 				game.map.getSafeTile(attr.getPoint(DEST)), 
-				PlayerMissionsContainer.Xml.player.units.getById(attr.getStrAttribute(UNIT))
+				PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(UNIT))
 			);
 			if (attr.hasAttr(UNIT_DEST)) {
 				m.unitDestination = game.map.getSafeTile(attr.getPoint(UNIT_DEST));
 			}
 			if (attr.hasAttr(CARRIER)) {
-				m.carrier = PlayerMissionsContainer.Xml.player.units.getById(attr.getStrAttribute(CARRIER));
+				m.carrier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(CARRIER));
 			}
 			if (attr.hasAttr(CARRIER_DEST)) {
 				m.carrierDestination = game.map.getSafeTile(attr.getPoint(CARRIER_DEST));

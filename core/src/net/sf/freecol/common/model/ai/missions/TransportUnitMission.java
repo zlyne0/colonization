@@ -6,7 +6,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -46,30 +45,22 @@ public class TransportUnitMission extends AbstractMission {
 	
     public static class Xml extends XmlNodeParser<TransportUnitMission> {
 
-        private static final String ATTR_DEST_X = "destX";
-        private static final String ATTR_DEST_Y = "destY";
+        private static final String ATTR_DEST = "dest";
         private static final String ATTR_CARRIER = "carrier";
         private static final String ELEMENT_UNIT = "unit";
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            Player player = PlayerMissionsContainer.Xml.player;
-            
             TransportUnitMission m = new TransportUnitMission(attr.getId());
-            m.carrier = player.units.getById(attr.getStrAttribute(ATTR_CARRIER));
-            // TODO: refactoring to getPoint
-            // TODO: method to get unit from playerMissionContext
-            m.dest = game.map.getTile(
-                attr.getIntAttribute(ATTR_DEST_X), 
-                attr.getIntAttribute(ATTR_DEST_Y)
-            );
+            m.carrier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_CARRIER));
+            m.dest = game.map.getSafeTile(attr.getPoint(ATTR_DEST));
             nodeObject = m;
         }
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
             if (attr.isQNameEquals(ELEMENT_UNIT)) {
-                nodeObject.units.add(PlayerMissionsContainer.Xml.player.units.getById(attr.getId()));
+                nodeObject.units.add(PlayerMissionsContainer.Xml.getPlayerUnit(attr.getId()));
             }
         }
         
@@ -77,8 +68,7 @@ public class TransportUnitMission extends AbstractMission {
         public void startWriteAttr(TransportUnitMission node, XmlNodeAttributesWriter attr) throws IOException {
             attr.setId(node);
             attr.set(ATTR_CARRIER, node.carrier);
-            attr.set(ATTR_DEST_X, node.dest.x);
-            attr.set(ATTR_DEST_Y, node.dest.y);
+            attr.setPoint(ATTR_DEST, node.dest.x, node.dest.y);
             
             for (Unit u : node.units.entities()) {
                 attr.xml.element(ELEMENT_UNIT);

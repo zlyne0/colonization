@@ -19,7 +19,8 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.ExplorerMission;
+import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -57,7 +58,7 @@ class TileAssert extends AbstractAssert<TileAssert, Tile> {
 		isNotNull();
 		
 		if (!actual.equalsCoordinates(x, y)) {
-			failWithMessage("Expected cords [<%s>,<%s>] on tile <%s> ", x, y, actual.toString());
+			failWithMessage("Expected cords [%s,%s] on tile <id: %s, cords %s, %s> ", x, y, actual.getId(), actual.x, actual.y);
 		}
 		return this;
 	}
@@ -96,9 +97,30 @@ public class Savegame1600Verifier {
 
 		verifyTransportUnitMission(game);
 		verifyRellocationMission(game);
+		verifyFoundColonyMission(game);
+		verifyExploreMission(game);
 	}
 
-	private void verifyRellocationMission(Game game) {
+	private void verifyExploreMission(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+        assertThat(missions).isNotNull();
+        ExplorerMission em = missions.getMission("explorerMission:5");
+        
+        assertThat(em.getId()).isEqualTo("explorerMission:5");
+        assertThat(em.unit.getId()).isEqualTo("unit:6437");
+    }
+
+    private void verifyFoundColonyMission(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+        assertThat(missions).isNotNull();
+        FoundColonyMission fm = missions.getMission("foundColonyMission:4");
+        
+        assertThat(fm.getId()).isEqualTo("foundColonyMission:4");
+        assertThat(fm.destTile).isEquals(21, 23);
+        assertThat(fm.unit.getId()).isEqualTo("unit:7095");
+    }
+
+    private void verifyRellocationMission(Game game) {
 		PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 		assertThat(missions).isNotNull();
 		RellocationMission rm = missions.getMission("rellocationMission:3");
@@ -111,16 +133,6 @@ public class Savegame1600Verifier {
 
 		assertThat(rm.carrier.getId()).isEqualTo("unit:6437");
 		assertThat(rm.carrierDestination).isEquals(30, 32);
-		
-		
-//		id="rellocationMission:3" 
-//		dest="20,22"
-		
-//		unit="unit:7095" 
-//		unitDest="25,27"
-		
-//		carrier="unit:6437" 
-//		carrierDest="30,32" 
 	}
 
 	private void verifyTransportUnitMission(Game game) {

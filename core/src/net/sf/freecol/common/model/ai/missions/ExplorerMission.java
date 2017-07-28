@@ -1,14 +1,24 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import java.io.IOException;
+
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
+import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public class ExplorerMission extends AbstractMission {
 
 	public final Unit unit;
+
+    public ExplorerMission(String id, Unit unit) {
+        super(id);
+        this.unit = unit;
+    }
 	
 	public ExplorerMission(Unit unit) {
-		super(unit.getId());
-		this.unit = unit;
+	    this(Game.idGenerator.nextId(ExplorerMission.class), unit);
 	}
 	
 	@Override
@@ -21,4 +31,34 @@ public class ExplorerMission extends AbstractMission {
 		unitMissionsMapping.unblockUnitFromMission(unit, this);
 	}
 
+    public static class Xml extends XmlNodeParser<ExplorerMission> {
+
+        private static final String ATTR_UNIT = "unit";
+
+        @Override
+        public void startElement(XmlNodeAttributes attr) {
+            ExplorerMission m = new ExplorerMission(
+                attr.getId(),
+                PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
+            );
+            nodeObject = m;
+        }
+
+        @Override
+        public void startWriteAttr(ExplorerMission node, XmlNodeAttributesWriter attr) throws IOException {
+            attr.setId(node);
+            attr.set(ATTR_UNIT, node.unit);
+        }
+        
+        @Override
+        public String getTagName() {
+            return tagName();
+        }
+
+        public static String tagName() {
+            return "explorerMission";
+        }
+        
+    }
+	
 }

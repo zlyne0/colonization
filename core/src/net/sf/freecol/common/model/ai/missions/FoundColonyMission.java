@@ -1,20 +1,26 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import java.io.IOException;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
+import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class FoundColonyMission extends AbstractMission {
 	public Tile destTile;
 	public final Unit unit;
-	
-	public FoundColonyMission(Tile destTile, Unit unit) {
-		super(Game.idGenerator.nextId(FoundColonyMission.class));
+
+    public FoundColonyMission(String id, Tile destTile, Unit unit) {
+        super(id);
         this.destTile = destTile;
         this.unit = unit;
+    }
+	
+	public FoundColonyMission(Tile destTile, Unit unit) {
+	    this(Game.idGenerator.nextId(FoundColonyMission.class), destTile, unit);
     }
 
 	@Override
@@ -40,12 +46,28 @@ public class FoundColonyMission extends AbstractMission {
 		return "FoundColonyMission[destTile: " + destTile.toStringCords() + ", unit: " + unit + "]";
 	}
 	
-	public static class Xml extends XmlNodeParser<Player> {
+	public static class Xml extends XmlNodeParser<FoundColonyMission> {
 
-		@Override
+		private static final String ATTR_UNIT = "unit";
+        private static final String ATTR_DEST = "dest";
+
+        @Override
 		public void startElement(XmlNodeAttributes attr) {
+		    FoundColonyMission m = new FoundColonyMission(
+		        attr.getId(), 
+		        game.map.getSafeTile(attr.getPoint(ATTR_DEST)), 
+		        PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
+	        );
+		    nodeObject = m;
 		}
 
+		@Override
+		public void startWriteAttr(FoundColonyMission node, XmlNodeAttributesWriter attr) throws IOException {
+		    attr.setId(node);
+		    attr.setPoint(ATTR_DEST, node.destTile.x, node.destTile.y);
+		    attr.set(ATTR_UNIT, node.unit);
+		}
+		
 		@Override
 		public String getTagName() {
 			return tagName();

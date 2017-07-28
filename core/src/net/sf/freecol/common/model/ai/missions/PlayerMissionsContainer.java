@@ -90,16 +90,19 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 	
     public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
-        static Player player;
-        
         private static final String ATTR_PLAYER = "player";
 
+        private static Player player;
+        public static Unit getPlayerUnit(String unitId) {
+            return player.units.getById(unitId);
+        }
+        
         public Xml() {
             addNodeForMapIdEntities("missions", WanderMission.class);
             addNodeForMapIdEntities("missions", TransportUnitMission.class);
             addNodeForMapIdEntities("missions", RellocationMission.class);
-//            addNodeForMapIdEntities("missions", FoundColonyMission.class);
-//            addNodeForMapIdEntities("missions", ExplorerMission.class);
+            addNodeForMapIdEntities("missions", FoundColonyMission.class);
+            addNodeForMapIdEntities("missions", ExplorerMission.class);
         }
         
         @Override
@@ -131,7 +134,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
         public static String tagName() {
             return "playerMissions";
         }
-        
+
     }
 	
 }

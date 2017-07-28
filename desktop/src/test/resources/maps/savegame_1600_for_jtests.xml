@@ -21009,10 +21009,12 @@
     
 	  <aiContainer>
 	      <playerMissions player="player:1">
-	          <transportUnitMission id="transportUnitMission:2" destX="10" destY="12" carrier="unit:6437">
+	          <transportUnitMission id="transportUnitMission:2" dest="10,12" carrier="unit:6437">
 	              <unit id="unit:7095"/>
               </transportUnitMission>
               <rellocationMission id="rellocationMission:3" dest="20,22" unit="unit:7095" unitDest="25,27" carrier="unit:6437" carrierDest="30,32" />
+              <foundColonyMission id="foundColonyMission:4" dest="21,23" unit="unit:7095" />
+              <explorerMission id="explorerMission:5" unit="unit:6437" />
 	      </playerMissions>
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>

@@ -45,7 +45,7 @@ public class WanderMission extends AbstractMission {
         @Override
 		public void startElement(XmlNodeAttributes attr) {
 		    String unitId = attr.getStrAttributeNotNull(ATTR_UNIT);
-		    Unit unit = PlayerMissionsContainer.Xml.player.units.getById(unitId);
+		    Unit unit = PlayerMissionsContainer.Xml.getPlayerUnit(unitId);
 		    
 		    WanderMission m = new WanderMission(attr.getId(), unit);
 		    nodeObject = m;
