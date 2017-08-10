@@ -43,7 +43,7 @@ public class TransportUnitMission extends AbstractMission {
 		return "TransportUnitMission";
 	}
 	
-    public static class Xml extends XmlNodeParser<TransportUnitMission> {
+    public static class Xml extends AbstractMission.Xml<TransportUnitMission> {
 
         private static final String ATTR_DEST = "dest";
         private static final String ATTR_CARRIER = "carrier";

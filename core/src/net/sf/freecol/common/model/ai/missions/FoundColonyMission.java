@@ -46,7 +46,7 @@ public class FoundColonyMission extends AbstractMission {
 		return "FoundColonyMission[destTile: " + destTile.toStringCords() + ", unit: " + unit + "]";
 	}
 	
-	public static class Xml extends XmlNodeParser<FoundColonyMission> {
+	public static class Xml extends AbstractMission.Xml<FoundColonyMission> {
 
 		private static final String ATTR_UNIT = "unit";
         private static final String ATTR_DEST = "dest";

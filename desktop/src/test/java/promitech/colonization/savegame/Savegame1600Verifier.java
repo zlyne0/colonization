@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -43,6 +44,7 @@ import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static promitech.colonization.savegame.TileAssert.assertThat;
+import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 
 class TileAssert extends AbstractAssert<TileAssert, Tile> {
 
@@ -63,6 +65,47 @@ class TileAssert extends AbstractAssert<TileAssert, Tile> {
 		return this;
 	}
 }
+
+class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
+
+	public AbstractMissionAssert(AbstractMission actual, Class<?> selfType) {
+		super(actual, selfType);
+	}
+	
+	public static AbstractMissionAssert assertThat(AbstractMission abstractMission) {
+		return new AbstractMissionAssert(abstractMission, AbstractMissionAssert.class);
+	}
+	
+	public AbstractMissionAssert isIdEquals(String id) {
+		isNotNull();
+		if (!actual.getId().equals(id)) {
+			failWithMessage("Expected id: %s on AbstractMission id: %s ", id, actual.getId());			
+		}
+		return this;
+	}
+	
+	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
+		isNotNull();
+		AbstractMission dependMission = actual.getDependMissionById(missionId);
+		if (dependMission == null) {
+			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
+		} else {
+			if (dependMission.getClass() != missionTypeClass) {
+				failWithMessage("Expected depend mission type %s on Mission id: %s ", missionTypeClass.getName(), missionId);
+			}
+		}
+		return this;
+	}
+	
+	public AbstractMissionAssert isType(Class<? extends AbstractMission> missionTypeClass) {
+		isNotNull();
+		if (actual.getClass() != missionTypeClass) {
+			failWithMessage("Expected mission type %s on mission id: %s ", missionTypeClass.getName(), actual.getId());
+		}
+		return this;
+	}
+}
+
 
 public class Savegame1600Verifier {
 
@@ -99,6 +142,23 @@ public class Savegame1600Verifier {
 		verifyRellocationMission(game);
 		verifyFoundColonyMission(game);
 		verifyExploreMission(game);
+		verifyMissionRecursion(game);
+	}
+
+	private void verifyMissionRecursion(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+		
+        assertThat(missions.getMission("foundColonyMission:4"))
+        	.isType(FoundColonyMission.class)
+        	.hasDependMission("rellocationMission:3:1", RellocationMission.class);
+        
+        assertThat(missions.getMission("explorerMission:5"))
+        	.isType(ExplorerMission.class)
+        	.hasDependMission("explorerMission:5:1", ExplorerMission.class)
+        	.hasDependMission("explorerMission:5:2", RellocationMission.class);
+        
+        assertThat(missions.getMission("explorerMission:5").getDependMissionById("explorerMission:5:2"))
+        	.hasDependMission("explorerMission:5:2:1", ExplorerMission.class);
 	}
 
 	private void verifyExploreMission(Game game) {

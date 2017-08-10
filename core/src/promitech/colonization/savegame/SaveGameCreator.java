@@ -37,6 +37,26 @@ public class SaveGameCreator {
 		}
 
 	}
+
+	// optimization for access to customeXmlGeneratorPool, 
+	// Access to customeXmlGeneratorPool only when write collection
+	private ObjectFromNodeSetter.ChildObject2XmlCustomeHandler poolForXmlGenerator = 
+			new ObjectFromNodeSetter.ChildObject2XmlCustomeHandler() 
+	{
+		@Override
+		public void generateXml(Object obj) throws IOException {
+			ChildObjectXmlGenerator collectionXmlGenerator = customeXmlGeneratorPool.obtain();
+			collectionXmlGenerator.generateXml(obj);
+			customeXmlGeneratorPool.free(collectionXmlGenerator);
+		}
+
+		@Override
+		public void generateXmlFromCollection(Collection objs) throws IOException {
+			ChildObjectXmlGenerator collectionXmlGenerator = customeXmlGeneratorPool.obtain();
+			collectionXmlGenerator.generateXmlFromCollection(objs);
+			customeXmlGeneratorPool.free(collectionXmlGenerator);
+		}
+	};
 	
 	private final Pool<ChildObjectXmlGenerator> customeXmlGeneratorPool = new Pool<SaveGameCreator.ChildObjectXmlGenerator>() {
 		@Override
@@ -79,6 +99,8 @@ public class SaveGameCreator {
 	}
 	
 	protected void saveChildren(Object objWithChildren, XmlNodeParser xmlParser) throws IOException {
+		xmlParser.writeCollections(objWithChildren, poolForXmlGenerator);
+		
 		for (XmlTagMetaData tagMetaData : (Collection<XmlTagMetaData>)xmlParser.childrenNodeParsers()) {
 			if (tagMetaData instanceof XmlTagMapIdEntitiesMetaData) {
 				saveMapEntityObj(objWithChildren, (XmlTagMapIdEntitiesMetaData)tagMetaData);

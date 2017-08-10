@@ -38,7 +38,7 @@ public class WanderMission extends AbstractMission {
 		return "WanderMission unit: " + unit + ", previewDirection: " + previewDirection;
 	}
 	
-	public static class Xml extends XmlNodeParser<WanderMission> {
+	public static class Xml extends AbstractMission.Xml<WanderMission> {
 
         private static final String ATTR_UNIT = "unit";
 

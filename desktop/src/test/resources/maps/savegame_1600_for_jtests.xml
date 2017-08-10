@@ -21013,8 +21013,15 @@
 	              <unit id="unit:7095"/>
               </transportUnitMission>
               <rellocationMission id="rellocationMission:3" dest="20,22" unit="unit:7095" unitDest="25,27" carrier="unit:6437" carrierDest="30,32" />
-              <foundColonyMission id="foundColonyMission:4" dest="21,23" unit="unit:7095" />
-              <explorerMission id="explorerMission:5" unit="unit:6437" />
+              <foundColonyMission id="foundColonyMission:4" dest="21,23" unit="unit:7095">
+                  <rellocationMission id="rellocationMission:3:1" dest="15,10" unit="unit:7095" unitDest="16,10" carrier="unit:6437" carrierDest="30,32"/>
+              </foundColonyMission>
+              <explorerMission id="explorerMission:5" unit="unit:6437">
+                  <explorerMission id="explorerMission:5:1" unit="unit:6437"/>
+                  <rellocationMission id="explorerMission:5:2" dest="15,10" unit="unit:7095" unitDest="16,10" carrier="unit:6437" carrierDest="30,32">
+                      <explorerMission id="explorerMission:5:2:1" unit="unit:6437"/>
+                  </rellocationMission>
+              </explorerMission>
 	      </playerMissions>
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>

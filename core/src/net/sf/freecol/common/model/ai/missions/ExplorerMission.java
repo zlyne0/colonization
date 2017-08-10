@@ -31,10 +31,14 @@ public class ExplorerMission extends AbstractMission {
 		unitMissionsMapping.unblockUnitFromMission(unit, this);
 	}
 
-    public static class Xml extends XmlNodeParser<ExplorerMission> {
+    public static class Xml extends AbstractMission.Xml<ExplorerMission> {
 
         private static final String ATTR_UNIT = "unit";
 
+        public Xml() {
+        	super();
+        }
+        
         @Override
         public void startElement(XmlNodeAttributes attr) {
             ExplorerMission m = new ExplorerMission(

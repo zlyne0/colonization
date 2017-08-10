@@ -163,7 +163,7 @@ public class RellocationMission extends AbstractMission {
         return carrierDestination == null && unitDestination == null;
     }
     
-	public static class Xml extends XmlNodeParser<RellocationMission> {
+	public static class Xml extends AbstractMission.Xml<RellocationMission> {
 
 		private static final String CARRIER_DEST = "carrierDest";
 		private static final String CARRIER = "carrier";

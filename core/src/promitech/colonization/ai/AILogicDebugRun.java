@@ -46,8 +46,8 @@ public class AILogicDebugRun {
 //        explorerMissionHandler.exploreByOneMove(unit);
         //explorerMissionHandler.exploreByAllMoves(unit);
         
-        Player aiNativePlayer = gameModel.game.players.getById("player:3");
-        aiNativePlayer = gameModel.game.players.getById("player:11");
+//        Player aiNativePlayer = gameModel.game.players.getById("player:3");
+//        aiNativePlayer = gameModel.game.players.getById("player:11");
         
 //        if (missionsContainer == null) {
 //            missionsContainer = new AIMissionsContainer();
@@ -56,6 +56,8 @@ public class AILogicDebugRun {
 //        	
 //			//createStartGameMissions(unit.getOwner());
 //        }
+        
+        Player aiNativePlayer = unit.getOwner();
         
         GameLogic gameLogic = new GameLogic(gameModel);
         AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveLogic);

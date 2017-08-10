@@ -1,10 +1,14 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.ObjectWithId;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
+import promitech.colonization.savegame.ObjectFromNodeSetter.ChildObject2XmlCustomeHandler;
+import promitech.colonization.savegame.XmlNodeParser;
 
 public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
@@ -75,4 +79,46 @@ public abstract class AbstractMission extends ObjectWithId {
 		return false;
 	}
 
+	public AbstractMission getDependMissionById(String missionId) {
+		for (AbstractMission am : dependMissions) {
+			if (am.equalsId(missionId)) {
+				return am;
+			}
+		}
+		return null;
+	}
+	
+	public static abstract class Xml<AM extends AbstractMission> extends XmlNodeParser<AM> {
+
+		public Xml() {
+			ObjectFromNodeSetter setter = new ObjectFromNodeSetter() {
+				@Override
+				public void set(Object target, Object entity) {
+					((AbstractMission)target).dependMissions.add((AbstractMission)entity);
+				}
+
+				@Override
+				public void generateXml(Object source, ChildObject2XmlCustomeHandler xmlGenerator) throws IOException {
+				}
+			}; 
+			
+			addNode(WanderMission.class, setter);
+			addNode(TransportUnitMission.class, setter);
+			addNode(RellocationMission.class, setter);
+			addNode(FoundColonyMission.class, setter);
+			addNode(ExplorerMission.class, setter);
+		}
+
+		@Override
+		public <COLL_OBJECTY_TYPE> void writeCollections(
+			AM entity,
+			ChildObject2XmlCustomeHandler<COLL_OBJECTY_TYPE> xmlGenerator
+		) throws IOException 
+		{
+			for (AbstractMission am : entity.dependMissions) {
+				xmlGenerator.generateXml((COLL_OBJECTY_TYPE) am);
+			}
+		}
+	}
+	
 }
