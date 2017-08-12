@@ -122,7 +122,7 @@ public class Map extends ObjectWithId {
 		tiles[y][x] = tile;
 	}
 	
-    public void afterReadMap() {
+    public void updateReferences() {
         for (int y=0; y<height; y++) {
             Tile row[] = tiles[y];
             for (int x=0; x<width; x++) {
@@ -284,7 +284,7 @@ public class Map extends ObjectWithId {
 		@Override
 		public void endElement(String uri, String localName, String qName) throws SAXException {
 		    if (qName.equals(getTagName())) {
-		        ((Map)nodeObject).afterReadMap();
+		        ((Map)nodeObject).updateReferences();
 		    }
 		}
 		

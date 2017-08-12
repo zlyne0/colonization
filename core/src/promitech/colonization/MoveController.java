@@ -160,8 +160,6 @@ public class MoveController {
 	public void leaveCreateGotoPathMode() {
 		guiGameModel.setCreateGotoPathMode(false);
 		mapActor.mapDrawModel().unitPath = null;
-		// TODO: remove hideTileDebugStrings
-		mapActor.hideTileDebugStrings();
 	}
 
 	public void generateGotoPath(Tile destinationTile) {
@@ -169,23 +167,9 @@ public class MoveController {
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
-		Unit carrier = guiGameModel.getActiveUnit().getOwner().units.getById("unit:6900");
-		
-		// TODO: remove transportPathFinder
-		PathFinder carrierRange = new PathFinder();
-		carrierRange.generateRangeMap(guiGameModel.game.map, carrier.getTile(), carrier, false);
-		
-		TransportPathFinder transportPathFinder = new TransportPathFinder(guiGameModel.game.map);
-		Path path = transportPathFinder.findToTile(startTile, destinationTile, guiGameModel.getActiveUnit(), carrier, carrierRange);
-		
-//		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
+		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;
-		
-		
-        String[][] debugPathRange = new String[guiGameModel.game.map.height][guiGameModel.game.map.width];
-        transportPathFinder.toStringArrays(debugPathRange, path);
-        mapActor.showTileDebugStrings(debugPathRange);
 	}
 
 	public void setDrawableUnitPath(Unit unit) {
