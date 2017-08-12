@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.ai.AIContainer;
 import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -28,6 +29,8 @@ public class Game {
 	public String activeUnitId;
 	private Turn turn;
 	private final List<String> citiesOfCibola = new ArrayList<String>(7);
+	
+	public AIContainer aiContainer = new AIContainer();
 	
 	public Game() {
 		turn = new Turn(0);
@@ -90,6 +93,7 @@ public class Game {
 			addNode(Specification.class, "specification");
 			addNodeForMapIdEntities("players", Player.class);
 			addNode(Map.class, "map");
+			addNode(AIContainer.class, "aiContainer");
 		}
 		
 		@Override

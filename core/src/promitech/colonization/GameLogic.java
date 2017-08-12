@@ -67,7 +67,6 @@ public class GameLogic {
         	player.getEurope().handleImmigrationOnNewTurn();
         }
         
-        System.out.println("end of newTurn");
 		player.fogOfWar.resetFogOfWar(player);
 	}
 

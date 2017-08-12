@@ -22,7 +22,7 @@ public class DebugShortcutsKeys {
         
         commandByKeycode.put(Input.Keys.NUM_1, "ai move");
         commandByKeycode.put(Input.Keys.NUM_2, "ai settlements");
-        //commandByKeycode.put(Input.Keys.NUM_3, "map show");
+        commandByKeycode.put(Input.Keys.NUM_5, "map show");
     }
 
     public boolean canHandleKey(int keycode) {

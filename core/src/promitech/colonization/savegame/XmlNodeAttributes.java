@@ -2,9 +2,14 @@ package promitech.colonization.savegame;
 
 import org.xml.sax.Attributes;
 
+import com.badlogic.gdx.math.GridPoint2;
+
+import promitech.colonization.savegame.XmlNodeParser;
+
 public class XmlNodeAttributes {
     String qName; 
     Attributes attributes;
+    private final GridPoint2 tmpPoint = new GridPoint2();
     
     public boolean isQNameEquals(String qname) {
         return qName.equals(qname);
@@ -71,6 +76,22 @@ public class XmlNodeAttributes {
     	return getEnumAttribute(enumClass, name, null);
     }
     
+    public String getId() {
+        return getStrAttributeNotNull(XmlNodeParser.ATTR_ID);
+    }
+
+    public GridPoint2 getPoint(String name) {
+    	String pointStr = getStrAttributeNotNull(name);
+    	String[] t = pointStr.split(",");
+    	tmpPoint.x = Integer.parseInt(t[0]);
+    	tmpPoint.y = Integer.parseInt(t[1]);
+    	return tmpPoint;
+    }
+
+	public boolean hasAttr(String name) {
+		return attributes.getValue(name) != null;
+	}
+    
     public String toString() {
         String st = "";
         for (int i=0; i<attributes.getLength(); i++) {
@@ -80,4 +101,5 @@ public class XmlNodeAttributes {
         }
         return "qName = " + qName + ", attributes = {" + st + "}"; 
     }
+
 }

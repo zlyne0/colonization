@@ -76,6 +76,8 @@ public class MapGenerator {
 		
 		generatePlayersStartPositions(map, players);
 		generateLostCityRumours(map);
+		
+		map.updateReferences();
 		return map;
 	}
 

@@ -79,6 +79,14 @@ public class Tile implements UnitLocation, Identifiable {
         return this.x == x && this.y == y;
     }
 	
+    public boolean equalsCoordinates(Tile t) {
+    	return this.x == t.x && this.y == t.y;
+    }
+    
+    public String toStringCords() {
+    	return "" + x + ", " + y;
+    }
+    
 	public String toString() {
 		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}
@@ -470,6 +478,10 @@ public class Tile implements UnitLocation, Identifiable {
 	
 	public boolean isOnSeaSide() {
 	    return getType().isLand() && tileConnected != ALL_NEIGHBOUR_LAND_BITS_VALUE; 
+	}
+	
+	public boolean isNextToLand() {
+		return getType().isWater() && tileConnected != ALL_NEIGHBOUR_WATER_BITS_VALUE;
 	}
 	
 	public static class Xml extends XmlNodeParser<Tile> {

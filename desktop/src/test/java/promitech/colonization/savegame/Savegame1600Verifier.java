@@ -3,6 +3,8 @@ package promitech.colonization.savegame;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
+import org.assertj.core.api.AbstractAssert;
+
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -17,6 +19,13 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.ExplorerMission;
+import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
+import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
@@ -34,6 +43,69 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
+import static promitech.colonization.savegame.TileAssert.assertThat;
+import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
+
+class TileAssert extends AbstractAssert<TileAssert, Tile> {
+
+	public TileAssert(Tile actual, Class<?> selfType) {
+		super(actual, selfType);
+	}
+	
+	public static TileAssert assertThat(Tile tile) {
+		return new TileAssert(tile, TileAssert.class);
+	}
+	
+	public TileAssert isEquals(int x, int y) {
+		isNotNull();
+		
+		if (!actual.equalsCoordinates(x, y)) {
+			failWithMessage("Expected cords [%s,%s] on tile <id: %s, cords %s, %s> ", x, y, actual.getId(), actual.x, actual.y);
+		}
+		return this;
+	}
+}
+
+class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
+
+	public AbstractMissionAssert(AbstractMission actual, Class<?> selfType) {
+		super(actual, selfType);
+	}
+	
+	public static AbstractMissionAssert assertThat(AbstractMission abstractMission) {
+		return new AbstractMissionAssert(abstractMission, AbstractMissionAssert.class);
+	}
+	
+	public AbstractMissionAssert isIdEquals(String id) {
+		isNotNull();
+		if (!actual.getId().equals(id)) {
+			failWithMessage("Expected id: %s on AbstractMission id: %s ", id, actual.getId());			
+		}
+		return this;
+	}
+	
+	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
+		isNotNull();
+		AbstractMission dependMission = actual.getDependMissionById(missionId);
+		if (dependMission == null) {
+			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
+		} else {
+			if (dependMission.getClass() != missionTypeClass) {
+				failWithMessage("Expected depend mission type %s on Mission id: %s ", missionTypeClass.getName(), missionId);
+			}
+		}
+		return this;
+	}
+	
+	public AbstractMissionAssert isType(Class<? extends AbstractMission> missionTypeClass) {
+		isNotNull();
+		if (actual.getClass() != missionTypeClass) {
+			failWithMessage("Expected mission type %s on mission id: %s ", missionTypeClass.getName(), actual.getId());
+		}
+		return this;
+	}
+}
+
 
 public class Savegame1600Verifier {
 
@@ -56,6 +128,83 @@ public class Savegame1600Verifier {
         verifySettlementsBuildings(game);
         
         verifySettlementBuildingWorker(game);
+        verifyAIContainer(game);
+	}
+
+	private void verifyAIContainer(Game game) {
+		PlayerMissionsContainer playerMissionsContainer = game.aiContainer.getMissionContainer("player:22");
+		assertThat(playerMissionsContainer).isNotNull();
+		WanderMission wm = playerMissionsContainer.getMission("wanderMission:1");
+		
+		assertThat(wm.unit.getId()).isEqualTo("unit:6706");
+
+		verifyTransportUnitMission(game);
+		verifyRellocationMission(game);
+		verifyFoundColonyMission(game);
+		verifyExploreMission(game);
+		verifyMissionRecursion(game);
+	}
+
+	private void verifyMissionRecursion(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+		
+        assertThat(missions.getMission("foundColonyMission:4"))
+        	.isType(FoundColonyMission.class)
+        	.hasDependMission("rellocationMission:3:1", RellocationMission.class);
+        
+        assertThat(missions.getMission("explorerMission:5"))
+        	.isType(ExplorerMission.class)
+        	.hasDependMission("explorerMission:5:1", ExplorerMission.class)
+        	.hasDependMission("explorerMission:5:2", RellocationMission.class);
+        
+        assertThat(missions.getMission("explorerMission:5").getDependMissionById("explorerMission:5:2"))
+        	.hasDependMission("explorerMission:5:2:1", ExplorerMission.class);
+	}
+
+	private void verifyExploreMission(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+        assertThat(missions).isNotNull();
+        ExplorerMission em = missions.getMission("explorerMission:5");
+        
+        assertThat(em.getId()).isEqualTo("explorerMission:5");
+        assertThat(em.unit.getId()).isEqualTo("unit:6437");
+    }
+
+    private void verifyFoundColonyMission(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+        assertThat(missions).isNotNull();
+        FoundColonyMission fm = missions.getMission("foundColonyMission:4");
+        
+        assertThat(fm.getId()).isEqualTo("foundColonyMission:4");
+        assertThat(fm.destTile).isEquals(21, 23);
+        assertThat(fm.unit.getId()).isEqualTo("unit:7095");
+    }
+
+    private void verifyRellocationMission(Game game) {
+		PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+		assertThat(missions).isNotNull();
+		RellocationMission rm = missions.getMission("rellocationMission:3");
+		
+		assertThat(rm.getId()).isEqualTo("rellocationMission:3");
+		assertThat(rm.rellocationDestination).isEquals(20, 22);
+		
+		assertThat(rm.unit.getId()).isEqualTo("unit:7095");
+		assertThat(rm.unitDestination).isEquals(25, 27);
+
+		assertThat(rm.carrier.getId()).isEqualTo("unit:6437");
+		assertThat(rm.carrierDestination).isEquals(30, 32);
+	}
+
+	private void verifyTransportUnitMission(Game game) {
+		PlayerMissionsContainer playerMissions1 = game.aiContainer.getMissionContainer("player:1");
+		assertThat(playerMissions1).isNotNull();
+		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
+		
+		assertThat(tm.dest.equalsCoordinates(10, 12)).isTrue();
+		assertThat(tm.carrier.getId()).isEqualTo("unit:6437");
+		
+		assertThat(tm.units.entities()).hasSize(1);
+		assertThat(tm.units.first().getId()).isEqualTo("unit:7095");
 	}
 
 	private void verifyGame(Game game) {

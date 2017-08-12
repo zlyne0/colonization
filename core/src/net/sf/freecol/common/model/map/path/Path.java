@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.map;
+package net.sf.freecol.common.model.map.path;
 
 import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;

@@ -58,4 +58,8 @@ public class XmlNodeAttributesWriter {
 			xml.attribute(attrName, val.name());
 		}
 	}
+
+	public void setPoint(String attrName, int x, int y) throws IOException {
+		xml.attribute(attrName, Integer.toString(x) + "," + Integer.toString(y));
+	}
 }

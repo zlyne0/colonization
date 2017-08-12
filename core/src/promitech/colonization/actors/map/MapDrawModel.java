@@ -13,7 +13,7 @@ import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.Path;
+import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
@@ -60,7 +60,9 @@ class TileDrawModel {
 	}
 
 	public void drawSettlementImage(Batch batch, float rx, float ry) {
-		batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
+		if (settlementImage != null) {
+			batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
+		}
 	}
 	
 	public void addBackgroundTerainTexture(Frame texture) {

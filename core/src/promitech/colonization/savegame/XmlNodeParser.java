@@ -124,5 +124,12 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
 
 	public void startWriteAttr(NODE_ENTITY_CLASS node, XmlNodeAttributesWriter attr) throws IOException {
 	}
+	
+	public <COLL_OBJECTY_TYPE> void writeCollections(
+			NODE_ENTITY_CLASS entity, 
+			ObjectFromNodeSetter.ChildObject2XmlCustomeHandler<COLL_OBJECTY_TYPE> xmlGenerator
+	) throws IOException 
+	{
+	}
 }
 

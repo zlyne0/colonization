@@ -4,7 +4,7 @@ import promitech.colonization.Direction;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.map.Path;
+import net.sf.freecol.common.model.map.path.Path;
 
 public class MoveContext {
 	public Unit unit;
@@ -13,12 +13,20 @@ public class MoveContext {
 	private Direction direction;
 	public MoveType moveType;
 	private int moveCost;
+	private Unit carrierToEmbark = null;
 	
 	private final Path path;
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
 	private boolean unitKilled = false;
+	private boolean moveViaHighSea = false;
 
+	public static MoveContext embarkUnit(Unit unit, Unit carrier) {
+		MoveContext moveContext = new MoveContext(unit.getTile(), carrier.getTile(), unit);
+		moveContext.carrierToEmbark = carrier;
+		return moveContext;
+	}
+	
 	public MoveContext() {
 		this.path = null;
 	}
@@ -128,15 +136,17 @@ public class MoveContext {
 	}
 	
 	private void embarkUnit() {
-		Unit carrier = null;
-		for (Unit u : destTile.getUnits().entities()) {
-			if (u.canAddUnit(unit)) {
-				carrier = u;
-				break;
-			}
-		}
+		Unit carrier = carrierToEmbark;
 		if (carrier == null) {
-			throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
+			for (Unit u : destTile.getUnits().entities()) {
+				if (u.canAddUnit(unit)) {
+					carrier = u;
+					break;
+				}
+			}
+			if (carrier == null) {
+				throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
+			}
 		}
 		System.out.println("moveContext.embarkUnit = " + this);
 		unit.setState(UnitState.SKIPPED);
@@ -173,7 +183,7 @@ public class MoveContext {
 			return true;
 		case MOVE_HIGH_SEAS: {
 			// show question dialog are you sure
-			if (isMoveViaPath() && path.isPathToEurope()) {
+			if (moveViaHighSea || isMoveViaPath() && path.isPathToEurope()) {
 				return false;
 			} else {
 				return true;
@@ -202,6 +212,10 @@ public class MoveContext {
 	
 	public boolean isUnitKilled() {
 		return unitKilled;
+	}
+	
+	public void setMoveViaHighSea() {
+	    moveViaHighSea = true;
 	}
 
 }

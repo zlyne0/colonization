@@ -4,8 +4,8 @@ import com.badlogic.gdx.utils.IntArray;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.map.Path;
-import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;

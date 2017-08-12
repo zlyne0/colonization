@@ -6,8 +6,9 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.map.Path;
-import net.sf.freecol.common.model.map.PathFinder;
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.gamelogic.MoveContext;
@@ -199,12 +200,21 @@ public class MoveController {
 			}
 		};
 		
+        final QuestionDialog.OptionAction<MoveContext> moveToHighSeaAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+                payload.setMoveViaHighSea();
+                // invoke forGuiMove like in logicAcceptGotoPath
+                moveLogic.forGuiMove(payload);
+            }
+        };
+		
         QuestionDialog questionDialog = new QuestionDialog();
 		questionDialog.addQuestion(StringTemplate.template("highseas.text")
             .addAmount("%number%", moveContext.unit.getSailTurns())
         );
         questionDialog.addAnswer("highseas.yes", sailHighSeasYesAnswer, moveContext);
-        questionDialog.addAnswer("highseas.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
+        questionDialog.addAnswer("highseas.no", moveToHighSeaAnswer, moveContext);
         
         guiGameController.showDialog(questionDialog);
 	}
