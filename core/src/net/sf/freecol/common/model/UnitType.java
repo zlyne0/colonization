@@ -138,6 +138,10 @@ public class UnitType extends BuildableType {
         return offence;
     }
     
+	public int getBaseDefence() {
+		return defence;
+	}
+    
     /**
      * Can this type of unit be upgraded to another given type by a given
      * educational change type?
@@ -341,5 +345,4 @@ public class UnitType extends BuildableType {
             return "unit-type";
         }
     }
-
 }

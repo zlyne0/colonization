@@ -19,6 +19,10 @@ public class IndianNationType extends NationType {
 	public boolean isREF() {
         return false;
     }
+	
+	public boolean isIndian() {
+		return true;
+	}
 
 	public Set<String> getRegionNames() {
 		return regionNames;

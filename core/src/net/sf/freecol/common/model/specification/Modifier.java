@@ -81,7 +81,16 @@ public class Modifier implements Identifiable {
     private ModifierType incrementType;
     private int modifierIndex = DEFAULT_MODIFIER_INDEX;
 	
+    public Modifier(String id) {
+    	this.id = id;
+    }
 	
+	public Modifier(String id, ModifierType modifierType, float value) {
+		this(id);
+		this.modifierType = modifierType;
+		this.value = value;
+	}
+
 	@Override
 	public String getId() {
 		return id;
@@ -138,8 +147,7 @@ public class Modifier implements Identifiable {
 
 	    @Override
         public void startElement(XmlNodeAttributes attr) {
-			Modifier modifier = new Modifier();
-			modifier.id = attr.getStrAttribute(ATTR_ID);
+			Modifier modifier = new Modifier(attr.getStrAttribute(ATTR_ID));
 			modifier.value = attr.getFloatAttribute(ATTR_VALUE, 0);
 			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, TYPE_ATTR);
 			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, INCREMENT_TYPE_ATTR);

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.map.generator;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -26,7 +25,7 @@ class RiverFlowGenerator {
 		randomDirectionLists = new ArrayList<List<Direction>>(2);
 		for (int i=0; i<2; i++) {
 			List<Direction> l = new ArrayList<Direction>(Direction.longSides);
-			Collections.shuffle(l, Randomizer.instance().getRand());
+			Randomizer.instance().shuffle(l);
 			randomDirectionLists.add(l);
 		}
 	}

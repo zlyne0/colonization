@@ -67,6 +67,10 @@ public abstract class NationType extends ObjectWithFeatures {
     	return european;
     }
     
+    public boolean isIndian() {
+    	return false;
+    }
+    
     public String toString() {
     	return "nationType: " + getId();
     }

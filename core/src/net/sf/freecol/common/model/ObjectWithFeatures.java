@@ -99,6 +99,28 @@ public class ObjectWithFeatures extends ObjectWithId {
         addToMapList(modifiers, modifier.getId(), modifier);
     }
 	
+	public void addModifierFrom(ObjectWithFeatures source, String modifierId) {
+		List<Modifier> list = source.modifiers.get(modifierId);
+		if (list != null) {
+			for (Modifier m : list) {
+				this.addModifier(m);
+			}
+		}
+	}
+	
+	public void addModifierFrom(ObjectWithFeatures source, String modifierId, ObjectWithFeatures filterObj) {
+        List<Modifier> list = source.modifiers.get(modifierId);
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+        for (int i=0; i<list.size(); i++) {
+            Modifier m = list.get(i);
+            if (m.canAppliesTo(filterObj)) {
+            	this.addModifier(m);
+            }
+        }
+	}
+    
 	private <T> void addToMapList(java.util.Map<String,List<T>> mapList, String id, T obj) {
 	    List<T> list = mapList.get(id);
 	    if (list == null) {
@@ -207,6 +229,19 @@ public class ObjectWithFeatures extends ObjectWithId {
 		return base;
     }
 
+	public float applyModifiers(final float base) {
+		float b = base;
+		for (Entry<String, List<Modifier>> modifiersEntryList : modifiers.entrySet()) {
+			if (modifiersEntryList.getValue() == null || modifiersEntryList.getValue().isEmpty()) {
+				continue;
+			}
+			for (Modifier m : modifiersEntryList.getValue()) {
+				b = m.apply(b);
+			}
+		}
+		return b;
+	}
+    
     public void addFeaturesAndOverwriteExisted(ObjectWithFeatures parent) {
     	for (Entry<String, List<Ability>> entrySet : parent.abilities.entrySet()) {
     		this.abilities.put(entrySet.getKey(), new ArrayList<Ability>(entrySet.getValue()));

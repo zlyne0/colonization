@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
@@ -97,6 +98,7 @@ public class Specification {
 	public static final Options options = new Options();
 	public static final MapIdEntities<OptionGroup> optionGroupEntities = MapIdEntities.linkedMapIdEntities();
 	
+	public final MapIdEntities<Modifier> modifiers = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<ResourceType> resourceTypes = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<GoodsType> goodsTypes = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<TileType> tileTypes = MapIdEntities.linkedMapIdEntities();
@@ -226,7 +228,8 @@ public class Specification {
 		}
 	}
 
-    private void clear() {
+    private void clearReferences() {
+    	modifiers.clear();
     	tileTypes.clear();
     	tileImprovementTypes.clear();
     	unitTypes.clear();
@@ -251,6 +254,8 @@ public class Specification {
 		private static final String DIFFICULTY_LEVEL = "difficultyLevel";
 
 		public Xml() {
+			addNodeForMapIdEntities("modifiers", "modifiers", Modifier.class);
+			
             addNodeForMapIdEntities("resource-types", "resourceTypes", ResourceType.class);
             addNodeForMapIdEntities("goods-types", "goodsTypes", GoodsType.class);
             addNodeForMapIdEntities("tile-types", "tileTypes", TileType.class);
@@ -269,7 +274,7 @@ public class Specification {
         public void startElement(XmlNodeAttributes attr) {
 		    Specification specification = Specification.instance;
 		    specification.difficultyLevel = attr.getStrAttribute(DIFFICULTY_LEVEL);
-		    specification.clear();
+		    specification.clearReferences();
 		    nodeObject = specification;
 		}
 

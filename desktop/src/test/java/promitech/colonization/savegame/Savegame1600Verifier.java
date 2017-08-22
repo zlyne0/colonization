@@ -289,6 +289,7 @@ public class Savegame1600Verifier {
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
 		
+		verifySpecificationModifiers(specification);
 		verifyOptions(Specification.options);
 		
         assertEquals(42, Specification.instance.unitTypes.size());
@@ -311,6 +312,19 @@ public class Savegame1600Verifier {
         verifySpecificationUnitTypes(specification);
         verifySpecificationFoundingFathers(specification);
     }
+
+	private void verifySpecificationModifiers(Specification spec) {
+		assertNotNull(spec.modifiers.getById("model.modifier.smallMovementPenalty"));
+		assertNotNull(spec.modifiers.getById("model.modifier.bigMovementPenalty"));
+		assertNotNull(spec.modifiers.getById("model.modifier.artilleryInTheOpen"));
+		assertNotNull(spec.modifiers.getById("model.modifier.attackBonus"));
+		assertNotNull(spec.modifiers.getById("model.modifier.fortified"));
+		assertNotNull(spec.modifiers.getById("model.modifier.artilleryAgainstRaid"));
+		assertNotNull(spec.modifiers.getById("model.modifier.amphibiousAttack"));
+		assertNotNull(spec.modifiers.getById("model.modifier.colonyGoodsParty"));
+		assertNotNull(spec.modifiers.getById("model.goods.food"));
+		assertNotNull(spec.modifiers.getById("model.modifier.shipTradePenalty"));
+	}
 
 	private void verifyOptions(Options options) {
 		int temperature = options.getIntValue(MapGeneratorOptions.TEMPERATURE);

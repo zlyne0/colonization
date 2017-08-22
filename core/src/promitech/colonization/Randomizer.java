@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -77,8 +78,7 @@ public final class Randomizer {
 		return col.get(index);
 	}
 
-	public Random getRand() {
-		return rand;
+	public <LIST_ELEMENT_TYPE> void shuffle(List<LIST_ELEMENT_TYPE> list) {
+		Collections.shuffle(list, rand);
 	}
-	
 }
