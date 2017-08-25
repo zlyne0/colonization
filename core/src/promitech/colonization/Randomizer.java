@@ -5,19 +5,24 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
+import com.badlogic.gdx.math.RandomXS128;
+
 import net.sf.freecol.common.model.specification.WithProbability;
 
 public final class Randomizer {
 
 	private static final Randomizer instance = new Randomizer();
 	
-	private final Random rand;
+	private Random rand;
 	
+	public static void changeRandomObject(Random random) {
+	    instance.rand = random;
+	}
 	
 	private Randomizer() {
-		rand = new Random(System.currentTimeMillis());
+		rand = new RandomXS128(System.currentTimeMillis());
 	}
-
+	
 	public static Randomizer instance() {
 		return instance;
 	}
