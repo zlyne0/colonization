@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -179,5 +180,10 @@ public class IndianSettlement extends Settlement {
 	@Override
 	public ProductionSummary productionSummary() {
 		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public List<Unit> settlementWorkers() {
+		return Collections.emptyList();
 	}
 }

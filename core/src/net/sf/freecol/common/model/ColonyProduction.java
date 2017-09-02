@@ -48,7 +48,7 @@ class ColonyProduction {
         	globalProductionConsumption.addGoods(ps.realProduction);
         }
         
-        for (Unit worker : colony.colonyWorkers) {
+        for (Unit worker : colony.settlementWorkers()) {
         	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
         		if (uc.getId().equals(GoodsType.FOOD)) {
         			if (globalProductionConsumption.decreaseIfHas(GoodsType.FISH, uc.getQuantity())) {

@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Randomizer;
@@ -115,6 +117,8 @@ public abstract class Settlement extends ObjectWithId {
         return hasAbility(Ability.BOMBARD_SHIPS);
     }
 
+    public abstract List<Unit> settlementWorkers();
+    
     public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);

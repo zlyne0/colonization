@@ -332,6 +332,14 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return unitType.isOffensive() || unitRole.isOffensive();
     }
     
+	public boolean isArmed() {
+        return hasAbility(Ability.ARMED);
+	}
+    
+    public boolean isDefensiveUnit() {
+        return (unitType.isDefensive() || unitRole.isDefensive()) && !isCarrier();
+    }
+	
     /**
      * Get the visible amount of goods that is carried by this unit.
      *

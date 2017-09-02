@@ -63,6 +63,10 @@ public class UnitRole extends ObjectWithFeatures {
         return hasModifier(Modifier.OFFENCE);
     }
 	
+	public boolean isDefensive() {
+		return hasModifier(Modifier.DEFENCE);
+	}
+    
 	public boolean isCompatibleWith(UnitRole role) {
 		if (role == null) {
 			return false;

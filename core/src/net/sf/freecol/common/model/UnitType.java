@@ -134,6 +134,10 @@ public class UnitType extends BuildableType {
         return getBaseOffence() > UnitType.DEFAULT_OFFENCE;
     }
 	
+	public boolean isDefensive() {
+		return getBaseDefence() > UnitType.DEFAULT_DEFENCE;
+	}
+    
     public int getBaseOffence() {
         return offence;
     }

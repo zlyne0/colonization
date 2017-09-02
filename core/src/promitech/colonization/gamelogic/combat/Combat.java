@@ -22,9 +22,13 @@ class Combat {
 		greatResult = false;
 		
 		offencePower = getOffencePower(attacker, defender);
-		defencePower = getDefencePower(attacker, defender);
+		defencePower = getDefencePower(defender);
 
 		winPropability = offencePower / (offencePower + defencePower);
+	}
+	
+	public void init(Unit attacker, Tile tile) {
+		Unit defender = getTileDefender(tile);
 	}
 	
 	void generateAttackResult(float r, float winVal) {
@@ -64,7 +68,7 @@ class Combat {
 	
 	void doCombat(Unit attacker, Unit defender) {
 		float offencePower = getOffencePower(attacker, defender);
-		float defencePower = getDefencePower(attacker, defender);
+		float defencePower = getDefencePower(defender);
 		
 		float victoryPropability = offencePower / (offencePower + defencePower);
 		System.out.println("victory = " + victoryPropability);
@@ -76,8 +80,60 @@ class Combat {
 	}
 	
 	private boolean canDefenderEvadeAttack() {
+		// TODO:
 		return false;
 	}
+	
+	Unit getTileDefender(Tile tile) {
+		Unit defender = null;
+		float defenderPower = 0;
+		
+		for (Unit u : tile.getUnits().entities()) {
+			float p = getDefencePower(u);
+			if (betterDefender(defender, defenderPower, u, p)) {
+				defenderPower = p;
+				defender = u;
+			}
+		}
+		if (defender == null && tile.hasSettlement()) {
+			for (Unit u : tile.getSettlement().settlementWorkers()) {
+				float p = getDefencePower(u);
+				if (betterDefender(defender, defenderPower, u, p)) {
+					defenderPower = p;
+					defender = u;
+				}
+			}
+			if (defender == null) {
+				throw new IllegalStateException(
+					"no worker in settlement: " + tile.getSettlement().getId() + 
+					", tile: " + tile.getId()
+				);
+			}
+		}		
+		if (defender == null) {
+			throw new IllegalStateException("no defender on tile " + tile);
+		}
+		return defender;
+	}
+	
+    private boolean betterDefender(
+		Unit defender, float defenderPower,
+        Unit other, float otherPower) 
+    {
+    	if (defender == null) {
+    		return true;
+    	} else if (defender.isPerson() && other.isPerson() && !defender.isArmed() && other.isArmed()) {
+            return true;
+        } else if (defender.isPerson() && other.isPerson() && defender.isArmed() && !other.isArmed()) {
+            return false;
+        } else if (!defender.isDefensiveUnit() && other.isDefensiveUnit()) {
+            return true;
+        } else if (defender.isDefensiveUnit() && !other.isDefensiveUnit()) {
+            return false;
+        } else {
+            return defenderPower < otherPower;
+        }
+    }
 	
 	public float getOffencePower(Unit attacker, Unit defender) {
 		ObjectWithFeatures mods = new ObjectWithFeatures("combat"); 
@@ -114,7 +170,7 @@ class Combat {
 		return mods.applyModifiers(0);
 	}
 	
-	public float getDefencePower(Unit attacker, Unit defender) {
+	public float getDefencePower(Unit defender) {
 		ObjectWithFeatures mods = new ObjectWithFeatures("defenceCombat");
 
 		mods.addModifier(new Modifier(
@@ -130,7 +186,7 @@ class Combat {
         if (defender.isNaval()) {
             addNavalDefensiveModifiers(defender, mods);
         } else {
-            addLandDefensiveModifiers(attacker, defender, mods);
+            addLandDefensiveModifiers(defender, mods);
         }
         return mods.applyModifiers(0);
 	}
@@ -147,7 +203,7 @@ class Combat {
 		}
 	}
 	
-	private void addLandDefensiveModifiers(Unit attacker, Unit defender, ObjectWithFeatures mods) {
+	private void addLandDefensiveModifiers(Unit defender, ObjectWithFeatures mods) {
 		Tile tile = defender.getTileLocationOrNull();
 		mods.addModifierFrom(tile.getType(), Modifier.DEFENCE);
 		
@@ -198,6 +254,7 @@ class Combat {
 				spec.modifiers.getById(Modifier.ARTILLERY_IN_THE_OPEN)
 			);
 		}
+		
 	}
 	
 	private void addNavalOffenceModifiers(Unit offenceUnit, ObjectWithFeatures mods) {

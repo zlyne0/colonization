@@ -2,6 +2,7 @@ package promitech.colonization.gamelogic.combat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
+import static org.junit.Assert.*;
 
 import java.io.IOException;
 
@@ -57,6 +58,7 @@ public class CombatTest {
     	
     	Combat combat = new Combat();
     	combat.init(attacker, defenderUnit);
+    	combat.init(attacker, defenderUnit.getTile());
     	
     	System.out.println("dutch vs indian = " + combat.getOffencePower()
     			+ " vs " + combat.getDefencePower());
@@ -70,6 +72,25 @@ public class CombatTest {
 		// when
 
 		// then
+	}
+    
+    @Test 
+	public void dragonUnitVsIndianUnit() throws Exception {
+		// given
+    	Player attackerPlayer = game.players.getById("player:1");
+    	Unit attacker = attackerPlayer.units.getById("unit:6764");
+
+    	Player defenderPlayer = game.players.getById("player:40");
+    	Unit defenderUnit = defenderPlayer.units.getById("unit:5967");
+    	
+		// when
+    	Combat combat = new Combat();
+    	combat.init(attacker, defenderUnit);
+
+		// then
+        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.78f, offset(0.01f));
 	}
     
     @Test
@@ -87,9 +108,9 @@ public class CombatTest {
         combat.init(spanishAttacker, defenderUnit);
 
         // then
-        assertThat(combat.getWinPropability()).isEqualTo(0.84f, offset(0.01f));
-        assertThat(combat.getOffencePower()).isEqualTo(7.0f, offset(0.01f));
+        assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
         assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.89f, offset(0.01f));
     }
     
     @Test
@@ -109,18 +130,95 @@ public class CombatTest {
         combat.init(spanishAttacker, defenderUnit);
 
         // then
-        assertThat(combat.getWinPropability()).isEqualTo(0.58f, offset(0.01f));
-        assertThat(combat.getOffencePower()).isEqualTo(1.75f, offset(0.01f));
+        assertThat(combat.getOffencePower()).isEqualTo(2.62f, offset(0.01f));
         assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.67f, offset(0.01f));
     }
     
+    @Test 
+	public void artilleryOutsideSettlementVsIndianSettlement() throws Exception {
+		// given
+
+		// when
+
+		// then
+    	fail("not implements");
+	}
     
-    // TODO: test case dragon vs indian settlement
-    // TODO: test case dragon vs colony
-    // TODO: test case colony vs pirate
-    // TODO: test case colony vs fregate
-    // TODO: test case colony vs caravel
-    // TODO: test case altilery vs indian
-    // TODO: test case altilery vs indian settlement
-    // TODO: setlement Automatic defensive role (e.g. Revere)
+    @Test 
+	public void dragonVsIndainSettlement() throws Exception {
+		// given
+
+		// when
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void dragonVsColony() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void dragonVsEmptyColony() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void colonyVsPirate() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void colonyVsFregate() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void colonyVsCaravel() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+    
+    @Test 
+	public void indianVsColony() throws Exception {
+		// given
+
+		// when
+		
+
+		// then
+    	fail("not implements");
+	}
+	
 }

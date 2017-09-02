@@ -60,7 +60,7 @@ public class Colony extends Settlement {
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
-    final List<Unit> colonyWorkers = new ArrayList<Unit>();
+    private final List<Unit> colonyWorkers = new ArrayList<Unit>();
     private int sonsOfLiberty = 0;
     private int tories = 0;
     private int productionBonus = 0;
@@ -1074,6 +1074,11 @@ public class Colony extends Settlement {
 			}
 		}
 		return false;
+	}
+	
+	@Override
+	public List<Unit> settlementWorkers() {
+		return colonyWorkers;
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
