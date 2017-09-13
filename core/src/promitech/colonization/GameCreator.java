@@ -84,12 +84,6 @@ public class GameCreator {
 		
 		for (Player player : guiGameModel.game.players.entities()) {
 			player.fogOfWar.resetFogOfWar(player);
-			
-			if (player.isIndian()) {
-				for (Unit indianUnit : player.units.entities()) {
-					indianUnit.addIndianUnitToSettlement();
-				}
-			}
 		}
 	}
 	

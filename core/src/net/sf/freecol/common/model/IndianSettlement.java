@@ -1,10 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
@@ -27,7 +24,7 @@ public class IndianSettlement extends Settlement {
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
-    public final List<Unit> units = new ArrayList<Unit>();
+    private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
     
     public IndianSettlement(IdGenerator idGenerator) {
     	super(idGenerator.nextId(IndianSettlement.class));
@@ -59,6 +56,11 @@ public class IndianSettlement extends Settlement {
     public boolean hasAbility(String abilityCode) {
         return false;
     }
+
+	@Override
+	public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
+		mods.addModifierFrom(settlementType, modifierCode);
+	}
     
     public String getImageKey() {
     	String st = owner.nation().getId();
@@ -97,6 +99,10 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_NAME = "name";
 
+		public Xml() {
+			addNodeForMapIdEntities("units", Unit.class);			
+		}
+		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
             IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull(ATTR_ID));
@@ -158,7 +164,7 @@ public class IndianSettlement extends Settlement {
     }
 
 	@Override
-	public int applyModifiers(String abilityCode, int val) {
+	public int applyModifiers(String modifierCode, int val) {
 		throw new IllegalStateException("not implemented");
 	}
 
@@ -183,7 +189,17 @@ public class IndianSettlement extends Settlement {
 	}
 
 	@Override
-	public List<Unit> settlementWorkers() {
-		return Collections.emptyList();
+	public MapIdEntities<Unit> getUnits() {
+		return units;
+	}
+
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
 	}
 }

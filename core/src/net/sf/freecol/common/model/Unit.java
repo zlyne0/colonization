@@ -886,15 +886,6 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
-	public void addIndianUnitToSettlement() {
-		if (indianSettlement != null) {
-			IndianSettlement settlement = (IndianSettlement)(owner.settlements.getByIdOrNull(indianSettlement));
-			if (settlement != null) {
-				settlement.units.add(this);
-			}
-		}
-	}
-
 	public void setIndianSettlement(IndianSettlement settlement) {
 		this.indianSettlement = settlement.getId();
 	}

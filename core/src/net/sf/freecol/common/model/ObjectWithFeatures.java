@@ -278,6 +278,24 @@ public class ObjectWithFeatures extends ObjectWithId {
     	return true;
     }
     
+    public String modifiersToString() {
+    	String st = "";
+    	for (Entry<String, List<Modifier>> entry : modifiers.entrySet()) {
+    		if (st.length() > 0) {
+    			st += ", ";
+    		}
+    		st += "modifier name: " + entry.getKey();
+    		st += "[ ";
+    		if (entry.getValue() != null) {
+    			for (Modifier m : entry.getValue()) {
+    				st += "[" + m.toString() + "], ";
+    			}
+    		}
+    		st += " ]";
+    	}
+    	return st;
+    }
+    
     public static class Xml {
 		public static void abstractAddNodes(XmlNodeParser<? extends ObjectWithFeatures> nodeParser) {
 			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

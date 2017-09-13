@@ -1,13 +1,11 @@
 package net.sf.freecol.common.model;
 
-import java.util.List;
-
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.resources.Messages;
 
-public abstract class Settlement extends ObjectWithId {
+public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
     public static final int FOOD_PER_COLONIST = 200;
     
@@ -46,8 +44,7 @@ public abstract class Settlement extends ObjectWithId {
 		for (int i=0; i<settlementUnitsNumber; i++) {
 			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
 			unit.setIndianSettlement(indianSettlement);
-			unit.changeUnitLocation(indianSettlement.tile);
-			indianSettlement.units.add(unit);
+			unit.changeUnitLocation(indianSettlement);
 		}
 	}
     
@@ -117,8 +114,6 @@ public abstract class Settlement extends ObjectWithId {
         return hasAbility(Ability.BOMBARD_SHIPS);
     }
 
-    public abstract List<Unit> settlementWorkers();
-    
     public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);
@@ -129,5 +124,7 @@ public abstract class Settlement extends ObjectWithId {
 	
 	public abstract void initMaxPossibleProductionOnTile(Tile tile);
 
-	public abstract ProductionSummary productionSummary();	
+	public abstract ProductionSummary productionSummary();
+
+	public abstract void addModifiersTo(ObjectWithFeatures mods, String modifierCode);
 }

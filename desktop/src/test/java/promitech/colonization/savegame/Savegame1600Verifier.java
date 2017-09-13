@@ -8,7 +8,9 @@ import org.assertj.core.api.AbstractAssert;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.ResourceType;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
@@ -129,6 +131,13 @@ public class Savegame1600Verifier {
         
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
+        verifyIndianSettlement(game);
+	}
+
+	private void verifyIndianSettlement(Game game) {
+		Player player = game.players.getById("player:58");
+		Settlement settlement = player.settlements.getById("indianSettlement:6019");
+		assertThat(settlement.getUnits().size()).isEqualTo(7);
 	}
 
 	private void verifyAIContainer(Game game) {
@@ -382,6 +391,9 @@ public class Savegame1600Verifier {
         NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
         assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
         assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+        SettlementType colonySettlementType = tradeNationType.settlementTypes.getById("model.settlement.colony");
+        assertTrue(colonySettlementType.hasModifier(Modifier.DEFENCE));
+        assertTrue(colonySettlementType.hasAbility(Ability.CONSUME_ALL_OR_NOTHING));
         
         EuropeanNationType buildingNationType = (EuropeanNationType)specification.nationTypes.getById("model.nationType.building");
         assertEquals(3, buildingNationType.getStartedUnits(true).size());

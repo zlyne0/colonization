@@ -60,7 +60,7 @@ public class Colony extends Settlement {
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
-    private final List<Unit> colonyWorkers = new ArrayList<Unit>();
+    private final MapIdEntities<Unit> colonyWorkers = new MapIdEntities<Unit>();
     private int sonsOfLiberty = 0;
     private int tories = 0;
     private int productionBonus = 0;
@@ -127,7 +127,7 @@ public class Colony extends Settlement {
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
-    		colonyWorkers.addAll(building.workers.entities());
+    		colonyWorkers.addAll(building.workers);
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.getWorker() != null) {
@@ -149,6 +149,11 @@ public class Colony extends Settlement {
     	for (FoundingFather ff : owner.foundingFathers.entities()) {
     	    colonyUpdatableFeatures.addFeatures(ff);
     	}
+    	colonyUpdatableFeatures.addFeatures(settlementType);
+    }
+    
+    public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
+    	mods.addModifierFrom(colonyUpdatableFeatures, modifierCode);
     }
     
     @Override
@@ -339,7 +344,8 @@ public class Colony extends Settlement {
                 	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {
-            	Unit unit = colonyWorkers.get(0);
+            	
+            	Unit unit = colonyWorkers.first();
             	removeWorkerFromWorkPlace(unit);
             	owner.units.removeId(unit);
             	System.out.println("unit[" + unit + "] was removed from colony[" + getName() + "]");
@@ -1075,10 +1081,24 @@ public class Colony extends Settlement {
 		}
 		return false;
 	}
+
+	public Collection<Unit> settlementWorkers() {
+		return colonyWorkers.entities();
+	}
 	
 	@Override
-	public List<Unit> settlementWorkers() {
+	public MapIdEntities<Unit> getUnits() {
 		return colonyWorkers;
+	}
+
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
@@ -1156,5 +1176,4 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
-
 }

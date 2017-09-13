@@ -122,7 +122,7 @@ public class Modifier implements Identifiable {
     }
 	
 	public String toString() {
-	    return "modifier id: " + id + ", modifierType: " + modifierType;
+	    return "id: " + id + ", modifierType: " + modifierType + ", value: " + value;
 	}
 	
 	public static class Xml extends XmlNodeParser<Modifier> {

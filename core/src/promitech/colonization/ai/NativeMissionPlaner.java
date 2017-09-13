@@ -19,7 +19,7 @@ public class NativeMissionPlaner {
 			IndianSettlement tribe = (IndianSettlement)settlement;
 			
 			units.clear();
-			for (Unit tribeUnit : tribe.units) {
+			for (Unit tribeUnit : tribe.getUnits().entities()) {
 				if (!missionsContainer.isUnitBlockedForMission(tribeUnit)) {
 					units.add(tribeUnit);
 				}
@@ -27,7 +27,9 @@ public class NativeMissionPlaner {
 			
 			if (units.size() > tribe.settlementType.getMinimumSize() - 1) {
 				for (int i = tribe.settlementType.getMinimumSize() - 1; i < units.size(); i++) {
-					WanderMission wanderMission = new WanderMission(units.get(i));
+					Unit unitToWander = units.get(i);
+					unitToWander.changeUnitLocation(settlement.tile);
+					WanderMission wanderMission = new WanderMission(unitToWander);
 					missionsContainer.blockUnitsForMission(wanderMission);
 					missionsContainer.addMission(wanderMission);
 				}

@@ -1,5 +1,6 @@
 package promitech.colonization.gamelogic.combat;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -17,18 +18,23 @@ class Combat {
 	private float defencePower;
 	private float winPropability;
 	
-	void init(Unit attacker, Unit defender) {
+	private void init(Unit attacker, Unit defender, Tile defenderTile) {
 		combatResult = null;
 		greatResult = false;
 		
 		offencePower = getOffencePower(attacker, defender);
-		defencePower = getDefencePower(defender);
+		defencePower = getDefencePower(defender, defenderTile);
 
 		winPropability = offencePower / (offencePower + defencePower);
 	}
 	
+	public void init(Colony colony, Tile tile) {
+		
+	}
+	
 	public void init(Unit attacker, Tile tile) {
 		Unit defender = getTileDefender(tile);
+		init(attacker, defender, tile);
 	}
 	
 	void generateAttackResult(float r, float winVal) {
@@ -66,13 +72,13 @@ class Combat {
 		return false;
 	}
 	
-	void doCombat(Unit attacker, Unit defender) {
-		float offencePower = getOffencePower(attacker, defender);
-		float defencePower = getDefencePower(defender);
-		
-		float victoryPropability = offencePower / (offencePower + defencePower);
-		System.out.println("victory = " + victoryPropability);
-	}
+//	void doCombat(Unit attacker, Unit defender) {
+//		float offencePower = getOffencePower(attacker, defender);
+//		float defencePower = getDefencePower(defender);
+//		
+//		float victoryPropability = offencePower / (offencePower + defencePower);
+//		System.out.println("victory = " + victoryPropability);
+//	}
 	
 	private boolean isDefenderUnitBeached() {
 		// TODO Auto-generated method stub
@@ -89,15 +95,15 @@ class Combat {
 		float defenderPower = 0;
 		
 		for (Unit u : tile.getUnits().entities()) {
-			float p = getDefencePower(u);
+			float p = getDefencePower(u, tile);
 			if (betterDefender(defender, defenderPower, u, p)) {
 				defenderPower = p;
 				defender = u;
 			}
 		}
 		if (defender == null && tile.hasSettlement()) {
-			for (Unit u : tile.getSettlement().settlementWorkers()) {
-				float p = getDefencePower(u);
+			for (Unit u : tile.getSettlement().getUnits().entities()) {
+				float p = getDefencePower(u, tile);
 				if (betterDefender(defender, defenderPower, u, p)) {
 					defenderPower = p;
 					defender = u;
@@ -170,7 +176,7 @@ class Combat {
 		return mods.applyModifiers(0);
 	}
 	
-	public float getDefencePower(Unit defender) {
+	public float getDefencePower(Unit defender, Tile tileDefender) {
 		ObjectWithFeatures mods = new ObjectWithFeatures("defenceCombat");
 
 		mods.addModifier(new Modifier(
@@ -186,7 +192,7 @@ class Combat {
         if (defender.isNaval()) {
             addNavalDefensiveModifiers(defender, mods);
         } else {
-            addLandDefensiveModifiers(defender, mods);
+            addLandDefensiveModifiers(defender, mods, tileDefender);
         }
         return mods.applyModifiers(0);
 	}
@@ -203,9 +209,11 @@ class Combat {
 		}
 	}
 	
-	private void addLandDefensiveModifiers(Unit defender, ObjectWithFeatures mods) {
-		Tile tile = defender.getTileLocationOrNull();
-		mods.addModifierFrom(tile.getType(), Modifier.DEFENCE);
+	private void addLandDefensiveModifiers(Unit defender, ObjectWithFeatures mods, Tile defenderTile) {
+		mods.addModifierFrom(defenderTile.getType(), Modifier.DEFENCE);
+		if (defenderTile.hasSettlement()) {
+			defenderTile.getSettlement().addModifiersTo(mods, Modifier.DEFENCE);
+		}
 		
         if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {
 			mods.addModifier(
@@ -295,5 +303,9 @@ class Combat {
 
 	public float getWinPropability() {
 		return winPropability;
+	}
+	
+	public String toString() {
+		return "offence: " + offencePower + ", defence: " + defencePower + ", winPropability: " + winPropability;
 	}
 }

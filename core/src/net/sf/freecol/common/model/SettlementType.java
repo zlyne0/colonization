@@ -190,6 +190,7 @@ public class SettlementType extends ObjectWithFeatures {
 		private static final String ATTR_CAPITAL = "capital";
 
 		public Xml() {
+			ObjectWithFeatures.Xml.abstractAddNodes(this);
     	}
     	
         @Override
