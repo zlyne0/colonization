@@ -1,7 +1,5 @@
 package promitech.colonization.gamelogic.combat;
 
-import static net.sf.freecol.common.model.UnitRole.DEFAULT_UNIT_ROLE_COUNT;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -13,7 +11,6 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 
@@ -34,7 +31,7 @@ class Combat {
 		greatResult = false;
 		
 		offencePower = getOffencePower(attacker, defender);
-		defencePower = getDefencePower(defender, defenderTile);
+		defencePower = getDefencePower(attacker, defender, defenderTile);
 
 		winPropability = offencePower / (offencePower + defencePower);
 	}
@@ -44,7 +41,7 @@ class Combat {
 	}
 	
 	public void init(Unit attacker, Tile tile) {
-		Unit defender = getTileDefender(tile);
+		Unit defender = getTileDefender(attacker, tile);
 		init(attacker, defender, tile);
 	}
 	
@@ -101,12 +98,12 @@ class Combat {
 		return false;
 	}
 	
-	Unit getTileDefender(Tile tile) {
+	Unit getTileDefender(Unit attacker, Tile tile) {
 		Unit defender = null;
 		float defenderPower = 0;
 		
 		for (Unit u : tile.getUnits().entities()) {
-			float p = getDefencePower(u, tile);
+			float p = getDefencePower(attacker, u, tile);
 			if (betterDefender(defender, defenderPower, u, p)) {
 				defenderPower = p;
 				defender = u;
@@ -114,7 +111,7 @@ class Combat {
 		}
 		if (defender == null && tile.hasSettlement()) {
 			for (Unit u : tile.getSettlement().getUnits().entities()) {
-				float p = getDefencePower(u, tile);
+				float p = getDefencePower(attacker, u, tile);
 				if (betterDefender(defender, defenderPower, u, p)) {
 					defenderPower = p;
 					defender = u;
@@ -187,7 +184,7 @@ class Combat {
 		return mods.applyModifiers(0);
 	}
 	
-	public float getDefencePower(Unit defender, Tile tileDefender) {
+	public float getDefencePower(Unit attacker, Unit defender, Tile tileDefender) {
 		ObjectWithFeatures mods = new ObjectWithFeatures("defenceCombat");
 
 		mods.addModifier(new Modifier(
@@ -203,7 +200,7 @@ class Combat {
         if (defender.isNaval()) {
             addNavalDefensiveModifiers(defender, mods);
         } else {
-            addLandDefensiveModifiers(defender, mods, tileDefender);
+            addLandDefensiveModifiers(attacker, defender, mods, tileDefender);
         }
         return mods.applyModifiers(0);
 	}
@@ -220,27 +217,28 @@ class Combat {
 		}
 	}
 	
-	private void addLandDefensiveModifiers(Unit defender, ObjectWithFeatures mods, Tile defenderTile) {
+	private void addLandDefensiveModifiers(Unit attacker, Unit defender, ObjectWithFeatures mods, Tile defenderTile) {
 		mods.addModifierFrom(defenderTile.getType(), Modifier.DEFENCE);
 		
 		if (defenderTile.hasSettlement()) {
 			defenderTile.getSettlement().addModifiersTo(mods, Modifier.DEFENCE);
 			
-			// TODO:
 			// Artillery defence bonus against an Indian raid
+			if (defender.hasAbility(Ability.BOMBARD) 
+				&& attacker != null 
+				&& attacker.getOwner().isIndian()) 
+			{
+				mods.addModifier(Specification.instance.modifiers.getById(Modifier.ARTILLERY_AGAINST_RAID));
+			}
 			
-
 			addSettlementAutoArmDefensiveModifiers(mods, defender, defenderTile.getSettlement());
 		} else {
-			
+			if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {
+				mods.addModifier(
+					Specification.instance.modifiers.getById(Modifier.ARTILLERY_IN_THE_OPEN)
+				);
+			}
 		}
-		
-		
-        if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {
-			mods.addModifier(
-				Specification.instance.modifiers.getById(Modifier.ARTILLERY_IN_THE_OPEN)
-			);
-        }
 	}
 	
 	/**

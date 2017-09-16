@@ -278,8 +278,8 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(23.5f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.06f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(47.0f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
 	}
     
 /*    
