@@ -300,8 +300,6 @@ public class CombatTest {
     	Combat combat = new Combat();
     	combat.init(indianUnit, colonyTile);
 
-    	System.out.println("combat = " + combat);
-    	
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
         assertThat(combat.getDefencePower()).isEqualTo(47.0f, offset(0.01f));

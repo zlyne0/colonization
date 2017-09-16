@@ -36,7 +36,7 @@ public class GoodsContainer {
     	return goods.hasMoreOrEquals(g);
     }
 
-    public boolean hasGoodsQuantity(List<RequiredGoods> requiredGoods) {
+    public boolean hasGoodsQuantity(MapIdEntities<RequiredGoods> requiredGoods) {
     	return goods.hasMoreOrEquals(requiredGoods);
     }
     

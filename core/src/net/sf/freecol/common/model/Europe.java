@@ -12,9 +12,9 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
-import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
 import net.sf.freecol.common.model.specification.options.UnitOption;
@@ -287,8 +287,8 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			return Integer.MAX_VALUE;
 		}
 		int price = unitType.getPrice();
-		for (Goods goods : unitRole.requiredGoods.entities()) {
-			price += owner.market().getBidPrice(goods.getId(), goods.getAmount() * unitRole.getMaximumCount());
+		for (RequiredGoods goods : unitRole.requiredGoods.entities()) {
+			price += owner.market().getBidPrice(goods.getId(), goods.amount * unitRole.getMaximumCount());
 		}
 		return price * amount;
 	}

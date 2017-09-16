@@ -195,8 +195,8 @@ public class ProductionSummary {
         return true;
     }
     
-	public boolean hasMoreOrEquals(List<RequiredGoods> requiredGoods) {
-		for (RequiredGoods rg : requiredGoods) {
+	public boolean hasMoreOrEquals(MapIdEntities<RequiredGoods> requiredGoods) {
+		for (RequiredGoods rg : requiredGoods.entities()) {
 			if (goods.get(rg.getId(), 0) < rg.amount) {
 				return false;
 			}

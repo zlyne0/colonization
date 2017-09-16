@@ -427,8 +427,8 @@ public class Savegame1600Verifier {
         
         assertEquals(3, dragoonUnitRole.requiredAbilitiesAmount());
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
-        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
-        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").amount);
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").amount);
     }
 
     private void verifySpecificationGameDifficultyOptions(Specification specification) {
