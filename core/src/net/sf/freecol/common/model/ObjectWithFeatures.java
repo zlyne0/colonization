@@ -130,8 +130,12 @@ public class ObjectWithFeatures extends ObjectWithId {
 	    list.add(obj);
 	}
 	
-    public boolean hasAbility(String abilityCode) {
-    	return hasAbility(abilityCode, true);
+    public boolean hasAbility(String code) {
+    	return hasAbility(code, true);
+    }
+
+    public void getAbilities(String code, List<Ability> abilities) {
+    	getAbilities(code, true, abilities);
     }
 
 	public boolean hasAbility(String abilityCode, boolean value) {
@@ -147,7 +151,21 @@ public class ObjectWithFeatures extends ObjectWithId {
         }
         return false;
 	}
-    
+
+	public void getAbilities(String code, boolean value, List<Ability> returnedAbilities) {
+        List<Ability> list = abilities.get(code);
+        if (list == null || list.isEmpty()) {
+            return;
+        }
+
+        for (int i=0; i<list.size(); i++) {
+        	Ability a = list.get(i);
+        	if (a.isValueEquals(value)) {
+        		returnedAbilities.add(a);
+        	}
+        }
+	}
+	
 	public boolean hasAbility(Ability ability) {
 		List<Ability> list = abilities.get(ability.getId());
         if (list == null || list.isEmpty()) {
@@ -285,10 +303,10 @@ public class ObjectWithFeatures extends ObjectWithId {
     			st += ", ";
     		}
     		st += "modifier name: " + entry.getKey();
-    		st += "[ ";
+    		st += "[\n";
     		if (entry.getValue() != null) {
     			for (Modifier m : entry.getValue()) {
-    				st += "[" + m.toString() + "], ";
+    				st += "[" + m.toString() + "],\n";
     			}
     		}
     		st += " ]";

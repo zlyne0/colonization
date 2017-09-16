@@ -85,6 +85,12 @@ public class ProductionSummary {
         }
     }
     
+	public void decreaseAllToZero() {
+		for (Entry<String> gsEntry : goods.entries()) {
+			goods.put(gsEntry.key, 0);
+		}
+	}
+    
     public void setZero(String goodsId) {
     	goods.put(goodsId, 0);
     }

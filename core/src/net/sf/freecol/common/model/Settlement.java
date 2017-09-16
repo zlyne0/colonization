@@ -114,6 +114,12 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
         return hasAbility(Ability.BOMBARD_SHIPS);
     }
 
+    public boolean hasGoodsToEquipRole(UnitRole unitRole) {
+    	return UnitRoleLogic.hasContainerRequiredGoods(getGoodsContainer(), unitRole);
+    }
+    
+    public abstract GoodsContainer getGoodsContainer();
+    
     public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);

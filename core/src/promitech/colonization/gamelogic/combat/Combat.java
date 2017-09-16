@@ -1,12 +1,21 @@
 package promitech.colonization.gamelogic.combat;
 
+import static net.sf.freecol.common.model.UnitRole.DEFAULT_UNIT_ROLE_COUNT;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.Scope;
 
 class Combat {
 	enum CombatResult {
@@ -17,6 +26,8 @@ class Combat {
 	private float offencePower;
 	private float defencePower;
 	private float winPropability;
+
+	private final List<Ability> automaticEquipmentAbilities = new ArrayList<Ability>();
 	
 	private void init(Unit attacker, Unit defender, Tile defenderTile) {
 		combatResult = null;
@@ -211,15 +222,54 @@ class Combat {
 	
 	private void addLandDefensiveModifiers(Unit defender, ObjectWithFeatures mods, Tile defenderTile) {
 		mods.addModifierFrom(defenderTile.getType(), Modifier.DEFENCE);
+		
 		if (defenderTile.hasSettlement()) {
 			defenderTile.getSettlement().addModifiersTo(mods, Modifier.DEFENCE);
+			
+			// TODO:
+			// Artillery defence bonus against an Indian raid
+			
+
+			addSettlementAutoArmDefensiveModifiers(mods, defender, defenderTile.getSettlement());
+		} else {
+			
 		}
+		
 		
         if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {
 			mods.addModifier(
 				Specification.instance.modifiers.getById(Modifier.ARTILLERY_IN_THE_OPEN)
 			);
         }
+	}
+	
+	/**
+	 * Paul Revere makes an unarmed colonist in a settlement pick up a
+	 * stock-piled musket if attacked, so the bonus should be applied for
+	 * unarmed colonists inside colonies where there are muskets available.
+	 * Natives can also auto-arm.
+	 * @param mods 
+	 */
+	private void addSettlementAutoArmDefensiveModifiers(ObjectWithFeatures mods, Unit defender, Settlement settlement) {
+		// unarm unit
+		if (!defender.unitRole.isDefaultRole()) {
+			return;
+		}
+		
+		automaticEquipmentAbilities.clear();
+		defender.getAbilities(Ability.AUTOMATIC_EQUIPMENT, automaticEquipmentAbilities);
+		
+		if (!automaticEquipmentAbilities.isEmpty()) {
+			for (Ability a : automaticEquipmentAbilities) {
+				for (Scope scope : a.getScopes()) {
+					UnitRole autoArmRole = Specification.instance.unitRoles.getById(scope.getType());
+					if (settlement.hasGoodsToEquipRole(autoArmRole)) {
+						mods.addModifierFrom(autoArmRole, Modifier.DEFENCE);
+						return;
+					}
+				}
+			}
+		}
 	}
 	
 	private void addLandOffenceModifiers(Unit offenceUnit, Unit defenderUnit, ObjectWithFeatures mods) {

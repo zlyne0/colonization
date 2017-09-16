@@ -45,6 +45,10 @@ public class Scope {
 		}
 		return !matchNegated;
 	}
+
+	public String getType() {
+		return type;
+	}
 	
 	public String toString() {
 		return "matchNegated = " + matchNegated + ", matchesNull = " + matchesNull 
@@ -98,5 +102,4 @@ public class Scope {
 			return "scope";
 		}
 	}
-
 }

@@ -28,6 +28,10 @@ public class GoodsContainer {
         return goods.getQuantity(type.getId());
     }
 
+    public boolean hasGoodsQuantity(String goodsId, int amount) {
+    	return goods.getQuantity(goodsId) >= amount;
+    }
+    
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
     }
@@ -86,6 +90,11 @@ public class GoodsContainer {
         updateTakenCargoSlots();
 	}
 	
+	public void decreaseAllToZero() {
+		goods.decreaseAllToZero();
+		updateTakenCargoSlots();
+	}
+    
     public int size() {
         return goods.size();
     }

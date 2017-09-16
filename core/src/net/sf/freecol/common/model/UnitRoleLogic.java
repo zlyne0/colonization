@@ -50,5 +50,13 @@ public class UnitRoleLogic {
 	    return required;
 	}
 	
+	public static boolean hasContainerRequiredGoods(GoodsContainer container, UnitRole role) {
+		for (Goods rg : role.requiredGoods.entities()) {
+			if (!container.hasGoodsQuantity(rg.getId(), rg.getAmount() * UnitRole.DEFAULT_UNIT_ROLE_COUNT)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
 }

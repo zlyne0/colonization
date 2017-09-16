@@ -252,6 +252,7 @@ public class Colony extends Settlement {
     	goodsContainer.decreaseGoodsQuantity(required);
     }
     
+    @Override
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }

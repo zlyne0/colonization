@@ -138,6 +138,12 @@ public class Savegame1600Verifier {
 		Player player = game.players.getById("player:58");
 		Settlement settlement = player.settlements.getById("indianSettlement:6019");
 		assertThat(settlement.getUnits().size()).isEqualTo(7);
+		
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.cotton", 150);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.food", 217);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.furs", 200);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
 	}
 
 	private void verifyAIContainer(Game game) {

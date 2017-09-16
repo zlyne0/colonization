@@ -211,13 +211,13 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(22.5f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(23.5f, offset(0.01f));
         assertThat(combat.getWinPropability()).isEqualTo(0.16f, offset(0.01f));
 	}
     
     
     @Test 
-	public void dragonVsEmptyColony() throws Exception {
+	public void dragonVsEmptyColonyAndAutoArm() throws Exception {
 		// given
     	Player attackerPlayer = game.players.getById("player:1");
     	Unit attacker = attackerPlayer.units.getById("unit:6764");
@@ -235,9 +235,34 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(5.5f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.45f, offset(0.01f));
+	}
+
+    @Test 
+	public void dragonVsEmptyColonyWithoutAutoArm() throws Exception {
+		// given
+    	Player attackerPlayer = game.players.getById("player:1");
+    	Unit attacker = attackerPlayer.units.getById("unit:6764");
+
+    	// remove artillery from colony
+    	Player spanish = game.players.getById("player:133");
+    	Unit spanishArtillery = spanish.units.getById("unit:6659");
+    	spanishArtillery.changeUnitLocation(game.map.getTile(29,57));
+    	
+		Tile colonyTile = game.map.getTile(29, 58);
+		colonyTile.getSettlement().getGoodsContainer().decreaseAllToZero();
+
+		// when
+    	Combat combat = new Combat();
+    	combat.init(attacker, colonyTile);
+
+		// then
+        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
         assertThat(combat.getDefencePower()).isEqualTo(4.5f, offset(0.01f));
         assertThat(combat.getWinPropability()).isEqualTo(0.5f, offset(0.01f));
 	}
+    
     
     @Test 
 	public void indianVsColony() throws Exception {
@@ -253,22 +278,11 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(22.5f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(23.5f, offset(0.01f));
         assertThat(combat.getWinPropability()).isEqualTo(0.06f, offset(0.01f));
 	}
     
 /*    
-
-    @Test 
-	public void dragonVsEmptyColonyWithAutoArm() throws Exception {
-		// given
-
-		// when
-		
-
-		// then
-    	fail("not implements");
-	}
     
     @Test 
 	public void colonyVsPirate() throws Exception {

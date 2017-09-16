@@ -791,6 +791,12 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    return false;
 	}
 	
+	public void getAbilities(String code, List<Ability> abilities) {
+		unitType.getAbilities(code, abilities);
+		unitRole.getAbilities(code, abilities);
+		owner.getFeatures().getAbilities(code, abilities);
+	}
+	
 	public void startImprovement(Tile tile, TileImprovementType improvement) {
 		workLeft = tile.getType().getBasicWorkTurns() + improvement.getAddWorkTurns();
 		if (getMovesLeft() < 1) {

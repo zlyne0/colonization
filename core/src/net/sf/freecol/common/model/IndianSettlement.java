@@ -25,9 +25,11 @@ public class IndianSettlement extends Settlement {
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
     private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
+    private GoodsContainer goodsContainer;
     
     public IndianSettlement(IdGenerator idGenerator) {
     	super(idGenerator.nextId(IndianSettlement.class));
+    	goodsContainer = new GoodsContainer();
     }
     
     public IndianSettlement(String id) {
@@ -89,6 +91,11 @@ public class IndianSettlement extends Settlement {
         return missionary != null;
     }
 
+	@Override
+	public GoodsContainer getGoodsContainer() {
+		return goodsContainer;
+	}
+    
     public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
@@ -100,7 +107,8 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_NAME = "name";
 
 		public Xml() {
-			addNodeForMapIdEntities("units", Unit.class);			
+			addNodeForMapIdEntities("units", Unit.class);
+			addNode(GoodsContainer.class, "goodsContainer");
 		}
 		
 		@Override
