@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.Modifier.ModifierPredicate;
 import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -220,6 +221,19 @@ public class ObjectWithFeatures extends ObjectWithId {
         List<Modifier> list = modifiers.get(code);
         return list != null && !list.isEmpty();
     }
+    
+	public boolean hasModifier(String code, ModifierPredicate predicate) {
+		List<Modifier> list = modifiers.get(code);
+		if (list == null || list.isEmpty()) {
+			return false;
+		}
+		for (Modifier m : list) {
+			if (predicate.apply(m)) {
+				return true;
+			}
+		}
+		return false;
+	}
     
     public float applyModifier(String modifierName, float base, ObjectWithFeatures obj) {
         List<Modifier> list = modifiers.get(modifierName);

@@ -13,6 +13,10 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Modifier implements Identifiable {
 
+	public static interface ModifierPredicate {
+		boolean apply(Modifier modifier);
+	}
+	
 	public static final String AMPHIBIOUS_ATTACK = "model.modifier.amphibiousAttack";
 	public static final String ARTILLERY_AGAINST_RAID = "model.modifier.artilleryAgainstRaid";
 	public static final String ARTILLERY_IN_THE_OPEN = "model.modifier.artilleryInTheOpen";
@@ -123,6 +127,14 @@ public class Modifier implements Identifiable {
 	
 	public String toString() {
 	    return "id: " + id + ", modifierType: " + modifierType + ", value: " + value;
+	}
+	
+	public boolean isPercentageType() {
+		return modifierType == ModifierType.PERCENTAGE;
+	}
+	
+	public float getValue() {
+		return value;
 	}
 	
 	public static class Xml extends XmlNodeParser<Modifier> {

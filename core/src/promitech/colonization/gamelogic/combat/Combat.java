@@ -3,6 +3,7 @@ package promitech.colonization.gamelogic.combat;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Settlement;
@@ -15,6 +16,16 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
 
 class Combat {
+	
+    /** A defence percentage bonus that disables the fortification bonus. */
+	private static final int STRONG_DEFENCE_THRESHOLD = 150; // percent
+	private final Modifier.ModifierPredicate hasStrongDefenceModifierPredicate = new Modifier.ModifierPredicate() {
+		@Override
+		public boolean apply(Modifier modifier) {
+			return modifier.isPercentageType() && modifier.getValue() >= STRONG_DEFENCE_THRESHOLD;
+		}
+	};
+    
 	enum CombatResult {
 		WIN, LOSE, EVADE_ATTACK;
 	}
@@ -218,10 +229,14 @@ class Combat {
 	}
 	
 	private void addLandDefensiveModifiers(Unit attacker, Unit defender, ObjectWithFeatures mods, Tile defenderTile) {
+		boolean disableFortified = false;
+		
 		mods.addModifierFrom(defenderTile.getType(), Modifier.DEFENCE);
+		disableFortified |= defenderTile.getType().hasModifier(Modifier.DEFENCE, hasStrongDefenceModifierPredicate);
 		
 		if (defenderTile.hasSettlement()) {
-			defenderTile.getSettlement().addModifiersTo(mods, Modifier.DEFENCE);
+			Settlement settlement = defenderTile.getSettlement();
+			settlement.addModifiersTo(mods, Modifier.DEFENCE);
 			
 			// Artillery defence bonus against an Indian raid
 			if (defender.hasAbility(Ability.BOMBARD) 
@@ -231,7 +246,11 @@ class Combat {
 				mods.addModifier(Specification.instance.modifiers.getById(Modifier.ARTILLERY_AGAINST_RAID));
 			}
 			
-			addSettlementAutoArmDefensiveModifiers(mods, defender, defenderTile.getSettlement());
+			addSettlementAutoArmDefensiveModifiers(mods, defender, settlement);
+			
+			if (settlement.isColony()) {
+				disableFortified |= hasBuildingWithStrongDefence(settlement.getColony());
+			}
 		} else {
 			if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {
 				mods.addModifier(
@@ -239,6 +258,21 @@ class Combat {
 				);
 			}
 		}
+		
+		if (Unit.UnitState.FORTIFIED.equals(defender.getState()) && !disableFortified) {
+			mods.addModifier(
+				Specification.instance.modifiers.getById(Modifier.FORTIFIED)
+			);
+		}
+	}
+	
+	private boolean hasBuildingWithStrongDefence(Colony colony) {
+		for (Building b : colony.buildings.entities()) {
+			if (b.buildingType.hasModifier(Modifier.DEFENCE)) {
+				return b.buildingType.hasModifier(Modifier.DEFENCE, hasStrongDefenceModifierPredicate);
+			}
+		}
+		return false;
 	}
 	
 	/**

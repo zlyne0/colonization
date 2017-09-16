@@ -19,6 +19,7 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -28,6 +29,7 @@ import net.sf.freecol.common.model.UnitTest;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -154,8 +156,8 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(2.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.84f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.77f, offset(0.01f));
 	}
 
     @Test 
@@ -175,8 +177,8 @@ public class CombatTest {
     	
     	// then
         assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(2.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.84f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.77f, offset(0.01f));
     }
     
     @Test 
@@ -193,8 +195,8 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(2.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.69f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.6f, offset(0.01f));
 	}
     
     @Test 
@@ -211,8 +213,8 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(23.5f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.16f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(35.25f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.11f, offset(0.01f));
 	}
     
     
@@ -278,9 +280,34 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(70.5f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
+	}
+
+    @Test 
+	public void indianVsColonyWithFort() throws Exception {
+		// given
+    	Player indianPlayer = game.players.getById("player:40");
+    	Unit indianUnit = indianPlayer.units.getById("unit:5967");
+    	
+    	Tile colonyTile = game.map.getTile(29, 58);
+    	
+    	BuildingType fort = Specification.instance.buildingTypes.getById("model.building.fort");
+		colonyTile.getSettlement().getColony().buildings.add(new Building("tmp:12345", fort));
+		colonyTile.getSettlement().getColony().buildings.removeId("building:6914");
+		
+		// when
+    	Combat combat = new Combat();
+    	combat.init(indianUnit, colonyTile);
+
+    	System.out.println("combat = " + combat);
+    	
+		// then
+        assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
         assertThat(combat.getDefencePower()).isEqualTo(47.0f, offset(0.01f));
         assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
 	}
+    
     
 /*    
     
