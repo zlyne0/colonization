@@ -3,8 +3,6 @@ package promitech.colonization.savegame;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-import org.assertj.core.api.AbstractAssert;
-
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -21,7 +19,6 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -47,67 +44,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static promitech.colonization.savegame.TileAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
-
-class TileAssert extends AbstractAssert<TileAssert, Tile> {
-
-	public TileAssert(Tile actual, Class<?> selfType) {
-		super(actual, selfType);
-	}
-	
-	public static TileAssert assertThat(Tile tile) {
-		return new TileAssert(tile, TileAssert.class);
-	}
-	
-	public TileAssert isEquals(int x, int y) {
-		isNotNull();
-		
-		if (!actual.equalsCoordinates(x, y)) {
-			failWithMessage("Expected cords [%s,%s] on tile <id: %s, cords %s, %s> ", x, y, actual.getId(), actual.x, actual.y);
-		}
-		return this;
-	}
-}
-
-class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
-
-	public AbstractMissionAssert(AbstractMission actual, Class<?> selfType) {
-		super(actual, selfType);
-	}
-	
-	public static AbstractMissionAssert assertThat(AbstractMission abstractMission) {
-		return new AbstractMissionAssert(abstractMission, AbstractMissionAssert.class);
-	}
-	
-	public AbstractMissionAssert isIdEquals(String id) {
-		isNotNull();
-		if (!actual.getId().equals(id)) {
-			failWithMessage("Expected id: %s on AbstractMission id: %s ", id, actual.getId());			
-		}
-		return this;
-	}
-	
-	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
-		isNotNull();
-		AbstractMission dependMission = actual.getDependMissionById(missionId);
-		if (dependMission == null) {
-			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
-		} else {
-			if (dependMission.getClass() != missionTypeClass) {
-				failWithMessage("Expected depend mission type %s on Mission id: %s ", missionTypeClass.getName(), missionId);
-			}
-		}
-		return this;
-	}
-	
-	public AbstractMissionAssert isType(Class<? extends AbstractMission> missionTypeClass) {
-		isNotNull();
-		if (actual.getClass() != missionTypeClass) {
-			failWithMessage("Expected mission type %s on mission id: %s ", missionTypeClass.getName(), actual.getId());
-		}
-		return this;
-	}
-}
-
+import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 
 public class Savegame1600Verifier {
 
@@ -260,6 +197,9 @@ public class Savegame1600Verifier {
         assertEquals(2, player.foundingFathers.size());
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
+        
+        // should add fathers modifiers to player features
+        assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);
         
         assertEquals(3, player.eventsNotifications.getNotifications().size());
         
