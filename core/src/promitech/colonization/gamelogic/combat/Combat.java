@@ -170,6 +170,11 @@ class Combat {
 		));
 				
 		mods.addModifierFrom(attacker.unitType, Modifier.OFFENCE);
+		mods.addModifierFrom(
+			attacker.getOwner().getFeatures(), 
+			Modifier.OFFENCE, 
+			attacker.unitType
+		);
 		mods.addModifierFrom(attacker.unitRole, Modifier.OFFENCE);
     	
     	if (defender != null) {
@@ -205,6 +210,11 @@ class Combat {
 		));
 		
 		mods.addModifierFrom(defender.unitType, Modifier.DEFENCE);
+		mods.addModifierFrom(
+			attacker.getOwner().getFeatures(), 
+			Modifier.DEFENCE, 
+			attacker.unitType
+		);
 		mods.addModifierFrom(defender.unitRole, Modifier.DEFENCE);
 		
         // Land/naval split

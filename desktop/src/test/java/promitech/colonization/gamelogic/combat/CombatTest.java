@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
 import static org.junit.Assert.*;
 
+import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
+
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -18,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Game;
@@ -39,6 +42,7 @@ public class CombatTest {
 	public TemporaryFolder tempFolder = new TemporaryFolder();
 	
 	private Game game;
+	private Player spanish;
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -48,6 +52,7 @@ public class CombatTest {
     @Before
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+    	spanish = game.players.getById("player:133"); 
     }
     
     @Test 
@@ -60,7 +65,6 @@ public class CombatTest {
     	Player defenderPlayer = game.players.getById("player:40");
     	Unit defenderUnit = defenderPlayer.units.getById("unit:5967");
     	
-    	Player spanish = game.players.getById("player:133");
     	Unit spanishAttacker = spanish.units.getById("unit:6659");
     	
     	
@@ -106,7 +110,6 @@ public class CombatTest {
         Player defenderPlayer = game.players.getById("player:40");
         Unit defenderUnit = defenderPlayer.units.getById("unit:5967");
 
-        Player spanish = game.players.getById("player:133");
         Unit spanishAttacker = spanish.units.getById("unit:6659");
         spanishAttacker.setState(UnitState.ACTIVE);
         
@@ -126,7 +129,6 @@ public class CombatTest {
         Player defenderPlayer = game.players.getById("player:40");
         Unit defenderUnit = defenderPlayer.units.getById("unit:5967");
 
-        Player spanish = game.players.getById("player:133");
         Unit spanishAttacker = spanish.units.getById("unit:6659");
         spanishAttacker.setState(UnitState.ACTIVE);
         
@@ -145,7 +147,6 @@ public class CombatTest {
     @Test 
 	public void artilleryInsideSettlementVsIndianSettlement() throws Exception {
 		// given
-    	Player spanish = game.players.getById("player:133");
     	Unit spanishArtillery = spanish.units.getById("unit:6659");
     	
     	Tile indianSettlement = game.map.getTile(27,53);
@@ -163,7 +164,6 @@ public class CombatTest {
     @Test 
 	public void artilleryOutsideSettlementVsIndianSettlement() throws Exception {
     	// given
-    	Player spanish = game.players.getById("player:133");
     	Unit spanishArtillery = spanish.units.getById("unit:6659");
     	
     	// change unit location next to village
@@ -225,7 +225,6 @@ public class CombatTest {
     	Unit attacker = attackerPlayer.units.getById("unit:6764");
 
     	// remove artillery from colony
-    	Player spanish = game.players.getById("player:133");
     	Unit spanishArtillery = spanish.units.getById("unit:6659");
     	spanishArtillery.changeUnitLocation(game.map.getTile(29,57));
     	
@@ -248,7 +247,6 @@ public class CombatTest {
     	Unit attacker = attackerPlayer.units.getById("unit:6764");
 
     	// remove artillery from colony
-    	Player spanish = game.players.getById("player:133");
     	Unit spanishArtillery = spanish.units.getById("unit:6659");
     	spanishArtillery.changeUnitLocation(game.map.getTile(29,57));
     	
@@ -305,7 +303,6 @@ public class CombatTest {
         assertThat(combat.getDefencePower()).isEqualTo(47.0f, offset(0.01f));
         assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
 	}
-    
     
 /*    
     
