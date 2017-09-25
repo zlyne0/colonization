@@ -17,6 +17,12 @@ import net.sf.freecol.common.model.specification.Scope;
 
 class Combat {
 	
+    /**
+     * The maximum attack power of a Colony's fortifications against a
+     * naval unit.
+     */
+    public static final int MAXIMUM_BOMBARD_POWER = 48;
+	
     /** A defence percentage bonus that disables the fortification bonus. */
 	private static final int STRONG_DEFENCE_THRESHOLD = 150; // percent
 	private final Modifier.ModifierPredicate hasStrongDefenceModifierPredicate = new Modifier.ModifierPredicate() {
@@ -47,8 +53,38 @@ class Combat {
 		winPropability = offencePower / (offencePower + defencePower);
 	}
 	
-	public void init(Colony colony, Tile tile) {
+	public void init(Colony colony, Tile defenderTile, Unit defender) {
+		combatResult = null;
+		greatResult = false;
 		
+		offencePower = 0;
+		defencePower = 0;
+		winPropability = 0;
+		
+		if (defender == null || !defender.isNaval()) {
+			throw new IllegalStateException("no defender to bombard or it is not naval");
+		}
+		if (!colony.colonyUpdatableFeatures.hasAbility(Ability.BOMBARD_SHIPS)) {
+			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
+		}
+		offencePower = colonyOffenceBombardPower(colony);
+		defencePower = getDefencePower(null, defender, defenderTile);
+		
+		winPropability = offencePower / (offencePower + defencePower);
+	}
+	
+	private float colonyOffenceBombardPower(Colony colony) {
+		float power = 0;
+		
+		for (Unit u : colony.tile.getUnits().entities()) {
+			if (u.hasAbility(Ability.BOMBARD)) {
+				power += u.unitType.applyModifier(Modifier.OFFENCE, u.unitType.getBaseOffence());
+			}
+		}
+		if (power > MAXIMUM_BOMBARD_POWER) {
+			power = MAXIMUM_BOMBARD_POWER;
+		}
+		return power;
 	}
 	
 	public void init(Unit attacker, Tile tile) {
@@ -211,9 +247,9 @@ class Combat {
 		
 		mods.addModifierFrom(defender.unitType, Modifier.DEFENCE);
 		mods.addModifierFrom(
-			attacker.getOwner().getFeatures(), 
+			defender.getOwner().getFeatures(), 
 			Modifier.DEFENCE, 
-			attacker.unitType
+			defender.unitType
 		);
 		mods.addModifierFrom(defender.unitRole, Modifier.DEFENCE);
 		

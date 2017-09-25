@@ -291,8 +291,9 @@ public class CombatTest {
     	Tile colonyTile = game.map.getTile(29, 58);
     	
     	BuildingType fort = Specification.instance.buildingTypes.getById("model.building.fort");
-		colonyTile.getSettlement().getColony().buildings.add(new Building("tmp:12345", fort));
+		colonyTile.getSettlement().getColony().buildings.add(new Building(Game.idGenerator, fort));
 		colonyTile.getSettlement().getColony().buildings.removeId("building:6914");
+		colonyTile.getSettlement().getColony().updateColonyFeatures();
 		
 		// when
     	Combat combat = new Combat();
@@ -300,43 +301,7 @@ public class CombatTest {
 
 		// then
         assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(47.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
+        assertThat(combat.getDefencePower()).isEqualTo(58.25f, offset(0.01f));
+        assertThat(combat.getWinPropability()).isEqualTo(0.02f, offset(0.01f));
 	}
-    
-/*    
-    
-    @Test 
-	public void colonyVsPirate() throws Exception {
-		// given
-
-		// when
-		
-
-		// then
-    	fail("not implements");
-	}
-    
-    @Test 
-	public void colonyVsFregate() throws Exception {
-		// given
-
-		// when
-		
-
-		// then
-    	fail("not implements");
-	}
-    
-    @Test 
-	public void colonyVsCaravel() throws Exception {
-		// given
-
-		// when
-		
-
-		// then
-    	fail("not implements");
-	}
-*/	
 }

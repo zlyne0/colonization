@@ -17,6 +17,10 @@ public class Building extends ObjectWithId implements ProductionLocation {
 
     public BuildingType buildingType;
     public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
+
+    public Building(IdGenerator idGenerator, BuildingType aBuildingType) {
+    	this(idGenerator.nextId(Building.class), aBuildingType);
+    }
     
     public Building(String id, BuildingType aBuildingType) {
         super(id);

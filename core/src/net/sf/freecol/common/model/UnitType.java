@@ -26,6 +26,7 @@ public class UnitType extends BuildableType {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
+	public static final String ARTILLERY = "model.unit.artillery";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
