@@ -37,6 +37,7 @@ public class GameLogic {
 	public void newTurn(Player player) {
 		newTurnContext.restart();
 		System.out.println("newTurn for player " + player);
+
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}
@@ -66,8 +67,38 @@ public class GameLogic {
         	MonarchLogic.generateMonarchAction(guiGameModel.game, player);
         	player.getEurope().handleImmigrationOnNewTurn();
         }
+        if (player.isEuropean()) {
+        	bombardEnemyShip(player);
+        }
         
 		player.fogOfWar.resetFogOfWar(player);
+	}
+
+	private void bombardEnemyShip(Player player) {
+		for (Settlement settlement : player.settlements.entities()) {
+			Colony colony = settlement.getColony();
+			if (!colony.canBombardEnemyShip()) {
+				continue;
+			}
+			
+			for (Direction direction : Direction.allDirections) {
+				Tile neighbourTile = guiGameModel.game.map.getTile(colony.tile, direction);
+				if (neighbourTile.getType().isWater()) {
+					Unit firstUnit = neighbourTile.getUnits().first();
+					if (firstUnit == null) {
+						continue;
+					}
+					if (firstUnit.isOwner(player)) {
+						continue;
+					}
+					if (player.atWarWith(firstUnit.getOwner()) || firstUnit.hasAbility(Ability.PIRACY)) {
+						// combat
+						// colony can bombard only one tile per turn
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	public void newTurnForUnit(Unit unit) {

@@ -111,7 +111,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	}
 	
     public boolean canBombardEnemyShip() {
-        return hasAbility(Ability.BOMBARD_SHIPS);
+        return isCoastland() && hasAbility(Ability.BOMBARD_SHIPS);
     }
 
     public boolean hasGoodsToEquipRole(UnitRole unitRole) {
