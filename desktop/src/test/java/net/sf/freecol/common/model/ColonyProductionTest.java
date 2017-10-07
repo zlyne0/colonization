@@ -17,6 +17,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
+import net.sf.freecol.common.model.specification.BuildingType;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -228,7 +229,7 @@ public class ColonyProductionTest {
 
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType("model.building.townHall");
+        Building townHall = colony.findBuildingByType(BuildingType.TOWN_HALL);
         townHall.workers.removeId(unit);
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         

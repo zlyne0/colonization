@@ -10,7 +10,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     public static final int FOOD_PER_COLONIST = 200;
     
 	protected String name;
-    public SettlementType settlementType;
+    public final SettlementType settlementType;
     protected Player owner;
     public Tile tile;
     protected boolean coastland = false;
@@ -22,10 +22,8 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
     	tile.addImprovement(tileImprovement);
     	
-		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
-		indianSettlement.settlementType = settlementType;
+		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator, settlementType);
 		indianSettlement.name = settlmentName;
-		
 		indianSettlement.tile = tile;
 		tile.setSettlement(indianSettlement);
 		
@@ -49,8 +47,10 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	}
     
     public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
-    	Colony colony = new Colony(Game.idGenerator);
-    	colony.settlementType = buildByUnit.getOwner().nationType().getSettlementRegularType();
+    	Colony colony = new Colony(
+			Game.idGenerator,
+			buildByUnit.getOwner().nationType().getSettlementRegularType()
+		);
     	colony.name = name;
     	
     	tile.setSettlement(colony);
@@ -78,8 +78,9 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 		return Integer.toString(player.settlements.size());
     }
     
-    public Settlement(String id) {
+    public Settlement(String id, SettlementType settlementType) {
 		super(id);
+		this.settlementType = settlementType;
 	}
     
     public abstract String getImageKey();

@@ -27,13 +27,19 @@ public class IndianSettlement extends Settlement {
     private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
     private GoodsContainer goodsContainer;
     
-    public IndianSettlement(IdGenerator idGenerator) {
-    	super(idGenerator.nextId(IndianSettlement.class));
+    public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
+    	super(idGenerator.nextId(IndianSettlement.class), settlementType);
     	goodsContainer = new GoodsContainer();
     }
-    
-    public IndianSettlement(String id) {
-		super(id);
+
+    /**
+     * constructor used only by xml parser.
+     * Xml parser also create {@link goodsContainer}
+     * @param id
+     * @param settlementType
+     */
+    private IndianSettlement(String id, SettlementType settlementType) {
+		super(id, settlementType);
 	}
 
     public boolean hasContact(Player player) {
@@ -113,11 +119,17 @@ public class IndianSettlement extends Settlement {
 		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-            IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull(ATTR_ID));
+			Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
+            SettlementType settlementType = owner.nationType()
+        		.settlementTypes
+        		.getById(attr.getStrAttribute(ATTR_SETTLEMENT_TYPE));
+            
+			IndianSettlement is = new IndianSettlement(
+        		attr.getStrAttributeNotNull(ATTR_ID),
+        		settlementType
+    		);
             is.name = attr.getStrAttribute(ATTR_NAME);
-            Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             is.owner = owner;
-            is.settlementType = owner.nationType().settlementTypes.getById(attr.getStrAttribute(ATTR_SETTLEMENT_TYPE));
             
             owner.settlements.add(is);
             

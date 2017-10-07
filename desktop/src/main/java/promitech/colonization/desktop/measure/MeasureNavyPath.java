@@ -43,12 +43,12 @@ public class MeasureNavyPath implements MeasureTask {
         {
             // create fortress colony 
             Player fortressOwner = game.players.getById("player:112");
-            Colony fortressColony = new Colony("colony:-1");
+            Colony fortressColony = new Colony(
+        		Game.idGenerator,
+        		fortressOwner.nationType().getSettlementRegularType()
+    		);
             fortressColony.setOwner(fortressOwner);
-    
-            Building fortressBuilding = new Building("building:-1", Specification.instance.buildingTypes.getById("model.building.fortress"));
-            fortressBuilding.buildingType = Specification.instance.buildingTypes.getById("model.building.fortress");
-            fortressColony.buildings.add(fortressBuilding);
+            fortressColony.addBuilding(Specification.instance.buildingTypes.getById("model.building.fortress"));
             fortressColony.updateColonyFeatures();
     
             Tile fortressTile = game.map.getTile(27, 75);

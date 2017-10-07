@@ -11,7 +11,6 @@ import org.junit.rules.TemporaryFolder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
@@ -20,7 +19,6 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -109,8 +107,7 @@ public class NavyCombatTest {
 	}
 
     private void navyDefenceColony(Colony colony) {
-    	BuildingType fort = Specification.instance.buildingTypes.getById("model.building.fort");
-		colony.buildings.add(new Building(Game.idGenerator, fort));
+    	colony.addBuilding(Specification.instance.buildingTypes.getById("model.building.fort"));
 		colony.updateColonyFeatures();
     	
 		UnitType artilleryType = Specification.instance.unitTypes.getById(UnitType.ARTILLERY);

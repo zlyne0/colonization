@@ -72,14 +72,16 @@ public class Colony extends Settlement {
      */
     protected int liberty = 0;
     
-    public Colony(String id) {
-    	super(id);
+    private Colony(String id, SettlementType settlementType) {
+    	super(id, settlementType);
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
+    	
+    	// constructor used only by xml parser which create goodsContainer 
     }
 
-    public Colony(IdGenerator idGenerator) {
-		this(idGenerator.nextId(Colony.class));
+    public Colony(IdGenerator idGenerator, SettlementType settlementType) {
+		this(idGenerator.nextId(Colony.class), settlementType);
     	goodsContainer = new GoodsContainer();
 	}
 
@@ -149,6 +151,7 @@ public class Colony extends Settlement {
     	for (FoundingFather ff : owner.foundingFathers.entities()) {
     	    colonyUpdatableFeatures.addFeatures(ff);
     	}
+    	//settlement type jest nulem
     	colonyUpdatableFeatures.addFeatures(settlementType);
     }
     
@@ -933,13 +936,46 @@ public class Colony extends Settlement {
 		buildingQueue.remove(0);
 	}
 	
+	public void addBuilding(final BuildingType buildingType) {
+		Building building = findBuildingByBuildingTypeHierarchy(buildingType);
+		if (building != null) {
+			building.upgrade(buildingType);
+		} else {
+			building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
+			buildings.add(building);
+		}
+	}
+	
+	protected Building findBuildingByBuildingTypeHierarchy(final BuildingType buildingType) {
+		Building foundBuilding = null;
+		BuildingType bt = buildingType;
+		
+		while (bt != null) {
+			foundBuilding = findBuildingByTypeOrNull(bt.getId());
+			if (foundBuilding != null) {
+				break;
+			}
+			bt = bt.getUpgradesFrom();
+		}
+		return foundBuilding;
+	}
+	
+	
 	protected Building findBuildingByType(String buildingTypeId) {
+		Building building = findBuildingByTypeOrNull(buildingTypeId);
+		if (building == null) {
+			throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
+		}
+		return building;
+	}
+	
+	private Building findBuildingByTypeOrNull(String buildingTypeId) {
 		for (Building building : buildings.entities()) {
 			if (building.buildingType.equalsId(buildingTypeId)) {
 				return building;
 			}
 		}
-		throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
+		return null;
 	}
 	
     private void removeResourcesAfterCompleteBuilding(BuildableType type) {
@@ -1133,14 +1169,16 @@ public class Colony extends Settlement {
             String strAttribute = attr.getStrAttribute(ATTR_SETTLEMENT_TYPE);
             Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             
-            Colony colony = new Colony(attr.getStrAttribute(ATTR_ID));
+            Colony colony = new Colony(
+        		attr.getStrAttribute(ATTR_ID),
+        		owner.nationType().settlementTypes.getById(strAttribute)
+    		);
             colony.name = attr.getStrAttribute(ATTR_NAME);
             colony.sonsOfLiberty = attr.getIntAttribute(ATTR_SONS_OF_LIBERTY, 0);
             colony.tories = attr.getIntAttribute(ATTR_TORIES, 0);
             colony.productionBonus = attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0);
             colony.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             colony.owner = owner;
-            colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);
             
             nodeObject = colony;

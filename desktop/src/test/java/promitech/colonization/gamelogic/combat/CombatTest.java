@@ -20,7 +20,6 @@ import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-import com.sun.jndi.url.corbaname.corbanameURLContextFactory;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Game;
