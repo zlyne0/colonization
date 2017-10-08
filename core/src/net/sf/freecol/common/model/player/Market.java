@@ -37,18 +37,41 @@ public class Market extends ObjectWithId {
 		super(id);
 	}
 
-	public int buildingGoodsPrice(GoodsType goodsType, int amount) {
-		if (goodsType.isStorable()) {
-		    // price for buy goods for buildings is 10% higher than in market
-			return (getBidPrice(goodsType.getId(), amount) * 110) / 100;
-		} else {
-			return goodsType.getPrice() * amount;
-		}
+	private interface GoodsPriceSpecification {
+		int price(GoodsType goodsType, int amount); 
 	}
 	
-    public int getBidPrice(String goodsTypeId, int amount) {
-        MarketData data = marketGoods.getByIdOrNull(goodsTypeId);
-        return (data == null) ? 0 : data.getCostToBuy(amount);
+	private final GoodsPriceSpecification buildingGoodsPrice = new GoodsPriceSpecification() {
+		@Override
+		public int price(GoodsType goodsType, int amount) {
+			if (goodsType.isStorable()) {
+			    // price for buy goods for buildings is 10% higher than in market
+				return (getBidPrice(goodsType, amount) * 110) / 100;
+			} else {
+				return goodsType.getPrice() * amount;
+			}
+		}
+	};
+	private final GoodsPriceSpecification marketGoodsPrice = new GoodsPriceSpecification() {
+		@Override
+		public int price(GoodsType goodsType, int amount) {
+			if (goodsType.isStorable()) {
+				MarketData data = marketGoods.getByIdOrNull(goodsType.getId());
+				if (data == null) {
+					throw new IllegalStateException("no goods type[" + goodsType + "] on market");
+				}
+				return (data == null) ? 0 : data.getCostToBuy(amount);
+			}
+			throw new IllegalStateException("can not buy not storable goods(" + goodsType.getId() + ") on market");
+		}
+	};
+	
+	public int buildingGoodsPrice(GoodsType goodsType, int amount) {
+		return buildingGoodsPrice.price(goodsType, amount);
+	}
+	
+    public int getBidPrice(GoodsType goodsType, int amount) {
+    	return marketGoodsPrice.price(goodsType, amount);
     }
 
 	public boolean hasArrears(GoodsType type) {
@@ -93,33 +116,46 @@ public class Market extends ObjectWithId {
 	}
 	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
-    
+
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
-	    MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
-		if (marketData.hasArrears()) {
-			throw new IllegalStateException("can not buy goods: " + goodsType + " because of arrears");
-		}
+		return buyGoods(game, player, goodsType, goodsAmount, marketGoodsPrice);
+	}
+
+	public TransactionEffectOnMarket buyGoodsForBuilding(Game game, Player player, GoodsType goodsType, int goodsAmount) {
+		return buyGoods(game, player, goodsType, goodsAmount, buildingGoodsPrice);
+	}
+	
+	private TransactionEffectOnMarket buyGoods(
+			Game game, Player player, 
+			GoodsType goodsType, int goodsAmount, 
+			GoodsPriceSpecification priceSpecification
+	) {
 		TRANSACTION_EFFECT_ON_MARKET.reset();
 		TRANSACTION_EFFECT_ON_MARKET.goodsTypeId = goodsType.getId();
 		TRANSACTION_EFFECT_ON_MARKET.quantity = goodsAmount;
        
-        TRANSACTION_EFFECT_ON_MARKET.grossPrice = getBidPrice(goodsType.getId(), goodsAmount);
+        TRANSACTION_EFFECT_ON_MARKET.grossPrice = priceSpecification.price(goodsType, goodsAmount);
 		
 		if (player.hasNotGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice)) {
 			throw new IllegalStateException("Insufficient funds to pay for build");
 		}
 		player.subtractGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice);
 		
-		int playerModifiedMarketAmount = goodsAmount;
 		if (goodsType.isStorable()) {
+			int playerModifiedMarketAmount = goodsAmount;
+			
+		    MarketData marketData = marketGoods.getById(goodsType.getId());
+			if (marketData.hasArrears()) {
+				throw new IllegalStateException("can not buy goods: " + goodsType + " because of arrears");
+			}
 			playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
 			marketData.modifyOnBuyGoods(goodsAmount, TRANSACTION_EFFECT_ON_MARKET.grossPrice, playerModifiedMarketAmount);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
+			
+			// bought goods amount on market. Can be modified by player modifiers and differ from argument goodsAmount
+			propagateTransactionToEuropeanMarkets(game, player, goodsType, -playerModifiedMarketAmount);
 		}
-		
-		// bought goods amount on market. Can be modified by player modifiers and differ from argument goodsAmount
-		propagateTransactionToEuropeanMarkets(game, player, goodsType, -playerModifiedMarketAmount);
 		return TRANSACTION_EFFECT_ON_MARKET;
 	}
 

@@ -34,7 +34,7 @@ public class EuropeanMissionPlaner {
 
 	private void prepareExploreMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
     	for (Unit unit : player.units.entities()) {
-    		if (unit.isNaval() && unit.isCarrier()) {
+    		if (unit.isNaval() && unit.isCarrier() && unit.getTileLocationOrNull() != null) {
     			if (!playerMissionContainer.isUnitBlockedForMission(unit)) {
     				ExplorerMission explorerMission = new ExplorerMission(unit);
     				playerMissionContainer.blockUnitForMission(unit, explorerMission);

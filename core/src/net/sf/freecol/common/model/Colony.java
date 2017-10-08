@@ -802,7 +802,7 @@ public class Colony extends Settlement {
 			if (reqDiffAmount <= 0) {
 				continue;
 			}
-			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoods(game, owner, requiredGood.goodsType, reqDiffAmount);
+			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoodsForBuilding(game, owner, requiredGood.goodsType, reqDiffAmount);
 			goodsContainer.increaseGoodsQuantity(requiredGood.goodsType, reqDiffAmount);
 			
 			if (effectOnMarket.isMarketPriceChanged()) {

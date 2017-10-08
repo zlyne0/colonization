@@ -39,11 +39,12 @@ public class MarketTest {
 		// given
         int goodsAmount = 100;
         String goodsTypeId = "model.goods.cigars";
+        GoodsType cigars = Specification.instance.goodsTypes.getById(goodsTypeId);
         
         Player player = game.players.getById("player:1");
         Market market = player.market();
 		
-        int beforeBuyPrice = market.getBidPrice(goodsTypeId, 100);
+        int beforeBuyPrice = market.getBidPrice(cigars, 100);
 		
         MarketData marketData = market.marketGoods.getById(goodsTypeId);
         
@@ -53,7 +54,7 @@ public class MarketTest {
 		// then
 		assertTrue(modifyOnBuyGoods);
         assertEquals(1200, beforeBuyPrice);
-        int afterBuyPrice = market.getBidPrice(goodsTypeId, 100);
+        int afterBuyPrice = market.getBidPrice(cigars, 100);
         assertEquals(1300, afterBuyPrice);
         
         System.out.println("before buy price = " + beforeBuyPrice);

@@ -163,14 +163,13 @@ public class MarketPanel extends Container<ScrollPane> implements DragAndDropTar
 	@Override
 	public void takePayload(AbstractGoods payload, float x, float y) {
 		System.out.println("Buy goods " + payload);
-		
+		GoodsType goodsType = Specification.instance.goodsTypes.getById(payload.getTypeId());
 
-		int price = player.market().getBidPrice(payload.getTypeId(), payload.getQuantity());
+		int price = player.market().getBidPrice(goodsType, payload.getQuantity());
 		if (player.hasNotGold(price)) {
 			marketLog.logMessage("notEnoughGold");
 			payload.makeEmpty();
 		} else {
-		    GoodsType goodsType = Specification.instance.goodsTypes.getById(payload.getTypeId());
 			TransactionEffectOnMarket transaction = player.market().buyGoods(game, player, goodsType, payload.getQuantity());
 			marketLog.logPurchase(transaction);
 			if (transaction.isMarketPriceChanged()) {
