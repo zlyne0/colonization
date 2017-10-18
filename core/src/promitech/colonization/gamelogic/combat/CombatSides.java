@@ -17,7 +17,7 @@ import net.sf.freecol.common.model.specification.Scope;
 
 class CombatSides {
 
-    /**
+	/**
      * The maximum attack power of a Colony's fortifications against a
      * naval unit.
      */
@@ -32,17 +32,23 @@ class CombatSides {
 		}
 	};
 	
+	private CombatType combatType = null;
+	private Unit defender;
+	private Tile defenderTile;
 	private float offencePower;
 	private float defencePower;
 	private float winPropability;
 	private final List<Ability> automaticEquipmentAbilities = new ArrayList<Ability>();
 
 	void init(Unit attacker, Tile tile) {
+		this.defenderTile = tile;
 		Unit defender = getTileDefender(attacker, tile);
 		init(attacker, defender, tile);
 	}
 	
-	void init(Unit attacker, Unit defender, Tile defenderTile) {
+	private void init(Unit attacker, Unit defender, Tile defenderTile) {
+		this.defender = defender;
+		this.combatType = CombatType.ATTACK;
 		offencePower = getOffencePower(attacker, defender);
 		defencePower = getDefencePower(attacker, defender, defenderTile);
 
@@ -50,6 +56,7 @@ class CombatSides {
 	}
 	
 	void init(Colony colony, Tile defenderTile, Unit defender) {
+		this.defenderTile = defenderTile;
 		if (defender == null || !defender.isNaval()) {
 			throw new IllegalStateException("no defender to bombard or it is not naval");
 		}
@@ -57,6 +64,8 @@ class CombatSides {
 			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
 		}
 		
+		this.defender = defender;
+		this.combatType = CombatType.BOMBARD;
 		offencePower = colonyOffenceBombardPower(colony);
 		defencePower = getDefencePower(null, defender, defenderTile);
 		winPropability = offencePower / (offencePower + defencePower);
@@ -363,6 +372,26 @@ class CombatSides {
 
 	public float getWinPropability() {
 		return winPropability;
+	}
+
+	public CombatType getCombatType() {
+		return combatType;
+	}
+	
+	public Tile getDefenderTile() {
+		return defenderTile;
+	}
+
+	public boolean hasDefenderRepairLocation() {
+		return defender.hasDefenderRepairLocation();
+	}
+	
+	public boolean canDefenderEvadeAttack() {
+		return defender.hasAbility(Ability.EVADE_ATTACK);
+	}
+	
+	public boolean isDefenderUnitBeached() {
+		return defender.isBeached();
 	}
 	
 }

@@ -2,21 +2,12 @@ package promitech.colonization.gamelogic.combat;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.offset;
-import static org.junit.Assert.*;
 
-import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
-
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.assertj.core.data.Offset;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
-import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -26,16 +17,12 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitTest;
-import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
-import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.SaveGameParser;
 
-public class CombatTest {
+public class LandCombatTest {
 
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();
@@ -53,36 +40,6 @@ public class CombatTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
     }
-    
-    @Test 
-	public void prototype() throws Exception {
-		// given
-
-    	Player attackerPlayer = game.players.getById("player:1");
-    	Unit attacker = attackerPlayer.units.getById("unit:6764");
-    	
-    	Player defenderPlayer = game.players.getById("player:40");
-    	Unit defenderUnit = defenderPlayer.units.getById("unit:5967");
-    	
-    	Unit spanishAttacker = spanish.units.getById("unit:6659");
-    	
-    	
-    	Combat combat = new Combat();
-    	combat.init(attacker, defenderUnit.getTile());
-    	
-    	System.out.println("dutch vs indian = " + combat.getOffencePower()
-    			+ " vs " + combat.getDefencePower());
-    	System.out.println("win probability " + combat.getWinPropability());
-
-    	combat.init(spanishAttacker, defenderUnit.getTile());
-    	System.out.println("spanish vs indian = " + combat.getOffencePower()
-    			+ " vs " + combat.getDefencePower());
-    	System.out.println("win probability " + combat.getWinPropability());
-    	
-		// when
-
-		// then
-	}
     
     @Test 
 	public void dragonUnitVsIndianUnit() throws Exception {

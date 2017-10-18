@@ -616,6 +616,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return isNaval() && tile != null && tile.getType().isLand() && !tile.hasSettlement();
     }
     
+    public boolean isBeached() {
+    	return isBeached(this.getTileLocationOrNull());
+    }
+    
     public void setState(UnitState newState) {
         if (state == newState) {
             // No need to do anything when the state is unchanged
@@ -894,6 +898,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
     
 	public void setIndianSettlement(IndianSettlement settlement) {
 		this.indianSettlement = settlement.getId();
+	}
+	
+	public boolean hasDefenderRepairLocation() {
+		for (Settlement settlement : getOwner().settlements.entities()) {
+			if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+				return true;
+			}
+		}
+		if (getOwner().getEurope() != null) {
+			return true;
+		}
+		return false;
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {
