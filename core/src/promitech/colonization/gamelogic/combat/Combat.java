@@ -5,6 +5,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -13,9 +15,12 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
+import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
 
 class Combat {
 	
@@ -50,9 +55,10 @@ class Combat {
         SLAUGHTER_UNIT,       // Losing unit is slaughtered
 	}
 	
-	private CombatResult combatResult = null;
-	private boolean greatResult;
+	protected CombatResult combatResult = null;
+	protected boolean greatResult;
 	private final CombatSides combatSides = new CombatSides();
+	protected final CombatResolver combatResolver = new CombatResolver();
 	
 	public void init(Colony colony, Tile defenderTile, Unit defender) {
 		combatResult = null;
@@ -66,20 +72,20 @@ class Combat {
 		combatSides.init(attacker, tile);
 	}
 	
-	void generateAttackResult(float r, float winVal) {
+	void generateAttackResult(float r) {
 		switch (combatSides.getCombatType()) {
 			case ATTACK: 
-				attackCombat(r, winVal);
+				attackCombat(r, combatSides.getWinPropability());
 				break;
 			case BOMBARD:
-				bombardCombat(r, winVal);
+				bombardCombat(r, combatSides.getWinPropability());
 				break;
 			default:
 				throw new IllegalStateException("no attack and no bombard combat");
 		}
 		
 		if (combatResult == null) {
-			throw new IllegalStateException("no attack result");
+			throw new IllegalStateException("attack result not generated");
 		}
 	}
 
@@ -103,17 +109,19 @@ class Combat {
 		if (r <= winVal || combatSides.isDefenderUnitBeached()) {
 			combatResult = CombatResult.WIN;
 			greatResult = r < 0.1f * winVal; // Great Win
-			// TODO: resolvAttack
+			combatResolver.init(combatSides.attacker, combatSides.defender, greatResult, combatSides);
 		} else {
 			if (r < 0.8f * winVal + 0.2f && combatSides.canDefenderEvadeAttack()) {
 				combatResult = CombatResult.EVADE_ATTACK;
+				combatResolver.initNoResult();
 				// TODO: no resolvAttack
 			} else {
 				combatResult = CombatResult.LOSE;
 				greatResult = r >= 0.1f * winVal + 0.9f; // Great Loss
-				// TODO: resolvAttack
+				combatResolver.init(combatSides.defender, combatSides.attacker, greatResult, combatSides);
 			}
 		}
+		//combatResolver.resolve(greatResult, combatSides);
 	}
 
 	private void bombardCombat(float r, float winVal) {
@@ -138,20 +146,20 @@ class Combat {
 			// TODO: no resolvAttack
 		}
 	}
-	
-	private void combatResultDetails(Unit winner, Unit loser) {
-		CombatResolver cr = new CombatResolver(winner, loser);
-		cr.resolve(greatResult, combatSides);
-	}
-	
 
-//	void doCombat(Unit attacker, Unit defender) {
-//		float offencePower = getOffencePower(attacker, defender);
-//		float defencePower = getDefencePower(defender);
-//		
-//		float victoryPropability = offencePower / (offencePower + defencePower);
-//		System.out.println("victory = " + victoryPropability);
-//	}
+	public void processAttackResult() {
+		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
+			
+			if (CombatResultDetails.SINK_SHIP_ATTACK == resultDetail) {
+				Player loserPlayer = combatResolver.loser.getOwner();
+				loserPlayer.removeUnit(combatResolver.loser);
+			}
+			
+			if (CombatResultDetails.LOOT_SHIP == resultDetail) {
+				combatResolver.loser.transferAllGoods(combatResolver.winner);
+			}
+		}
+	}
 
 	public float getOffencePower() {
 		return combatSides.getOffencePower();

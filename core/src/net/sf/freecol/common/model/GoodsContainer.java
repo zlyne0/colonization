@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import java.io.IOException;
 import java.util.List;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -20,6 +21,10 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public Entries<String> entries() {
+    	return goods.entries();
+    }
+    
 	public int goodsAmount(String id) {
         return goods.getQuantity(id);
 	}

@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -44,7 +46,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
     public UnitType unitType;
     public UnitRole unitRole;
     
-    private UnitLocation location;
+    protected UnitLocation location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -152,6 +154,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	public void remove() {
 		location.getUnits().removeId(this);
 		location = null;
+		disposed = true;
 	}
 	
     public boolean canAddUnit(Unit unit) {
@@ -353,9 +356,19 @@ public class Unit extends ObjectWithId implements UnitLocation {
         if (!canCarryGoods()) {
         	return 0;
         }
-//        GoodsContainer gc = getGoodsContainer();
-//        return (gc == null) ? 0 : gc.getSpaceTaken();
-        return 0;
+        GoodsContainer gc = getGoodsContainer();
+        return (gc == null) ? 0 : gc.getCargoSpaceTaken();
+    }
+    
+    public void transferAllGoods(Unit toUnit) {
+    	for (Entry<String> transferedGoods : getGoodsContainer().entries()) {
+			int max = toUnit.maxGoodsAmountToFillFreeSlots(transferedGoods.key);
+			if (max > 0) {
+				toUnit.getGoodsContainer().increaseGoodsQuantity(
+					transferedGoods.key, max
+				);
+			}
+		}
     }
     
     public boolean canCarryGoods() {
@@ -900,7 +913,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		this.indianSettlement = settlement.getId();
 	}
 	
-	public boolean hasDefenderRepairLocation() {
+	public boolean hasRepairLocation() {
 		for (Settlement settlement : getOwner().settlements.entities()) {
 			if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
 				return true;
@@ -910,6 +923,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 			return true;
 		}
 		return false;
+	}
+
+	public boolean isDisposed() {
+		return disposed;
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {

@@ -10,16 +10,23 @@ import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
 
 class CombatResolver {
 
-	Unit winner; 
-	Unit loser;
-	Set<CombatResultDetails> combatResultDetails = new HashSet<Combat.CombatResultDetails>();
+	protected Unit winner; 
+	protected Unit loser;
+	protected Set<CombatResultDetails> combatResultDetails = new HashSet<Combat.CombatResultDetails>();
 	
-	public CombatResolver(Unit winner, Unit loser) {
+	public void init(Unit winner, Unit loser, boolean greatResult, CombatSides combatSides) {
+		combatResultDetails.clear();
 		this.winner = winner;
 		this.loser = loser;
+		
+		resolve(greatResult, combatSides);
 	}
 
-	public void resolve(boolean greatResult, CombatSides combatSides) {
+	public void initNoResult() {
+		combatResultDetails.clear();
+	}
+	
+	private void resolve(boolean greatResult, CombatSides combatSides) {
 		boolean loserMustDie = loser.hasAbility(Ability.DISPOSE_ON_COMBAT_LOSS);
 		
 		if (loser.isNaval()) {
@@ -28,13 +35,13 @@ class CombatResolver {
 					&& loser.hasGoodsCargo()) {
 				combatResultDetails.add(CombatResultDetails.LOOT_SHIP);
 			}
-			if (greatResult || loserMustDie || loser.hasDefenderRepairLocation() || loser.isBeached()) {
+			if (greatResult || loserMustDie || !loser.hasRepairLocation() || loser.isBeached()) {
 				combatResultDetails.add(CombatResultDetails.SINK_SHIP_ATTACK);
 			} else {
 				combatResultDetails.add(CombatResultDetails.DAMAGE_SHIP_ATTACK);
 			}
 		} else {
-			Tile defenderTile = combatSides.getDefenderTile();
+			Tile defenderTile = combatSides.defenderTile;
 			if (defenderTile.hasSettlement()) {
 				if (defenderTile.getSettlement().isColony()) {
 					colonyCombatResultDetails();
@@ -65,6 +72,4 @@ class CombatResolver {
 	private void indianSettlementCombatResultDetails() {
 		// TODO:
 	}
-	
-	
 }

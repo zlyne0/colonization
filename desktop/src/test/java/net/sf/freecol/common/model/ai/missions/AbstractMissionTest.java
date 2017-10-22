@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.ai.missions;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 
 import java.util.LinkedList;
 

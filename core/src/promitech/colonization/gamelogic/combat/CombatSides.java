@@ -33,8 +33,9 @@ class CombatSides {
 	};
 	
 	private CombatType combatType = null;
-	private Unit defender;
-	private Tile defenderTile;
+	protected Unit attacker;
+	protected Unit defender;
+	protected Tile defenderTile;
 	private float offencePower;
 	private float defencePower;
 	private float winPropability;
@@ -43,10 +44,8 @@ class CombatSides {
 	void init(Unit attacker, Tile tile) {
 		this.defenderTile = tile;
 		Unit defender = getTileDefender(attacker, tile);
-		init(attacker, defender, tile);
-	}
-	
-	private void init(Unit attacker, Unit defender, Tile defenderTile) {
+		
+		this.attacker = attacker;
 		this.defender = defender;
 		this.combatType = CombatType.ATTACK;
 		offencePower = getOffencePower(attacker, defender);
@@ -64,6 +63,7 @@ class CombatSides {
 			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
 		}
 		
+		this.attacker = null;
 		this.defender = defender;
 		this.combatType = CombatType.BOMBARD;
 		offencePower = colonyOffenceBombardPower(colony);
@@ -378,12 +378,8 @@ class CombatSides {
 		return combatType;
 	}
 	
-	public Tile getDefenderTile() {
-		return defenderTile;
-	}
-
 	public boolean hasDefenderRepairLocation() {
-		return defender.hasDefenderRepairLocation();
+		return defender.hasRepairLocation();
 	}
 	
 	public boolean canDefenderEvadeAttack() {

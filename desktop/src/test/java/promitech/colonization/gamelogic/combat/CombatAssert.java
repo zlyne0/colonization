@@ -2,6 +2,9 @@ package promitech.colonization.gamelogic.combat;
 
 import org.assertj.core.api.AbstractAssert;
 
+import promitech.colonization.gamelogic.combat.Combat.CombatResult;
+import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
+
 public class CombatAssert extends AbstractAssert<CombatAssert, Combat>  {
 
 	private static final float COMPARE_OFFSET = 0.01f;
@@ -29,4 +32,22 @@ public class CombatAssert extends AbstractAssert<CombatAssert, Combat>  {
 		return this;
 	}
 	
+	public CombatAssert hasResult(CombatResult combatResult, boolean greatResult) {
+		isNotNull();
+		if (actual.greatResult != greatResult || actual.combatResult != combatResult) {
+			failWithMessage("expected combat result <%s great:%s> but got\n <%s great %s>", 
+				combatResult, greatResult, actual.combatResult, actual.greatResult
+			);
+		}
+		return this;
+	}
+	
+	public CombatAssert hasDetails(CombatResultDetails ... combatResultDetails) {
+		isNotNull();
+
+		org.assertj.core.api.Assertions.assertThat(actual.combatResolver.combatResultDetails)
+			.contains(combatResultDetails);
+		
+		return this;
+	}
 }
