@@ -5,6 +5,7 @@ import java.util.List;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
+import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 
@@ -27,6 +28,7 @@ public class MoveLogic {
 	private GUIGameController guiGameController;
 	private MoveController moveController;
 	private GUIGameModel guiGameModel;
+	private CombatController combatController;
 	
 	private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
 		@Override
@@ -55,6 +57,7 @@ public class MoveLogic {
 		this.moveDrawerSemaphore = moveController.getMoveDrawerSemaphore();
 		this.moveController = moveController;
 		this.guiGameModel = guiGameModel;
+		this.combatController = new CombatController(guiGameController);
 	}
 	
 	private void gui_handleMoveContext(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
@@ -146,6 +149,9 @@ public class MoveLogic {
 			} break;
 			case MOVE_HIGH_SEAS: {
 				moveController.showHighSeasQuestion(moveContext);
+			} break;
+			case ATTACK_UNIT: {
+				combatController.userInteraction(moveContext);
 			} break;
 			default:
 				throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);

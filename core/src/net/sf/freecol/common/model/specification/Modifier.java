@@ -27,6 +27,7 @@ public class Modifier implements Identifiable {
 	public static final String BREEDING_FACTOR = "model.modifier.breedingFactor";
 	public static final String BUILDING_PRICE_BONUS = "model.modifier.buildingPriceBonus";
 	public static final String COLONY_GOODS_PARTY = "model.modifier.colonyGoodsParty";
+	public static final String COMBAT_CARGO_PENALTY = "model.modifier.cargo.penalty";
 	public static final String CONSUME_ONLY_SURPLUS_PRODUCTION = "model.modifier.consumeOnlySurplusProduction";
 	public static final String CONVERSION_ALARM_RATE = "model.modifier.conversionAlarmRate";
 	public static final String CONVERSION_SKILL = "model.modifier.conversionSkill";
@@ -84,6 +85,7 @@ public class Modifier implements Identifiable {
     private float increment;
     private ModifierType incrementType;
     private int modifierIndex = DEFAULT_MODIFIER_INDEX;
+	private String sourceId;
 	
     public Modifier(String id) {
     	this.id = id;
@@ -126,7 +128,11 @@ public class Modifier implements Identifiable {
     }
 	
 	public String toString() {
-	    return "id: " + id + ", modifierType: " + modifierType + ", value: " + value;
+	    return 
+	    		"id: " + id + 
+	    		", modifierType: " + modifierType + 
+	    		", value: " + value + 
+	    		", source: " + sourceId;
 	}
 	
 	public boolean isPercentageType() {
@@ -137,8 +143,13 @@ public class Modifier implements Identifiable {
 		return value;
 	}
 	
+	public String getSourceId() {
+		return sourceId;
+	}
+	
 	public static class Xml extends XmlNodeParser<Modifier> {
 
+		private static final String SOURCE_ATTR = "source";
 		private static final String INDEX_TYPE = "index";
 		private static final String INCREMENT_TYPE = "increment";
 		private static final String INCREMENT_TYPE_ATTR = "incrementType";
@@ -167,6 +178,7 @@ public class Modifier implements Identifiable {
 				modifier.increment = attr.getFloatAttribute(INCREMENT_TYPE);
 			}
 			modifier.modifierIndex = attr.getIntAttribute(INDEX_TYPE, DEFAULT_MODIFIER_INDEX);
+			modifier.sourceId = attr.getStrAttribute(SOURCE_ATTR);
 			nodeObject = modifier;
 		}
 
@@ -179,6 +191,7 @@ public class Modifier implements Identifiable {
 	    		attr.set(INCREMENT_TYPE_ATTR, node.incrementType);
 	    		attr.set(INCREMENT_TYPE, node.increment);
 	    	}
+	    	attr.set(SOURCE_ATTR, node.sourceId);
 	    	attr.set(INDEX_TYPE, node.modifierIndex);
 	    }
 	    

@@ -1,26 +1,12 @@
 package promitech.colonization.gamelogic.combat;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
-import com.badlogic.gdx.utils.ObjectIntMap.Entry;
-
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ObjectWithFeatures;
-import net.sf.freecol.common.model.Settlement;
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.AbstractGoods;
-import net.sf.freecol.common.model.specification.Modifier;
-import net.sf.freecol.common.model.specification.Scope;
-import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
+import promitech.colonization.ui.resources.StringTemplate;
 
 class Combat {
 	
@@ -57,7 +43,7 @@ class Combat {
 	
 	protected CombatResult combatResult = null;
 	protected boolean greatResult;
-	private final CombatSides combatSides = new CombatSides();
+	protected final CombatSides combatSides = new CombatSides();
 	protected final CombatResolver combatResolver = new CombatResolver();
 	
 	public void init(Colony colony, Tile defenderTile, Unit defender) {
@@ -161,6 +147,43 @@ class Combat {
 		}
 	}
 
+	public boolean canAttackWithoutConfirmation() {
+		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
+			return true;
+		}
+        if (combatSides.defender.hasAbility(Ability.PIRACY)) {
+            return true;
+        }
+        
+        if (combatSides.attacker.getOwner().atWarWith(combatSides.defender.getOwner())) {
+        	return true;
+        }
+        return false;
+	}
+	
+	public StringTemplate attackConfirmationMessageTemplate() {
+		Stance stance = combatSides.attacker.getOwner().getStance(combatSides.defender.getOwner());
+		String msgStr = null;
+		switch (stance) {
+	        case WAR:
+	        	throw new IllegalStateException("Player at war, no confirmation needed");
+	        case CEASE_FIRE:
+	        	msgStr = "model.diplomacy.attack.ceaseFire";
+	        	break;
+	        case ALLIANCE:
+	        	msgStr = "model.diplomacy.attack.alliance";
+	        	break;
+	        case UNCONTACTED: 
+	    	case PEACE: 
+			default:
+				msgStr = "model.diplomacy.attack.peace";
+				break;
+		}
+		
+		return StringTemplate.template(msgStr)
+			.addStringTemplate("%nation%", combatSides.defender.getOwner().getNationName());
+	}
+	
 	public float getOffencePower() {
 		return combatSides.getOffencePower();
 	}

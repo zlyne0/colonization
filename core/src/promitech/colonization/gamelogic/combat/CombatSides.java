@@ -1,6 +1,7 @@
 package promitech.colonization.gamelogic.combat;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 
 import net.sf.freecol.common.model.Building;
@@ -40,6 +41,9 @@ class CombatSides {
 	private float defencePower;
 	private float winPropability;
 	private final List<Ability> automaticEquipmentAbilities = new ArrayList<Ability>();
+
+	protected final ObjectWithFeatures offenceModifers = new ObjectWithFeatures("combat"); 
+	protected final ObjectWithFeatures defenceModifiers = new ObjectWithFeatures("defenceCombat");
 
 	void init(Unit attacker, Tile tile) {
 		this.defenderTile = tile;
@@ -86,26 +90,51 @@ class CombatSides {
 		return power;
 	}
 	
+	// msg keys
+	private static final String BASE_OFFENCE = "model.source.baseOffence";
+	private static final String BASE_DEFENCE = "model.source.baseDefence";
+	private static final String CARGO_PENALTY = "model.source.cargoPenalty";
+	private static final String MOVEMENT_PENALTY = "model.source.movementPenalty";
+	private static final String ATTACK_BONUS = "model.source.attackBonus";
+	private static final String AMPHIBIOUS_ATTACK_PENALTY = "model.source.amphibiousAttack";
+	private static final String ARTILLERY_PENALTY = "model.source.artilleryInTheOpen";
+	private static final String FORTIFICATION_BONUS = "model.source.fortified";
+	private static final String INDIAN_RAID_BONUS = "model.source.artilleryAgainstRaid";
+	
+	{
+		java.util.Map<String, String> z = new HashMap<String, String>();
+		z.put(Modifier.OFFENCE, BASE_OFFENCE);
+		z.put(Modifier.DEFENCE, BASE_DEFENCE);
+		z.put(Modifier.COMBAT_CARGO_PENALTY, CARGO_PENALTY);
+		z.put(Modifier.SMALL_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
+		z.put(Modifier.BIG_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
+		z.put(Modifier.ARTILLERY_IN_THE_OPEN, ARTILLERY_PENALTY);
+		z.put(Modifier.ATTACK_BONUS, ATTACK_BONUS);
+		z.put(Modifier.FORTIFIED, FORTIFICATION_BONUS);
+		z.put(Modifier.ARTILLERY_AGAINST_RAID, INDIAN_RAID_BONUS);
+		z.put(Modifier.AMPHIBIOUS_ATTACK, AMPHIBIOUS_ATTACK_PENALTY);
+	}
+	
 	public float getOffencePower(Unit attacker, Unit defender) {
-		ObjectWithFeatures mods = new ObjectWithFeatures("combat"); 
+		offenceModifers.clearLists();
 		
-		mods.addModifier(new Modifier(
+		offenceModifers.addModifier(new Modifier(
 			Modifier.OFFENCE, 
 			Modifier.ModifierType.ADDITIVE, 
 			attacker.unitType.getBaseOffence()
 		));
 				
-		mods.addModifierFrom(attacker.unitType, Modifier.OFFENCE);
-		mods.addModifierFrom(
+		offenceModifers.addModifierFrom(attacker.unitType, Modifier.OFFENCE);
+		offenceModifers.addModifierFrom(
 			attacker.getOwner().getFeatures(), 
 			Modifier.OFFENCE, 
 			attacker.unitType
 		);
-		mods.addModifierFrom(attacker.unitRole, Modifier.OFFENCE);
+		offenceModifers.addModifierFrom(attacker.unitRole, Modifier.OFFENCE);
     	
     	if (defender != null) {
     		// Special bonuses against certain nation types
-    		mods.addModifierFrom(
+    		offenceModifers.addModifierFrom(
 				attacker.getOwner().nationType(), 
 				Modifier.OFFENCE_AGAINST, 
 				defender.getOwner().nationType()
@@ -113,52 +142,52 @@ class CombatSides {
     	}
 
     	// Attack bonus
-		mods.addModifier(
+		offenceModifers.addModifier(
 			Specification.instance.modifiers.getById(Modifier.ATTACK_BONUS)
 		);
     	
     	if (attacker.isNaval()) {
-    		addNavalOffenceModifiers(attacker, mods);
+    		addNavalOffenceModifiers(attacker, offenceModifers);
     	} else {
-    		addLandOffenceModifiers(attacker, defender, mods);
+    		addLandOffenceModifiers(attacker, defender, offenceModifers);
     	}
     	
-		return mods.applyModifiers(0);
+		return offenceModifers.applyModifiers(0);
 	}
 	
 	private float getDefencePower(Unit attacker, Unit defender, Tile tileDefender) {
-		ObjectWithFeatures mods = new ObjectWithFeatures("defenceCombat");
+		defenceModifiers.clearLists();
 
-		mods.addModifier(new Modifier(
+		defenceModifiers.addModifier(new Modifier(
 			Modifier.DEFENCE, 
 			Modifier.ModifierType.ADDITIVE, 
 			defender.unitType.getBaseDefence()
 		));
 		
-		mods.addModifierFrom(defender.unitType, Modifier.DEFENCE);
-		mods.addModifierFrom(
+		defenceModifiers.addModifierFrom(defender.unitType, Modifier.DEFENCE);
+		defenceModifiers.addModifierFrom(
 			defender.getOwner().getFeatures(), 
 			Modifier.DEFENCE, 
 			defender.unitType
 		);
-		mods.addModifierFrom(defender.unitRole, Modifier.DEFENCE);
+		defenceModifiers.addModifierFrom(defender.unitRole, Modifier.DEFENCE);
 		
         // Land/naval split
         if (defender.isNaval()) {
-            addNavalDefensiveModifiers(defender, mods);
+            addNavalDefensiveModifiers(defender, defenceModifiers);
         } else {
-            addLandDefensiveModifiers(attacker, defender, mods, tileDefender);
+            addLandDefensiveModifiers(attacker, defender, defenceModifiers, tileDefender);
         }
-        return mods.applyModifiers(0);
+        return defenceModifiers.applyModifiers(0);
 	}
 
 	private void addNavalDefensiveModifiers(Unit defender, ObjectWithFeatures mods) {
 		int cargo = defender.getGoodsContainer().getCargoSpaceTaken();
 		if (cargo > 0) {
 			Modifier cargoPenalty = new Modifier(
-				Modifier.DEFENCE, 
+				Modifier.COMBAT_CARGO_PENALTY, 
 				Modifier.ModifierType.PERCENTAGE,
-				cargo * -12.5f 
+				cargo * -12.5f
 			);
 			mods.addModifier(cargoPenalty);
 		}
@@ -265,6 +294,8 @@ class CombatSides {
 			);
 		}
 		
+		// Ambush bonus in the open = defender's defence
+		// bonus, if defender is REF, or attacker is indian.
 		if (isAmbush(offenceUnit, defenderUnit)) {
 			Tile defenceTile = defenderUnit.getTileLocationOrNull();
 			mods.addModifierFrom(defenceTile.getType(), Modifier.DEFENCE);
@@ -287,9 +318,9 @@ class CombatSides {
 		int cargo = offenceUnit.getGoodsContainer().getCargoSpaceTaken();
 		if (cargo > 0) {
 			Modifier cargoPenalty = new Modifier(
-				Modifier.OFFENCE, 
+				Modifier.COMBAT_CARGO_PENALTY, 
 				Modifier.ModifierType.PERCENTAGE,
-				cargo * -12.5f 
+				cargo * -12.5f
 			);
 			mods.addModifier(cargoPenalty);
 		}

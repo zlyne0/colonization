@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
@@ -67,8 +68,8 @@ public class ObjectWithFeatures extends ObjectWithId {
     };
     
     protected final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
-    private final java.util.Map<String, List<Modifier>> modifiers = new HashMap<String, List<Modifier>>();
-    private final java.util.Map<String, List<Ability>> abilities = new HashMap<String, List<Ability>>();
+    private final java.util.Map<String, List<Modifier>> modifiers = new LinkedHashMap<String, List<Modifier>>();
+    private final java.util.Map<String, List<Ability>> abilities = new LinkedHashMap<String, List<Ability>>();
 	private final List<Scope> scopes = new ArrayList<Scope>();
     
 	public ObjectWithFeatures(String id) {
@@ -301,6 +302,17 @@ public class ObjectWithFeatures extends ObjectWithId {
         modifiers.clear();
     }
     
+	public void clearLists() {
+		clearLists(abilities);
+		clearLists(modifiers);
+	}
+
+	private <T> void clearLists(java.util.Map<String,List<T>> mapList) {
+		for (Entry<String, List<T>> entry : mapList.entrySet()) {
+			entry.getValue().clear();
+		}
+	}
+    
     public boolean canApplyAllScopes(ObjectWithFeatures obj) {
     	for (Scope scope : scopes) {
     		if (!scope.isAppliesTo(obj)) {
@@ -313,17 +325,16 @@ public class ObjectWithFeatures extends ObjectWithId {
     public String modifiersToString() {
     	String st = "";
     	for (Entry<String, List<Modifier>> entry : modifiers.entrySet()) {
-    		if (st.length() > 0) {
-    			st += ", ";
-    		}
     		st += "modifier name: " + entry.getKey();
-    		st += "[\n";
+    		st += " [\n";
     		if (entry.getValue() != null) {
     			for (Modifier m : entry.getValue()) {
-    				st += "[" + m.toString() + "],\n";
+    				st += "   [" + m.toString() + "],\n";
     			}
     		}
-    		st += " ]";
+    		if (st.length() > 0) {
+    			st += "],\n";
+    		}
     	}
     	return st;
     }
@@ -342,4 +353,5 @@ public class ObjectWithFeatures extends ObjectWithId {
 		}
 		
     }
+
 }

@@ -168,7 +168,8 @@ public class MoveContext {
 				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
 				MoveType.EMBARK.equals(moveType) ||
 				MoveType.DISEMBARK.equals(moveType) ||
-				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType)
+				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
+				MoveType.ATTACK_UNIT.equals(moveType)
 		);
 	}
 
@@ -188,7 +189,9 @@ public class MoveContext {
 			} else {
 				return true;
 			}
-		} 
+		}
+		case ATTACK_UNIT: 
+			return true;
 		default:
 			return false;
 		}
