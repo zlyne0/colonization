@@ -22,4 +22,13 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
 		return this;
 	}
 	
+    public TileAssert isEquals(int x, int y) {
+        isNotNull();
+        
+        if (!actual.equalsCoordinates(x, y)) {
+            failWithMessage("Expected cords [%s,%s] on tile <id: %s, cords %s, %s> ", x, y, actual.getId(), actual.x, actual.y);
+        }
+        return this;
+    }
+	
 }

@@ -1,7 +1,8 @@
 package promitech.colonization.gamelogic.combat;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.offset;
+
+import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -55,9 +56,7 @@ public class LandCombatTest {
     	combat.init(attacker, defenderUnit.getTile());
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.78f, offset(0.01f));
+    	assertThat(combat).hasPowers(4.5f, 1.25f, 0.78f);
 	}
     
     @Test
@@ -72,11 +71,9 @@ public class LandCombatTest {
         Combat combat = new Combat();
         // when
         combat.init(spanishAttacker, defenderUnit.getTile());
-
+        
         // then
-        assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.89f, offset(0.01f));
+        assertThat(combat).hasPowers(15.75f, 1.25f, 0.92f);
     }
     
     @Test
@@ -95,9 +92,7 @@ public class LandCombatTest {
         combat.init(spanishAttacker, defenderUnit.getTile());
 
         // then
-        assertThat(combat.getOffencePower()).isEqualTo(2.62f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(1.25f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.67f, offset(0.01f));
+        assertThat(combat).hasPowers(3.93f, 1.25f, 0.75f);
     }
     
     @Test 
@@ -112,9 +107,7 @@ public class LandCombatTest {
     	combat.init(spanishArtillery, indianSettlement);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.77f, offset(0.01f));
+        assertThat(combat).hasPowers(15.75f, 3.0f, 0.84f);
 	}
 
     @Test 
@@ -132,9 +125,7 @@ public class LandCombatTest {
     	combat.init(spanishArtillery, indianSettlement);
     	
     	// then
-        assertThat(combat.getOffencePower()).isEqualTo(10.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.77f, offset(0.01f));
+        assertThat(combat).hasPowers(15.75f, 3.0f, 0.84f);
     }
     
     @Test 
@@ -150,9 +141,7 @@ public class LandCombatTest {
     	combat.init(attacker, indianSettlement);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(3.0f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.6f, offset(0.01f));
+        assertThat(combat).hasPowers(4.5f, 3.0f, 0.6f);
 	}
     
     @Test 
@@ -168,9 +157,7 @@ public class LandCombatTest {
     	combat.init(attacker, colonyTile);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(35.25f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.11f, offset(0.01f));
+        assertThat(combat).hasPowers(4.5f, 35.25f, 0.11f);
 	}
     
     
@@ -191,9 +178,7 @@ public class LandCombatTest {
     	combat.init(attacker, colonyTile);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(5.5f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.45f, offset(0.01f));
+        assertThat(combat).hasPowers(4.5f, 5.5f, 0.45f);
 	}
 
     @Test 
@@ -214,9 +199,7 @@ public class LandCombatTest {
     	combat.init(attacker, colonyTile);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(4.5f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.5f, offset(0.01f));
+        assertThat(combat).hasPowers(4.5f, 4.5f, 0.5f);
 	}
     
     
@@ -233,9 +216,7 @@ public class LandCombatTest {
     	combat.init(indianUnit, colonyTile);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(70.5f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.03f, offset(0.01f));
+        assertThat(combat).hasPowers(1.5f, 70.5f, 0.03f);
 	}
 
     @Test 
@@ -256,8 +237,6 @@ public class LandCombatTest {
     	combat.init(indianUnit, colonyTile);
 
 		// then
-        assertThat(combat.getOffencePower()).isEqualTo(1.5f, offset(0.01f));
-        assertThat(combat.getDefencePower()).isEqualTo(58.25f, offset(0.01f));
-        assertThat(combat.getWinPropability()).isEqualTo(0.02f, offset(0.01f));
+        assertThat(combat).hasPowers(1.5f, 58.25f, 0.02f);
 	}
 }

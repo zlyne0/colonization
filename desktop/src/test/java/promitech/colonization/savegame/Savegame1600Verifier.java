@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
@@ -42,7 +41,7 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
-import static promitech.colonization.savegame.TileAssert.assertThat;
+import static net.sf.freecol.common.model.TileAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 
