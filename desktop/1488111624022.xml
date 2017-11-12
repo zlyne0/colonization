@@ -7,6 +7,18 @@
 		<cibola id="lostCityRumour.cityName.4"/>
 		<cibola id="lostCityRumour.cityName.1"/>
 		<freecol-specification difficultyLevel="model.difficulty.medium">
+			<modifiers>
+				<modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.bigMovementPenalty" source="model.source.movementPenalty" value="-66.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.artilleryInTheOpen" source="model.source.artilleryInTheOpen" value="-75.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.attackBonus" source="model.source.attackBonus" value="50.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.fortified" source="model.source.fortified" value="50.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.artilleryAgainstRaid" source="model.source.artilleryAgainstRaid" value="100.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.amphibiousAttack" source="model.source.amphibiousAttack" value="-75.0" type="percentage" index="50"/>
+				<modifier id="model.modifier.colonyGoodsParty" source="model.source.colonyGoodsParty" duration="25" value="50.0" type="percentage" incrementType="additive" increment="-2.0" index="90"/>
+				<modifier id="model.goods.food" value="0.0" type="additive" index="0"/>
+				<modifier id="model.modifier.shipTradePenalty" source="model.source.shipTradePenalty" value="0.0" type="percentage" index="0"/>
+			</modifiers>		    		    
 			<resource-types>
 				<resource-type id="model.resource.game">
 					<modifier id="model.goods.furs" value="2.0" type="ADDITIVE" index="10"/>
@@ -17908,6 +17920,19 @@
 			</tile>
 			<tile id="tile:3460" x="12" y="80" type="model.tile.ocean" style="1" moveToEurope="false">
 				<cachedTile player="player:1"/>
+				
+		        <unit id="unit:-111" name="spanis skunks" unitType="model.unit.privateer" movesLeft="24" state="active" role="model.role.default" roleCount="0" owner="player:133" treasureAmount="0" entryLocation="tile:3437" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="4">
+		          <goodsContainer id="goodsContainer:6901">
+		            <storedGoods>
+		              <goods type="model.goods.tools" amount="1"/>
+		            </storedGoods>
+		            <oldStoredGoods>
+		              <goods type="model.goods.tools" amount="1"/>
+		              <goods type="model.goods.tradeGoods" amount="1"/>
+		            </oldStoredGoods>
+		          </goodsContainer>
+		        </unit>
+								
 			</tile>
 			<tile id="tile:3461" x="13" y="80" type="model.tile.ocean" style="1" moveToEurope="false">
 				<cachedTile player="player:1"/>

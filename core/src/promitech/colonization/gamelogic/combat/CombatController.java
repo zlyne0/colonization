@@ -25,11 +25,12 @@ public class CombatController {
 		combat.init(moveContext.unit, moveContext.destTile);
 
 		if (combat.canAttackWithoutConfirmation()) {
-			System.out.println("combat estimation dialog");
 			showPreCombatDialog();
 		} else {
+			CombatMsg combatMsg = new CombatMsg(combat);
+			
 			QuestionDialog questionDialog = new QuestionDialog();
-			questionDialog.addQuestion(combat.attackConfirmationMessageTemplate());
+			questionDialog.addQuestion(combatMsg.createAttackConfirmationMessageTemplate());
 			questionDialog.addAnswer("model.diplomacy.attack.confirm", confirmAttack, moveContext);
 			questionDialog.addOnlyCloseAnswer("cancel");
 			guiGameController.showDialog(questionDialog);
@@ -37,9 +38,7 @@ public class CombatController {
 	}
 
 	private void showPreCombatDialog() {
-		System.out.println("" + combat.combatSides.offenceModifers.modifiersToString());
-		System.out.println("" + combat.combatSides.defenceModifiers.modifiersToString());
+		SummaryDialog summaryDialog = new SummaryDialog(this, combat);
+		guiGameController.showDialog(summaryDialog);
 	}
-	
-
 }

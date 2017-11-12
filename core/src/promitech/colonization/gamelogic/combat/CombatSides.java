@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Scope;
@@ -101,18 +102,18 @@ class CombatSides {
 	private static final String FORTIFICATION_BONUS = "model.source.fortified";
 	private static final String INDIAN_RAID_BONUS = "model.source.artilleryAgainstRaid";
 	
+	public final java.util.Map<String, String> combatModifiersNames = new HashMap<String, String>();
 	{
-		java.util.Map<String, String> z = new HashMap<String, String>();
-		z.put(Modifier.OFFENCE, BASE_OFFENCE);
-		z.put(Modifier.DEFENCE, BASE_DEFENCE);
-		z.put(Modifier.COMBAT_CARGO_PENALTY, CARGO_PENALTY);
-		z.put(Modifier.SMALL_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
-		z.put(Modifier.BIG_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
-		z.put(Modifier.ARTILLERY_IN_THE_OPEN, ARTILLERY_PENALTY);
-		z.put(Modifier.ATTACK_BONUS, ATTACK_BONUS);
-		z.put(Modifier.FORTIFIED, FORTIFICATION_BONUS);
-		z.put(Modifier.ARTILLERY_AGAINST_RAID, INDIAN_RAID_BONUS);
-		z.put(Modifier.AMPHIBIOUS_ATTACK, AMPHIBIOUS_ATTACK_PENALTY);
+		combatModifiersNames.put(Modifier.OFFENCE, BASE_OFFENCE);
+		combatModifiersNames.put(Modifier.DEFENCE, BASE_DEFENCE);
+		combatModifiersNames.put(Modifier.COMBAT_CARGO_PENALTY, CARGO_PENALTY);
+		combatModifiersNames.put(Modifier.SMALL_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
+		combatModifiersNames.put(Modifier.BIG_MOVEMENT_PENALTY, MOVEMENT_PENALTY);
+		combatModifiersNames.put(Modifier.ARTILLERY_IN_THE_OPEN, ARTILLERY_PENALTY);
+		combatModifiersNames.put(Modifier.ATTACK_BONUS, ATTACK_BONUS);
+		combatModifiersNames.put(Modifier.FORTIFIED, FORTIFICATION_BONUS);
+		combatModifiersNames.put(Modifier.ARTILLERY_AGAINST_RAID, INDIAN_RAID_BONUS);
+		combatModifiersNames.put(Modifier.AMPHIBIOUS_ATTACK, AMPHIBIOUS_ATTACK_PENALTY);
 	}
 	
 	public float getOffencePower(Unit attacker, Unit defender) {
@@ -419,6 +420,10 @@ class CombatSides {
 	
 	public boolean isDefenderUnitBeached() {
 		return defender.isBeached();
+	}
+
+	public Stance stance() {
+		return attacker.getOwner().getStance(defender.getOwner());
 	}
 	
 }

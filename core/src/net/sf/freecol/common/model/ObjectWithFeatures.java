@@ -338,6 +338,10 @@ public class ObjectWithFeatures extends ObjectWithId {
     	return st;
     }
     
+    public java.util.Map<String,List<Modifier>> getModifiers() {
+    	return modifiers;
+    }
+    
     public static class Xml {
 		public static void abstractAddNodes(XmlNodeParser<? extends ObjectWithFeatures> nodeParser) {
 			nodeParser.addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);

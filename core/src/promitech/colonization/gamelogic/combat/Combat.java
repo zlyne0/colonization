@@ -4,9 +4,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.ui.resources.StringTemplate;
 
 class Combat {
 	
@@ -159,29 +157,6 @@ class Combat {
         	return true;
         }
         return false;
-	}
-	
-	public StringTemplate attackConfirmationMessageTemplate() {
-		Stance stance = combatSides.attacker.getOwner().getStance(combatSides.defender.getOwner());
-		String msgStr = null;
-		switch (stance) {
-	        case WAR:
-	        	throw new IllegalStateException("Player at war, no confirmation needed");
-	        case CEASE_FIRE:
-	        	msgStr = "model.diplomacy.attack.ceaseFire";
-	        	break;
-	        case ALLIANCE:
-	        	msgStr = "model.diplomacy.attack.alliance";
-	        	break;
-	        case UNCONTACTED: 
-	    	case PEACE: 
-			default:
-				msgStr = "model.diplomacy.attack.peace";
-				break;
-		}
-		
-		return StringTemplate.template(msgStr)
-			.addStringTemplate("%nation%", combatSides.defender.getOwner().getNationName());
 	}
 	
 	public float getOffencePower() {

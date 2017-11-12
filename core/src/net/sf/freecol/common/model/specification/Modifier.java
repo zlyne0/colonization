@@ -135,6 +135,15 @@ public class Modifier implements Identifiable {
 	    		", source: " + sourceId;
 	}
 	
+	public String createTypeMessage() {
+		switch (modifierType) {
+		case MULTIPLICATIVE: return "*";
+		case PERCENTAGE: return "%";
+		default:
+			return "";
+		}
+	}
+	
 	public boolean isPercentageType() {
 		return modifierType == ModifierType.PERCENTAGE;
 	}
