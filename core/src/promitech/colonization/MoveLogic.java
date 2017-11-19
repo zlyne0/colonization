@@ -57,7 +57,7 @@ public class MoveLogic {
 		this.moveDrawerSemaphore = moveController.getMoveDrawerSemaphore();
 		this.moveController = moveController;
 		this.guiGameModel = guiGameModel;
-		this.combatController = new CombatController(guiGameController);
+		this.combatController = new CombatController(guiGameController, this);
 	}
 	
 	private void gui_handleMoveContext(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
@@ -151,7 +151,7 @@ public class MoveLogic {
 				moveController.showHighSeasQuestion(moveContext);
 			} break;
 			case ATTACK_UNIT: {
-				combatController.userInteraction(moveContext);
+				combatController.confirmCombat(moveContext);
 			} break;
 			default:
 				throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);

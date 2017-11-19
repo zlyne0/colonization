@@ -89,7 +89,7 @@ public class MoveController {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
-		mapActor.startUnitDislocationAnimation(moveContext);
+		mapActor.startUnitDislocationAnimation(moveContext, moveDrawerSemaphore);
 	}
 	
 	public boolean showMoveOnPlayerScreen(MoveContext moveContext) {
@@ -225,7 +225,6 @@ public class MoveController {
 
 	public void setMapActor(MapActor mapActor) {
 		this.mapActor = mapActor;
-		this.mapActor.mapDrawModel().setEndOfUnitDislocationAnimationListener(moveDrawerSemaphore);
 	}
 	
 }

@@ -27,6 +27,7 @@ public class MapActor extends Widget {
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 	private MoveContext unitDislocationAnimationMoveContext;
+	private Runnable unitDislocationEndActionListener;
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -117,9 +118,15 @@ public class MapActor extends Widget {
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
 		}
         if (unitDislocationAnimationMoveContext != null) {
-        	mapDrawModel.unitDislocationAnimation.init(mapRenderer, unitDislocationAnimationMoveContext);
+        	mapDrawModel.unitDislocationAnimation.init(mapRenderer, 
+    			unitDislocationAnimationMoveContext.unit,
+    			unitDislocationAnimationMoveContext.sourceTile,
+    			unitDislocationAnimationMoveContext.destTile,
+    			unitDislocationEndActionListener
+			);
         	getStage().addAction(mapDrawModel.unitDislocationAnimation);
         	unitDislocationAnimationMoveContext = null;
+        	unitDislocationEndActionListener = null;
         }
         mapRenderer.render(batch);
 	}
@@ -159,7 +166,8 @@ public class MapActor extends Widget {
 		return mapDrawModel;
 	}
 
-	public void startUnitDislocationAnimation(final MoveContext moveContext) {
+	public void startUnitDislocationAnimation(final MoveContext moveContext, final Runnable endActionListener) {
+		this.unitDislocationEndActionListener = endActionListener;
 		this.unitDislocationAnimationMoveContext = moveContext;
 		Gdx.graphics.requestRendering();
 	}

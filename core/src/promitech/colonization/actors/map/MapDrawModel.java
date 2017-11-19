@@ -357,10 +357,6 @@ public class MapDrawModel {
 		return selectedUnit;
 	}
 	
-	public void setEndOfUnitDislocationAnimationListener(Runnable listener) {
-		unitDislocationAnimation.setEndActionListener(listener);
-	}
-	
 	public void setSelectedUnit(Unit selectedUnit) {
 		this.selectedUnit = selectedUnit;
 		for (ChangeSelectedUnitListener l : changeSelectedUnitListeners) {

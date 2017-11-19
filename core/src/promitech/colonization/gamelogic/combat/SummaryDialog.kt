@@ -13,7 +13,7 @@ import promitech.colonization.ui.ClosableDialog
 import promitech.colonization.ui.resources.Messages
 
 internal class SummaryDialog (
-	val combatController : CombatController,
+	val attackConfirmation : java.lang.Runnable,
 	val combat : Combat
 ) : ClosableDialog<SummaryDialog>("", GameResources.instance.getUiSkin()) {
 	
@@ -98,6 +98,13 @@ internal class SummaryDialog (
 		cancelButton.addListener(object : ChangeListener() {
 			override fun changed(event: ChangeListener.ChangeEvent, actor: Actor) {
 				hideWithFade()
+			}
+		})
+		
+		okButton.addListener(object : ChangeListener() {
+			override fun changed(event: ChangeListener.ChangeEvent, actor: Actor) {
+				hideWithoutFade()
+				attackConfirmation.run()
 			}
 		})
 		
