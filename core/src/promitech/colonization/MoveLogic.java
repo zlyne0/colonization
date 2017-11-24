@@ -5,6 +5,7 @@ import java.util.List;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
+import promitech.colonization.gamelogic.MoveView;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
@@ -52,12 +53,12 @@ public class MoveLogic {
 	public MoveLogic() {
 	}
 	
-	public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel) {
+	public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, MoveView moveView) {
 		this.guiGameController = guiGameController;
 		this.moveDrawerSemaphore = moveController.getMoveDrawerSemaphore();
 		this.moveController = moveController;
 		this.guiGameModel = guiGameModel;
-		this.combatController = new CombatController(guiGameController, this);
+		this.combatController = new CombatController(guiGameController, moveView);
 	}
 	
 	private void gui_handleMoveContext(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {

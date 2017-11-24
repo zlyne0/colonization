@@ -1,12 +1,11 @@
 package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.actions.TemporalAction;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 
-class UnitDislocationAnimation extends TemporalAction {
+class UnitDislocationAnimation extends UnitTileAnimation {
 	private static final float UPDATE_DURATION = 0.2f; 
 	
 	private Unit unit;
@@ -22,23 +21,26 @@ class UnitDislocationAnimation extends TemporalAction {
 	UnitDislocationAnimation() {
 	}
 
+    @Override
 	public String toString() {
 		return "UnitDislocationAnimation " + unit.getId() + ", source:" + source + ", dest:" + dest;
 	}
 	
-	void init(MapRenderer mapRenderer, Unit unit, Tile sourceTile, Tile destTile, Runnable endActionListener) {
+	void init(Unit unit, Tile sourceTile, Tile destTile, Runnable endActionListener) {
 		this.unit = unit;
 		this.sourceTile = sourceTile;
 		this.destTile = destTile;
 		this.endActionListener = endActionListener;
 		
-		mapRenderer.mapToScreenCords(sourceTile.x, sourceTile.y, source);
-		mapRenderer.mapToScreenCords(destTile.x, destTile.y, dest);
-		
-		v.set(source);
-		
 		restart();
 		setDuration(UPDATE_DURATION);
+	}
+	
+	@Override
+	void initMapPos(MapRenderer mapRenderer) {
+        mapRenderer.mapToScreenCords(sourceTile.x, sourceTile.y, source);
+        mapRenderer.mapToScreenCords(destTile.x, destTile.y, dest);
+        v.set(source);
 	}
 	
 	@Override
@@ -62,23 +64,27 @@ class UnitDislocationAnimation extends TemporalAction {
 		v.add(source);
 	}
 	
-	boolean isUnitAnimated(Unit u) {
+	@Override
+	public boolean isUnitAnimated(Unit u) {
 		return this.unit != null && u != null && this.unit.equalsId(u);
 	}
 
 	boolean isAnimatedSourceTile(int mapx, int mapy) {
-		return sourceTile != null && sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy;
+		return sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy;
 	}
 
-	boolean isTileAnimated(int mapx, int mapy) {
+	@Override
+	public boolean isTileAnimated(int mapx, int mapy) {
 		return (sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy) ||
 				(destTile != null && destTile.x == mapx && destTile.y == mapy);
 	}
 	
-	void drawUnit(ObjectsTileDrawer unitDrawer) {
+	@Override
+	public void drawUnit(ObjectsTileDrawer unitDrawer) {
 		if (unit != null) {
 			unitDrawer.drawUnit(unit, v);
 		}
 	}
+
 }
 

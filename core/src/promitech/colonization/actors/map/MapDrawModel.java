@@ -294,7 +294,31 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	protected Map map;
-	protected final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
+	// TODO: refactoring
+	protected UnitTileAnimation unitTileAnimation = new UnitTileAnimation() {
+        @Override
+        protected void update(float percent) {
+        }
+        
+        @Override
+        boolean isUnitAnimated(Unit unit) {
+            return false;
+        }
+        
+        @Override
+        boolean isTileAnimated(int x, int y) {
+            return false;
+        }
+        
+        @Override
+        void drawUnit(ObjectsTileDrawer drawer) {
+        }
+
+        @Override
+        void initMapPos(MapRenderer mapRenderer) {
+        }
+    };
+    
 	public Path unitPath;
 	
 	protected void initialize(Map map, Player player, GameResources gameResources) {

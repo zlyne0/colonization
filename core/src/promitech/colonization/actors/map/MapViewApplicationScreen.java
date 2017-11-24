@@ -32,6 +32,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         di.guiGameController.setMapActor(mapActor);
         di.guiGameController.setApplicationScreenManager(this.screenManager);
         di.moveController.setMapActor(mapActor);
+        di.moveView.setMapActor(mapActor);
         
         hudStage = new HudStage(new ScreenViewport(), di, mapActor);
         

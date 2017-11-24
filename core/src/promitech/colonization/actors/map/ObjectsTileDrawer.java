@@ -2,6 +2,7 @@ package promitech.colonization.actors.map;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
@@ -15,7 +16,9 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 
 class ObjectsTileDrawer extends TileDrawer {
-	private static final int UNIT_IMAGE_OFFSET = 20;
+	private static final float NO_ALPHA = 1f;
+
+    private static final int UNIT_IMAGE_OFFSET = 20;
 	
 	private int w = MapRenderer.TILE_WIDTH;
 	private int h = MapRenderer.TILE_HEIGHT;
@@ -39,10 +42,11 @@ class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-		// draw selected unit always on top
+		// 1. draw selected unit always on top
+		// 2. animated unit always on top
 		boolean drawRestOfUnits = true;
 		Unit selectedUnit = mapDrawModel.getSelectedUnit();
-		if (selectedUnit != null && !mapDrawModel.unitDislocationAnimation.isUnitAnimated(selectedUnit)) {
+		if (selectedUnit != null && !mapDrawModel.unitTileAnimation.isUnitAnimated(selectedUnit)) {
 			Tile selectedUnitTile = selectedUnit.getTileLocationOrNull();
 			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
 				drawUnit(selectedUnit);
@@ -52,15 +56,15 @@ class ObjectsTileDrawer extends TileDrawer {
 		if (drawRestOfUnits && tile.getUnits().size() > 0 && !tile.hasSettlement()) {
 			Unit firstUnit = tile.getUnits().first();
 			
-			if (mapDrawModel.unitDislocationAnimation.isUnitAnimated(firstUnit)) {
-				mapDrawModel.unitDislocationAnimation.drawUnit(this);
+			if (mapDrawModel.unitTileAnimation.isUnitAnimated(firstUnit)) {
+				mapDrawModel.unitTileAnimation.drawUnit(this);
 			} else {
 				drawUnit(firstUnit);
 			}
 		}
 		
-		if (mapDrawModel.unitDislocationAnimation.isTileAnimated(mapx, mapy)) {
-			mapDrawModel.unitDislocationAnimation.drawUnit(this);
+		if (mapDrawModel.unitTileAnimation.isTileAnimated(mapx, mapy)) {
+			mapDrawModel.unitTileAnimation.drawUnit(this);
 		}
 	}
 
@@ -70,20 +74,23 @@ class ObjectsTileDrawer extends TileDrawer {
 				|| mapDrawModel.selectedTile.y != mapy) {
 			return;
 		}
-		drawFocus();
+		drawFocus(NO_ALPHA);
 	}
 	
-	private void drawFocus() {
+	private void drawFocus(float alpha) {
 		batch.end();
 		
 		Gdx.gl20.glLineWidth(3);
+        if (alpha != NO_ALPHA) {
+            Gdx.gl.glEnable(GL20.GL_BLEND);
+        }
 		shapeRenderer.begin(ShapeType.Line);
-		shapeRenderer.setColor(Color.WHITE);
+		shapeRenderer.setColor(Color.WHITE.r, Color.WHITE.g, Color.WHITE.b, alpha);
 		shapeRenderer.ellipse(
-				screenPoint.x + MapRenderer.TILE_WIDTH/4, 
-				screenPoint.y + MapRenderer.TILE_HEIGHT/4, 
-				MapRenderer.TILE_WIDTH/2,
-				MapRenderer.TILE_HEIGHT/2
+				screenPoint.x + MapRenderer.TILE_WIDTH/4f, 
+				screenPoint.y + MapRenderer.TILE_HEIGHT/4f, 
+				MapRenderer.TILE_WIDTH/2f,
+				MapRenderer.TILE_HEIGHT/2f
 		);
 		shapeRenderer.end();
 		Gdx.gl20.glLineWidth(1);
@@ -101,27 +108,52 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		float strWidth = FontResource.strWidth(font, tile.getSettlement().getName());
 		font.setColor(tile.getSettlement().getOwner().nation().getColor());
-		font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2 - strWidth/2, screenPoint.y);
+		font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2f - strWidth/2, screenPoint.y);
 		
 		if (tile.hasSettlementOwnedBy(mapDrawModel.playingPlayer) && tile.getSettlement().isColony()) {
 			Colony colony = tile.getSettlement().getColony();
 			font.setColor(Color.WHITE);
-			font.draw(batch, "" + colony.getColonyUnitsCount(), 
-					screenPoint.x + w/2, 
-					screenPoint.y + h/2 + 5
+			font.draw(batch, Integer.toString(colony.getColonyUnitsCount()), 
+					screenPoint.x + w/2f, 
+					screenPoint.y + h/2f + 5
 			);
 		}
 	}
 
 	protected void drawUnit(Unit unit, Vector2 aScreenPoint) {
-		this.screenPoint.set(aScreenPoint);
-		this.drawUnit(unit);
+	    this.screenPoint.set(aScreenPoint);
+	    this.drawUnit(unit);
 	}
+	
+    protected void drawUnit(Unit unit, Vector2 pos, float alpha) {
+        this.screenPoint.set(pos);
+        
+        Unit selectedUnit = mapDrawModel.getSelectedUnit();
+        if (selectedUnit != null && selectedUnit.equalsId(unit)) {
+            drawFocus(alpha);
+        }
+        
+        Frame frame = gameResources.getCenterAdjustFrameTexture(unit.resourceImageKey());
+        
+        Color tmpColor = batch.getColor();
+        batch.setColor(tmpColor.r, tmpColor.g, tmpColor.b, alpha);
+        batch.draw(frame.texture, 
+                screenPoint.x + frame.offsetX, 
+                screenPoint.y + frame.offsetY + UNIT_IMAGE_OFFSET
+        );
+        batch.setColor(tmpColor.r, tmpColor.g, tmpColor.b, 1f);
+        
+        UnitDrawer.drawMapUnitChip(batch, shapeRenderer, 
+            unit, tile, mapDrawModel.playingPlayer, 
+            screenPoint.x, screenPoint.y,
+            alpha
+        );
+    }
 	
 	protected void drawUnit(Unit unit) {
 		Unit selectedUnit = mapDrawModel.getSelectedUnit();
 		if (selectedUnit != null && selectedUnit.equalsId(unit)) {
-			drawFocus();
+			drawFocus(NO_ALPHA);
 		}
 		
 		Frame frame = gameResources.getCenterAdjustFrameTexture(unit.resourceImageKey());
@@ -132,7 +164,8 @@ class ObjectsTileDrawer extends TileDrawer {
 		
 		UnitDrawer.drawMapUnitChip(batch, shapeRenderer, 
 			unit, tile, mapDrawModel.playingPlayer, 
-			screenPoint.x, screenPoint.y
+			screenPoint.x, screenPoint.y,
+			NO_ALPHA
 		);
 	}
 	

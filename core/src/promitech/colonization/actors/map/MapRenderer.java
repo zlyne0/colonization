@@ -423,16 +423,16 @@ public class MapRenderer {
 
 	private void drawTileGrid(float screenX, float screenY, Vector2 v) {
 	    shapeRenderer.line(
-	        screenX + v.x + TILE_WIDTH/2, 
+	        screenX + v.x + TILE_WIDTH/2f, 
 	        screenY + v.y, 
 	        screenX + v.x, 
-	        screenY + v.y + TILE_HEIGHT/2
+	        screenY + v.y + TILE_HEIGHT/2f
         );
 	    shapeRenderer.line(
-	        screenX + v.x + TILE_WIDTH/2, 
+	        screenX + v.x + TILE_WIDTH/2f, 
 	        screenY + v.y, 
 	        screenX + v.x + TILE_WIDTH, 
-	        screenY + v.y + TILE_HEIGHT/2
+	        screenY + v.y + TILE_HEIGHT/2f
         );
 	}
 	

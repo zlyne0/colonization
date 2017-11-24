@@ -1,16 +1,16 @@
 package promitech.colonization.gamelogic.combat;
 
 import promitech.colonization.GUIGameController;
-import promitech.colonization.MoveLogic;
 import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.gamelogic.MoveView;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
 public class CombatController {
 	
 	private final GUIGameController guiGameController;
-	private final MoveLogic moveLogic;
 	private final Combat combat = new Combat();
+	private final MoveView moveView;
 
 	private final OptionAction<MoveContext> confirmWarDeclaration = new OptionAction<MoveContext>() {
 		@Override
@@ -19,9 +19,9 @@ public class CombatController {
 		}
 	};
 	
-	public CombatController(GUIGameController guiGameController, MoveLogic moveLogic) {
+	public CombatController(GUIGameController guiGameController, MoveView moveView) {
 		this.guiGameController = guiGameController;
-		this.moveLogic = moveLogic;
+		this.moveView = moveView;
 	}
 	
 	public void confirmCombat(MoveContext moveContext) {
@@ -40,13 +40,20 @@ public class CombatController {
 		}
 	}
 
-	public void confirmAttack(MoveContext moveContext) {
-		moveLogic.forGuiMoveOnlyReallocation(moveContext, new MoveLogic.AfterMoveProcessor() {
-			public void afterMove(final MoveContext mc) {
-			}
-		});
+	public void confirmAttack(final MoveContext moveContext) {
+	    Runnable endOfAnimation = new Runnable() {
+            @Override
+            public void run() {
+                System.out.println("end of animation");
+            }
+        };
+        //moveView.showMoveUnblocked(moveContext, endOfAnimation);
+        moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
 		
-		
+        // TODO nie dziala animacja porazka:
+//		sukces,
+//		porazka -> zmiana roli,
+//		porazka -> calkowite zniszczenie
 //		na move logic odpalic show move animation
 //		- sukces
 //		- porazka

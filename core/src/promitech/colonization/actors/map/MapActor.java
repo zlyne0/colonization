@@ -8,8 +8,11 @@ import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
+import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
+import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GUIGameController;
@@ -26,8 +29,10 @@ public class MapActor extends Widget {
 	private final MapRenderer mapRenderer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
-	private MoveContext unitDislocationAnimationMoveContext;
-	private Runnable unitDislocationEndActionListener;
+
+	private final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
+    private final UnitDisappearAnimation unitDisappearAnimation = new UnitDisappearAnimation();
+    private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -117,16 +122,15 @@ public class MapActor extends Widget {
 			mapCentered = true;
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
 		}
-        if (unitDislocationAnimationMoveContext != null) {
-        	mapDrawModel.unitDislocationAnimation.init(mapRenderer, 
-    			unitDislocationAnimationMoveContext.unit,
-    			unitDislocationAnimationMoveContext.sourceTile,
-    			unitDislocationAnimationMoveContext.destTile,
-    			unitDislocationEndActionListener
-			);
-        	getStage().addAction(mapDrawModel.unitDislocationAnimation);
-        	unitDislocationAnimationMoveContext = null;
-        	unitDislocationEndActionListener = null;
+        if (unitAnimationsToStart.size > 0) {
+            SequenceAction sequence = Actions.sequence();
+            for (int i = 0; i < unitAnimationsToStart.size; i++) {
+                unitAnimationsToStart.get(i).initMapPos(mapRenderer);
+                sequence.addAction(unitAnimationsToStart.get(i));
+            }
+            getStage().addAction(sequence);
+            mapDrawModel.unitTileAnimation = unitDislocationAnimation;
+            unitAnimationsToStart.clear();
         }
         mapRenderer.render(batch);
 	}
@@ -167,9 +171,33 @@ public class MapActor extends Widget {
 	}
 
 	public void startUnitDislocationAnimation(final MoveContext moveContext, final Runnable endActionListener) {
-		this.unitDislocationEndActionListener = endActionListener;
-		this.unitDislocationAnimationMoveContext = moveContext;
+        unitDislocationAnimation.init( 
+            moveContext.unit,
+            moveContext.sourceTile,
+            moveContext.destTile,
+            endActionListener
+        );
+		unitAnimationsToStart.add(unitDislocationAnimation);
+		
 		Gdx.graphics.requestRendering();
+	}
+	
+	public void startFailedAttackAnimation(final MoveContext moveContext, final Runnable endActionListener) {
+        unitDislocationAnimation.init(
+            moveContext.unit,
+            moveContext.sourceTile,
+            moveContext.destTile,
+            null
+        );
+        unitDisappearAnimation.init( 
+            moveContext.unit, 
+            moveContext.destTile, 
+            endActionListener
+        );
+        unitAnimationsToStart.add(unitDislocationAnimation);
+        unitAnimationsToStart.add(unitDisappearAnimation);
+        
+	    Gdx.graphics.requestRendering();
 	}
 
 	public void showTileOwners() {
