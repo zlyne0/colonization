@@ -187,7 +187,13 @@ public class MapActor extends Widget {
             moveContext.unit,
             moveContext.sourceTile,
             moveContext.destTile,
-            null
+            new Runnable() {
+				@Override
+				public void run() {
+					// TODO: refactoring
+					mapDrawModel.unitTileAnimation = unitDisappearAnimation;
+				}
+			}
         );
         unitDisappearAnimation.init( 
             moveContext.unit, 

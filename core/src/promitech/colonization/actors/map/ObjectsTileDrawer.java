@@ -8,6 +8,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -42,32 +43,52 @@ class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-		// 1. draw selected unit always on top
-		// 2. animated unit always on top
-		boolean drawRestOfUnits = true;
-		Unit selectedUnit = mapDrawModel.getSelectedUnit();
-		if (selectedUnit != null && !mapDrawModel.unitTileAnimation.isUnitAnimated(selectedUnit)) {
-			Tile selectedUnitTile = selectedUnit.getTileLocationOrNull();
-			if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
-				drawUnit(selectedUnit);
-				drawRestOfUnits = false;
-			}
-		}
-		if (drawRestOfUnits && tile.getUnits().size() > 0 && !tile.hasSettlement()) {
-			Unit firstUnit = tile.getUnits().first();
-			
-			if (mapDrawModel.unitTileAnimation.isUnitAnimated(firstUnit)) {
-				mapDrawModel.unitTileAnimation.drawUnit(this);
-			} else {
-				drawUnit(firstUnit);
-			}
-		}
+
 		
 		if (mapDrawModel.unitTileAnimation.isTileAnimated(mapx, mapy)) {
+			// tile is animated so tak first unit as background
+			if (!tile.hasSettlement()) {
+				Unit unitToDraw = firstButNot(tile.getUnits(), mapDrawModel.unitTileAnimation.getUnit());
+				if (unitToDraw != null) {
+					drawUnit(unitToDraw);
+				}
+			}
 			mapDrawModel.unitTileAnimation.drawUnit(this);
+		} else {
+			// tile is not animated so take first unit or selected
+			Unit unitToDraw = null;
+			Unit selectedUnit = mapDrawModel.getSelectedUnit();
+			if (selectedUnit != null) {
+				Tile selectedUnitTile = selectedUnit.getTileLocationOrNull();
+				if (selectedUnitTile != null && mapx == selectedUnitTile.x && mapy == selectedUnitTile.y) {
+					unitToDraw = selectedUnit;
+				}
+			}
+			if (unitToDraw == null) {
+				// no selected unit on actual tile
+				if (!tile.hasSettlement()) {
+					unitToDraw = tile.getUnits().first();
+				}
+			}
+			if (unitToDraw != null) {
+				drawUnit(unitToDraw);
+			}
 		}
 	}
 
+	// TODO: refactoring move to MapIdEntities
+	private Unit firstButNot(MapIdEntities<Unit> units, Unit excludeUnit) {
+		if (excludeUnit == null) {
+			return units.first();
+		}
+		for (Unit u : units.entities()) {
+			if (!u.equalsId(excludeUnit)) {
+				return u;
+			}
+		}
+		return null;
+	}
+	
 	private void drawTerrainFocus() {
 		if (mapDrawModel.selectedTile == null 
 				|| mapDrawModel.selectedTile.x != mapx 

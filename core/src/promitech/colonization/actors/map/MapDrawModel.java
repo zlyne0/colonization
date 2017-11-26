@@ -317,6 +317,11 @@ public class MapDrawModel {
         @Override
         void initMapPos(MapRenderer mapRenderer) {
         }
+
+		@Override
+		Unit getUnit() {
+			return null;
+		}
     };
     
 	public Path unitPath;

@@ -13,4 +13,6 @@ abstract class UnitTileAnimation extends TemporalAction {
     abstract void drawUnit(ObjectsTileDrawer drawer);
     
     abstract boolean isTileAnimated(int x, int y);
+    
+    abstract Unit getUnit();
 }

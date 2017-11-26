@@ -68,9 +68,10 @@ class UnitDislocationAnimation extends UnitTileAnimation {
 	public boolean isUnitAnimated(Unit u) {
 		return this.unit != null && u != null && this.unit.equalsId(u);
 	}
-
-	boolean isAnimatedSourceTile(int mapx, int mapy) {
-		return sourceTile != null && sourceTile.x == mapx && sourceTile.y == mapy;
+	
+	@Override
+	public Unit getUnit() {
+		return unit;
 	}
 
 	@Override

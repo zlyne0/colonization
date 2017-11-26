@@ -53,7 +53,12 @@ class UnitDisappearAnimation extends UnitTileAnimation {
 	
 	@Override
 	protected void update(float percent) {
-	    alpha = 1-percent;
+		alpha = 1f - percent;
+	}
+	
+	@Override
+	public Unit getUnit() {
+		return this.unit;
 	}
 	
 	@Override
