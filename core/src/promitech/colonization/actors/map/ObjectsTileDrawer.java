@@ -8,7 +8,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.math.Vector2;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
@@ -43,17 +42,15 @@ class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-
-		
-		if (mapDrawModel.unitTileAnimation.isTileAnimated(mapx, mapy)) {
-			// tile is animated so tak first unit as background
+		Unit animatedUnit = mapDrawModel.unitTileAnimation.getUnit();
+		if (animatedUnit != null) {
+			// tile is animated so take first unit as background
 			if (!tile.hasSettlement()) {
-				Unit unitToDraw = firstButNot(tile.getUnits(), mapDrawModel.unitTileAnimation.getUnit());
+				Unit unitToDraw = tile.getUnits().firstButNot(animatedUnit);
 				if (unitToDraw != null) {
 					drawUnit(unitToDraw);
 				}
 			}
-			mapDrawModel.unitTileAnimation.drawUnit(this);
 		} else {
 			// tile is not animated so take first unit or selected
 			Unit unitToDraw = null;
@@ -64,29 +61,14 @@ class ObjectsTileDrawer extends TileDrawer {
 					unitToDraw = selectedUnit;
 				}
 			}
-			if (unitToDraw == null) {
+			if (unitToDraw == null && !tile.hasSettlement()) {
 				// no selected unit on actual tile
-				if (!tile.hasSettlement()) {
-					unitToDraw = tile.getUnits().first();
-				}
+				unitToDraw = tile.getUnits().first();
 			}
 			if (unitToDraw != null) {
 				drawUnit(unitToDraw);
 			}
 		}
-	}
-
-	// TODO: refactoring move to MapIdEntities
-	private Unit firstButNot(MapIdEntities<Unit> units, Unit excludeUnit) {
-		if (excludeUnit == null) {
-			return units.first();
-		}
-		for (Unit u : units.entities()) {
-			if (!u.equalsId(excludeUnit)) {
-				return u;
-			}
-		}
-		return null;
 	}
 	
 	private void drawTerrainFocus() {

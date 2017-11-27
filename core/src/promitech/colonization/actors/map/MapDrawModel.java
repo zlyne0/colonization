@@ -301,16 +301,6 @@ public class MapDrawModel {
         }
         
         @Override
-        boolean isUnitAnimated(Unit unit) {
-            return false;
-        }
-        
-        @Override
-        boolean isTileAnimated(int x, int y) {
-            return false;
-        }
-        
-        @Override
         void drawUnit(ObjectsTileDrawer drawer) {
         }
 

@@ -165,6 +165,7 @@ public class MapRenderer {
     	drawLayer(batch, terrainForegroundTileDrawer);
     	drawRoadLayer(batch);
     	drawLayer(batch, objectsTileDrawer);
+    	drawMoveUnitAnimation(batch);
     	drawFogOfWarLayer(batch);
     	drawTileOwners(batch);
     	drawPathLayer(batch);
@@ -174,7 +175,11 @@ public class MapRenderer {
     	}
     }
 
-    private void drawPathLayer(Batch batch) {
+    private void drawMoveUnitAnimation(Batch batch) {
+		mapDrawModel.unitTileAnimation.drawUnit(objectsTileDrawer);
+	}
+
+	private void drawPathLayer(Batch batch) {
     	if (mapDrawModel.unitPath == null) {
     		return;
     	}

@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 
 class UnitDisappearAnimation extends UnitTileAnimation {
-	private static final float UPDATE_DURATION = 0.5f; 
+	private static final float UPDATE_DURATION = 0.7f; 
 	
 	private Unit unit;
 	private Tile tile;
@@ -59,16 +59,6 @@ class UnitDisappearAnimation extends UnitTileAnimation {
 	@Override
 	public Unit getUnit() {
 		return this.unit;
-	}
-	
-	@Override
-	public boolean isUnitAnimated(Unit u) {
-		return this.unit != null && u != null && this.unit.equalsId(u);
-	}
-
-	@Override
-	public boolean isTileAnimated(int mapx, int mapy) {
-		return (tile != null && tile.x == mapx && tile.y == mapy);
 	}
 	
 	@Override

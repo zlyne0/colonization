@@ -89,6 +89,18 @@ public class MapIdEntities<T extends Identifiable> {
     	return entities.values().iterator().next();
     }
     
+	public T firstButNot(T exclude) {
+		if (exclude == null) {
+			return first();
+		}
+		for (T entity : entities()) {
+			if (!entity.getId().equals(exclude.getId())) {
+				return entity;
+			}
+		}
+		return null;
+	}
+    
     public T getByIdOrNull(String id) {
         T en = entities.get(id);
         return en;

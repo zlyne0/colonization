@@ -8,11 +8,7 @@ abstract class UnitTileAnimation extends TemporalAction {
 
     abstract void initMapPos(MapRenderer mapRenderer);    
     
-    abstract boolean isUnitAnimated(Unit unit);
-    
     abstract void drawUnit(ObjectsTileDrawer drawer);
-    
-    abstract boolean isTileAnimated(int x, int y);
     
     abstract Unit getUnit();
 }

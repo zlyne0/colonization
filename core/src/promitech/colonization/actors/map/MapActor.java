@@ -33,6 +33,12 @@ public class MapActor extends Widget {
 	private final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
     private final UnitDisappearAnimation unitDisappearAnimation = new UnitDisappearAnimation();
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
+	private final Runnable endOfUnitDislocationForUnitDisappearListener = new Runnable() {
+		@Override
+		public void run() {
+			mapDrawModel.unitTileAnimation = unitDisappearAnimation;
+		}
+	};
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -183,17 +189,11 @@ public class MapActor extends Widget {
 	}
 	
 	public void startFailedAttackAnimation(final MoveContext moveContext, final Runnable endActionListener) {
-        unitDislocationAnimation.init(
+		unitDislocationAnimation.init(
             moveContext.unit,
             moveContext.sourceTile,
             moveContext.destTile,
-            new Runnable() {
-				@Override
-				public void run() {
-					// TODO: refactoring
-					mapDrawModel.unitTileAnimation = unitDisappearAnimation;
-				}
-			}
+            endOfUnitDislocationForUnitDisappearListener
         );
         unitDisappearAnimation.init( 
             moveContext.unit, 
@@ -206,6 +206,19 @@ public class MapActor extends Widget {
 	    Gdx.graphics.requestRendering();
 	}
 
+	public void startAttackRetreatAnimation(MoveContext moveContext, Runnable endOfAnimation) {
+		// TODO:
+//		UnitAttackRetreatAnimation unitAttackRetreatAnimation = new UnitAttackRetreatAnimation();
+//		unitAttackRetreatAnimation.init(
+//            moveContext.unit,
+//            moveContext.sourceTile,
+//            moveContext.destTile,
+//            endOfAnimation
+//		);
+//		
+//		Gdx.graphics.requestRendering();
+	}
+	
 	public void showTileOwners() {
 		mapRenderer.showTileOwners();
 	}
