@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
+import promitech.colonization.actors.map.unitanimation.UnitTileAnimation;
 import promitech.colonization.gdx.Frame;
 
 class TileDrawModel {
@@ -294,26 +295,9 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	protected Map map;
-	// TODO: refactoring
-	protected UnitTileAnimation unitTileAnimation = new UnitTileAnimation() {
-        @Override
-        protected void update(float percent) {
-        }
-        
-        @Override
-        void drawUnit(ObjectsTileDrawer drawer) {
-        }
-
-        @Override
-        void initMapPos(MapRenderer mapRenderer) {
-        }
-
-		@Override
-		Unit getUnit() {
-			return null;
-		}
-    };
-    
+	
+	protected UnitTileAnimation unitTileAnimation = UnitTileAnimation.NoAnimation;
+	
 	public Path unitPath;
 	
 	protected void initialize(Map map, Player player, GameResources gameResources) {

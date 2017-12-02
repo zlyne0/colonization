@@ -8,9 +8,9 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
-import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
+import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.StringTemplate;
@@ -20,6 +20,7 @@ public class MoveController {
 	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
 	
 	private MapActor mapActor;
+	private MoveView moveView;
 	private MoveLogic moveLogic;
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
@@ -29,8 +30,12 @@ public class MoveController {
 	public MoveController() {
 	}
 	
-	public void inject(MoveLogic moveLogic, GUIGameModel guiGameModel, GUIGameController guiGameController) {
+	public void inject(
+		MoveLogic moveLogic, GUIGameModel guiGameModel, 
+		GUIGameController guiGameController, MoveView moveView
+	) {
 		this.moveLogic = moveLogic;
+		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
 	}
@@ -89,7 +94,7 @@ public class MoveController {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
-		mapActor.startUnitDislocationAnimation(moveContext, moveDrawerSemaphore);
+		moveView.showMoveUnblocked(moveContext, moveDrawerSemaphore);
 	}
 	
 	public boolean showMoveOnPlayerScreen(MoveContext moveContext) {

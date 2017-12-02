@@ -1,11 +1,14 @@
-package promitech.colonization.actors.map;
+package promitech.colonization.actors.map.unitanimation;
 
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.actions.TemporalAction;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import promitech.colonization.actors.map.MapRenderer;
+import promitech.colonization.actors.map.ObjectsTileDrawer;
 
-class UnitDislocationAnimation extends UnitTileAnimation {
+class UnitDislocationAnimation extends TemporalAction implements UnitTileAnimation {
 	private static final float UPDATE_DURATION = 0.2f; 
 	
 	private Unit unit;
@@ -37,7 +40,7 @@ class UnitDislocationAnimation extends UnitTileAnimation {
 	}
 	
 	@Override
-	void initMapPos(MapRenderer mapRenderer) {
+	public void initMapPos(MapRenderer mapRenderer) {
         mapRenderer.mapToScreenCords(sourceTile.x, sourceTile.y, source);
         mapRenderer.mapToScreenCords(destTile.x, destTile.y, dest);
         v.set(source);

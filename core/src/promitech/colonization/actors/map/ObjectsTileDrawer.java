@@ -15,7 +15,7 @@ import promitech.colonization.actors.map.MapRenderer.TileDrawer;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 
-class ObjectsTileDrawer extends TileDrawer {
+public class ObjectsTileDrawer extends TileDrawer {
 	private static final float NO_ALPHA = 1f;
 
     private static final int UNIT_IMAGE_OFFSET = 20;
@@ -123,12 +123,12 @@ class ObjectsTileDrawer extends TileDrawer {
 		}
 	}
 
-	protected void drawUnit(Unit unit, Vector2 aScreenPoint) {
+	public void drawUnit(Unit unit, Vector2 aScreenPoint) {
 	    this.screenPoint.set(aScreenPoint);
 	    this.drawUnit(unit);
 	}
 	
-    protected void drawUnit(Unit unit, Vector2 pos, float alpha) {
+    public void drawUnit(Unit unit, Vector2 pos, float alpha) {
         this.screenPoint.set(pos);
         
         Unit selectedUnit = mapDrawModel.getSelectedUnit();

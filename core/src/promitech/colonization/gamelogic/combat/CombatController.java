@@ -1,8 +1,8 @@
 package promitech.colonization.gamelogic.combat;
 
 import promitech.colonization.GUIGameController;
+import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveView;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
@@ -48,9 +48,9 @@ public class CombatController {
             }
         };
         //moveView.showMoveUnblocked(moveContext, endOfAnimation);
-        moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
+        //moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
+        moveView.showAttackRetreat(moveContext, endOfAnimation);
 		
-        // TODO nie dziala animacja porazka:
 //		sukces,
 //		porazka -> zmiana roli,
 //		porazka -> calkowite zniszczenie

@@ -3,9 +3,9 @@ package promitech.colonization;
 import java.util.List;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.MoveType;
-import promitech.colonization.gamelogic.MoveView;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;

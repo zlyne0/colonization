@@ -6,10 +6,9 @@ import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.math.Vector2;
+import com.badlogic.gdx.scenes.scene2d.Action;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
-import com.badlogic.gdx.scenes.scene2d.actions.Actions;
-import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
 import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
@@ -18,7 +17,7 @@ import net.sf.freecol.common.model.Tile;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.actors.map.unitanimation.UnitTileAnimation;
 import promitech.colonization.math.Point;
 
 public class MapActor extends Widget {
@@ -30,15 +29,7 @@ public class MapActor extends Widget {
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 
-	private final UnitDislocationAnimation unitDislocationAnimation = new UnitDislocationAnimation();
-    private final UnitDisappearAnimation unitDisappearAnimation = new UnitDisappearAnimation();
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
-	private final Runnable endOfUnitDislocationForUnitDisappearListener = new Runnable() {
-		@Override
-		public void run() {
-			mapDrawModel.unitTileAnimation = unitDisappearAnimation;
-		}
-	};
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
@@ -129,13 +120,11 @@ public class MapActor extends Widget {
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
 		}
         if (unitAnimationsToStart.size > 0) {
-            SequenceAction sequence = Actions.sequence();
             for (int i = 0; i < unitAnimationsToStart.size; i++) {
                 unitAnimationsToStart.get(i).initMapPos(mapRenderer);
-                sequence.addAction(unitAnimationsToStart.get(i));
+                getStage().addAction((Action)unitAnimationsToStart.get(i));
             }
-            getStage().addAction(sequence);
-            mapDrawModel.unitTileAnimation = unitDislocationAnimation;
+            mapDrawModel.unitTileAnimation = unitAnimationsToStart.get(0);
             unitAnimationsToStart.clear();
         }
         mapRenderer.render(batch);
@@ -176,47 +165,9 @@ public class MapActor extends Widget {
 		return mapDrawModel;
 	}
 
-	public void startUnitDislocationAnimation(final MoveContext moveContext, final Runnable endActionListener) {
-        unitDislocationAnimation.init( 
-            moveContext.unit,
-            moveContext.sourceTile,
-            moveContext.destTile,
-            endActionListener
-        );
-		unitAnimationsToStart.add(unitDislocationAnimation);
-		
+	public void startUnitTileAnimation(UnitTileAnimation animation) {
+		unitAnimationsToStart.add(animation);
 		Gdx.graphics.requestRendering();
-	}
-	
-	public void startFailedAttackAnimation(final MoveContext moveContext, final Runnable endActionListener) {
-		unitDislocationAnimation.init(
-            moveContext.unit,
-            moveContext.sourceTile,
-            moveContext.destTile,
-            endOfUnitDislocationForUnitDisappearListener
-        );
-        unitDisappearAnimation.init( 
-            moveContext.unit, 
-            moveContext.destTile, 
-            endActionListener
-        );
-        unitAnimationsToStart.add(unitDislocationAnimation);
-        unitAnimationsToStart.add(unitDisappearAnimation);
-        
-	    Gdx.graphics.requestRendering();
-	}
-
-	public void startAttackRetreatAnimation(MoveContext moveContext, Runnable endOfAnimation) {
-		// TODO:
-//		UnitAttackRetreatAnimation unitAttackRetreatAnimation = new UnitAttackRetreatAnimation();
-//		unitAttackRetreatAnimation.init(
-//            moveContext.unit,
-//            moveContext.sourceTile,
-//            moveContext.destTile,
-//            endOfAnimation
-//		);
-//		
-//		Gdx.graphics.requestRendering();
 	}
 	
 	public void showTileOwners() {
