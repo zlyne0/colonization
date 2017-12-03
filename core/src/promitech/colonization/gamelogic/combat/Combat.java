@@ -55,8 +55,16 @@ class Combat {
 		greatResult = false;
 		combatSides.init(attacker, tile);
 	}
+
+	CombatResult generateGreatLoss() {
+    	return generateAttackResult(1f);
+	}
 	
-	void generateAttackResult(float r) {
+	CombatResult generateGreatWin() {
+    	return generateAttackResult(0f);
+	}
+	
+	CombatResult generateAttackResult(float r) {
 		switch (combatSides.getCombatType()) {
 			case ATTACK: 
 				attackCombat(r, combatSides.getWinPropability());
@@ -71,6 +79,7 @@ class Combat {
 		if (combatResult == null) {
 			throw new IllegalStateException("attack result not generated");
 		}
+		return combatResult;
 	}
 
 	private void attackCombat(float r, float winVal) {

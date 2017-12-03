@@ -3,6 +3,7 @@ package promitech.colonization.gamelogic.combat;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
@@ -41,15 +42,23 @@ public class CombatController {
 	}
 
 	public void confirmAttack(final MoveContext moveContext) {
-	    Runnable endOfAnimation = new Runnable() {
-            @Override
-            public void run() {
-                System.out.println("end of animation");
-            }
-        };
-        //moveView.showMoveUnblocked(moveContext, endOfAnimation);
-        //moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
-        moveView.showAttackRetreat(moveContext, endOfAnimation);
+		final Runnable endOfAnimation = new Runnable() {
+			@Override
+			public void run() {
+				combat.processAttackResult();
+			}
+		};
+		
+		CombatResult combatResult = combat.generateGreatWin();
+		if (combatResult.equals(Combat.CombatResult.WIN)) {
+			moveView.showSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser, endOfAnimation);
+		}
+		if (combatResult.equals(Combat.CombatResult.LOSE)) {
+			moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
+		}
+		if (combatResult.equals(Combat.CombatResult.EVADE_ATTACK)) {
+			moveView.showAttackRetreat(moveContext, endOfAnimation);
+		}		
 		
 //		sukces,
 //		porazka -> zmiana roli,

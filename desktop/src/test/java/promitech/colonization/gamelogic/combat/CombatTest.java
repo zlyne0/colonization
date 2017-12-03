@@ -71,7 +71,7 @@ public class CombatTest {
 		// when
     	Combat combat = new Combat();
     	combat.init(dutchPrivater, attackTile);
-    	combat.generateAttackResult(0f);
+    	combat.generateGreatWin();
     	combat.processAttackResult();
 
 		// then
@@ -99,7 +99,7 @@ public class CombatTest {
 		// when
     	Combat combat = new Combat();
     	combat.init(dutchPrivater, attackTile);
-    	combat.generateAttackResult(0f);
+    	combat.generateGreatWin();
     	combat.processAttackResult();
 
 		// then
@@ -129,7 +129,7 @@ public class CombatTest {
 		// when
     	Combat combat = new Combat();
     	combat.init(dutchPrivater, attackTile);
-    	combat.generateAttackResult(1f);
+    	combat.generateGreatLoss();
     	combat.processAttackResult();
 
 		// then
