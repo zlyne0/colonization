@@ -22,7 +22,7 @@ import net.sf.freecol.common.model.Unit
 import promitech.colonization.DI
 
 class DebugConsole(val commandExecutor : CommandExecutor)
-	: ClosableDialog<DebugConsole>("", GameResources.instance.getUiSkin())
+	: ClosableDialog<DebugConsole>("", GameResources.instance.getUiSkin()), ConsoleOutput
 {
 	private val dialogLayout = Table()
 	private val textField = TextField("", GameResources.instance.getUiSkin())
@@ -67,7 +67,7 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 		textField.setText("");
 		addConsoleLine(cmd)
 		
-		if (commandExecutor.execute(cmd)) {
+		if (commandExecutor.execute(cmd, this)) {
 			hideWithFade();
 		}
 	}
@@ -84,7 +84,7 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 		}
 	}
 	
-	fun addConsoleLine(line: String) {
+	override fun addConsoleLine(line: String) {
 		if (label.getText().toString().equals("")) {
 			label.setText(line);			
 		} else {

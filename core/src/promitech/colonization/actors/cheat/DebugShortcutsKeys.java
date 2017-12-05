@@ -11,6 +11,12 @@ public class DebugShortcutsKeys {
     private MapActor mapActor;
     private HudStage hudStage;
     private final IntMap<String> commandByKeycode = new IntMap<String>();
+    private final ConsoleOutput stdConsoleOutput = new ConsoleOutput() {
+        @Override
+        public void addConsoleLine(String line) {
+            System.out.println("debugconsole: " + line);
+        }
+    };
     
     private final CommandExecutor commandExecutor;
     
@@ -39,7 +45,7 @@ public class DebugShortcutsKeys {
         }
         if (commandByKeycode.containsKey(keycode)) {
             String cmd = commandByKeycode.get(keycode);
-            commandExecutor.execute(cmd);
+            commandExecutor.execute(cmd, stdConsoleOutput);
         }
     }
 

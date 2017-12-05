@@ -13,7 +13,7 @@ import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.infrastructure.ThreadsResources
 
 abstract class Task(var cmd: String) {
-	abstract fun run()
+	abstract fun run(console: ConsoleOutput) : Boolean
 	
 	fun isMatchToExecute(enteredCmd: String) : Boolean {
 		return cmd.equals(enteredCmd);
@@ -25,8 +25,8 @@ abstract class Task(var cmd: String) {
 }
 
 class Alias(cmd: String, val task: Task) : Task(cmd) {
-	override fun run() {
-		task.run()
+	override fun run(console: ConsoleOutput) : Boolean {
+		return task.run(console)
 	}
 }
 
@@ -36,54 +36,61 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		
 	var tasks : List<Task> = mutableListOf<Task>(
 		object : Task("map show") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    guiGameModel.game.playingPlayer.explorAllTiles();
 			    guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 			    gameController.resetMapModel();
+				return true
 			}
 		},
 		object : Task("map generate") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
                 guiGameModel.game.map = MapGenerator().generate(guiGameModel.game.players);
                 gameController.resetMapModel();
+				return true
 			}
 		},
 		object : Task("m") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    guiGameModel.game.playingPlayer.explorAllTiles();
 			    guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 			    gameController.resetMapModel();
 			    
 			    guiGameModel.game.map = MapGenerator().generate(guiGameModel.game.players);
 			    gameController.resetMapModel();
+				return true
 			}
 		},
 		object : Task("map show owners") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    gameController.showTilesOwners();
+				return true
 			}
 		},
 		object : Task("map hide owners") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    gameController.hideTilesOwners();
+				return true
 			}
 		},
 		object : Task("new game") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    GameCreator(guiGameModel).initNewGame();
 			    gameController.resetMapModel();
 			    gameController.nextActiveUnit();
+				return true
 			}
 		},
 		object : Task("load game") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    GameCreator(guiGameModel).initGameFromSavegame();
 			    gameController.resetMapModel();
 			    gameController.nextActiveUnit();
+				return true
 			}
 		},
 		object : Task("sp") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 			    guiGameModel.game.playingPlayer.setAi(true);
 			    
 			    var newHumanPlayer = guiGameModel.game.players.getById("player:112");
@@ -98,21 +105,34 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			    gameController.centerOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
 			    
 			    gameController.nextActiveUnit();
+				return true
 			}
 		},
 		object : Task("ai settlements") {
-		    override fun run() {
+		    override fun run(console: ConsoleOutput) : Boolean {
 				theBestPlaceToBuildColony()
+				return true
 			}
 		},
 		object : Task("ai explore") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 				theBestMove()
+				return true
 			}
 		},
 		object : Task("ai move") {
-			override fun run() {
+			override fun run(console: ConsoleOutput) : Boolean {
 				aiMove()
+				return true
+			}
+		},
+		object : Task("pools") {
+			override fun run(console: ConsoleOutput) : Boolean {
+				console.addConsoleLine(PoolsStat.Stat.header())
+				PoolsStat().readStats()
+					.map { it.toFormatedString() }
+					.forEach { console.addConsoleLine(it)}
+				return false
 			}
 		}
 	);
@@ -132,13 +152,12 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		return Alias(cmd, execTask)
 	}		
 	
-	fun execute(cmd: String) : Boolean {
+	fun execute(cmd: String, console: ConsoleOutput) : Boolean {
 	    var execTask = tasks
 			.filter { t -> t.isMatchToExecute(cmd) }
 			.singleOrNull()
 		if (execTask != null) {
-			execTask.run()
-			return true
+			return execTask.run(console)
 		}
 		return false
 	}

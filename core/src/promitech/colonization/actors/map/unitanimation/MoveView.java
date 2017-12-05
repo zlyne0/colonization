@@ -1,7 +1,6 @@
 package promitech.colonization.actors.map.unitanimation;
 
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
+import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.actors.map.MapActor;
@@ -16,7 +15,7 @@ public class MoveView {
     }
     
     public void showMoveUnblocked(MoveContext moveContext, Runnable endOfAnimation) {
-    	UnitDislocationAnimation animation = getFromPool(UnitDislocationAnimation.class);
+    	UnitDislocationAnimation animation = Actions.action(UnitDislocationAnimation.class);
     	animation.init( 
             moveContext.unit,
             moveContext.sourceTile,
@@ -27,7 +26,7 @@ public class MoveView {
     }
     
     public void showFailedAttackMoveUnblocked(MoveContext moveContext, Runnable endOfAnimation) {
-    	UnitFailAttackAnimation animation = getFromPool(UnitFailAttackAnimation.class);
+    	UnitFailAttackAnimation animation = Actions.action(UnitFailAttackAnimation.class);
         animation.init(
 	        moveContext.unit,
 	        moveContext.sourceTile,
@@ -38,7 +37,7 @@ public class MoveView {
     }
 
 	public void showAttackRetreat(MoveContext moveContext, Runnable endOfAnimation) {
-		UnitAttackRetreatAnimation animation = getFromPool(UnitAttackRetreatAnimation.class);
+		UnitAttackRetreatAnimation animation = Actions.action(UnitAttackRetreatAnimation.class);
 		animation.init(
             moveContext.unit,
             moveContext.sourceTile,
@@ -49,7 +48,7 @@ public class MoveView {
 	}
 	
 	public void showSuccessfulAttackWithMove(MoveContext moveContext, Unit loser, Runnable endOfAnimation) {
-		SuccessAttackAnimation animation = getFromPool(SuccessAttackAnimation.class);
+		SuccessAttackAnimation animation = Actions.action(SuccessAttackAnimation.class);
 		animation.init(
 			moveContext.unit, 
 			moveContext.sourceTile, 
@@ -58,9 +57,4 @@ public class MoveView {
 		);
 		mapActor.startUnitTileAnimation(animation);
 	}
-
-    private <T> T getFromPool(Class<T> type) {
-    	Pool<T> pool = Pools.get(type);
-    	return pool.obtain();
-    }
 }
