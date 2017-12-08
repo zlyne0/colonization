@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.badlogic.gdx.Gdx;
+
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
@@ -11,7 +13,9 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.unitanimation.MoveView;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
+import promitech.colonization.move.MoveService;
+import promitech.colonization.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -19,9 +23,17 @@ public class MoveController {
 
 	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
 	
+    private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
+        @Override
+        public void afterMove(MoveContext moveContext) {
+            nextActiveUnitForGuiPlayer(moveContext);
+        }
+    };
+	
 	private MapActor mapActor;
 	private MoveView moveView;
 	private MoveLogic moveLogic;
+	private MoveService moveService;
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
 
@@ -32,12 +44,13 @@ public class MoveController {
 	
 	public void inject(
 		MoveLogic moveLogic, GUIGameModel guiGameModel, 
-		GUIGameController guiGameController, MoveView moveView
+		GUIGameController guiGameController, MoveView moveView, MoveService moveService
 	) {
 		this.moveLogic = moveLogic;
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
+		this.moveService = moveService;
 	}
 	
 	public void pressDirectionKey(Direction direction) {
@@ -66,10 +79,19 @@ public class MoveController {
 			selectedUnit.clearDestination();
 			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
-			moveLogic.forGuiMove(moveContext);
+            moveService.preMoveProcessorInNewThread(moveContext, ifRequiredNextActiveUnit);
 		}
 	}
 
+    private void nextActiveUnitForGuiPlayer(MoveContext moveContext) {
+        if (moveContext.isAi()) {
+            throw new IllegalStateException("should not run by ai");
+        }
+        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
+            guiGameController.nextActiveUnitAsGdxPostRunnable();
+        }
+    }
+	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
 		
@@ -90,16 +112,15 @@ public class MoveController {
 		moveLogic.forGuiMoveOnlyReallocation(disembarkMoves, null);
 	}
 
-	protected void startAnimateMove(MoveContext moveContext) {
+	public void waitForUnitDislocationAnimation(MoveContext moveContext) {
+	    moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+	}
+	
+	void startAnimateMove(MoveContext moveContext) {
 		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
 			mapActor.centerCameraOnTile(moveContext.destTile);
 		}
 		moveView.showMoveUnblocked(moveContext, moveDrawerSemaphore);
-	}
-	
-	public boolean showMoveOnPlayerScreen(MoveContext moveContext) {
-		return !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
-				|| !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
 	}
 
 	public void acceptPathToDestination(Tile tile) {
@@ -144,7 +165,15 @@ public class MoveController {
 
 		System.out.println("path.moveContext = " + moveContext);
 
-		moveLogic.forGuiMove(moveContext);
+		moveService.preMoveProcessorInNewThread(moveContext, new AfterMoveProcessor() {
+		    @Override
+		    public void afterMove(MoveContext moveContext) {
+		        if (moveContext.isEndOfPath() && moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
+                    guiGameController.showColonyScreen(moveContext.destTile);
+		        }
+		        ifRequiredNextActiveUnit.afterMove(moveContext);
+		    }
+        });
 	}
 
 	public void removeDrawableUnitPath() {
@@ -195,13 +224,13 @@ public class MoveController {
 		final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
 			public void executeAction(MoveContext payload) {
-				moveLogic.forGuiMoveOnlyReallocation(payload, new MoveLogic.AfterMoveProcessor() {
-					@Override
-					void afterMove(MoveContext moveContext) {
-						moveContext.unit.moveUnitToHighSea();
-						guiGameController.logicNextActiveUnit();
-					}
-				});
+			    moveService.confirmedMoveProcessorInNewThread(payload, new MoveService.AfterMoveProcessor() {
+			        @Override
+			        public void afterMove(MoveContext moveContext) {
+			            moveContext.unit.moveUnitToHighSea();
+			            guiGameController.nextActiveUnitAsGdxPostRunnable();
+			        }
+                });
 			}
 		};
 		
@@ -209,8 +238,7 @@ public class MoveController {
             @Override
             public void executeAction(MoveContext payload) {
                 payload.setMoveViaHighSea();
-                // invoke forGuiMove like in logicAcceptGotoPath
-                moveLogic.forGuiMove(payload);
+                moveService.preMoveProcessorInNewThread(payload, ifRequiredNextActiveUnit);
             }
         };
 		
@@ -223,11 +251,7 @@ public class MoveController {
         
         guiGameController.showDialog(questionDialog);
 	}
-	
-	public MoveDrawerSemaphore getMoveDrawerSemaphore() {
-		return moveDrawerSemaphore;
-	}
-
+    
 	public void setMapActor(MapActor mapActor) {
 		this.mapActor = mapActor;
 	}

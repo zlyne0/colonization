@@ -2,8 +2,8 @@ package promitech.colonization.gamelogic.combat;
 
 import promitech.colonization.GUIGameController;
 import promitech.colonization.actors.map.unitanimation.MoveView;
-import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
+import promitech.colonization.move.MoveContext;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
@@ -46,6 +46,8 @@ public class CombatController {
 			@Override
 			public void run() {
 				combat.processAttackResult();
+				// TODO: if moved unit killed
+				// moveContext.setUnitKilled();
 			}
 		};
 		

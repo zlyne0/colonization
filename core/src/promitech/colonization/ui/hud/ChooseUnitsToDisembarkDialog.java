@@ -13,7 +13,7 @@ import net.sf.freecol.common.model.UnitLabel;
 import promitech.colonization.GameResources;
 import promitech.colonization.MoveController;
 import promitech.colonization.actors.UnitActor;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;

@@ -8,7 +8,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.Direction;
 import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 
 public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
     public static enum ExploreStatus {

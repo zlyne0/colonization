@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic;
+package net.sf.freecol.common.model;
 
 public enum MoveType {
     MOVE(null, true),

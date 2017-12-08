@@ -19,19 +19,19 @@ import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class LostCityRumourLogic {
+public class LostCityRumourController {
 
 	private final Game game;
 	private final GUIGameController guiGameController;
 	private final MoveLogic moveLogic;
 
-	public LostCityRumourLogic(GUIGameController guiGameController, MoveLogic moveLogic, Game game) {
+	public LostCityRumourController(GUIGameController guiGameController, MoveLogic moveLogic, Game game) {
 		this.game = game;
 		this.guiGameController = guiGameController;
 		this.moveLogic = moveLogic;
@@ -226,13 +226,13 @@ public class LostCityRumourLogic {
 		};
 	}	
 
-	public LostCityRumourLogic aiHandle(MoveContext moveContext) {
+	public LostCityRumourController aiHandle(MoveContext moveContext) {
 		moveLogic.forAiMoveOnlyReallocation(moveContext);
 		processExploration(moveContext);
 		return this;
 	}
 	
-	public LostCityRumourLogic handle(MoveContext moveContext) {
+	public LostCityRumourController handle(MoveContext moveContext) {
 		if (moveContext.isAi()) {
 			throw new IllegalStateException("can run only by gui");
 		}

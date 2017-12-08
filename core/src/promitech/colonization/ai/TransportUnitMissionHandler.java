@@ -1,13 +1,13 @@
 package promitech.colonization.ai;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveType;
+import promitech.colonization.move.MoveContext;
 
 class TransportUnitMissionHandler {
 

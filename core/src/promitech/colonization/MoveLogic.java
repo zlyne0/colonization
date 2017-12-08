@@ -2,12 +2,12 @@ package promitech.colonization;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.actors.map.unitanimation.MoveView;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
+import promitech.colonization.move.MoveContext;
 import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 
 public class MoveLogic {
@@ -25,7 +25,6 @@ public class MoveLogic {
 		protected List<MoveContext> moveContextList;
 	}
 	
-	private MoveDrawerSemaphore moveDrawerSemaphore;
 	private GUIGameController guiGameController;
 	private MoveController moveController;
 	private GUIGameModel guiGameModel;
@@ -55,7 +54,6 @@ public class MoveLogic {
 	
 	public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, MoveView moveView) {
 		this.guiGameController = guiGameController;
-		this.moveDrawerSemaphore = moveController.getMoveDrawerSemaphore();
 		this.moveController = moveController;
 		this.guiGameModel = guiGameModel;
 		this.combatController = new CombatController(guiGameController, moveView);
@@ -132,7 +130,7 @@ public class MoveLogic {
 	private void requiredUserInterationProcessor(MoveContext moveContext) {
 		switch (moveContext.moveType) {
 			case EXPLORE_LOST_CITY_RUMOUR: {
-				new LostCityRumourLogic(guiGameController, this, guiGameModel.game)
+				new LostCityRumourController(guiGameController, this, guiGameModel.game)
 					.handle(moveContext);
 			} break;
 			case DISEMBARK: {
@@ -160,7 +158,9 @@ public class MoveLogic {
 	}
 
 	private void handleOnlyReallocation(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
-		moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+	    if (showMoveOnPlayerScreen(moveContext)) {
+	        moveController.waitForUnitDislocationAnimation(moveContext);
+	    }
 		moveContext.handleMove();
 		
 		if (moveContext.isAi()) {
@@ -181,6 +181,11 @@ public class MoveLogic {
 			afterMovePorcessor.afterMove(moveContext);
 		}
 	}
+	
+    private boolean showMoveOnPlayerScreen(MoveContext moveContext) {
+        return !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
+                || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
+    }
 	
 	private void handleOnlyReallocation(List<MoveContext> moveContextList, AfterMoveProcessor afterMovePorcessor) {
 		for (MoveContext mc : moveContextList) {

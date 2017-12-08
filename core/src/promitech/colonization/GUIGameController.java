@@ -96,6 +96,15 @@ public class GUIGameController {
 		}
 	}
 
+	public void nextActiveUnitAsGdxPostRunnable() {
+        Gdx.app.postRunnable(new Runnable() {
+            @Override
+            public void run() {
+                logicNextActiveUnit();
+            }
+        });
+	}
+	
 	public void enterInViewMode() {
 		if (blockUserInteraction) {
 			return;

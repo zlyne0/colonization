@@ -1,8 +1,8 @@
 package net.sf.freecol.common.model.map.path;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveType;
 
 class NavyCostDecider extends CostDecider {
     

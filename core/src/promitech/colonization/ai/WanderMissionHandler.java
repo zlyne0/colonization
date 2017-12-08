@@ -13,7 +13,7 @@ import promitech.colonization.Direction;
 import promitech.colonization.MoveLogic;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 import promitech.map.Boolean2dArray;
 
 public class WanderMissionHandler implements MissionHandler<WanderMission> {

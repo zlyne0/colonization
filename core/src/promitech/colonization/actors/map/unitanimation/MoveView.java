@@ -4,7 +4,7 @@ import com.badlogic.gdx.scenes.scene2d.actions.Actions;
 
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.actors.map.MapActor;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 
 public class MoveView {
 

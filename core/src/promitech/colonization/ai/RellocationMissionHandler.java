@@ -9,7 +9,7 @@ import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.move.MoveContext;
 
 public class RellocationMissionHandler implements MissionHandler<RellocationMission> {
     

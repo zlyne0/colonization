@@ -12,12 +12,11 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
 import promitech.colonization.GameResources;
-import promitech.colonization.gamelogic.MoveContext;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class QuestionDialog extends Dialog {
-	public static final QuestionDialog.OptionAction<MoveContext> DO_NOTHING_ACTION = null;
+	public static final QuestionDialog.OptionAction<Object> DO_NOTHING_ACTION = null;
 	
     public static interface OptionAction<T> {
         public void executeAction(T payload);

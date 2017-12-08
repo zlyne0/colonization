@@ -1,6 +1,7 @@
-package promitech.colonization.gamelogic;
+package promitech.colonization.move;
 
 import promitech.colonization.Direction;
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;

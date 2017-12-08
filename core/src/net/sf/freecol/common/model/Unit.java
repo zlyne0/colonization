@@ -14,7 +14,6 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
