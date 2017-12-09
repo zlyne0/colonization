@@ -2,10 +2,10 @@ package promitech.colonization.move;
 
 import java.util.List;
 
-import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
+import promitech.colonization.LostCityRumourService;
 import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -88,6 +88,10 @@ public class MoveService {
     	afterMoveProcessor.afterMove(moveContextList);
     }
     
+    public void confirmedMoveProcessor(MoveContext moveContext) {
+    	confirmedMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
+    }
+    
     private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         showMoveIfRequired(moveContext);
         postMoveProcessor(moveContext, afterMoveProcessor);
@@ -114,12 +118,12 @@ public class MoveService {
         moveContext.handleMove();
         
         if (moveContext.isAi()) {
-            if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
+            if (moveContext.isMoveTypeRevealMap()) {
                 moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
             }
         } else {
             boolean exloredNewTiles = false;
-            if (moveContext.isMoveType(MoveType.MOVE) || moveContext.isMoveType(MoveType.MOVE_HIGH_SEAS)) {
+            if (moveContext.isMoveTypeRevealMap()) {
                 exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
             }
             if (exloredNewTiles) {
@@ -132,8 +136,8 @@ public class MoveService {
     private void userInterationRequestProcessor(MoveContext moveContext) {
         switch (moveContext.moveType) {
             case EXPLORE_LOST_CITY_RUMOUR: {
-//                new LostCityRumourController(guiGameController, this, guiGameModel.game)
-//                    .handle(moveContext);
+                new LostCityRumourService(guiGameController, this, guiGameModel.game)
+                    .showLostCityRumourConfirmation(moveContext);
             } break;
             case DISEMBARK: {
                 if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {

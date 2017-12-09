@@ -26,11 +26,13 @@ import promitech.colonization.ai.AILogic;
 import promitech.colonization.gamelogic.BuildColonyOrder;
 import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 import promitech.colonization.math.Point;
+import promitech.colonization.move.MoveContext;
 import promitech.colonization.move.MoveController;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;
 
+/// TODO: rename MapGuiController, change package
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
@@ -104,6 +106,12 @@ public class GUIGameController {
                 logicNextActiveUnit();
             }
         });
+	}
+	
+	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(MoveContext moveContext) {
+        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
+        	nextActiveUnitAsGdxPostRunnable();
+        }
 	}
 	
 	public void enterInViewMode() {

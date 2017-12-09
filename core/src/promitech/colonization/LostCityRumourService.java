@@ -20,24 +20,26 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.move.MoveContext;
+import promitech.colonization.move.MoveService;
+import promitech.colonization.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class LostCityRumourController {
+public class LostCityRumourService {
 
 	private final Game game;
 	private final GUIGameController guiGameController;
-	private final MoveLogic moveLogic;
+	private final MoveService moveService;
 
-	public LostCityRumourController(GUIGameController guiGameController, MoveLogic moveLogic, Game game) {
+	public LostCityRumourService(GUIGameController guiGameController, MoveService moveService, Game game) {
 		this.game = game;
 		this.guiGameController = guiGameController;
-		this.moveLogic = moveLogic;
+		this.moveService = moveService;
 	}
 	
-	void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
+	private void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
 		final Unit unit = mc.unit;
 		final Tile destTile = mc.destTile;
 		
@@ -220,19 +222,19 @@ public class LostCityRumourController {
 		return new EventListener() {
 			@Override
 			public boolean handle(Event event) {
-				moveLogic.guiNextActiveUnit(mc);
+				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(mc);
 				return true;
 			}
 		};
 	}	
 
-	public LostCityRumourController aiHandle(MoveContext moveContext) {
-		moveLogic.forAiMoveOnlyReallocation(moveContext);
+	public LostCityRumourService aiHandle(MoveContext moveContext) {
+		moveService.confirmedMoveProcessor(moveContext);
 		processExploration(moveContext);
 		return this;
 	}
 	
-	public LostCityRumourController handle(MoveContext moveContext) {
+	public LostCityRumourService showLostCityRumourConfirmation(MoveContext moveContext) {
 		if (moveContext.isAi()) {
 			throw new IllegalStateException("can run only by gui");
 		}
@@ -240,10 +242,11 @@ public class LostCityRumourController {
 		QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
 			public void executeAction(final MoveContext mc) {
-				moveLogic.forGuiMoveOnlyReallocation(mc, new MoveLogic.AfterMoveProcessor() {
+				moveService.confirmedMoveProcessorInNewThread(mc, new AfterMoveProcessor() {
 					@Override
 					public void afterMove(final MoveContext mc) {
 						processExploration(mc);
+						guiGameController.resetMapModelOnTile(mc.destTile);
 					}
 				});
 			}
@@ -258,7 +261,6 @@ public class LostCityRumourController {
 	
 	private void processExploration(MoveContext mc) {
 		mc.destTile.removeLostCityRumour();
-		guiGameController.resetMapModelOnTile(mc.destTile);
 		
 		LostCityRumour lostCityRumour = new LostCityRumour();
 		RumourType type = lostCityRumour.type(game, mc.unit, mc.destTile);

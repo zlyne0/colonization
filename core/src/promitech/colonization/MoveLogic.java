@@ -131,8 +131,8 @@ public class MoveLogic {
 	private void requiredUserInterationProcessor(MoveContext moveContext) {
 		switch (moveContext.moveType) {
 			case EXPLORE_LOST_CITY_RUMOUR: {
-				new LostCityRumourController(guiGameController, this, guiGameModel.game)
-					.handle(moveContext);
+//				new LostCityRumourController(guiGameController, this, guiGameModel.game)
+//					.handle(moveContext);
 			} break;
 			case DISEMBARK: {
 				if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {

@@ -26,7 +26,7 @@ public class MoveController {
     private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
         public void afterMove(MoveContext moveContext) {
-            nextActiveUnitForGuiPlayer(moveContext);
+        	guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);
         }
     };
 	
@@ -80,15 +80,6 @@ public class MoveController {
             moveService.preMoveProcessorInNewThread(moveContext, ifRequiredNextActiveUnit);
 		}
 	}
-
-    private void nextActiveUnitForGuiPlayer(MoveContext moveContext) {
-        if (moveContext.isAi()) {
-            throw new IllegalStateException("should not run by ai");
-        }
-        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
-            guiGameController.nextActiveUnitAsGdxPostRunnable();
-        }
-    }
 	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
