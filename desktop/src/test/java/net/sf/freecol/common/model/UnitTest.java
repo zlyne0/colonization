@@ -11,7 +11,6 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.FoundingFather;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class UnitTest {

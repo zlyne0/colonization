@@ -101,6 +101,6 @@ public class EndOfTurnActor extends Actor {
 	};
 	
 	public void start(final GUIGameController gameController) {
-		ThreadsResources.instance.executeAImovement(endTurnCalculations);
+		ThreadsResources.instance.executeMovement(endTurnCalculations);
 	}
 }

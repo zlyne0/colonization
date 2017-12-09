@@ -8,6 +8,7 @@ import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.move.MoveContext;
+import promitech.colonization.move.MoveController;
 import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 
 public class MoveLogic {
@@ -230,7 +231,7 @@ public class MoveLogic {
 		
 		moveHandlerThread.moveContext = moveContext;
 		moveHandlerThread.afterMovePorcessor = oneStepGuiAfterMoveProcessor;
-		ThreadsResources.instance.executeAImovement(moveHandlerThread);
+		ThreadsResources.instance.executeMovement(moveHandlerThread);
 	}
 	
 	public void forGuiMoveOnlyReallocation(MoveContext moveContext, AfterMoveProcessor afterMovePorcessor) {
@@ -239,13 +240,13 @@ public class MoveLogic {
 		}
 		moveHandlerOnlyReallocation.moveContext = moveContext;
 		moveHandlerOnlyReallocation.afterMovePorcessor = afterMovePorcessor;
-		ThreadsResources.instance.executeAImovement(moveHandlerOnlyReallocation);
+		ThreadsResources.instance.executeMovement(moveHandlerOnlyReallocation);
 	}
 
 	public void forGuiMoveOnlyReallocation(List<MoveContext> moveContextList, AfterMoveProcessor afterMovePorcessor) {
 		multipleMoveContextHandlerForOnlyReallocation.moveContextList = moveContextList;
 		multipleMoveContextHandlerForOnlyReallocation.afterMovePorcessor = afterMovePorcessor;
-		ThreadsResources.instance.executeAImovement(multipleMoveContextHandlerForOnlyReallocation);
+		ThreadsResources.instance.executeMovement(multipleMoveContextHandlerForOnlyReallocation);
 	}
 	
 	public void forAiMoveOnlyReallocation(MoveContext moveContext) {

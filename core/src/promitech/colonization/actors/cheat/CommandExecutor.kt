@@ -227,7 +227,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			return
 		}
 		
-		ThreadsResources.instance.executeAImovement(object : Runnable {
+		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				AILogicDebugRun(di.guiGameModel, di.moveLogic, mapActor).run()
 			}

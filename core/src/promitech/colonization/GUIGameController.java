@@ -26,6 +26,7 @@ import promitech.colonization.ai.AILogic;
 import promitech.colonization.gamelogic.BuildColonyOrder;
 import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 import promitech.colonization.math.Point;
+import promitech.colonization.move.MoveController;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;

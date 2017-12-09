@@ -1,8 +1,6 @@
-package promitech.colonization;
+package promitech.colonization.move;
 
 import java.util.concurrent.Semaphore;
-
-import promitech.colonization.move.MoveContext;
 
 class MoveDrawerSemaphore implements Runnable {
     private final MoveController moveController;

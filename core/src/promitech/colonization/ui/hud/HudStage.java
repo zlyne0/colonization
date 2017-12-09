@@ -29,8 +29,8 @@ import promitech.colonization.GUIGameModel;
 import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.actors.cheat.DebugShortcutsKeys;
 import promitech.colonization.actors.map.MapActor;
+import promitech.colonization.move.MoveController;
 import promitech.colonization.GameResources;
-import promitech.colonization.MoveController;
 import promitech.colonization.ui.ClosableDialog;
 
 public class HudStage extends Stage {

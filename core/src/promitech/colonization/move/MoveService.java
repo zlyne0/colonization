@@ -6,17 +6,17 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
-import promitech.colonization.LostCityRumourController;
-import promitech.colonization.MoveController;
-import promitech.colonization.MoveLogic.AfterMoveProcessor;
 import promitech.colonization.actors.map.unitanimation.MoveView;
 import promitech.colonization.gamelogic.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
-import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 
 public class MoveService {
 
     public abstract static class AfterMoveProcessor {
+    	
+    	public static AfterMoveProcessor DO_NOTHING = new AfterMoveProcessor() {
+		};
+    	
         public void afterMove(MoveContext moveContext) {
         }
         void afterMove(List<MoveContext> moveContextList) {
@@ -26,22 +26,8 @@ public class MoveService {
     private abstract class RunnableMoveContext implements Runnable {
         protected MoveContext moveContext;
         protected AfterMoveProcessor afterMovePorcessor;
-//        protected List<MoveContext> moveContextList;
+        protected List<MoveContext> moveContextList;
     }
-    
-    private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            preMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    private final RunnableMoveContext confirmedMoveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            confirmedMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    private final AfterMoveProcessor doNothingAfterMoveProcessor = new AfterMoveProcessor() {};
     
     private GUIGameModel guiGameModel;
     private GUIGameController guiGameController;
@@ -54,20 +40,52 @@ public class MoveService {
         this.guiGameModel = guiGameModel;
         this.combatController = new CombatController(guiGameController, moveView);
     }
-    
+
+    private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
+        @Override
+        public void run() {
+            preMoveProcessor(moveContext, afterMovePorcessor);
+        }
+    };
     public void preMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         if (!moveContext.canHandleMove()) {
             return;
         }
         moveHandlerThread.moveContext = moveContext;
         moveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeAImovement(moveHandlerThread);
+        ThreadsResources.instance.executeMovement(moveHandlerThread);
     }
 
+    private final RunnableMoveContext confirmedMoveHandlerThread = new RunnableMoveContext() {
+        @Override
+        public void run() {
+            confirmedMoveProcessor(moveContext, afterMovePorcessor);
+        }
+    };
     public void confirmedMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         confirmedMoveHandlerThread.moveContext = moveContext;
         confirmedMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeAImovement(confirmedMoveHandlerThread);
+        ThreadsResources.instance.executeMovement(confirmedMoveHandlerThread);
+    }
+
+    private final RunnableMoveContext confirmedMultipleMoveHandlerThread = new RunnableMoveContext() {
+        @Override
+        public void run() {
+            confirmedMultipleMoveProcessor(moveContextList, afterMovePorcessor);
+        }
+    };
+    public void confirmedMultipleMoveProcessorInNewThread(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
+    	confirmedMultipleMoveHandlerThread.moveContextList = moveContextList;
+    	confirmedMultipleMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
+        ThreadsResources.instance.executeMovement(confirmedMultipleMoveHandlerThread);
+    }
+
+    private void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
+    	for (MoveContext mc : moveContextList) {
+            showMoveIfRequired(mc);
+            postMoveProcessor(mc, AfterMoveProcessor.DO_NOTHING);
+    	}
+    	afterMoveProcessor.afterMove(moveContextList);
     }
     
     private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -114,23 +132,20 @@ public class MoveService {
     private void userInterationRequestProcessor(MoveContext moveContext) {
         switch (moveContext.moveType) {
             case EXPLORE_LOST_CITY_RUMOUR: {
-                // TODO:
 //                new LostCityRumourController(guiGameController, this, guiGameModel.game)
 //                    .handle(moveContext);
             } break;
             case DISEMBARK: {
-                // TODO:
-//                if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
-//                    MoveContext mc = new MoveContext(
-//                        moveContext.unit.getTileLocationOrNull(), 
-//                        moveContext.destTile, 
-//                        moveContext.unit.getUnitContainer().getUnits().first()
-//                    );
-//                    handleOnlyReallocation(mc, null);
-//                } else {
-//                    ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, moveController);
-//                    guiGameController.showDialog(chooseUnitsDialog);
-//                }
+                if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
+                    MoveContext mc = new MoveContext(
+                        moveContext.unit.getTileLocationOrNull(), 
+                        moveContext.destTile, 
+                        moveContext.unit.getUnitContainer().getUnits().first()
+                    );
+                    confirmedMoveProcessor(mc, AfterMoveProcessor.DO_NOTHING);
+                } else {
+                	moveController.showDisembarkConfirmation(moveContext);
+                }
             } break;
             case MOVE_HIGH_SEAS: {
                 moveController.showHighSeasQuestion(moveContext);
@@ -170,7 +185,7 @@ public class MoveService {
             }
 
             showMoveIfRequired(moveContext);
-            postMoveProcessor(moveContext, doNothingAfterMoveProcessor);
+            postMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
             
             moveContext.initNextPathStep();
             

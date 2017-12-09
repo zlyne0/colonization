@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import promitech.colonization.actors.map.unitanimation.MoveView;
+import promitech.colonization.move.MoveController;
 import promitech.colonization.move.MoveService;
 
 public class DI {
@@ -22,7 +23,7 @@ public class DI {
 		
 		GameLogic gameLogic = new GameLogic(guiGameModel);
 		
-		moveController.inject(moveLogic, guiGameModel, guiGameController, moveView, moveService);
+		moveController.inject(guiGameModel, guiGameController, moveView, moveService);
 		moveLogic.inject(guiGameController, moveController, guiGameModel, moveView);
 		moveService.inject(guiGameController, moveController, guiGameModel, moveView);
 		

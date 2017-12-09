@@ -1,22 +1,22 @@
-package promitech.colonization;
+package promitech.colonization.move;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import com.badlogic.gdx.Gdx;
-
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import promitech.colonization.Direction;
+import promitech.colonization.GUIGameController;
+import promitech.colonization.GUIGameModel;
 import promitech.colonization.actors.map.MapActor;
 import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.actors.map.unitanimation.MoveView;
-import promitech.colonization.move.MoveContext;
-import promitech.colonization.move.MoveService;
 import promitech.colonization.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.hud.ChooseUnitsToDisembarkDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
@@ -32,7 +32,6 @@ public class MoveController {
 	
 	private MapActor mapActor;
 	private MoveView moveView;
-	private MoveLogic moveLogic;
 	private MoveService moveService;
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
@@ -43,10 +42,9 @@ public class MoveController {
 	}
 	
 	public void inject(
-		MoveLogic moveLogic, GUIGameModel guiGameModel, 
+		GUIGameModel guiGameModel, 
 		GUIGameController guiGameController, MoveView moveView, MoveService moveService
 	) {
-		this.moveLogic = moveLogic;
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
@@ -95,7 +93,7 @@ public class MoveController {
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
 		
-		moveLogic.forGuiMoveOnlyReallocation(mc, null);
+		moveService.confirmedMoveProcessorInNewThread(mc, AfterMoveProcessor.DO_NOTHING);
 	}
 	
 	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
@@ -108,8 +106,7 @@ public class MoveController {
 				disembarkMoves.add(mc);
 			}
 		}
-		
-		moveLogic.forGuiMoveOnlyReallocation(disembarkMoves, null);
+		moveService.confirmedMultipleMoveProcessorInNewThread(disembarkMoves, AfterMoveProcessor.DO_NOTHING);
 	}
 
 	public void waitForUnitDislocationAnimation(MoveContext moveContext) {
@@ -254,6 +251,11 @@ public class MoveController {
     
 	public void setMapActor(MapActor mapActor) {
 		this.mapActor = mapActor;
+	}
+
+	public void showDisembarkConfirmation(MoveContext moveContext) {
+        ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, this);
+        guiGameController.showDialog(chooseUnitsDialog);
 	}
 	
 }
