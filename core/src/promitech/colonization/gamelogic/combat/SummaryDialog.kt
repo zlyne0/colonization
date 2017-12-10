@@ -8,7 +8,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.utils.Align
 import net.sf.freecol.common.model.UnitLabel
 import promitech.colonization.GameResources
-import promitech.colonization.actors.UnitActor
+import promitech.colonization.screen.ui.UnitActor
 import promitech.colonization.ui.ClosableDialog
 import promitech.colonization.ui.resources.Messages
 

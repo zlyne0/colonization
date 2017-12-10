@@ -10,8 +10,8 @@ import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameLogic;
-import promitech.colonization.actors.map.MapActor;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.map.MapActor;
 
 public class AILogicDebugRun {
 

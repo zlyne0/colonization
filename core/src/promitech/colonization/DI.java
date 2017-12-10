@@ -1,8 +1,8 @@
 package promitech.colonization;
 
-import promitech.colonization.actors.map.unitanimation.MoveView;
-import promitech.colonization.move.MoveController;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveController;
+import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.map.unitanimation.MoveView;
 
 public class DI {
 

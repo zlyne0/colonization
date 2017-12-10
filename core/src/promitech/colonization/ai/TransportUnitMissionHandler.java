@@ -6,8 +6,8 @@ import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.GUIGameModel;
-import promitech.colonization.move.MoveContext;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 
 class TransportUnitMissionHandler {
 

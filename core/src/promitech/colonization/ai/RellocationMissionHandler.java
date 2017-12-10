@@ -8,8 +8,8 @@ import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
-import promitech.colonization.move.MoveContext;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 
 public class RellocationMissionHandler implements MissionHandler<RellocationMission> {
     

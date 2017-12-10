@@ -15,7 +15,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameLogic;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveService;
 
 public class AILogic {
 

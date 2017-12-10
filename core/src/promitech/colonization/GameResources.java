@@ -14,8 +14,8 @@ import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.actors.map.MapRenderer;
 import promitech.colonization.gdx.Frame;
+import promitech.colonization.screen.map.MapRenderer;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.files.FileHandle;

@@ -12,8 +12,8 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.move.MoveContext;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 import promitech.map.Boolean2dArray;
 
 public class WanderMissionHandler implements MissionHandler<WanderMission> {

@@ -2,7 +2,7 @@ package promitech.colonization.ai;
 
 import net.sf.freecol.common.model.map.path.Path;
 import promitech.colonization.GUIGameModel;
-import promitech.colonization.actors.map.MapActor;
+import promitech.colonization.screen.map.MapActor;
 
 public class TileDebugView {
 

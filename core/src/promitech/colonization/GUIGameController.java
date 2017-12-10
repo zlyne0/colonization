@@ -15,22 +15,24 @@ import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
-import promitech.colonization.actors.colony.ColonyApplicationScreen;
-import promitech.colonization.actors.europe.EuropeApplicationScreen;
-import promitech.colonization.actors.map.ColonyNameDialog;
-import promitech.colonization.actors.map.MapActor;
-import promitech.colonization.actors.map.MapDrawModel;
 import promitech.colonization.ai.AILogic;
-import promitech.colonization.gamelogic.BuildColonyOrder;
-import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 import promitech.colonization.math.Point;
-import promitech.colonization.move.MoveContext;
-import promitech.colonization.move.MoveController;
-import promitech.colonization.move.MoveService;
+import promitech.colonization.orders.BuildColonyOrder;
+import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveController;
+import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.ApplicationScreenManager;
+import promitech.colonization.screen.ApplicationScreenType;
+import promitech.colonization.screen.colony.ColonyApplicationScreen;
+import promitech.colonization.screen.europe.EuropeApplicationScreen;
+import promitech.colonization.screen.map.ColonyNameDialog;
+import promitech.colonization.screen.map.MapActor;
+import promitech.colonization.screen.map.MapDrawModel;
+import promitech.colonization.screen.map.hud.HudStage;
+import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
-import promitech.colonization.ui.hud.HudStage;
 
 /// TODO: rename MapGuiController, change package
 public class GUIGameController {
