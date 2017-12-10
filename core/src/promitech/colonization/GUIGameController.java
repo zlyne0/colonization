@@ -15,7 +15,6 @@ import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.actors.IndianLandDemandQuestionsDialog;
 import promitech.colonization.actors.colony.ColonyApplicationScreen;
 import promitech.colonization.actors.europe.EuropeApplicationScreen;
@@ -28,6 +27,7 @@ import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
 import promitech.colonization.math.Point;
 import promitech.colonization.move.MoveContext;
 import promitech.colonization.move.MoveController;
+import promitech.colonization.move.MoveService;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.hud.HudStage;
@@ -37,7 +37,7 @@ public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
 	private GameLogic gameLogic;
-	private MoveLogic moveLogic;
+	private MoveService moveService;
 	
 	private MapActor mapActor;
 	private HudStage mapHudStage;
@@ -48,11 +48,11 @@ public class GUIGameController {
 	public GUIGameController() {
 	}
 	
-	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveLogic moveLogic) {
+	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveService moveService) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.gameLogic = gameLogic;
-		this.moveLogic = moveLogic;
+		this.moveService = moveService;
 	}
 	
 	public void quickSaveGame() {
@@ -285,7 +285,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveLogic);
+		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveService);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			

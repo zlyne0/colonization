@@ -10,8 +10,8 @@ import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameLogic;
-import promitech.colonization.MoveLogic;
 import promitech.colonization.actors.map.MapActor;
+import promitech.colonization.move.MoveService;
 
 public class AILogicDebugRun {
 
@@ -19,24 +19,24 @@ public class AILogicDebugRun {
     private final TransportPathFinder transportPathFinder;
     private final ExplorerMissionHandler explorerMissionHandler;
     private GUIGameModel gameModel;
-    private final MoveLogic moveLogic;
+    private final MoveService moveService;
     private final MapActor mapActor;
     
     private final TileDebugView tileDebugView;
     private final FoundColonyMissionHandler foundColonyMissionHandler;
     private final RellocationMissionHandler rellocationMissionHandler;
     
-    public AILogicDebugRun(GUIGameModel gameModel, MoveLogic moveLogic, MapActor mapActor) {
-    	this.moveLogic = moveLogic;
+    public AILogicDebugRun(GUIGameModel gameModel, MoveService moveService, MapActor mapActor) {
+    	this.moveService = moveService;
         this.gameModel = gameModel;
         this.mapActor = mapActor;
         
         transportPathFinder = new TransportPathFinder(gameModel.game.map);
-        explorerMissionHandler = new ExplorerMissionHandler(gameModel.game, pathFinder, moveLogic);
+        explorerMissionHandler = new ExplorerMissionHandler(gameModel.game, pathFinder, moveService);
 
         tileDebugView = new TileDebugView(mapActor, gameModel);
         foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, gameModel.game);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, gameModel.game, moveLogic);
+        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, gameModel.game, moveService);
     }
     
     public void run() {
@@ -60,7 +60,7 @@ public class AILogicDebugRun {
         Player aiNativePlayer = unit.getOwner();
         
         GameLogic gameLogic = new GameLogic(gameModel);
-        AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveLogic);
+        AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveService);
         aiLogic.aiNewTurn(aiNativePlayer);
         
     	//executeMissions(unit);

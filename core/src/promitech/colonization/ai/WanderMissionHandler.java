@@ -10,10 +10,10 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
-import promitech.colonization.MoveLogic;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.move.MoveContext;
+import promitech.colonization.move.MoveService;
 import promitech.map.Boolean2dArray;
 
 public class WanderMissionHandler implements MissionHandler<WanderMission> {
@@ -22,14 +22,14 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 	private Player wanderRangeForPlayer;
 	
 	private final Game game;
-	private final MoveLogic moveLogic;
+	private final MoveService moveService;
 	
 	private final List<Direction> allowedDirections = new ArrayList<Direction>(Direction.allDirections);
 	private final MoveContext moveContext = new MoveContext();
 	
-	public WanderMissionHandler(Game game, MoveLogic moveLogic) {
+	public WanderMissionHandler(Game game, MoveService moveService) {
 		this.game = game;
-		this.moveLogic = moveLogic;
+		this.moveService = moveService;
 		this.settlementWanderRange = new Boolean2dArray(game.map.width, game.map.height);
 	}
 
@@ -69,7 +69,7 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 			moveContext.init(sourceTile, destTile, mission.unit, moveDirection);
 			
 			if (moveContext.canHandleMove()) {
-				moveLogic.forAiMoveOnlyReallocation(moveContext);
+	            moveService.aiConfirmedMoveProcessor(moveContext);
 				
 				mission.previewDirection = moveDirection;					
 				

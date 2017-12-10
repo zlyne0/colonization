@@ -2,6 +2,7 @@ package promitech.colonization.move;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
@@ -97,6 +98,20 @@ public class MoveService {
         postMoveProcessor(moveContext, afterMoveProcessor);
     }
     
+    public MoveType aiConfirmedMovePath(MoveContext moveContext) {
+    	moveContext.initNextPathStep();
+    	while (moveContext.canHandleMove()) {
+    		aiConfirmedMoveProcessor(moveContext);
+    		moveContext.initNextPathStep();
+    	}
+    	return moveContext.moveType;
+    }
+    
+    public void aiConfirmedMoveProcessor(MoveContext moveContext) {
+        showMoveIfRequired(moveContext);
+        aiPostMoveProcessor(moveContext);
+    }
+    
     private void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         if (!moveContext.canHandleMove()) {
             return;
@@ -117,19 +132,20 @@ public class MoveService {
     private void postMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         moveContext.handleMove();
         
-        if (moveContext.isAi()) {
-            if (moveContext.isMoveTypeRevealMap()) {
-                moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
-            }
-        } else {
-            boolean exloredNewTiles = false;
-            if (moveContext.isMoveTypeRevealMap()) {
-                exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
-            }
-            if (exloredNewTiles) {
-                guiGameController.resetUnexploredBorders();
-            }
-            afterMoveProcessor.afterMove(moveContext);
+        boolean exloredNewTiles = false;
+        if (moveContext.isMoveTypeRevealMap()) {
+            exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+        }
+        if (exloredNewTiles) {
+            guiGameController.resetUnexploredBorders();
+        }
+        afterMoveProcessor.afterMove(moveContext);
+    }
+    
+    private void aiPostMoveProcessor(MoveContext moveContext) {
+    	moveContext.handleMove();
+        if (moveContext.isMoveTypeRevealMap()) {
+            moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
     }
     
