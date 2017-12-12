@@ -118,21 +118,23 @@ public class MoveContext {
 		switch (moveType) {
 		    case MOVE_HIGH_SEAS:
 		    case EXPLORE_LOST_CITY_RUMOUR:
-			case MOVE: {
+			case MOVE:
 				if (path != null) {
 					path.removeFirst();
 				}
 				moveUnit();
-			} break;
-			case EMBARK: {
+			break;
+			case ATTACK_UNIT: 
+			    unit.reduceMovesLeftToZero();
+			break;
+			case EMBARK:
 				if (path != null) {
 					path.removeFirst();
 				}
 				embarkUnit();
-			} break;
-			default: {
+			break;
+			default:
 				System.out.println("not handled move type: " + moveType);
-			}
 		}
 	}
 	
