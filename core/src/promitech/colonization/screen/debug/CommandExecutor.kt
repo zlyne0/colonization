@@ -2,15 +2,17 @@ package promitech.colonization.screen.debug
 
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitIterator
-import net.sf.freecol.common.model.map.path.PathFinder
+import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.map.generator.MapGenerator
+import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.DI
 import promitech.colonization.GameCreator
-import promitech.colonization.screen.map.MapActor
 import promitech.colonization.ai.AILogicDebugRun
 import promitech.colonization.ai.BuildColony
 import promitech.colonization.ai.NavyExplorer
+import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.infrastructure.ThreadsResources
+import promitech.colonization.screen.map.MapActor
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -126,6 +128,16 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
+		object : Task("ai attack") {
+			override fun run(console: ConsoleOutput) : Boolean {
+        		ThreadsResources.instance.executeMovement(object : Runnable {
+        			override fun run() {
+        			    aiAttack()
+        			}
+        		})
+				return true
+			}
+		},
 		object : Task("pools") {
 			override fun run(console: ConsoleOutput) : Boolean {
 				console.addConsoleLine(PoolsStat.Stat.header())
@@ -232,5 +244,13 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor).run()
 			}
 		})
+	}
+	
+	fun aiAttack() {
+		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
+		val mission = SeekAndDestroyMission(srcTile.units.first())
+		
+		val missionHandler = SeekAndDestroyMissionHandler(guiGameModel.game)
+		missionHandler.handle(null, mission) 
 	}
 }
