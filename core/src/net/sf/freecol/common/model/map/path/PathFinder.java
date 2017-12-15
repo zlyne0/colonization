@@ -49,6 +49,7 @@ public class PathFinder {
 	
 	private final CostDecider baseCostDecider = new CostDecider();
 	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
+	private final NavyWithoutThreatCostDecider navyWithoutThreatCostDecider = new NavyWithoutThreatCostDecider();
 	private CostDecider costDecider;
 	private GoalDecider goalDecider;
 
@@ -69,28 +70,36 @@ public class PathFinder {
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
+        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = true;
         this.navyCostDecider.avoidUnexploredTiles = true;
         this.baseCostDecider.avoidUnexploredTiles = true;
         
+        determineCostDecider(false);
         Path path = find();
         path.toEurope = true;
 		return path;
 	}
 	
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
-	    return findToTile(map, startTile, endTile, moveUnit, true);
+	    return findToTile(map, startTile, endTile, moveUnit, true, false);
 	}
 
     public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
+        return findToTile(map, startTile, endTile, moveUnit, avoidUnexploredTiles, false);
+    }
+	
+    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles, boolean withoutNavyThreat) {
         goalDecider = pathToTileGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = endTile;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
+        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         
+        determineCostDecider(withoutNavyThreat);
         Path path = find();
         path.toEurope = false;
         return path;
@@ -107,21 +116,31 @@ public class PathFinder {
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = true;
+        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
 		
+        determineCostDecider(false);
         find();
+	}
+	
+	private void determineCostDecider(boolean withoutNavyThreat) {
+	    if (moveUnit.isNaval()) {
+	        if (withoutNavyThreat) {
+	            costDecider = navyWithoutThreatCostDecider;
+	        } else {
+	            costDecider = navyCostDecider;
+	        }
+	    } else {
+	        costDecider = baseCostDecider;
+	    }
 	}
 	
 	private Path find() {
 		resetFinderBeforeSearching(map);
 		
-		int iDirections = 0, nDirections = Direction.values().length;
-		if (moveUnit.isNaval()) {
-			costDecider = navyCostDecider;
-		} else {
-			costDecider = baseCostDecider;
-		}
+		int iDirections = 0; 
+		int nDirections = Direction.values().length;
 		costDecider.init(map, moveUnit);
 		
 		Node currentNode = grid.get(startTile.x, startTile.y);
