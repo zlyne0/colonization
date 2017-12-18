@@ -250,7 +250,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
 		val mission = SeekAndDestroyMission(srcTile.units.first())
 		
-		val missionHandler = SeekAndDestroyMissionHandler(guiGameModel.game)
+		val missionHandler = SeekAndDestroyMissionHandler(guiGameModel.game, di.moveService, di.combatService)
 		missionHandler.handle(null, mission) 
 	}
 }

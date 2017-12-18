@@ -3,13 +3,14 @@ package promitech.colonization.orders.move;
 import java.util.List;
 
 import net.sf.freecol.common.model.MoveType;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.gamelogic.combat.CombatController;
+import promitech.colonization.gamelogic.combat.CombatService;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
-import promitech.colonization.screen.map.unitanimation.MoveView;
 
 public class MoveService {
 
@@ -35,11 +36,11 @@ public class MoveService {
     private MoveController moveController;
     private CombatController combatController;
 
-    public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, MoveView moveView) {
+    public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, CombatService combatService) {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
-        this.combatController = new CombatController(guiGameController, moveView,  this);
+        this.combatController = new CombatController(guiGameController, combatService);
     }
 
     private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
@@ -184,7 +185,25 @@ public class MoveService {
     
     private void showMoveIfRequired(MoveContext moveContext) {
         if (showMoveOnPlayerScreen(moveContext)) {
-            moveController.waitForUnitDislocationAnimation(moveContext);
+            moveController.blockedShowMove(moveContext);
+        }
+    }
+    
+    public void blockedShowFailedAttackMove(MoveContext moveContext) {
+        if (showMoveOnPlayerScreen(moveContext)) {
+            moveController.blockedShowFailedAttackMove(moveContext);
+        }
+    }
+
+    public void blockedShowAttackRetreat(MoveContext moveContext) {
+        if (showMoveOnPlayerScreen(moveContext)) {
+            moveController.blockedShowAttackRetreat(moveContext);
+        }
+    }
+    
+    public void blockedShowSuccessfulAttackWithMove(MoveContext moveContext, Unit loser) {
+        if (showMoveOnPlayerScreen(moveContext)) {
+            moveController.blockedShowSuccessfulAttackWithMove(moveContext, loser);
         }
     }
     

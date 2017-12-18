@@ -20,8 +20,7 @@ import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
-
-	private final MoveDrawerSemaphore moveDrawerSemaphore = new MoveDrawerSemaphore(this);
+    private final MoveDrawerSemaphore unitAnimationSemaphore = new MoveDrawerSemaphore();
 	
     private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
@@ -100,17 +99,26 @@ public class MoveController {
 		moveService.confirmedMultipleMoveProcessorInNewThread(disembarkMoves, AfterMoveProcessor.DO_NOTHING);
 	}
 
-	public void waitForUnitDislocationAnimation(MoveContext moveContext) {
-	    moveDrawerSemaphore.waitForUnitDislocationAnimation(moveContext);
+	public void blockedShowMove(MoveContext moveContext) {
+	    moveView.showMoveUnblocked(moveContext, unitAnimationSemaphore);
+	    unitAnimationSemaphore.waitForUnitAnimation();
 	}
 	
-	void startAnimateMove(MoveContext moveContext) {
-		if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
-			mapActor.centerCameraOnTile(moveContext.destTile);
-		}
-		moveView.showMoveUnblocked(moveContext, moveDrawerSemaphore);
-	}
+    public void blockedShowFailedAttackMove(MoveContext moveContext) {
+        moveView.showFailedAttackMoveUnblocked(moveContext, unitAnimationSemaphore);
+        unitAnimationSemaphore.waitForUnitAnimation();
+    }
 
+    public void blockedShowAttackRetreat(MoveContext moveContext) {
+        moveView.showAttackRetreat(moveContext, unitAnimationSemaphore);
+        unitAnimationSemaphore.waitForUnitAnimation();
+    }
+    
+    public void blockedShowSuccessfulAttackWithMove(MoveContext moveContext, Unit loser) {
+        moveView.showSuccessfulAttackWithMove(moveContext, loser, unitAnimationSemaphore);
+        unitAnimationSemaphore.waitForUnitAnimation();
+    }
+	
 	public void acceptPathToDestination(Tile tile) {
 		generateGotoPath(tile);
 		logicAcceptGotoPath();

@@ -11,8 +11,7 @@ import promitech.colonization.ui.QuestionDialog.OptionAction;
 public class CombatController {
 	
 	private final GUIGameController guiGameController;
-	private final MoveView moveView;
-	private final MoveService moveService;
+	private final CombatService combatService;
 	
 	private final Combat combat = new Combat();
 
@@ -23,10 +22,9 @@ public class CombatController {
 		}
 	};
     
-	public CombatController(GUIGameController guiGameController, MoveView moveView, MoveService moveService) {
+	public CombatController(GUIGameController guiGameController, CombatService combatService) {
 		this.guiGameController = guiGameController;
-		this.moveView = moveView;
-		this.moveService = moveService;
+		this.combatService = combatService;
 	}
 	
 	public void confirmCombat(MoveContext moveContext) {
@@ -44,48 +42,18 @@ public class CombatController {
 			guiGameController.showDialog(questionDialog);
 		}
 	}
-
-	public void confirmAttack(final MoveContext moveContext) {
-		final Runnable endOfAnimation = new Runnable() {
-			@Override
-			public void run() {
-				combat.processAttackResult();
-				moveService.postMoveProcessor(moveContext);
-				guiGameController.nextActiveUnitAsGdxPostRunnable();
-			}
-		};
-		
-		// TODO: random
-		CombatResult combatResult = combat.generateGreatLoss();
-		if (combatResult.equals(Combat.CombatResult.WIN)) {
-			moveView.showSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser, endOfAnimation);
-		}
-		if (combatResult.equals(Combat.CombatResult.LOSE)) {
-		    moveContext.setUnitKilled();
-			moveView.showFailedAttackMoveUnblocked(moveContext, endOfAnimation);
-		}
-		if (combatResult.equals(Combat.CombatResult.EVADE_ATTACK)) {
-			moveView.showAttackRetreat(moveContext, endOfAnimation);
-		}		
-		
-		// TODO: SeekAndDestroyAiMission jesli jednostak widzi do zniszenia to niszczy
-		
-//		sukces,
-//		porazka -> zmiana roli,
-//		porazka -> calkowite zniszczenie
-//		na move logic odpalic show move animation
-//		- sukces
-//		- porazka
-		
-		//na zakonczenie przelaczenie na kolejna jednostke
-		//skasowanie jednostki lub zmiana polozenia
-	}
 	
 	private void showPreCombatDialog(final MoveContext moveContext) {
+	    // TODO: refactoring
 		Runnable ca = new Runnable() {
 			@Override
 			public void run() {
-				confirmAttack(moveContext);
+			    combatService.doConfirmedCombat(moveContext, combat, new Runnable() {
+                    @Override
+                    public void run() {
+                        guiGameController.nextActiveUnitAsGdxPostRunnable();
+                    }
+                });
 			}
 		};
 		SummaryDialog summaryDialog = new SummaryDialog(ca, combat);

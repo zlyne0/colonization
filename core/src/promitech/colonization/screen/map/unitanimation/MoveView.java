@@ -15,6 +15,8 @@ public class MoveView {
     }
     
     public void showMoveUnblocked(MoveContext moveContext, Runnable endOfAnimation) {
+        centerViewIfRequired(moveContext);
+        
     	UnitDislocationAnimation animation = Actions.action(UnitDislocationAnimation.class);
     	animation.init( 
             moveContext.unit,
@@ -26,6 +28,8 @@ public class MoveView {
     }
     
     public void showFailedAttackMoveUnblocked(MoveContext moveContext, Runnable endOfAnimation) {
+        centerViewIfRequired(moveContext);
+        
     	UnitFailAttackAnimation animation = Actions.action(UnitFailAttackAnimation.class);
         animation.init(
 	        moveContext.unit,
@@ -37,6 +41,8 @@ public class MoveView {
     }
 
 	public void showAttackRetreat(MoveContext moveContext, Runnable endOfAnimation) {
+        centerViewIfRequired(moveContext);
+        
 		UnitAttackRetreatAnimation animation = Actions.action(UnitAttackRetreatAnimation.class);
 		animation.init(
             moveContext.unit,
@@ -48,6 +54,8 @@ public class MoveView {
 	}
 	
 	public void showSuccessfulAttackWithMove(MoveContext moveContext, Unit loser, Runnable endOfAnimation) {
+        centerViewIfRequired(moveContext);
+        
 		SuccessAttackAnimation animation = Actions.action(SuccessAttackAnimation.class);
 		animation.init(
 			moveContext.unit, 
@@ -56,5 +64,11 @@ public class MoveView {
 			loser, endOfAnimation
 		);
 		mapActor.startUnitTileAnimation(animation);
+	}
+	
+	private void centerViewIfRequired(MoveContext moveContext) {
+        if (mapActor.isTileOnScreenEdge(moveContext.destTile)) {
+            mapActor.centerCameraOnTile(moveContext.destTile);
+        }
 	}
 }

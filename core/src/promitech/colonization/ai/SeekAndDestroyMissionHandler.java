@@ -9,13 +9,20 @@ import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.SpiralIterator;
+import promitech.colonization.gamelogic.combat.CombatService;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 
 public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestroyMission> {
 
+    private final MoveService moveService;
+    private final CombatService combatService;
     private final Game game;
     private final PathFinder pathFinder;
     
-    public SeekAndDestroyMissionHandler(Game game) {
+    public SeekAndDestroyMissionHandler(Game game, MoveService moveService, CombatService combatService) {
+        this.moveService = moveService;
+        this.combatService = combatService;
         this.game = game;
         this.pathFinder = new PathFinder();
     }
@@ -35,6 +42,18 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
             false, true
         );
         System.out.println("path to enemy = " + pathToEnemy);
+        
+        MoveContext moveContext = new MoveContext(pathToEnemy);
+        moveContext.initNextPathStep();
+        while (moveContext.canHandleMove()) {
+            if (moveContext.isMoveType(MoveType.ATTACK_UNIT)) {
+                System.out.println("attack");
+                combatService.doCombat(moveContext);
+                break;
+            }
+            moveService.aiConfirmedMoveProcessor(moveContext);
+            moveContext.initNextPathStep();
+        }
     }
     
     private Tile enemyTile(SeekAndDestroyMission mission) {
