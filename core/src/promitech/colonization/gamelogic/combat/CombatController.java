@@ -1,10 +1,7 @@
 package promitech.colonization.gamelogic.combat;
 
 import promitech.colonization.GUIGameController;
-import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.orders.move.MoveContext;
-import promitech.colonization.orders.move.MoveService;
-import promitech.colonization.screen.map.unitanimation.MoveView;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
@@ -20,6 +17,12 @@ public class CombatController {
 		public void executeAction(MoveContext payload) {
 			showPreCombatDialog(payload);
 		}
+	};
+	private final Runnable nextActiveUnitAction = new Runnable() {
+	    @Override
+	    public void run() {
+	        guiGameController.nextActiveUnitAsGdxPostRunnable();
+	    }
 	};
     
 	public CombatController(GUIGameController guiGameController, CombatService combatService) {
@@ -44,19 +47,13 @@ public class CombatController {
 	}
 	
 	private void showPreCombatDialog(final MoveContext moveContext) {
-	    // TODO: refactoring
-		Runnable ca = new Runnable() {
+		Runnable confirmCombatAction = new Runnable() {
 			@Override
 			public void run() {
-			    combatService.doConfirmedCombat(moveContext, combat, new Runnable() {
-                    @Override
-                    public void run() {
-                        guiGameController.nextActiveUnitAsGdxPostRunnable();
-                    }
-                });
+                combatService.doConfirmedCombat(moveContext, combat, nextActiveUnitAction);
 			}
 		};
-		SummaryDialog summaryDialog = new SummaryDialog(ca, combat);
+		SummaryDialog summaryDialog = new SummaryDialog(confirmCombatAction, combat);
 		guiGameController.showDialog(summaryDialog);
 	}
 }

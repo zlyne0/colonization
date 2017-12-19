@@ -7,7 +7,7 @@ import promitech.colonization.orders.move.MoveService;
 
 public class CombatService {
 
-    class Xxx implements Runnable {
+    class RunnableCombatConfirmation implements Runnable {
         private MoveContext moveContext;
         private Combat combat;
         private Runnable afterActionListener;
@@ -18,6 +18,7 @@ public class CombatService {
             afterActionListener.run();
         }
     }
+    private final RunnableCombatConfirmation runnableCombatConfirmation = new RunnableCombatConfirmation();
     
     private MoveService moveService;
     
@@ -26,12 +27,10 @@ public class CombatService {
     }
     
     void doConfirmedCombat(MoveContext moveContext, Combat combat, Runnable afterAction) {
-        // TODO: refactoring
-        Xxx x = new Xxx();
-        x.moveContext = moveContext;
-        x.combat = combat;
-        x.afterActionListener = afterAction;
-        ThreadsResources.instance.executeMovement(x);
+        runnableCombatConfirmation.moveContext = moveContext;
+        runnableCombatConfirmation.combat = combat;
+        runnableCombatConfirmation.afterActionListener = afterAction;
+        ThreadsResources.instance.executeMovement(runnableCombatConfirmation);
     }
     
     public void doCombat(MoveContext moveContext) {
@@ -42,8 +41,7 @@ public class CombatService {
     }
 
     private void processInitiatedCombat(MoveContext moveContext, Combat combat) {
-        // TODO: random
-        CombatResult combatResult = combat.generateGreatWin();
+        CombatResult combatResult = combat.generateRandomResult();
         
         if (combatResult.equals(Combat.CombatResult.WIN)) {
             moveService.blockedShowSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser);
@@ -59,5 +57,4 @@ public class CombatService {
         combat.processAttackResult();
         moveService.postMoveProcessor(moveContext);
     }
-    
 }

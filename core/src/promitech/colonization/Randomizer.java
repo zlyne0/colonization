@@ -27,6 +27,10 @@ public final class Randomizer {
 		return instance;
 	}
 	
+	public float realProbability() {
+	    return rand.nextFloat();
+	}
+	
 	public int randomInt(int max) {
 		return Math.abs(rand.nextInt()) % max;
 	}

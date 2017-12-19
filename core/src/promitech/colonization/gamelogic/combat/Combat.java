@@ -5,6 +5,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.Randomizer;
 
 class Combat {
 	
@@ -62,6 +63,10 @@ class Combat {
 	
 	CombatResult generateGreatWin() {
     	return generateAttackResult(0f);
+	}
+	
+	CombatResult generateRandomResult() {
+	    return generateAttackResult(Randomizer.instance().realProbability());
 	}
 	
 	CombatResult generateAttackResult(float r) {
