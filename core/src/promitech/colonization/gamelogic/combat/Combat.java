@@ -1,8 +1,11 @@
 package promitech.colonization.gamelogic.combat;
 
+import java.util.HashSet;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Randomizer;
@@ -64,6 +67,16 @@ class Combat {
 	CombatResult generateGreatWin() {
     	return generateAttackResult(0f);
 	}
+	
+	CombatResult generateOrdinaryWin() {
+	    float r = combatSides.getWinPropability() - 0.001f;
+	    return generateAttackResult(r);
+	}
+	
+    CombatResult generateOrdinaryLoss() {
+        float r = combatSides.getWinPropability() + (1f - combatSides.getWinPropability()) * 0.9f - 0.001f;
+        return generateAttackResult(r);
+    }
 	
 	CombatResult generateRandomResult() {
 	    return generateAttackResult(Randomizer.instance().realProbability());
@@ -146,11 +159,20 @@ class Combat {
 	}
 
 	public void processAttackResult() {
+	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
-			
+		    System.out.println(" - result " + resultDetail);			
 			if (CombatResultDetails.SINK_SHIP_ATTACK == resultDetail) {
 				Player loserPlayer = combatResolver.loser.getOwner();
 				loserPlayer.removeUnit(combatResolver.loser);
+			}
+			
+			if (CombatResultDetails.DAMAGE_SHIP_ATTACK == resultDetail) {
+			    UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
+			    combatResolver.loser.makeUnitDamaged(repairLocation);
+			    
+			    // TODO: messages to users
+			    // ServerPlayer.csDamageShipAttack
 			}
 			
 			if (CombatResultDetails.LOOT_SHIP == resultDetail) {

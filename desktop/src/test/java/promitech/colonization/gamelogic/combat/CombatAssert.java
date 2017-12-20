@@ -44,10 +44,8 @@ public class CombatAssert extends AbstractAssert<CombatAssert, Combat>  {
 	
 	public CombatAssert hasDetails(CombatResultDetails ... combatResultDetails) {
 		isNotNull();
-
 		org.assertj.core.api.Assertions.assertThat(actual.combatResolver.combatResultDetails)
-			.contains(combatResultDetails);
-		
+		    .containsExactly(combatResultDetails);
 		return this;
 	}
 }

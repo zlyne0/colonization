@@ -26,6 +26,14 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		return this;
 	}
 
+    public UnitAssert isNotDisposed() {
+        isNotNull();
+        if (actual.isDisposed()) {
+            failWithMessage("expected unit <%s> to be not disposed", actual.getId());
+        }
+        return this;
+    }
+	
 	public UnitAssert notExistsOnTile(Tile tile) {
 		isNotNull();
 		if (tile.getUnits().containsId(actual)) {
@@ -34,6 +42,16 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 			);
 		}
 		return this;
+	}
+	
+	public UnitAssert isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
+	    if (!actual.isAtLocation(unitLocationClass)) {
+	        failWithMessage(
+	            "expected unit <%s> to be at location <%s> but is is at location <%s>", 
+	            actual.getId(), unitLocationClass, actual.location
+            );
+	    }
+	    return this;
 	}
 	
 	public UnitAssert hasGoods(String goodsId, int amount) {
@@ -45,4 +63,35 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		}
 		return this;
 	}
+
+    public UnitAssert hasNoGoods() {
+        isNotNull();
+        if (actual.getGoodsContainer().getCargoSpaceTaken() != 0) {
+            failWithMessage("expected unit <%s> to has no cargo", actual.getId());
+        }
+        return this;
+    }
+
+    public UnitAssert hasNoUnits() {
+        isNotNull();
+        if (actual.getUnitContainer().isNotEmpty()) {
+            failWithMessage("expected unit <%s> to carry no unit", actual.getId());
+        }
+        return this;
+    }
+
+    public UnitAssert isDamaged() {
+        if (!actual.isDamaged()) {
+            failWithMessage("expected unit <%s> to be damaged", actual.getId());
+        }
+        return this;
+    }
+
+    public UnitAssert hasNoMovesPoints() {
+        if (actual.hasMovesPoints()) {
+            failWithMessage("expected unit <%s> to has no moves points", actual.getId());
+        }
+        return this;
+    }
+
 }

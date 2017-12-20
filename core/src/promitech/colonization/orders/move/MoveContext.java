@@ -139,22 +139,12 @@ public class MoveContext {
 	}
 	
 	private void embarkUnit() {
-		Unit carrier = carrierToEmbark;
-		if (carrier == null) {
-			for (Unit u : destTile.getUnits().entities()) {
-				if (u.canAddUnit(unit)) {
-					carrier = u;
-					break;
-				}
-			}
-			if (carrier == null) {
-				throw new IllegalStateException("carrier unit unit should exists and check while generate moveType");
-			}
-		}
+	    if (carrierToEmbark != null) {
+	        unit.embarkTo(carrierToEmbark);
+	    } else {
+	        unit.embarkCarrierOnTile(destTile);
+	    }
 		System.out.println("moveContext.embarkUnit = " + this);
-		unit.setState(UnitState.SKIPPED);
-		unit.changeUnitLocation(carrier);
-		unit.reduceMovesLeftToZero();
 	}
 	
 	private void moveUnit() {

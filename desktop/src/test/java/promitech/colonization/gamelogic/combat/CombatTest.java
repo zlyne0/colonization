@@ -14,6 +14,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -22,6 +23,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -39,6 +41,8 @@ public class CombatTest {
 	private Player dutch;
 	
 	private Unit spanishPrivateer;
+	private Unit spanishColonist;
+    private Unit spanishColonist2;
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -57,6 +61,18 @@ public class CombatTest {
 			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
 			spanish
 		);
+    	spanishColonist = new Unit(
+    	    Game.idGenerator.nextId(Unit.class), 
+    	    Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
+    	    Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+    	    spanish
+	    );
+        spanishColonist2 = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+            spanish
+        );
     }
 	
     @Test 
@@ -106,7 +122,7 @@ public class CombatTest {
     	assertThat(combat)
     		.hasPowers(12f, 7.0f, 0.63f)
     		.hasResult(CombatResult.WIN, true)
-    		.hasDetails(CombatResultDetails.SINK_SHIP_ATTACK, CombatResultDetails.LOOT_SHIP);
+    		.hasDetails(CombatResultDetails.LOOT_SHIP, CombatResultDetails.SINK_SHIP_ATTACK);
     	
     	UnitAssert.assertThat(spanishPrivateer)
     		.isDisposed()
@@ -142,6 +158,80 @@ public class CombatTest {
 			.isDisposed()
 			.notExistsOnTile(attackFromTile);
 	}
+
+    @Test 
+    public void navyAttackerLoseAndBecomeDamage() throws Exception {
+        // given
+        Unit dutchPrivater = dutch.units.getById("unit:6900");
+        dutchPrivater.getGoodsContainer().decreaseAllToZero();
+        Tile attackFromTile = dutchPrivater.getTile();
+        
+        Tile attackTile = game.map.getTile(12, 80);
+        spanishPrivateer.changeUnitLocation(attackTile);
+
+        // when
+        Combat combat = new Combat();
+        combat.init(dutchPrivater, attackTile);
+        combat.generateOrdinaryLoss();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(12f, 8.0f, 0.6f)
+            .hasResult(CombatResult.LOSE, false)
+            .hasDetails(CombatResultDetails.DAMAGE_SHIP_ATTACK);
+    
+        UnitAssert.assertThat(dutchPrivater)
+            .isDamaged()
+            .isNotDisposed()
+            .isAtLocation(Europe.class)
+            .notExistsOnTile(attackFromTile);
+        UnitAssert.assertThat(spanishPrivateer)
+            .isNotDisposed();
+    }
+    
+    @Test
+    public void navyAttackerDamageEnemyShip() throws Exception {
+        // given
+        Unit dutchPrivater = dutch.units.getById("unit:6900");
+        dutchPrivater.getGoodsContainer().decreaseAllToZero();
+        
+        Tile attackTile = game.map.getTile(12, 80);
+        spanishPrivateer.changeUnitLocation(attackTile);
+        spanishPrivateer.getGoodsContainer().decreaseAllToZero();
+        spanishPrivateer.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 100);
+        
+        spanishColonist.embarkTo(spanishPrivateer);
+        spanishColonist2.embarkTo(spanishPrivateer);
+        
+        // when
+        Combat combat = new Combat();
+        combat.init(dutchPrivater, attackTile);
+        combat.generateOrdinaryWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(12f, 7.0f, 0.63f)
+            .hasResult(CombatResult.WIN, false)
+            .hasDetails(CombatResultDetails.LOOT_SHIP, CombatResultDetails.DAMAGE_SHIP_ATTACK);
+        
+        UnitAssert.assertThat(spanishPrivateer)
+            .isDamaged()
+            .hasNoGoods()
+            .hasNoUnits()
+            .hasNoMovesPoints()
+            .isNotDisposed()
+            .isAtLocation(Europe.class)
+            .notExistsOnTile(attackTile);
+        UnitAssert.assertThat(spanishColonist)
+            .isDisposed();
+        UnitAssert.assertThat(spanishColonist2)
+            .isDisposed();        
+        UnitAssert.assertThat(dutchPrivater)
+            .isNotDisposed()
+            .hasGoods(GoodsType.MUSKETS, 100);
+    }
     
 /*    
     @Test 

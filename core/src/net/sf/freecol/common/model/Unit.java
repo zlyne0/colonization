@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
@@ -913,19 +914,56 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	}
 	
 	public boolean hasRepairLocation() {
-		for (Settlement settlement : getOwner().settlements.entities()) {
-			if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
-				return true;
-			}
-		}
-		if (getOwner().getEurope() != null) {
-			return true;
-		}
-		return false;
+	    return getRepairLocation() != null;
+	}
+	
+	public UnitLocation getRepairLocation() {
+	    for (Settlement settlement : getOwner().settlements.entities()) {
+	        if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+	            return settlement;
+	        }
+	    }
+	    return getOwner().getEurope();
 	}
 
 	public boolean isDisposed() {
 		return disposed;
+	}
+	
+	public void embarkCarrierOnTile(Tile destTile) {
+	    Unit carrier = null;
+        for (Unit u : destTile.getUnits().entities()) {
+            if (u.canAddUnit(this)) {
+                carrier = u;
+                break;
+            }
+        }
+        if (carrier == null) {
+            throw new IllegalStateException("carrier unit on tile: " + destTile);
+        }
+        embarkTo(carrier);
+	}
+	
+	public void embarkTo(Unit carrier) {
+	    this.setState(UnitState.SKIPPED);
+	    this.changeUnitLocation(carrier);
+	    this.reduceMovesLeftToZero();
+	}
+	
+	public void makeUnitDamaged(UnitLocation repairLocation) {
+        goodsContainer.decreaseAllToZero();
+        for (Unit u : new HashSet<Unit>(unitContainer.getUnits().entities())) {
+            owner.removeUnit(u);
+        }
+        if (repairLocation instanceof Colony) {
+            changeUnitLocation(((Colony) repairLocation).tile);
+        } else {
+            changeUnitLocation(repairLocation);
+        }
+        hitPoints = 1;
+        clearDestination();
+        setState(Unit.UnitState.ACTIVE);
+        reduceMovesLeftToZero();
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {

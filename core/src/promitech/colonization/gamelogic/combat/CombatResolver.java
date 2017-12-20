@@ -1,7 +1,7 @@
 package promitech.colonization.gamelogic.combat;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -12,7 +12,7 @@ class CombatResolver {
 
 	protected Unit winner; 
 	protected Unit loser;
-	protected Set<CombatResultDetails> combatResultDetails = new HashSet<Combat.CombatResultDetails>();
+	protected List<CombatResultDetails> combatResultDetails = new ArrayList<Combat.CombatResultDetails>(5);
 	
 	public void init(Unit winner, Unit loser, boolean greatResult, CombatSides combatSides) {
 		combatResultDetails.clear();
