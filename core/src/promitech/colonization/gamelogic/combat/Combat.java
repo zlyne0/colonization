@@ -1,7 +1,5 @@
 package promitech.colonization.gamelogic.combat;
 
-import java.util.HashSet;
-
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -136,48 +134,71 @@ class Combat {
 	}
 
 	private void bombardCombat(float r, float winVal) {
+		combatResolver.combatResultDetails.clear();
+		
 		if (r <= winVal) {
 			combatResult = CombatResult.WIN;
-			// TODO: trzeba wydzielic w combat result takie tam atrybuty
-			
 		    // Great wins occur at most in 1 in 3 of successful bombards,
 		    // Good defences reduce this proportion.
 			float diff = Math.max(3f, combatSides.getDefencePower() * 2f - combatSides.getOffencePower());
 			greatResult = r < winVal / diff;
 			
+			combatResolver.loser = combatSides.defender;
 			if (greatResult || !combatSides.hasDefenderRepairLocation()) {
-				// crs.add(CombatResult.SINK_SHIP_BOMBARD);
+				combatResolver.combatResultDetails.add(CombatResultDetails.SINK_SHIP_BOMBARD);
 			} else {
-				// crs.add(CombatResult.DAMAGE_SHIP_BOMBARD);
+				combatResolver.combatResultDetails.add(CombatResultDetails.DAMAGE_SHIP_BOMBARD);
 			}
-			
-			// TODO: resolvAttack
 		} else {
 			combatResult = CombatResult.EVADE_ATTACK;
-			// TODO: no resolvAttack
+			combatResolver.combatResultDetails.add(CombatResultDetails.EVADE_BOMBARD);
 		}
 	}
 
 	public void processAttackResult() {
 	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
-		    System.out.println(" - result " + resultDetail);			
-			if (CombatResultDetails.SINK_SHIP_ATTACK == resultDetail) {
+		    System.out.println(" - result " + resultDetail);
+		    switch (resultDetail) {
+		    case SINK_SHIP_ATTACK:
+			case SINK_SHIP_BOMBARD:
 				Player loserPlayer = combatResolver.loser.getOwner();
 				loserPlayer.removeUnit(combatResolver.loser);
-			}
-			
-			if (CombatResultDetails.DAMAGE_SHIP_ATTACK == resultDetail) {
-			    UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
-			    combatResolver.loser.makeUnitDamaged(repairLocation);
-			    
-			    // TODO: messages to users
-			    // ServerPlayer.csDamageShipAttack
-			}
-			
-			if (CombatResultDetails.LOOT_SHIP == resultDetail) {
+				break;
+			case DAMAGE_SHIP_ATTACK:
+			case DAMAGE_SHIP_BOMBARD:
+				UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
+				combatResolver.loser.makeUnitDamaged(repairLocation);
+				break;
+			case LOOT_SHIP:
 				combatResolver.loser.transferAllGoods(combatResolver.winner);
+				break;
+			case EVADE_BOMBARD: // do nothing
+			default:
+				break;
 			}
+
+			// TODO:
+//        case AUTOEQUIP_UNIT:
+//        case BURN_MISSIONS:
+//        case CAPTURE_AUTOEQUIP:
+//        case CAPTURE_COLONY:
+//        case CAPTURE_CONVERT:
+//        case CAPTURE_EQUIP:
+//        case CAPTURE_UNIT:
+//        case DAMAGE_COLONY_SHIPS:
+//        case DEMOTE_UNIT:
+//        case DESTROY_COLONY:
+//        case DESTROY_SETTLEMENT:
+//        case EVADE_ATTACK:
+//        case LOSE_AUTOEQUIP:
+//        case LOSE_EQUIP:
+//        case PILLAGE_COLONY:
+//        case PROMOTE_UNIT:
+//        case SINK_COLONY_SHIPS:
+//        case SLAUGHTER_UNIT:
+			
+			
 		}
 	}
 

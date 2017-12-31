@@ -44,6 +44,16 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		return this;
 	}
 	
+	public UnitAssert isExistsOnTile(Tile tile) {
+		isNotNull();
+		if (!tile.getUnits().containsId(actual)) {
+			failWithMessage("expected unit <%s> on tile %s, [%d, %d]", actual.getId(), 
+				tile.id, tile.x, tile.y
+			);
+		}
+		return this;
+	}
+	
 	public UnitAssert isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
 	    if (!actual.isAtLocation(unitLocationClass)) {
 	        failWithMessage(

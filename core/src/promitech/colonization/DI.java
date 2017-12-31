@@ -22,7 +22,7 @@ public class DI {
 		moveController = new MoveController();
 		moveView = new MoveView();
 		
-		GameLogic gameLogic = new GameLogic(guiGameModel);
+		GameLogic gameLogic = new GameLogic(guiGameModel, combatService);
 		
 		moveController.inject(guiGameModel, guiGameController, moveView, moveService);
 		moveService.inject(guiGameController, moveController, guiGameModel, combatService);

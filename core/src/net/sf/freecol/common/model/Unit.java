@@ -172,6 +172,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return owner;
 	}
 
+	public void changeOwner(Player player) {
+		this.owner = player;
+	}
+	
 	public boolean isOwner(Player player) {
 		return owner.equals(player);
 	}

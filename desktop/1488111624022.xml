@@ -14122,6 +14122,7 @@
 				<tileitemcontainer>
 					<tileimprovement id="tileimprovement:6692" type="model.improvement.plow" magnitude="1" turns="0"/>
 					<resource id="resource:5621" type="model.resource.cotton" quantity="-1"/>
+					<lostCityRumour/>
 				</tileitemcontainer>
 			</tile>
 			<tile id="tile:2558" x="30" y="57" type="model.tile.ocean" style="192" moveToEurope="false">
@@ -17550,6 +17551,8 @@
 					<tileimprovement id="tileimprovement:6642" type="model.improvement.plow" magnitude="1" turns="0"/>
 				</tileitemcontainer>
 				<unit id="unit:6762" unitType="model.unit.hardyPioneer" role="model.role.default" owner="player:1" state="ACTIVE" movesLeft="3" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" experience="0" workLeft="-1"/>
+				<unit id="unit:67622" unitType="model.unit.artillery" role="model.role.default" owner="player:1" state="FORTIFIED" movesLeft="3" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" experience="0" workLeft="-1"/>
+				<unit id="unit:67623" unitType="model.unit.artillery" role="model.role.default" owner="player:1" state="FORTIFIED" movesLeft="3" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" experience="0" workLeft="-1"/>
 				<unit id="unit:-23" unitType="model.unit.frigate" role="model.role.default" owner="player:1" state="ACTIVE" movesLeft="12" hitPoints="6" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" name="Gideon3" experience="0" workLeft="-1">
 					<goodsContainer/>
 				</unit>
@@ -17587,6 +17590,7 @@
 					<building id="building:6539" buildingType="model.building.townHall">
 						<unit id="unit:7076" unitType="model.unit.elderStatesman" role="model.role.default" owner="player:1" state="IN_COLONY" movesLeft="3" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" experience="0" workLeft="-1"/>
 					</building>
+					<building id="building:70822" buildingType="model.building.fort"/>
 					<colonyTile workTile="tile:3392">
 						<production unattended="true">
 							<output goods-type="model.goods.grain" value="5"/>
@@ -17618,6 +17622,19 @@
 				<tileitemcontainer>
 					<tileimprovement id="tileimprovement:5759" type="model.improvement.fishBonusLand" magnitude="1" turns="0"/>
 				</tileitemcontainer>
+
+				<unit id="unit:33933" name="spanis skunks" unitType="model.unit.privateer" movesLeft="24" state="active" role="model.role.default" roleCount="0" owner="player:133" treasureAmount="0" entryLocation="tile:3437" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="6" attrition="4">
+		          <goodsContainer id="goodsContainer:6901">
+		            <storedGoods>
+		              <goods type="model.goods.tools" amount="1"/>
+		            </storedGoods>
+		            <oldStoredGoods>
+		              <goods type="model.goods.tools" amount="1"/>
+		              <goods type="model.goods.tradeGoods" amount="1"/>
+		            </oldStoredGoods>
+		          </goodsContainer>
+		        </unit>
+				
 			</tile>
 			<tile id="tile:3394" x="26" y="78" type="model.tile.ocean" style="1" moveToEurope="false">
 				<cachedTile player="player:1"/>

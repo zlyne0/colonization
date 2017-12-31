@@ -23,15 +23,18 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.gamelogic.combat.CombatService;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
 
 	private final GUIGameModel guiGameModel;
+	private final CombatService combatService;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
 	
-	public GameLogic(GUIGameModel guiGameModel) {
+	public GameLogic(GUIGameModel guiGameModel, CombatService combatService) {
 		this.guiGameModel = guiGameModel;
+		this.combatService = combatService;
 	}
 
 	public void newTurn(Player player) {
@@ -85,14 +88,8 @@ public class GameLogic {
 				Tile neighbourTile = guiGameModel.game.map.getTile(colony.tile, direction);
 				if (neighbourTile.getType().isWater()) {
 					Unit firstUnit = neighbourTile.getUnits().first();
-					if (firstUnit == null) {
-						continue;
-					}
-					if (firstUnit.isOwner(player)) {
-						continue;
-					}
-					if (player.atWarWith(firstUnit.getOwner()) || firstUnit.hasAbility(Ability.PIRACY)) {
-						// combat
+					if (combatService.canBombardTile(colony, neighbourTile, firstUnit)) {
+						combatService.bombardTileCombat(colony, neighbourTile, firstUnit);
 						// colony can bombard only one tile per turn
 						break;
 					}

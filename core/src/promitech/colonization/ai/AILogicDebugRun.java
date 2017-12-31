@@ -40,7 +40,7 @@ public class AILogicDebugRun {
     }
     
     public void run() {
-        Unit unit = gameModel.getActiveUnit();
+        //Unit unit = gameModel.getActiveUnit();
 //        ExplorerMission explorerMission = new ExplorerMission(unit);
 //        explorerMissionHandler.executeMission(explorerMission);
 //        explorerMissionHandler.exploreByOneMove(unit);
@@ -57,11 +57,11 @@ public class AILogicDebugRun {
 //			//createStartGameMissions(unit.getOwner());
 //        }
         
-        Player aiNativePlayer = unit.getOwner();
+        //Player aiNativePlayer = unit.getOwner();
         
-        GameLogic gameLogic = new GameLogic(gameModel);
-        AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveService);
-        aiLogic.aiNewTurn(aiNativePlayer);
+//        GameLogic gameLogic = new GameLogic(gameModel);
+//        AILogic aiLogic = new AILogic(gameModel.game, gameLogic, moveService);
+//        aiLogic.aiNewTurn(aiNativePlayer);
         
     	//executeMissions(unit);
     }

@@ -2,9 +2,16 @@ package promitech.colonization.orders.move;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MoveType;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
 import promitech.colonization.gamelogic.combat.CombatController;
@@ -36,6 +43,8 @@ public class MoveService {
     private MoveController moveController;
     private CombatController combatController;
 
+	private MoveContext artilleryUnitBombardAnimation;
+    
     public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, CombatService combatService) {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
@@ -184,32 +193,65 @@ public class MoveService {
     }
     
     private void showMoveIfRequired(MoveContext moveContext) {
-        if (showMoveOnPlayerScreen(moveContext)) {
+        if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowMove(moveContext);
         }
     }
     
     public void blockedShowFailedAttackMove(MoveContext moveContext) {
-        if (showMoveOnPlayerScreen(moveContext)) {
+        if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowFailedAttackMove(moveContext);
         }
     }
+    
+    public void blockedShowFailedBombardAttack(Player bombardingPlayer, Tile bombardingTile, Tile bombardedTile) {
+        if (showMoveOnPlayerScreen(bombardingTile, bombardedTile)) {
+        	createBombardArtillery();
+    		artilleryUnitBombardAnimation.sourceTile = bombardingTile;
+    		artilleryUnitBombardAnimation.destTile = bombardedTile;
+    		artilleryUnitBombardAnimation.unit.changeOwner(bombardingPlayer);
+            moveController.blockedShowFailedAttackMove(artilleryUnitBombardAnimation);
+        }
+    }
+    
+	public void blockedShowSuccessfulBombardAttack(Colony bombardingColony, Tile bombardedTile, Unit bombardedUnit) {
+		if (showMoveOnPlayerScreen(bombardingColony.tile, bombardedTile)) {
+			createBombardArtillery();
+    		artilleryUnitBombardAnimation.sourceTile = bombardingColony.tile;
+    		artilleryUnitBombardAnimation.destTile = bombardedTile;
+    		artilleryUnitBombardAnimation.unit.changeOwner(bombardingColony.getOwner());
+			moveController.blockedShowSuccessfulAttackWithMove(artilleryUnitBombardAnimation, bombardedUnit);
+		}
+	}
+	
+	private void createBombardArtillery() {
+		if (artilleryUnitBombardAnimation != null) {
+			return;
+		}
+		artilleryUnitBombardAnimation = new MoveContext();
+    	artilleryUnitBombardAnimation.unit = new Unit(
+			Game.idGenerator.nextId(Unit.class), 
+			Specification.instance.unitTypes.getById(UnitType.ARTILLERY), 
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+			new Player("artilleryUnitBombardAnimation:player")
+		);
+	}
 
     public void blockedShowAttackRetreat(MoveContext moveContext) {
-        if (showMoveOnPlayerScreen(moveContext)) {
+        if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowAttackRetreat(moveContext);
         }
     }
     
     public void blockedShowSuccessfulAttackWithMove(MoveContext moveContext, Unit loser) {
-        if (showMoveOnPlayerScreen(moveContext)) {
+        if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowSuccessfulAttackWithMove(moveContext, loser);
         }
     }
     
-    private boolean showMoveOnPlayerScreen(MoveContext moveContext) {
-        return !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.sourceTile)
-                || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(moveContext.destTile);
+    private boolean showMoveOnPlayerScreen(Tile sourceTile, Tile destTile) {
+        return !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(sourceTile)
+                || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
     }
 
     private void handlePathMoveContext(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -250,6 +292,4 @@ public class MoveService {
             afterMoveProcessor.afterMove(moveContext);
         }
     }
-    
-    
 }

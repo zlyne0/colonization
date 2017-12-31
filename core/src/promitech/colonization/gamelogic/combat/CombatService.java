@@ -1,5 +1,9 @@
 package promitech.colonization.gamelogic.combat;
 
+import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.move.MoveContext;
@@ -57,4 +61,32 @@ public class CombatService {
         combat.processAttackResult();
         moveService.postMoveProcessor(moveContext);
     }
+    
+    public boolean canBombardTile(Colony colony, Tile tile, Unit tileUnit) {
+		if (tileUnit == null) {
+			return false;
+		}
+		if (tileUnit.isOwner(colony.getOwner())) {
+			return false;
+		}
+		return colony.getOwner().atWarWith(tileUnit.getOwner()) || tileUnit.hasAbility(Ability.PIRACY);
+    }
+
+	public void bombardTileCombat(Colony bombardingColony, Tile bombardedTile, Unit bombardedUnit) {
+		Combat combat = new Combat();
+		combat.init(bombardingColony, bombardedTile, bombardedUnit);
+		
+		CombatResult combatResult = combat.generateRandomResult();
+		switch (combatResult) {
+		case WIN:
+			moveService.blockedShowSuccessfulBombardAttack(bombardingColony, bombardedTile, combat.combatResolver.loser);
+			break;
+		case EVADE_ATTACK:
+			moveService.blockedShowFailedBombardAttack(bombardingColony.getOwner(), bombardingColony.tile, bombardedTile);
+			break;
+		default:
+			throw new IllegalStateException("unrecoginized combatResult: " + combatResult);
+		}
+		combat.processAttackResult();
+	}
 }
