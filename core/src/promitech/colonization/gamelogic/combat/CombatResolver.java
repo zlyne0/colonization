@@ -6,6 +6,7 @@ import java.util.List;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
 
 class CombatResolver {
@@ -48,9 +49,43 @@ class CombatResolver {
 				} else {
 					indianSettlementCombatResultDetails();
 				}
+			} else {
+				if (loserMustDie) {
+					// TODO: handle
+					combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+				} else if (loser.unitRole.isOffensive()) {
+					if (winner.canCaptureEquipment(loser)) {
+						combatResultDetails.add(CombatResultDetails.CAPTURE_EQUIP);
+					} else {
+						combatResultDetails.add(CombatResultDetails.LOSE_EQUIP);
+					}
+					
+					if (loser.losingEquipmentKillsUnit()) {
+						combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+					} else if (loser.losingEquipmentDemotesUnit()) {
+						combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
+					}
+					
+				// But some can be captured.
+				} else if (
+						loser.hasAbility(Ability.CAN_BE_CAPTURED) 
+						&& winner.hasAbility(Ability.CAPTURE_UNITS)
+						// TODO:
+						/*&& !combatIsAmphibious(attacker, defender)*/) {
+					combatResultDetails.add(CombatResultDetails.CAPTURE_UNIT);
+					
+				// Or losing just causes a demotion.
+				} else if (loser.canUpgradeByChangeType(ChangeType.DEMOTION)) {
+						combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
+				} else {
+					// default
+					combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+				}
 			}
+			
 		}
 		
+		// TODO: promotion
 	}
 
 	// A Colony falls to Europeans when the last defender

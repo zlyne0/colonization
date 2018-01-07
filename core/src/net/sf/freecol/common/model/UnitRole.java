@@ -31,6 +31,7 @@ public class UnitRole extends ObjectWithFeatures {
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
 	public final MapIdEntities<RequiredGoods> requiredGoods = MapIdEntities.linkedMapIdEntities();
+	public final MapIdEntities<UnitRoleChange> roleChanges = MapIdEntities.linkedMapIdEntities();
 	private String downgradeRoleId;
 	private int maximumCount = DEFAULT_UNIT_ROLE_COUNT;
 	
@@ -67,6 +68,10 @@ public class UnitRole extends ObjectWithFeatures {
 		return hasModifier(Modifier.DEFENCE);
 	}
     
+	public boolean noDowngradeRole() {
+		return downgradeRoleId == null;
+	}
+	
 	public boolean isCompatibleWith(UnitRole role) {
 		if (role == null) {
 			return false;
@@ -76,25 +81,19 @@ public class UnitRole extends ObjectWithFeatures {
 				|| this.getId().equals(role.downgradeRoleId);
 	}
 
-    public boolean isAvailableTo(UnitType unitType, ObjectWithFeatures place) {
-        if (requiredAbilities != null) {
-            for (Ability aa : requiredAbilities.entities()) {
-                boolean found = unitType.hasAbility(aa.getId());
-                if (!found) {
-                	found = place.hasAbility(aa.getId());
-                }
-                if (aa.isValueNotEquals(found)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
 	public int getMaximumCount() {
 		return maximumCount;
 	}
-    
+
+	boolean canChangeRole(UnitRole fromRole, UnitRole toRole) {
+		for (UnitRoleChange urc : roleChanges.entities()) {
+			if (urc.match(fromRole, toRole)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static class Xml extends XmlNodeParser<UnitRole> {
 		private static final String ATTR_MAXIMUM_COUNT = "maximumCount";
 		private static final String ATTR_DOWNGRADE = "downgrade";
@@ -103,6 +102,7 @@ public class UnitRole extends ObjectWithFeatures {
 		public Xml() {
 			ObjectWithFeatures.Xml.abstractAddNodes(this);
 			addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
+			addNodeForMapIdEntities("roleChanges", UnitRoleChange.class);
 		}
 
 		@Override

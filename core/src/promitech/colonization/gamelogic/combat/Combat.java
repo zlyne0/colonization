@@ -130,6 +130,7 @@ class Combat {
 				combatResolver.init(combatSides.defender, combatSides.attacker, greatResult, combatSides);
 			}
 		}
+		// TODO:
 		//combatResolver.resolve(greatResult, combatSides);
 	}
 

@@ -123,7 +123,8 @@ public class Specification {
     public final List<UnitType> navalTypes = new ArrayList<UnitType>();
     public final List<UnitType> bombardTypes = new ArrayList<UnitType>();
     public final List<UnitType> landTypes = new ArrayList<UnitType>();
-    public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();    
+    public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();
+    public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
     
     private String difficultyLevel;
     
@@ -165,6 +166,12 @@ public class Specification {
                 immigrationGoodsTypeList.add(gt);
             }
         }
+        
+        for (UnitRole ur : unitRoles.entities()) {
+			if (ur.isOffensive()) {
+				militaryRoles.add(ur);
+			}
+		}
         
         createSupportUnitLists();
     }
@@ -247,7 +254,8 @@ public class Specification {
         navalTypes.clear();
         bombardTypes.clear();
         landTypes.clear();
-        mercenaryTypes.clear();    
+        mercenaryTypes.clear();
+        militaryRoles.clear();
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {

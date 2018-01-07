@@ -788,7 +788,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	public List<UnitRole> avaliableRoles(ObjectWithFeatures place) {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(unitType, place)) {
+            if (role.isAvailableTo(unitType, place, owner.getFeatures())) {
                 a.add(role);
             }
         }
@@ -810,6 +810,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	        return true;
 	    }
 	    return false;
+	}
+	
+	public boolean isRoleAvailable(UnitRole role) {
+		return role.isAvailableTo(unitType, unitRole, owner.getFeatures());
 	}
 	
 	public void getAbilities(String code, List<Ability> abilities) {
@@ -968,6 +972,36 @@ public class Unit extends ObjectWithId implements UnitLocation {
         clearDestination();
         setState(Unit.UnitState.ACTIVE);
         reduceMovesLeftToZero();
+	}
+	
+	public boolean canCaptureEquipment(Unit unitEquipment) {
+		return capturedEquipment(unitEquipment) != null;
+	}
+	
+	public UnitRole capturedEquipment(Unit unitEquipment) {
+		if (!hasAbility(Ability.CAPTURE_EQUIPMENT)) {
+			return null;
+		}
+		for (UnitRole milRole : Specification.instance.militaryRoles) {
+			if (isRoleAvailable(milRole)) {
+				if (milRole.canChangeRole(unitRole, unitEquipment.unitRole)) {
+					return milRole;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public boolean losingEquipmentKillsUnit() {
+		return hasAbility(Ability.DISPOSE_ON_ALL_EQUIPMENT_LOST) && unitRole.noDowngradeRole();
+	}
+	
+	public boolean losingEquipmentDemotesUnit() {
+		return hasAbility(Ability.DEMOTE_ON_ALL_EQUIPMENT_LOST) && unitRole.noDowngradeRole();
+	}
+	
+	public boolean canUpgradeByChangeType(ChangeType changeType) {
+		return unitType.upgradeByChangeType(changeType, getOwner()) != null;
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {

@@ -66,7 +66,7 @@ public class ObjectWithFeatures extends ObjectWithId {
 		};
     };
     
-    protected final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
+    private final MapIdEntities<Ability> requiredAbilities = new MapIdEntities<Ability>();
     private final java.util.Map<String, List<Modifier>> modifiers = new LinkedHashMap<String, List<Modifier>>();
     private final java.util.Map<String, List<Ability>> abilities = new LinkedHashMap<String, List<Ability>>();
 	private final List<Scope> scopes = new ArrayList<Scope>();
@@ -216,7 +216,25 @@ public class ObjectWithFeatures extends ObjectWithId {
 		}
 		return true;
 	}
-	
+
+    public boolean isAvailableTo(ObjectWithFeatures ... places) {
+        if (requiredAbilities != null) {
+            for (Ability aa : requiredAbilities.entities()) {
+                boolean found = false;
+            	for (int i=0; i<places.length; i++) {
+            		if (places[i].hasAbility(aa.getId())) {
+            			found = true;
+            			break;
+            		}
+            	}
+                if (aa.isValueNotEquals(found)) {
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
     public boolean hasModifier(String code) {
         List<Modifier> list = modifiers.get(code);
         return list != null && !list.isEmpty();

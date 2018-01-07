@@ -6,6 +6,7 @@ import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
@@ -17,6 +18,7 @@ import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
@@ -40,10 +42,12 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static net.sf.freecol.common.model.TileAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
+import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
 
 public class Savegame1600Verifier {
 
@@ -262,8 +266,8 @@ public class Savegame1600Verifier {
         verifyShipGoods(game, specification);
         verifySpecificationOptionGroup(specification);
         verifySpecificationGameDifficultyOptions(specification);
-        verifySpecificationUnitRoles(specification);
-        verifySpecificationUnitTypes(specification);
+        verifySpecificationUnitRoles(specification, game);
+        verifySpecificationUnitTypes(specification, game);
         verifySpecificationFoundingFathers(specification);
     }
 
@@ -344,7 +348,7 @@ public class Savegame1600Verifier {
         assertEquals(3, buildingNationType.getStartedUnits(true).size());
 	}
 
-    private void verifySpecificationUnitTypes(Specification specification) {
+    private void verifySpecificationUnitTypes(Specification specification, Game game) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
     	assertEquals(1, unitType.requiredAbilitiesAmount());
     	
@@ -356,9 +360,14 @@ public class Savegame1600Verifier {
     	UnitType freeColonist = specification.unitTypes.getById(UnitType.FREE_COLONIST);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.FOOD).getQuantity()).isEqualTo(2);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.BELLS).getQuantity()).isEqualTo(1);
+    	
+    	UnitType artillery = specification.unitTypes.getById("model.unit.artillery");
+    	Player player = game.players.getById("player:1");
+    	UnitType damagedArtillery = artillery.upgradeByChangeType(ChangeType.DEMOTION, player);
+    	assertThat(damagedArtillery.getId()).isEqualTo("model.unit.damagedArtillery");
 	}
 
-	private void verifySpecificationUnitRoles(Specification specification) {
+	private void verifySpecificationUnitRoles(Specification specification, Game game) {
         UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
@@ -368,7 +377,33 @@ public class Savegame1600Verifier {
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").amount);
         assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").amount);
+        
+        MapIdEntities<UnitRoleChange> roleChanges = specification.unitRoles.getById("model.role.mountedBrave")
+    		.roleChanges;
+        assertThat(roleChanges.entities()).hasSize(3);
+        
+        assertThat(roleChanges).containsId("model.role.default:model.role.scout");
+        assertThat(roleChanges).containsId("model.role.default:model.role.dragoon");
+        assertThat(roleChanges).containsId("model.role.default:model.role.cavalry");
+        
+        verifyCaptureEquipment(specification, game);
     }
+	
+	private void verifyCaptureEquipment(Specification spec, Game game) {
+		Unit brave = new Unit("1", 
+			spec.unitTypes.getById("model.unit.brave"), 
+			spec.unitRoles.getById("model.role.default"),
+			game.players.getById("player:40")
+		);
+		Unit dragon = new Unit("2", 
+			spec.unitTypes.getById("model.unit.freeColonist"), 
+			spec.unitRoles.getById("model.role.dragoon"),
+			game.players.getById("player:1")
+		);
+		
+		assertThat(brave.canCaptureEquipment(dragon)).isTrue();
+		assertThat(brave.capturedEquipment(dragon).getId()).isEqualTo("model.role.mountedBrave");
+	}
 
     private void verifySpecificationGameDifficultyOptions(Specification specification) {
         assertEquals(true, specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
@@ -376,7 +411,6 @@ public class Savegame1600Verifier {
         
         assertEquals(0, specification.options.getIntValue(GameOptions.STARTING_MONEY));
         assertEquals("medium", specification.options.getStringValue(GameOptions.TILE_PRODUCTION));
-        
     }
 
     private void verifySpecificationOptionGroup(Specification specification) {

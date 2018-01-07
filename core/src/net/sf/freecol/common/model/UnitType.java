@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -171,6 +172,19 @@ public class UnitType extends BuildableType {
             }
         }
         return false;
+    }
+    
+    public UnitType upgradeByChangeType(ChangeType changeType, Player player) {
+    	for (UnitTypeChange change : unitTypeChanges.entities()) {
+    		if (change.isPositiveProbability(changeType)) {
+    			String newUnitTypeId = change.getNewUnitTypeId();
+    			UnitType newUnitType = Specification.instance.unitTypes.getById(newUnitTypeId);
+    			if (newUnitType.isAvailableTo(player.getFeatures())) {
+    				return newUnitType;
+    			}
+    		}
+    	}
+    	return null;
     }
     
     public List<String> getUpgradesUnitTypeIds(ChangeType changeType) {
