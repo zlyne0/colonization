@@ -174,6 +174,19 @@ public class UnitType extends BuildableType {
         return false;
     }
     
+    public UnitTypeChange getUnitTypeChange(ChangeType changeType, Player player) {
+    	for (UnitTypeChange change : unitTypeChanges.entities()) {
+    		if (change.isPositiveProbability(changeType)) {
+    			String newUnitTypeId = change.getNewUnitTypeId();
+    			UnitType newUnitType = Specification.instance.unitTypes.getById(newUnitTypeId);
+    			if (newUnitType.isAvailableTo(player.getFeatures())) {
+    				return change;
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
     public UnitType upgradeByChangeType(ChangeType changeType, Player player) {
     	for (UnitTypeChange change : unitTypeChanges.entities()) {
     		if (change.isPositiveProbability(changeType)) {
