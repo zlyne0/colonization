@@ -172,8 +172,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return owner;
 	}
 
-	public void changeOwner(Player player) {
-		this.owner = player;
+	public void setOwner(Player player) {
+        this.owner = player;
+	}
+	
+	public void captureUnit(Unit unit) {
+	    unit.getOwner().units.removeId(unit);
+	    unit.owner = this.owner;
+	    owner.units.add(unit);
+	    unit.changeUnitLocation(this.getTile());
+	    unit.reduceMovesLeftToZero();
+	    unit.clearDestination();
+	    unit.setState(Unit.UnitState.ACTIVE);
 	}
 	
 	public boolean isOwner(Player player) {
@@ -780,9 +790,23 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		reduceMovesLeftToZero();
 	}
 	
+	public void downgradeRole() {
+	    if (unitRole.noDowngradeRole()) {
+	        changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+	    } else {
+	        changeRole(Specification.instance.unitRoles.getById(unitRole.getDowngradeRoleId()));
+	    }
+	}
+	
 	public void changeUnitType(UnitType newUnitType) {
 		this.unitType = newUnitType;
 		this.experience = 0;
+		this.hitPoints = newUnitType.getHitPoints();
+	}
+	
+	public void changeUnitType(ChangeType changeType) {
+        UnitType newUnitType = unitType.upgradeByChangeType(changeType, owner);
+        changeUnitType(newUnitType);
 	}
 	
 	public List<UnitRole> avaliableRoles(ObjectWithFeatures place) {
@@ -919,6 +943,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
     
 	public void setIndianSettlement(IndianSettlement settlement) {
 		this.indianSettlement = settlement.getId();
+	}
+	
+	public String getIndianSettlementId() {
+	    return this.indianSettlement;
 	}
 	
 	public boolean hasRepairLocation() {

@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
-import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.util.StringUtils;
@@ -68,9 +67,13 @@ public class UnitRole extends ObjectWithFeatures {
 		return hasModifier(Modifier.DEFENCE);
 	}
     
-	public boolean noDowngradeRole() {
+	boolean noDowngradeRole() {
 		return downgradeRoleId == null;
 	}
+	
+    String getDowngradeRoleId() {
+        return downgradeRoleId;
+    }
 	
 	public boolean isCompatibleWith(UnitRole role) {
 		if (role == null) {

@@ -2,6 +2,8 @@ package net.sf.freecol.common.model;
 
 import org.assertj.core.api.AbstractAssert;
 
+import net.sf.freecol.common.model.player.Player;
+
 public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 
 	public UnitAssert(Unit actual, Class<?> selfType) {
@@ -104,4 +106,32 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
         return this;
     }
 
+    public UnitAssert isUnitType(String unitTypeId) {
+        if (!actual.unitType.equalsId(unitTypeId)) {
+            failWithMessage("expected unit <%s> to be unit type <%s> but it is <%s>", actual.getId(), unitTypeId, actual.unitType.getId());
+        }
+        return this;
+    }
+    
+    public UnitAssert isUnitType(UnitType unitType) {
+        return this.isUnitType(unitType.getId());
+    }
+
+    public UnitAssert isUnitRole(String unitRoleId) {
+        if (!actual.unitRole.equalsId(unitRoleId)) {
+            failWithMessage("expected unit <%s> to be in role <%s> but it is in <%s>", actual.getId(), unitRoleId, actual.unitRole.getId());
+        }
+        return this;
+    }
+
+    public UnitAssert isOwnedBy(Player player) {
+        if (!actual.getOwner().equalsId(player)) {
+            failWithMessage("expected unit <%s> owned by <%p> but it is owned by <%s>", actual.getId(), player.getId(), actual.getOwner().getId());
+        }
+        if (!player.units.containsId(actual)) {
+            failWithMessage("expected that player <%s> posses unit <%s>", player.getId(), actual.getId());
+        }
+        return this;
+    }
+    
 }

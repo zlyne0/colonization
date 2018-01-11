@@ -25,7 +25,7 @@ public class IndianSettlement extends Settlement {
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
     private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
-    private GoodsContainer goodsContainer;
+    private final GoodsContainer goodsContainer;
     
     public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
     	super(idGenerator.nextId(IndianSettlement.class), settlementType);
@@ -40,6 +40,7 @@ public class IndianSettlement extends Settlement {
      */
     private IndianSettlement(String id, SettlementType settlementType) {
 		super(id, settlementType);
+		goodsContainer = new GoodsContainer();
 	}
 
     public boolean hasContact(Player player) {
@@ -190,7 +191,7 @@ public class IndianSettlement extends Settlement {
 
 	@Override
 	public void addGoods(String goodsTypeId, int quantity) {
-		throw new IllegalStateException("not implemented");
+	    goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
 	}
 
 	@Override

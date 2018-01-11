@@ -209,7 +209,7 @@ public class MoveService {
         	createBombardArtillery();
     		artilleryUnitBombardAnimation.sourceTile = bombardingTile;
     		artilleryUnitBombardAnimation.destTile = bombardedTile;
-    		artilleryUnitBombardAnimation.unit.changeOwner(bombardingPlayer);
+    		artilleryUnitBombardAnimation.unit.setOwner(bombardingPlayer);
             moveController.blockedShowFailedAttackMove(artilleryUnitBombardAnimation);
         }
     }
@@ -219,7 +219,7 @@ public class MoveService {
 			createBombardArtillery();
     		artilleryUnitBombardAnimation.sourceTile = bombardingColony.tile;
     		artilleryUnitBombardAnimation.destTile = bombardedTile;
-    		artilleryUnitBombardAnimation.unit.changeOwner(bombardingColony.getOwner());
+    		artilleryUnitBombardAnimation.unit.setOwner(bombardingColony.getOwner());
 			moveController.blockedShowSuccessfulAttackWithMove(artilleryUnitBombardAnimation, bombardedUnit);
 		}
 	}

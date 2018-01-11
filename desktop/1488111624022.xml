@@ -1283,6 +1283,9 @@
 					<required-ability id="model.ability.refUnit" value="false"/>
 					<required-ability id="model.ability.canBeEquipped" value="true"/>
 					<required-ability id="model.ability.native" value="true"/>
+			          <role-change from="model.role.default" capture="model.role.scout"/>
+			          <role-change from="model.role.default" capture="model.role.dragoon"/>
+			          <role-change from="model.role.default" capture="model.role.cavalry"/>
 				</role>
 				<role id="model.role.armedBrave" maximumCount="1">
 					<required-goods id="model.goods.muskets" value="25"/>
@@ -1293,6 +1296,8 @@
 					<required-ability id="model.ability.refUnit" value="false"/>
 					<required-ability id="model.ability.canBeEquipped" value="true"/>
 					<required-ability id="model.ability.native" value="true"/>
+			          <role-change from="model.role.default" capture="model.role.soldier"/>
+			          <role-change from="model.role.default" capture="model.role.infantry"/>
 				</role>
 				<role id="model.role.nativeDragoon" downgrade="model.role.armedBrave" maximumCount="1">
 					<required-goods id="model.goods.muskets" value="25"/>
@@ -1305,6 +1310,11 @@
 					<required-ability id="model.ability.refUnit" value="false"/>
 					<required-ability id="model.ability.canBeEquipped" value="true"/>
 					<required-ability id="model.ability.native" value="true"/>
+			          <role-change from="model.role.mountedBrave" capture="model.role.soldier"/>
+			          <role-change from="model.role.mountedBrave" capture="model.role.infantry"/>
+			          <role-change from="model.role.armedBrave" capture="model.role.scout"/>
+			          <role-change from="model.role.armedBrave" capture="model.role.dragoon"/>
+			          <role-change from="model.role.armedBrave" capture="model.role.cavalry"/>
 				</role>
 			</roles>
 			<building-types>

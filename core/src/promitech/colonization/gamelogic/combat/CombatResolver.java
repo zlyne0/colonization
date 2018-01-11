@@ -52,17 +52,14 @@ class CombatResolver {
 					indianSettlementCombatResultDetails();
 				}
 			} else {
-				landCombatResultDetails(loserMustDie);
+				landCombatResultDetails(loserMustDie, combatSides.combatAmphibious);
 			}
-			
 		}
-		
 		unitPromotion(greatResult);
 	}
 
-	private void landCombatResultDetails(boolean loserMustDie) {
+	private void landCombatResultDetails(boolean loserMustDie, boolean combatAmphibious) {
 		if (loserMustDie) {
-			// TODO: handle
 			combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 		} else if (loser.unitRole.isOffensive()) {
 			if (winner.canCaptureEquipment(loser)) {
@@ -78,11 +75,9 @@ class CombatResolver {
 			}
 			
 		// But some can be captured.
-		} else if (
-				loser.hasAbility(Ability.CAN_BE_CAPTURED) 
-				&& winner.hasAbility(Ability.CAPTURE_UNITS)
-				// TODO:
-				/*&& !combatIsAmphibious(attacker, defender)*/) {
+		} else if (loser.hasAbility(Ability.CAN_BE_CAPTURED) 
+		        && winner.hasAbility(Ability.CAPTURE_UNITS) 
+		        && !combatAmphibious) {
 			combatResultDetails.add(CombatResultDetails.CAPTURE_UNIT);
 			
 		// Or losing just causes a demotion.
@@ -96,7 +91,7 @@ class CombatResolver {
 
 	private void unitPromotion(boolean greatResult) {
 		UnitTypeChange promotion = winner.unitType.getUnitTypeChange(ChangeType.PROMOTION, winner.getOwner());
-		if (promotion == null || !winner.hasAbility(Ability.AUTOMATIC_PROMOTION)) {
+		if (promotion == null) {
 			return;
 		}
 		if (winner.hasAbility(Ability.AUTOMATIC_PROMOTION)) {

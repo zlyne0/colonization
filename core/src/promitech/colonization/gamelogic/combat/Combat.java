@@ -1,11 +1,19 @@
 package promitech.colonization.gamelogic.combat;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLocation;
+import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
 
 class Combat {
@@ -157,15 +165,18 @@ class Combat {
 	}
 
 	public void processAttackResult() {
+        int winnerTension = 0;
+        int loserTension = 0;
+	    
 	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
 		    System.out.println(" - result " + resultDetail);
 		    switch (resultDetail) {
 		    case SINK_SHIP_ATTACK:
-			case SINK_SHIP_BOMBARD:
+			case SINK_SHIP_BOMBARD: {
 				Player loserPlayer = combatResolver.loser.getOwner();
 				loserPlayer.removeUnit(combatResolver.loser);
-				break;
+			} break;
 			case DAMAGE_SHIP_ATTACK:
 			case DAMAGE_SHIP_BOMBARD:
 				UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
@@ -174,6 +185,23 @@ class Combat {
 			case LOOT_SHIP:
 				combatResolver.loser.transferAllGoods(combatResolver.winner);
 				break;
+			case SLAUGHTER_UNIT: {
+                Player loserPlayer = combatResolver.loser.getOwner();
+                loserPlayer.removeUnit(combatResolver.loser);
+                
+                winnerTension -= Tension.TENSION_ADD_NORMAL;
+                loserTension += getSlaughterTension(combatResolver.loser);
+			} break;
+			case PROMOTE_UNIT: combatResolver.winner.changeUnitType(ChangeType.PROMOTION);
+			break;
+			case CAPTURE_EQUIP: captureEquipment();
+			break;
+			case DEMOTE_UNIT: combatResolver.loser.changeUnitType(ChangeType.DEMOTION);
+			break;
+			case LOSE_EQUIP: combatResolver.loser.downgradeRole(); 
+		    break;
+			case CAPTURE_UNIT: combatResolver.winner.captureUnit(combatResolver.loser); 
+			break;
 			case EVADE_BOMBARD: // do nothing
 			default:
 				break;
@@ -185,24 +213,53 @@ class Combat {
 //        case CAPTURE_AUTOEQUIP:
 //        case CAPTURE_COLONY:
 //        case CAPTURE_CONVERT:
-//        case CAPTURE_EQUIP:
-//        case CAPTURE_UNIT:
 //        case DAMAGE_COLONY_SHIPS:
-//        case DEMOTE_UNIT:
 //        case DESTROY_COLONY:
 //        case DESTROY_SETTLEMENT:
 //        case EVADE_ATTACK:
 //        case LOSE_AUTOEQUIP:
-//        case LOSE_EQUIP:
 //        case PILLAGE_COLONY:
-//        case PROMOTE_UNIT:
 //        case SINK_COLONY_SHIPS:
-//        case SLAUGHTER_UNIT:
-			
-			
 		}
+		
+		// TODO: tension
 	}
 
+    private int getSlaughterTension(Unit loser) {
+        if (loser.getIndianSettlementId() != null) {
+            return Tension.TENSION_ADD_UNIT_DESTROYED;
+        } else {
+            return Tension.TENSION_ADD_MINOR;
+        }
+    }
+
+    private void captureEquipment() {
+        combatResolver.loser.downgradeRole();
+        
+        UnitRole newRole = combatResolver.winner.capturedEquipment(combatResolver.loser);
+        if (newRole == null) {
+            return;
+        }
+        if (combatResolver.winner.getOwner().isIndian()) {
+            indianTransferCapturedGoodToHomeSettlement(newRole);
+        }
+        combatResolver.winner.changeRole(newRole);
+    }
+
+    private void indianTransferCapturedGoodToHomeSettlement(UnitRole roleEquipment) {
+        // CHEAT: Immediately transferring the captured goods back to a potentially remote settlement
+        // Apparently Col1 did it
+        ProductionSummary equipment = UnitRoleLogic.requiredGoodsToChangeRole(combatResolver.winner, roleEquipment);
+        if (combatResolver.winner.getIndianSettlementId() != null) {
+            Settlement settlement = combatResolver.winner.getOwner().settlements.getByIdOrNull(combatResolver.winner.getIndianSettlementId());
+            if (settlement != null) {
+                for (Entry<String> goods : equipment.entries()) {
+                    settlement.addGoods(goods.key, goods.value);
+                }
+            }
+        }
+    }
+    
 	public boolean canAttackWithoutConfirmation() {
 		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
 			return true;

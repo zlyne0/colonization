@@ -38,6 +38,7 @@ class CombatSides {
 	protected Unit attacker;
 	protected Unit defender;
 	protected Tile defenderTile;
+	protected boolean combatAmphibious;
 	private float offencePower;
 	private float defencePower;
 	private float winPropability;
@@ -53,6 +54,7 @@ class CombatSides {
 		this.attacker = attacker;
 		this.defender = defender;
 		this.combatType = CombatType.ATTACK;
+		this.combatAmphibious = this.isCombatAmphibious(attacker, defender);
 		offencePower = getOffencePower(attacker, defender);
 		defencePower = getDefencePower(attacker, defender, defenderTile);
 
@@ -71,6 +73,7 @@ class CombatSides {
 		this.attacker = null;
 		this.defender = defender;
 		this.combatType = CombatType.BOMBARD;
+		this.combatAmphibious = false;
 		offencePower = colonyOffenceBombardPower(colony);
 		defencePower = getDefencePower(null, defender, defenderTile);
 		winPropability = offencePower / (offencePower + defencePower);
@@ -289,7 +292,7 @@ class CombatSides {
 				break;
 		}
 		
-		if (isCombatAmphibious(offenceUnit, defenderUnit)) {
+		if (combatAmphibious) {
 			mods.addModifier(
 				spec.modifiers.getById(Modifier.AMPHIBIOUS_ATTACK)
 			);
@@ -327,7 +330,7 @@ class CombatSides {
 		}
 	}
 
-	boolean isCombatAmphibious(Unit attacker, Unit defender) {
+	private boolean isCombatAmphibious(Unit attacker, Unit defender) {
 		return attacker.getTileLocationOrNull() == null && 
 				defender.getTileLocationOrNull() != null;
 	}
