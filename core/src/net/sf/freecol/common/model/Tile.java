@@ -297,6 +297,15 @@ public class Tile implements UnitLocation, Identifiable {
         return false;
     }
     
+    public boolean doesTileHaveNavyUnit() {
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.isNaval()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public boolean isTileHasNavyUnitThatCanBombardUnit(Player navyUnitOwner, boolean isNavyPiracy) {
         if (type.isLand()) {
             // land units can not bombard ship

@@ -3,8 +3,10 @@ package promitech.colonization.gamelogic.combat;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
@@ -16,21 +18,24 @@ class CombatResolver {
 	protected Unit winner; 
 	protected Unit loser;
 	protected List<CombatResultDetails> combatResultDetails = new ArrayList<Combat.CombatResultDetails>(5);
+	private boolean greatResult;
+	private boolean loserMustDie;
 	
 	public void init(Unit winner, Unit loser, boolean greatResult, CombatSides combatSides) {
 		combatResultDetails.clear();
 		this.winner = winner;
 		this.loser = loser;
+		this.greatResult = greatResult;
 		
-		resolve(greatResult, combatSides);
+		resolve(combatSides);
 	}
 
 	public void initNoResult() {
 		combatResultDetails.clear();
 	}
 	
-	private void resolve(boolean greatResult, CombatSides combatSides) {
-		boolean loserMustDie = loser.hasAbility(Ability.DISPOSE_ON_COMBAT_LOSS);
+	private void resolve(CombatSides combatSides) {
+		loserMustDie = loser.hasAbility(Ability.DISPOSE_ON_COMBAT_LOSS);
 		
 		if (loser.isNaval()) {
 			if (winner.isNaval() 
@@ -47,7 +52,7 @@ class CombatResolver {
 			Tile defenderTile = combatSides.defenderTile;
 			if (defenderTile.hasSettlement()) {
 				if (defenderTile.getSettlement().isColony()) {
-					colonyCombatResultDetails();
+					colonyCombatResultDetails(combatSides);
 				} else {
 					indianSettlementCombatResultDetails();
 				}
@@ -112,10 +117,53 @@ class CombatResolver {
 	// until the colony falls for lack of survivors.
 	// Ships in a falling colony will be damaged or sunk
 	// if they have no repair location.
-	private void colonyCombatResultDetails() {
+	private void colonyCombatResultDetails(CombatSides combatSides) {
+	    if (loser.isDefensiveUnit()) {
+	        landCombatResultDetails(loserMustDie, combatSides.combatAmphibious);
+	        return;
+	    }
+	    
+	    if (winner.getOwner().isEuropean()) {
+	        if (combatSides.defenderTile.doesTileHaveNavyUnit()) {
+	            if (loser.hasRepairLocation()) {
+	                combatResultDetails.add(CombatResultDetails.DAMAGE_COLONY_SHIPS);
+	            } else {
+                    combatResultDetails.add(CombatResultDetails.SINK_COLONY_SHIPS);
+	            }
+	        }
+	        if (loserMustDie) {
+	            combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+	        }
+	        combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
+	    } else {
+	        if (!greatResult && canColonyByPillaged(combatSides.defenderTile.getSettlement().getColony())) {
+	            combatResultDetails.add(CombatResultDetails.PILLAGE_COLONY);
+	        }
+	    }
+	    
 		// TODO:
+	    //SimpleCombatModel
 	}
 
+	private boolean canColonyByPillaged(Colony colony) {
+	     return 
+             !colony.hasStockade() 
+             && winner.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
+             && (colony.hasBurnableBuildings() 
+                     //|| hasNavalUnits || (hasLootableGoods && attacker can carry goods && hasSpaceLeft ) || canBePlundered
+             );
+//        return !hasStockade()
+//                && attacker.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
+//                && !(getBurnableBuildings().isEmpty()
+//                    && getTile().getNavalUnits().isEmpty()
+//                    && (getLootableGoodsList().isEmpty()
+//                        || !attacker.getType().canCarryGoods()
+//                        || !attacker.hasSpaceLeft())
+//                    && !canBePlundered());
+	    
+	    // TODO:
+	}
+	
     // Attacking and defeating the defender of a native
     // settlement with a mission may yield converts but
     // also may provoke the burning of all missions.

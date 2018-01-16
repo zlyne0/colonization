@@ -169,6 +169,20 @@ public class Colony extends Settlement {
 		return (int)colonyUpdatableFeatures.applyModifier(modifierCode, (float)val);
 	}
 
+	public boolean hasBurnableBuildings() {
+	    // TODO
+	    return false;
+	}
+	
+	public boolean hasStockade() {
+	    for (Building building : buildings.entities()) {
+	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
     private String getStockadeKey() {
     	for (Building building : buildings.entities()) {
     		if (building.buildingType.hasModifier(Modifier.DEFENCE)) {

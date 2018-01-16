@@ -187,6 +187,9 @@ public class MoveService {
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
             } break;
+            case ATTACK_SETTLEMENT: {
+                combatController.confirmSettlementCombat(moveContext);
+            } break;
             default:
                 throw new IllegalStateException("not implemented required user interaction move type " + moveContext.moveType);
         }

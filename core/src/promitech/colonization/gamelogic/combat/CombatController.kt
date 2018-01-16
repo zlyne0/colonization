@@ -34,6 +34,11 @@ class CombatController (
         }
     }
 
+	fun confirmSettlementCombat(moveContext: MoveContext) {
+        // TODO: TRIBUTE
+		confirmCombat(moveContext)
+	}
+	
     private fun showPreCombatDialog(moveContext: MoveContext) {
         val confirmCombatAction = Runnable {
             combatService.doConfirmedCombat(moveContext, combat, nextActiveUnitAction)

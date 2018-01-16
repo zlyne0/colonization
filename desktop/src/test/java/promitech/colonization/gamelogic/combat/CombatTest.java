@@ -41,7 +41,6 @@ public class CombatTest {
 	private Game game;
     private Player spanish;
     private Player dutch;
-    private Tile freeTile;
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -53,177 +52,97 @@ public class CombatTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
-    	freeTile = game.map.getSafeTile(23, 80);    	
     }
     
     @Test
-    public void dragoonWinPromoteAndKillBrave() throws Exception {
+    public void dragoonVsArmedColony() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        
-        Tile braveTile = game.map.getSafeTile(22, 79);
-        Unit braveUnit = braveTile.getUnits().getById("unit:5967");
-        
-        // when
-        Combat combat = new Combat();
-        combat.init(dragoon, braveTile);
-        combat.generateGreatWin();
-        combat.processAttackResult();
-
-        // then
-        assertThat(combat)
-            .hasPowers(1.12f, 1.25f, 0.47f)
-            .hasResult(CombatResult.WIN, true)
-            .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.PROMOTE_UNIT);
-
-        assertThat(braveUnit).isDisposed();
-        assertThat(dragoon).isUnitType(UnitType.VETERAN_SOLDIER);
-    }
-    
-    @Test
-    public void braveWinCaptureEquipment() throws Exception {
-        // given
-        Unit dragoon = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        Tile dragoonTile = game.map.getSafeTile(23, 78);
-        dragoon.changeUnitLocation(dragoonTile);
-        
-        Tile braveTile = game.map.getSafeTile(22, 79);
-        Unit braveUnit = braveTile.getUnits().getById("unit:5967");
-
-        // when
-        Combat combat = new Combat();
-        combat.init(braveUnit, dragoonTile);
-        combat.generateGreatWin();
-        combat.processAttackResult();
-
-        // then
-        assertThat(combat)
-            .hasPowers(1.5f, 3.75f, 0.28f)
-            .hasResult(CombatResult.WIN, true)
-            .hasDetails(CombatResultDetails.CAPTURE_EQUIP);
-        
-        assertThat(dragoon).isUnitRole(UnitRole.SOLDIER);
-        assertThat(braveUnit).isUnitRole("model.role.armedBrave");
-    }
-    
-    @Test
-    public void artilleryWinVsDragoon() throws Exception {
-        Unit dragoon = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        
-        Unit artillery = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById("model.unit.artillery"),
-            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
             spanish
         );
-        Tile artilleryTile = freeTile;
-        artillery.changeUnitLocation(artilleryTile);
+        Tile freeTileNextToColony = game.map.getSafeTile(23, 79);
+        dragoon.changeUnitLocation(freeTileNextToColony);
         
+        Tile colonyTile = game.map.getSafeTile(24, 78);
         
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, artilleryTile);
-        combat.generateGreatLoss();
+        combat.init(dragoon, colonyTile);
+        combat.generateGreatWin();
         combat.processAttackResult();
-
+    
         // then
         assertThat(combat)
-            .hasPowers(1.12f, 1.25f, 0.47f)
-            .hasResult(CombatResult.LOSE, true)
-            .hasDetails(CombatResultDetails.LOSE_EQUIP);
-        
-        assertThat(dragoon).isUnitRole(UnitRole.SOLDIER);
+            .hasPowers(4.5f, 6.75f, 0.4f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.LOSE_EQUIP, CombatResultDetails.PROMOTE_UNIT);
     }
     
     @Test
-    public void demoteArtillery() throws Exception {
+    public void emptyColony() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        Tile dragoonTile = game.map.getSafeTile(23, 78);
-        dragoon.changeUnitLocation(dragoonTile);
-
-        Unit artillery = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById("model.unit.artillery"),
-            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
             spanish
         );
-        Tile artilleryTile = freeTile;
-        artillery.changeUnitLocation(artilleryTile);
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        dragoon.changeUnitLocation(freeTileNextToColony);
         
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Unit frigate = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.frigate"), 
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+            emptyColonyTile.getSettlement().getOwner()
+        );
+        frigate.changeUnitLocation(emptyColonyTile);
+
+    
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, artilleryTile);
+        combat.init(dragoon, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
         // then
         assertThat(combat)
-            .hasPowers(4.5f, 1.25f, 0.78f)
+            .hasPowers(4.5f, 2.25f, 0.66f)
             .hasResult(CombatResult.WIN, true)
-            .hasDetails(CombatResultDetails.DEMOTE_UNIT, CombatResultDetails.PROMOTE_UNIT);
-        
-        assertThat(artillery).isUnitType("model.unit.damagedArtillery");
+            .hasDetails(CombatResultDetails.PROMOTE_UNIT);
+        // TODO:
+        // spanish vs empty colony
+        // free tile x="21" y="80" vs x="20" y="79" 
     }
     
     @Test
-    public void canCaptureUnit() throws Exception {
+    public void emptyColonyWithAutoRole() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        Tile dragoonTile = game.map.getSafeTile(23, 78);
-        dragoon.changeUnitLocation(dragoonTile);
-        
-        Unit colonist = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
             spanish
         );
-        Tile colonistTile = freeTile;
-        colonist.changeUnitLocation(colonistTile);
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        dragoon.changeUnitLocation(freeTileNextToColony);
         
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
 
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, colonistTile);
+        combat.init(dragoon, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
         // then
-        assertThat(combat)
-            .hasPowers(4.5f, 1.0f, 0.81f)
-            .hasResult(CombatResult.WIN, true)
-            .hasDetails(CombatResultDetails.CAPTURE_UNIT, CombatResultDetails.PROMOTE_UNIT);
-
-        assertThat(colonist)
-            .isExistsOnTile(dragoonTile)
-            .isOwnedBy(dutch);
+        // TODO:
     }
+    
     
 //  <tile id="tile:3391" x="23" y="78" type="model.tile.swamp" style="0" moveToEurope="false" owner="player:1">
 //  <cachedTile player="player:1"/>
