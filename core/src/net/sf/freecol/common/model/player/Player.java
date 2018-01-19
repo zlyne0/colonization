@@ -383,6 +383,10 @@ public class Player extends ObjectWithId {
     	this.gold -= gold;
     }
     
+    public boolean hasGold() {
+        return this.gold > 0;
+    }
+    
     public boolean hasNotGold(int gold) {
     	return this.gold < gold;
     }

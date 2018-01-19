@@ -81,7 +81,11 @@ public class BuildingType extends BuildableType {
 	public BuildingType getUpgradesFrom() {
 		return upgradesFrom;
 	}
-	
+
+    public boolean isAutomaticBuild() {
+        return doesNotNeedGoodsToBuild() && isRoot();
+    }
+    
     public static class Xml extends XmlNodeParser<BuildingType> {
         private static final String ATTR_PRIORITY = "priority";
 		private static final String ATTR_UPKEEP = "upkeep";

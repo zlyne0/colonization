@@ -351,6 +351,9 @@ class CombatSides {
 		float defenderPower = 0;
 		
 		for (Unit u : tile.getUnits().entities()) {
+		    if (u.isNaval()) {
+		        continue;
+		    }
 			float p = getDefencePower(attacker, u, tile);
 			if (betterDefender(defender, defenderPower, u, p)) {
 				defenderPower = p;

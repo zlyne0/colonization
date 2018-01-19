@@ -170,7 +170,11 @@ public class Colony extends Settlement {
 	}
 
 	public boolean hasBurnableBuildings() {
-	    // TODO
+	    for (Building building : buildings.entities()) {
+	        if (!isAutoBuildable(building.buildingType)) {
+	            return true;
+	        }
+	    }
 	    return false;
 	}
 	
@@ -1072,13 +1076,17 @@ public class Colony extends Settlement {
 	
 	public void initDefaultBuildings() {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
-    		if (buildingType.doesNotNeedGoodsToBuild() && buildingType.isRoot() || isAutobuildable(buildingType)) {
+    		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
     		}
     	}
 	}
 	
-    private boolean isAutobuildable(BuildingType buildingType) {
+	private boolean isAutoBuildable(BuildingType buildingType) {
+	    return buildingType.isAutomaticBuild() && isAutoBuildableInColony(buildingType);
+	}
+	
+    private boolean isAutoBuildableInColony(BuildingType buildingType) {
     	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100);
     	NoBuildReason noBuildReason = getNoBuildReason(buildingType);
     	return modified == 0f && noBuildReason == NoBuildReason.NONE;
@@ -1133,6 +1141,16 @@ public class Colony extends Settlement {
 		return false;
 	}
 
+	public boolean hasLootableGoods() {
+	    Specification spec = Specification.instance;
+	    for (Entry<String> goods : goodsContainer.entries()) {
+	        if (goods.value > 0 && spec.goodsTypes.getById(goods.key).isStorable()) {
+	            return true;
+	        }
+        }
+	    return false;
+	}
+	
 	public Collection<Unit> settlementWorkers() {
 		return colonyWorkers.entities();
 	}

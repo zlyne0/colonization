@@ -82,7 +82,7 @@ public class CombatTest {
     }
     
     @Test
-    public void emptyColony() throws Exception {
+    public void spanishVsEmptyColony() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
@@ -101,7 +101,6 @@ public class CombatTest {
             emptyColonyTile.getSettlement().getOwner()
         );
         frigate.changeUnitLocation(emptyColonyTile);
-
     
         // when
         Combat combat = new Combat();
@@ -113,7 +112,7 @@ public class CombatTest {
         assertThat(combat)
             .hasPowers(4.5f, 2.25f, 0.66f)
             .hasResult(CombatResult.WIN, true)
-            .hasDetails(CombatResultDetails.PROMOTE_UNIT);
+            .hasDetails(CombatResultDetails.DAMAGE_COLONY_SHIPS, CombatResultDetails.CAPTURE_COLONY, CombatResultDetails.PROMOTE_UNIT);
         // TODO:
         // spanish vs empty colony
         // free tile x="21" y="80" vs x="20" y="79" 
@@ -141,6 +140,18 @@ public class CombatTest {
 
         // then
         // TODO:
+    }
+    
+    @Test
+    public void indianVsEmptyColony() throws Exception {
+        // given
+
+        // TODO: pladrowanie/zniszczenie
+
+        // when
+
+        // then
+
     }
     
     

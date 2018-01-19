@@ -57,13 +57,13 @@ class CombatResolver {
 					indianSettlementCombatResultDetails();
 				}
 			} else {
-				landCombatResultDetails(loserMustDie, combatSides.combatAmphibious);
+				landCombatResultDetails(combatSides.combatAmphibious);
 			}
 		}
 		unitPromotion(greatResult);
 	}
 
-	private void landCombatResultDetails(boolean loserMustDie, boolean combatAmphibious) {
+	private void landCombatResultDetails(boolean combatAmphibious) {
 		if (loserMustDie) {
 			combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 		} else if (loser.unitRole.isOffensive()) {
@@ -118,8 +118,9 @@ class CombatResolver {
 	// Ships in a falling colony will be damaged or sunk
 	// if they have no repair location.
 	private void colonyCombatResultDetails(CombatSides combatSides) {
+	    // TODO: sometime after attack move unit:  moveAttacker = true;
 	    if (loser.isDefensiveUnit()) {
-	        landCombatResultDetails(loserMustDie, combatSides.combatAmphibious);
+	        landCombatResultDetails(combatSides.combatAmphibious);
 	        return;
 	    }
 	    
@@ -136,32 +137,31 @@ class CombatResolver {
 	        }
 	        combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
 	    } else {
-	        if (!greatResult && canColonyByPillaged(combatSides.defenderTile.getSettlement().getColony())) {
+	        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+	        if (!greatResult && canColonyBePillaged(colony)) {
 	            combatResultDetails.add(CombatResultDetails.PILLAGE_COLONY);
+	        } else {
+	            if (colony.getColonyUnitsCount() > 1 || loser.getTileLocationOrNull() != null) {
+	                // Treat as ordinary combat
+	                loserMustDie = true;
+	                combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+	            } else {
+	                combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+	                combatResultDetails.add(CombatResultDetails.DESTROY_COLONY);
+	            }
 	        }
 	    }
-	    
-		// TODO:
-	    //SimpleCombatModel
 	}
 
-	private boolean canColonyByPillaged(Colony colony) {
+	private boolean canColonyBePillaged(Colony colony) {
 	     return 
              !colony.hasStockade() 
              && winner.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
              && (colony.hasBurnableBuildings() 
-                     //|| hasNavalUnits || (hasLootableGoods && attacker can carry goods && hasSpaceLeft ) || canBePlundered
-             );
-//        return !hasStockade()
-//                && attacker.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
-//                && !(getBurnableBuildings().isEmpty()
-//                    && getTile().getNavalUnits().isEmpty()
-//                    && (getLootableGoodsList().isEmpty()
-//                        || !attacker.getType().canCarryGoods()
-//                        || !attacker.hasSpaceLeft())
-//                    && !canBePlundered());
-	    
-	    // TODO:
+                     || colony.tile.doesTileHaveNavyUnit() 
+                     || (colony.hasLootableGoods() && winner.canCarryGoods() && winner.hasSpaceForAdditionalCargo())
+                     || colony.getOwner().hasGold()
+                );
 	}
 	
     // Attacking and defeating the defender of a native

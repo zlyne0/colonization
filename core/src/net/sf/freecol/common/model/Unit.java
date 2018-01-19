@@ -213,6 +213,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return space;
     }
 
+    public boolean hasSpaceForAdditionalCargo() {
+        return getSpaceTaken() < unitType.getSpace();
+    }
+    
     public boolean hasSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return getSpaceTaken() + additionalCargoSlots <= unitType.getSpace();
     }
