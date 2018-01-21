@@ -1,6 +1,10 @@
 package promitech.colonization.gamelogic.combat;
 
 import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
+
+import java.util.ArrayList;
+import java.util.List;
+
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -18,6 +22,8 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
@@ -94,14 +100,18 @@ public class CombatTest {
         dragoon.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
         Unit frigate = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById("model.unit.frigate"), 
             Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-            emptyColonyTile.getSettlement().getOwner()
+            colony.getOwner()
         );
         frigate.changeUnitLocation(emptyColonyTile);
-    
+        
+        MapIdEntities<Unit> colonyUnitsBeforeCombat = new MapIdEntities<>();
+        colonyUnitsBeforeCombat.addAll(colony.getUnits());
+        
         // when
         Combat combat = new Combat();
         combat.init(dragoon, emptyColonyTile);
@@ -113,9 +123,23 @@ public class CombatTest {
             .hasPowers(4.5f, 2.25f, 0.66f)
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.DAMAGE_COLONY_SHIPS, CombatResultDetails.CAPTURE_COLONY, CombatResultDetails.PROMOTE_UNIT);
+        UnitAssert.assertThat(frigate)
+	        .isDamaged()
+	        .isNotDisposed()
+	        .isAtLocation(Europe.class)
+	        .isOwnedBy(dutch)
+        	.notExistsOnTile(emptyColonyTile);
+        
         // TODO:
         // spanish vs empty colony
-        // free tile x="21" y="80" vs x="20" y="79" 
+        
+        assertThat(spanish.settlements.containsId(colony)).isTrue();
+        assertThat(dutch.settlements.containsId(colony)).isFalse();
+        
+        PlayerAssert.assertThat(spanish)
+        	.containsUnits(colonyUnitsBeforeCombat);
+        PlayerAssert.assertThat(dutch)
+        	.notContainsUnits(colonyUnitsBeforeCombat);
     }
     
     @Test
@@ -154,6 +178,16 @@ public class CombatTest {
 
     }
     
+    @Test 
+	public void testName() throws Exception {
+		// given
+    	// TODO: test na zabicie jednostki ktora jest w budynku lub na polu, musi zerzywiscie zniknac
+
+		// when
+		
+
+		// then
+	}
     
 //  <tile id="tile:3391" x="23" y="78" type="model.tile.swamp" style="0" moveToEurope="false" owner="player:1">
 //  <cachedTile player="player:1"/>

@@ -1170,6 +1170,34 @@ public class Colony extends Settlement {
 		return false;
 	}
 	
+	public void changeOwner(Player newOwner) {
+		Player oldOwner = owner;
+		super.changeOwner(newOwner);
+		
+		if (oldOwner != null) {
+			for (ColonyTile colonyTile : colonyTiles.entities()) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner())) {
+					colonyTile.tile.changeOwner(newOwner);
+				}
+			}
+		}
+		
+		buildingQueue.clear();
+		
+		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+			boolean foundBuildingType = false;
+			for (Building building : buildings.entities()) {
+				if (building.buildingType.equalsId(buildingType)) {
+					foundBuildingType = true;
+					break;
+				}
+			}
+			if (!foundBuildingType && isAutoBuildable(buildingType)) {
+				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+			}
+		}
+	}
+	
     public static class Xml extends XmlNodeParser<Colony> {
         private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_PRODUCTION_BONUS = "productionBonus";

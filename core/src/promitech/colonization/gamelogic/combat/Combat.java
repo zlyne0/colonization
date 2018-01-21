@@ -1,10 +1,15 @@
 package promitech.colonization.gamelogic.combat;
 
+import java.util.ArrayList;
+import java.util.Collection;
+
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLocation;
@@ -13,6 +18,7 @@ import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
 
@@ -202,6 +208,12 @@ class Combat {
 		    break;
 			case CAPTURE_UNIT: combatResolver.winner.captureUnit(combatResolver.loser); 
 			break;
+			
+			case DAMAGE_COLONY_SHIPS: damageColonyShips();
+			break;
+			
+			case CAPTURE_COLONY: captureColony();
+			
 			case EVADE_BOMBARD: // do nothing
 			default:
 				break;
@@ -225,6 +237,31 @@ class Combat {
 		// TODO: tension
 	}
 
+	private void captureColony() {
+		// TODO: plunder gold
+		// TODO: update modifiers and features
+		// TODO: update production, liberty bells
+		
+		Colony colony = combatSides.defenderTile.getSettlement().getColony();
+		Player winnerPlayer = combatResolver.winner.getOwner();
+		Player losserPlayer = colony.getOwner();
+		
+		colony.changeOwner(winnerPlayer);
+	}
+	
+	private void damageColonyShips() {
+        boolean captureRepairing = Specification.options
+    		.getBoolean(GameOptions.CAPTURE_UNITS_UNDER_REPAIR);
+		
+		UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
+		
+		for (Unit unit : new ArrayList<Unit>(combatSides.defenderTile.getUnits().entities())) {
+			if (unit.isNaval() && !(captureRepairing && unit.isDamaged())) {
+				unit.makeUnitDamaged(repairLocation);
+			}
+		}
+	}
+	
     private int getSlaughterTension(Unit loser) {
         if (loser.getIndianSettlementId() != null) {
             return Tension.TENSION_ADD_UNIT_DESTROYED;

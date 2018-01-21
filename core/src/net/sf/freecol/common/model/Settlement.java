@@ -101,6 +101,20 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	    this.owner = owner;
 	}
 	
+	public void changeOwner(Player newOwner) {
+		if (this.owner != null) {
+			this.owner.settlements.removeId(this);
+		}
+		newOwner.addSettlement(this);
+		
+		for (Unit unit : getUnits().entities()) {
+			unit.captureByPlayer(newOwner);
+		}
+		for (Unit unit : tile.getUnits().entities()) {
+			unit.captureByPlayer(newOwner);
+		}
+	}
+	
     public boolean isCoastland() {
     	return coastland;
     }

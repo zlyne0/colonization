@@ -177,13 +177,18 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	}
 	
 	public void captureUnit(Unit unit) {
-	    unit.getOwner().units.removeId(unit);
-	    unit.owner = this.owner;
-	    owner.units.add(unit);
-	    unit.changeUnitLocation(this.getTile());
-	    unit.reduceMovesLeftToZero();
-	    unit.clearDestination();
-	    unit.setState(Unit.UnitState.ACTIVE);
+		unit.captureByPlayer(owner);
+		
+    	unit.changeUnitLocation(this.getTile());
+    	unit.reduceMovesLeftToZero();
+    	unit.clearDestination();
+    	unit.setState(Unit.UnitState.ACTIVE);
+	}
+	
+	public void captureByPlayer(Player player) {
+		owner.units.removeId(this);
+		owner = player;
+		player.units.add(this);
 	}
 	
 	public boolean isOwner(Player player) {
