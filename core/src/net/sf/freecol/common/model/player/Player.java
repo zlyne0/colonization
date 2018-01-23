@@ -381,6 +381,9 @@ public class Player extends ObjectWithId {
     
     public void subtractGold(int gold) {
     	this.gold -= gold;
+        if (this.gold < 0) {
+            this.gold = 0;
+        }
     }
     
     public boolean hasGold() {

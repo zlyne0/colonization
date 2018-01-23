@@ -111,6 +111,7 @@ public class CombatTest {
         
         MapIdEntities<Unit> colonyUnitsBeforeCombat = new MapIdEntities<>();
         colonyUnitsBeforeCombat.addAll(colony.getUnits());
+        int spanishBeforeCombatGold = spanish.getGold();
         
         // when
         Combat combat = new Combat();
@@ -130,9 +131,7 @@ public class CombatTest {
 	        .isOwnedBy(dutch)
         	.notExistsOnTile(emptyColonyTile);
         
-        // TODO:
-        // spanish vs empty colony
-        
+        assertThat(spanish.getGold() > spanishBeforeCombatGold).isTrue();
         assertThat(spanish.settlements.containsId(colony)).isTrue();
         assertThat(dutch.settlements.containsId(colony)).isFalse();
         

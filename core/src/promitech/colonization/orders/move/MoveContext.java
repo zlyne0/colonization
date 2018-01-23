@@ -124,7 +124,8 @@ public class MoveContext {
 				}
 				moveUnit();
 			break;
-			case ATTACK_UNIT: 
+			case ATTACK_UNIT:
+			case ATTACK_SETTLEMENT:
 			    unit.reduceMovesLeftToZero();
 			break;
 			case EMBARK:
@@ -162,7 +163,8 @@ public class MoveContext {
 				MoveType.EMBARK.equals(moveType) ||
 				MoveType.DISEMBARK.equals(moveType) ||
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
-				MoveType.ATTACK_UNIT.equals(moveType)
+				MoveType.ATTACK_UNIT.equals(moveType) ||
+				MoveType.ATTACK_SETTLEMENT.equals(moveType)
 		);
 	}
 
@@ -192,6 +194,7 @@ public class MoveContext {
 			}
 		}
 		case ATTACK_UNIT: 
+		case ATTACK_SETTLEMENT:
 			return true;
 		default:
 			return false;

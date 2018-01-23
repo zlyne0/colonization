@@ -213,6 +213,7 @@ class Combat {
 			break;
 			
 			case CAPTURE_COLONY: captureColony();
+			break;
 			
 			case EVADE_BOMBARD: // do nothing
 			default:
@@ -238,15 +239,32 @@ class Combat {
 	}
 
 	private void captureColony() {
-		// TODO: plunder gold
-		// TODO: update modifiers and features
-		// TODO: update production, liberty bells
-		
 		Colony colony = combatSides.defenderTile.getSettlement().getColony();
 		Player winnerPlayer = combatResolver.winner.getOwner();
 		Player losserPlayer = colony.getOwner();
 		
+		if (losserPlayer.hasGold()) {
+		    int upper = (losserPlayer.getGold() * (colony.getUnits().size() + 1)) / (coloniesPopulation(losserPlayer) + 1);
+		    if (upper > 0) {
+		        int gold = Randomizer.instance().randomInt(1, upper);
+		        if (gold > 0) {
+		            losserPlayer.subtractGold(gold);
+		            winnerPlayer.addGold(gold);
+		        }
+		    }
+		}
 		colony.changeOwner(winnerPlayer);
+		
+		colony.updateColonyFeatures();
+		colony.updateColonyPopulation();
+	}
+	
+	private int coloniesPopulation(Player player) {
+	    int sum = 0;
+	    for (Settlement settlement : player.settlements.entities()) {
+	        sum += settlement.getUnits().size();
+        }
+	    return sum;
 	}
 	
 	private void damageColonyShips() {

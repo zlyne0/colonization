@@ -1176,7 +1176,7 @@ public class Colony extends Settlement {
 		
 		if (oldOwner != null) {
 			for (ColonyTile colonyTile : colonyTiles.entities()) {
-				if (oldOwner.equalsId(colonyTile.tile.getOwner())) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
 					colonyTile.tile.changeOwner(newOwner);
 				}
 			}
