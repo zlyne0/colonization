@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
 
@@ -214,6 +215,12 @@ class Combat {
 			
 			case CAPTURE_COLONY: captureColony();
 			break;
+			case AUTOEQUIP_UNIT: // do nothing, in freecol its show message 
+			break;
+			case LOSE_AUTOEQUIP: loseAutoEquip();
+			break;
+			case CAPTURE_AUTOEQUIP: captureAutoEquip();
+			break;
 			
 			case EVADE_BOMBARD: // do nothing
 			default:
@@ -237,6 +244,14 @@ class Combat {
 		
 		// TODO: tension
 	}
+
+    private void loseAutoEquip() {
+        UnitRole autoArmRole = combatSides.getDefenderAutoArmRole();
+        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+        for (RequiredGoods requiredGoods : autoArmRole.requiredGoods.entities()) {
+            colony.getGoodsContainer().decreaseGoodsQuantity(requiredGoods.goodsType.getId(), requiredGoods.amount);
+        }
+    }
 
 	private void captureColony() {
 		Colony colony = combatSides.defenderTile.getSettlement().getColony();
@@ -288,10 +303,20 @@ class Combat {
         }
     }
 
+    private void captureAutoEquip() {
+        UnitRole autoArmRole = combatSides.getDefenderAutoArmRole();
+        captureEquipmentFromUserRole(autoArmRole);
+    }
+
     private void captureEquipment() {
         combatResolver.loser.downgradeRole();
         
-        UnitRole newRole = combatResolver.winner.capturedEquipment(combatResolver.loser);
+        // TODO: tutaj chyba powinno byc capture roznice rol 
+        captureEquipmentFromUserRole(combatResolver.loser.unitRole);
+    }
+    
+    private void captureEquipmentFromUserRole(UnitRole loserRole) {
+        UnitRole newRole = combatResolver.winner.capturedEquipment(loserRole);
         if (newRole == null) {
             return;
         }

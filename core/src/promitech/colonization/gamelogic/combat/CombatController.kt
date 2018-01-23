@@ -36,6 +36,7 @@ class CombatController (
 
 	fun confirmSettlementCombat(moveContext: MoveContext) {
         // TODO: TRIBUTE
+		// TODO: po zdobyciu miasta komunikat ze udalo sie zdobyc miasto, przy komunikacie ekran zostaje na colony 
 		confirmCombat(moveContext)
 	}
 	

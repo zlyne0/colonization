@@ -1012,16 +1012,24 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	}
 	
 	public boolean canCaptureEquipment(Unit unitEquipment) {
-		return capturedEquipment(unitEquipment) != null;
+		return capturedEquipment(unitEquipment.unitRole) != null;
 	}
 	
 	public UnitRole capturedEquipment(Unit unitEquipment) {
+	    return capturedEquipment(unitEquipment.unitRole);
+	}
+
+    public boolean canCaptureEquipment(UnitRole unitRoleEquipment) {
+        return capturedEquipment(unitRoleEquipment) != null;
+    }
+	
+	public UnitRole capturedEquipment(UnitRole capturedRole) {
 		if (!hasAbility(Ability.CAPTURE_EQUIPMENT)) {
 			return null;
 		}
 		for (UnitRole milRole : Specification.instance.militaryRoles) {
 			if (isRoleAvailable(milRole)) {
-				if (milRole.canChangeRole(unitRole, unitEquipment.unitRole)) {
+				if (milRole.canChangeRole(unitRole, capturedRole)) {
 					return milRole;
 				}
 			}

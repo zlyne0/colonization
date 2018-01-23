@@ -57,14 +57,32 @@ class CombatResolver {
 					indianSettlementCombatResultDetails();
 				}
 			} else {
-				landCombatResultDetails(combatSides.combatAmphibious);
+				landCombatResultDetails(combatSides);
 			}
 		}
 		unitPromotion(greatResult);
 	}
 
-	private void landCombatResultDetails(boolean combatAmphibious) {
-		if (loserMustDie) {
+	private boolean isDefenderLoser(CombatSides combatSides) {
+	    return loser.equalsId(combatSides.defender);
+	}
+	
+	private void landCombatResultDetails(CombatSides combatSides) {
+	    if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
+	        
+	        if (winner.canCaptureEquipment(combatSides.getDefenderAutoArmRole())) {
+	            combatResultDetails.add(CombatResultDetails.CAPTURE_AUTOEQUIP);
+	            combatResultDetails.add(CombatResultDetails.LOSE_AUTOEQUIP);
+	        } else {
+	            combatResultDetails.add(CombatResultDetails.LOSE_AUTOEQUIP);
+	        }
+	        if (loserMustDie) {
+	            combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+	        } else if (loser.hasAbility(Ability.DEMOTE_ON_ALL_EQUIPMENT_LOST)) {
+	            combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
+	        }
+	        
+	    } else if (loserMustDie) {
 			combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 		} else if (loser.unitRole.isOffensive()) {
 			if (winner.canCaptureEquipment(loser)) {
@@ -82,7 +100,7 @@ class CombatResolver {
 		// But some can be captured.
 		} else if (loser.hasAbility(Ability.CAN_BE_CAPTURED) 
 		        && winner.hasAbility(Ability.CAPTURE_UNITS) 
-		        && !combatAmphibious) {
+		        && !combatSides.combatAmphibious) {
 			combatResultDetails.add(CombatResultDetails.CAPTURE_UNIT);
 			
 		// Or losing just causes a demotion.
@@ -119,8 +137,11 @@ class CombatResolver {
 	// if they have no repair location.
 	private void colonyCombatResultDetails(CombatSides combatSides) {
 	    // TODO: sometime after attack move unit:  moveAttacker = true;
-	    if (loser.isDefensiveUnit()) {
-	        landCombatResultDetails(combatSides.combatAmphibious);
+	    if (loser.isDefensiveUnit() || isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
+	        if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
+	            combatResultDetails.add(CombatResultDetails.AUTOEQUIP_UNIT);
+	        }
+	        landCombatResultDetails(combatSides);
 	        return;
 	    }
 	    
@@ -135,7 +156,9 @@ class CombatResolver {
 	        if (loserMustDie) {
 	            combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 	        }
-	        combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
+	        if (loser.getOwner().isEuropean()) {
+	            combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
+	        }
 	    } else {
 	        Colony colony = combatSides.defenderTile.getSettlement().getColony();
 	        if (!greatResult && canColonyBePillaged(colony)) {

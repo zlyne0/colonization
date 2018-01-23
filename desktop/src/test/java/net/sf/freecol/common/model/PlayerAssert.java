@@ -14,6 +14,13 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		return new PlayerAssert(player, PlayerAssert.class);
 	}
 
+	public PlayerAssert notContainsUnit(Unit notContainedUnit) {
+	    if (actual.units.containsId(notContainedUnit)) {
+	        failWithMessage("expected player <%s> does not contain unit <%s>", actual.getId(), notContainedUnit.getId());
+	    }
+	    return this;
+	}
+	
 	public PlayerAssert notContainsUnits(MapIdEntities<Unit> notContainedUnits) {
 		for (Unit excluded : notContainedUnits.entities()) {
 			if (actual.units.containsId(excluded)) {

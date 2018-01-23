@@ -17,6 +17,7 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String CROSSES = "model.goods.crosses";
     public static final String BELLS = "model.goods.bells";
     public static final String MUSKETS = "model.goods.muskets";
+    public static final String HORSES = "model.goods.horses";
     
     private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
     private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;

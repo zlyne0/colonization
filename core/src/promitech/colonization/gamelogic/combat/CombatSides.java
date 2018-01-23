@@ -43,6 +43,7 @@ class CombatSides {
 	private float defencePower;
 	private float winPropability;
 	private final List<Ability> automaticEquipmentAbilities = new ArrayList<Ability>();
+	private UnitRole defenderAutoArmRole;
 
 	protected final ObjectWithFeatures offenceModifers = new ObjectWithFeatures("combat"); 
 	protected final ObjectWithFeatures defenceModifiers = new ObjectWithFeatures("defenceCombat");
@@ -51,6 +52,7 @@ class CombatSides {
 		this.defenderTile = tile;
 		Unit defender = getTileDefender(attacker, tile);
 		
+		this.defenderAutoArmRole = null;
 		this.attacker = attacker;
 		this.defender = defender;
 		this.combatType = CombatType.ATTACK;
@@ -70,6 +72,7 @@ class CombatSides {
 			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
 		}
 		
+		this.defenderAutoArmRole = null;
 		this.attacker = null;
 		this.defender = defender;
 		this.combatType = CombatType.BOMBARD;
@@ -263,9 +266,10 @@ class CombatSides {
 		if (!automaticEquipmentAbilities.isEmpty()) {
 			for (Ability a : automaticEquipmentAbilities) {
 				for (Scope scope : a.getScopes()) {
-					UnitRole autoArmRole = Specification.instance.unitRoles.getById(scope.getType());
-					if (settlement.hasGoodsToEquipRole(autoArmRole)) {
-						mods.addModifierFrom(autoArmRole, Modifier.DEFENCE);
+					UnitRole tmpAutoArmRole = Specification.instance.unitRoles.getById(scope.getType());
+					if (settlement.hasGoodsToEquipRole(tmpAutoArmRole)) {
+					    this.defenderAutoArmRole = tmpAutoArmRole;
+						mods.addModifierFrom(tmpAutoArmRole, Modifier.DEFENCE);
 						return;
 					}
 				}
@@ -431,5 +435,13 @@ class CombatSides {
 	public Stance stance() {
 		return attacker.getOwner().getStance(defender.getOwner());
 	}
+
+	public boolean hasDefenderAutoArmRole() {
+	    return defenderAutoArmRole != null;
+	}
+	
+    public UnitRole getDefenderAutoArmRole() {
+        return defenderAutoArmRole;
+    }
 	
 }

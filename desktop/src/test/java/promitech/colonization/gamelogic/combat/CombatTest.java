@@ -20,10 +20,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.PlayerAssert;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
@@ -47,6 +49,7 @@ public class CombatTest {
 	private Game game;
     private Player spanish;
     private Player dutch;
+    private Player aztec;
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -58,6 +61,7 @@ public class CombatTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
+    	aztec = game.players.getById("player:40");
     }
     
     @Test
@@ -142,7 +146,7 @@ public class CombatTest {
     }
     
     @Test
-    public void emptyColonyWithAutoRole() throws Exception {
+    public void emptyColonyWithAutoRoleLoseVsDragoon() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
@@ -154,6 +158,11 @@ public class CombatTest {
         dragoon.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        colony.addGoods(GoodsType.MUSKETS, 50);
+        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+        colony.updateColonyFeatures();
+        ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
         Combat combat = new Combat();
@@ -162,18 +171,200 @@ public class CombatTest {
         combat.processAttackResult();
 
         // then
-        // TODO:
+        assertThat(combat)
+            .hasPowers(4.5f, 3.25f, 0.58f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.AUTOEQUIP_UNIT, CombatResultDetails.LOSE_AUTOEQUIP, CombatResultDetails.PROMOTE_UNIT);
+        
+        assertThat(colony.getGoodsContainer().goodsAmount(GoodsType.MUSKETS))
+            .isEqualTo(goodsBefore.getQuantity(GoodsType.MUSKETS) - 50);
     }
+    
+    @Test
+    public void emptyColonyWithAutoRoleWinVsDragoon() throws Exception {
+        // given
+        Unit dragoon = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
+            spanish
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        dragoon.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        colony.addGoods(GoodsType.MUSKETS, 50);
+        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+        colony.updateColonyFeatures();
+        ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
+
+        // when
+        Combat combat = new Combat();
+        combat.init(dragoon, emptyColonyTile);
+        combat.generateGreatLoss();
+        combat.processAttackResult();
+        
+        // then
+        assertThat(combat)
+            .hasPowers(4.5f, 3.25f, 0.58f)
+            .hasResult(CombatResult.LOSE, true)
+            .hasDetails(CombatResultDetails.LOSE_EQUIP);
+
+        assertThat(colony.getGoodsContainer().goodsAmount(GoodsType.MUSKETS))
+            .isEqualTo(goodsBefore.getQuantity(GoodsType.MUSKETS));
+        
+        assertThat(dragoon).isUnitRole(UnitRole.SOLDIER);
+    }
+    
+
+    @Test
+    public void emptyColonyWithAutoRoleLoseVsIndian() throws Exception {
+        // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        colony.addGoods(GoodsType.MUSKETS, 50);
+        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+        colony.updateColonyFeatures();
+        ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
+
+        // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
+        
+        // then
+        assertThat(combat)
+            .hasPowers(1.5f, 3.25f, 0.31f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.AUTOEQUIP_UNIT, CombatResultDetails.CAPTURE_AUTOEQUIP, CombatResultDetails.LOSE_AUTOEQUIP);
+
+        assertThat(colony.getGoodsContainer().goodsAmount(GoodsType.MUSKETS))
+            .isEqualTo(goodsBefore.getQuantity(GoodsType.MUSKETS) - 50);
+        
+        assertThat(brave).isUnitRole("model.role.armedBrave");
+    }
+
+    @Test
+    public void emptyColonyWithAutoRoleWinVsIndian() throws Exception {
+        // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        colony.addGoods(GoodsType.MUSKETS, 50);
+        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+        colony.updateColonyFeatures();
+        ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
+
+        // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.generateGreatLoss();
+        combat.processAttackResult();
+        
+        // then
+        assertThat(combat)
+            .hasPowers(1.5f, 3.25f, 0.31f)
+            .hasResult(CombatResult.LOSE, true)
+            .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
+
+        UnitAssert.assertThat(brave)
+            .isDisposed();
+        TileAssert.assertThat(freeTileNextToColony)
+            .hasNotUnit(brave);
+        assertThat(colony.getGoodsContainer().goodsAmount(GoodsType.MUSKETS))
+            .isEqualTo(goodsBefore.getQuantity(GoodsType.MUSKETS));
+    }
+    
+    
+    @Test
+    public void emptyColonyWithAutoRoleLoseVsIndian2() throws Exception {
+        // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById("model.role.armedBrave"),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        colony.addGoods(GoodsType.MUSKETS, 50);
+        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+        colony.updateColonyFeatures();
+        ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
+
+        // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
+        
+        // then
+        assertThat(combat)
+            .hasPowers(4.5f, 3.25f, 0.58f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.AUTOEQUIP_UNIT, CombatResultDetails.LOSE_AUTOEQUIP);
+
+        assertThat(colony.getGoodsContainer().goodsAmount(GoodsType.MUSKETS))
+            .isEqualTo(goodsBefore.getQuantity(GoodsType.MUSKETS) - 50);
+        
+        assertThat(brave).isUnitRole("model.role.armedBrave");
+    }
+    
     
     @Test
     public void indianVsEmptyColony() throws Exception {
         // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
 
-        // TODO: pladrowanie/zniszczenie
 
         // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.combatSides.defender = dutch.units.getById("unit:6652"); // unit in building
+        combat.generateGreatWin();
+        combat.processAttackResult();
 
         // then
+        assertThat(combat)
+            .hasPowers(1.5f, 2.25f, 0.4f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
+        
+        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatResolver.loser);
+        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatResolver.loser);
+        // TODO: pladrowanie/zniszczenie
 
     }
     
