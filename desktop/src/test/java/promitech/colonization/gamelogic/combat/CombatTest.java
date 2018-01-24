@@ -334,7 +334,7 @@ public class CombatTest {
     
     
     @Test
-    public void indianVsEmptyColony() throws Exception {
+    public void indianSlaughterUnitInColonyBuilding() throws Exception {
         // given
         Unit brave = new Unit(
             Game.idGenerator.nextId(Unit.class), 
@@ -347,7 +347,6 @@ public class CombatTest {
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
-
 
         // when
         Combat combat = new Combat();
@@ -364,14 +363,73 @@ public class CombatTest {
         
         PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatResolver.loser);
         ColonyAssert.assertThat(colony).notContainsUnit(combat.combatResolver.loser);
-        // TODO: pladrowanie/zniszczenie
+    }
+    
+    @Test
+    public void indianSlaughterUnitInColonyTile() throws Exception {
+        // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
 
+        // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.combatSides.defender = dutch.units.getById("unit:6766"); // unit in building
+        combat.generateGreatWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(1.5f, 2.25f, 0.4f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
+        
+        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatResolver.loser);
+        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatResolver.loser);
+    }
+    
+    @Test
+    public void indianPillageColony() throws Exception {
+        // given
+        Unit brave = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.brave"),
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+            aztec
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        brave.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+
+        // when
+        Combat combat = new Combat();
+        combat.init(brave, emptyColonyTile);
+        combat.generateOrdinaryWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(1.5f, 2.25f, 0.4f)
+            .hasResult(CombatResult.WIN, false)
+            .hasDetails(CombatResultDetails.PILLAGE_COLONY);
+
+        fail("not implemented");
     }
     
     @Test 
-	public void testName() throws Exception {
+	public void indianDestroyColony() throws Exception {
 		// given
-    	// TODO: test na zabicie jednostki ktora jest w budynku lub na polu, musi zerzywiscie zniknac
 
 		// when
 		

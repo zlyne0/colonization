@@ -9,14 +9,15 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Building extends ObjectWithId implements ProductionLocation {
+public class Building extends ObjectWithId implements ProductionLocation, UnitLocation {
 
     public BuildingType buildingType;
-    public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
+    private final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
 
     public Building(IdGenerator idGenerator, BuildingType aBuildingType) {
     	this(idGenerator.nextId(Building.class), aBuildingType);
@@ -171,12 +172,37 @@ public class Building extends ObjectWithId implements ProductionLocation {
 		this.buildingType = aBuildingType;
 	}
 	
+    @Override
+    public MapIdEntities<Unit> getUnits() {
+        return workers;
+    }
+
+    @Override
+    public boolean canAutoLoadUnit() {
+        return false;
+    }
+
+    @Override
+    public boolean canAutoUnloadUnits() {
+        return false;
+    }
+	
     public static class Xml extends XmlNodeParser<Building> {
 
         private static final String ATTR_BUILDING_TYPE = "buildingType";
 
-		public Xml() {
-            addNodeForMapIdEntities("workers", Unit.class);
+        public Xml() {
+            addNode(Unit.class, new ObjectFromNodeSetter<Building, Unit>() {
+                @Override
+                public void set(Building target, Unit entity) {
+                    entity.changeUnitLocation(target);
+                }
+
+                @Override
+                public void generateXml(Building source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+                    xmlGenerator.generateXmlFromCollection(source.workers.entities());
+                }
+            });
         }
         
         @Override

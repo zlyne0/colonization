@@ -50,7 +50,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     
     void initWorkers(DragAndDrop dragAndDrop) {
         int offsetX = 0; 
-        for (Unit worker : building.workers.entities()) {
+        for (Unit worker : building.getUnits().entities()) {
             UnitActor unitActor = new UnitActor(worker, unitActorDoubleClickListener);
             addActor(unitActor);
             unitActor.dragAndDropSourceContainer = this;
@@ -69,7 +69,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		
 		unitActor.dragAndDropSourceContainer = null;
 		
-		building.workers.removeId(unitActor.unit);
+		unitActor.unit.removeFromLocation();
 		removeActor(unitActor);
 		resetUnitActorPlacement();
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();

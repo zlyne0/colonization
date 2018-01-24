@@ -103,7 +103,7 @@ public class Colony extends Settlement {
 
     public boolean isUnitInColony(Unit unit) {
         for (Building building : buildings.entities()) {
-            if (building.workers.containsId(unit)) {
+            if (building.getUnits().containsId(unit)) {
                 return true;
             }
         }
@@ -129,7 +129,7 @@ public class Colony extends Settlement {
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
-    		colonyWorkers.addAll(building.workers);
+    		colonyWorkers.addAll(building.getUnits());
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.getWorker() != null) {
@@ -217,7 +217,7 @@ public class Colony extends Settlement {
     	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
-        building.workers.add(unit);
+    	unit.changeUnitLocation(building);
     }
     
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
@@ -235,12 +235,7 @@ public class Colony extends Settlement {
     			return;
     		}
     	}
-    	for (Building b : buildings.entities()) {
-    		if (b.workers.containsId(worker)) {
-    			b.workers.removeId(worker);
-    			return;
-    		}
-    	}
+    	worker.removeFromLocation();
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
@@ -291,11 +286,11 @@ public class Colony extends Settlement {
             }
         }
         for (Building building : buildings.entities()) {
-            for (Unit worker : building.workers.entities()) {
+            for (Unit worker : building.getUnits().entities()) {
                 if (worker.isExpert()) {
                     continue;
                 }
-                increaseExperienceForWorker(building, worker, building.workers.size());
+                increaseExperienceForWorker(building, worker, building.getUnits().size());
             }
         }
     }

@@ -239,8 +239,8 @@ public class Savegame1600Verifier {
     	assertNotNull(colony);
     	System.out.println("size = " + colony.buildings.size());
     	Building carpenterHouse = colony.buildings.getById("building:7122");
-    	assertEquals(1, carpenterHouse.workers.size());
-    	Unit worker = carpenterHouse.workers.first();
+    	assertEquals(1, carpenterHouse.getUnits().size());
+    	Unit worker = carpenterHouse.getUnits().first();
     	assertEquals("unit:6498", worker.getId());
 	}
 
@@ -477,8 +477,8 @@ public class Savegame1600Verifier {
         
         Building building = colony.buildings.getById("building:6545");
         assertEquals("model.building.furTraderHouse", building.buildingType.getId());
-        assertNotNull(building.workers.getById("unit:6765"));
-        assertNotNull(building.workers.getById("unit:6439"));
+        assertNotNull(building.getUnits().getById("unit:6765"));
+        assertNotNull(building.getUnits().getById("unit:6439"));
     }
 	
 	

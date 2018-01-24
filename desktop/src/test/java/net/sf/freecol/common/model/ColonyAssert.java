@@ -14,7 +14,7 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 
 	public ColonyAssert notContainsUnit(Unit notContainedUnit) {
 	    for (Building building : actual.buildings.entities()) {
-	        if (building.workers.containsId(notContainedUnit)) {
+	        if (building.getUnits().containsId(notContainedUnit)) {
 	            failWithMessage("expected colony <%s> does not contain unit <%s> but building <%s> contains", actual.getId(), notContainedUnit.getId(), building.getId());
 	        }
         }

@@ -175,7 +175,7 @@ public class ColonyProductionTest {
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");
         Building townHall = colony.findBuildingByType("model.building.townHall");
-        townHall.workers.removeId(unit);
+        unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
         colony.addWorkerToTerrain(fursColonyTile, unit);
@@ -230,7 +230,7 @@ public class ColonyProductionTest {
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");
         Building townHall = colony.findBuildingByType(BuildingType.TOWN_HALL);
-        townHall.workers.removeId(unit);
+        unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
         colony.addWorkerToTerrain(fursColonyTile, unit);

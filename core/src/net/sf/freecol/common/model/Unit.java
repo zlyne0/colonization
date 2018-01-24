@@ -151,9 +151,15 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		location = newUnitLocation;
 	}
 	
+	public void removeFromLocation() {
+	    if (location != null) {
+	        location.getUnits().removeId(this);
+	        location = null;
+	    }
+	}
+	
 	public void remove() {
-		location.getUnits().removeId(this);
-		location = null;
+	    removeFromLocation();
 		disposed = true;
 	}
 	
