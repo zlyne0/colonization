@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -314,6 +315,16 @@ public class Tile implements UnitLocation, Identifiable {
             }
         }
         return false;
+    }
+    
+    public List<Unit> createNavyUnitsList() {
+        List<Unit> navyList = new ArrayList<Unit>();
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.isNaval()) {
+                navyList.add(unit);
+            }
+        }
+        return navyList;
     }
     
     public boolean isTileHasNavyUnitThatCanBombardUnit(Player navyUnitOwner, boolean isNavyPiracy) {

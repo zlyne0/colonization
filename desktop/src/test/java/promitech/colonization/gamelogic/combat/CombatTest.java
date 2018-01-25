@@ -40,6 +40,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.resources.Messages;
 
 public class CombatTest {
 
@@ -54,6 +55,7 @@ public class CombatTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
+        Messages.instance().load();
     }
 
     @Before

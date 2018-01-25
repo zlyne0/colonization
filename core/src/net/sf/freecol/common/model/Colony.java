@@ -173,6 +173,16 @@ public class Colony extends Settlement {
 	    return false;
 	}
 	
+	public List<Building> createBurnableBuildingsList() {
+	    List<Building> burnable = new ArrayList<Building>();
+	    for (Building building : buildings.entities()) {
+	        if (!isAutoBuildable(building.buildingType)) {
+	            burnable.add(building);
+	        }
+	    }
+	    return burnable;
+	}
+	
 	public boolean hasStockade() {
 	    for (Building building : buildings.entities()) {
 	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
@@ -1129,6 +1139,18 @@ public class Colony extends Settlement {
 	        }
         }
 	    return false;
+	}
+	
+	public List<GoodsType> createLootableGoodsList() {
+	    List<GoodsType> lootable = new ArrayList<GoodsType>();
+	    Specification spec = Specification.instance;
+        for (Entry<String> goods : goodsContainer.entries()) {
+            GoodsType gt = spec.goodsTypes.getById(goods.key);
+            if (goods.value > 0 && gt.isStorable()) {
+                lootable.add(gt);
+            }
+        }
+	    return lootable;
 	}
 	
 	public Collection<Unit> settlementWorkers() {

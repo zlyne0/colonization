@@ -2,9 +2,11 @@ package promitech.colonization.gamelogic.combat;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -12,6 +14,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleLogic;
@@ -19,9 +22,12 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
+import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 class Combat {
 	
@@ -212,6 +218,7 @@ class Combat {
 			
 			case DAMAGE_COLONY_SHIPS: damageColonyShips();
 			break;
+			case PILLAGE_COLONY: pillageColony(); break;
 			
 			case CAPTURE_COLONY: captureColony();
 			break;
@@ -245,6 +252,44 @@ class Combat {
 		// TODO: tension
 	}
 
+    private void pillageColony() {
+        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+        List<Building> burnable = colony.createBurnableBuildingsList();
+        List<Unit> navy = colony.tile.createNavyUnitsList();
+        List<GoodsType> lootable = colony.createLootableGoodsList();
+        
+        int pillage = Randomizer.instance().randomInt(
+            0, 
+            burnable.size() + navy.size() + lootable.size() + (colony.getOwner().hasGold() ? 1 : 0)
+        );
+        pillage = 10000;
+        if (pillage < burnable.size()) {
+            Building building = burnable.get(pillage);
+            
+        } else if (pillage < burnable.size() + navy.size()) {
+            Unit navyUnit = navy.get(pillage - burnable.size());
+            
+        } else if (pillage < burnable.size() + navy.size() + lootable.size()) {
+            GoodsType loot = lootable.get(pillage - burnable.size() + navy.size());
+            
+        } else {
+            int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
+            combatResolver.winner.getOwner().addGold(plunderGold);
+            colony.getOwner().subtractGold(plunderGold);
+            
+            //model.unit.indianPlunder=%enemyNation% %enemyUnit% plunder %amount% from %colony%.
+            
+            
+            
+            StringTemplate t = StringTemplate.template("model.unit.indianPlunder")
+                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+                .addAmount("%amount%", plunderGold)
+                .add("%colony%", colony.getName());
+            System.out.println("" + Messages.message(t));
+        }
+    }
+
     private void loseAutoEquip() {
         UnitRole autoArmRole = combatSides.getDefenderAutoArmRole();
         Colony colony = combatSides.defenderTile.getSettlement().getColony();
@@ -259,7 +304,7 @@ class Combat {
 		Player losserPlayer = colony.getOwner();
 		
 		if (losserPlayer.hasGold()) {
-		    int upper = (losserPlayer.getGold() * (colony.getUnits().size() + 1)) / (coloniesPopulation(losserPlayer) + 1);
+		    int upper = colonyUpperRangePlunderGold(colony);
 		    if (upper > 0) {
 		        int gold = Randomizer.instance().randomInt(1, upper);
 		        if (gold > 0) {
@@ -272,6 +317,10 @@ class Combat {
 		
 		colony.updateColonyFeatures();
 		colony.updateColonyPopulation();
+	}
+	
+	private int colonyUpperRangePlunderGold(Colony colony) {
+	    return (colony.getOwner().getGold() * (colony.getUnits().size() + 1)) / (coloniesPopulation(colony.getOwner()) + 1);
 	}
 	
 	private int coloniesPopulation(Player player) {
