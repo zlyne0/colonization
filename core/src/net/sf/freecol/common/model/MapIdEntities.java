@@ -14,7 +14,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
-public class MapIdEntities<T extends Identifiable> {
+public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
 	
     protected final java.util.Map<String,T> entities;
     protected List<T> sortedEntities; 
@@ -39,8 +39,12 @@ public class MapIdEntities<T extends Identifiable> {
         sortedEntities = null;
     }
 
-    public void addAll(MapIdEntities<T> parentEntities) {
-        entities.putAll(parentEntities.entities);
+    public java.util.Map<String,T> innerMap() {
+        return entities;
+    }
+    
+    public void addAll(MapIdEntitiesReadOnly<T> parentEntities) {
+        entities.putAll(parentEntities.innerMap());
         sortedEntities = null;
     }
     

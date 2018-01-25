@@ -424,7 +424,7 @@ public class CombatTest {
             .hasResult(CombatResult.WIN, false)
             .hasDetails(CombatResultDetails.PILLAGE_COLONY);
 
-        fail("not implemented");
+        fail("test not implemented");
     }
     
     @Test 

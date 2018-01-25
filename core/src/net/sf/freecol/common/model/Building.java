@@ -173,10 +173,20 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 	}
 	
     @Override
-    public MapIdEntities<Unit> getUnits() {
+    public MapIdEntitiesReadOnly<Unit> getUnits() {
         return workers;
     }
 
+    @Override
+    public void addUnit(Unit unit) {
+        workers.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        workers.removeId(unit);
+    }
+    
     @Override
     public boolean canAutoLoadUnit() {
         return false;

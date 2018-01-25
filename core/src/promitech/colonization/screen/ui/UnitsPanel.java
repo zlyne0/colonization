@@ -215,7 +215,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		unitActor.dragAndDropSourceContainer = null;
 		unitActor.disableUnitChip();
 		
-		unitLocation.getUnits().removeId(unitActor.unit);
+		unitLocation.removeUnit(unitActor.unit);
 		widgets.removeActor(unitActor);
 		
 		validate();

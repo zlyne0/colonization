@@ -19,7 +19,7 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 	        }
         }
 	    for (ColonyTile colonyTile : actual.colonyTiles.entities()) {
-	        if (colonyTile.getWorker() != null && colonyTile.getWorker().equalsId(notContainedUnit)) {
+	        if (colonyTile.hasWorker(notContainedUnit)) {
                 failWithMessage("expected colony <%s> does not contain unit <%s> but colony tile <%s> contains", actual.getId(), notContainedUnit.getId(), colonyTile.getId());
 	        }
         }

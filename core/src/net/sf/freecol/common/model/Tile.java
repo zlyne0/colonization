@@ -61,9 +61,19 @@ public class Tile implements UnitLocation, Identifiable {
 	}
 
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
 	}
+	
+    @Override
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        units.removeId(unit);
+    }
 	
 	@Override
 	public boolean canAutoLoadUnit() {
@@ -482,7 +492,7 @@ public class Tile implements UnitLocation, Identifiable {
 		}
 		Colony tileOwnerColony = (Colony)owner.settlements.getById(owningSettlement);
 		ColonyTile ct = tileOwnerColony.colonyTiles.getById(this.getId());
-		return ct.getWorker() != null;
+		return ct.hasWorker();
 	}
 	
 	public boolean isOnSeaSide() {

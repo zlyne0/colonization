@@ -136,15 +136,24 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    return location != null && location.getClass().equals(unitLocationClass);
 	}
 	
+	@SuppressWarnings("unchecked")
+    public <T extends UnitLocation> T getLocationOrNull(Class<T> unitLocationClass) {
+	    if (location != null && location.getClass().equals(unitLocationClass)) {
+	        return (T)location;
+	    }
+	    return null;
+	}
+	
 	public void changeUnitLocation(UnitLocation newUnitLocation) {
-		if (location != null) {
-			location.getUnits().removeId(this);
+	    UnitLocation oldLocation = location;
+		if (oldLocation != null) {
+		    removeFromLocation();
 			
-			if (location.canAutoLoadUnit()) {
-				embarkUnitsFromLocation(location);
+			if (oldLocation.canAutoLoadUnit()) {
+				embarkUnitsFromLocation(oldLocation);
 			}
 		}
-		newUnitLocation.getUnits().add(this);
+		newUnitLocation.addUnit(this);
 		if (newUnitLocation.canAutoUnloadUnits()) {
 			disembarkUnitsToLocation(newUnitLocation);
 		}
@@ -153,7 +162,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	
 	public void removeFromLocation() {
 	    if (location != null) {
-	        location.getUnits().removeId(this);
+	        location.removeUnit(this);
 	        location = null;
 	    }
 	}
@@ -756,10 +765,20 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
     
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return unitContainer.getUnits();
 	}
     
+    @Override
+    public void addUnit(Unit unit) {
+        unitContainer.addUnit(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        unitContainer.getUnits().removeId(unit);
+    }
+	
 	@Override
 	public boolean canAutoUnloadUnits() {
 		return false;
@@ -920,7 +939,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
 		if (unitContainer != null && unitContainer.isNotEmpty()) {
 			for (Unit unit : unitContainer.getUnits().entities()) {
-				newUnitLocation.getUnits().add(unit);
+				newUnitLocation.addUnit(unit);
 				unit.location = newUnitLocation;
 				unit.setState(UnitState.ACTIVE);
 			}

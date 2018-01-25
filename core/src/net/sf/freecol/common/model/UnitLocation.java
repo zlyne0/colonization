@@ -2,7 +2,11 @@ package net.sf.freecol.common.model;
 
 public interface UnitLocation {
 
-	MapIdEntities<Unit> getUnits();
+    void addUnit(Unit unit);
+    
+    void removeUnit(Unit unit);
+    
+    MapIdEntitiesReadOnly<Unit> getUnits();
 	
 	boolean canAutoLoadUnit();
 

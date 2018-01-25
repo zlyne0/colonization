@@ -111,29 +111,22 @@ public class TerrainPanel extends Table implements
 		if (ct.equalsId(colonyTile)) {
 			return false;
 		}	
-		return ct.getWorker() == null;
+		return ct.hasNotWorker();
 	}
 
 	@Override
 	public void takePayload(UnitActor unitActor, float x, float y) {
 		unitActor.dragAndDropSourceContainer = null;
 		
-		for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
-			Unit tWorker = colonyTile.getWorker();
-			if (tWorker != null && tWorker.equalsId(unitActor.unit)) {
-				System.out.println("take worker "
-						+ "[" + unitActor.unit + "] from "
-						+ "[" + colonyTile.getId() + "] "
-					);
-				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-				colonyTile.takeWorker();
-				removeActor(unitActor);
-				
-				changeColonyStateListener.changeUnitAllocation();
-				return;
-			}
+		if (unitActor.unit.isAtLocation(ColonyTile.class)) {
+		    System.out.println("take worker "
+		            + "[" + unitActor.unit + "] from "
+		            + "[" + unitActor.unit.getLocationOrNull(ColonyTile.class) + "] "
+		            );
+		    unitActor.unit.removeFromLocation();
+            removeActor(unitActor);
+            changeColonyStateListener.changeUnitAllocation();
 		}
-		throw new IllegalStateException("can not find colony tile by workerId: " + unitActor.unit.getId());
 	}
 
 	@Override
@@ -213,7 +206,7 @@ public class TerrainPanel extends Table implements
 
 	private void initWorkersActors(DragAndDrop dragAndDrop) {
 		for (ColonyTile ct : colony.colonyTiles.entities()) {
-			if (ct.getWorker() != null) {
+			if (ct.hasWorker()) {
 				
 				UnitActor ua = new UnitActor(ct.getWorker(), unitActorDoubleClickListener);
 				ua.dragAndDropSourceContainer = this;

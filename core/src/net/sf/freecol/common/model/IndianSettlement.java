@@ -210,10 +210,20 @@ public class IndianSettlement extends Settlement {
 	}
 
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
 	}
 
+    @Override
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        units.removeId(unit);
+    }
+	
 	@Override
 	public boolean canAutoLoadUnit() {
 		return false;

@@ -114,16 +114,11 @@ public class Colony extends Settlement {
     }
     
 	public boolean isUnitOnTerrain(Unit unit) {
-		return unitWorkingTerrain(unit) != null;
+	    return unit.isAtLocation(ColonyTile.class);
 	}
 
 	public ColonyTile unitWorkingTerrain(Unit unit) {
-        for (ColonyTile colonyTile : colonyTiles.entities()) {
-            if (colonyTile.getWorker() != null && unit.equalsId(colonyTile.getWorker())) {
-            	return colonyTile;
-            }
-        }
-        return null;
+	    return unit.getLocationOrNull(ColonyTile.class);
 	}
 	
     public void updateColonyPopulation() {
@@ -132,7 +127,7 @@ public class Colony extends Settlement {
     		colonyWorkers.addAll(building.getUnits());
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
-    		if (colonyTile.getWorker() != null) {
+    		if (colonyTile.hasWorker()) {
     			colonyWorkers.add(colonyTile.getWorker());
     		}
     	}
@@ -224,18 +219,8 @@ public class Colony extends Settlement {
     	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
-        destColonyTile.setWorker(unit);
+    	unit.changeUnitLocation(destColonyTile);
         destColonyTile.tile.changeOwner(owner, this);
-    }
-    
-    public void removeWorkerFromWorkPlace(Unit worker) {
-    	for (ColonyTile ct : colonyTiles.entities()) {
-    		if (ct.getWorker() != null && ct.getWorker().equalsId(worker)) {
-    			ct.takeWorker();
-    			return;
-    		}
-    	}
-    	worker.removeFromLocation();
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
@@ -280,7 +265,7 @@ public class Colony extends Settlement {
     
     public void increaseWorkersExperience() {
         for (ColonyTile colonyTile : colonyTiles.entities()) {
-            if (colonyTile.getWorker() != null && !colonyTile.getWorker().isExpert()) {
+            if (colonyTile.hasWorker() && !colonyTile.getWorker().isExpert()) {
                 Unit worker = colonyTile.getWorker();
                 increaseExperienceForWorker(colonyTile, worker, 1);
             }
@@ -363,8 +348,9 @@ public class Colony extends Settlement {
             } else {
             	
             	Unit unit = colonyWorkers.first();
-            	removeWorkerFromWorkPlace(unit);
-            	owner.units.removeId(unit);
+            	unit.removeFromLocation();
+            	owner.removeUnit(unit);
+
             	System.out.println("unit[" + unit + "] was removed from colony[" + getName() + "]");
             	
     			updateColonyPopulation();
@@ -457,7 +443,7 @@ public class Colony extends Settlement {
     
 	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
 		for (ColonyTile ct : colonyTiles.entities()) {
-			if (ct.getWorker() == null) {
+			if (ct.hasNotWorker()) {
 				continue;
 			}
 			ProductionConsumption ps = productionSummary(ct);
@@ -486,7 +472,7 @@ public class Colony extends Settlement {
     }
     
 	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
-		if (aColonyTile.notEqualsId(tile) && aColonyTile.getWorker() == null) {
+		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
 			return;
 		}
 		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
@@ -1106,7 +1092,6 @@ public class Colony extends Settlement {
     		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
     		addWorkerToBuilding(townHall, builder);
     	}
-    	builder.getTile().getUnits().removeId(builder);
     	updateColonyPopulation();
     }
     
@@ -1151,10 +1136,20 @@ public class Colony extends Settlement {
 	}
 	
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return colonyWorkers;
 	}
 
+    @Override
+    public void addUnit(Unit unit) {
+        throw new IllegalStateException("should add unit directly to building or colony tile");
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        throw new IllegalStateException("should remove unit directly from building or colony tile");
+    }
+	
 	@Override
 	public boolean canAutoLoadUnit() {
 		return false;

@@ -97,8 +97,7 @@ public class PathFinderTest {
 
         Tile privateerTile = game.map.getTile(12, 79);
         Unit privateer = privateerTile.getUnits().getById("unit:6900");
-        privateerTile.getUnits().removeId(privateer);
-        startTile.getUnits().add(privateer);
+        privateer.changeUnitLocation(startTile);
 
         Tile fortressTile = game.map.getTile(27, 75);
         
@@ -149,8 +148,7 @@ public class PathFinderTest {
 
         Tile privateerTile = game.map.getTile(12, 79);
         Unit privateer = privateerTile.getUnits().getById("unit:6900");
-        privateerTile.getUnits().removeId(privateer);
-        startTile.getUnits().add(privateer);
+        privateer.changeUnitLocation(startTile);
 
         // when
         path = sut.findToTile(game.map, startTile, endTile, privateer);

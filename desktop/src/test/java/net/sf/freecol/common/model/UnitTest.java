@@ -89,7 +89,7 @@ public class UnitTest {
     	Tile srcTile = game.map.getSafeTile(23, 78);
     	Tile destTile = game.map.getSafeTile(22, 79);
     	destTile.addLostCityRumors();
-    	destTile.getUnits().clear();
+    	((MapIdEntities<Unit>)destTile.getUnits()).clear();
 
     	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
     		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
