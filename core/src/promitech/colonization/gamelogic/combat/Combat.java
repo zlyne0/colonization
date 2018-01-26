@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -21,6 +22,7 @@ import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
@@ -186,14 +188,12 @@ class Combat {
 		    System.out.println(" - result " + resultDetail);
 		    switch (resultDetail) {
 		    case SINK_SHIP_ATTACK:
-			case SINK_SHIP_BOMBARD: {
-				Player loserPlayer = combatResolver.loser.getOwner();
-				loserPlayer.removeUnit(combatResolver.loser);
-			} break;
+			case SINK_SHIP_BOMBARD: 
+			    sinkShip(combatResolver.loser);
+			    break;
 			case DAMAGE_SHIP_ATTACK:
-			case DAMAGE_SHIP_BOMBARD:
-				UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
-				combatResolver.loser.makeUnitDamaged(repairLocation);
+			case DAMAGE_SHIP_BOMBARD: 
+			    damageShip(combatResolver.loser);
 				break;
 			case LOOT_SHIP:
 				combatResolver.loser.transferAllGoods(combatResolver.winner);
@@ -252,6 +252,16 @@ class Combat {
 		// TODO: tension
 	}
 
+	private String repairLocationLabel(UnitLocation unitLocation) {
+	    if (unitLocation instanceof Settlement) {
+	        return ((Settlement)unitLocation).getName();
+	    }
+	    if (unitLocation instanceof Europe) {
+	        return "Europe";
+	    }
+	    throw new IllegalStateException("can not recognize unit location name for " + unitLocation);
+	}
+	
     private void pillageColony() {
         Colony colony = combatSides.defenderTile.getSettlement().getColony();
         List<Building> burnable = colony.createBurnableBuildingsList();
@@ -262,32 +272,77 @@ class Combat {
             0, 
             burnable.size() + navy.size() + lootable.size() + (colony.getOwner().hasGold() ? 1 : 0)
         );
-        pillage = 10000;
+        
+        // TODO:
+        pillage = 5;
+        System.out.println("buildings count " + burnable.size());
+        
         if (pillage < burnable.size()) {
             Building building = burnable.get(pillage);
+            
+            StringTemplate t = StringTemplate.template("model.unit.buildingDamaged")
+                .addName("%building%", building.buildingType)
+                .add("%colony%", colony.getName())
+                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
+            System.out.println("" + Messages.message(t));
             
         } else if (pillage < burnable.size() + navy.size()) {
             Unit navyUnit = navy.get(pillage - burnable.size());
             
+            if (navyUnit.hasRepairLocation()) {
+                damageShip(navyUnit);
+            } else {
+                sinkShipWithNotification(navyUnit);
+            }
+            
         } else if (pillage < burnable.size() + navy.size() + lootable.size()) {
-            GoodsType loot = lootable.get(pillage - burnable.size() + navy.size());
+            GoodsType lootType = lootable.get(pillage - burnable.size() + navy.size());
+            indianPillageColonyGoods(colony, lootType);
             
         } else {
-            int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
-            combatResolver.winner.getOwner().addGold(plunderGold);
-            colony.getOwner().subtractGold(plunderGold);
-            
-            //model.unit.indianPlunder=%enemyNation% %enemyUnit% plunder %amount% from %colony%.
-            
-            
-            
-            StringTemplate t = StringTemplate.template("model.unit.indianPlunder")
-                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
-                .addAmount("%amount%", plunderGold)
-                .add("%colony%", colony.getName());
-            System.out.println("" + Messages.message(t));
+            indianPillageColonyGold(colony);
         }
+        
+        // TODO: to all player beside colony.getOwner()
+        
+        // model.unit.indianRaid=Our spies report that the %nation% have raided the %colonyNation% colony of %colony%.
+        StringTemplate t = StringTemplate.template("model.unit.indianRaid")
+            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+            .addStringTemplate("%colonyNation%", colony.getOwner().getNationName())
+            .add("%colony%", colony.getName());
+        System.out.println("" + Messages.message(t));
+    }
+
+    private void indianPillageColonyGold(Colony colony) {
+        int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
+        combatResolver.winner.getOwner().addGold(plunderGold);
+        colony.getOwner().subtractGold(plunderGold);
+        
+        StringTemplate t = StringTemplate.template("model.unit.indianPlunder")
+            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addAmount("%amount%", plunderGold)
+            .add("%colony%", colony.getName());
+        colony.getOwner().eventsNotifications.addMessageNotification(t);
+    }
+
+    private void indianPillageColonyGoods(Colony colony, GoodsType lootType) {
+        int goodsAmount = Math.min(colony.getGoodsContainer().goodsAmount(lootType) / 2, 50);
+        AbstractGoods loot = new AbstractGoods(lootType.getId(), goodsAmount);
+        
+        colony.getGoodsContainer().decreaseGoodsQuantity(loot);
+        if (combatResolver.winner.hasSpaceForAdditionalCargo(loot)) {
+            combatResolver.winner.getGoodsContainer().increaseGoodsQuantity(loot);
+        }
+        
+        StringTemplate t = StringTemplate.template("model.unit.goodsStolen")
+            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addAmount("%amount%", goodsAmount)
+            .addName("%goods%", lootType)
+            .add("%colony%", colony.getName());
+        colony.getOwner().eventsNotifications.addMessageNotification(t);
     }
 
     private void loseAutoEquip() {
@@ -344,6 +399,33 @@ class Combat {
 		}
 	}
 	
+	private void damageShip(Unit ship) {
+	    UnitLocation repairLocation = ship.getRepairLocation();
+	    ship.makeUnitDamaged(repairLocation);
+	    
+	    StringTemplate t = StringTemplate.template("model.unit.shipDamaged")
+            .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(ship))
+            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .add("%repairLocation%", repairLocationLabel(repairLocation));
+        ship.getOwner().eventsNotifications.addMessageNotification(t);
+	}
+
+    private void sinkShip(Unit ship) {
+        Player loserPlayer = ship.getOwner();
+        loserPlayer.removeUnit(ship);
+    }
+	
+    private void sinkShipWithNotification(Unit ship) {
+        StringTemplate t = StringTemplate.template("model.unit.shipSunk")
+                .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(ship))
+                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
+        ship.getOwner().eventsNotifications.addMessageNotification(t);
+        
+        sinkShip(ship);
+    }
+
     private int getSlaughterTension(Unit loser) {
         if (loser.getIndianSettlementId() != null) {
             return Tension.TENSION_ADD_UNIT_DESTROYED;

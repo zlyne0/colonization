@@ -1,14 +1,11 @@
 package promitech.colonization.gamelogic.combat;
 
+import static net.sf.freecol.common.model.UnitAssert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.Assert.fail;
 import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import static net.sf.freecol.common.model.UnitAssert.assertThat;
-
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -33,9 +30,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
@@ -55,6 +50,7 @@ public class CombatTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
+        Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
@@ -413,6 +409,13 @@ public class CombatTest {
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
+        Unit frigate = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.frigate"), 
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+            colony.getOwner()
+        );
+        frigate.changeUnitLocation(emptyColonyTile);
 
         // when
         Combat combat = new Combat();
