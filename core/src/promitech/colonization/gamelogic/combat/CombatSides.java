@@ -38,6 +38,7 @@ class CombatSides {
 	protected Unit attacker;
 	protected Unit defender;
 	protected Tile defenderTile;
+	protected Colony bombardmentColony;
 	protected boolean combatAmphibious;
 	private float offencePower;
 	private float defencePower;
@@ -49,6 +50,7 @@ class CombatSides {
 	protected final ObjectWithFeatures defenceModifiers = new ObjectWithFeatures("defenceCombat");
 
 	void init(Unit attacker, Tile tile) {
+		this.bombardmentColony = null;
 		this.defenderTile = tile;
 		Unit defender = getTileDefender(attacker, tile);
 		
@@ -71,7 +73,7 @@ class CombatSides {
 		if (!colony.colonyUpdatableFeatures.hasAbility(Ability.BOMBARD_SHIPS)) {
 			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
 		}
-		
+		this.bombardmentColony = colony;
 		this.defenderAutoArmRole = null;
 		this.attacker = null;
 		this.defender = defender;
@@ -81,7 +83,6 @@ class CombatSides {
 		defencePower = getDefencePower(null, defender, defenderTile);
 		winPropability = offencePower / (offencePower + defencePower);
 	}
-	
 
 	private float colonyOffenceBombardPower(Colony colony) {
 		float power = 0;

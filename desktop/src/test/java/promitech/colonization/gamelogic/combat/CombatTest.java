@@ -2,7 +2,7 @@ package promitech.colonization.gamelogic.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.fail;
+import static org.junit.Assert.*;
 import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
@@ -16,11 +16,14 @@ import org.junit.rules.TemporaryFolder;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
@@ -46,6 +49,7 @@ public class CombatTest {
     private Player spanish;
     private Player dutch;
     private Player aztec;
+    private Combat combat = new Combat();
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -77,8 +81,7 @@ public class CombatTest {
         Tile colonyTile = game.map.getSafeTile(24, 78);
         
         // when
-        Combat combat = new Combat();
-        combat.init(dragoon, colonyTile);
+        combat.init(game, dragoon, colonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
     
@@ -116,8 +119,7 @@ public class CombatTest {
         int spanishBeforeCombatGold = spanish.getGold();
         
         // when
-        Combat combat = new Combat();
-        combat.init(dragoon, emptyColonyTile);
+        combat.init(game, dragoon, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -163,8 +165,7 @@ public class CombatTest {
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
-        Combat combat = new Combat();
-        combat.init(dragoon, emptyColonyTile);
+        combat.init(game, dragoon, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -198,8 +199,7 @@ public class CombatTest {
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
-        Combat combat = new Combat();
-        combat.init(dragoon, emptyColonyTile);
+        combat.init(game, dragoon, emptyColonyTile);
         combat.generateGreatLoss();
         combat.processAttackResult();
         
@@ -236,8 +236,7 @@ public class CombatTest {
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
         
@@ -273,8 +272,7 @@ public class CombatTest {
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.generateGreatLoss();
         combat.processAttackResult();
         
@@ -313,8 +311,7 @@ public class CombatTest {
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.generateGreatWin();
         combat.processAttackResult();
         
@@ -347,8 +344,7 @@ public class CombatTest {
         Colony colony = emptyColonyTile.getSettlement().getColony();
 
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.combatSides.defender = dutch.units.getById("unit:6652"); // unit in building
         combat.generateGreatWin();
         combat.processAttackResult();
@@ -379,8 +375,7 @@ public class CombatTest {
         Colony colony = emptyColonyTile.getSettlement().getColony();
 
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.combatSides.defender = dutch.units.getById("unit:6766"); // unit in building
         combat.generateGreatWin();
         combat.processAttackResult();
@@ -417,9 +412,11 @@ public class CombatTest {
         );
         frigate.changeUnitLocation(emptyColonyTile);
 
+        int colonyOwnerNotificationsSize = colony.getOwner().eventsNotifications.getNotifications().size();
+        int spanishNotificationSize = spanish.eventsNotifications.getNotifications().size();
+        
         // when
-        Combat combat = new Combat();
-        combat.init(brave, emptyColonyTile);
+        combat.init(game, brave, emptyColonyTile);
         combat.generateOrdinaryWin();
         combat.processAttackResult();
 
@@ -429,8 +426,84 @@ public class CombatTest {
             .hasResult(CombatResult.WIN, false)
             .hasDetails(CombatResultDetails.PILLAGE_COLONY);
 
-        fail("test not implemented");
+        PlayerAssert.assertThat(colony.getOwner())
+        	.hasNotificationSize(colonyOwnerNotificationsSize + 1);
+        PlayerAssert.assertThat(spanish)
+    		.hasNotificationSize(spanishNotificationSize + 1);
     }
+    
+    @Test 
+	public void damageColonyBuildingRemoveUnitsToLowerLevel() throws Exception {
+		// given
+    	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+
+    	Building lumberMill = newAmsterdam.findBuildingByType("model.building.lumberMill");
+    	Unit carpenter = lumberMill.getUnits().first();
+    	
+		// when
+    	newAmsterdam.damageBuilding(lumberMill);
+
+		// then
+    	ColonyAssert.assertThat(newAmsterdam)
+    		.hasNotBuilding("model.building.lumberMill")
+    		.hasBuilding("model.building.carpenterHouse");
+    	Building carpenterHouse = newAmsterdam.findBuildingByType("model.building.carpenterHouse");
+    	MapIdEntitiesAssert.assertThat(carpenterHouse.getUnits())
+    		.containsId(carpenter);
+    	
+    	UnitAssert.assertThat(carpenter)
+    		.isAtLocation(Building.class)
+    		.isAtLocation(newAmsterdam.findBuildingByType("model.building.carpenterHouse"));
+	}
+
+    @Test 
+	public void damageColonyBuildingRemoveUnitsFromIt() throws Exception {
+		// given
+    	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Unit carpenter = newAmsterdam.getOwner().units.getById("unit:6940");
+
+    	Building schoolhouse = newAmsterdam.addBuilding(
+			Specification.instance.buildingTypes.getById("model.building.schoolhouse")
+		);
+    	carpenter.changeUnitLocation(schoolhouse);
+    	
+    	UnitAssert.assertThat(carpenter)
+    		.isAtLocation(Building.class)
+    		.isAtLocation(schoolhouse);
+    	
+		// when
+    	newAmsterdam.damageBuilding(schoolhouse);
+
+		// then
+    	ColonyAssert.assertThat(newAmsterdam)
+    		.hasNotBuilding("model.building.schoolhouse");
+    	UnitAssert.assertThat(carpenter)
+			.isAtLocation(Building.class)
+			.isNotAtLocation(schoolhouse);
+	}
+    
+    @Test 
+	public void damageColonyBuildingCanRemoveUnitsFromWorkingLocation() throws Exception {
+		// given
+    	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Unit fisherman = newAmsterdam.getOwner().units.getById("unit:7096");
+
+    	Building docks = newAmsterdam.findBuildingByType("model.building.docks");
+    	UnitAssert.assertThat(fisherman)
+			.isAtLocation(ColonyTile.class);
+    	
+		// when
+    	newAmsterdam.damageBuilding(docks);
+		
+		// then
+    	ColonyAssert.assertThat(newAmsterdam)
+    		.hasNotBuilding("model.building.docks");
+    	UnitAssert.assertThat(fisherman)
+    		.isAtLocation(Building.class);
+	}
     
     @Test 
 	public void indianDestroyColony() throws Exception {

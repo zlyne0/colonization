@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.GUIGameModel;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.move.MoveContext;
@@ -25,9 +26,12 @@ public class CombatService {
     private final RunnableCombatConfirmation runnableCombatConfirmation = new RunnableCombatConfirmation();
     
     private MoveService moveService;
+    private GUIGameModel guiGameModel;
+    private final Combat combat = new Combat();
     
-    public void inject(MoveService moveService) {
+    public void inject(MoveService moveService, GUIGameModel guiGameModel) {
         this.moveService = moveService;
+        this.guiGameModel = guiGameModel;
     }
     
     void doConfirmedCombat(MoveContext moveContext, Combat combat, Runnable afterAction) {
@@ -38,8 +42,7 @@ public class CombatService {
     }
     
     public void doCombat(MoveContext moveContext) {
-        Combat combat = new Combat();
-        combat.init(moveContext.unit, moveContext.destTile);
+        combat.init(guiGameModel.game, moveContext.unit, moveContext.destTile);
         
         processInitiatedCombat(moveContext, combat);
     }
@@ -73,8 +76,7 @@ public class CombatService {
     }
 
 	public void bombardTileCombat(Colony bombardingColony, Tile bombardedTile, Unit bombardedUnit) {
-		Combat combat = new Combat();
-		combat.init(bombardingColony, bombardedTile, bombardedUnit);
+		combat.init(guiGameModel.game, bombardingColony, bombardedTile, bombardedUnit);
 		
 		CombatResult combatResult = combat.generateRandomResult();
 		switch (combatResult) {

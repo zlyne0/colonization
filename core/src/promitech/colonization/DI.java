@@ -26,7 +26,7 @@ public class DI {
 		
 		moveController.inject(guiGameModel, guiGameController, moveView, moveService);
 		moveService.inject(guiGameController, moveController, guiGameModel, combatService);
-		combatService.inject(moveService);
+		combatService.inject(moveService, guiGameModel);
 		
 		guiGameController.inject(guiGameModel, moveController, gameLogic, moveService);
 	}

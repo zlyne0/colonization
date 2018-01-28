@@ -53,7 +53,7 @@ public class LandCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(attacker, defenderUnit.getTile());
+    	combat.init(game, attacker, defenderUnit.getTile());
 
 		// then
     	assertThat(combat).hasPowers(4.5f, 1.25f, 0.78f);
@@ -70,7 +70,7 @@ public class LandCombatTest {
         
         Combat combat = new Combat();
         // when
-        combat.init(spanishAttacker, defenderUnit.getTile());
+        combat.init(game, spanishAttacker, defenderUnit.getTile());
         
         // then
         assertThat(combat).hasPowers(15.75f, 1.25f, 0.92f);
@@ -89,7 +89,7 @@ public class LandCombatTest {
         
         Combat combat = new Combat();
         // when
-        combat.init(spanishAttacker, defenderUnit.getTile());
+        combat.init(game, spanishAttacker, defenderUnit.getTile());
 
         // then
         assertThat(combat).hasPowers(3.93f, 1.25f, 0.75f);
@@ -104,7 +104,7 @@ public class LandCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(spanishArtillery, indianSettlement);
+    	combat.init(game, spanishArtillery, indianSettlement);
 
 		// then
         assertThat(combat).hasPowers(15.75f, 3.0f, 0.84f);
@@ -122,7 +122,7 @@ public class LandCombatTest {
     	
     	// when
     	Combat combat = new Combat();
-    	combat.init(spanishArtillery, indianSettlement);
+    	combat.init(game, spanishArtillery, indianSettlement);
     	
     	// then
         assertThat(combat).hasPowers(15.75f, 3.0f, 0.84f);
@@ -138,7 +138,7 @@ public class LandCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(attacker, indianSettlement);
+    	combat.init(game, attacker, indianSettlement);
 
 		// then
         assertThat(combat).hasPowers(4.5f, 3.0f, 0.6f);
@@ -154,7 +154,7 @@ public class LandCombatTest {
 
     	// when
     	Combat combat = new Combat();
-    	combat.init(attacker, colonyTile);
+    	combat.init(game, attacker, colonyTile);
 
 		// then
         assertThat(combat).hasPowers(4.5f, 35.25f, 0.11f);
@@ -175,7 +175,7 @@ public class LandCombatTest {
 
 		// when
     	Combat combat = new Combat();
-    	combat.init(attacker, colonyTile);
+    	combat.init(game, attacker, colonyTile);
 
 		// then
         assertThat(combat).hasPowers(4.5f, 5.5f, 0.45f);
@@ -196,7 +196,7 @@ public class LandCombatTest {
 
 		// when
     	Combat combat = new Combat();
-    	combat.init(attacker, colonyTile);
+    	combat.init(game, attacker, colonyTile);
 
 		// then
         assertThat(combat).hasPowers(4.5f, 4.5f, 0.5f);
@@ -213,7 +213,7 @@ public class LandCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(indianUnit, colonyTile);
+    	combat.init(game, indianUnit, colonyTile);
 
 		// then
         assertThat(combat).hasPowers(1.5f, 70.5f, 0.03f);
@@ -234,7 +234,7 @@ public class LandCombatTest {
 		
 		// when
     	Combat combat = new Combat();
-    	combat.init(indianUnit, colonyTile);
+    	combat.init(game, indianUnit, colonyTile);
 
 		// then
         assertThat(combat).hasPowers(1.5f, 58.25f, 0.02f);

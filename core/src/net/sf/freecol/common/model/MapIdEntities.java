@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.xml.sax.SAXException;
 
@@ -22,6 +23,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities() {
     	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
     }
+
+	public static <TT extends Identifiable> MapIdEntities<TT> unmodifiableEmpty() {
+		Map<String, TT> emptyMap = Collections.emptyMap();
+		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));
+	}
     
     public MapIdEntities() {
     	entities = new HashMap<String,T>();
@@ -29,6 +35,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
     	this.entities = entitiesMapImplementation;
+    }
+    
+    public MapIdEntities(MapIdEntitiesReadOnly<T> aMapEntities) {
+    	this();
+    	addAll(aMapEntities);
     }
     
     public void add(T entity) {

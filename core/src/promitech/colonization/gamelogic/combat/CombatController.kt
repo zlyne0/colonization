@@ -1,12 +1,14 @@
 package promitech.colonization.gamelogic.combat
 
 import promitech.colonization.GUIGameController
+import promitech.colonization.GUIGameModel
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
 
 class CombatController (
 	private val guiGameController: GUIGameController,
-	private val combatService: CombatService
+	private val combatService: CombatService,
+	private val guiGameModel: GUIGameModel 
 ) {
 	
 	private val combat: Combat = Combat()
@@ -19,7 +21,7 @@ class CombatController (
     }
 
     fun confirmCombat(moveContext: MoveContext) {
-		combat.init(moveContext.unit, moveContext.destTile)
+		combat.init(guiGameModel.game, moveContext.unit, moveContext.destTile)
 
         if (combat.canAttackWithoutConfirmation()) {
             showPreCombatDialog(moveContext)

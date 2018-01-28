@@ -166,7 +166,7 @@ public class Colony extends Settlement {
 
 	public boolean hasBurnableBuildings() {
 	    for (Building building : buildings.entities()) {
-	        if (!isAutoBuildable(building.buildingType)) {
+	    	if (isBuildingBurnable(building)) {
 	            return true;
 	        }
 	    }
@@ -176,11 +176,15 @@ public class Colony extends Settlement {
 	public List<Building> createBurnableBuildingsList() {
 	    List<Building> burnable = new ArrayList<Building>();
 	    for (Building building : buildings.entities()) {
-	        if (!isAutoBuildable(building.buildingType)) {
+	        if (isBuildingBurnable(building)) {
 	            burnable.add(building);
 	        }
 	    }
 	    return burnable;
+	}
+	
+	private boolean isBuildingBurnable(Building building) {
+		return !isAutoBuildable(building.buildingType);
 	}
 	
 	public boolean hasStockade() {
@@ -945,7 +949,7 @@ public class Colony extends Settlement {
 		buildingQueue.remove(0);
 	}
 	
-	public void addBuilding(final BuildingType buildingType) {
+	public Building addBuilding(final BuildingType buildingType) {
 		Building building = findBuildingByBuildingTypeHierarchy(buildingType);
 		if (building != null) {
 			building.upgrade(buildingType);
@@ -953,6 +957,7 @@ public class Colony extends Settlement {
 			building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
 			buildings.add(building);
 		}
+		return building;
 	}
 	
 	protected Building findBuildingByBuildingTypeHierarchy(final BuildingType buildingType) {
@@ -970,7 +975,7 @@ public class Colony extends Settlement {
 	}
 	
 	
-	protected Building findBuildingByType(String buildingTypeId) {
+	public Building findBuildingByType(String buildingTypeId) {
 		Building building = findBuildingByTypeOrNull(buildingTypeId);
 		if (building == null) {
 			throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
@@ -978,7 +983,7 @@ public class Colony extends Settlement {
 		return building;
 	}
 	
-	private Building findBuildingByTypeOrNull(String buildingTypeId) {
+	protected Building findBuildingByTypeOrNull(String buildingTypeId) {
 		for (Building building : buildings.entities()) {
 			if (building.buildingType.equalsId(buildingTypeId)) {
 				return building;
@@ -993,6 +998,54 @@ public class Colony extends Settlement {
     	}
 	}
 
+    public void damageBuilding(Building building) {
+    	if (building.buildingType.isRoot()) {
+    		MapIdEntities<Unit> ejectWorkers = new MapIdEntities<Unit>(building.getUnits());
+    		buildings.removeId(building);
+    		
+    		updateColonyFeatures();
+    		
+    		for (ColonyTile ct : colonyTiles.entities()) {
+    			if (ct.hasWorker() && isTileLocked(ct.tile)) {
+    				ejectWorkers.add(ct.getWorker());
+    			}
+    		}
+    		for (Building b : buildings.entities()) {
+    			if (b.getUnits().isNotEmpty()) {
+    				b.getWorkersToEject(ejectWorkers);
+    			}
+    		}
+    		
+    		ejectWorkers(ejectWorkers);
+    	} else if (isBuildingBurnable(building)) {
+    		MapIdEntities<Unit> ejectWorkers = building.damageBuilding();
+    		ejectWorkers(ejectWorkers);
+    	} else {
+    		return;
+    	}
+    	
+		updateColonyFeatures();
+		updateColonyPopulation();
+		updateModelOnWorkerAllocationOrGoodsTransfer();
+    }
+    
+    private void ejectWorkers(MapIdEntitiesReadOnly<Unit> ejectWorkers) {
+    	if (ejectWorkers.isNotEmpty()) {
+    		for (Unit ejectedWorker : ejectWorkers.entities()) {
+    			boolean foundBuilding = false;
+    			for (Building b : buildings.entities()) {
+    				if (b.canAddWorker(ejectedWorker)) {
+    					foundBuilding = true;
+    					ejectedWorker.changeUnitLocation(b);
+    				}
+    			}
+    			if (!foundBuilding) {
+    				ejectedWorker.changeUnitLocation(tile);
+    			}
+    		}
+    	}
+    }
+    
 	/**
      * Return the reason why the give <code>BuildableType</code> can
      * not be built.

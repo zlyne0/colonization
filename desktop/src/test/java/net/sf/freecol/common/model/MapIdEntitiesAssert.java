@@ -2,13 +2,13 @@ package net.sf.freecol.common.model;
 
 import org.assertj.core.api.AbstractAssert;
 
-public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, MapIdEntities> {
+public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, MapIdEntitiesReadOnly<?>> {
 
-	public MapIdEntitiesAssert(MapIdEntities<?> actual, Class<?> selfType) {
+	public MapIdEntitiesAssert(MapIdEntitiesReadOnly<?> actual, Class<?> selfType) {
 		super(actual, selfType);
 	}
 
-	public static MapIdEntitiesAssert assertThat(MapIdEntities<?> map) {
+	public static MapIdEntitiesAssert assertThat(MapIdEntitiesReadOnly<?> map) {
 		return new MapIdEntitiesAssert(map, MapIdEntitiesAssert.class);
 	}
 	
@@ -19,5 +19,21 @@ public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, Map
 		}
 		return this;
 	}
+
+	public MapIdEntitiesAssert containsId(Identifiable identifiable) {
+		isNotNull();
+		if (!actual.containsId(identifiable)) {
+			failWithMessage("expected contain entity id <%s>", identifiable.getId());
+		}
+		return this;
+	}
+
+	public MapIdEntitiesAssert isEmpty() {
+		if (actual.isNotEmpty()) {
+			failWithMessage("expected to be empty");
+		}
+		return this;
+	}
+	
 	
 }

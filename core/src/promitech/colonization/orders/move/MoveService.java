@@ -49,7 +49,7 @@ public class MoveService {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
-        this.combatController = new CombatController(guiGameController, combatService);
+        this.combatController = new CombatController(guiGameController, combatService, guiGameModel);
     }
 
     private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {

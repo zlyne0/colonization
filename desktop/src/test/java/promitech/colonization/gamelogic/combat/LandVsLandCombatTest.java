@@ -56,7 +56,7 @@ public class LandVsLandCombatTest {
         
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, braveTile);
+        combat.init(game, dragoon, braveTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -87,7 +87,7 @@ public class LandVsLandCombatTest {
 
         // when
         Combat combat = new Combat();
-        combat.init(braveUnit, dragoonTile);
+        combat.init(game, braveUnit, dragoonTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -122,7 +122,7 @@ public class LandVsLandCombatTest {
         
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, artilleryTile);
+        combat.init(game, dragoon, artilleryTile);
         combat.generateGreatLoss();
         combat.processAttackResult();
 
@@ -158,7 +158,7 @@ public class LandVsLandCombatTest {
         
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, artilleryTile);
+        combat.init(game, dragoon, artilleryTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -195,7 +195,7 @@ public class LandVsLandCombatTest {
 
         // when
         Combat combat = new Combat();
-        combat.init(dragoon, colonistTile);
+        combat.init(game, dragoon, colonistTile);
         combat.generateGreatWin();
         combat.processAttackResult();
 

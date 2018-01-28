@@ -2,6 +2,8 @@ package promitech.colonization.gamelogic.combat;
 
 import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
 
+import java.util.Locale;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Rule;
@@ -26,6 +28,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.resources.Messages;
 
 public class NavyCombatTest {
 
@@ -43,6 +46,8 @@ public class NavyCombatTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
+        Locale.setDefault(Locale.US);
+        Messages.instance().load();
     }
 
     @Before
@@ -84,7 +89,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(privateer, attackTile);
+    	combat.init(game, privateer, attackTile);
 
 		// then
     	assertThat(combat).hasPowers(12f, 8.0f, 0.6f);
@@ -100,7 +105,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(privateer, attackTile);
+    	combat.init(game, privateer, attackTile);
 
 		// then
     	assertThat(combat).hasPowers(9f, 8f, 0.52f);
@@ -121,7 +126,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(privateer, attackTile);
+    	combat.init(game, privateer, attackTile);
 
 		// then
     	assertThat(combat).hasPowers(18f, 12.0f, 0.60f);
@@ -140,7 +145,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(newAmsterdam, seaTile, spanishPrivateer);
+    	combat.init(game, newAmsterdam, seaTile, spanishPrivateer);
         combat.generateGreatLoss();
         combat.processAttackResult();
 
@@ -173,7 +178,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(newAmsterdam, seaTile, spanishFrigate);
+    	combat.init(game, newAmsterdam, seaTile, spanishFrigate);
         combat.generateOrdinaryWin();
         combat.processAttackResult();
 
@@ -209,7 +214,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(newAmsterdam, seaTile, spanishCaravel);
+    	combat.init(game, newAmsterdam, seaTile, spanishCaravel);
         combat.generateGreatWin();
         combat.processAttackResult();
 
@@ -234,7 +239,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(dutchPrivater, attackTile);
+    	combat.init(game, dutchPrivater, attackTile);
     	combat.generateGreatWin();
     	combat.processAttackResult();
 
@@ -262,7 +267,7 @@ public class NavyCombatTest {
     	
 		// when
     	Combat combat = new Combat();
-    	combat.init(dutchPrivater, attackTile);
+    	combat.init(game, dutchPrivater, attackTile);
     	combat.generateGreatWin();
     	combat.processAttackResult();
 
@@ -292,7 +297,7 @@ public class NavyCombatTest {
 
 		// when
     	Combat combat = new Combat();
-    	combat.init(dutchPrivater, attackTile);
+    	combat.init(game, dutchPrivater, attackTile);
     	combat.generateGreatLoss();
     	combat.processAttackResult();
 
@@ -319,7 +324,7 @@ public class NavyCombatTest {
 
         // when
         Combat combat = new Combat();
-        combat.init(dutchPrivater, attackTile);
+        combat.init(game, dutchPrivater, attackTile);
         combat.generateOrdinaryLoss();
         combat.processAttackResult();
 
@@ -354,7 +359,7 @@ public class NavyCombatTest {
         
         // when
         Combat combat = new Combat();
-        combat.init(dutchPrivater, attackTile);
+        combat.init(game, dutchPrivater, attackTile);
         combat.generateOrdinaryWin();
         combat.processAttackResult();
 

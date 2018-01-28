@@ -172,6 +172,41 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 		this.buildingType = aBuildingType;
 	}
 	
+	public MapIdEntities<Unit> damageBuilding() {
+		buildingType = buildingType.getUpgradesFrom();
+		if (workers.isEmpty()) {
+			return MapIdEntities.unmodifiableEmpty();
+		}
+		
+		MapIdEntities<Unit> eject = new MapIdEntities<Unit>();
+		getWorkersToEject(eject);
+		return eject;
+	}
+
+	/**
+	 * Method return workers which can not work in building because of type or workspace capacity
+	 * @param ejectWorkers
+	 */
+	public void getWorkersToEject(MapIdEntities<Unit> ejectWorkers) {
+		if (workers.isEmpty()) {
+			return;
+		}
+		
+		int workersSpaceTaken = 0;
+		for (Unit worker : workers.entities()) {
+			UnitContainer.NoAddReason reason = buildingType.getNoAddReason(worker.unitType);
+			if (reason != NoAddReason.NONE) {
+				ejectWorkers.add(worker);
+				continue;
+			}
+			if (workersSpaceTaken + worker.unitType.getSpaceTaken() > buildingType.getWorkplaces()) {
+				ejectWorkers.add(worker);
+			} else {
+				workersSpaceTaken += worker.unitType.getSpaceTaken();
+			}
+		}
+	}
+	
     @Override
     public MapIdEntitiesReadOnly<Unit> getUnits() {
         return workers;

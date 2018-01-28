@@ -25,6 +25,20 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
         }
 	    return this;
 	}
+
+	public ColonyAssert hasNotBuilding(String buildingTypeId) {
+		if (actual.findBuildingByTypeOrNull(buildingTypeId) != null) {
+			failWithMessage("expected colony <%s> does not have building type <%s>", actual.getId(), buildingTypeId);
+		}
+		return this;
+	}
+
+	public ColonyAssert hasBuilding(String buildingTypeId) {
+		if (actual.findBuildingByTypeOrNull(buildingTypeId) == null) {
+			failWithMessage("expected colony <%s> has building type <%s>", actual.getId(), buildingTypeId);
+		}
+		return this;
+	}
 	
     
 }

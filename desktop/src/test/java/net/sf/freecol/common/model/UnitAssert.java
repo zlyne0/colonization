@@ -66,6 +66,27 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 	    return this;
 	}
 	
+	public UnitAssert isAtLocation(UnitLocation unitLocation) {
+		if (actual.location != unitLocation || !unitLocation.getUnits().containsId(actual)) {
+			failWithMessage("expected unit <%s> to be at location <%s> but it is at location <%s>",
+				actual.getId(),
+				unitLocation,
+				actual.location
+			);
+		}
+		return this;
+	}
+	
+	public UnitAssert isNotAtLocation(UnitLocation unitLocation) {
+		if (actual.location == unitLocation || unitLocation.getUnits().containsId(actual)) {
+			failWithMessage("expected unit <%s> not to be at location <%s> ",
+				actual.getId(), 
+				unitLocation
+			);
+		}
+		return this;
+	}
+	
 	public UnitAssert hasGoods(String goodsId, int amount) {
 		isNotNull();
 		if (!actual.getGoodsContainer().hasGoodsQuantity(goodsId, amount)) {

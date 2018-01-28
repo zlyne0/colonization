@@ -1,15 +1,14 @@
 package promitech.colonization.gamelogic.combat;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.Europe;
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -28,7 +27,6 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
-import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 class Combat {
@@ -68,14 +66,17 @@ class Combat {
 	protected boolean greatResult;
 	protected final CombatSides combatSides = new CombatSides();
 	protected final CombatResolver combatResolver = new CombatResolver();
+	private Game game;
 	
-	public void init(Colony colony, Tile defenderTile, Unit defender) {
+	public void init(Game game, Colony colony, Tile defenderTile, Unit defender) {
+		this.game = game;
 		combatResult = null;
 		greatResult = false;
 		combatSides.init(colony, defenderTile, defender);
 	}
 	
-	public void init(Unit attacker, Tile tile) {
+	public void init(Game game, Unit attacker, Tile tile) {
+		this.game = game;
 		combatResult = null;
 		greatResult = false;
 		combatSides.init(attacker, tile);
@@ -192,8 +193,10 @@ class Combat {
 			    sinkShip(combatResolver.loser);
 			    break;
 			case DAMAGE_SHIP_ATTACK:
-			case DAMAGE_SHIP_BOMBARD: 
-			    damageShip(combatResolver.loser);
+				damageShip(combatResolver.loser);
+				break;
+			case DAMAGE_SHIP_BOMBARD:
+				damageShipInBombardment(combatResolver.loser);
 				break;
 			case LOOT_SHIP:
 				combatResolver.loser.transferAllGoods(combatResolver.winner);
@@ -273,20 +276,9 @@ class Combat {
             burnable.size() + navy.size() + lootable.size() + (colony.getOwner().hasGold() ? 1 : 0)
         );
         
-        // TODO:
-        pillage = 5;
-        System.out.println("buildings count " + burnable.size());
-        
         if (pillage < burnable.size()) {
             Building building = burnable.get(pillage);
-            
-            StringTemplate t = StringTemplate.template("model.unit.buildingDamaged")
-                .addName("%building%", building.buildingType)
-                .add("%colony%", colony.getName())
-                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
-            System.out.println("" + Messages.message(t));
-            
+            indianPillageColonyBuilding(colony, building);
         } else if (pillage < burnable.size() + navy.size()) {
             Unit navyUnit = navy.get(pillage - burnable.size());
             
@@ -304,15 +296,27 @@ class Combat {
             indianPillageColonyGold(colony);
         }
         
-        // TODO: to all player beside colony.getOwner()
-        
-        // model.unit.indianRaid=Our spies report that the %nation% have raided the %colonyNation% colony of %colony%.
         StringTemplate t = StringTemplate.template("model.unit.indianRaid")
-            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
-            .addStringTemplate("%colonyNation%", colony.getOwner().getNationName())
-            .add("%colony%", colony.getName());
-        System.out.println("" + Messages.message(t));
+    		.addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+    		.addStringTemplate("%colonyNation%", colony.getOwner().getNationName())
+    		.add("%colony%", colony.getName());
+		for (Player player : game.players.entities()) {
+			if (!player.equals(colony.getOwner()) && player.isLiveEuropeanPlayer()) {
+				player.eventsNotifications.addMessageNotification(t);
+			}
+		}
     }
+
+	private void indianPillageColonyBuilding(Colony colony, Building building) {
+		colony.damageBuilding(building);
+		
+		StringTemplate t = StringTemplate.template("model.unit.buildingDamaged")
+		    .addName("%building%", building.buildingType)
+		    .add("%colony%", colony.getName())
+		    .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
+		    .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
+		colony.getOwner().eventsNotifications.addMessageNotification(t);
+	}
 
     private void indianPillageColonyGold(Colony colony) {
         int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
@@ -397,6 +401,17 @@ class Combat {
 				unit.makeUnitDamaged(repairLocation);
 			}
 		}
+	}
+	
+	private void damageShipInBombardment(Unit ship) {
+	    UnitLocation repairLocation = ship.getRepairLocation();
+	    ship.makeUnitDamaged(repairLocation);
+		
+	    StringTemplate t = StringTemplate.template("model.unit.shipDamagedByBombardment")
+    		.add("%colony%", combatSides.bombardmentColony.getName())
+    		.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(ship))
+            .add("%repairLocation%", repairLocationLabel(repairLocation));
+        ship.getOwner().eventsNotifications.addMessageNotification(t);
 	}
 	
 	private void damageShip(Unit ship) {

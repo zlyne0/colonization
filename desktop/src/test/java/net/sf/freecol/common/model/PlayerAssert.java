@@ -38,5 +38,16 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		}
 		return this;
 	}
+
+	public PlayerAssert hasNotificationSize(int size) {
+		if (actual.eventsNotifications.getNotifications().size() != size) {
+			failWithMessage("expected player <%s> has <%s> notifications, but has <%s>", 
+				actual.getId(), 
+				size,
+				actual.eventsNotifications.getNotifications().size()
+			);
+		}
+		return this;
+	}
     
 }
