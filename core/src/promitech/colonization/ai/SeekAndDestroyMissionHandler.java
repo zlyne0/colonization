@@ -46,7 +46,9 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         MoveContext moveContext = new MoveContext(pathToEnemy);
         moveContext.initNextPathStep();
         while (moveContext.canHandleMove()) {
-            if (moveContext.isMoveType(MoveType.ATTACK_UNIT)) {
+            if (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
+            		|| moveContext.isMoveType(MoveType.ATTACK_SETTLEMENT)
+    		) {
                 System.out.println("attack");
                 combatService.doCombat(moveContext);
                 break;
@@ -67,7 +69,7 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         while (spiralIterator.hasNext()) {
             Tile destTile = map.getSafeTile(spiralIterator.getX(), spiralIterator.getY());
             MoveType moveType = mission.unit.getMoveType(unitTileLocation, destTile);
-            if (moveType == MoveType.ATTACK_UNIT) {
+            if (moveType == MoveType.ATTACK_UNIT || moveType == MoveType.ATTACK_SETTLEMENT) {
                 return destTile;
             }
             spiralIterator.next();

@@ -247,7 +247,12 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 	}
 	
 	fun aiAttack() {
-		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
+		// private attack
+//		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
+//		val mission = SeekAndDestroyMission(srcTile.units.first())
+		
+		// brave attack
+		var srcTile = guiGameModel.game.map.getSafeTile(20, 80)
 		val mission = SeekAndDestroyMission(srcTile.units.first())
 		
 		val missionHandler = SeekAndDestroyMissionHandler(guiGameModel.game, di.moveService, di.combatService)
