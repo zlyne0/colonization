@@ -508,28 +508,29 @@ public class CombatTest {
     @Test 
 	public void indianDestroyColony() throws Exception {
 		// given
-
+    	Tile trinidadTile = game.map.getSafeTile(27, 57);
+    	Colony trinidadColony = trinidadTile.getSettlement().getColony();
+    	
+    	Tile braveTile = game.map.getSafeTile(27, 55);
+    	Unit brave = braveTile.getUnits().first();
+    	Unit colonyUnit = spanish.units.getById("unit:6447");
+    	
 		// when
-		
+        combat.init(game, brave, trinidadTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
 
 		// then
+        assertThat(combat)
+	        .hasPowers(1.5f, 2.25f, 0.4f)
+	        .hasResult(CombatResult.WIN, true)
+	        .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.DESTROY_COLONY);
+        
+        UnitAssert.assertThat(colonyUnit)
+        	.isDisposed();
+        ColonyAssert.assertThat(trinidadColony)
+        	.notContainsUnit(colonyUnit);
+        	
+        // TODO: not exists
 	}
-    
-//  <tile id="tile:3391" x="23" y="78" type="model.tile.swamp" style="0" moveToEurope="false" owner="player:1">
-//  <cachedTile player="player:1"/>
-//  <tileitemcontainer>
-//      <tileimprovement id="tileimprovement:6820" type="model.improvement.road" style="10100010" magnitude="1" turns="0"/>
-//  </tileitemcontainer>
-//  <unit id="unit:6764" unitType="model.unit.freeColonist" role="model.role.dragoon" owner="player:1" state="ACTIVE" movesLeft="11" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="1" experience="0" workLeft="-1"/>
-//</tile>
-  
-//<tile id="tile:3430" x="22" y="79" type="model.tile.marsh" style="0" moveToEurope="false">
-//  <cachedTile player="player:1"/>
-//  <unit id="unit:5967" unitType="model.unit.brave" role="model.role.default" owner="player:40" state="ACTIVE" movesLeft="3" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="0" experience="0" indianSettlement="indianSettlement:5961" workLeft="-1">
-//      <goodsContainer/>
-//  </unit>
-//</tile>
-//wolne pole x="23" y="80"        
-  
-    
 }
