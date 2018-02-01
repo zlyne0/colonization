@@ -30,5 +30,12 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
         }
         return this;
     }
+    
+    public TileAssert hasNotSettlement() {
+        if (actual.getSettlement() != null) {
+            failWithMessage("expected tile id: %s, x=\"%s\", y=\"%s\" has not settlement", actual.getId(), actual.x, actual.y);
+        }
+        return this;
+    }
 	
 }

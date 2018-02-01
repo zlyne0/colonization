@@ -412,6 +412,10 @@ public class Tile implements UnitLocation, Identifiable {
 		}
 	}
 	
+	public void resetOwningSettlement() {
+	    owningSettlement = null;
+	}
+	
 	public boolean hasOwnerOrOwningSettlement() {
 		return owner != null || owningSettlement != null;
 	}

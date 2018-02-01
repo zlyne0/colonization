@@ -232,6 +232,9 @@ class Combat {
 			case CAPTURE_AUTOEQUIP: captureAutoEquip();
 			break;
 			
+			case DESTROY_COLONY: destroyColony();
+			break;
+			
 			case EVADE_BOMBARD: // do nothing
 			default:
 				break;
@@ -255,6 +258,45 @@ class Combat {
 		// TODO: tension
 	}
 
+	private void destroyColony() {
+	    Colony colony = combatSides.defenderTile.getSettlement().getColony();
+	    
+	    int plunderGold = colonyPlunderGold(combatResolver.winner.getOwner(), colony);
+	    if (plunderGold > 0) {
+	        colony.getOwner().subtractGold(plunderGold);
+	        combatResolver.winner.getOwner().addGold(plunderGold);
+	    }
+	    
+        StringTemplate t = StringTemplate.template("model.unit.colonyBurning")
+            .add("%colony%", colony.getName())
+            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+            .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addAmount("%amount%", plunderGold);
+        colony.getOwner().eventsNotifications.addMessageNotification(t);
+
+        StringTemplate t2 = StringTemplate.template("model.unit.colonyBurning.other")
+            .addStringTemplate("%nation%", colony.getOwner().getNationName())
+            .add("%colony%", colony.getName())
+            .addStringTemplate("%attackerNation%", combatResolver.winner.getOwner().getNationName());
+        sendNotificationToEuropeanPlayersExclude(t2, colony.getOwner());
+        
+	    Tile settlementTile = combatSides.defenderTile;
+	    Settlement settlement = combatSides.defenderTile.getSettlement();
+	    Player settlementOwner = settlement.getOwner();
+	    
+	    settlementOwner.settlements.removeId(settlement);
+	    settlementTile.setSettlement(null);
+	    
+	    for (int x=0; x<game.map.width; x++) {
+	        for (int y=0; y<game.map.height; y++) {
+	            Tile tile = game.map.getSafeTile(x, y);
+	            if (tile.getOwningSettlementId() != null && settlement.equalsId(tile.getOwningSettlementId())) {
+	                tile.resetOwningSettlement();
+	            }
+	        }
+	    }
+	}
+	
 	private String repairLocationLabel(UnitLocation unitLocation) {
 	    if (unitLocation instanceof Settlement) {
 	        return ((Settlement)unitLocation).getName();
@@ -300,13 +342,17 @@ class Combat {
     		.addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
     		.addStringTemplate("%colonyNation%", colony.getOwner().getNationName())
     		.add("%colony%", colony.getName());
-		for (Player player : game.players.entities()) {
-			if (!player.equals(colony.getOwner()) && player.isLiveEuropeanPlayer()) {
-				player.eventsNotifications.addMessageNotification(t);
-			}
-		}
+        sendNotificationToEuropeanPlayersExclude(t, colony.getOwner());
     }
 
+    private void sendNotificationToEuropeanPlayersExclude(StringTemplate str, Player exclude) {
+        for (Player player : game.players.entities()) {
+            if (!player.equals(exclude) && player.isLiveEuropeanPlayer()) {
+                player.eventsNotifications.addMessageNotification(str);
+            }
+        }
+    }
+    
 	private void indianPillageColonyBuilding(Colony colony, Building building) {
 		colony.damageBuilding(building);
 		
@@ -319,7 +365,8 @@ class Combat {
 	}
 
     private void indianPillageColonyGold(Colony colony) {
-        int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
+        // plundered gold is already > 0
+        int plunderGold = colonyPlunderGold(combatResolver.winner.getOwner(), colony);
         combatResolver.winner.getOwner().addGold(plunderGold);
         colony.getOwner().subtractGold(plunderGold);
         
@@ -363,14 +410,11 @@ class Combat {
 		Player losserPlayer = colony.getOwner();
 		
 		if (losserPlayer.hasGold()) {
-		    int upper = colonyUpperRangePlunderGold(colony);
-		    if (upper > 0) {
-		        int gold = Randomizer.instance().randomInt(1, upper);
-		        if (gold > 0) {
-		            losserPlayer.subtractGold(gold);
-		            winnerPlayer.addGold(gold);
-		        }
-		    }
+		    int gold = colonyPlunderGold(winnerPlayer, colony);
+	        if (gold > 0) {
+	            losserPlayer.subtractGold(gold);
+	            winnerPlayer.addGold(gold);
+	        }
 		}
 		colony.changeOwner(winnerPlayer);
 		
@@ -378,6 +422,19 @@ class Combat {
 		colony.updateColonyPopulation();
 	}
 	
+    private int colonyPlunderGold(Player attacker, Colony colony) {
+        if (attacker.isIndian()) {
+            int plunderGold = Math.max(1, colonyUpperRangePlunderGold(colony) / 5);
+            return plunderGold;
+        }
+        int upper = colonyUpperRangePlunderGold(colony);
+        if (upper <= 0) {
+            return 0;
+        }
+        int gold = Randomizer.instance().randomInt(1, upper);
+        return gold;
+    }
+    
 	private int colonyUpperRangePlunderGold(Colony colony) {
 	    return (colony.getOwner().getGold() * (colony.getUnits().size() + 1)) / (coloniesPopulation(colony.getOwner()) + 1);
 	}

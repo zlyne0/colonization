@@ -49,5 +49,12 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		}
 		return this;
 	}
+	
+	public PlayerAssert hasNotColony(Colony colony) {
+	    if (actual.settlements.containsId(colony)) {
+	        failWithMessage("expected player <%s> has not colony <%s>", actual.getId(), colony.getId());
+	    }
+	    return this;
+	}
     
 }

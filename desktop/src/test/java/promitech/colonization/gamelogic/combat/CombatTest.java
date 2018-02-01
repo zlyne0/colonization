@@ -530,7 +530,9 @@ public class CombatTest {
         	.isDisposed();
         ColonyAssert.assertThat(trinidadColony)
         	.notContainsUnit(colonyUnit);
-        	
-        // TODO: not exists
+        PlayerAssert.assertThat(spanish)
+            .hasNotColony(trinidadColony);
+        TileAssert.assertThat(trinidadTile)
+            .hasNotSettlement();
 	}
 }
