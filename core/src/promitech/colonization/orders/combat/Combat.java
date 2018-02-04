@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -241,17 +241,10 @@ class Combat {
 			}
 
 			// TODO:
-//        case AUTOEQUIP_UNIT:
 //        case BURN_MISSIONS:
-//        case CAPTURE_AUTOEQUIP:
-//        case CAPTURE_COLONY:
 //        case CAPTURE_CONVERT:
-//        case DAMAGE_COLONY_SHIPS:
-//        case DESTROY_COLONY:
 //        case DESTROY_SETTLEMENT:
 //        case EVADE_ATTACK:
-//        case LOSE_AUTOEQUIP:
-//        case PILLAGE_COLONY:
 //        case SINK_COLONY_SHIPS:
 		}
 		

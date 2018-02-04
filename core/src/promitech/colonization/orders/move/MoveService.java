@@ -14,10 +14,10 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GUIGameController;
 import promitech.colonization.GUIGameModel;
-import promitech.colonization.gamelogic.combat.CombatController;
-import promitech.colonization.gamelogic.combat.CombatService;
+import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
+import promitech.colonization.orders.combat.CombatService;
 
 public class MoveService {
 

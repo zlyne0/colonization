@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic.combat
+package promitech.colonization.orders.combat
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Actor

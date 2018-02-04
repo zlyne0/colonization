@@ -1,7 +1,7 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
-import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
+import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -17,8 +17,9 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.gamelogic.combat.Combat.CombatResult;
-import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
+import promitech.colonization.orders.combat.Combat;
+import promitech.colonization.orders.combat.Combat.CombatResult;
+import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class LandVsLandCombatTest {

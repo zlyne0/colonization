@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic.combat
+package promitech.colonization.orders.combat
 
 import promitech.colonization.GUIGameController
 import promitech.colonization.GUIGameModel

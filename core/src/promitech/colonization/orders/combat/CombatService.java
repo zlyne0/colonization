@@ -1,12 +1,12 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GUIGameModel;
-import promitech.colonization.gamelogic.combat.Combat.CombatResult;
 import promitech.colonization.infrastructure.ThreadsResources;
+import promitech.colonization.orders.combat.Combat.CombatResult;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 

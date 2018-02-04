@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -11,7 +11,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
-import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
+import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 
 class CombatResolver {
 

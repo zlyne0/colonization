@@ -1,9 +1,10 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import org.assertj.core.api.AbstractAssert;
 
-import promitech.colonization.gamelogic.combat.Combat.CombatResult;
-import promitech.colonization.gamelogic.combat.Combat.CombatResultDetails;
+import promitech.colonization.orders.combat.Combat;
+import promitech.colonization.orders.combat.Combat.CombatResult;
+import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 
 public class CombatAssert extends AbstractAssert<CombatAssert, Combat>  {
 

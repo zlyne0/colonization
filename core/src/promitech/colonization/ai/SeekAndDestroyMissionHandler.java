@@ -9,7 +9,7 @@ import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.gamelogic.combat.CombatService;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 

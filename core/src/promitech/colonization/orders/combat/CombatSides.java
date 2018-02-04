@@ -1,4 +1,4 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import java.util.ArrayList;
 import java.util.HashMap;

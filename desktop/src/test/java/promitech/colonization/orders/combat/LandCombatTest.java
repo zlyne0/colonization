@@ -1,8 +1,7 @@
-package promitech.colonization.gamelogic.combat;
+package promitech.colonization.orders.combat;
 
 import static org.assertj.core.api.Assertions.assertThat;
-
-import static promitech.colonization.gamelogic.combat.CombatAssert.assertThat;
+import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -21,6 +20,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
+import promitech.colonization.orders.combat.Combat;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class LandCombatTest {

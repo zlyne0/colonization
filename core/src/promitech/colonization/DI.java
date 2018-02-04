@@ -1,6 +1,6 @@
 package promitech.colonization;
 
-import promitech.colonization.gamelogic.combat.CombatService;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.unitanimation.MoveView;

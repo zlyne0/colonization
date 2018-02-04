@@ -23,7 +23,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
-import promitech.colonization.gamelogic.combat.CombatService;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
