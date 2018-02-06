@@ -267,6 +267,14 @@ public class Player extends ObjectWithId {
     	tensionObj.modify(val);
     }
     
+    public Tension getTension(Player p) {
+        Tension tensionObj = tension.get(p.getId());
+        if (tensionObj == null) {
+            return new Tension(Tension.TENSION_MIN);
+        }
+        return tensionObj;
+    }
+    
     private void changePlayerType(PlayerType type) {
         if (playerType != PlayerType.REBEL && playerType != PlayerType.INDEPENDENT) {
             switch (type) {

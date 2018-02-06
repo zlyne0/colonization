@@ -1,9 +1,11 @@
 package promitech.colonization.orders.combat
 
+import net.sf.freecol.common.model.player.Player
 import promitech.colonization.GUIGameController
 import promitech.colonization.GUIGameModel
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
+import promitech.colonization.ui.resources.StringTemplate
 
 class CombatController (
 	private val guiGameController: GUIGameController,
@@ -37,9 +39,32 @@ class CombatController (
     }
 
 	fun confirmSettlementCombat(moveContext: MoveContext) {
+	    // TODO: po zdobyciu miasta komunikat ze udalo sie zdobyc miasto, przy komunikacie ekran zostaje na colony
         // TODO: TRIBUTE
-		// TODO: po zdobyciu miasta komunikat ze udalo sie zdobyc miasto, przy komunikacie ekran zostaje na colony 
-		confirmCombat(moveContext)
+
+		var questionMsg = settlementActionChoice(moveContext.unit.getOwner(), moveContext.destTile.settlement.getOwner())
+
+		var questionDialog = QuestionDialog()
+		questionDialog.addQuestion(questionMsg)
+		questionDialog.addAnswer("armedUnitSettlement.tribute", QuestionDialog.DO_NOTHING_ACTION, moveContext)
+		questionDialog.addAnswer("armedUnitSettlement.attack",
+			QuestionDialog.OptionAction {
+				mc -> confirmCombat(mc)
+			},
+			moveContext
+        )
+		questionDialog.addAnswer("cancel", QuestionDialog.DO_NOTHING_ACTION, moveContext)
+		guiGameController.showDialog(questionDialog)
+	}
+	
+	private fun settlementActionChoice(attacker : Player, settlementOwner: Player) : StringTemplate {
+		if (settlementOwner.isIndian()) {
+			return StringTemplate.template("indianSettlement." + settlementOwner.getTension(attacker).getKey())
+		        .addStringTemplate("%nation%", settlementOwner.getNationName());
+		} else {
+			return StringTemplate.template("colony.tension." + settlementOwner.getStance(attacker).getKey())
+			    .addStringTemplate("%nation%", settlementOwner.getNationName())
+		}
 	}
 	
     private fun showPreCombatDialog(moveContext: MoveContext) {
