@@ -67,8 +67,10 @@ class Combat {
 	protected final CombatSides combatSides = new CombatSides();
 	protected final CombatResolver combatResolver = new CombatResolver();
 	private Game game;
+	private final List<StringTemplate> blockingCombatNotifications = new ArrayList<StringTemplate>();
 	
 	public void init(Game game, Colony colony, Tile defenderTile, Unit defender) {
+	    blockingCombatNotifications.clear();
 		this.game = game;
 		combatResult = null;
 		greatResult = false;
@@ -76,6 +78,7 @@ class Combat {
 	}
 	
 	public void init(Game game, Unit attacker, Tile tile) {
+	    blockingCombatNotifications.clear();
 		this.game = game;
 		combatResult = null;
 		greatResult = false;
@@ -402,8 +405,9 @@ class Combat {
 		Player winnerPlayer = combatResolver.winner.getOwner();
 		Player losserPlayer = colony.getOwner();
 		
+		int gold = 0;
 		if (losserPlayer.hasGold()) {
-		    int gold = colonyPlunderGold(winnerPlayer, colony);
+		    gold = colonyPlunderGold(winnerPlayer, colony);
 	        if (gold > 0) {
 	            losserPlayer.subtractGold(gold);
 	            winnerPlayer.addGold(gold);
@@ -413,6 +417,19 @@ class Combat {
 		
 		colony.updateColonyFeatures();
 		colony.updateColonyPopulation();
+		
+		blockingCombatNotifications.add(
+            StringTemplate.template("model.unit.colonyCaptured")
+                .add("%colony%", colony.getName())
+                .addAmount("%amount%", gold)
+        );
+
+        losserPlayer.eventsNotifications.addMessageNotification(
+            StringTemplate.template("model.unit.colonyCapturedBy")
+                .add("%colony%", colony.getName())
+                .addAmount("%amount%", gold)
+                .addStringTemplate("%player%", winnerPlayer.getNationName())
+        );
 	}
 	
     private int colonyPlunderGold(Player attacker, Colony colony) {
@@ -567,4 +584,8 @@ class Combat {
 				", defence: " + combatSides.getDefencePower() + 
 				", winPropability: " + combatSides.getWinPropability();
 	}
+
+    public List<StringTemplate> getBlockingCombatNotifications() {
+        return blockingCombatNotifications;
+    }
 }

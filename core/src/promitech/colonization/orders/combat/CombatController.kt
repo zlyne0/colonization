@@ -1,10 +1,13 @@
 package promitech.colonization.orders.combat
 
+import com.badlogic.gdx.scenes.scene2d.Event
+import com.badlogic.gdx.scenes.scene2d.EventListener
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.GUIGameController
 import promitech.colonization.GUIGameModel
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
+import promitech.colonization.ui.SimpleMessageDialog
 import promitech.colonization.ui.resources.StringTemplate
 
 class CombatController (
@@ -21,6 +24,12 @@ class CombatController (
     private val nextActiveUnitAction = Runnable {
         guiGameController.nextActiveUnitAsGdxPostRunnable()
     }
+	private val nextActiveUnitActionEventListener = object : EventListener {
+		override fun handle(event: Event?) : Boolean {
+		    guiGameController.nextActiveUnitAsGdxPostRunnable()
+			return true
+		}
+	}
 
     fun confirmCombat(moveContext: MoveContext) {
 		combat.init(guiGameModel.game, moveContext.unit, moveContext.destTile)
@@ -39,9 +48,6 @@ class CombatController (
     }
 
 	fun confirmSettlementCombat(moveContext: MoveContext) {
-	    // TODO: po zdobyciu miasta komunikat ze udalo sie zdobyc miasto, przy komunikacie ekran zostaje na colony
-        // TODO: TRIBUTE
-
 		var questionMsg = settlementActionChoice(moveContext.unit.getOwner(), moveContext.destTile.settlement.getOwner())
 
 		var questionDialog = QuestionDialog()
@@ -69,7 +75,17 @@ class CombatController (
 	
     private fun showPreCombatDialog(moveContext: MoveContext) {
         val confirmCombatAction = Runnable {
-            combatService.doConfirmedCombat(moveContext, combat, nextActiveUnitAction)
+            combatService.doConfirmedCombat(moveContext, combat, Runnable() {
+				if (combat.getBlockingCombatNotifications().isEmpty()) {
+					nextActiveUnitAction.run()
+				} else {
+    				guiGameController.showDialog(SimpleMessageDialog()
+    					.withContent(combat.getBlockingCombatNotifications().first())
+    					.withButton("ok")
+    					.addOnCloseListener(nextActiveUnitActionEventListener)
+    				);
+				}
+			})
         }
         val summaryDialog = SummaryDialog(confirmCombatAction, combat)
         guiGameController.showDialog(summaryDialog)
