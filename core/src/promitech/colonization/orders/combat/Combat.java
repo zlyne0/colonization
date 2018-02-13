@@ -522,10 +522,10 @@ class Combat {
     }
 
     private void captureEquipment() {
+        UnitRole lostRole = combatResolver.loser.unitRole;
         combatResolver.loser.downgradeRole();
         
-        // TODO: tutaj chyba powinno byc capture roznice rol 
-        captureEquipmentFromUserRole(combatResolver.loser.unitRole);
+        captureEquipmentFromUserRole(lostRole);
     }
     
     private void captureEquipmentFromUserRole(UnitRole loserRole) {

@@ -99,7 +99,39 @@ public class LandVsLandCombatTest {
             .hasDetails(CombatResultDetails.CAPTURE_EQUIP);
         
         assertThat(dragoon).isUnitRole(UnitRole.SOLDIER);
-        assertThat(braveUnit).isUnitRole("model.role.armedBrave");
+        assertThat(braveUnit).isUnitRole("model.role.mountedBrave");
+    }
+    
+    @Test
+    public void mountedBraveWinAndCaptureMuskets() throws Exception {
+        // given
+        Unit soldier = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+            Specification.instance.unitRoles.getById(UnitRole.SOLDIER),
+            dutch
+        );
+        Tile soldierTile = game.map.getSafeTile(23, 78);
+        soldier.changeUnitLocation(soldierTile);
+        
+        Tile mountedBraveTile = game.map.getSafeTile(22, 79);
+        Unit mountedBraveUnit = mountedBraveTile.getUnits().getById("unit:5967");
+        mountedBraveUnit.changeRole(Specification.instance.unitRoles.getById("model.role.mountedBrave"));
+
+        // when
+        Combat combat = new Combat();
+        combat.init(game, mountedBraveUnit, soldierTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(3.0f, 2.5f, 0.54f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.CAPTURE_EQUIP);
+        
+        assertThat(soldier).isUnitRole(UnitRole.DEFAULT_ROLE_ID);
+        assertThat(mountedBraveUnit).isUnitRole("model.role.nativeDragoon");
     }
     
     @Test
