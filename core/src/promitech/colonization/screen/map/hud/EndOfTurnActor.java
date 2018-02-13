@@ -14,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.EndOfTurnPhaseListener;
-import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;

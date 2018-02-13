@@ -15,10 +15,10 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitIterator;
 import net.sf.freecol.common.model.map.generator.MapGenerator;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameController;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameCreator;
 import promitech.colonization.GameResources;
+import promitech.colonization.screen.map.hud.GUIGameController;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.ClosableDialog;
 
 public class CheatConsole extends ClosableDialog<CheatConsole> {

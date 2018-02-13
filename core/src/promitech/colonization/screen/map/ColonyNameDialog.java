@@ -6,11 +6,10 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.TextField;
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 
-import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
+import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.resources.Messages;
 

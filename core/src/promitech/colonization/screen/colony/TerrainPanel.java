@@ -12,7 +12,6 @@ import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import promitech.colonization.GUIGameController;
 import promitech.colonization.GameResources;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
@@ -222,8 +221,8 @@ public class TerrainPanel extends Table implements
 		Vector2 tileScreenCords = mapRenderer.mapToScreenCords(ct.tile.x, ct.tile.y);
 		ua.setPosition(0, 0);
 		ua.moveBy(
-			tileScreenCords.x + MapRenderer.TILE_WIDTH/2 - ua.getWidth()/2, 
-			tileScreenCords.y + MapRenderer.TILE_HEIGHT/2 - ua.getHeight()/2
+			tileScreenCords.x + MapRenderer.TILE_WIDTH/2f - ua.getWidth()/2, 
+			tileScreenCords.y + MapRenderer.TILE_HEIGHT/2f - ua.getHeight()/2
 		);
 	}
 	

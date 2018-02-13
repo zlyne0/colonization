@@ -8,10 +8,10 @@ import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameLogic;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.MapActor;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 
 public class AILogicDebugRun {
 

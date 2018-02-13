@@ -24,12 +24,10 @@ import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.DI;
 import promitech.colonization.Direction;
-import promitech.colonization.GUIGameController;
-import promitech.colonization.GUIGameModel;
-import promitech.colonization.GUIGameModel.ChangeStateListener;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
+import promitech.colonization.screen.map.hud.GUIGameModel.ChangeStateListener;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 

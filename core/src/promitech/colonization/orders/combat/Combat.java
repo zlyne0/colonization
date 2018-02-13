@@ -150,15 +150,12 @@ class Combat {
 			if (r < 0.8f * winVal + 0.2f && combatSides.canDefenderEvadeAttack()) {
 				combatResult = CombatResult.EVADE_ATTACK;
 				combatResolver.initNoResult();
-				// TODO: no resolvAttack
 			} else {
 				combatResult = CombatResult.LOSE;
 				greatResult = r >= 0.1f * winVal + 0.9f; // Great Loss
 				combatResolver.init(combatSides.defender, combatSides.attacker, greatResult, combatSides);
 			}
 		}
-		// TODO:
-		//combatResolver.resolve(greatResult, combatSides);
 	}
 
 	private void bombardCombat(float r, float winVal) {

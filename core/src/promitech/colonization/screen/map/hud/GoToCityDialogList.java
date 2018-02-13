@@ -17,7 +17,6 @@ import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;

@@ -1,4 +1,4 @@
-package promitech.colonization;
+package promitech.colonization.screen.map.hud;
 
 import java.util.List;
 
@@ -15,6 +15,9 @@ import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.EndOfTurnPhaseListener;
+import promitech.colonization.GameCreator;
+import promitech.colonization.GameLogic;
 import promitech.colonization.ai.AILogic;
 import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
@@ -29,12 +32,10 @@ import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.ColonyNameDialog;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
-import promitech.colonization.screen.map.hud.HudStage;
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.QuestionDialog;
 
-/// TODO: rename MapGuiController, change package
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;

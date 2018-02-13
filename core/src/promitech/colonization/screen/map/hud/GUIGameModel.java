@@ -1,4 +1,4 @@
-package promitech.colonization;
+package promitech.colonization.screen.map.hud;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;

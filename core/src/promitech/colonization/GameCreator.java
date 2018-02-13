@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.map.generator.MapGenerator;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameList;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 
 public class GameCreator {
 	private final GUIGameModel guiGameModel;

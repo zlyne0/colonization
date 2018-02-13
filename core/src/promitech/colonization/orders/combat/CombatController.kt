@@ -3,8 +3,8 @@ package promitech.colonization.orders.combat
 import com.badlogic.gdx.scenes.scene2d.Event
 import com.badlogic.gdx.scenes.scene2d.EventListener
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.GUIGameController
-import promitech.colonization.GUIGameModel
+import promitech.colonization.screen.map.hud.GUIGameController
+import promitech.colonization.screen.map.hud.GUIGameModel
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
 import promitech.colonization.ui.SimpleMessageDialog

@@ -10,9 +10,9 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.viewport.ScreenViewport;
 
-import promitech.colonization.GUIGameController;
 import promitech.colonization.infrastructure.ManyStageInputProcessor;
 import promitech.colonization.screen.ApplicationScreen;
+import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.HudStage;
 
 public class MapViewApplicationScreen extends ApplicationScreen {

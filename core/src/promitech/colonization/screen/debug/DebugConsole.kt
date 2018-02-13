@@ -7,8 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.utils.Align
 import net.sf.freecol.common.model.Tile
-import promitech.colonization.GUIGameController
-import promitech.colonization.GUIGameModel
+import promitech.colonization.screen.map.hud.GUIGameController
+import promitech.colonization.screen.map.hud.GUIGameModel
 import promitech.colonization.GameResources
 import promitech.colonization.ui.ClosableDialog
 import com.badlogic.gdx.scenes.scene2d.InputListener

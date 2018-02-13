@@ -14,10 +14,10 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
-import promitech.colonization.GUIGameController;
-import promitech.colonization.GUIGameModel;
 import promitech.colonization.GameResources;
 import promitech.colonization.math.Point;
+import promitech.colonization.screen.map.hud.GUIGameController;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.unitanimation.UnitTileAnimation;
 
 public class MapActor extends Widget {
