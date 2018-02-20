@@ -21,6 +21,7 @@ public class MoveContext {
 	private boolean hasMovePoints = false;
 	private boolean unitKilled = false;
 	private boolean moveViaHighSea = false;
+	private boolean moveAfterAttack = false;
 
 	public static MoveContext embarkUnit(Unit unit, Unit carrier) {
 		MoveContext moveContext = new MoveContext(unit.getTile(), carrier.getTile(), unit);
@@ -126,6 +127,9 @@ public class MoveContext {
 			break;
 			case ATTACK_UNIT:
 			case ATTACK_SETTLEMENT:
+			    if (moveAfterAttack) {
+			        unit.changeUnitLocation(destTile);
+			    }
 			    unit.reduceMovesLeftToZero();
 			break;
 			case EMBARK:
@@ -223,6 +227,10 @@ public class MoveContext {
 	
 	public void setMoveViaHighSea() {
 	    moveViaHighSea = true;
+	}
+	
+	public void setMoveAfterAttack() {
+	    moveAfterAttack = true;
 	}
 
 }

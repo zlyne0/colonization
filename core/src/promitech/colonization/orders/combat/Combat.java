@@ -585,4 +585,8 @@ class Combat {
     public List<StringTemplate> getBlockingCombatNotifications() {
         return blockingCombatNotifications;
     }
+
+    public boolean isMoveAfterAttack() {
+        return combatResolver.moveAfterAttack;
+    }
 }

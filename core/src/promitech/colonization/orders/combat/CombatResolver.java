@@ -6,7 +6,6 @@ import java.util.List;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
@@ -20,18 +19,32 @@ class CombatResolver {
 	protected List<CombatResultDetails> combatResultDetails = new ArrayList<Combat.CombatResultDetails>(5);
 	private boolean greatResult;
 	private boolean loserMustDie;
+    protected boolean moveAfterAttack = false;
 	
 	public void init(Unit winner, Unit loser, boolean greatResult, CombatSides combatSides) {
 		combatResultDetails.clear();
+		this.moveAfterAttack = false;
 		this.winner = winner;
 		this.loser = loser;
 		this.greatResult = greatResult;
 		
 		resolve(combatSides);
+		
+		this.moveAfterAttack = determineMoveAfterAttack();
 	}
 
 	public void initNoResult() {
+	    moveAfterAttack = false;
 		combatResultDetails.clear();
+	}
+	
+	private boolean determineMoveAfterAttack() {
+	    for (CombatResultDetails c : combatResultDetails) {
+	        if (c == CombatResultDetails.CAPTURE_COLONY || c == CombatResultDetails.DESTROY_COLONY || c == CombatResultDetails.DESTROY_SETTLEMENT) {
+	            return true;
+	        }
+	    }
+	    return false;
 	}
 	
 	private void resolve(CombatSides combatSides) {

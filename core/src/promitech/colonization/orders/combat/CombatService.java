@@ -51,7 +51,12 @@ public class CombatService {
         CombatResult combatResult = combat.generateRandomResult();
         
         if (combatResult.equals(Combat.CombatResult.WIN)) {
-            moveService.blockedShowSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser);
+            if (combat.isMoveAfterAttack()) {
+                moveContext.setMoveAfterAttack();
+                moveService.blockedShowMove(moveContext);
+            } else {
+                moveService.blockedShowSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser);
+            }
         }
         if (combatResult.equals(Combat.CombatResult.LOSE)) {
             moveContext.setUnitKilled();

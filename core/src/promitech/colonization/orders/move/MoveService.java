@@ -201,6 +201,12 @@ public class MoveService {
         }
     }
     
+    public void blockedShowMove(MoveContext moveContext) {
+        if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
+            moveController.blockedShowMove(moveContext);
+        }
+    }
+    
     public void blockedShowFailedAttackMove(MoveContext moveContext) {
         if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowFailedAttackMove(moveContext);
