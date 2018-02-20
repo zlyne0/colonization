@@ -149,7 +149,6 @@ class CombatResolver {
 	// Ships in a falling colony will be damaged or sunk
 	// if they have no repair location.
 	private void colonyCombatResultDetails(CombatSides combatSides) {
-	    // TODO: sometime after attack move unit:  moveAttacker = true;
 	    if (loser.isDefensiveUnit() || isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
 	        if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
 	            combatResultDetails.add(CombatResultDetails.AUTOEQUIP_UNIT);
