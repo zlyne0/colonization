@@ -2,7 +2,6 @@ package promitech.colonization.orders.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
@@ -35,13 +34,12 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.orders.combat.Combat;
 import promitech.colonization.orders.combat.Combat.CombatResult;
 import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
-public class CombatTest {
+public class ColonyCombatTest {
 
 	@Rule
 	public TemporaryFolder tempFolder = new TemporaryFolder();

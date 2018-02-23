@@ -4,9 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
@@ -67,7 +73,7 @@ class CombatResolver {
 				if (defenderTile.getSettlement().isColony()) {
 					colonyCombatResultDetails(combatSides);
 				} else {
-					indianSettlementCombatResultDetails();
+					indianSettlementCombatResultDetails(combatSides);
 				}
 			} else {
 				landCombatResultDetails(combatSides);
@@ -76,6 +82,7 @@ class CombatResolver {
 		unitPromotion(greatResult);
 	}
 
+	// TODO: podoba metoda is attacker won
 	private boolean isDefenderLoser(CombatSides combatSides) {
 	    return loser.equalsId(combatSides.defender);
 	}
@@ -205,7 +212,51 @@ class CombatResolver {
     // Native settlements fall when there are no units
     // present either in-settlement or on the settlement
     // tile.
-	private void indianSettlementCombatResultDetails() {
-		// TODO:
+	private void indianSettlementCombatResultDetails(CombatSides combatSides) {
+	    // TODO:
+	    
+	    IndianSettlement is = (IndianSettlement)combatSides.defenderTile.getSettlement();
+	    boolean attackerWon = combatSides.attacker.equalsId(winner);
+	    int lose = 0;
+	    
+	    if (loserMustDie) {
+	        combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
+	        lose++;
+	    }
+	    if (attackerWon) {
+	        if (Randomizer.instance().realProbability() < getConvertProbability(winner.getOwner())) {
+	            if (!combatSides.combatAmphibious && is.hasMissionary(winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
+	                combatResultDetails.add(CombatResultDetails.CAPTURE_CONVERT);
+	                lose++;
+	            }
+	        } else {
+	            if (Randomizer.instance().realProbability() < getBurnProbability()) {
+	                for (Settlement settlement : loser.getOwner().settlements.entities()) {
+	                    if (((IndianSettlement)settlement).hasMissionary(winner.getOwner())) {
+	                        combatResultDetails.add(CombatResultDetails.BURN_MISSIONS);
+	                    }
+	                }
+	            }
+	            if (!isIndianSettlementHasMoreUnit(is, lose)) {
+	                combatResultDetails.add(CombatResultDetails.DESTROY_SETTLEMENT);
+	            }
+	        }
+	    }
+	}
+	
+	private boolean isIndianSettlementHasMoreUnit(IndianSettlement is, int lose) {
+	    return is.getUnits().size() + is.tile.getUnits().size() > lose;
+	}
+	
+	private float getConvertProbability(Player player) {
+	    int percentProb = Specification.options.getIntValue(GameOptions.NATIVE_CONVERT_PROBABILITY);
+	    float floatProb = 0.01f * player.getFeatures().applyModifier(Modifier.NATIVE_CONVERT_BONUS, percentProb);
+	    return floatProb;
+	}
+	
+	private float getBurnProbability() {
+	    int percentProb = Specification.options.getIntValue(GameOptions.BURN_PROBABILITY);
+	    float floatProb = 0.01f * percentProb;
+	    return floatProb;
 	}
 }

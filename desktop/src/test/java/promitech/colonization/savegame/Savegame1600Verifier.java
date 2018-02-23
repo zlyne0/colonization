@@ -6,7 +6,9 @@ import static org.junit.Assert.*;
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
@@ -84,9 +86,19 @@ public class Savegame1600Verifier {
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.furs", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
+		
+		verifyMissionary(game);
 	}
 
-	private void verifyAIContainer(Game game) {
+	private void verifyMissionary(Game game) {
+	    Player player = game.players.getById("player:22");
+	    IndianSettlement indianSettlement = player.settlements.getById("indianSettlement:5901")
+	            .getIndianSettlement();
+	    Player dutch = game.players.getById("player:1");
+	    assertThat(indianSettlement.hasMissionary(dutch)).isTrue();
+    }
+
+    private void verifyAIContainer(Game game) {
 		PlayerMissionsContainer playerMissionsContainer = game.aiContainer.getMissionContainer("player:22");
 		assertThat(playerMissionsContainer).isNotNull();
 		WanderMission wm = playerMissionsContainer.getMission("wanderMission:1");

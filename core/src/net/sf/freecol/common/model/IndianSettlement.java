@@ -20,7 +20,7 @@ public class IndianSettlement extends Settlement {
     };
 	
 	/** The missionary at this settlement. */
-    protected Unit missionary = null;
+    private IndianSettlementMissionary missionary;
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
@@ -116,6 +116,7 @@ public class IndianSettlement extends Settlement {
 		public Xml() {
 			addNodeForMapIdEntities("units", Unit.class);
 			addNode(GoodsContainer.class, "goodsContainer");
+			addNode(IndianSettlementMissionary.class, "missionary");
 		}
 		
 		@Override
@@ -233,4 +234,8 @@ public class IndianSettlement extends Settlement {
 	public boolean canAutoUnloadUnits() {
 		return false;
 	}
+
+    public boolean hasMissionary(Player player) {
+        return missionary != null && missionary.unit != null && missionary.unit.getOwner().equalsId(player);
+    }
 }

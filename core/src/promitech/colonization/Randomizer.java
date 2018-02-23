@@ -19,6 +19,10 @@ public final class Randomizer {
 	    instance.rand = random;
 	}
 	
+	public static void changeRandomToRandomXS128() {
+	    instance.rand = new RandomXS128(System.currentTimeMillis());
+	}
+	
 	private Randomizer() {
 		rand = new RandomXS128(System.currentTimeMillis());
 	}
