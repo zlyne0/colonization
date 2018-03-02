@@ -82,9 +82,12 @@ class CombatResolver {
 		unitPromotion(greatResult);
 	}
 
-	// TODO: podoba metoda is attacker won
 	private boolean isDefenderLoser(CombatSides combatSides) {
 	    return loser.equalsId(combatSides.defender);
+	}
+	
+	private boolean isAttackerWon(CombatSides combatSides) {
+	    return combatSides.attacker.equalsId(winner);	    
 	}
 	
 	private void landCombatResultDetails(CombatSides combatSides) {
@@ -216,21 +219,20 @@ class CombatResolver {
 	    // TODO:
 	    
 	    IndianSettlement is = (IndianSettlement)combatSides.defenderTile.getSettlement();
-	    boolean attackerWon = combatSides.attacker.equalsId(winner);
 	    int lose = 0;
 	    
 	    if (loserMustDie) {
 	        combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 	        lose++;
 	    }
-	    if (attackerWon) {
-	        if (Randomizer.instance().realProbability() < getConvertProbability(winner.getOwner())) {
+	    if (isAttackerWon(combatSides)) {
+            if (Randomizer.instance().isHappen(getConvertProbability(winner.getOwner()))) {
 	            if (!combatSides.combatAmphibious && is.hasMissionary(winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
 	                combatResultDetails.add(CombatResultDetails.CAPTURE_CONVERT);
 	                lose++;
 	            }
 	        } else {
-	            if (Randomizer.instance().realProbability() < getBurnProbability()) {
+	            if (Randomizer.instance().isHappen(getBurnMissionaryPercentProbability())) {
 	                for (Settlement settlement : loser.getOwner().settlements.entities()) {
 	                    if (((IndianSettlement)settlement).hasMissionary(winner.getOwner())) {
 	                        combatResultDetails.add(CombatResultDetails.BURN_MISSIONS);
@@ -248,15 +250,12 @@ class CombatResolver {
 	    return is.getUnits().size() + is.tile.getUnits().size() > lose;
 	}
 	
-	private float getConvertProbability(Player player) {
+	private int getConvertProbability(Player player) {
 	    int percentProb = Specification.options.getIntValue(GameOptions.NATIVE_CONVERT_PROBABILITY);
-	    float floatProb = 0.01f * player.getFeatures().applyModifier(Modifier.NATIVE_CONVERT_BONUS, percentProb);
-	    return floatProb;
+	    return (int)player.getFeatures().applyModifier(Modifier.NATIVE_CONVERT_BONUS, percentProb);
 	}
 	
-	private float getBurnProbability() {
-	    int percentProb = Specification.options.getIntValue(GameOptions.BURN_PROBABILITY);
-	    float floatProb = 0.01f * percentProb;
-	    return floatProb;
+	private int getBurnMissionaryPercentProbability() {
+	    return Specification.options.getIntValue(GameOptions.BURN_PROBABILITY);
 	}
 }

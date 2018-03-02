@@ -34,6 +34,13 @@ public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, Map
 		}
 		return this;
 	}
+
+    public MapIdEntitiesAssert hasSize(int size) {
+        if (actual.size() != size) {
+            failWithMessage("expected has size <%s> but has size <%s>", size, actual.size());
+        }
+        return this;
+    }
 	
 	
 }

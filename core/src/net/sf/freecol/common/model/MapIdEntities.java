@@ -144,6 +144,16 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     public Collection<T> entities() {
     	return entities.values();
     }
+
+    public MapIdEntities<T> reduceBy(MapIdEntities<T> reducer) {
+        MapIdEntities<T> reduced = new MapIdEntities<T>();
+        for (T u : this.entities()) {
+            if (!reducer.containsId(u)) {
+                reduced.add(u);
+            }
+        }
+        return reduced;
+    }
     
     public void removeId(String id) {
     	entities.remove(id);
@@ -229,6 +239,5 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
             return tagName;
         }
     }
-
 }
 

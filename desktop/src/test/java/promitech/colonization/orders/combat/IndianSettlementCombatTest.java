@@ -15,9 +15,12 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
@@ -38,6 +41,8 @@ public class IndianSettlementCombatTest {
     Unit dutchDragoon;
     Tile freeTileNextToIndianSettlement;
     Tile indianSettlementTile;
+    
+    MapIdEntities<Unit> settlementUnits; 
     
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -64,6 +69,8 @@ public class IndianSettlementCombatTest {
         dutchDragoon.changeUnitLocation(freeTileNextToIndianSettlement);
         
         indianSettlementTile = game.map.getSafeTile(19, 78);
+        
+        settlementUnits = unitsFromIndianSettlement();
     }
 
     @After
@@ -71,11 +78,20 @@ public class IndianSettlementCombatTest {
         Randomizer.changeRandomToRandomXS128();
     }
     
+    private MapIdEntities<Unit> unitsFromIndianSettlement() {
+        MapIdEntities<Unit> settlementUnits = new MapIdEntities<>(indianSettlementTile.getUnits());
+        settlementUnits.addAll(indianSettlementTile.getSettlement().getIndianSettlement().getUnits());
+        return settlementUnits;
+    }
+    
     @Test
     public void dragoonSuccessfullyAttackSettlement() throws Exception {
         // given
-        Randomizer.changeRandomObject(new MockedRandomizer().withFloatsResults(1, 1, 1, 1 ));
-
+        Randomizer.changeRandomObject(new MockedRandomizer()
+            .withFloatsResults(1, 1, 1, 1 )
+            .withIntsResults(99, 99, 99, 99)
+        );
+        
         // when
         combat.init(game, dutchDragoon, indianSettlementTile);
         combat.generateGreatWin();
@@ -86,13 +102,25 @@ public class IndianSettlementCombatTest {
             .hasPowers(4.5f, 3.0f, 0.6f)
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.PROMOTE_UNIT);
-        fail("assert results");
+        
+        verifySettlementSlaughterUnit();
     }
     
+    private void verifySettlementSlaughterUnit() {
+        MapIdEntities<Unit> settlementUnitsAfterAttack = unitsFromIndianSettlement();
+        
+        MapIdEntities<Unit> slaughterUnits = settlementUnits.reduceBy(settlementUnitsAfterAttack);
+        MapIdEntitiesAssert.assertThat(slaughterUnits).hasSize(1);
+        UnitAssert.assertThat(slaughterUnits.first()).isDisposed();
+    }
+
     @Test
     public void dragoonSuccessfullyAttackSettlementAndCaptureConvert() throws Exception {
         // given
-        Randomizer.changeRandomObject(new MockedRandomizer().withFloatsResults(0, 1, 1, 1 ));
+        Randomizer.changeRandomObject(new MockedRandomizer()
+            .withFloatsResults(0, 1, 1, 1 )
+            .withIntsResults(0, 99, 99, 99)
+        );
 
         // when
         combat.init(game, dutchDragoon, indianSettlementTile);
@@ -110,7 +138,10 @@ public class IndianSettlementCombatTest {
     @Test
     public void dragoonSuccessfullyAttackSettlementAndBurnMission() throws Exception {
         // given
-        Randomizer.changeRandomObject(new MockedRandomizer().withFloatsResults(1, 0, 1, 1 ));
+        Randomizer.changeRandomObject(new MockedRandomizer()
+            .withFloatsResults(1, 0, 1, 1 )
+            .withIntsResults(99, 0, 99, 99)
+        );
 
         // when
         combat.init(game, dutchDragoon, indianSettlementTile);

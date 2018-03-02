@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -114,7 +115,18 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_NAME = "name";
 
 		public Xml() {
-			addNodeForMapIdEntities("units", Unit.class);
+            addNode(Unit.class, new ObjectFromNodeSetter<IndianSettlement, Unit>() {
+                @Override
+                public void set(IndianSettlement target, Unit entity) {
+                    entity.changeUnitLocation(target);
+                }
+
+                @Override
+                public void generateXml(IndianSettlement source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+                    xmlGenerator.generateXmlFromCollection(source.units.entities());
+                }
+            });
+			
 			addNode(GoodsContainer.class, "goodsContainer");
 			addNode(IndianSettlementMissionary.class, "missionary");
 		}
