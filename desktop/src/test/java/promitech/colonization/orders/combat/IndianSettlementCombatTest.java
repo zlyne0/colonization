@@ -15,6 +15,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.Specification;
@@ -41,6 +43,7 @@ public class IndianSettlementCombatTest {
     Unit dutchDragoon;
     Tile freeTileNextToIndianSettlement;
     Tile indianSettlementTile;
+    IndianSettlement indianSettlement;
     
     MapIdEntities<Unit> settlementUnits; 
     
@@ -69,6 +72,7 @@ public class IndianSettlementCombatTest {
         dutchDragoon.changeUnitLocation(freeTileNextToIndianSettlement);
         
         indianSettlementTile = game.map.getSafeTile(19, 78);
+        indianSettlement = indianSettlementTile.getSettlement().getIndianSettlement();
         
         settlementUnits = unitsFromIndianSettlement();
     }
@@ -80,7 +84,7 @@ public class IndianSettlementCombatTest {
     
     private MapIdEntities<Unit> unitsFromIndianSettlement() {
         MapIdEntities<Unit> settlementUnits = new MapIdEntities<>(indianSettlementTile.getUnits());
-        settlementUnits.addAll(indianSettlementTile.getSettlement().getIndianSettlement().getUnits());
+        settlementUnits.addAll(indianSettlement.getUnits());
         return settlementUnits;
     }
     
@@ -153,7 +157,9 @@ public class IndianSettlementCombatTest {
             .hasPowers(4.5f, 3.0f, 0.6f)
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.BURN_MISSIONS, CombatResultDetails.PROMOTE_UNIT);
-        fail("");
+        
+        verifySettlementSlaughterUnit();
+        IndianSettlementAssert.assertThat(indianSettlement).hasNoMissionary(dutch);
     }
     
     @Test

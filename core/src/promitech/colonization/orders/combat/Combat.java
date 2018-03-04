@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -233,6 +234,9 @@ class Combat {
 			break;
 			
 			case DESTROY_COLONY: destroyColony();
+			break;
+			
+			case BURN_MISSIONS: burnMissions();
 			break;
 			
 			case EVADE_BOMBARD: // do nothing
@@ -549,6 +553,20 @@ class Combat {
             }
         }
     }
+
+	private void burnMissions() {
+        StringTemplate t = StringTemplate.template("model.unit.burnMissions")
+                .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+        		.addStringTemplate("%enemyNation%", combatResolver.loser.getOwner().getNationName());
+        combatResolver.winner.getOwner().eventsNotifications.addMessageNotification(t);
+		
+		for (Settlement settlement : combatResolver.loser.getOwner().settlements.entities()) {
+			IndianSettlement indianSettlement = settlement.getIndianSettlement();
+			if (indianSettlement.hasMissionary(combatResolver.winner.getOwner())) {
+				indianSettlement.removeMissionary();
+			}
+		}
+	}
     
 	public boolean canAttackWithoutConfirmation() {
 		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
