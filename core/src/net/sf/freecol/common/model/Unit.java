@@ -191,6 +191,12 @@ public class Unit extends ObjectWithId implements UnitLocation {
         this.owner = player;
 	}
 	
+	public void changeOwner(Player newOwner) {
+		this.owner.units.removeId(this);
+		this.owner = newOwner;
+		this.owner.units.add(this);
+	}
+	
 	public void captureUnit(Unit unit) {
 		unit.captureByPlayer(owner);
 		

@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
+import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -126,6 +127,8 @@ public class IndianSettlementCombatTest {
             .withIntsResults(0, 99, 99, 99)
         );
 
+        MapIdEntities<Unit> dragoonTileUnitsBeforeCombat = new MapIdEntities<>(dutchDragoon.getTile().getUnits());
+        
         // when
         combat.init(game, dutchDragoon, indianSettlementTile);
         combat.generateGreatWin();
@@ -136,7 +139,16 @@ public class IndianSettlementCombatTest {
             .hasPowers(4.5f, 3.0f, 0.6f)
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.CAPTURE_CONVERT, CombatResultDetails.PROMOTE_UNIT);
-        fail("");
+        
+        MapIdEntities<Unit> convertUnits = new MapIdEntities<>(dutchDragoon.getTile().getUnits())
+        	.reduceBy(dragoonTileUnitsBeforeCombat);
+        
+        MapIdEntitiesAssert.assertThat(convertUnits)
+        	.hasSize(1);
+        Unit convert = convertUnits.first();
+        
+        PlayerAssert.assertThat(indian).notContainsUnit(convert);
+        PlayerAssert.assertThat(dutch).containsUnit(convert);
     }
     
     @Test

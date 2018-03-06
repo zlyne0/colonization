@@ -238,6 +238,8 @@ class Combat {
 			
 			case BURN_MISSIONS: burnMissions();
 			break;
+			case CAPTURE_CONVERT: captureConvert();
+			break;
 			
 			case EVADE_BOMBARD: // do nothing
 			default:
@@ -558,7 +560,7 @@ class Combat {
         StringTemplate t = StringTemplate.template("model.unit.burnMissions")
                 .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
         		.addStringTemplate("%enemyNation%", combatResolver.loser.getOwner().getNationName());
-        combatResolver.winner.getOwner().eventsNotifications.addMessageNotification(t);
+        blockingCombatNotifications.add(t);
 		
 		for (Settlement settlement : combatResolver.loser.getOwner().settlements.entities()) {
 			IndianSettlement indianSettlement = settlement.getIndianSettlement();
@@ -566,6 +568,20 @@ class Combat {
 				indianSettlement.removeMissionary();
 			}
 		}
+	}
+	
+	private void captureConvert() {
+		List<Unit> units = new ArrayList<Unit>();
+		units.addAll(combatSides.defenderTile.getUnits().entities());
+		units.addAll(combatSides.defenderTile.getSettlement().getUnits().entities());
+		
+		Unit convert = Randomizer.instance().randomMember(units);
+		convert.changeOwner(combatResolver.winner.getOwner());
+		convert.changeUnitType(ChangeType.CONVERSION);
+		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+        convert.reduceMovesLeftToZero();
+        convert.setState(Unit.UnitState.ACTIVE);
+        convert.changeUnitLocation(combatResolver.winner.getTile());
 	}
     
 	public boolean canAttackWithoutConfirmation() {

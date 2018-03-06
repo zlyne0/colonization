@@ -39,6 +39,13 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		return this;
 	}
 
+	public PlayerAssert containsUnit(Unit unit) {
+		if (!actual.units.containsId(unit)) {
+			failWithMessage("expected player <%s> contain unit <%s>", actual.getId(), unit.getId());
+		}
+		return this;
+	}
+	
 	public PlayerAssert hasNotificationSize(int size) {
 		if (actual.eventsNotifications.getNotifications().size() != size) {
 			failWithMessage("expected player <%s> has <%s> notifications, but has <%s>", 
