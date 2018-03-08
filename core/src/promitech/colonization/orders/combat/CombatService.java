@@ -67,6 +67,10 @@ public class CombatService {
         }
         
         combat.processAttackResult();
+        MoveContext captureConvertMove = combat.captureConvertMove();
+        if (captureConvertMove != null) {
+        	moveService.blockedShowMove(captureConvertMove);
+        }
         moveService.postMoveProcessor(moveContext);
     }
     

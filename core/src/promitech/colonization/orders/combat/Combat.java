@@ -28,6 +28,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
+import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.ui.resources.StringTemplate;
 
 class Combat {
@@ -69,9 +70,11 @@ class Combat {
 	protected final CombatResolver combatResolver = new CombatResolver();
 	private Game game;
 	private final List<StringTemplate> blockingCombatNotifications = new ArrayList<StringTemplate>();
+	private MoveContext captureConvertMove;
 	
 	public void init(Game game, Colony colony, Tile defenderTile, Unit defender) {
 	    blockingCombatNotifications.clear();
+	    captureConvertMove = null;
 		this.game = game;
 		combatResult = null;
 		greatResult = false;
@@ -80,6 +83,7 @@ class Combat {
 	
 	public void init(Game game, Unit attacker, Tile tile) {
 	    blockingCombatNotifications.clear();
+	    captureConvertMove = null;
 		this.game = game;
 		combatResult = null;
 		greatResult = false;
@@ -582,8 +586,14 @@ class Combat {
         convert.reduceMovesLeftToZero();
         convert.setState(Unit.UnitState.ACTIVE);
         convert.changeUnitLocation(combatResolver.winner.getTile());
+        
+        captureConvertMove = new MoveContext(
+    		combatSides.defenderTile, 
+    		combatResolver.winner.getTile(), 
+    		convert
+		);
 	}
-    
+	
 	public boolean canAttackWithoutConfirmation() {
 		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
 			return true;
@@ -623,4 +633,8 @@ class Combat {
     public boolean isMoveAfterAttack() {
         return combatResolver.moveAfterAttack;
     }
+
+	public MoveContext captureConvertMove() {
+		return captureConvertMove;
+	}
 }
