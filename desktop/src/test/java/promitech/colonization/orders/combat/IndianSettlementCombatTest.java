@@ -1,9 +1,9 @@
 package promitech.colonization.orders.combat;
 
+import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static org.assertj.core.api.Assertions.*;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
-import java.util.Arrays;
 import java.util.Locale;
 
 import org.junit.After;
@@ -189,9 +189,18 @@ public class IndianSettlementCombatTest {
         // given
 
         // when
+        combat.init(game, dutchDragoon, indianSettlementTile);
+        combat.generateGreatLoss();
+        combat.processAttackResult();
 
         // then
-        fail("");
+        assertThat(combat)
+	        .hasPowers(4.5f, 3.0f, 0.6f)
+	        .hasResult(CombatResult.LOSE, true)
+	        .hasDetails(CombatResultDetails.CAPTURE_EQUIP);
+        
+        assertThat(dutchDragoon).isUnitRole(UnitRole.SOLDIER);
+        assertThat(combat.combatSides.defender).isUnitRole("model.role.mountedBrave");
     }
     
 }

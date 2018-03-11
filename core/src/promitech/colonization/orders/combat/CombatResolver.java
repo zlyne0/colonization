@@ -90,6 +90,10 @@ class CombatResolver {
 	    return combatSides.attacker.equalsId(winner);	    
 	}
 	
+	private boolean isAttackerLose(CombatSides combatSides) {
+		return combatSides.attacker.equalsId(loser);
+	}
+	
 	private void landCombatResultDetails(CombatSides combatSides) {
 	    if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
 	        
@@ -225,25 +229,27 @@ class CombatResolver {
 	        combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 	        lose++;
 	    }
-	    if (isAttackerWon(combatSides)) {
-            if (Randomizer.instance().isHappen(getConvertProbability(winner.getOwner()))) {
-	            if (!combatSides.combatAmphibious && is.hasMissionary(winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
-	                combatResultDetails.add(CombatResultDetails.CAPTURE_CONVERT);
-	                lose++;
-	            }
-	        } else {
-	            if (Randomizer.instance().isHappen(getBurnMissionaryPercentProbability())) {
-	                for (Settlement settlement : loser.getOwner().settlements.entities()) {
-	                    if (((IndianSettlement)settlement).hasMissionary(winner.getOwner())) {
-	                        combatResultDetails.add(CombatResultDetails.BURN_MISSIONS);
-	                    }
-	                }
-	            }
-	            if (!isIndianSettlementHasMoreUnit(is, lose)) {
-	                combatResultDetails.add(CombatResultDetails.DESTROY_SETTLEMENT);
-	            }
-	        }
+	    if (isAttackerLose(combatSides)) {
+	        landCombatResultDetails(combatSides);
+	    	return;
 	    }
+        if (Randomizer.instance().isHappen(getConvertProbability(winner.getOwner()))) {
+            if (!combatSides.combatAmphibious && is.hasMissionary(winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
+                combatResultDetails.add(CombatResultDetails.CAPTURE_CONVERT);
+                lose++;
+            }
+        } else {
+            if (Randomizer.instance().isHappen(getBurnMissionaryPercentProbability())) {
+                for (Settlement settlement : loser.getOwner().settlements.entities()) {
+                    if (((IndianSettlement)settlement).hasMissionary(winner.getOwner())) {
+                        combatResultDetails.add(CombatResultDetails.BURN_MISSIONS);
+                    }
+                }
+            }
+            if (!isIndianSettlementHasMoreUnit(is, lose)) {
+                combatResultDetails.add(CombatResultDetails.DESTROY_SETTLEMENT);
+            }
+        }
 	}
 	
 	private boolean isIndianSettlementHasMoreUnit(IndianSettlement is, int lose) {
