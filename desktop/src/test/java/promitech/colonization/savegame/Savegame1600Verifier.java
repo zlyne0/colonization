@@ -8,9 +8,9 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementPlunderRange;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
@@ -348,6 +348,10 @@ public class Savegame1600Verifier {
         NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
         assertNotNull(settlementType);
+        assertThat(settlementType.getPlunderRanges()).hasSize(2);
+        for (SettlementPlunderRange spr : settlementType.getPlunderRanges()) {
+            assertThat(spr.getScopes()).hasSize(1);
+        }
         
         NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
         assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));

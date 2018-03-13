@@ -20,7 +20,10 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -70,6 +73,8 @@ public class SettlementType extends ObjectWithFeatures {
     /** The threshold at which a new convert occurs. */
     private int convertThreshold = 100;
 
+    private List<SettlementPlunderRange> plunderRanges = new ArrayList<SettlementPlunderRange>();
+    
     public SettlementType(String id) {
 		super(id);
 	}
@@ -175,6 +180,10 @@ public class SettlementType extends ObjectWithFeatures {
         return convertThreshold;
     }
 
+    public List<SettlementPlunderRange> getPlunderRanges() {
+        return plunderRanges;
+    }
+    
     public static class Xml extends XmlNodeParser<SettlementType> {
 
     	private static final String ATTR_CONVERT_THRESHOLD = "convertThreshold";
@@ -191,6 +200,17 @@ public class SettlementType extends ObjectWithFeatures {
 
 		public Xml() {
 			ObjectWithFeatures.Xml.abstractAddNodes(this);
+			
+			addNode(SettlementPlunderRange.class, new ObjectFromNodeSetter<SettlementType, SettlementPlunderRange>() {
+                @Override
+                public void set(SettlementType target, SettlementPlunderRange entity) {
+                    target.plunderRanges.add(entity);
+                }
+                @Override
+                public void generateXml(SettlementType source, ChildObject2XmlCustomeHandler<SettlementPlunderRange> xmlGenerator) throws IOException {
+                    xmlGenerator.generateXmlFromCollection(source.plunderRanges);
+                }
+            });
     	}
     	
         @Override
