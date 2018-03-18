@@ -2,6 +2,7 @@ package promitech.colonization.orders.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static org.assertj.core.api.Assertions.*;
+import static org.junit.Assert.*;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
@@ -20,6 +21,9 @@ import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.PlayerAssert;
+import net.sf.freecol.common.model.SettlementPlunderRange;
+import net.sf.freecol.common.model.SettlementPlunderRangeAssert;
+import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -27,6 +31,9 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.MockedRandomizer;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.Combat.CombatResult;
@@ -84,7 +91,8 @@ public class IndianSettlementCombatTest {
     }
     
     private MapIdEntities<Unit> unitsFromIndianSettlement() {
-        MapIdEntities<Unit> settlementUnits = new MapIdEntities<>(indianSettlementTile.getUnits());
+        MapIdEntities<Unit> settlementUnits = new MapIdEntities<>();
+        settlementUnits.addAll(indianSettlementTile.getUnits());
         settlementUnits.addAll(indianSettlement.getUnits());
         return settlementUnits;
     }
@@ -177,11 +185,26 @@ public class IndianSettlementCombatTest {
     @Test
     public void dragoonSuccessfullyAttackSettlementAndDestroySettlement() throws Exception {
         // given
+    	MapIdEntities<Unit> units = unitsFromIndianSettlement();
+    	Unit oneUnit = units.getById("unit:6351");
+    	for (Unit u : units.entities()) {
+    		if (u.equalsId(oneUnit)) {
+    			continue;
+    		}
+    		u.removeFromLocation();
+    	}
 
         // when
+        combat.init(game, dutchDragoon, indianSettlementTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
 
         // then
-        fail("");
+        assertThat(combat)
+	        .hasPowers(4.5f, 3.0f, 0.6f)
+	        .hasResult(CombatResult.WIN, true)
+	        .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.DESTROY_SETTLEMENT, CombatResultDetails.PROMOTE_UNIT);
+        fail();
     }
  
     @Test
@@ -202,5 +225,38 @@ public class IndianSettlementCombatTest {
         assertThat(dutchDragoon).isUnitRole(UnitRole.SOLDIER);
         assertThat(combat.combatSides.defender).isUnitRole("model.role.mountedBrave");
     }
+
+    @Test 
+	public void canDeterminePlunderRangeWithoutHernanCortes() throws Exception {
+		// given
+    	dutch.foundingFathers.removeId("model.foundingFather.hernanCortes");
+    	
+    	NationType inca = Specification.instance.nationTypes.getById("model.nationType.inca");
+    	SettlementType incaSettlementType = inca.settlementTypes.getById("model.settlement.inca");
+    	
+		// when
+    	SettlementPlunderRange range = incaSettlementType.plunderGoldRange(dutchDragoon);
+
+		// then
+    	SettlementPlunderRangeAssert.assertThat(range)
+    		.equalsProbMinMaxFactor(100, 2, 6, 2100);
+	}
+
+    @Test 
+	public void canDeterminePlunderRangeWithHernanCortes() throws Exception {
+		// given
+    	FoundingFather cortes = Specification.instance.foundingFathers.getById("model.foundingFather.hernanCortes");
+    	dutch.addFoundingFathers(cortes);
+    	
+    	NationType inca = Specification.instance.nationTypes.getById("model.nationType.inca");
+    	SettlementType incaSettlementType = inca.settlementTypes.getById("model.settlement.inca");
+
+    	// when
+    	SettlementPlunderRange range = incaSettlementType.plunderGoldRange(dutchDragoon);
+
+		// then
+    	SettlementPlunderRangeAssert.assertThat(range)
+    		.equalsProbMinMaxFactor(100, 2, 6, 3100);
+	}
     
 }

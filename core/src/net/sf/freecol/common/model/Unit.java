@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.ScopeAppliable;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -20,7 +21,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit extends ObjectWithId implements UnitLocation {
+public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -863,6 +864,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return unitRole;
     }
 	
+	@Override
 	public boolean hasAbility(String code) {
 	    if (unitType.hasAbility(code)) {
 	        return true;

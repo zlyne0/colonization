@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.specification.Scope;
+import net.sf.freecol.common.model.specification.ScopeAppliable;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -12,16 +14,33 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class SettlementPlunderRange {
 
-    private int probability = 0;
-    private int minimum = 0;
-    private int maximum = 0;
-    private int factor = 0;
-    private List<Scope> scopes = new ArrayList<Scope>();
+    protected int probability = 0;
+    protected int minimum = 0;
+    protected int maximum = 0;
+    protected int factor = 0;
+    private final List<Scope> scopes = new ArrayList<Scope>();
 
     public List<Scope> getScopes() {
         return scopes;
     }
+
+	public boolean canApplyTo(ScopeAppliable appliable) {
+		for (Scope s : scopes) {
+			if (s.isAppliesTo(appliable)) {
+				return true;
+			}
+		}
+		return false;
+	}
     
+	public int randomValue() {
+		if (probability >= 100 || probability > 0 && Randomizer.instance().isHappen(probability)) {
+			int r = Randomizer.instance().randomInt(minimum, maximum);
+			return r * factor;
+		}
+		return 0;
+	}
+	
     public static class Xml extends XmlNodeParser<SettlementPlunderRange> {
 
         private static final String ATTR_FACTOR = "factor";
@@ -46,7 +65,7 @@ public class SettlementPlunderRange {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             SettlementPlunderRange plunderRange = new SettlementPlunderRange();
-            plunderRange.factor = attr.getIntAttribute(ATTR_PROBABILITY, 0);
+            plunderRange.probability = attr.getIntAttribute(ATTR_PROBABILITY, 0);
             plunderRange.minimum = attr.getIntAttribute(ATTR_MINIMUM, 0);
             plunderRange.maximum = attr.getIntAttribute(ATTR_MAXIMUM, 0);
             plunderRange.factor = attr.getIntAttribute(ATTR_FACTOR, 0);
@@ -70,4 +89,10 @@ public class SettlementPlunderRange {
             return "plunder";
         }
     }
+
+	@Override
+	public String toString() {
+		return "SettlementPlunderRange [probability=" + probability + ", minimum=" + minimum + ", maximum=" + maximum
+				+ ", factor=" + factor + "]";
+	}
 }

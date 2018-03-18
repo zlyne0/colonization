@@ -10,12 +10,13 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Modifier.ModifierPredicate;
 import net.sf.freecol.common.model.specification.Scope;
+import net.sf.freecol.common.model.specification.ScopeAppliable;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class ObjectWithFeatures extends ObjectWithId {
+public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
     
     public static final ObjectFromNodeSetter<ObjectWithFeatures, Modifier> OBJECT_MODIFIER_NODE_SETTER = new ObjectFromNodeSetter<ObjectWithFeatures, Modifier>() {
         @Override

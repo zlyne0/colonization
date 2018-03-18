@@ -183,7 +183,24 @@ public class SettlementType extends ObjectWithFeatures {
     public List<SettlementPlunderRange> getPlunderRanges() {
         return plunderRanges;
     }
+
+	public int plunderGold(Unit attacker) {
+		SettlementPlunderRange range = plunderGoldRange(attacker);
+		if (range != null) {
+			return range.randomValue();
+		}
+		return 0;
+	}
     
+	public SettlementPlunderRange plunderGoldRange(Unit attacker) {
+		for (SettlementPlunderRange range : plunderRanges) {
+			if (range.canApplyTo(attacker)) {
+				return range;
+			}
+		}
+		return null;
+	}
+	
     public static class Xml extends XmlNodeParser<SettlementType> {
 
     	private static final String ATTR_CONVERT_THRESHOLD = "convertThreshold";

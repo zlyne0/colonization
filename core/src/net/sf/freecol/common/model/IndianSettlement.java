@@ -104,6 +104,13 @@ public class IndianSettlement extends Settlement {
 		return goodsContainer;
 	}
     
+	public int plunderGold(Unit attacker) {
+		if (settlementType == null) {
+			return 0;
+		}
+		return settlementType.plunderGold(attacker);
+	}
+	
     public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";

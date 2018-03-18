@@ -244,6 +244,8 @@ class Combat {
 			break;
 			case CAPTURE_CONVERT: captureConvert();
 			break;
+			case DESTROY_SETTLEMENT: destroySettlement();
+			break;
 			
 			case EVADE_BOMBARD: // do nothing
 			default:
@@ -593,7 +595,14 @@ class Combat {
     		convert
 		);
 	}
-	
+
+	private void destroySettlement() {
+		IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
+		// TODO
+		// TODO 
+		is.plunderGold(combatResolver.winner);
+	}
+
 	public boolean canAttackWithoutConfirmation() {
 		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
 			return true;
