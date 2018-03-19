@@ -26,6 +26,7 @@ import net.sf.freecol.common.model.SettlementPlunderRangeAssert;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
@@ -33,7 +34,6 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.NationType;
-import net.sf.freecol.common.model.specification.Scope;
 import promitech.colonization.MockedRandomizer;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.Combat.CombatResult;
@@ -204,10 +204,28 @@ public class IndianSettlementCombatTest {
 	        .hasPowers(4.5f, 3.0f, 0.6f)
 	        .hasResult(CombatResult.WIN, true)
 	        .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.DESTROY_SETTLEMENT, CombatResultDetails.PROMOTE_UNIT);
-        fail();
+        
+        verifyTreasureUnit();
+        
+        IndianSettlementAssert.assertThat(indianSettlement)
+        	.notOwnedBy(indian);
+        TileAssert.assertThat(indianSettlementTile)
+        	.hasNotSettlement();
     }
  
-    @Test
+    private void verifyTreasureUnit() {
+    	Unit treasureUnit = null;
+    	for (Unit unit : indianSettlementTile.getUnits().entities()) {
+			if (unit.canCarryTreasure()) {
+				treasureUnit = unit;
+			}
+		}
+    	UnitAssert.assertThat(treasureUnit)
+			.isNotNull()
+			.isOwnedBy(dutch);
+	}
+
+	@Test
     public void dragoonFailedAttack() throws Exception {
         // given
 

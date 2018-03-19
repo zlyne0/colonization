@@ -21,5 +21,12 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 		return this;
 	}
 
-    
+    public IndianSettlementAssert notOwnedBy(Player player) {
+    	if (player.settlements.containsId(actual)) {
+    		failWithMessage("expected indian settlement <%s> not owned by player <%s>", 
+				actual.getId(), player.getId()
+			);
+    	}
+    	return this;
+    }
 }

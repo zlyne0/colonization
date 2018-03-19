@@ -1842,8 +1842,26 @@
 				<indian-nation-type id="model.nationType.inca" number-of-settlements="HIGH" aggression="LOW">
 					<region id="model.region.south"/>
 					<region id="model.region.southWest"/>
-					<settlement id="model.settlement.inca.capital" capital="true" minimumSize="10" maximumSize="12" visibleRadius="2" claimableRadius="3" extraClaimableRadius="3" wanderingRadius="4" minimumGrowth="4" maximumGrowth="14" tradeBonus="4" convertThreshold="100"/>
-					<settlement id="model.settlement.inca" capital="false" minimumSize="8" maximumSize="12" visibleRadius="2" claimableRadius="2" extraClaimableRadius="2" wanderingRadius="4" minimumGrowth="3" maximumGrowth="12" tradeBonus="3" convertThreshold="100"/>
+          <settlement id="model.settlement.inca" capital="false" minimumSize="8" maximumSize="12" visibleRadius="2" claimableRadius="2" extraClaimableRadius="2" wanderingRadius="4" minimumGrowth="3" maximumGrowth="12" tradeBonus="3" convertThreshold="100">
+            <modifier id="model.modifier.defence" source="model.settlement.inca" value="100.0" type="percentage" index="50"/>
+            <plunder probability="100" minimum="2" maximum="6" factor="2100">
+              <scope matchNegated="false" matchesNull="true" ability-id="model.ability.plunderNatives" ability-value="false"/>
+            </plunder>
+            <plunder probability="100" minimum="2" maximum="6" factor="3100">
+              <scope matchNegated="false" matchesNull="true" ability-id="model.ability.plunderNatives" ability-value="true"/>
+            </plunder>
+            <gifts probability="100" minimum="3" maximum="6" factor="200"/>
+          </settlement>
+          <settlement id="model.settlement.inca.capital" capital="true" minimumSize="10" maximumSize="12" visibleRadius="2" claimableRadius="3" extraClaimableRadius="3" wanderingRadius="4" minimumGrowth="4" maximumGrowth="14" tradeBonus="4" convertThreshold="100">
+            <modifier id="model.modifier.defence" source="model.settlement.inca.capital" value="200.0" type="percentage" index="50"/>
+            <plunder probability="100" minimum="2" maximum="6" factor="3000">
+              <scope matchNegated="false" matchesNull="true" ability-id="model.ability.plunderNatives" ability-value="false"/>
+            </plunder>
+            <plunder probability="100" minimum="3" maximum="8" factor="4000">
+              <scope matchNegated="false" matchesNull="true" ability-id="model.ability.plunderNatives" ability-value="true"/>
+            </plunder>
+            <gifts probability="100" minimum="4" maximum="8" factor="300"/>
+          </settlement>
 					<ability id="model.ability.foundsColonies" source="model.nationType.inca" value="false"/>
 					<ability id="model.ability.ambushBonus" source="model.nationType.inca" value="true"/>
 					<ability id="model.ability.native" source="model.nationType.inca" value="true"/>
@@ -17509,6 +17527,31 @@
 			<tile id="tile:3387" x="19" y="78" type="model.tile.desert" style="0" moveToEurope="false" owner="player:154" owningSettlement="indianSettlement:6339">
 				<cachedTile player="player:1"/>
 				<indianSettlement id="indianSettlement:6339" name="Vicaquirao" owner="player:154" settlementType="model.settlement.inca">
+			          <unit id="unit:6351" unitType="model.unit.brave" movesLeft="3" state="fortified" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0">
+			            <goodsContainer id="goodsContainer:6352"/>
+			          </unit>
+<!-- 			          <unit id="unit:6353" unitType="model.unit.brave" movesLeft="3" state="fortified" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6354"/> -->
+<!-- 			          </unit> -->
+<!-- 			          <unit id="unit:6355" unitType="model.unit.brave" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6356"/> -->
+<!-- 			          </unit> -->
+<!-- 			          <unit id="unit:6357" unitType="model.unit.brave" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6358"/> -->
+<!-- 			          </unit> -->
+<!-- 			          <unit id="unit:6359" unitType="model.unit.brave" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6360"/> -->
+<!-- 			          </unit> -->
+<!-- 			          <unit id="unit:6361" unitType="model.unit.brave" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6362"/> -->
+<!-- 			          </unit> -->
+<!-- 			          <unit id="unit:6363" unitType="model.unit.brave" movesLeft="3" state="active" role="model.role.default" roleCount="0" owner="player:154" nationality="model.nation.inca" ethnicity="model.nation.inca" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" indianSettlement="indianSettlement:6339" workLeft="-1" hitPoints="0" attrition="0"> -->
+<!-- 			            <goodsContainer id="goodsContainer:6364"/> -->
+<!-- 			          </unit> -->
+          <missionary>
+            <unit id="unit:7136" unitType="model.unit.freeColonist" movesLeft="0" state="active" role="model.role.missionary" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="indianSettlement:6339" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+          </missionary>
+			          			          
 					<contactLevel player="player:190" level="CONTACTED"/>
 					<contactLevel player="player:76" level="CONTACTED"/>
 					<contactLevel player="player:22" level="CONTACTED"/>

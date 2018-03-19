@@ -987,6 +987,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		this.indianSettlement = settlement.getId();
 	}
 	
+	public void removeFromIndianSettlement() {
+		this.indianSettlement = null;
+	}
+	
 	public String getIndianSettlementId() {
 	    return this.indianSettlement;
 	}

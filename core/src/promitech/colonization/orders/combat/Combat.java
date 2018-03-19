@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.UnitRole;
@@ -285,21 +286,9 @@ class Combat {
             .addStringTemplate("%attackerNation%", combatResolver.winner.getOwner().getNationName());
         sendNotificationToEuropeanPlayersExclude(t2, colony.getOwner());
         
-	    Tile settlementTile = combatSides.defenderTile;
-	    Settlement settlement = combatSides.defenderTile.getSettlement();
-	    Player settlementOwner = settlement.getOwner();
 	    
-	    settlementOwner.settlements.removeId(settlement);
-	    settlementTile.setSettlement(null);
-	    
-	    for (int x=0; x<game.map.width; x++) {
-	        for (int y=0; y<game.map.height; y++) {
-	            Tile tile = game.map.getSafeTile(x, y);
-	            if (tile.getOwningSettlementId() != null && settlement.equalsId(tile.getOwningSettlementId())) {
-	                tile.resetOwningSettlement();
-	            }
-	        }
-	    }
+	    colony.removeFromMap(game);
+	    colony.removeFromPlayer();
 	}
 	
 	private String repairLocationLabel(UnitLocation unitLocation) {
@@ -564,8 +553,8 @@ class Combat {
 
 	private void burnMissions() {
         StringTemplate t = StringTemplate.template("model.unit.burnMissions")
-                .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
-        		.addStringTemplate("%enemyNation%", combatResolver.loser.getOwner().getNationName());
+            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+    		.addStringTemplate("%enemyNation%", combatResolver.loser.getOwner().getNationName());
         blockingCombatNotifications.add(t);
 		
 		for (Settlement settlement : combatResolver.loser.getOwner().settlements.entities()) {
@@ -598,9 +587,35 @@ class Combat {
 
 	private void destroySettlement() {
 		IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
-		// TODO
-		// TODO 
-		is.plunderGold(combatResolver.winner);
+		
+		int plunderGold = is.plunderGold(combatResolver.winner);
+		if (plunderGold > 0) {
+			UnitFactory.createTreasureTrain(
+				combatResolver.winner.getOwner(),
+				is.tile,
+				plunderGold
+			);
+			
+			StringTemplate t = StringTemplate.template("model.unit.indianTreasure")
+				.add("%settlement%", is.getName())
+				.addAmount("%amount%", plunderGold);
+			blockingCombatNotifications.add(t);
+		}
+		
+		for (Unit settlementPlayerUnit : is.getOwner().units.entities()) {
+			if (is.equalsId(settlementPlayerUnit.getIndianSettlementId())) {
+				settlementPlayerUnit.removeFromIndianSettlement();
+			}
+		}
+
+		if (is.hasMissionaryNotPlayer(combatResolver.winner.getOwner())) {
+	        StringTemplate t = StringTemplate.template("indianSettlement.mission.destroyed")
+                .add("%settlement%", is.getName());
+	        is.missionaryOwner().eventsNotifications.addMessageNotification(t);
+		}
+		
+		is.removeFromMap(game);
+		is.removeFromPlayer();
 	}
 
 	public boolean canAttackWithoutConfirmation() {

@@ -257,7 +257,17 @@ public class IndianSettlement extends Settlement {
     public boolean hasMissionary(Player player) {
         return missionary != null && missionary.unit != null && missionary.unit.getOwner().equalsId(player);
     }
+    
+    public boolean hasMissionaryNotPlayer(Player player) {
+    	return missionary != null 
+			&& missionary.unit != null 
+			&& missionary.unit.getOwner().notEqualsId(player);
+    }
 
+    public Player missionaryOwner() {
+    	return missionary.unit.getOwner();
+    }
+    
 	public void removeMissionary() {
 		Unit m = missionary.unit;
 		m.getOwner().removeUnit(m);

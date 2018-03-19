@@ -152,4 +152,22 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	public abstract ProductionSummary productionSummary();
 
 	public abstract void addModifiersTo(ObjectWithFeatures mods, String modifierCode);
+
+	public void removeFromMap(Game game) {
+		for (int x=0; x<game.map.width; x++) {
+			for (int y=0; y<game.map.height; y++) {
+				Tile tile = game.map.getSafeTile(x, y);
+				if (tile.getOwningSettlementId() != null && this.equalsId(tile.getOwningSettlementId())) {
+					tile.resetOwningSettlement();
+				}
+			}
+		}
+		tile.setSettlement(null);
+		tile = null;
+	}
+
+	public void removeFromPlayer() {
+		owner.settlements.removeId(this);
+		owner = null;
+	}
 }
