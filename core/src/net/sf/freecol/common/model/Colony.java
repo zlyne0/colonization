@@ -344,7 +344,7 @@ public class Colony extends Settlement {
         }
     }
     
-    public void handleLackOfResources(NewTurnContext newTurnContext) {
+    public void handleLackOfResources(NewTurnContext newTurnContext, Game game) {
         int foodProdCons = colonyProduction.globalProductionConsumption().getQuantity(GoodsType.FOOD);
         if (foodProdCons < 0) {
             // food consumption is greater then production
@@ -376,7 +376,8 @@ public class Colony extends Settlement {
     			} else {
     				StringTemplate st = StringTemplate.template("model.colony.colonyStarved").add("%colony%", getName());
     				owner.eventsNotifications.addMessageNotification(st);
-    				owner.removeSettlement(this);
+    				removeFromMap(game);
+    				removeFromPlayer();
     				newTurnContext.setRequireUpdateMapModel();
     			}
             }

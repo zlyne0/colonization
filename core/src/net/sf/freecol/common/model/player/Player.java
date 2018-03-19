@@ -506,11 +506,6 @@ public class Player extends ObjectWithId {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
 	
-	public void removeSettlement(Settlement settlement) {
-		settlement.tile.setSettlement(null);
-		settlements.removeId(settlement.getId());
-	}
-
 	public void removeUnit(Unit unit) {
 		units.removeId(unit);
 		unit.remove();

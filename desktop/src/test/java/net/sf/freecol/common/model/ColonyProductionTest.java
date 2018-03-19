@@ -323,7 +323,7 @@ public class ColonyProductionTest {
         Building furTrading = colony.buildings.getByIdOrNull("building:6545");
         ProductionConsumption productionSummary = colony.productionSummary(furTrading);
         System.out.println("productionSummary = " + productionSummary);
-        colony.handleLackOfResources(null);
+        colony.handleLackOfResources(null, game);
 
         // when
 
