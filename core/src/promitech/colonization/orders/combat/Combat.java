@@ -151,7 +151,9 @@ class Combat {
 		if (r <= winVal || combatSides.isDefenderUnitBeached()) {
 			combatResult = CombatResult.WIN;
 			greatResult = r < 0.1f * winVal; // Great Win
-			combatResolver.init(combatSides.attacker, combatSides.defender, greatResult, combatSides);
+			combatSides.winner = combatSides.attacker;
+			combatSides.loser = combatSides.defender;
+			combatResolver.init(greatResult, combatSides);
 		} else {
 			if (r < 0.8f * winVal + 0.2f && combatSides.canDefenderEvadeAttack()) {
 				combatResult = CombatResult.EVADE_ATTACK;
@@ -159,7 +161,9 @@ class Combat {
 			} else {
 				combatResult = CombatResult.LOSE;
 				greatResult = r >= 0.1f * winVal + 0.9f; // Great Loss
-				combatResolver.init(combatSides.defender, combatSides.attacker, greatResult, combatSides);
+				combatSides.winner = combatSides.defender;
+				combatSides.loser = combatSides.attacker;
+				combatResolver.init(greatResult, combatSides);
 			}
 		}
 	}
@@ -174,7 +178,7 @@ class Combat {
 			float diff = Math.max(3f, combatSides.getDefencePower() * 2f - combatSides.getOffencePower());
 			greatResult = r < winVal / diff;
 			
-			combatResolver.loser = combatSides.defender;
+			combatSides.loser = combatSides.defender;
 			if (greatResult || !combatSides.hasDefenderRepairLocation()) {
 				combatResolver.combatResultDetails.add(CombatResultDetails.SINK_SHIP_BOMBARD);
 			} else {
@@ -196,33 +200,33 @@ class Combat {
 		    switch (resultDetail) {
 		    case SINK_SHIP_ATTACK:
 			case SINK_SHIP_BOMBARD: 
-			    sinkShip(combatResolver.loser);
+			    sinkShip(combatSides.loser);
 			    break;
 			case DAMAGE_SHIP_ATTACK:
-				damageShip(combatResolver.loser);
+				damageShip(combatSides.loser);
 				break;
 			case DAMAGE_SHIP_BOMBARD:
-				damageShipInBombardment(combatResolver.loser);
+				damageShipInBombardment(combatSides.loser);
 				break;
 			case LOOT_SHIP:
-				combatResolver.loser.transferAllGoods(combatResolver.winner);
+				combatSides.loser.transferAllGoods(combatSides.winner);
 				break;
 			case SLAUGHTER_UNIT: {
-                Player loserPlayer = combatResolver.loser.getOwner();
-                loserPlayer.removeUnit(combatResolver.loser);
+                Player loserPlayer = combatSides.loser.getOwner();
+                loserPlayer.removeUnit(combatSides.loser);
                 
                 winnerTension -= Tension.TENSION_ADD_NORMAL;
-                loserTension += getSlaughterTension(combatResolver.loser);
+                loserTension += getSlaughterTension(combatSides.loser);
 			} break;
-			case PROMOTE_UNIT: combatResolver.winner.changeUnitType(ChangeType.PROMOTION);
+			case PROMOTE_UNIT: combatSides.winner.changeUnitType(ChangeType.PROMOTION);
 			break;
 			case CAPTURE_EQUIP: captureEquipment();
 			break;
-			case DEMOTE_UNIT: combatResolver.loser.changeUnitType(ChangeType.DEMOTION);
+			case DEMOTE_UNIT: combatSides.loser.changeUnitType(ChangeType.DEMOTION);
 			break;
-			case LOSE_EQUIP: combatResolver.loser.downgradeRole(); 
+			case LOSE_EQUIP: combatSides.loser.downgradeRole(); 
 		    break;
-			case CAPTURE_UNIT: combatResolver.winner.captureUnit(combatResolver.loser); 
+			case CAPTURE_UNIT: combatSides.winner.captureUnit(combatSides.loser); 
 			break;
 			
 			case DAMAGE_COLONY_SHIPS: damageColonyShips();
@@ -254,9 +258,6 @@ class Combat {
 			}
 
 			// TODO:
-//        case BURN_MISSIONS:
-//        case CAPTURE_CONVERT:
-//        case DESTROY_SETTLEMENT:
 //        case EVADE_ATTACK:
 //        case SINK_COLONY_SHIPS:
 		}
@@ -267,23 +268,23 @@ class Combat {
 	private void destroyColony() {
 	    Colony colony = combatSides.defenderTile.getSettlement().getColony();
 	    
-	    int plunderGold = colonyPlunderGold(combatResolver.winner.getOwner(), colony);
+	    int plunderGold = colonyPlunderGold(combatSides.winner.getOwner(), colony);
 	    if (plunderGold > 0) {
 	        colony.getOwner().subtractGold(plunderGold);
-	        combatResolver.winner.getOwner().addGold(plunderGold);
+	        combatSides.winner.getOwner().addGold(plunderGold);
 	    }
 	    
         StringTemplate t = StringTemplate.template("model.unit.colonyBurning")
             .add("%colony%", colony.getName())
-            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
-            .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addStringTemplate("%nation%", combatSides.winner.getOwner().getNationName())
+            .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(combatSides.winner))
             .addAmount("%amount%", plunderGold);
         colony.getOwner().eventsNotifications.addMessageNotification(t);
 
         StringTemplate t2 = StringTemplate.template("model.unit.colonyBurning.other")
             .addStringTemplate("%nation%", colony.getOwner().getNationName())
             .add("%colony%", colony.getName())
-            .addStringTemplate("%attackerNation%", combatResolver.winner.getOwner().getNationName());
+            .addStringTemplate("%attackerNation%", combatSides.winner.getOwner().getNationName());
         sendNotificationToEuropeanPlayersExclude(t2, colony.getOwner());
         
 	    
@@ -333,7 +334,7 @@ class Combat {
         }
         
         StringTemplate t = StringTemplate.template("model.unit.indianRaid")
-    		.addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
+    		.addStringTemplate("%nation%", combatSides.winner.getOwner().getNationName())
     		.addStringTemplate("%colonyNation%", colony.getOwner().getNationName())
     		.add("%colony%", colony.getName());
         sendNotificationToEuropeanPlayersExclude(t, colony.getOwner());
@@ -353,20 +354,20 @@ class Combat {
 		StringTemplate t = StringTemplate.template("model.unit.buildingDamaged")
 		    .addName("%building%", building.buildingType)
 		    .add("%colony%", colony.getName())
-		    .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-		    .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
+		    .addStringTemplate("%enemyNation%", combatSides.winner.getOwner().getNationName())
+		    .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatSides.winner));
 		colony.getOwner().eventsNotifications.addMessageNotification(t);
 	}
 
     private void indianPillageColonyGold(Colony colony) {
         // plundered gold is already > 0
-        int plunderGold = colonyPlunderGold(combatResolver.winner.getOwner(), colony);
-        combatResolver.winner.getOwner().addGold(plunderGold);
+        int plunderGold = colonyPlunderGold(combatSides.winner.getOwner(), colony);
+        combatSides.winner.getOwner().addGold(plunderGold);
         colony.getOwner().subtractGold(plunderGold);
         
         StringTemplate t = StringTemplate.template("model.unit.indianPlunder")
-            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addStringTemplate("%enemyNation%", combatSides.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatSides.winner))
             .addAmount("%amount%", plunderGold)
             .add("%colony%", colony.getName());
         colony.getOwner().eventsNotifications.addMessageNotification(t);
@@ -377,13 +378,13 @@ class Combat {
         AbstractGoods loot = new AbstractGoods(lootType.getId(), goodsAmount);
         
         colony.getGoodsContainer().decreaseGoodsQuantity(loot);
-        if (combatResolver.winner.hasSpaceForAdditionalCargo(loot)) {
-            combatResolver.winner.getGoodsContainer().increaseGoodsQuantity(loot);
+        if (combatSides.winner.hasSpaceForAdditionalCargo(loot)) {
+            combatSides.winner.getGoodsContainer().increaseGoodsQuantity(loot);
         }
         
         StringTemplate t = StringTemplate.template("model.unit.goodsStolen")
-            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addStringTemplate("%enemyNation%", combatSides.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatSides.winner))
             .addAmount("%amount%", goodsAmount)
             .addName("%goods%", lootType)
             .add("%colony%", colony.getName());
@@ -400,7 +401,7 @@ class Combat {
 
 	private void captureColony() {
 		Colony colony = combatSides.defenderTile.getSettlement().getColony();
-		Player winnerPlayer = combatResolver.winner.getOwner();
+		Player winnerPlayer = combatSides.winner.getOwner();
 		Player losserPlayer = colony.getOwner();
 		
 		int gold = 0;
@@ -459,7 +460,7 @@ class Combat {
         boolean captureRepairing = Specification.options
     		.getBoolean(GameOptions.CAPTURE_UNITS_UNDER_REPAIR);
 		
-		UnitLocation repairLocation = combatResolver.loser.getRepairLocation();
+		UnitLocation repairLocation = combatSides.loser.getRepairLocation();
 		
 		for (Unit unit : new ArrayList<Unit>(combatSides.defenderTile.getUnits().entities())) {
 			if (unit.isNaval() && !(captureRepairing && unit.isDamaged())) {
@@ -485,8 +486,8 @@ class Combat {
 	    
 	    StringTemplate t = StringTemplate.template("model.unit.shipDamaged")
             .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(ship))
-            .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner))
+            .addStringTemplate("%enemyNation%", combatSides.winner.getOwner().getNationName())
+            .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatSides.winner))
             .add("%repairLocation%", repairLocationLabel(repairLocation));
         ship.getOwner().eventsNotifications.addMessageNotification(t);
 	}
@@ -499,8 +500,8 @@ class Combat {
     private void sinkShipWithNotification(Unit ship) {
         StringTemplate t = StringTemplate.template("model.unit.shipSunk")
                 .addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(ship))
-                .addStringTemplate("%enemyNation%", combatResolver.winner.getOwner().getNationName())
-                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatResolver.winner));
+                .addStringTemplate("%enemyNation%", combatSides.winner.getOwner().getNationName())
+                .addStringTemplate("%enemyUnit%", UnitLabel.getPlainUnitLabel(combatSides.winner));
         ship.getOwner().eventsNotifications.addMessageNotification(t);
         
         sinkShip(ship);
@@ -520,29 +521,29 @@ class Combat {
     }
 
     private void captureEquipment() {
-        UnitRole lostRole = combatResolver.loser.unitRole;
-        combatResolver.loser.downgradeRole();
+        UnitRole lostRole = combatSides.loser.unitRole;
+        combatSides.loser.downgradeRole();
         
         captureEquipmentFromUserRole(lostRole);
     }
     
     private void captureEquipmentFromUserRole(UnitRole loserRole) {
-        UnitRole newRole = combatResolver.winner.capturedEquipment(loserRole);
+        UnitRole newRole = combatSides.winner.capturedEquipment(loserRole);
         if (newRole == null) {
             return;
         }
-        if (combatResolver.winner.getOwner().isIndian()) {
+        if (combatSides.winner.getOwner().isIndian()) {
             indianTransferCapturedGoodToHomeSettlement(newRole);
         }
-        combatResolver.winner.changeRole(newRole);
+        combatSides.winner.changeRole(newRole);
     }
 
     private void indianTransferCapturedGoodToHomeSettlement(UnitRole roleEquipment) {
         // CHEAT: Immediately transferring the captured goods back to a potentially remote settlement
         // Apparently Col1 did it
-        ProductionSummary equipment = UnitRoleLogic.requiredGoodsToChangeRole(combatResolver.winner, roleEquipment);
-        if (combatResolver.winner.getIndianSettlementId() != null) {
-            Settlement settlement = combatResolver.winner.getOwner().settlements.getByIdOrNull(combatResolver.winner.getIndianSettlementId());
+        ProductionSummary equipment = UnitRoleLogic.requiredGoodsToChangeRole(combatSides.winner, roleEquipment);
+        if (combatSides.winner.getIndianSettlementId() != null) {
+            Settlement settlement = combatSides.winner.getOwner().settlements.getByIdOrNull(combatSides.winner.getIndianSettlementId());
             if (settlement != null) {
                 for (Entry<String> goods : equipment.entries()) {
                     settlement.addGoods(goods.key, goods.value);
@@ -553,13 +554,13 @@ class Combat {
 
 	private void burnMissions() {
         StringTemplate t = StringTemplate.template("model.unit.burnMissions")
-            .addStringTemplate("%nation%", combatResolver.winner.getOwner().getNationName())
-    		.addStringTemplate("%enemyNation%", combatResolver.loser.getOwner().getNationName());
+            .addStringTemplate("%nation%", combatSides.winner.getOwner().getNationName())
+    		.addStringTemplate("%enemyNation%", combatSides.loser.getOwner().getNationName());
         blockingCombatNotifications.add(t);
 		
-		for (Settlement settlement : combatResolver.loser.getOwner().settlements.entities()) {
+		for (Settlement settlement : combatSides.loser.getOwner().settlements.entities()) {
 			IndianSettlement indianSettlement = settlement.getIndianSettlement();
-			if (indianSettlement.hasMissionary(combatResolver.winner.getOwner())) {
+			if (indianSettlement.hasMissionary(combatSides.winner.getOwner())) {
 				indianSettlement.removeMissionary();
 			}
 		}
@@ -571,16 +572,16 @@ class Combat {
 		units.addAll(combatSides.defenderTile.getSettlement().getUnits().entities());
 		
 		Unit convert = Randomizer.instance().randomMember(units);
-		convert.changeOwner(combatResolver.winner.getOwner());
+		convert.changeOwner(combatSides.winner.getOwner());
 		convert.changeUnitType(ChangeType.CONVERSION);
 		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
         convert.reduceMovesLeftToZero();
         convert.setState(Unit.UnitState.ACTIVE);
-        convert.changeUnitLocation(combatResolver.winner.getTile());
+        convert.changeUnitLocation(combatSides.winner.getTile());
         
         captureConvertMove = new MoveContext(
     		combatSides.defenderTile, 
-    		combatResolver.winner.getTile(), 
+    		combatSides.winner.getTile(), 
     		convert
 		);
 	}
@@ -588,10 +589,10 @@ class Combat {
 	private void destroySettlement() {
 		IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
 		
-		int plunderGold = is.plunderGold(combatResolver.winner);
+		int plunderGold = is.plunderGold(combatSides.winner);
 		if (plunderGold > 0) {
 			UnitFactory.createTreasureTrain(
-				combatResolver.winner.getOwner(),
+				combatSides.winner.getOwner(),
 				is.tile,
 				plunderGold
 			);
@@ -608,7 +609,7 @@ class Combat {
 			}
 		}
 
-		if (is.hasMissionaryNotPlayer(combatResolver.winner.getOwner())) {
+		if (is.hasMissionaryNotPlayer(combatSides.winner.getOwner())) {
 	        StringTemplate t = StringTemplate.template("indianSettlement.mission.destroyed")
                 .add("%settlement%", is.getName());
 	        is.missionaryOwner().eventsNotifications.addMessageNotification(t);

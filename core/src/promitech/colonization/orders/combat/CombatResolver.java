@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -20,18 +19,14 @@ import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 
 class CombatResolver {
 
-	protected Unit winner; 
-	protected Unit loser;
 	protected List<CombatResultDetails> combatResultDetails = new ArrayList<Combat.CombatResultDetails>(5);
 	private boolean greatResult;
 	private boolean loserMustDie;
     protected boolean moveAfterAttack = false;
 	
-	public void init(Unit winner, Unit loser, boolean greatResult, CombatSides combatSides) {
+	public void init(boolean greatResult, CombatSides combatSides) {
 		combatResultDetails.clear();
 		this.moveAfterAttack = false;
-		this.winner = winner;
-		this.loser = loser;
 		this.greatResult = greatResult;
 		
 		resolve(combatSides);
@@ -54,15 +49,15 @@ class CombatResolver {
 	}
 	
 	private void resolve(CombatSides combatSides) {
-		loserMustDie = loser.hasAbility(Ability.DISPOSE_ON_COMBAT_LOSS);
+		loserMustDie = combatSides.loser.hasAbility(Ability.DISPOSE_ON_COMBAT_LOSS);
 		
-		if (loser.isNaval()) {
-			if (winner.isNaval() 
-					&& winner.hasAbility(Ability.CAPTURE_GOODS) 
-					&& loser.hasGoodsCargo()) {
+		if (combatSides.loser.isNaval()) {
+			if (combatSides.winner.isNaval() 
+					&& combatSides.winner.hasAbility(Ability.CAPTURE_GOODS) 
+					&& combatSides.loser.hasGoodsCargo()) {
 				combatResultDetails.add(CombatResultDetails.LOOT_SHIP);
 			}
-			if (greatResult || loserMustDie || !loser.hasRepairLocation() || loser.isBeached()) {
+			if (greatResult || loserMustDie || !combatSides.loser.hasRepairLocation() || combatSides.loser.isBeached()) {
 				combatResultDetails.add(CombatResultDetails.SINK_SHIP_ATTACK);
 			} else {
 				combatResultDetails.add(CombatResultDetails.DAMAGE_SHIP_ATTACK);
@@ -79,25 +74,13 @@ class CombatResolver {
 				landCombatResultDetails(combatSides);
 			}
 		}
-		unitPromotion(greatResult);
+		unitPromotion(greatResult, combatSides);
 	}
 
-	private boolean isDefenderLoser(CombatSides combatSides) {
-	    return loser.equalsId(combatSides.defender);
-	}
-	
-	private boolean isAttackerWon(CombatSides combatSides) {
-	    return combatSides.attacker.equalsId(winner);	    
-	}
-	
-	private boolean isAttackerLose(CombatSides combatSides) {
-		return combatSides.attacker.equalsId(loser);
-	}
-	
 	private void landCombatResultDetails(CombatSides combatSides) {
-	    if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
+	    if (combatSides.isDefenderLoser() && combatSides.hasDefenderAutoArmRole()) {
 	        
-	        if (winner.canCaptureEquipment(combatSides.getDefenderAutoArmRole())) {
+	        if (combatSides.winner.canCaptureEquipment(combatSides.getDefenderAutoArmRole())) {
 	            combatResultDetails.add(CombatResultDetails.CAPTURE_AUTOEQUIP);
 	            combatResultDetails.add(CombatResultDetails.LOSE_AUTOEQUIP);
 	        } else {
@@ -105,33 +88,33 @@ class CombatResolver {
 	        }
 	        if (loserMustDie) {
 	            combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
-	        } else if (loser.hasAbility(Ability.DEMOTE_ON_ALL_EQUIPMENT_LOST)) {
+	        } else if (combatSides.loser.hasAbility(Ability.DEMOTE_ON_ALL_EQUIPMENT_LOST)) {
 	            combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
 	        }
 	        
 	    } else if (loserMustDie) {
 			combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
-		} else if (loser.unitRole.isOffensive()) {
-			if (winner.canCaptureEquipment(loser)) {
+		} else if (combatSides.loser.unitRole.isOffensive()) {
+			if (combatSides.winner.canCaptureEquipment(combatSides.loser)) {
 				combatResultDetails.add(CombatResultDetails.CAPTURE_EQUIP);
 			} else {
 				combatResultDetails.add(CombatResultDetails.LOSE_EQUIP);
 			}
 			
-			if (loser.losingEquipmentKillsUnit()) {
+			if (combatSides.loser.losingEquipmentKillsUnit()) {
 				combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
-			} else if (loser.losingEquipmentDemotesUnit()) {
+			} else if (combatSides.loser.losingEquipmentDemotesUnit()) {
 				combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
 			}
 			
 		// But some can be captured.
-		} else if (loser.hasAbility(Ability.CAN_BE_CAPTURED) 
-		        && winner.hasAbility(Ability.CAPTURE_UNITS) 
+		} else if (combatSides.loser.hasAbility(Ability.CAN_BE_CAPTURED) 
+		        && combatSides.winner.hasAbility(Ability.CAPTURE_UNITS) 
 		        && !combatSides.combatAmphibious) {
 			combatResultDetails.add(CombatResultDetails.CAPTURE_UNIT);
 			
 		// Or losing just causes a demotion.
-		} else if (loser.canUpgradeByChangeType(ChangeType.DEMOTION)) {
+		} else if (combatSides.loser.canUpgradeByChangeType(ChangeType.DEMOTION)) {
 				combatResultDetails.add(CombatResultDetails.DEMOTE_UNIT);
 		} else {
 			// default
@@ -139,12 +122,15 @@ class CombatResolver {
 		}
 	}
 
-	private void unitPromotion(boolean greatResult) {
-		UnitTypeChange promotion = winner.unitType.getUnitTypeChange(ChangeType.PROMOTION, winner.getOwner());
+	private void unitPromotion(boolean greatResult, CombatSides combatSides) {
+		UnitTypeChange promotion = combatSides.winner.unitType.getUnitTypeChange(
+			ChangeType.PROMOTION, 
+			combatSides.winner.getOwner()
+		);
 		if (promotion == null) {
 			return;
 		}
-		if (winner.hasAbility(Ability.AUTOMATIC_PROMOTION)) {
+		if (combatSides.winner.hasAbility(Ability.AUTOMATIC_PROMOTION)) {
 			combatResultDetails.add(CombatResultDetails.PROMOTE_UNIT);
 			return;
 		}
@@ -163,17 +149,17 @@ class CombatResolver {
 	// Ships in a falling colony will be damaged or sunk
 	// if they have no repair location.
 	private void colonyCombatResultDetails(CombatSides combatSides) {
-	    if (loser.isDefensiveUnit() || isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
-	        if (isDefenderLoser(combatSides) && combatSides.hasDefenderAutoArmRole()) {
+	    if (combatSides.loser.isDefensiveUnit() || combatSides.isDefenderLoser() && combatSides.hasDefenderAutoArmRole()) {
+	        if (combatSides.isDefenderLoser() && combatSides.hasDefenderAutoArmRole()) {
 	            combatResultDetails.add(CombatResultDetails.AUTOEQUIP_UNIT);
 	        }
 	        landCombatResultDetails(combatSides);
 	        return;
 	    }
 	    
-	    if (winner.getOwner().isEuropean()) {
+	    if (combatSides.winner.getOwner().isEuropean()) {
 	        if (combatSides.defenderTile.doesTileHaveNavyUnit()) {
-	            if (loser.hasRepairLocation()) {
+	            if (combatSides.loser.hasRepairLocation()) {
 	                combatResultDetails.add(CombatResultDetails.DAMAGE_COLONY_SHIPS);
 	            } else {
                     combatResultDetails.add(CombatResultDetails.SINK_COLONY_SHIPS);
@@ -182,15 +168,15 @@ class CombatResolver {
 	        if (loserMustDie) {
 	            combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 	        }
-	        if (loser.getOwner().isEuropean()) {
+	        if (combatSides.loser.getOwner().isEuropean()) {
 	            combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
 	        }
 	    } else {
 	        Colony colony = combatSides.defenderTile.getSettlement().getColony();
-	        if (!greatResult && canColonyBePillaged(colony)) {
+	        if (!greatResult && canColonyBePillaged(colony, combatSides)) {
 	            combatResultDetails.add(CombatResultDetails.PILLAGE_COLONY);
 	        } else {
-	            if (colony.getColonyUnitsCount() > 1 || loser.getTileLocationOrNull() != null) {
+	            if (colony.getColonyUnitsCount() > 1 || combatSides.loser.getTileLocationOrNull() != null) {
 	                // Treat as ordinary combat
 	                loserMustDie = true;
 	                combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
@@ -202,13 +188,13 @@ class CombatResolver {
 	    }
 	}
 
-	private boolean canColonyBePillaged(Colony colony) {
+	private boolean canColonyBePillaged(Colony colony, CombatSides combatSides) {
 	     return 
              !colony.hasStockade() 
-             && winner.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
+             && combatSides.winner.hasAbility(Ability.PILLAGE_UNPROTECTED_COLONY)
              && (colony.hasBurnableBuildings() 
                      || colony.tile.doesTileHaveNavyUnit() 
-                     || (colony.hasLootableGoods() && winner.canCarryGoods() && winner.hasSpaceForAdditionalCargo())
+                     || (colony.hasLootableGoods() && combatSides.winner.canCarryGoods() && combatSides.winner.hasSpaceForAdditionalCargo())
                      || colony.getOwner().hasGold()
                 );
 	}
@@ -220,8 +206,6 @@ class CombatResolver {
     // present either in-settlement or on the settlement
     // tile.
 	private void indianSettlementCombatResultDetails(CombatSides combatSides) {
-	    // TODO:
-	    
 	    IndianSettlement is = (IndianSettlement)combatSides.defenderTile.getSettlement();
 	    int lose = 0;
 	    
@@ -229,19 +213,19 @@ class CombatResolver {
 	        combatResultDetails.add(CombatResultDetails.SLAUGHTER_UNIT);
 	        lose++;
 	    }
-	    if (isAttackerLose(combatSides)) {
+	    if (combatSides.isAttackerLose()) {
 	        landCombatResultDetails(combatSides);
 	    	return;
 	    }
-        if (Randomizer.instance().isHappen(getConvertProbability(winner.getOwner()))) {
-            if (!combatSides.combatAmphibious && is.hasMissionary(winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
+        if (Randomizer.instance().isHappen(getConvertProbability(combatSides.winner.getOwner()))) {
+            if (!combatSides.combatAmphibious && is.hasMissionary(combatSides.winner.getOwner()) && isIndianSettlementHasMoreUnit(is, lose) ) {
                 combatResultDetails.add(CombatResultDetails.CAPTURE_CONVERT);
                 lose++;
             }
         } else {
             if (Randomizer.instance().isHappen(getBurnMissionaryPercentProbability())) {
-                for (Settlement settlement : loser.getOwner().settlements.entities()) {
-                    if (((IndianSettlement)settlement).hasMissionary(winner.getOwner())) {
+                for (Settlement settlement : combatSides.loser.getOwner().settlements.entities()) {
+                    if (((IndianSettlement)settlement).hasMissionary(combatSides.winner.getOwner())) {
                         combatResultDetails.add(CombatResultDetails.BURN_MISSIONS);
                     }
                 }

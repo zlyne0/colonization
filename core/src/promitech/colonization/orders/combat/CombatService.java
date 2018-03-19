@@ -55,7 +55,7 @@ public class CombatService {
                 moveContext.setMoveAfterAttack();
                 moveService.blockedShowMove(moveContext);
             } else {
-                moveService.blockedShowSuccessfulAttackWithMove(moveContext, combat.combatResolver.loser);
+                moveService.blockedShowSuccessfulAttackWithMove(moveContext, combat.combatSides.loser);
             }
         }
         if (combatResult.equals(Combat.CombatResult.LOSE)) {
@@ -90,7 +90,7 @@ public class CombatService {
 		CombatResult combatResult = combat.generateRandomResult();
 		switch (combatResult) {
 		case WIN:
-			moveService.blockedShowSuccessfulBombardAttack(bombardingColony, bombardedTile, combat.combatResolver.loser);
+			moveService.blockedShowSuccessfulBombardAttack(bombardingColony, bombardedTile, combat.combatSides.loser);
 			break;
 		case EVADE_ATTACK:
 			moveService.blockedShowFailedBombardAttack(bombardingColony.getOwner(), bombardingColony.tile, bombardedTile);

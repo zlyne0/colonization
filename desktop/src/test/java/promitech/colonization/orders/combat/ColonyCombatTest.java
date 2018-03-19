@@ -354,8 +354,8 @@ public class ColonyCombatTest {
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
         
-        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatResolver.loser);
-        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatResolver.loser);
+        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatSides.loser);
+        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatSides.loser);
     }
     
     @Test
@@ -385,8 +385,8 @@ public class ColonyCombatTest {
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
         
-        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatResolver.loser);
-        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatResolver.loser);
+        PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatSides.loser);
+        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatSides.loser);
     }
     
     @Test

@@ -38,6 +38,8 @@ class CombatSides {
 	protected Unit attacker;
 	protected Unit defender;
 	protected Tile defenderTile;
+	protected Unit winner;
+	protected Unit loser;
 	protected Colony bombardmentColony;
 	protected boolean combatAmphibious;
 	private float offencePower;
@@ -50,6 +52,8 @@ class CombatSides {
 	protected final ObjectWithFeatures defenceModifiers = new ObjectWithFeatures("defenceCombat");
 
 	void init(Unit attacker, Tile tile) {
+		this.winner = null;
+		this.loser = null;
 		this.bombardmentColony = null;
 		this.defenderTile = tile;
 		Unit defender = getTileDefender(attacker, tile);
@@ -66,6 +70,8 @@ class CombatSides {
 	}
 	
 	void init(Colony colony, Tile defenderTile, Unit defender) {
+		this.winner = null;
+		this.loser = null;
 		this.defenderTile = defenderTile;
 		if (defender == null || !defender.isNaval()) {
 			throw new IllegalStateException("no defender to bombard or it is not naval");
@@ -448,5 +454,17 @@ class CombatSides {
     public UnitRole getDefenderAutoArmRole() {
         return defenderAutoArmRole;
     }
+
+	protected boolean isDefenderLoser() {
+	    return loser.equalsId(defender);
+	}
 	
+	protected boolean isAttackerWon() {
+	    return attacker.equalsId(winner);	    
+	}
+	
+	protected boolean isAttackerLose() {
+		return attacker.equalsId(loser);
+	}
+    
 }
