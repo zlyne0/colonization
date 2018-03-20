@@ -236,6 +236,7 @@ class Combat {
 			case CAPTURE_COLONY: captureColony();
 			break;
 			case AUTOEQUIP_UNIT: // do nothing, in freecol its show message 
+			case EVADE_ATTACK:   // do nothing, in freecol its show message
 			break;
 			case LOSE_AUTOEQUIP: loseAutoEquip();
 			break;
@@ -258,7 +259,6 @@ class Combat {
 			}
 
 			// TODO:
-//        case EVADE_ATTACK:
 //        case SINK_COLONY_SHIPS:
 		}
 		
