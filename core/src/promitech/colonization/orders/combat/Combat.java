@@ -235,6 +235,8 @@ class Combat {
 			
 			case CAPTURE_COLONY: captureColony();
 			break;
+			case SINK_COLONY_SHIPS: sinkColonyShips();
+			break;
 			case AUTOEQUIP_UNIT: // do nothing, in freecol its show message 
 			case EVADE_ATTACK:   // do nothing, in freecol its show message
 			break;
@@ -257,9 +259,6 @@ class Combat {
 			default:
 				break;
 			}
-
-			// TODO:
-//        case SINK_COLONY_SHIPS:
 		}
 		
 		// TODO: tension
@@ -429,6 +428,14 @@ class Combat {
                 .addAmount("%amount%", gold)
                 .addStringTemplate("%player%", winnerPlayer.getNationName())
         );
+	}
+	
+	private void sinkColonyShips() {
+		for (Unit u : combatSides.defenderTile.getUnits().entities()) {
+			if (u.isNaval()) {
+				sinkShip(u);
+			}
+		}
 	}
 	
     private int colonyPlunderGold(Player attacker, Colony colony) {

@@ -143,6 +143,79 @@ public class ColonyCombatTest {
         PlayerAssert.assertThat(dutch)
         	.notContainsUnits(colonyUnitsBeforeCombat);
     }
+
+    @Test
+    public void spanishSinkShipInColony() throws Exception {
+        // given
+        Unit dragoon = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
+            spanish
+        );
+        Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
+        dragoon.changeUnitLocation(freeTileNextToColony);
+        
+        Tile emptyColonyTile = game.map.getSafeTile(20, 79);
+        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Unit frigate = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById("model.unit.frigate"), 
+            Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+            colony.getOwner()
+        );
+        frigate.changeUnitLocation(emptyColonyTile);
+        removeUnitsButBesides(colony.tile, frigate);
+        Unit defender = new Unit(
+    		Game.idGenerator.nextId(Unit.class),
+    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+    		colony.getOwner()
+		) {
+        	@Override
+        	public boolean hasRepairLocation() {
+        		return false;
+        	}
+        };
+        defender.changeUnitLocation(colony.tile);
+        
+        MapIdEntities<Unit> colonyUnitsBeforeCombat = new MapIdEntities<>();
+        colonyUnitsBeforeCombat.addAll(colony.getUnits());
+        int spanishBeforeCombatGold = spanish.getGold();
+        
+        // when
+        combat.init(game, dragoon, emptyColonyTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(4.5f, 2.25f, 0.66f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.SINK_COLONY_SHIPS, CombatResultDetails.CAPTURE_COLONY, CombatResultDetails.PROMOTE_UNIT);
+        UnitAssert.assertThat(frigate)
+	        .isDisposed()
+        	.notExistsOnTile(emptyColonyTile);
+        
+        assertThat(spanish.getGold() > spanishBeforeCombatGold).isTrue();
+        assertThat(spanish.settlements.containsId(colony)).isTrue();
+        assertThat(dutch.settlements.containsId(colony)).isFalse();
+        
+        PlayerAssert.assertThat(spanish)
+        	.containsUnits(colonyUnitsBeforeCombat);
+        PlayerAssert.assertThat(dutch)
+        	.notContainsUnit(frigate)
+        	.notContainsUnits(colonyUnitsBeforeCombat);
+    }
+    
+    private void removeUnitsButBesides(Tile tile, Unit exclude) {
+    	MapIdEntities<Unit> units = new MapIdEntities<>(tile.getUnits());
+    	for (Unit u : units.entities()) {
+    		if (u.notEqualsId(exclude)) {
+    			tile.removeUnit(u);
+    		}
+    	}
+    }
     
     @Test
     public void emptyColonyWithAutoRoleLoseVsDragoon() throws Exception {
