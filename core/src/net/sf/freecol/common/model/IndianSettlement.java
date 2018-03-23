@@ -61,7 +61,17 @@ public class IndianSettlement extends Settlement {
 			tension.modify(tensionValue);
 		}
 	}
-    
+
+    public void setTension(Player player, int tensionValue) {
+        Tension tension = tensionByPlayer.get(player.getId());
+        if (tension == null) {
+            tension = new Tension(tensionValue);
+            tensionByPlayer.put(player.getId(), tension);
+        } else {
+            tension.setValue(tensionValue);
+        }
+    }
+	
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;

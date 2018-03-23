@@ -21,6 +21,7 @@ import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -191,8 +192,9 @@ class Combat {
 	}
 
 	public void processAttackResult() {
-        int winnerTension = 0;
-        int loserTension = 0;
+        int attackerTension = 0;
+        int defenderTension = 0;
+        boolean burnedNativeCapital = false;
 	    
 	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
@@ -215,8 +217,13 @@ class Combat {
                 Player loserPlayer = combatSides.loser.getOwner();
                 loserPlayer.removeUnit(combatSides.loser);
                 
-                winnerTension -= Tension.TENSION_ADD_NORMAL;
-                loserTension += getSlaughterTension(combatSides.loser);
+                if (combatSides.isAttackerWon()) {
+                    attackerTension -= Tension.TENSION_ADD_NORMAL;
+                    defenderTension += getSlaughterTension(combatSides.defender);
+                } else {
+                    attackerTension += getSlaughterTension(combatSides.attacker);
+                    defenderTension -= Tension.TENSION_ADD_MAJOR;
+                }
 			} break;
 			case PROMOTE_UNIT: combatSides.winner.changeUnitType(ChangeType.PROMOTION);
 			break;
@@ -231,10 +238,16 @@ class Combat {
 			
 			case DAMAGE_COLONY_SHIPS: damageColonyShips();
 			break;
-			case PILLAGE_COLONY: pillageColony(); break;
-			
-			case CAPTURE_COLONY: captureColony();
+			case PILLAGE_COLONY: { 
+		        pillageColony();
+		        attackerTension -= Tension.TENSION_ADD_NORMAL;
+			}
 			break;
+			
+			case CAPTURE_COLONY: {
+			    captureColony();
+			    defenderTension += Tension.TENSION_ADD_MAJOR;
+			} break;
 			case SINK_COLONY_SHIPS: sinkColonyShips();
 			break;
 			case AUTOEQUIP_UNIT: // do nothing, in freecol its show message 
@@ -245,20 +258,49 @@ class Combat {
 			case CAPTURE_AUTOEQUIP: captureAutoEquip();
 			break;
 			
-			case DESTROY_COLONY: destroyColony();
-			break;
+			case DESTROY_COLONY: {
+			    destroyColony();
+			    attackerTension -= Tension.TENSION_ADD_NORMAL;
+			    defenderTension += Tension.TENSION_ADD_MAJOR;
+			} break;
 			
 			case BURN_MISSIONS: burnMissions();
 			break;
 			case CAPTURE_CONVERT: captureConvert();
 			break;
-			case DESTROY_SETTLEMENT: destroySettlement();
+			case DESTROY_SETTLEMENT: {
+			    destroySettlement();
+			    
+			    IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
+			    if (is.settlementType.isCapital()) {
+			        burnedNativeCapital = true;
+			    }
+			    attackerTension -= Tension.TENSION_ADD_NORMAL;
+			    if (!burnedNativeCapital) {
+			        defenderTension += Tension.TENSION_ADD_MAJOR;
+			    }
+			}
 			break;
 			
 			case EVADE_BOMBARD: // do nothing
 			default:
 				break;
 			}
+		}
+		
+		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
+		    combatSides.defender.getOwner().setAttackedByPrivateers();
+		}
+		if (burnedNativeCapital) {
+		    combatSides.defender.getOwner().getTension(combatSides.attacker.getOwner()).surrende();
+		    combatSides.attacker.getOwner().changeStance(combatSides.defender.getOwner(), Stance.PEACE);
+		    
+		    for (Settlement settlement : combatSides.defender.getOwner().settlements.entities()) {
+		        IndianSettlement is = settlement.getIndianSettlement();
+		        if (is.hasContact(combatSides.attacker.getOwner())) {
+		            is.setTension(combatSides.attacker.getOwner(), Tension.SURRENDERED);
+		        }
+            }
 		}
 		
 		// TODO: tension

@@ -553,6 +553,10 @@ public class Player extends ObjectWithId {
         return attackedByPrivateers;
     }
 
+    public void setAttackedByPrivateers() {
+        this.attackedByPrivateers = true;
+    }
+    
     public Monarch getMonarch() {
         return monarch;
     }
