@@ -192,10 +192,6 @@ class Combat {
 	}
 
 	public void processAttackResult() {
-        int attackerTension = 0;
-        int defenderTension = 0;
-        boolean burnedNativeCapital = false;
-	    
 	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
 		    System.out.println(" - result " + resultDetail);
@@ -216,14 +212,6 @@ class Combat {
 			case SLAUGHTER_UNIT: {
                 Player loserPlayer = combatSides.loser.getOwner();
                 loserPlayer.removeUnit(combatSides.loser);
-                
-                if (combatSides.isAttackerWon()) {
-                    attackerTension -= Tension.TENSION_ADD_NORMAL;
-                    defenderTension += getSlaughterTension(combatSides.defender);
-                } else {
-                    attackerTension += getSlaughterTension(combatSides.attacker);
-                    defenderTension -= Tension.TENSION_ADD_MAJOR;
-                }
 			} break;
 			case PROMOTE_UNIT: combatSides.winner.changeUnitType(ChangeType.PROMOTION);
 			break;
@@ -240,13 +228,11 @@ class Combat {
 			break;
 			case PILLAGE_COLONY: { 
 		        pillageColony();
-		        attackerTension -= Tension.TENSION_ADD_NORMAL;
 			}
 			break;
 			
 			case CAPTURE_COLONY: {
 			    captureColony();
-			    defenderTension += Tension.TENSION_ADD_MAJOR;
 			} break;
 			case SINK_COLONY_SHIPS: sinkColonyShips();
 			break;
@@ -260,8 +246,6 @@ class Combat {
 			
 			case DESTROY_COLONY: {
 			    destroyColony();
-			    attackerTension -= Tension.TENSION_ADD_NORMAL;
-			    defenderTension += Tension.TENSION_ADD_MAJOR;
 			} break;
 			
 			case BURN_MISSIONS: burnMissions();
@@ -270,15 +254,6 @@ class Combat {
 			break;
 			case DESTROY_SETTLEMENT: {
 			    destroySettlement();
-			    
-			    IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
-			    if (is.settlementType.isCapital()) {
-			        burnedNativeCapital = true;
-			    }
-			    attackerTension -= Tension.TENSION_ADD_NORMAL;
-			    if (!burnedNativeCapital) {
-			        defenderTension += Tension.TENSION_ADD_MAJOR;
-			    }
 			}
 			break;
 			
@@ -288,24 +263,87 @@ class Combat {
 			}
 		}
 		
-		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
-		    combatSides.defender.getOwner().setAttackedByPrivateers();
-		}
-		if (burnedNativeCapital) {
-		    combatSides.defender.getOwner().getTension(combatSides.attacker.getOwner()).surrende();
-		    combatSides.attacker.getOwner().changeStance(combatSides.defender.getOwner(), Stance.PEACE);
-		    
-		    for (Settlement settlement : combatSides.defender.getOwner().settlements.entities()) {
-		        IndianSettlement is = settlement.getIndianSettlement();
-		        if (is.hasContact(combatSides.attacker.getOwner())) {
-		            is.setTension(combatSides.attacker.getOwner(), Tension.SURRENDERED);
-		        }
-            }
-		}
-		
-		// TODO: tension
+		modifyTension();
 	}
 
+	private void modifyTension() {
+        int attackerTension = 0;
+        int defenderTension = 0;
+        boolean burnedNativeCapital = false;
+
+        Player attackerPlayer = combatSides.attacker.getOwner();
+        Player defenderPlayer = combatSides.defender.getOwner();
+        
+		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
+			switch (resultDetail) {
+			case SLAUGHTER_UNIT:
+				if (combatSides.isAttackerWon()) {
+					attackerTension -= Tension.TENSION_ADD_NORMAL;
+					defenderTension += getSlaughterTension(combatSides.defender);
+				} else {
+					attackerTension += getSlaughterTension(combatSides.attacker);
+					defenderTension -= Tension.TENSION_ADD_MAJOR;
+				}
+				break;
+
+			case PILLAGE_COLONY:
+				attackerTension -= Tension.TENSION_ADD_NORMAL;
+				break;
+
+			case CAPTURE_COLONY:
+				defenderTension += Tension.TENSION_ADD_MAJOR;
+				break;
+
+			case DESTROY_COLONY:
+				attackerTension -= Tension.TENSION_ADD_NORMAL;
+				defenderTension += Tension.TENSION_ADD_MAJOR;
+				break;
+
+			case DESTROY_SETTLEMENT:
+				IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
+				if (is.settlementType.isCapital()) {
+					burnedNativeCapital = true;
+				}
+				attackerTension -= Tension.TENSION_ADD_NORMAL;
+				if (!burnedNativeCapital) {
+					defenderTension += Tension.TENSION_ADD_MAJOR;
+				}
+				break;
+			default:
+				break;
+			}
+		}
+		
+		if (combatSides.attacker.hasAbility(Ability.PIRACY)) {
+			defenderPlayer.setAttackedByPrivateers();
+		} else if (combatSides.defender.hasAbility(Ability.PIRACY)) {
+			// do nothing
+		} else if (burnedNativeCapital) {
+			defenderPlayer.getTension(attackerPlayer).surrende();
+			attackerPlayer.changeStance(defenderPlayer, Stance.PEACE);
+		    
+		    for (Settlement settlement : defenderPlayer.settlements.entities()) {
+		        IndianSettlement is = settlement.getIndianSettlement();
+		        if (is.hasContact(attackerPlayer)) {
+		            is.setTension(attackerPlayer, Tension.SURRENDERED);
+		        }
+            }
+		} else if (attackerPlayer.isEuropean() && defenderPlayer.isEuropean()) {
+			attackerPlayer.changeStance(defenderPlayer, Stance.WAR);
+		} else {
+			// TODO:
+			if (attackerPlayer.isIndian()) {
+				if (combatSides.isAttackerWon()) {
+					attackerTension -= Tension.TENSION_ADD_MINOR;
+				} else {
+					attackerTension += Tension.TENSION_ADD_MINOR;
+				}
+			}
+		}
+		defenderPlayer.modifyTension(attackerPlayer, defenderTension);
+		attackerPlayer.modifyTension(defenderPlayer, attackerTension);
+	}
+	
 	private void destroyColony() {
 	    Colony colony = combatSides.defenderTile.getSettlement().getColony();
 	    
