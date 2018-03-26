@@ -192,6 +192,8 @@ class Combat {
 	}
 
 	public void processAttackResult() {
+        modifyTension();
+	    
 	    System.out.println("combatResultDetails.size " + combatResolver.combatResultDetails.size());
 		for (CombatResultDetails resultDetail : combatResolver.combatResultDetails) {
 		    System.out.println(" - result " + resultDetail);
@@ -262,8 +264,6 @@ class Combat {
 				break;
 			}
 		}
-		
-		modifyTension();
 	}
 
 	private void modifyTension() {
@@ -271,6 +271,10 @@ class Combat {
         int defenderTension = 0;
         boolean burnedNativeCapital = false;
 
+        if (combatSides.bombardmentColony != null) {
+            return;
+        }
+        
         Player attackerPlayer = combatSides.attacker.getOwner();
         Player defenderPlayer = combatSides.defender.getOwner();
         
@@ -303,11 +307,10 @@ class Combat {
 				IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
 				if (is.settlementType.isCapital()) {
 					burnedNativeCapital = true;
+				} else {
+				    defenderTension += Tension.TENSION_ADD_MAJOR;
 				}
 				attackerTension -= Tension.TENSION_ADD_NORMAL;
-				if (!burnedNativeCapital) {
-					defenderTension += Tension.TENSION_ADD_MAJOR;
-				}
 				break;
 			default:
 				break;
@@ -319,29 +322,42 @@ class Combat {
 		} else if (combatSides.defender.hasAbility(Ability.PIRACY)) {
 			// do nothing
 		} else if (burnedNativeCapital) {
-			defenderPlayer.getTension(attackerPlayer).surrende();
-			attackerPlayer.changeStance(defenderPlayer, Stance.PEACE);
-		    
-		    for (Settlement settlement : defenderPlayer.settlements.entities()) {
-		        IndianSettlement is = settlement.getIndianSettlement();
-		        if (is.hasContact(attackerPlayer)) {
-		            is.setTension(attackerPlayer, Tension.SURRENDERED);
-		        }
+            defenderPlayer.getTension(attackerPlayer).surrende();
+            attackerPlayer.changeStance(defenderPlayer, Stance.PEACE);
+            
+            for (Settlement settlement : defenderPlayer.settlements.entities()) {
+                IndianSettlement is = settlement.getIndianSettlement();
+                if (is.hasContact(attackerPlayer)) {
+                    is.setTension(attackerPlayer, Tension.SURRENDERED);
+                }
             }
 		} else if (attackerPlayer.isEuropean() && defenderPlayer.isEuropean()) {
-			attackerPlayer.changeStance(defenderPlayer, Stance.WAR);
+		    attackerPlayer.changeStance(defenderPlayer, Stance.WAR);
 		} else {
-			// TODO:
-			if (attackerPlayer.isIndian()) {
-				if (combatSides.isAttackerWon()) {
-					attackerTension -= Tension.TENSION_ADD_MINOR;
-				} else {
-					attackerTension += Tension.TENSION_ADD_MINOR;
-				}
-			}
+		    if (attackerPlayer.isEuropean()) {
+		        attackerPlayer.changeStance(defenderPlayer, Stance.WAR);
+		    } else if (attackerPlayer.isIndian()) {
+		        if (combatSides.isAttackerWon()) {
+		            attackerTension -= Tension.TENSION_ADD_MINOR;
+		        } else {
+		            attackerTension += Tension.TENSION_ADD_MINOR;
+		        }
+		    }
+		    
+		    if (defenderPlayer.isEuropean()) {
+		        defenderPlayer.changeStance(attackerPlayer, Stance.WAR);
+		    } else if (defenderPlayer.isIndian()) {
+		        if (combatSides.isAttackerWon()) {
+		            defenderTension += Tension.TENSION_ADD_MINOR;
+		        } else {
+		            defenderTension -= Tension.TENSION_ADD_MINOR;
+		        }
+		    }
+		    
+		    defenderPlayer.modifyTension(attackerPlayer, defenderTension);
+		    attackerPlayer.modifyTension(defenderPlayer, attackerTension);
 		}
-		defenderPlayer.modifyTension(attackerPlayer, defenderTension);
-		attackerPlayer.modifyTension(defenderPlayer, attackerTension);
+		
 	}
 	
 	private void destroyColony() {
@@ -511,7 +527,7 @@ class Combat {
 	}
 	
 	private void sinkColonyShips() {
-		for (Unit u : combatSides.defenderTile.getUnits().entities()) {
+		for (Unit u : new ArrayList<Unit>(combatSides.defenderTile.getUnits().entities())) {
 			if (u.isNaval()) {
 				sinkShip(u);
 			}

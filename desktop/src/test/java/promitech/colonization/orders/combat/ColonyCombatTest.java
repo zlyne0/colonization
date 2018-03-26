@@ -499,7 +499,7 @@ public class ColonyCombatTest {
             .hasDetails(CombatResultDetails.PILLAGE_COLONY);
 
         PlayerAssert.assertThat(colony.getOwner())
-        	.hasNotificationSize(colonyOwnerNotificationsSize + 1);
+        	.hasNotificationSize(colonyOwnerNotificationsSize + 2);
         PlayerAssert.assertThat(spanish)
     		.hasNotificationSize(spanishNotificationSize + 1);
     }

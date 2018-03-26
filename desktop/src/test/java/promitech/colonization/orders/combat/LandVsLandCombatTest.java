@@ -3,6 +3,8 @@ package promitech.colonization.orders.combat;
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
+import java.util.Locale;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -21,6 +23,7 @@ import promitech.colonization.orders.combat.Combat;
 import promitech.colonization.orders.combat.Combat.CombatResult;
 import promitech.colonization.orders.combat.Combat.CombatResultDetails;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.resources.Messages;
 
 public class LandVsLandCombatTest {
 
@@ -32,6 +35,8 @@ public class LandVsLandCombatTest {
     @BeforeClass
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
+        Locale.setDefault(Locale.US);
+        Messages.instance().load();
     }
 
     @Before
