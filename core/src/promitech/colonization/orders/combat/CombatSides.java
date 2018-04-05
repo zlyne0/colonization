@@ -132,11 +132,13 @@ class CombatSides {
 	public float getOffencePower(Unit attacker, Unit defender) {
 		offenceModifers.clearLists();
 		
-		offenceModifers.addModifier(new Modifier(
-			Modifier.OFFENCE, 
-			Modifier.ModifierType.ADDITIVE, 
-			attacker.unitType.getBaseOffence()
-		));
+		if (attacker.unitType.getBaseOffence() != 0) {
+    		offenceModifers.addModifier(new Modifier(
+    			Modifier.OFFENCE, 
+    			Modifier.ModifierType.ADDITIVE, 
+    			attacker.unitType.getBaseOffence()
+    		));
+		}
 				
 		offenceModifers.addModifierFrom(attacker.unitType, Modifier.OFFENCE);
 		offenceModifers.addModifierFrom(
@@ -225,7 +227,9 @@ class CombatSides {
 				mods.addModifier(Specification.instance.modifiers.getById(Modifier.ARTILLERY_AGAINST_RAID));
 			}
 			
-			addSettlementAutoArmDefensiveModifiers(mods, defender, settlement);
+			if (!defender.hasAbility(Ability.BOMBARD)) {
+			    addSettlementAutoArmDefensiveModifiers(mods, defender, settlement);
+			}
 			
 			if (settlement.isColony()) {
 				disableFortified |= hasBuildingWithStrongDefence(settlement.getColony());

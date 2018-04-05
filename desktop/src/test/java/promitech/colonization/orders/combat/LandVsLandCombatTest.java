@@ -56,6 +56,7 @@ public class LandVsLandCombatTest {
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
             dutch
         );
+        dragoon.changeUnitLocation(freeTile);
         
         Tile braveTile = game.map.getSafeTile(22, 79);
         Unit braveUnit = braveTile.getUnits().getById("unit:5967");
@@ -68,7 +69,7 @@ public class LandVsLandCombatTest {
 
         // then
         assertThat(combat)
-            .hasPowers(1.12f, 1.25f, 0.47f)
+            .hasPowers(4.5f, 1.25f, 0.78f)
             .hasResult(CombatResult.WIN, true)
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.PROMOTE_UNIT);
 
@@ -147,6 +148,8 @@ public class LandVsLandCombatTest {
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
             dutch
         );
+        Tile dragoonTile = game.map.getSafeTile(23, 78);
+        dragoon.changeUnitLocation(dragoonTile);
         
         Unit artillery = new Unit(
             Game.idGenerator.nextId(Unit.class), 
@@ -166,7 +169,7 @@ public class LandVsLandCombatTest {
 
         // then
         assertThat(combat)
-            .hasPowers(1.12f, 1.25f, 0.47f)
+            .hasPowers(4.5f, 1.25f, 0.78f)
             .hasResult(CombatResult.LOSE, true)
             .hasDetails(CombatResultDetails.LOSE_EQUIP);
         

@@ -607,4 +607,31 @@ public class ColonyCombatTest {
         TileAssert.assertThat(trinidadTile)
             .hasNotSettlement();
 	}
+    
+    @Test
+    public void dragonVsColonyWithArtillery() throws Exception {
+        // given
+        Unit dragoon = new Unit(
+            Game.idGenerator.nextId(Unit.class), 
+            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
+            dutch
+        );
+        Tile nextColonyTile = game.map.getSafeTile(29, 57);
+        dragoon.changeUnitLocation(nextColonyTile);
+        
+        Tile colonyTile = game.map.getSafeTile(29, 58);
+        
+        // when
+        combat.init(game, dragoon, colonyTile);
+        combat.generateGreatWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(4.5f, 33.75f, 0.11f)
+            .hasResult(CombatResult.WIN, true)
+            .hasDetails(CombatResultDetails.DEMOTE_UNIT, CombatResultDetails.PROMOTE_UNIT);
+
+    }
 }
