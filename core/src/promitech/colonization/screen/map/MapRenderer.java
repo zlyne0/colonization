@@ -444,7 +444,11 @@ public class MapRenderer {
 	private void drawColonyTilesObjects(Tile colonyTile, float screenX, float screenY) {
 		TileDrawModel tileDrawModel = mapDrawModel.getTileDrawModel(colonyTile.x, colonyTile.y);
 		Vector2 v = mapToScreenCords(colonyTile.x, colonyTile.y);
-		tileDrawModel.drawSettlementImage(objectsTileDrawer.batch, screenX + v.x, screenY + v.y);
+		tileDrawModel.drawSettlementImage(
+			objectsTileDrawer.batch, 
+			objectsTileDrawer.shapeRenderer, 
+			screenX + v.x, screenY + v.y
+		);
 		
 		for (Direction direction : Direction.allDirections) {
 			x = direction.stepX(colonyTile.x, colonyTile.y);
@@ -452,7 +456,11 @@ public class MapRenderer {
 			tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 			if (tileDrawModel.settlementImage != null) {
 				v = mapToScreenCords(x, y);
-				tileDrawModel.drawSettlementImage(objectsTileDrawer.batch, screenX + v.x, screenY + v.y);
+				tileDrawModel.drawSettlementImage(
+					objectsTileDrawer.batch, 
+					objectsTileDrawer.shapeRenderer,
+					screenX + v.x, screenY + v.y
+				);
 			}
 		}
 	}

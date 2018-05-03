@@ -91,17 +91,17 @@ public class MapActor extends Widget {
 			}
 		});
 		
-		mapDrawModel.initialize(guiGameModel.game.map, guiGameModel.game.playingPlayer, gameResources);
+		mapDrawModel.initialize(guiGameModel.game, gameResources);
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
 		centerCameraOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
 	}
 	
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(guiGameModel.game.map, gameResources);
+		mapDrawModel.resetUnexploredBorders(gameResources);
 	}
 	
 	public void resetMapModel() {
-		mapDrawModel.initialize(guiGameModel.game.map, guiGameModel.game.playingPlayer, gameResources);
+		mapDrawModel.initialize(guiGameModel.game, gameResources);
 	}
 	
 	@Override

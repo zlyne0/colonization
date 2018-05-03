@@ -209,7 +209,7 @@ public class Colony extends Settlement {
 	public boolean isColony() {
 		return true;
 	}
-    
+	
     public String getImageKey() {
         int count = getColonyUnitsCount();
         String key = (count <= 3) ? "small"

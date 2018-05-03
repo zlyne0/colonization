@@ -6,7 +6,9 @@ import java.util.LinkedList;
 import java.util.List;
 
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
@@ -25,6 +27,7 @@ class TileDrawModel {
 	private final LinkedList<Frame> foregroundTerainTextures = new LinkedList<Frame>();
 	private final LinkedList<Frame> unexploredBorders = new LinkedList<Frame>();
 	Frame settlementImage;
+	IndianSettlementChip settlementChip;
 	private boolean explored = false;
 	private boolean fogOfWar = true;
 	
@@ -60,9 +63,12 @@ class TileDrawModel {
 		}
 	}
 
-	public void drawSettlementImage(Batch batch, float rx, float ry) {
+	public void drawSettlementImage(Batch batch, ShapeRenderer shapeRenderer, float rx, float ry) {
 		if (settlementImage != null) {
 			batch.draw(settlementImage.texture, rx + settlementImage.offsetX, ry + settlementImage.offsetY);
+			if (settlementChip != null) {
+				settlementChip.draw(batch, shapeRenderer, rx, ry);
+			}
 		}
 	}
 	
@@ -85,6 +91,8 @@ class TileDrawModel {
 	public void clear() {
 		backgroundTerainTextures.clear();
 		foregroundTerainTextures.clear();
+		settlementImage = null;
+		settlementChip = null;
 	}
 
 	public void resetUnexploredBorders() {
@@ -102,9 +110,10 @@ class TileDrawModel {
 }
 
 class TileDrawModelInitializer {
-	private GameResources gameResources;
-	private Map map; 
-	private Player player;
+	private final GameResources gameResources;
+	private final Game game;
+	private final Map map; 
+	private final Player player;
 	
 	private int x, y;
 	private Tile tile;
@@ -115,10 +124,11 @@ class TileDrawModelInitializer {
 	
 	private Frame frame;
 	
-	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Map map, Player player, GameResources gameResources) {
+	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Game game, GameResources gameResources) {
+		this.game = game;
 		this.mapDrawModel = mapDrawModel;
-		this.map = map;
-		this.player = player;
+		this.map = game.map;
+		this.player = game.playingPlayer;
 		this.gameResources = gameResources;
 		
 		if (player == null) {
@@ -129,7 +139,7 @@ class TileDrawModelInitializer {
 	public void initMapTiles() {
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				renderTerainAndBeaches();
 			}
@@ -137,7 +147,7 @@ class TileDrawModelInitializer {
 		
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				
 	            for (Direction direction : Direction.values()) {
@@ -153,7 +163,7 @@ class TileDrawModelInitializer {
 		
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				renderResources();
 			}
@@ -165,7 +175,7 @@ class TileDrawModelInitializer {
 	public void initBordersForUnexploredTiles() {
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 				tileDrawModel.resetUnexploredBorders();
 				tileDrawModel.setTileVisibility(
@@ -275,6 +285,13 @@ class TileDrawModelInitializer {
 		if (tile.getSettlement() != null) {
 			String key = tile.getSettlement().getImageKey();
 			tileDrawModel.settlementImage = gameResources.getCenterAdjustFrameTexture(key);
+			if (tile.getSettlement().isIndianSettlement()) {
+				tileDrawModel.settlementChip = new IndianSettlementChip(
+					game.players,
+					game.playingPlayer,
+					tile.getSettlement().getIndianSettlement()
+				);
+			}
 		}
 	}
 }
@@ -295,14 +312,16 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	protected Map map;
+	private Game game;
 	
 	protected UnitTileAnimation unitTileAnimation = UnitTileAnimation.NoAnimation;
 	
 	public Path unitPath;
 	
-	protected void initialize(Map map, Player player, GameResources gameResources) {
-		this.map = map;
-		this.playingPlayer = player;
+	protected void initialize(Game game, GameResources gameResources) {
+		this.game = game;
+		this.map = game.map;
+		this.playingPlayer = game.playingPlayer;
 		width = map.width;
 		height = map.height;
 		
@@ -324,7 +343,7 @@ public class MapDrawModel {
 			}
 		}
 
-		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, map, player, gameResources);
+		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, game, gameResources);
 		initializer.initMapTiles();
 	}
 
@@ -347,8 +366,8 @@ public class MapDrawModel {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}
 
-	public void resetUnexploredBorders(Map map, GameResources gameResources) {
-		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, map, playingPlayer, gameResources);
+	public void resetUnexploredBorders(GameResources gameResources) {
+		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, game, gameResources);
 		initializer.initBordersForUnexploredTiles();
 	}
 	

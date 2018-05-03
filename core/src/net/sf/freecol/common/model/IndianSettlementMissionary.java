@@ -9,6 +9,10 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class IndianSettlementMissionary {
 
     protected Unit unit;
+
+    public boolean isMissionaryExpert() {
+    	return unit.isExpert();
+    }
     
     public static class Xml extends XmlNodeParser<IndianSettlementMissionary> {
 

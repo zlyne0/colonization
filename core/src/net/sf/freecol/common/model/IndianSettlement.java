@@ -101,14 +101,10 @@ public class IndianSettlement extends Settlement {
     }
     
 	@Override
-	public boolean isColony() {
-		return false;
+	public boolean isIndianSettlement() {
+		return true;
 	}
-    
-    private boolean hasMissionary() {
-        return missionary != null;
-    }
-
+	
 	@Override
 	public GoodsContainer getGoodsContainer() {
 		return goodsContainer;
@@ -119,6 +115,28 @@ public class IndianSettlement extends Settlement {
 			return 0;
 		}
 		return settlementType.plunderGold(attacker);
+	}
+
+	public Entry<String, Tension> mostHatedPlayer(MapIdEntities<Player> players) {
+		Entry<String, Tension> mostHatedPlayer = null;
+		int playerTensionLevel = Integer.MIN_VALUE;
+
+		for (Entry<String, Tension> entry : tensionByPlayer.entrySet()) {
+			Tension tension = entry.getValue();
+			Player player = players.getById(entry.getKey());
+			
+			if (player.isNotLiveEuropeanPlayer()) {
+				continue;
+			}
+			if (tension.getLevel() == Tension.Level.HAPPY) {
+				continue;
+			}
+			if (playerTensionLevel < tension.getValue()) {
+				mostHatedPlayer = entry;
+				playerTensionLevel = tension.getValue();
+			}
+		}
+		return mostHatedPlayer;
 	}
 	
     public static class Xml extends XmlNodeParser<IndianSettlement> {
@@ -264,6 +282,10 @@ public class IndianSettlement extends Settlement {
 		return false;
 	}
 
+    private boolean hasMissionary() {
+        return missionary != null;
+    }
+
     public boolean hasMissionary(Player player) {
         return missionary != null && missionary.unit != null && missionary.unit.getOwner().equalsId(player);
     }
@@ -274,6 +296,10 @@ public class IndianSettlement extends Settlement {
 			&& missionary.unit.getOwner().notEqualsId(player);
     }
 
+    public IndianSettlementMissionary getMissionary() {
+    	return missionary;
+    }
+    
     public Player missionaryOwner() {
     	return missionary.unit.getOwner();
     }

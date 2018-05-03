@@ -105,7 +105,7 @@ public class ObjectsTileDrawer extends TileDrawer {
 		if (!tile.hasSettlement()) {
 			return;
 		}
-		tileDrawModel.drawSettlementImage(batch, screenPoint.x, screenPoint.y);
+		tileDrawModel.drawSettlementImage(batch, shapeRenderer, screenPoint.x, screenPoint.y);
 		
 		BitmapFont font = FontResource.getCityNamesFont();
 		

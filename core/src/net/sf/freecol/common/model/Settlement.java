@@ -119,7 +119,13 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	return coastland;
     }
 	
-	public abstract boolean isColony();
+	public boolean isColony() {
+		return false;
+	}
+	
+	public boolean isIndianSettlement() {
+		return false;
+	}
 
 	public Colony getColony() {
 		return (Colony)this;
