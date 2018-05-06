@@ -2,9 +2,8 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
-import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -30,7 +29,8 @@ public class UnitRole extends ObjectWithFeatures {
 	
 	private final String roleSuffix;
 	protected String expertUnitTypeId;
-	public final MapIdEntities<Goods> requiredGoods = MapIdEntities.linkedMapIdEntities();
+	public final MapIdEntities<RequiredGoods> requiredGoods = MapIdEntities.linkedMapIdEntities();
+	public final MapIdEntities<UnitRoleChange> roleChanges = MapIdEntities.linkedMapIdEntities();
 	private String downgradeRoleId;
 	private int maximumCount = DEFAULT_UNIT_ROLE_COUNT;
 	
@@ -63,6 +63,18 @@ public class UnitRole extends ObjectWithFeatures {
         return hasModifier(Modifier.OFFENCE);
     }
 	
+	public boolean isDefensive() {
+		return hasModifier(Modifier.DEFENCE);
+	}
+    
+	boolean noDowngradeRole() {
+		return downgradeRoleId == null;
+	}
+	
+    String getDowngradeRoleId() {
+        return downgradeRoleId;
+    }
+	
 	public boolean isCompatibleWith(UnitRole role) {
 		if (role == null) {
 			return false;
@@ -72,33 +84,28 @@ public class UnitRole extends ObjectWithFeatures {
 				|| this.getId().equals(role.downgradeRoleId);
 	}
 
-    public boolean isAvailableTo(UnitType unitType, ObjectWithFeatures place) {
-        if (requiredAbilities != null) {
-            for (Ability aa : requiredAbilities.entities()) {
-                boolean found = unitType.hasAbility(aa.getId());
-                if (!found) {
-                	found = place.hasAbility(aa.getId());
-                }
-                if (aa.isValueNotEquals(found)) {
-                    return false;
-                }
-            }
-        }
-        return true;
-    }
-
 	public int getMaximumCount() {
 		return maximumCount;
 	}
-    
+
+	boolean canChangeRole(UnitRole fromRole, UnitRole toRole) {
+		for (UnitRoleChange urc : roleChanges.entities()) {
+			if (urc.match(fromRole, toRole)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public static class Xml extends XmlNodeParser<UnitRole> {
-		private static final String ELEMENT_REQUIRED_GOODS = "required-goods";
 		private static final String ATTR_MAXIMUM_COUNT = "maximumCount";
 		private static final String ATTR_DOWNGRADE = "downgrade";
 		private static final String ATTR_EXPERT_UNIT = "expertUnit";
 
 		public Xml() {
 			ObjectWithFeatures.Xml.abstractAddNodes(this);
+			addNodeForMapIdEntities("requiredGoods", RequiredGoods.class);
+			addNodeForMapIdEntities("roleChanges", UnitRoleChange.class);
 		}
 
 		@Override
@@ -111,29 +118,11 @@ public class UnitRole extends ObjectWithFeatures {
 		}
 
 		@Override
-		public void startReadChildren(XmlNodeAttributes attr) {
-			if (attr.isQNameEquals(ELEMENT_REQUIRED_GOODS)) {
-				Goods goods = new Goods(attr.getStrAttribute(ATTR_ID), attr.getIntAttribute(ATTR_VALUE));
-				nodeObject.requiredGoods.add(goods);
-			}
-		}
-		
-		@Override
 		public void startWriteAttr(UnitRole ur, XmlNodeAttributesWriter attr) throws IOException {
 			attr.setId(ur);
-
 			attr.set(ATTR_EXPERT_UNIT, ur.expertUnitTypeId);
 			attr.set(ATTR_DOWNGRADE, ur.downgradeRoleId);
 			attr.set(ATTR_MAXIMUM_COUNT, ur.maximumCount);
-			
-			if (ur.requiredGoods.isNotEmpty()) {
-				for (Goods reqGoods : ur.requiredGoods.entities()) {
-					attr.xml.element(ELEMENT_REQUIRED_GOODS);
-					attr.set(ATTR_ID, reqGoods.getId());
-					attr.set(ATTR_VALUE, reqGoods.getAmount());
-					attr.xml.pop();
-				}
-			}
 		}
 		
 		@Override

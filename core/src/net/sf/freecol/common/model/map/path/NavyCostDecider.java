@@ -1,8 +1,8 @@
 package net.sf.freecol.common.model.map.path;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveType;
 
 class NavyCostDecider extends CostDecider {
     
@@ -36,6 +36,7 @@ class NavyCostDecider extends CostDecider {
         return improveMove;
     }
 
+    @Override
 	boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
 		if (moveType == MoveType.MOVE_NO_ACCESS_LAND && source.tile.hasSettlement() && dest.tile.getType().isLand()) {
 			return false;
@@ -43,7 +44,7 @@ class NavyCostDecider extends CostDecider {
 		return isMoveIllegal();
 	}
     
-    private boolean isTileThreatForUnit(Node moveNode) {
+    protected boolean isTileThreatForUnit(Node moveNode) {
         if (moveNode.tileBombardedMetaData) {
             return moveNode.tileBombarded;
         }

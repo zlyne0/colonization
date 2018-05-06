@@ -9,14 +9,19 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Building extends ObjectWithId implements ProductionLocation {
+public class Building extends ObjectWithId implements ProductionLocation, UnitLocation {
 
     public BuildingType buildingType;
-    public final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
+    private final MapIdEntities<Unit> workers = new MapIdEntities<Unit>();
+
+    public Building(IdGenerator idGenerator, BuildingType aBuildingType) {
+    	this(idGenerator.nextId(Building.class), aBuildingType);
+    }
     
     public Building(String id, BuildingType aBuildingType) {
         super(id);
@@ -167,12 +172,82 @@ public class Building extends ObjectWithId implements ProductionLocation {
 		this.buildingType = aBuildingType;
 	}
 	
+	public MapIdEntities<Unit> damageBuilding() {
+		buildingType = buildingType.getUpgradesFrom();
+		if (workers.isEmpty()) {
+			return MapIdEntities.unmodifiableEmpty();
+		}
+		
+		MapIdEntities<Unit> eject = new MapIdEntities<Unit>();
+		getWorkersToEject(eject);
+		return eject;
+	}
+
+	/**
+	 * Method return workers which can not work in building because of type or workspace capacity
+	 * @param ejectWorkers
+	 */
+	public void getWorkersToEject(MapIdEntities<Unit> ejectWorkers) {
+		if (workers.isEmpty()) {
+			return;
+		}
+		
+		int workersSpaceTaken = 0;
+		for (Unit worker : workers.entities()) {
+			UnitContainer.NoAddReason reason = buildingType.getNoAddReason(worker.unitType);
+			if (reason != NoAddReason.NONE) {
+				ejectWorkers.add(worker);
+				continue;
+			}
+			if (workersSpaceTaken + worker.unitType.getSpaceTaken() > buildingType.getWorkplaces()) {
+				ejectWorkers.add(worker);
+			} else {
+				workersSpaceTaken += worker.unitType.getSpaceTaken();
+			}
+		}
+	}
+	
+    @Override
+    public MapIdEntitiesReadOnly<Unit> getUnits() {
+        return workers;
+    }
+
+    @Override
+    public void addUnit(Unit unit) {
+        workers.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        workers.removeId(unit);
+    }
+    
+    @Override
+    public boolean canAutoLoadUnit() {
+        return false;
+    }
+
+    @Override
+    public boolean canAutoUnloadUnits() {
+        return false;
+    }
+	
     public static class Xml extends XmlNodeParser<Building> {
 
         private static final String ATTR_BUILDING_TYPE = "buildingType";
 
-		public Xml() {
-            addNodeForMapIdEntities("workers", Unit.class);
+        public Xml() {
+            addNode(Unit.class, new ObjectFromNodeSetter<Building, Unit>() {
+                @Override
+                public void set(Building target, Unit entity) {
+                    entity.changeUnitLocation(target);
+                }
+
+                @Override
+                public void generateXml(Building source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+                    xmlGenerator.generateXmlFromCollection(source.workers.entities());
+                }
+            });
         }
         
         @Override

@@ -7,8 +7,8 @@ import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.Direction;
-import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 
 public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
     public static enum ExploreStatus {
@@ -18,15 +18,15 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
         OK
     }
     
-	private final MoveLogic moveLogic;
+	private final MoveService moveService;
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final NavyExplorer navyExplorer;
 
-	public ExplorerMissionHandler(Game game, PathFinder pathFinder, MoveLogic moveLogic) {
+	public ExplorerMissionHandler(Game game, PathFinder pathFinder, MoveService moveService) {
 		this.game = game;
 		this.pathFinder = pathFinder;
-		this.moveLogic = moveLogic;
+		this.moveService = moveService;
 		this.navyExplorer = new NavyExplorer(game.map);
 	}
 
@@ -71,7 +71,7 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
             if (!moveContext.canHandleMove()) {
                 return ExploreStatus.NO_MOVE_POINTS;
             }
-            moveLogic.forAiMoveOnlyReallocation(moveContext);
+            moveService.aiConfirmedMoveProcessor(moveContext);
             
             if (!ship.hasMovesPoints()) {
                 return ExploreStatus.OK;
@@ -95,7 +95,7 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
         MoveContext moveContext = new MoveContext(sourceTile, destTile, ship, direction);
        
         if (moveContext.canHandleMove()) {
-            moveLogic.forAiMoveOnlyReallocation(moveContext);
+            moveService.aiConfirmedMoveProcessor(moveContext);
         } else {
             exploreStatus = ExploreStatus.NO_MOVE_POINTS;
         }

@@ -3,12 +3,14 @@ package promitech.colonization.savegame;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.*;
 
-import org.assertj.core.api.AbstractAssert;
-
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ResourceType;
+import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementPlunderRange;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
@@ -18,8 +20,8 @@ import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -42,70 +44,12 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
-import static promitech.colonization.savegame.TileAssert.assertThat;
+import static net.sf.freecol.common.model.TileAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
-
-class TileAssert extends AbstractAssert<TileAssert, Tile> {
-
-	public TileAssert(Tile actual, Class<?> selfType) {
-		super(actual, selfType);
-	}
-	
-	public static TileAssert assertThat(Tile tile) {
-		return new TileAssert(tile, TileAssert.class);
-	}
-	
-	public TileAssert isEquals(int x, int y) {
-		isNotNull();
-		
-		if (!actual.equalsCoordinates(x, y)) {
-			failWithMessage("Expected cords [%s,%s] on tile <id: %s, cords %s, %s> ", x, y, actual.getId(), actual.x, actual.y);
-		}
-		return this;
-	}
-}
-
-class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
-
-	public AbstractMissionAssert(AbstractMission actual, Class<?> selfType) {
-		super(actual, selfType);
-	}
-	
-	public static AbstractMissionAssert assertThat(AbstractMission abstractMission) {
-		return new AbstractMissionAssert(abstractMission, AbstractMissionAssert.class);
-	}
-	
-	public AbstractMissionAssert isIdEquals(String id) {
-		isNotNull();
-		if (!actual.getId().equals(id)) {
-			failWithMessage("Expected id: %s on AbstractMission id: %s ", id, actual.getId());			
-		}
-		return this;
-	}
-	
-	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
-		isNotNull();
-		AbstractMission dependMission = actual.getDependMissionById(missionId);
-		if (dependMission == null) {
-			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
-		} else {
-			if (dependMission.getClass() != missionTypeClass) {
-				failWithMessage("Expected depend mission type %s on Mission id: %s ", missionTypeClass.getName(), missionId);
-			}
-		}
-		return this;
-	}
-	
-	public AbstractMissionAssert isType(Class<? extends AbstractMission> missionTypeClass) {
-		isNotNull();
-		if (actual.getClass() != missionTypeClass) {
-			failWithMessage("Expected mission type %s on mission id: %s ", missionTypeClass.getName(), actual.getId());
-		}
-		return this;
-	}
-}
-
+import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
+import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
 
 public class Savegame1600Verifier {
 
@@ -129,9 +73,32 @@ public class Savegame1600Verifier {
         
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
+        verifyIndianSettlement(game);
 	}
 
-	private void verifyAIContainer(Game game) {
+	private void verifyIndianSettlement(Game game) {
+		Player player = game.players.getById("player:58");
+		Settlement settlement = player.settlements.getById("indianSettlement:6019");
+		assertThat(settlement.getUnits().size()).isEqualTo(7);
+		
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.cotton", 150);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.food", 217);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.furs", 200);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
+		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
+		
+		verifyMissionary(game);
+	}
+
+	private void verifyMissionary(Game game) {
+	    Player player = game.players.getById("player:22");
+	    IndianSettlement indianSettlement = player.settlements.getById("indianSettlement:5901")
+	            .getIndianSettlement();
+	    Player dutch = game.players.getById("player:1");
+	    assertThat(indianSettlement.hasMissionary(dutch)).isTrue();
+    }
+
+    private void verifyAIContainer(Game game) {
 		PlayerMissionsContainer playerMissionsContainer = game.aiContainer.getMissionContainer("player:22");
 		assertThat(playerMissionsContainer).isNotNull();
 		WanderMission wm = playerMissionsContainer.getMission("wanderMission:1");
@@ -246,6 +213,9 @@ public class Savegame1600Verifier {
         assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
         assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
         
+        // should add fathers modifiers to player features
+        assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);
+        
         assertEquals(3, player.eventsNotifications.getNotifications().size());
         
         MonarchActionNotification monarchNotification = (MonarchActionNotification)player.eventsNotifications.getNotifications().get(1);
@@ -281,14 +251,15 @@ public class Savegame1600Verifier {
     	assertNotNull(colony);
     	System.out.println("size = " + colony.buildings.size());
     	Building carpenterHouse = colony.buildings.getById("building:7122");
-    	assertEquals(1, carpenterHouse.workers.size());
-    	Unit worker = carpenterHouse.workers.first();
+    	assertEquals(1, carpenterHouse.getUnits().size());
+    	Unit worker = carpenterHouse.getUnits().first();
     	assertEquals("unit:6498", worker.getId());
 	}
 
 	private void verifySpecification(Game game) {
 		Specification specification = Specification.instance;
 		
+		verifySpecificationModifiers(specification);
 		verifyOptions(Specification.options);
 		
         assertEquals(42, Specification.instance.unitTypes.size());
@@ -307,10 +278,23 @@ public class Savegame1600Verifier {
         verifyShipGoods(game, specification);
         verifySpecificationOptionGroup(specification);
         verifySpecificationGameDifficultyOptions(specification);
-        verifySpecificationUnitRoles(specification);
-        verifySpecificationUnitTypes(specification);
+        verifySpecificationUnitRoles(specification, game);
+        verifySpecificationUnitTypes(specification, game);
         verifySpecificationFoundingFathers(specification);
     }
+
+	private void verifySpecificationModifiers(Specification spec) {
+		assertNotNull(spec.modifiers.getById("model.modifier.smallMovementPenalty"));
+		assertNotNull(spec.modifiers.getById("model.modifier.bigMovementPenalty"));
+		assertNotNull(spec.modifiers.getById("model.modifier.artilleryInTheOpen"));
+		assertNotNull(spec.modifiers.getById("model.modifier.attackBonus"));
+		assertNotNull(spec.modifiers.getById("model.modifier.fortified"));
+		assertNotNull(spec.modifiers.getById("model.modifier.artilleryAgainstRaid"));
+		assertNotNull(spec.modifiers.getById("model.modifier.amphibiousAttack"));
+		assertNotNull(spec.modifiers.getById("model.modifier.colonyGoodsParty"));
+		assertNotNull(spec.modifiers.getById("model.goods.food"));
+		assertNotNull(spec.modifiers.getById("model.modifier.shipTradePenalty"));
+	}
 
 	private void verifyOptions(Options options) {
 		int temperature = options.getIntValue(MapGeneratorOptions.TEMPERATURE);
@@ -364,16 +348,23 @@ public class Savegame1600Verifier {
         NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
         assertNotNull(settlementType);
+        assertThat(settlementType.getPlunderRanges()).hasSize(2);
+        for (SettlementPlunderRange spr : settlementType.getPlunderRanges()) {
+            assertThat(spr.getScopes()).hasSize(1);
+        }
         
         NationType tradeNationType = specification.nationTypes.getById("model.nationType.trade");
         assertTrue(tradeNationType.hasModifier("model.modifier.tradeBonus"));
         assertTrue(tradeNationType.hasAbility("model.ability.electFoundingFather"));
+        SettlementType colonySettlementType = tradeNationType.settlementTypes.getById("model.settlement.colony");
+        assertTrue(colonySettlementType.hasModifier(Modifier.DEFENCE));
+        assertTrue(colonySettlementType.hasAbility(Ability.CONSUME_ALL_OR_NOTHING));
         
         EuropeanNationType buildingNationType = (EuropeanNationType)specification.nationTypes.getById("model.nationType.building");
         assertEquals(3, buildingNationType.getStartedUnits(true).size());
 	}
 
-    private void verifySpecificationUnitTypes(Specification specification) {
+    private void verifySpecificationUnitTypes(Specification specification, Game game) {
     	UnitType unitType = specification.unitTypes.getById("model.unit.flyingDutchman");
     	assertEquals(1, unitType.requiredAbilitiesAmount());
     	
@@ -385,9 +376,14 @@ public class Savegame1600Verifier {
     	UnitType freeColonist = specification.unitTypes.getById(UnitType.FREE_COLONIST);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.FOOD).getQuantity()).isEqualTo(2);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.BELLS).getQuantity()).isEqualTo(1);
+    	
+    	UnitType artillery = specification.unitTypes.getById("model.unit.artillery");
+    	Player player = game.players.getById("player:1");
+    	UnitType damagedArtillery = artillery.upgradeByChangeType(ChangeType.DEMOTION, player);
+    	assertThat(damagedArtillery.getId()).isEqualTo("model.unit.damagedArtillery");
 	}
 
-	private void verifySpecificationUnitRoles(Specification specification) {
+	private void verifySpecificationUnitRoles(Specification specification, Game game) {
         UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
@@ -395,9 +391,35 @@ public class Savegame1600Verifier {
         
         assertEquals(3, dragoonUnitRole.requiredAbilitiesAmount());
         assertEquals(2, dragoonUnitRole.requiredGoods.size());
-        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").getAmount());
-        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").getAmount());
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.muskets").amount);
+        assertEquals(50, dragoonUnitRole.requiredGoods.getById("model.goods.horses").amount);
+        
+        MapIdEntities<UnitRoleChange> roleChanges = specification.unitRoles.getById("model.role.mountedBrave")
+    		.roleChanges;
+        assertThat(roleChanges.entities()).hasSize(3);
+        
+        assertThat(roleChanges).containsId("model.role.default:model.role.scout");
+        assertThat(roleChanges).containsId("model.role.default:model.role.dragoon");
+        assertThat(roleChanges).containsId("model.role.default:model.role.cavalry");
+        
+        verifyCaptureEquipment(specification, game);
     }
+	
+	private void verifyCaptureEquipment(Specification spec, Game game) {
+		Unit brave = new Unit("1", 
+			spec.unitTypes.getById("model.unit.brave"), 
+			spec.unitRoles.getById("model.role.default"),
+			game.players.getById("player:40")
+		);
+		Unit dragon = new Unit("2", 
+			spec.unitTypes.getById("model.unit.freeColonist"), 
+			spec.unitRoles.getById("model.role.dragoon"),
+			game.players.getById("player:1")
+		);
+		
+		assertThat(brave.canCaptureEquipment(dragon)).isTrue();
+		assertThat(brave.capturedEquipment(dragon).getId()).isEqualTo("model.role.mountedBrave");
+	}
 
     private void verifySpecificationGameDifficultyOptions(Specification specification) {
         assertEquals(true, specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
@@ -405,7 +427,6 @@ public class Savegame1600Verifier {
         
         assertEquals(0, specification.options.getIntValue(GameOptions.STARTING_MONEY));
         assertEquals("medium", specification.options.getStringValue(GameOptions.TILE_PRODUCTION));
-        
     }
 
     private void verifySpecificationOptionGroup(Specification specification) {
@@ -472,8 +493,8 @@ public class Savegame1600Verifier {
         
         Building building = colony.buildings.getById("building:6545");
         assertEquals("model.building.furTraderHouse", building.buildingType.getId());
-        assertNotNull(building.workers.getById("unit:6765"));
-        assertNotNull(building.workers.getById("unit:6439"));
+        assertNotNull(building.getUnits().getById("unit:6765"));
+        assertNotNull(building.getUnits().getById("unit:6439"));
     }
 	
 	

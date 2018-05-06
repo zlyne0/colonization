@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -42,7 +42,7 @@ public class UnitLabel {
             	
             	if (unit.roleCount > 0) {
             		boolean first = true;
-            		for (Goods goods : unit.unitRole.requiredGoods.entities()) {
+            		for (RequiredGoods goods : unit.unitRole.requiredGoods.entities()) {
             			if (first) {
             				first = false; 
             			} else {  
@@ -50,7 +50,7 @@ public class UnitLabel {
             			}
             			extra.addStringTemplate(StringTemplate.template("model.goods.goodsAmount")
             					.addName("%goods%", goods)
-            					.addAmount("%amount%", goods.getAmount() *  unit.roleCount)
+            					.addAmount("%amount%", goods.amount *  unit.roleCount)
             			);
             		}
             	}

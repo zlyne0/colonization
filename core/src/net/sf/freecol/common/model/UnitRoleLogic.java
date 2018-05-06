@@ -1,18 +1,19 @@
 package net.sf.freecol.common.model;
 
-import static net.sf.freecol.common.model.UnitRole.*;
-import net.sf.freecol.common.model.specification.Goods;
+import static net.sf.freecol.common.model.UnitRole.DEFAULT_UNIT_ROLE_COUNT;
+
+import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class UnitRoleLogic {
 
 	public static int maximumAvailableRequiredGoods(final Unit unit, UnitRole newRole, GoodsContainer goodsContainer, ProductionSummary required) {
 		int maxRoleCount = DEFAULT_UNIT_ROLE_COUNT;
-		for (Goods g : newRole.requiredGoods.entities()) {
+		for (RequiredGoods g : newRole.requiredGoods.entities()) {
 			int marg = 0;
 			int containerGoodsAmount = goodsContainer.goodsAmount(g.getId());
 			for (int i=1; i<=newRole.getMaximumCount(); i++) {
-				if (containerGoodsAmount >= i * g.getAmount()) {
-					marg = i * g.getAmount();
+				if (containerGoodsAmount >= i * g.amount) {
+					marg = i * g.amount;
 					maxRoleCount = Math.max(maxRoleCount, i);
 				}
 			}
@@ -21,19 +22,19 @@ public class UnitRoleLogic {
 			}
 		}
 		
-		for (Goods g : unit.unitRole.requiredGoods.entities()) {
-			required.addGoods(g.getId(), -g.getAmount() * unit.getRoleCount());
+		for (RequiredGoods g : unit.unitRole.requiredGoods.entities()) {
+			required.addGoods(g.getId(), -g.amount * unit.getRoleCount());
 		}
 		return maxRoleCount;
 	}
 	
 	public static ProductionSummary minimumRequiredGoods(UnitRole actualRole, UnitRole newRole) {
         ProductionSummary required = new ProductionSummary();
-        for (Goods g : newRole.requiredGoods.entities()) {
-        	required.addGoods(g.getId(), g.getAmount() * DEFAULT_UNIT_ROLE_COUNT);
+        for (RequiredGoods g : newRole.requiredGoods.entities()) {
+        	required.addGoods(g.getId(), g.amount * DEFAULT_UNIT_ROLE_COUNT);
 		}
-		for (Goods g : actualRole.requiredGoods.entities()) {
-			required.addGoods(g.getId(), -g.getAmount() * DEFAULT_UNIT_ROLE_COUNT);
+		for (RequiredGoods g : actualRole.requiredGoods.entities()) {
+			required.addGoods(g.getId(), -g.amount * DEFAULT_UNIT_ROLE_COUNT);
 		}
         return required;
 	}
@@ -41,14 +42,17 @@ public class UnitRoleLogic {
 	public static ProductionSummary requiredGoodsToChangeRole(Unit unit, UnitRole newRole) {
         ProductionSummary required = new ProductionSummary();
         
-        for (Goods g : newRole.requiredGoods.entities()) {
-        	required.addGoods(g.getId(), g.getAmount() * newRole.getMaximumCount());
+        for (RequiredGoods g : newRole.requiredGoods.entities()) {
+        	required.addGoods(g.getId(), g.amount * newRole.getMaximumCount());
 		}
-		for (Goods g : unit.unitRole.requiredGoods.entities()) {
-			required.addGoods(g.getId(), -g.getAmount() * unit.roleCount);
+		for (RequiredGoods g : unit.unitRole.requiredGoods.entities()) {
+			required.addGoods(g.getId(), -g.amount * unit.roleCount);
 		}
 	    return required;
 	}
 	
+	public static boolean hasContainerRequiredGoods(GoodsContainer container, UnitRole role) {
+		return container.hasGoodsQuantity(role.requiredGoods);
+	}
 	
 }

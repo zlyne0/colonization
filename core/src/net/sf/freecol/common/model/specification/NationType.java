@@ -67,6 +67,10 @@ public abstract class NationType extends ObjectWithFeatures {
     	return european;
     }
     
+    public boolean isIndian() {
+    	return false;
+    }
+    
     public String toString() {
     	return "nationType: " + getId();
     }
@@ -87,7 +91,7 @@ public abstract class NationType extends ObjectWithFeatures {
 				return type;
 			}
 		}
-		return null;
+		throw new IllegalStateException("can not find regular settlement type for nation type: " + getId());
 	}
 	
 	public SettlementType getSettlementCapitalType() {
@@ -96,7 +100,7 @@ public abstract class NationType extends ObjectWithFeatures {
 				return type;
 			}
 		}
-		return null;
+		throw new IllegalStateException("can not find capital settlement type fro nation type: " + getId());
 	}
 	
 	public static class Xml {

@@ -166,5 +166,9 @@ public class Tension {
     @Override
     public String toString() {
         return getLevel().toString();
+    }
+
+    public void surrende() {
+        setValue(SURRENDERED);
     }    
 }

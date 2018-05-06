@@ -267,6 +267,14 @@ public class Player extends ObjectWithId {
     	tensionObj.modify(val);
     }
     
+    public Tension getTension(Player p) {
+        Tension tensionObj = tension.get(p.getId());
+        if (tensionObj == null) {
+            return new Tension(Tension.TENSION_MIN);
+        }
+        return tensionObj;
+    }
+    
     private void changePlayerType(PlayerType type) {
         if (playerType != PlayerType.REBEL && playerType != PlayerType.INDEPENDENT) {
             switch (type) {
@@ -381,6 +389,13 @@ public class Player extends ObjectWithId {
     
     public void subtractGold(int gold) {
     	this.gold -= gold;
+        if (this.gold < 0) {
+            this.gold = 0;
+        }
+    }
+    
+    public boolean hasGold() {
+        return this.gold > 0;
     }
     
     public boolean hasNotGold(int gold) {
@@ -491,11 +506,6 @@ public class Player extends ObjectWithId {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
 	
-	public void removeSettlement(Settlement settlement) {
-		settlement.tile.setSettlement(null);
-		settlements.removeId(settlement.getId());
-	}
-
 	public void removeUnit(Unit unit) {
 		units.removeId(unit);
 		unit.remove();
@@ -543,6 +553,10 @@ public class Player extends ObjectWithId {
         return attackedByPrivateers;
     }
 
+    public void setAttackedByPrivateers() {
+        this.attackedByPrivateers = true;
+    }
+    
     public Monarch getMonarch() {
         return monarch;
     }

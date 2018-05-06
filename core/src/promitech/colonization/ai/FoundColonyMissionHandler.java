@@ -13,8 +13,8 @@ import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.ai.BuildColony.TileSelection;
-import promitech.colonization.gamelogic.BuildColonyOrder;
-import promitech.colonization.gamelogic.BuildColonyOrder.OrderStatus;
+import promitech.colonization.orders.BuildColonyOrder;
+import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
 
 class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     

@@ -15,7 +15,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameLogic;
-import promitech.colonization.MoveLogic;
+import promitech.colonization.orders.move.MoveService;
 
 public class AILogic {
 
@@ -35,16 +35,16 @@ public class AILogic {
 	private final NativeMissionPlaner nativeMissionPlaner = new NativeMissionPlaner();
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
-	public AILogic(Game game, GameLogic gameLogic, MoveLogic moveLogic) {
+	public AILogic(Game game, GameLogic gameLogic, MoveService moveService) {
 		this.game = game;
 		this.gameLogic = gameLogic;
 		
         transportPathFinder = new TransportPathFinder(game.map);
 		
-		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveLogic);
-		wanderMissionHandler = new WanderMissionHandler(game, moveLogic);
+		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
+		wanderMissionHandler = new WanderMissionHandler(game, moveService);
         foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, game);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveLogic);
+        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveService);
 		
         europeanMissionPlaner = new EuropeanMissionPlaner(foundColonyMissionHandler);
 

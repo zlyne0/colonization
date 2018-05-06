@@ -48,7 +48,7 @@ class ColonyProduction {
         	globalProductionConsumption.addGoods(ps.realProduction);
         }
         
-        for (Unit worker : colony.colonyWorkers) {
+        for (Unit worker : colony.settlementWorkers()) {
         	for (UnitConsumption uc : worker.unitType.unitConsumption.entities()) {
         		if (uc.getId().equals(GoodsType.FOOD)) {
         			if (globalProductionConsumption.decreaseIfHas(GoodsType.FISH, uc.getQuantity())) {
@@ -94,7 +94,7 @@ class ColonyProduction {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
 		List<Production> productions; 
-		if (colonyTile.getWorker() != null) {
+		if (colonyTile.hasWorker()) {
 		    productions = colonyTile.productionInfo.getAttendedProductions();
 		} else {
             productions = colonyTile.productionInfo.getUnattendedProductions();
@@ -108,7 +108,7 @@ class ColonyProduction {
 	                continue;
 	            }
 	            int goodQuantity = 0;
-		        if (colonyTile.getWorker() != null) {
+		        if (colonyTile.hasWorker()) {
 		            goodQuantity += (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
 		            for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
 		            	goodQuantity = (int)ff.applyModifier(goodsId, goodQuantity);
@@ -218,7 +218,7 @@ class ColonyProduction {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
-	        if (colonyTile.getWorker() != null) {
+	        if (colonyTile.hasWorker()) {
 	            continue;
 	        }
 	        if (colonyTile.tile.getId().equals(colony.tile.getId())) {

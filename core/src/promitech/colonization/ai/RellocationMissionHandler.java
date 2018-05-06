@@ -8,23 +8,23 @@ import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
-import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
 
 public class RellocationMissionHandler implements MissionHandler<RellocationMission> {
     
     private final PathFinder pathFinder;
     private final TransportPathFinder transportPathFinder;
-    private final MoveLogic moveLogic;
+    private final MoveService moveService;
     private final Game game;
     private Path carrierPath = null;
     
     private PlayerMissionsContainer playerMissionsContainer;
     
-    public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, Game game, MoveLogic moveLogic) {
+    public RellocationMissionHandler(PathFinder pathFinder, TransportPathFinder transportPathFinder, Game game, MoveService moveService) {
         this.pathFinder = pathFinder;
         this.transportPathFinder = transportPathFinder;
-        this.moveLogic = moveLogic;
+        this.moveService = moveService;
         this.game = game;
     }
     
@@ -51,7 +51,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         if (mission.needUnitMove()) {
             Path path = pathFinder.findToTile(game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, false);
             MoveContext moveContext = new MoveContext(path);
-            moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+            moveService.aiConfirmedMovePath(moveContext);
         }
         if (mission.isUnitOnRellocationDestination()) {
         	playerMissionsContainer.unblockUnitsFromMission(mission);
@@ -61,7 +61,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
                 if (mission.isCarrierOnStepDestination() && mission.unit.hasMovesPoints()) {
                     // embark
                     MoveContext moveContext = MoveContext.embarkUnit(mission.unit, mission.carrier);
-                    moveLogic.forAiMoveOnlyReallocation(moveContext);
+                    moveService.aiConfirmedMoveProcessor(moveContext);
 
                     // after embark generate path for carrier
                     generatePathToRellocate(mission);
@@ -83,7 +83,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 			carrierPath = pathFinder.findToTile(game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
 		}
 		MoveContext moveContext = new MoveContext(carrierPath);
-		moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+		moveService.aiConfirmedMovePath(moveContext);
 	}
 
 	private void disembarkUnit(RellocationMission mission) {
@@ -93,7 +93,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 		        mission.unitDestination, 
 		        mission.unit
 		    );
-		    moveLogic.forAiMoveOnlyReallocation(mc);
+            moveService.aiConfirmedMoveProcessor(mc);
 		    
 		    generatePathToRellocate(mission);
 		}

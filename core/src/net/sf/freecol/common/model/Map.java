@@ -11,7 +11,6 @@ import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;

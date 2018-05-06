@@ -2,23 +2,26 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.ScopeAppliable;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class Unit extends ObjectWithId implements UnitLocation {
+public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -44,7 +47,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
     public UnitType unitType;
     public UnitRole unitRole;
     
-    private UnitLocation location;
+    protected UnitLocation location;
 
     private UnitState state = UnitState.ACTIVE;
     private int movesLeft;
@@ -134,24 +137,40 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	    return location != null && location.getClass().equals(unitLocationClass);
 	}
 	
+	@SuppressWarnings("unchecked")
+    public <T extends UnitLocation> T getLocationOrNull(Class<T> unitLocationClass) {
+	    if (location != null && location.getClass().equals(unitLocationClass)) {
+	        return (T)location;
+	    }
+	    return null;
+	}
+	
 	public void changeUnitLocation(UnitLocation newUnitLocation) {
-		if (location != null) {
-			location.getUnits().removeId(this);
+	    UnitLocation oldLocation = location;
+		if (oldLocation != null) {
+		    removeFromLocation();
 			
-			if (location.canAutoLoadUnit()) {
-				embarkUnitsFromLocation(location);
+			if (oldLocation.canAutoLoadUnit()) {
+				embarkUnitsFromLocation(oldLocation);
 			}
 		}
-		newUnitLocation.getUnits().add(this);
+		newUnitLocation.addUnit(this);
 		if (newUnitLocation.canAutoUnloadUnits()) {
 			disembarkUnitsToLocation(newUnitLocation);
 		}
 		location = newUnitLocation;
 	}
 	
+	public void removeFromLocation() {
+	    if (location != null) {
+	        location.removeUnit(this);
+	        location = null;
+	    }
+	}
+	
 	public void remove() {
-		location.getUnits().removeId(this);
-		location = null;
+	    removeFromLocation();
+		disposed = true;
 	}
 	
     public boolean canAddUnit(Unit unit) {
@@ -169,6 +188,31 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return owner;
 	}
 
+	public void setOwner(Player player) {
+        this.owner = player;
+	}
+	
+	public void changeOwner(Player newOwner) {
+		this.owner.units.removeId(this);
+		this.owner = newOwner;
+		this.owner.units.add(this);
+	}
+	
+	public void captureUnit(Unit unit) {
+		unit.captureByPlayer(owner);
+		
+    	unit.changeUnitLocation(this.getTile());
+    	unit.reduceMovesLeftToZero();
+    	unit.clearDestination();
+    	unit.setState(Unit.UnitState.ACTIVE);
+	}
+	
+	public void captureByPlayer(Player player) {
+		owner.units.removeId(this);
+		owner = player;
+		player.units.add(this);
+	}
+	
 	public boolean isOwner(Player player) {
 		return owner.equals(player);
 	}
@@ -196,6 +240,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return space;
     }
 
+    public boolean hasSpaceForAdditionalCargo() {
+        return getSpaceTaken() < unitType.getSpace();
+    }
+    
     public boolean hasSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return getSpaceTaken() + additionalCargoSlots <= unitType.getSpace();
     }
@@ -332,6 +380,14 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return unitType.isOffensive() || unitRole.isOffensive();
     }
     
+	public boolean isArmed() {
+        return hasAbility(Ability.ARMED);
+	}
+    
+    public boolean isDefensiveUnit() {
+        return (unitType.isDefensive() || unitRole.isDefensive()) && !isCarrier();
+    }
+	
     /**
      * Get the visible amount of goods that is carried by this unit.
      *
@@ -345,9 +401,19 @@ public class Unit extends ObjectWithId implements UnitLocation {
         if (!canCarryGoods()) {
         	return 0;
         }
-//        GoodsContainer gc = getGoodsContainer();
-//        return (gc == null) ? 0 : gc.getSpaceTaken();
-        return 0;
+        GoodsContainer gc = getGoodsContainer();
+        return (gc == null) ? 0 : gc.getCargoSpaceTaken();
+    }
+    
+    public void transferAllGoods(Unit toUnit) {
+    	for (Entry<String> transferedGoods : getGoodsContainer().entries()) {
+			int max = toUnit.maxGoodsAmountToFillFreeSlots(transferedGoods.key);
+			if (max > 0) {
+				toUnit.getGoodsContainer().increaseGoodsQuantity(
+					transferedGoods.key, max
+				);
+			}
+		}
     }
     
     public boolean canCarryGoods() {
@@ -608,6 +674,10 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return isNaval() && tile != null && tile.getType().isLand() && !tile.hasSettlement();
     }
     
+    public boolean isBeached() {
+    	return isBeached(this.getTileLocationOrNull());
+    }
+    
     public void setState(UnitState newState) {
         if (state == newState) {
             // No need to do anything when the state is unchanged
@@ -702,10 +772,20 @@ public class Unit extends ObjectWithId implements UnitLocation {
     }
     
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return unitContainer.getUnits();
 	}
     
+    @Override
+    public void addUnit(Unit unit) {
+        unitContainer.addUnit(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        unitContainer.getUnits().removeId(unit);
+    }
+	
 	@Override
 	public boolean canAutoUnloadUnits() {
 		return false;
@@ -751,15 +831,29 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		reduceMovesLeftToZero();
 	}
 	
+	public void downgradeRole() {
+	    if (unitRole.noDowngradeRole()) {
+	        changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+	    } else {
+	        changeRole(Specification.instance.unitRoles.getById(unitRole.getDowngradeRoleId()));
+	    }
+	}
+	
 	public void changeUnitType(UnitType newUnitType) {
 		this.unitType = newUnitType;
 		this.experience = 0;
+		this.hitPoints = newUnitType.getHitPoints();
+	}
+	
+	public void changeUnitType(ChangeType changeType) {
+        UnitType newUnitType = unitType.upgradeByChangeType(changeType, owner);
+        changeUnitType(newUnitType);
 	}
 	
 	public List<UnitRole> avaliableRoles(ObjectWithFeatures place) {
 	    List<UnitRole> a = new ArrayList<UnitRole>();
         for (UnitRole role : Specification.instance.unitRoles.entities()) {
-            if (role.isAvailableTo(unitType, place)) {
+            if (role.isAvailableTo(unitType, place, owner.getFeatures())) {
                 a.add(role);
             }
         }
@@ -770,6 +864,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
         return unitRole;
     }
 	
+	@Override
 	public boolean hasAbility(String code) {
 	    if (unitType.hasAbility(code)) {
 	        return true;
@@ -781,6 +876,16 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	        return true;
 	    }
 	    return false;
+	}
+	
+	public boolean isRoleAvailable(UnitRole role) {
+		return role.isAvailableTo(unitType, unitRole, owner.getFeatures());
+	}
+	
+	public void getAbilities(String code, List<Ability> abilities) {
+		unitType.getAbilities(code, abilities);
+		unitRole.getAbilities(code, abilities);
+		owner.getFeatures().getAbilities(code, abilities);
 	}
 	
 	public void startImprovement(Tile tile, TileImprovementType improvement) {
@@ -842,7 +947,7 @@ public class Unit extends ObjectWithId implements UnitLocation {
 	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
 		if (unitContainer != null && unitContainer.isNotEmpty()) {
 			for (Unit unit : unitContainer.getUnits().entities()) {
-				newUnitLocation.getUnits().add(unit);
+				newUnitLocation.addUnit(unit);
 				unit.location = newUnitLocation;
 				unit.setState(UnitState.ACTIVE);
 			}
@@ -878,17 +983,107 @@ public class Unit extends ObjectWithId implements UnitLocation {
 		return roleCount;
 	}
     
-	public void addIndianUnitToSettlement() {
-		if (indianSettlement != null) {
-			IndianSettlement settlement = (IndianSettlement)(owner.settlements.getByIdOrNull(indianSettlement));
-			if (settlement != null) {
-				settlement.units.add(this);
-			}
-		}
-	}
-
 	public void setIndianSettlement(IndianSettlement settlement) {
 		this.indianSettlement = settlement.getId();
+	}
+	
+	public void removeFromIndianSettlement() {
+		this.indianSettlement = null;
+	}
+	
+	public String getIndianSettlementId() {
+	    return this.indianSettlement;
+	}
+	
+	public boolean hasRepairLocation() {
+	    return getRepairLocation() != null;
+	}
+	
+	public UnitLocation getRepairLocation() {
+	    for (Settlement settlement : getOwner().settlements.entities()) {
+	        if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+	            return settlement;
+	        }
+	    }
+	    return getOwner().getEurope();
+	}
+
+	public boolean isDisposed() {
+		return disposed;
+	}
+	
+	public void embarkCarrierOnTile(Tile destTile) {
+	    Unit carrier = null;
+        for (Unit u : destTile.getUnits().entities()) {
+            if (u.canAddUnit(this)) {
+                carrier = u;
+                break;
+            }
+        }
+        if (carrier == null) {
+            throw new IllegalStateException("carrier unit on tile: " + destTile);
+        }
+        embarkTo(carrier);
+	}
+	
+	public void embarkTo(Unit carrier) {
+	    this.setState(UnitState.SKIPPED);
+	    this.changeUnitLocation(carrier);
+	    this.reduceMovesLeftToZero();
+	}
+	
+	public void makeUnitDamaged(UnitLocation repairLocation) {
+        goodsContainer.decreaseAllToZero();
+        for (Unit u : new HashSet<Unit>(unitContainer.getUnits().entities())) {
+            owner.removeUnit(u);
+        }
+        if (repairLocation instanceof Colony) {
+            changeUnitLocation(((Colony) repairLocation).tile);
+        } else {
+            changeUnitLocation(repairLocation);
+        }
+        hitPoints = 1;
+        clearDestination();
+        setState(Unit.UnitState.ACTIVE);
+        reduceMovesLeftToZero();
+	}
+	
+	public boolean canCaptureEquipment(Unit unitEquipment) {
+		return capturedEquipment(unitEquipment.unitRole) != null;
+	}
+	
+	public UnitRole capturedEquipment(Unit unitEquipment) {
+	    return capturedEquipment(unitEquipment.unitRole);
+	}
+
+    public boolean canCaptureEquipment(UnitRole unitRoleEquipment) {
+        return capturedEquipment(unitRoleEquipment) != null;
+    }
+	
+	public UnitRole capturedEquipment(UnitRole capturedRole) {
+		if (!hasAbility(Ability.CAPTURE_EQUIPMENT)) {
+			return null;
+		}
+		for (UnitRole milRole : Specification.instance.militaryRoles) {
+			if (isRoleAvailable(milRole)) {
+				if (milRole.canChangeRole(unitRole, capturedRole)) {
+					return milRole;
+				}
+			}
+		}
+		return null;
+	}
+	
+	public boolean losingEquipmentKillsUnit() {
+		return hasAbility(Ability.DISPOSE_ON_ALL_EQUIPMENT_LOST) && unitRole.noDowngradeRole();
+	}
+	
+	public boolean losingEquipmentDemotesUnit() {
+		return hasAbility(Ability.DEMOTE_ON_ALL_EQUIPMENT_LOST) && unitRole.noDowngradeRole();
+	}
+	
+	public boolean canUpgradeByChangeType(ChangeType changeType) {
+		return unitType.upgradeByChangeType(changeType, getOwner()) != null;
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {

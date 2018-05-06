@@ -213,7 +213,7 @@ class IndianSettlementsGenerator {
 				}
 			}
 		}
-		Collections.shuffle(settlementTiles, Randomizer.instance().getRand());
+		Randomizer.instance().shuffle(settlementTiles);
 		return settlementTiles;
 	}
 	

@@ -19,7 +19,7 @@ public class Scope {
 	private String methodName;
 	private String methodValue;
 	
-	public boolean isAppliesTo(ObjectWithFeatures obj) {
+	public boolean isAppliesTo(ScopeAppliable obj) {
 		if (obj == null) {
 			return matchesNull;
 		}
@@ -29,7 +29,8 @@ public class Scope {
 			}
 		}
 		if (abilityId != null) {
-		    if (!obj.hasAbility(abilityId, abilityValue)) {
+			// case when obj has not ability and ability value  is false sa its ok
+		    if (obj.hasAbility(abilityId) != abilityValue) {
 		        return matchNegated;
 		    }
 		}
@@ -44,6 +45,10 @@ public class Scope {
 			}
 		}
 		return !matchNegated;
+	}
+
+	public String getType() {
+		return type;
 	}
 	
 	public String toString() {
@@ -98,5 +103,4 @@ public class Scope {
 			return "scope";
 		}
 	}
-
 }

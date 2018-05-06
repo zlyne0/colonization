@@ -414,7 +414,7 @@ public final class Ability implements Identifiable {
     private boolean value = true;
     private String source;
     private String id;
-    private List<Scope> scopes = new ArrayList<Scope>();
+    private final List<Scope> scopes = new ArrayList<Scope>();
     
     public Ability(String id) {
     	this.id = id;
@@ -441,6 +441,10 @@ public final class Ability implements Identifiable {
     	}
     	return false;
     }
+
+	public List<Scope> getScopes() {
+		return scopes;
+	}
     
     public boolean isValueEquals(boolean v) {
 		return value == v;

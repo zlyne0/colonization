@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.xml.sax.SAXException;
 
@@ -14,7 +15,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
-public class MapIdEntities<T extends Identifiable> {
+public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
 	
     protected final java.util.Map<String,T> entities;
     protected List<T> sortedEntities; 
@@ -22,6 +23,11 @@ public class MapIdEntities<T extends Identifiable> {
     public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities() {
     	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
     }
+
+	public static <TT extends Identifiable> MapIdEntities<TT> unmodifiableEmpty() {
+		Map<String, TT> emptyMap = Collections.emptyMap();
+		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));
+	}
     
     public MapIdEntities() {
     	entities = new HashMap<String,T>();
@@ -29,6 +35,11 @@ public class MapIdEntities<T extends Identifiable> {
     
     private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
     	this.entities = entitiesMapImplementation;
+    }
+    
+    public MapIdEntities(MapIdEntitiesReadOnly<T> aMapEntities) {
+    	this();
+    	addAll(aMapEntities);
     }
     
     public void add(T entity) {
@@ -39,8 +50,12 @@ public class MapIdEntities<T extends Identifiable> {
         sortedEntities = null;
     }
 
-    public void addAll(MapIdEntities<T> parentEntities) {
-        entities.putAll(parentEntities.entities);
+    public java.util.Map<String,T> innerMap() {
+        return entities;
+    }
+    
+    public void addAll(MapIdEntitiesReadOnly<T> parentEntities) {
+        entities.putAll(parentEntities.innerMap());
         sortedEntities = null;
     }
     
@@ -89,6 +104,18 @@ public class MapIdEntities<T extends Identifiable> {
     	return entities.values().iterator().next();
     }
     
+	public T firstButNot(T exclude) {
+		if (exclude == null) {
+			return first();
+		}
+		for (T entity : entities()) {
+			if (!entity.getId().equals(exclude.getId())) {
+				return entity;
+			}
+		}
+		return null;
+	}
+    
     public T getByIdOrNull(String id) {
         T en = entities.get(id);
         return en;
@@ -116,6 +143,16 @@ public class MapIdEntities<T extends Identifiable> {
     
     public Collection<T> entities() {
     	return entities.values();
+    }
+
+    public MapIdEntities<T> reduceBy(MapIdEntities<T> reducer) {
+        MapIdEntities<T> reduced = new MapIdEntities<T>();
+        for (T u : this.entities()) {
+            if (!reducer.containsId(u)) {
+                reduced.add(u);
+            }
+        }
+        return reduced;
     }
     
     public void removeId(String id) {
@@ -202,6 +239,5 @@ public class MapIdEntities<T extends Identifiable> {
             return tagName;
         }
     }
-
 }
 

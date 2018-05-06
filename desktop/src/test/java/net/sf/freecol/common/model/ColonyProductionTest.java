@@ -17,6 +17,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
+import net.sf.freecol.common.model.specification.BuildingType;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -174,7 +175,7 @@ public class ColonyProductionTest {
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");
         Building townHall = colony.findBuildingByType("model.building.townHall");
-        townHall.workers.removeId(unit);
+        unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
         colony.addWorkerToTerrain(fursColonyTile, unit);
@@ -228,8 +229,8 @@ public class ColonyProductionTest {
 
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType("model.building.townHall");
-        townHall.workers.removeId(unit);
+        Building townHall = colony.findBuildingByType(BuildingType.TOWN_HALL);
+        unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
         colony.addWorkerToTerrain(fursColonyTile, unit);
@@ -322,7 +323,7 @@ public class ColonyProductionTest {
         Building furTrading = colony.buildings.getByIdOrNull("building:6545");
         ProductionConsumption productionSummary = colony.productionSummary(furTrading);
         System.out.println("productionSummary = " + productionSummary);
-        colony.handleLackOfResources(null);
+        colony.handleLackOfResources(null, game);
 
         // when
 

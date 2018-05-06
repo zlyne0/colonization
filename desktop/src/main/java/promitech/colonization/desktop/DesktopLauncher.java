@@ -3,7 +3,7 @@ package promitech.colonization.desktop;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplication;
 import com.badlogic.gdx.backends.lwjgl.LwjglApplicationConfiguration;
 
-import promitech.colonization.ApplicationScreenManager;
+import promitech.colonization.screen.ApplicationScreenManager;
 
 public class DesktopLauncher {
 	public static void main (String[] arg) {

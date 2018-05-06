@@ -48,7 +48,7 @@ public abstract class BuildableType extends ObjectWithFeatures {
 	}
 	
 	public boolean doesNotNeedGoodsToBuild() {
-		return requiredGoods().isEmpty();
+		return requiredGoods.isEmpty();
 	}
 
 	public boolean isBuildingType() {

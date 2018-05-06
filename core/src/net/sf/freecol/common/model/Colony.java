@@ -60,7 +60,7 @@ public class Colony extends Settlement {
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
-    final List<Unit> colonyWorkers = new ArrayList<Unit>();
+    private final MapIdEntities<Unit> colonyWorkers = new MapIdEntities<Unit>();
     private int sonsOfLiberty = 0;
     private int tories = 0;
     private int productionBonus = 0;
@@ -72,14 +72,16 @@ public class Colony extends Settlement {
      */
     protected int liberty = 0;
     
-    public Colony(String id) {
-    	super(id);
+    private Colony(String id, SettlementType settlementType) {
+    	super(id, settlementType);
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
+    	
+    	// constructor used only by xml parser which create goodsContainer 
     }
 
-    public Colony(IdGenerator idGenerator) {
-		this(idGenerator.nextId(Colony.class));
+    public Colony(IdGenerator idGenerator, SettlementType settlementType) {
+		this(idGenerator.nextId(Colony.class), settlementType);
     	goodsContainer = new GoodsContainer();
 	}
 
@@ -101,7 +103,7 @@ public class Colony extends Settlement {
 
     public boolean isUnitInColony(Unit unit) {
         for (Building building : buildings.entities()) {
-            if (building.workers.containsId(unit)) {
+            if (building.getUnits().containsId(unit)) {
                 return true;
             }
         }
@@ -112,25 +114,20 @@ public class Colony extends Settlement {
     }
     
 	public boolean isUnitOnTerrain(Unit unit) {
-		return unitWorkingTerrain(unit) != null;
+	    return unit.isAtLocation(ColonyTile.class);
 	}
 
 	public ColonyTile unitWorkingTerrain(Unit unit) {
-        for (ColonyTile colonyTile : colonyTiles.entities()) {
-            if (colonyTile.getWorker() != null && unit.equalsId(colonyTile.getWorker())) {
-            	return colonyTile;
-            }
-        }
-        return null;
+	    return unit.getLocationOrNull(ColonyTile.class);
 	}
 	
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
-    		colonyWorkers.addAll(building.workers.entities());
+    		colonyWorkers.addAll(building.getUnits());
     	}
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
-    		if (colonyTile.getWorker() != null) {
+    		if (colonyTile.hasWorker()) {
     			colonyWorkers.add(colonyTile.getWorker());
     		}
     	}
@@ -149,6 +146,12 @@ public class Colony extends Settlement {
     	for (FoundingFather ff : owner.foundingFathers.entities()) {
     	    colonyUpdatableFeatures.addFeatures(ff);
     	}
+    	//settlement type jest nulem
+    	colonyUpdatableFeatures.addFeatures(settlementType);
+    }
+    
+    public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
+    	mods.addModifierFrom(colonyUpdatableFeatures, modifierCode);
     }
     
     @Override
@@ -161,6 +164,38 @@ public class Colony extends Settlement {
 		return (int)colonyUpdatableFeatures.applyModifier(modifierCode, (float)val);
 	}
 
+	public boolean hasBurnableBuildings() {
+	    for (Building building : buildings.entities()) {
+	    	if (isBuildingBurnable(building)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
+	public List<Building> createBurnableBuildingsList() {
+	    List<Building> burnable = new ArrayList<Building>();
+	    for (Building building : buildings.entities()) {
+	        if (isBuildingBurnable(building)) {
+	            burnable.add(building);
+	        }
+	    }
+	    return burnable;
+	}
+	
+	private boolean isBuildingBurnable(Building building) {
+		return !isAutoBuildable(building.buildingType);
+	}
+	
+	public boolean hasStockade() {
+	    for (Building building : buildings.entities()) {
+	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
     private String getStockadeKey() {
     	for (Building building : buildings.entities()) {
     		if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
@@ -174,7 +209,7 @@ public class Colony extends Settlement {
 	public boolean isColony() {
 		return true;
 	}
-    
+	
     public String getImageKey() {
         int count = getColonyUnitsCount();
         String key = (count <= 3) ? "small"
@@ -191,30 +226,15 @@ public class Colony extends Settlement {
     	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
-        building.workers.add(unit);
+    	unit.changeUnitLocation(building);
     }
     
     public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
     	unit.setState(UnitState.IN_COLONY);
     	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
     	changeUnitRole(unit, defaultUnitRole);
-        destColonyTile.setWorker(unit);
+    	unit.changeUnitLocation(destColonyTile);
         destColonyTile.tile.changeOwner(owner, this);
-    }
-    
-    public void removeWorkerFromWorkPlace(Unit worker) {
-    	for (ColonyTile ct : colonyTiles.entities()) {
-    		if (ct.getWorker() != null && ct.getWorker().equalsId(worker)) {
-    			ct.takeWorker();
-    			return;
-    		}
-    	}
-    	for (Building b : buildings.entities()) {
-    		if (b.workers.containsId(worker)) {
-    			b.workers.removeId(worker);
-    			return;
-    		}
-    	}
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
@@ -247,6 +267,7 @@ public class Colony extends Settlement {
     	goodsContainer.decreaseGoodsQuantity(required);
     }
     
+    @Override
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }
@@ -258,17 +279,17 @@ public class Colony extends Settlement {
     
     public void increaseWorkersExperience() {
         for (ColonyTile colonyTile : colonyTiles.entities()) {
-            if (colonyTile.getWorker() != null && !colonyTile.getWorker().isExpert()) {
+            if (colonyTile.hasWorker() && !colonyTile.getWorker().isExpert()) {
                 Unit worker = colonyTile.getWorker();
                 increaseExperienceForWorker(colonyTile, worker, 1);
             }
         }
         for (Building building : buildings.entities()) {
-            for (Unit worker : building.workers.entities()) {
+            for (Unit worker : building.getUnits().entities()) {
                 if (worker.isExpert()) {
                     continue;
                 }
-                increaseExperienceForWorker(building, worker, building.workers.size());
+                increaseExperienceForWorker(building, worker, building.getUnits().size());
             }
         }
     }
@@ -323,7 +344,7 @@ public class Colony extends Settlement {
         }
     }
     
-    public void handleLackOfResources(NewTurnContext newTurnContext) {
+    public void handleLackOfResources(NewTurnContext newTurnContext, Game game) {
         int foodProdCons = colonyProduction.globalProductionConsumption().getQuantity(GoodsType.FOOD);
         if (foodProdCons < 0) {
             // food consumption is greater then production
@@ -339,9 +360,11 @@ public class Colony extends Settlement {
                 	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {
-            	Unit unit = colonyWorkers.get(0);
-            	removeWorkerFromWorkPlace(unit);
-            	owner.units.removeId(unit);
+            	
+            	Unit unit = colonyWorkers.first();
+            	unit.removeFromLocation();
+            	owner.removeUnit(unit);
+
             	System.out.println("unit[" + unit + "] was removed from colony[" + getName() + "]");
             	
     			updateColonyPopulation();
@@ -353,7 +376,8 @@ public class Colony extends Settlement {
     			} else {
     				StringTemplate st = StringTemplate.template("model.colony.colonyStarved").add("%colony%", getName());
     				owner.eventsNotifications.addMessageNotification(st);
-    				owner.removeSettlement(this);
+    				removeFromMap(game);
+    				removeFromPlayer();
     				newTurnContext.setRequireUpdateMapModel();
     			}
             }
@@ -434,7 +458,7 @@ public class Colony extends Settlement {
     
 	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
 		for (ColonyTile ct : colonyTiles.entities()) {
-			if (ct.getWorker() == null) {
+			if (ct.hasNotWorker()) {
 				continue;
 			}
 			ProductionConsumption ps = productionSummary(ct);
@@ -463,7 +487,7 @@ public class Colony extends Settlement {
     }
     
 	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
-		if (aColonyTile.notEqualsId(tile) && aColonyTile.getWorker() == null) {
+		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
 			return;
 		}
 		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
@@ -792,7 +816,7 @@ public class Colony extends Settlement {
 			if (reqDiffAmount <= 0) {
 				continue;
 			}
-			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoods(game, owner, requiredGood.goodsType, reqDiffAmount);
+			TransactionEffectOnMarket effectOnMarket = ownerMarket.buyGoodsForBuilding(game, owner, requiredGood.goodsType, reqDiffAmount);
 			goodsContainer.increaseGoodsQuantity(requiredGood.goodsType, reqDiffAmount);
 			
 			if (effectOnMarket.isMarketPriceChanged()) {
@@ -926,13 +950,47 @@ public class Colony extends Settlement {
 		buildingQueue.remove(0);
 	}
 	
-	protected Building findBuildingByType(String buildingTypeId) {
+	public Building addBuilding(final BuildingType buildingType) {
+		Building building = findBuildingByBuildingTypeHierarchy(buildingType);
+		if (building != null) {
+			building.upgrade(buildingType);
+		} else {
+			building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
+			buildings.add(building);
+		}
+		return building;
+	}
+	
+	protected Building findBuildingByBuildingTypeHierarchy(final BuildingType buildingType) {
+		Building foundBuilding = null;
+		BuildingType bt = buildingType;
+		
+		while (bt != null) {
+			foundBuilding = findBuildingByTypeOrNull(bt.getId());
+			if (foundBuilding != null) {
+				break;
+			}
+			bt = bt.getUpgradesFrom();
+		}
+		return foundBuilding;
+	}
+	
+	
+	public Building findBuildingByType(String buildingTypeId) {
+		Building building = findBuildingByTypeOrNull(buildingTypeId);
+		if (building == null) {
+			throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
+		}
+		return building;
+	}
+	
+	protected Building findBuildingByTypeOrNull(String buildingTypeId) {
 		for (Building building : buildings.entities()) {
 			if (building.buildingType.equalsId(buildingTypeId)) {
 				return building;
 			}
 		}
-		throw new IllegalStateException("can not find building '" + buildingTypeId + "' in colony " + this);
+		return null;
 	}
 	
     private void removeResourcesAfterCompleteBuilding(BuildableType type) {
@@ -941,6 +999,54 @@ public class Colony extends Settlement {
     	}
 	}
 
+    public void damageBuilding(Building building) {
+    	if (building.buildingType.isRoot()) {
+    		MapIdEntities<Unit> ejectWorkers = new MapIdEntities<Unit>(building.getUnits());
+    		buildings.removeId(building);
+    		
+    		updateColonyFeatures();
+    		
+    		for (ColonyTile ct : colonyTiles.entities()) {
+    			if (ct.hasWorker() && isTileLocked(ct.tile)) {
+    				ejectWorkers.add(ct.getWorker());
+    			}
+    		}
+    		for (Building b : buildings.entities()) {
+    			if (b.getUnits().isNotEmpty()) {
+    				b.getWorkersToEject(ejectWorkers);
+    			}
+    		}
+    		
+    		ejectWorkers(ejectWorkers);
+    	} else if (isBuildingBurnable(building)) {
+    		MapIdEntities<Unit> ejectWorkers = building.damageBuilding();
+    		ejectWorkers(ejectWorkers);
+    	} else {
+    		return;
+    	}
+    	
+		updateColonyFeatures();
+		updateColonyPopulation();
+		updateModelOnWorkerAllocationOrGoodsTransfer();
+    }
+    
+    private void ejectWorkers(MapIdEntitiesReadOnly<Unit> ejectWorkers) {
+    	if (ejectWorkers.isNotEmpty()) {
+    		for (Unit ejectedWorker : ejectWorkers.entities()) {
+    			boolean foundBuilding = false;
+    			for (Building b : buildings.entities()) {
+    				if (b.canAddWorker(ejectedWorker)) {
+    					foundBuilding = true;
+    					ejectedWorker.changeUnitLocation(b);
+    				}
+    			}
+    			if (!foundBuilding) {
+    				ejectedWorker.changeUnitLocation(tile);
+    			}
+    		}
+    	}
+    }
+    
 	/**
      * Return the reason why the give <code>BuildableType</code> can
      * not be built.
@@ -1015,13 +1121,17 @@ public class Colony extends Settlement {
 	
 	public void initDefaultBuildings() {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
-    		if (buildingType.doesNotNeedGoodsToBuild() && buildingType.isRoot() || isAutobuildable(buildingType)) {
+    		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
     		}
     	}
 	}
 	
-    private boolean isAutobuildable(BuildingType buildingType) {
+	private boolean isAutoBuildable(BuildingType buildingType) {
+	    return buildingType.isAutomaticBuild() && isAutoBuildableInColony(buildingType);
+	}
+	
+    private boolean isAutoBuildableInColony(BuildingType buildingType) {
     	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100);
     	NoBuildReason noBuildReason = getNoBuildReason(buildingType);
     	return modified == 0f && noBuildReason == NoBuildReason.NONE;
@@ -1046,7 +1156,6 @@ public class Colony extends Settlement {
     		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
     		addWorkerToBuilding(townHall, builder);
     	}
-    	builder.getTile().getUnits().removeId(builder);
     	updateColonyPopulation();
     }
     
@@ -1074,6 +1183,85 @@ public class Colony extends Settlement {
 			}
 		}
 		return false;
+	}
+
+	public boolean hasLootableGoods() {
+	    Specification spec = Specification.instance;
+	    for (Entry<String> goods : goodsContainer.entries()) {
+	        if (goods.value > 0 && spec.goodsTypes.getById(goods.key).isStorable()) {
+	            return true;
+	        }
+        }
+	    return false;
+	}
+	
+	public List<GoodsType> createLootableGoodsList() {
+	    List<GoodsType> lootable = new ArrayList<GoodsType>();
+	    Specification spec = Specification.instance;
+        for (Entry<String> goods : goodsContainer.entries()) {
+            GoodsType gt = spec.goodsTypes.getById(goods.key);
+            if (goods.value > 0 && gt.isStorable()) {
+                lootable.add(gt);
+            }
+        }
+	    return lootable;
+	}
+	
+	public Collection<Unit> settlementWorkers() {
+		return colonyWorkers.entities();
+	}
+	
+	@Override
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
+		return colonyWorkers;
+	}
+
+    @Override
+    public void addUnit(Unit unit) {
+        throw new IllegalStateException("should add unit directly to building or colony tile");
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        throw new IllegalStateException("should remove unit directly from building or colony tile");
+    }
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
+	}
+	
+	public void changeOwner(Player newOwner) {
+		Player oldOwner = owner;
+		super.changeOwner(newOwner);
+		
+		if (oldOwner != null) {
+			for (ColonyTile colonyTile : colonyTiles.entities()) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
+					colonyTile.tile.changeOwner(newOwner);
+				}
+			}
+		}
+		
+		buildingQueue.clear();
+		
+		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+			boolean foundBuildingType = false;
+			for (Building building : buildings.entities()) {
+				if (building.buildingType.equalsId(buildingType)) {
+					foundBuildingType = true;
+					break;
+				}
+			}
+			if (!foundBuildingType && isAutoBuildable(buildingType)) {
+				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+			}
+		}
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
@@ -1107,14 +1295,16 @@ public class Colony extends Settlement {
             String strAttribute = attr.getStrAttribute(ATTR_SETTLEMENT_TYPE);
             Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             
-            Colony colony = new Colony(attr.getStrAttribute(ATTR_ID));
+            Colony colony = new Colony(
+        		attr.getStrAttribute(ATTR_ID),
+        		owner.nationType().settlementTypes.getById(strAttribute)
+    		);
             colony.name = attr.getStrAttribute(ATTR_NAME);
             colony.sonsOfLiberty = attr.getIntAttribute(ATTR_SONS_OF_LIBERTY, 0);
             colony.tories = attr.getIntAttribute(ATTR_TORIES, 0);
             colony.productionBonus = attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0);
             colony.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             colony.owner = owner;
-            colony.settlementType = owner.nationType().settlementTypes.getById(strAttribute);
             owner.settlements.add(colony);
             
             nodeObject = colony;
@@ -1151,5 +1341,4 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
-
 }

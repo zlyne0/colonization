@@ -12,7 +12,7 @@ public class ThreadsResources {
 	private ThreadsResources() {
 	}
 	
-	public void executeAImovement(Runnable command) {
+	public void executeMovement(Runnable command) {
 		if (executorService == null) {
 			executorService = Executors.newFixedThreadPool(1);
 		}

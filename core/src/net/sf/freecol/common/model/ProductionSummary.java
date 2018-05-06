@@ -85,6 +85,12 @@ public class ProductionSummary {
         }
     }
     
+	public void decreaseAllToZero() {
+		for (Entry<String> gsEntry : goods.entries()) {
+			goods.put(gsEntry.key, 0);
+		}
+	}
+    
     public void setZero(String goodsId) {
     	goods.put(goodsId, 0);
     }
@@ -189,8 +195,8 @@ public class ProductionSummary {
         return true;
     }
     
-	public boolean hasMoreOrEquals(List<RequiredGoods> requiredGoods) {
-		for (RequiredGoods rg : requiredGoods) {
+	public boolean hasMoreOrEquals(MapIdEntities<RequiredGoods> requiredGoods) {
+		for (RequiredGoods rg : requiredGoods.entities()) {
 			if (goods.get(rg.getId(), 0) < rg.amount) {
 				return false;
 			}

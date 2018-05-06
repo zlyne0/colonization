@@ -12,7 +12,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
-	private List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
+	protected List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
 	
 	public AbstractMission(String id) {
 		super(id);

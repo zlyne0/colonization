@@ -13,6 +13,10 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class Modifier implements Identifiable {
 
+	public static interface ModifierPredicate {
+		boolean apply(Modifier modifier);
+	}
+	
 	public static final String AMPHIBIOUS_ATTACK = "model.modifier.amphibiousAttack";
 	public static final String ARTILLERY_AGAINST_RAID = "model.modifier.artilleryAgainstRaid";
 	public static final String ARTILLERY_IN_THE_OPEN = "model.modifier.artilleryInTheOpen";
@@ -23,6 +27,7 @@ public class Modifier implements Identifiable {
 	public static final String BREEDING_FACTOR = "model.modifier.breedingFactor";
 	public static final String BUILDING_PRICE_BONUS = "model.modifier.buildingPriceBonus";
 	public static final String COLONY_GOODS_PARTY = "model.modifier.colonyGoodsParty";
+	public static final String COMBAT_CARGO_PENALTY = "model.modifier.cargo.penalty";
 	public static final String CONSUME_ONLY_SURPLUS_PRODUCTION = "model.modifier.consumeOnlySurplusProduction";
 	public static final String CONVERSION_ALARM_RATE = "model.modifier.conversionAlarmRate";
 	public static final String CONVERSION_SKILL = "model.modifier.conversionSkill";
@@ -80,8 +85,18 @@ public class Modifier implements Identifiable {
     private float increment;
     private ModifierType incrementType;
     private int modifierIndex = DEFAULT_MODIFIER_INDEX;
+	private String sourceId;
 	
+    public Modifier(String id) {
+    	this.id = id;
+    }
 	
+	public Modifier(String id, ModifierType modifierType, float value) {
+		this(id);
+		this.modifierType = modifierType;
+		this.value = value;
+	}
+
 	@Override
 	public String getId() {
 		return id;
@@ -113,11 +128,37 @@ public class Modifier implements Identifiable {
     }
 	
 	public String toString() {
-	    return "modifier id: " + id + ", modifierType: " + modifierType;
+	    return 
+	    		"id: " + id + 
+	    		", modifierType: " + modifierType + 
+	    		", value: " + value + 
+	    		", source: " + sourceId;
+	}
+	
+	public String createTypeMessage() {
+		switch (modifierType) {
+		case MULTIPLICATIVE: return "*";
+		case PERCENTAGE: return "%";
+		default:
+			return "";
+		}
+	}
+	
+	public boolean isPercentageType() {
+		return modifierType == ModifierType.PERCENTAGE;
+	}
+	
+	public float getValue() {
+		return value;
+	}
+	
+	public String getSourceId() {
+		return sourceId;
 	}
 	
 	public static class Xml extends XmlNodeParser<Modifier> {
 
+		private static final String SOURCE_ATTR = "source";
 		private static final String INDEX_TYPE = "index";
 		private static final String INCREMENT_TYPE = "increment";
 		private static final String INCREMENT_TYPE_ATTR = "incrementType";
@@ -138,8 +179,7 @@ public class Modifier implements Identifiable {
 
 	    @Override
         public void startElement(XmlNodeAttributes attr) {
-			Modifier modifier = new Modifier();
-			modifier.id = attr.getStrAttribute(ATTR_ID);
+			Modifier modifier = new Modifier(attr.getStrAttribute(ATTR_ID));
 			modifier.value = attr.getFloatAttribute(ATTR_VALUE, 0);
 			modifier.modifierType = attr.getEnumAttribute(ModifierType.class, TYPE_ATTR);
 			modifier.incrementType = attr.getEnumAttribute(ModifierType.class, INCREMENT_TYPE_ATTR);
@@ -147,6 +187,7 @@ public class Modifier implements Identifiable {
 				modifier.increment = attr.getFloatAttribute(INCREMENT_TYPE);
 			}
 			modifier.modifierIndex = attr.getIntAttribute(INDEX_TYPE, DEFAULT_MODIFIER_INDEX);
+			modifier.sourceId = attr.getStrAttribute(SOURCE_ATTR);
 			nodeObject = modifier;
 		}
 
@@ -159,6 +200,7 @@ public class Modifier implements Identifiable {
 	    		attr.set(INCREMENT_TYPE_ATTR, node.incrementType);
 	    		attr.set(INCREMENT_TYPE, node.increment);
 	    	}
+	    	attr.set(SOURCE_ATTR, node.sourceId);
 	    	attr.set(INDEX_TYPE, node.modifierIndex);
 	    }
 	    

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -26,6 +27,8 @@ public class UnitType extends BuildableType {
 	
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
+	public static final String ARTILLERY = "model.unit.artillery";
+	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -134,9 +137,17 @@ public class UnitType extends BuildableType {
         return getBaseOffence() > UnitType.DEFAULT_OFFENCE;
     }
 	
+	public boolean isDefensive() {
+		return getBaseDefence() > UnitType.DEFAULT_DEFENCE;
+	}
+    
     public int getBaseOffence() {
         return offence;
     }
+    
+	public int getBaseDefence() {
+		return defence;
+	}
     
     /**
      * Can this type of unit be upgraded to another given type by a given
@@ -162,6 +173,32 @@ public class UnitType extends BuildableType {
             }
         }
         return false;
+    }
+    
+    public UnitTypeChange getUnitTypeChange(ChangeType changeType, Player player) {
+    	for (UnitTypeChange change : unitTypeChanges.entities()) {
+    		if (change.isPositiveProbability(changeType)) {
+    			String newUnitTypeId = change.getNewUnitTypeId();
+    			UnitType newUnitType = Specification.instance.unitTypes.getById(newUnitTypeId);
+    			if (newUnitType.isAvailableTo(player.getFeatures())) {
+    				return change;
+    			}
+    		}
+    	}
+    	return null;
+    }
+    
+    public UnitType upgradeByChangeType(ChangeType changeType, Player player) {
+    	for (UnitTypeChange change : unitTypeChanges.entities()) {
+    		if (change.isPositiveProbability(changeType)) {
+    			String newUnitTypeId = change.getNewUnitTypeId();
+    			UnitType newUnitType = Specification.instance.unitTypes.getById(newUnitTypeId);
+    			if (newUnitType.isAvailableTo(player.getFeatures())) {
+    				return newUnitType;
+    			}
+    		}
+    	}
+    	return null;
     }
     
     public List<String> getUpgradesUnitTypeIds(ChangeType changeType) {
@@ -341,5 +378,4 @@ public class UnitType extends BuildableType {
             return "unit-type";
         }
     }
-
 }

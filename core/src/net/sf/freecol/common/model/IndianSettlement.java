@@ -1,13 +1,12 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
+import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -22,18 +21,27 @@ public class IndianSettlement extends Settlement {
     };
 	
 	/** The missionary at this settlement. */
-    protected Unit missionary = null;
+    private IndianSettlementMissionary missionary;
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
-    public final List<Unit> units = new ArrayList<Unit>();
+    private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
+    private final GoodsContainer goodsContainer;
     
-    public IndianSettlement(IdGenerator idGenerator) {
-    	super(idGenerator.nextId(IndianSettlement.class));
+    public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
+    	super(idGenerator.nextId(IndianSettlement.class), settlementType);
+    	goodsContainer = new GoodsContainer();
     }
-    
-    public IndianSettlement(String id) {
-		super(id);
+
+    /**
+     * constructor used only by xml parser.
+     * Xml parser also create {@link goodsContainer}
+     * @param id
+     * @param settlementType
+     */
+    private IndianSettlement(String id, SettlementType settlementType) {
+		super(id, settlementType);
+		goodsContainer = new GoodsContainer();
 	}
 
     public boolean hasContact(Player player) {
@@ -53,11 +61,26 @@ public class IndianSettlement extends Settlement {
 			tension.modify(tensionValue);
 		}
 	}
-    
+
+    public void setTension(Player player, int tensionValue) {
+        Tension tension = tensionByPlayer.get(player.getId());
+        if (tension == null) {
+            tension = new Tension(tensionValue);
+            tensionByPlayer.put(player.getId(), tension);
+        } else {
+            tension.setValue(tensionValue);
+        }
+    }
+	
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;
     }
+
+	@Override
+	public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
+		mods.addModifierFrom(settlementType, modifierCode);
+	}
     
     public String getImageKey() {
     	String st = owner.nation().getId();
@@ -78,14 +101,44 @@ public class IndianSettlement extends Settlement {
     }
     
 	@Override
-	public boolean isColony() {
-		return false;
+	public boolean isIndianSettlement() {
+		return true;
+	}
+	
+	@Override
+	public GoodsContainer getGoodsContainer() {
+		return goodsContainer;
 	}
     
-    private boolean hasMissionary() {
-        return missionary != null;
-    }
+	public int plunderGold(Unit attacker) {
+		if (settlementType == null) {
+			return 0;
+		}
+		return settlementType.plunderGold(attacker);
+	}
 
+	public Entry<String, Tension> mostHatedPlayer(MapIdEntities<Player> players) {
+		Entry<String, Tension> mostHatedPlayer = null;
+		int playerTensionLevel = Integer.MIN_VALUE;
+
+		for (Entry<String, Tension> entry : tensionByPlayer.entrySet()) {
+			Tension tension = entry.getValue();
+			Player player = players.getById(entry.getKey());
+			
+			if (player.isNotLiveEuropeanPlayer()) {
+				continue;
+			}
+			if (tension.getLevel() == Tension.Level.HAPPY) {
+				continue;
+			}
+			if (playerTensionLevel < tension.getValue()) {
+				mostHatedPlayer = entry;
+				playerTensionLevel = tension.getValue();
+			}
+		}
+		return mostHatedPlayer;
+	}
+	
     public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
@@ -96,13 +149,36 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_NAME = "name";
 
+		public Xml() {
+            addNode(Unit.class, new ObjectFromNodeSetter<IndianSettlement, Unit>() {
+                @Override
+                public void set(IndianSettlement target, Unit entity) {
+                    entity.changeUnitLocation(target);
+                }
+
+                @Override
+                public void generateXml(IndianSettlement source, ChildObject2XmlCustomeHandler<Unit> xmlGenerator) throws IOException {
+                    xmlGenerator.generateXmlFromCollection(source.units.entities());
+                }
+            });
+			
+			addNode(GoodsContainer.class, "goodsContainer");
+			addNode(IndianSettlementMissionary.class, "missionary");
+		}
+		
 		@Override
         public void startElement(XmlNodeAttributes attr) {
-            IndianSettlement is = new IndianSettlement(attr.getStrAttributeNotNull(ATTR_ID));
+			Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
+            SettlementType settlementType = owner.nationType()
+        		.settlementTypes
+        		.getById(attr.getStrAttribute(ATTR_SETTLEMENT_TYPE));
+            
+			IndianSettlement is = new IndianSettlement(
+        		attr.getStrAttributeNotNull(ATTR_ID),
+        		settlementType
+    		);
             is.name = attr.getStrAttribute(ATTR_NAME);
-            Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             is.owner = owner;
-            is.settlementType = owner.nationType().settlementTypes.getById(attr.getStrAttribute(ATTR_SETTLEMENT_TYPE));
             
             owner.settlements.add(is);
             
@@ -157,13 +233,13 @@ public class IndianSettlement extends Settlement {
     }
 
 	@Override
-	public int applyModifiers(String abilityCode, int val) {
+	public int applyModifiers(String modifierCode, int val) {
 		throw new IllegalStateException("not implemented");
 	}
 
 	@Override
 	public void addGoods(String goodsTypeId, int quantity) {
-		throw new IllegalStateException("not implemented");
+	    goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
 	}
 
 	@Override
@@ -179,5 +255,59 @@ public class IndianSettlement extends Settlement {
 	@Override
 	public ProductionSummary productionSummary() {
 		throw new IllegalStateException("not implemented");
+	}
+
+	@Override
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
+		return units;
+	}
+
+    @Override
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        units.removeId(unit);
+    }
+	
+	@Override
+	public boolean canAutoLoadUnit() {
+		return false;
+	}
+
+	@Override
+	public boolean canAutoUnloadUnits() {
+		return false;
+	}
+
+    private boolean hasMissionary() {
+        return missionary != null;
+    }
+
+    public boolean hasMissionary(Player player) {
+        return missionary != null && missionary.unit != null && missionary.unit.getOwner().equalsId(player);
+    }
+    
+    public boolean hasMissionaryNotPlayer(Player player) {
+    	return missionary != null 
+			&& missionary.unit != null 
+			&& missionary.unit.getOwner().notEqualsId(player);
+    }
+
+    public IndianSettlementMissionary getMissionary() {
+    	return missionary;
+    }
+    
+    public Player missionaryOwner() {
+    	return missionary.unit.getOwner();
+    }
+    
+	public void removeMissionary() {
+		Unit m = missionary.unit;
+		m.getOwner().removeUnit(m);
+		missionary.unit = null;
+		missionary = null;
 	}
 }

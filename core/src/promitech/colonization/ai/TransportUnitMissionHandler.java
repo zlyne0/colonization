@@ -1,24 +1,24 @@
 package promitech.colonization.ai;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
-import promitech.colonization.GUIGameModel;
-import promitech.colonization.MoveLogic;
-import promitech.colonization.gamelogic.MoveContext;
-import promitech.colonization.gamelogic.MoveType;
+import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 
 class TransportUnitMissionHandler {
 
     private final PathFinder pathFinder;
     private final GUIGameModel gameModel;
-    private final MoveLogic moveLogic;
+    private final MoveService moveService;
 
-    public TransportUnitMissionHandler(PathFinder pathFinder, GUIGameModel gameModel, MoveLogic moveLogic) {
+    public TransportUnitMissionHandler(PathFinder pathFinder, GUIGameModel gameModel, MoveService moveService) {
         this.pathFinder = pathFinder;
         this.gameModel = gameModel;
-        this.moveLogic = moveLogic;
+        this.moveService = moveService;
     }
 
     public void transportUnitMissionHandler(TransportUnitMission mission) {
@@ -26,7 +26,7 @@ class TransportUnitMissionHandler {
         
         MoveContext moveContext = new MoveContext(path);
         
-        moveLogic.forAiMoveViaPathOnlyReallocation(moveContext);
+        moveService.aiConfirmedMovePath(moveContext);
         
         if (moveContext.isMoveType(MoveType.DISEMBARK)) {
             mission.setDone();
@@ -36,7 +36,7 @@ class TransportUnitMissionHandler {
                     mission.dest, 
                     unitToDisembark
                 );
-                moveLogic.forAiMoveOnlyReallocation(mc);
+                moveService.aiConfirmedMoveProcessor(mc);
             }
         }
     }

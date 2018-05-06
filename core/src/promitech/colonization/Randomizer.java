@@ -1,8 +1,11 @@
 package promitech.colonization;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+
+import com.badlogic.gdx.math.RandomXS128;
 
 import net.sf.freecol.common.model.specification.WithProbability;
 
@@ -10,15 +13,26 @@ public final class Randomizer {
 
 	private static final Randomizer instance = new Randomizer();
 	
-	private final Random rand;
+	private Random rand;
 	
+	public static void changeRandomObject(Random random) {
+	    instance.rand = random;
+	}
+	
+	public static void changeRandomToRandomXS128() {
+	    instance.rand = new RandomXS128(System.currentTimeMillis());
+	}
 	
 	private Randomizer() {
-		rand = new Random(System.currentTimeMillis());
+		rand = new RandomXS128(System.currentTimeMillis());
 	}
-
+	
 	public static Randomizer instance() {
 		return instance;
+	}
+	
+	public float realProbability() {
+	    return rand.nextFloat();
 	}
 	
 	public int randomInt(int max) {
@@ -77,8 +91,7 @@ public final class Randomizer {
 		return col.get(index);
 	}
 
-	public Random getRand() {
-		return rand;
+	public <LIST_ELEMENT_TYPE> void shuffle(List<LIST_ELEMENT_TYPE> list) {
+		Collections.shuffle(list, rand);
 	}
-	
 }

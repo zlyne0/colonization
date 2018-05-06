@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.player;
 import java.io.IOException;
 
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLocation;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -13,9 +14,19 @@ public class HighSeas implements UnitLocation {
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
 	}
+
+    @Override
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        units.removeId(unit);
+    }
 	
 	@Override
 	public boolean canAutoLoadUnit() {
@@ -59,5 +70,4 @@ public class HighSeas implements UnitLocation {
         }
         
     }
-
 }

@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Iterator;
@@ -61,9 +62,19 @@ public class Tile implements UnitLocation, Identifiable {
 	}
 
 	@Override
-	public MapIdEntities<Unit> getUnits() {
+	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
 	}
+	
+    @Override
+    public void addUnit(Unit unit) {
+        units.add(unit);
+    }
+
+    @Override
+    public void removeUnit(Unit unit) {
+        units.removeId(unit);
+    }
 	
 	@Override
 	public boolean canAutoLoadUnit() {
@@ -297,6 +308,25 @@ public class Tile implements UnitLocation, Identifiable {
         return false;
     }
     
+    public boolean doesTileHaveNavyUnit() {
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.isNaval()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
+    public List<Unit> createNavyUnitsList() {
+        List<Unit> navyList = new ArrayList<Unit>();
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.isNaval()) {
+                navyList.add(unit);
+            }
+        }
+        return navyList;
+    }
+    
     public boolean isTileHasNavyUnitThatCanBombardUnit(Player navyUnitOwner, boolean isNavyPiracy) {
         if (type.isLand()) {
             // land units can not bombard ship
@@ -380,6 +410,10 @@ public class Tile implements UnitLocation, Identifiable {
 		if (settlement != null) {
 			this.owningSettlement = settlement.getId();
 		}
+	}
+	
+	public void resetOwningSettlement() {
+	    owningSettlement = null;
 	}
 	
 	public boolean hasOwnerOrOwningSettlement() {
@@ -473,7 +507,7 @@ public class Tile implements UnitLocation, Identifiable {
 		}
 		Colony tileOwnerColony = (Colony)owner.settlements.getById(owningSettlement);
 		ColonyTile ct = tileOwnerColony.colonyTiles.getById(this.getId());
-		return ct.getWorker() != null;
+		return ct.hasWorker();
 	}
 	
 	public boolean isOnSeaSide() {

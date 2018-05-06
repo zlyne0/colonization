@@ -9,12 +9,14 @@ import org.junit.Test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -95,20 +97,28 @@ public class PathFinderTest {
 
         Tile privateerTile = game.map.getTile(12, 79);
         Unit privateer = privateerTile.getUnits().getById("unit:6900");
-        privateerTile.getUnits().removeId(privateer);
-        startTile.getUnits().add(privateer);
-
-        Player fortressOwner = game.players.getById("player:112");
-        Colony fortressColony = new Colony("colony:-1");
-        fortressColony.setOwner(fortressOwner);
-
-        Building fortressBuilding = new Building("building:-1", Specification.instance.buildingTypes.getById("model.building.fortress"));
-        fortressBuilding.buildingType = Specification.instance.buildingTypes.getById("model.building.fortress");
-        fortressColony.buildings.add(fortressBuilding);
-        fortressColony.updateColonyFeatures();
+        privateer.changeUnitLocation(startTile);
 
         Tile fortressTile = game.map.getTile(27, 75);
-        fortressTile.setSettlement(fortressColony);
+        
+        Player fortressOwner = game.players.getById("player:112");
+        Unit freeColonist = new Unit(
+    		Game.idGenerator.nextId(Unit.class), 
+    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
+    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+    		fortressOwner
+		);
+        freeColonist.changeUnitLocation(fortressTile);
+        
+		Colony fortressColony = Settlement.buildColony(
+			game.map, 
+			freeColonist, 
+			fortressTile, 
+			"fortress colony"
+		);
+        fortressColony.addBuilding(Specification.instance.buildingTypes.getById("model.building.fortress"));
+        fortressColony.updateColonyFeatures();
+
 
         // when
         path = sut.findToTile(game.map, startTile, endTile, privateer);
@@ -138,8 +148,7 @@ public class PathFinderTest {
 
         Tile privateerTile = game.map.getTile(12, 79);
         Unit privateer = privateerTile.getUnits().getById("unit:6900");
-        privateerTile.getUnits().removeId(privateer);
-        startTile.getUnits().add(privateer);
+        privateer.changeUnitLocation(startTile);
 
         // when
         path = sut.findToTile(game.map, startTile, endTile, privateer);

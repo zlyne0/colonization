@@ -5,12 +5,12 @@ import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.resources.Messages;
 
-public abstract class Settlement extends ObjectWithId {
+public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
     public static final int FOOD_PER_COLONIST = 200;
     
 	protected String name;
-    public SettlementType settlementType;
+    public final SettlementType settlementType;
     protected Player owner;
     public Tile tile;
     protected boolean coastland = false;
@@ -22,10 +22,8 @@ public abstract class Settlement extends ObjectWithId {
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
     	tile.addImprovement(tileImprovement);
     	
-		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator);
-		indianSettlement.settlementType = settlementType;
+		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator, settlementType);
 		indianSettlement.name = settlmentName;
-		
 		indianSettlement.tile = tile;
 		tile.setSettlement(indianSettlement);
 		
@@ -44,14 +42,15 @@ public abstract class Settlement extends ObjectWithId {
 		for (int i=0; i<settlementUnitsNumber; i++) {
 			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
 			unit.setIndianSettlement(indianSettlement);
-			unit.changeUnitLocation(indianSettlement.tile);
-			indianSettlement.units.add(unit);
+			unit.changeUnitLocation(indianSettlement);
 		}
 	}
     
     public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
-    	Colony colony = new Colony(Game.idGenerator);
-    	colony.settlementType = buildByUnit.getOwner().nationType().getSettlementRegularType();
+    	Colony colony = new Colony(
+			Game.idGenerator,
+			buildByUnit.getOwner().nationType().getSettlementRegularType()
+		);
     	colony.name = name;
     	
     	tile.setSettlement(colony);
@@ -79,8 +78,9 @@ public abstract class Settlement extends ObjectWithId {
 		return Integer.toString(player.settlements.size());
     }
     
-    public Settlement(String id) {
+    public Settlement(String id, SettlementType settlementType) {
 		super(id);
+		this.settlementType = settlementType;
 	}
     
     public abstract String getImageKey();
@@ -101,20 +101,50 @@ public abstract class Settlement extends ObjectWithId {
 	    this.owner = owner;
 	}
 	
+	public void changeOwner(Player newOwner) {
+		if (this.owner != null) {
+			this.owner.settlements.removeId(this);
+		}
+		newOwner.addSettlement(this);
+		
+		for (Unit unit : getUnits().entities()) {
+			unit.captureByPlayer(newOwner);
+		}
+		for (Unit unit : tile.getUnits().entities()) {
+			unit.captureByPlayer(newOwner);
+		}
+	}
+	
     public boolean isCoastland() {
     	return coastland;
     }
 	
-	public abstract boolean isColony();
+	public boolean isColony() {
+		return false;
+	}
+	
+	public boolean isIndianSettlement() {
+		return false;
+	}
 
 	public Colony getColony() {
 		return (Colony)this;
 	}
 	
+	public IndianSettlement getIndianSettlement() {
+	    return (IndianSettlement)this;
+	}
+	
     public boolean canBombardEnemyShip() {
-        return hasAbility(Ability.BOMBARD_SHIPS);
+        return isCoastland() && hasAbility(Ability.BOMBARD_SHIPS);
     }
 
+    public boolean hasGoodsToEquipRole(UnitRole unitRole) {
+    	return UnitRoleLogic.hasContainerRequiredGoods(getGoodsContainer(), unitRole);
+    }
+    
+    public abstract GoodsContainer getGoodsContainer();
+    
     public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);
@@ -125,5 +155,25 @@ public abstract class Settlement extends ObjectWithId {
 	
 	public abstract void initMaxPossibleProductionOnTile(Tile tile);
 
-	public abstract ProductionSummary productionSummary();	
+	public abstract ProductionSummary productionSummary();
+
+	public abstract void addModifiersTo(ObjectWithFeatures mods, String modifierCode);
+
+	public void removeFromMap(Game game) {
+		for (int x=0; x<game.map.width; x++) {
+			for (int y=0; y<game.map.height; y++) {
+				Tile tile = game.map.getSafeTile(x, y);
+				if (tile.getOwningSettlementId() != null && this.equalsId(tile.getOwningSettlementId())) {
+					tile.resetOwningSettlement();
+				}
+			}
+		}
+		tile.setSettlement(null);
+		tile = null;
+	}
+
+	public void removeFromPlayer() {
+		owner.settlements.removeId(this);
+		owner = null;
+	}
 }

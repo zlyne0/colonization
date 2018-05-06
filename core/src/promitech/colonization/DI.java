@@ -1,24 +1,36 @@
 package promitech.colonization;
 
+import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.orders.move.MoveController;
+import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.map.hud.GUIGameController;
+import promitech.colonization.screen.map.hud.GUIGameModel;
+import promitech.colonization.screen.map.unitanimation.MoveView;
+
 public class DI {
 
 	public GUIGameController guiGameController;
 	public MoveController moveController;
 	public GUIGameModel guiGameModel;
-	public MoveLogic moveLogic;
+	public MoveService moveService;
+	public CombatService combatService;
+	public MoveView moveView;
 	
 	public void createBeans() {
 		guiGameModel = new GUIGameModel();
 		guiGameController = new GUIGameController();
-		moveLogic = new MoveLogic();
+		moveService = new MoveService();
+		combatService = new CombatService();
 		moveController = new MoveController();
+		moveView = new MoveView();
 		
-		GameLogic gameLogic = new GameLogic(guiGameModel);
+		GameLogic gameLogic = new GameLogic(guiGameModel, combatService);
 		
-		moveController.inject(moveLogic, guiGameModel, guiGameController);
-		moveLogic.inject(guiGameController, moveController, guiGameModel);
+		moveController.inject(guiGameModel, guiGameController, moveView, moveService);
+		moveService.inject(guiGameController, moveController, guiGameModel, combatService);
+		combatService.inject(moveService, guiGameModel);
 		
-		guiGameController.inject(guiGameModel, moveController, gameLogic, moveLogic);
+		guiGameController.inject(guiGameModel, moveController, gameLogic, moveService);
 	}
 	
 }

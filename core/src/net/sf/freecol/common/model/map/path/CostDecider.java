@@ -1,11 +1,11 @@
 package net.sf.freecol.common.model.map.path;
 
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
-import promitech.colonization.gamelogic.MoveType;
 
 // cost for move by civilian unit into foreign settlement is delt by moveType
 // the same case for move to foreign unit

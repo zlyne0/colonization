@@ -23,20 +23,25 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class GameLogic {
 
 	private final GUIGameModel guiGameModel;
+	private final CombatService combatService;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
 	
-	public GameLogic(GUIGameModel guiGameModel) {
+	public GameLogic(GUIGameModel guiGameModel, CombatService combatService) {
 		this.guiGameModel = guiGameModel;
+		this.combatService = combatService;
 	}
 
 	public void newTurn(Player player) {
 		newTurnContext.restart();
 		System.out.println("newTurn for player " + player);
+
 		for (Unit unit : player.units.entities()) {
 			newTurnForUnit(unit);
 		}
@@ -56,7 +61,7 @@ public class GameLogic {
 			colony.buildBuildings(newTurnContext);
 			
 			colony.removeExcessedStorableGoods();
-			colony.handleLackOfResources(newTurnContext);
+			colony.handleLackOfResources(newTurnContext, guiGameModel.game);
 			colony.calculateSonsOfLiberty();
 			
 			colony.increaseWorkersExperience();
@@ -66,8 +71,32 @@ public class GameLogic {
         	MonarchLogic.generateMonarchAction(guiGameModel.game, player);
         	player.getEurope().handleImmigrationOnNewTurn();
         }
+        if (player.isEuropean()) {
+        	bombardEnemyShip(player);
+        }
         
 		player.fogOfWar.resetFogOfWar(player);
+	}
+
+	private void bombardEnemyShip(Player player) {
+		for (Settlement settlement : player.settlements.entities()) {
+			Colony colony = settlement.getColony();
+			if (!colony.canBombardEnemyShip()) {
+				continue;
+			}
+			
+			for (Direction direction : Direction.allDirections) {
+				Tile neighbourTile = guiGameModel.game.map.getTile(colony.tile, direction);
+				if (neighbourTile.getType().isWater()) {
+					Unit firstUnit = neighbourTile.getUnits().first();
+					if (combatService.canBombardTile(colony, neighbourTile, firstUnit)) {
+						combatService.bombardTileCombat(colony, neighbourTile, firstUnit);
+						// colony can bombard only one tile per turn
+						break;
+					}
+				}
+			}
+		}
 	}
 
 	public void newTurnForUnit(Unit unit) {
