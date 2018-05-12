@@ -134,9 +134,12 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	    }
 	};
     
-    
 	public UnitsPanel() {
 		super(null, GameResources.instance.getUiSkin());
+		ScrollPaneStyle frameStyle = new ScrollPaneStyle(this.getStyle());
+		frameStyle.background = new FrameWithCornersDrawableSkin(GameResources.instance);
+		setStyle(frameStyle);
+		
 		setWidget(widgets);
 		
         setForceScroll(false, false);

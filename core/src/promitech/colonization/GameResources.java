@@ -58,6 +58,7 @@ public class GameResources {
 	public void load() throws IOException {
 		loadModule("rules/classic");
 		loadModule("base");
+		loadModule("frames");
 		
 		uiSkin = new Skin(Gdx.files.internal("data/uiskin.json"));
 	}
