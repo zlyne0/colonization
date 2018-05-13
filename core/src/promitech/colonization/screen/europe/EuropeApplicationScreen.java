@@ -11,7 +11,6 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
-import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ObjectWithId;
@@ -215,7 +214,6 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         tableLayout.add(marketPanel).fillY().expandY();
 
         stage.addActor(tableLayout);
-        stage.setDebugAll(true);
 	}
 
 	protected void showUnitOrders(UnitActor unitActor) {
