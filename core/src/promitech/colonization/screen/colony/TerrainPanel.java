@@ -193,7 +193,15 @@ public class TerrainPanel extends Table implements
 				mapDrawModel, 
 				GameResources.instance, 
 				shapeRenderer
-		);
+		) {
+			public void mapToScreenCords(int x, int y, Vector2 p) {
+				super.mapToScreenCords(x, y, p);
+				
+		    	if (TerrainPanel.this.colonyTile.y % 2 == 1) {
+		    		p.x -= TILE_WIDTH / 2;
+		    	}
+			};
+		};
 		mapRenderer.setMapRendererSize(PREF_WIDTH, PREF_HEIGHT);
 		mapRenderer.centerCameraOnTileCords(colonyTile.x, colonyTile.y);
 		mapRenderer.showColonyLockedTiles(colony);
