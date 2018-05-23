@@ -27,7 +27,7 @@ import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class UnitActionOrdersDialog extends ClosableDialog {
+public class UnitActionOrdersDialog extends ClosableDialog<UnitActionOrdersDialog> {
 	public static interface UnitOrderExecutor {
 		/**
 		 * should return true to close dialog 

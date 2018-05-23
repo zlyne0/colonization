@@ -30,7 +30,8 @@ public class NotificationDialog extends ClosableDialog {
 		dialogLayout.add(label).pad(20);
 		
 		getContentTable().add(dialogLayout).top().expand();
-		getButtonTable().add(buttonsPanel()).expandX();
+		buttonTableLayoutExtendX();
+		dialog.getButtonTable().add(buttonsPanel()).expandX().fillX().padTop(20);
 		
 		withHidingOnEsc();
 	}
@@ -43,11 +44,7 @@ public class NotificationDialog extends ClosableDialog {
 				NotificationDialog.this.hide();
 			}
 		});
-		
-		Table panel = new Table();
-		panel.setFillParent(true);
-		panel.add(okButton).right().pad(20, 20, 20, 20);
-		return panel;
+		return okButton;
 	}
 
 	

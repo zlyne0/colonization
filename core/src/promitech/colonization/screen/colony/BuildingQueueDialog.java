@@ -159,8 +159,9 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		dialogLayout.add(buildQueueScrollPane).pad(20).top();
 		dialogLayout.add(buildableItemsScrollPane).pad(20).row();
 		
+		buttonTableLayoutExtendX();
 		getContentTable().add(dialogLayout);
-		getButtonTable().add(buttonsPanel()).expandX();
+		getButtonTable().add(buttonsPanel()).expandX().fillX();
         
 		withHidingOnEsc();
 	}
@@ -170,9 +171,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		TextButton okButton = new TextButton("OK", GameResources.instance.getUiSkin());
 		buyButton = new TextButton(buyMsg, GameResources.instance.getUiSkin());
 		
-		okButton.align(Align.right);
-		buyButton.align(Align.left);
-
 		okButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -187,8 +185,9 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		});
 		
 		Table panel = new Table();
-		panel.add(buyButton).left().pad(0, 20, 20, 20);
-		panel.add(okButton).right().pad(0, 20, 20, 20);
+		panel.setFillParent(true);
+		panel.add(buyButton).pad(0, 10, 10, 10).expandX().fillX();
+		panel.add(okButton).pad(0, 10, 10, 10).expandX().fillX();
 		return panel;
 	}
 

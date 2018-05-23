@@ -52,9 +52,10 @@ public class GoToCityDialogList extends ClosableDialog<GoToCityDialogList> {
 		locationsItemsScrollPane.setOverscroll(true, true);
 		locationsItemsScrollPane.setScrollBarPositions(false, true);
 		
+		buttonTableLayoutExtendX();
 		dialogLayout.add(locationsItemsScrollPane).pad(20);
 		getContentTable().add(dialogLayout).top().expand();
-		getButtonTable().add(buttonsPanel()).expandX();
+		dialog.getButtonTable().add(buttonsPanel()).expandX().fillX();
 		
 		withHidingOnEsc();
 	}
@@ -120,8 +121,14 @@ public class GoToCityDialogList extends ClosableDialog<GoToCityDialogList> {
 		
 		Table panel = new Table();
 		panel.setFillParent(true);
-		panel.add(cancelButton).left().pad(0, 20, 20, 20);
-		panel.add(okButton).right().pad(0, 20, 20, 20);
+		panel.add(cancelButton)
+			.pad(5, 5, 5, 5)
+			.fillX()
+			.expandX();
+		panel.add(okButton)
+			.pad(5, 5, 5, 5)
+			.fillX()
+			.expandX();
 		return panel;
 	}
 	
