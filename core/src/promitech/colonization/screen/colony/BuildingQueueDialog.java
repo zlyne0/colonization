@@ -5,10 +5,12 @@ import java.util.List;
 
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Image;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
@@ -150,17 +152,16 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		buildQueueScrollPane.setOverscroll(true, true);
 		buildQueueScrollPane.setScrollBarPositions(false, true);
 		
-		Table dialogLayout = new Table();
-		dialogLayout.add(actualBuildableItemActor)
-			.expandX()
-			.colspan(2)
-			.row();
-		
-		dialogLayout.add(buildQueueScrollPane).pad(20).top();
-		dialogLayout.add(buildableItemsScrollPane).pad(20).row();
+		SplitPane lists = new SplitPane(
+			buildQueueScrollPane, 
+			buildableItemsScrollPane, 
+			false, 
+			GameResources.instance.getUiSkin()
+		);
 		
 		buttonTableLayoutExtendX();
-		getContentTable().add(dialogLayout);
+		getContentTable().add(actualBuildableItemActor).row();
+		getContentTable().add(lists).expand().fill().pad(10);
 		getButtonTable().add(buttonsPanel()).expandX().fillX();
         
 		withHidingOnEsc();
@@ -306,4 +307,12 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 			buyButton.setDisabled(false);
 		}
 	}
+	
+	@Override
+	public void show(Stage stage) {
+		super.show(stage);
+		dialog.setWidth(stage.getWidth() * 0.75f);
+		resetPositionToCenter();
+	}
+	
 }
