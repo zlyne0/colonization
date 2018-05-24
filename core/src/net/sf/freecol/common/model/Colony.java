@@ -660,6 +660,7 @@ public class Colony extends Settlement {
     
     public void createColonyTiles(Map map, Tile centerColonyTile) {
     	this.tile = centerColonyTile;
+    	this.coastland = this.tile.isOnSeaSide();
     	
 		ColonyTile centerTile = new ColonyTile(tile);
 		colonyTiles.add(centerTile);
@@ -671,15 +672,13 @@ public class Colony extends Settlement {
     			continue;
     		}
     		colonyTiles.add(new ColonyTile(neighbourTile));
-    		if (neighbourTile.getType().isWater()) {
-    			coastland = true;
-    		}
-    			
     	}
     }
     
     public void initColonyTilesTile(Tile colonyTile, Map map) {
-        for (ColonyTile ct : colonyTiles.entities()) {
+    	this.coastland = this.tile.isOnSeaSide();
+    	
+    	for (ColonyTile ct : colonyTiles.entities()) {
             boolean foundTileForColonyTile = false; 
             for (Direction direction : Direction.allDirections) {
                 if (ct.equalsId(colonyTile)) {
@@ -697,10 +696,6 @@ public class Colony extends Settlement {
             if (foundTileForColonyTile == false) {
                 throw new IllegalStateException("can not find Tile for ColonyTile: " + ct);
             }
-            
-        	if (ct.tile.getType().isWater()) {
-        		coastland = true;
-        	}
         }
     }
     
@@ -722,6 +717,9 @@ public class Colony extends Settlement {
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
+    		if (bt.equalsId("model.building.docks")) {
+    			System.out.println("" + bt);
+    		}
 
     	    NoBuildReason noBuildReason = getNoBuildReason(bt);
     	    if (noBuildReason != NoBuildReason.NONE) {
@@ -1310,14 +1308,6 @@ public class Colony extends Settlement {
             nodeObject = colony;
         }
 
-        @Override
-        public void endElement(String uri, String localName, String qName) throws SAXException {
-        	if (qName.equals(tagName())) {
-        		nodeObject.updateColonyPopulation();
-        		nodeObject.updateColonyFeatures();
-        	}
-        }
-        
         @Override
         public void startWriteAttr(Colony colony, XmlNodeAttributesWriter attr) throws IOException {
         	attr.setId(colony);
