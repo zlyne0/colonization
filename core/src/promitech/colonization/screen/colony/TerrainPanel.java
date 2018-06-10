@@ -184,24 +184,7 @@ public class TerrainPanel extends Group implements
 				mapDrawModel, 
 				GameResources.instance, 
 				shapeRenderer
-		) {
-			@Override
-			public void mapToScreenCords(int x, int y, Vector2 p) {
-				super.mapToScreenCords(x, y, p);
-				
-		    	if (TerrainPanel.this.colonyTile.y % 2 == 1) {
-		    		p.x -= TILE_WIDTH / 2;
-		    	}
-			};
-			
-			@Override
-			public Point screenToMapCords(int screenX, int screenY) {
-				if (TerrainPanel.this.colonyTile.y % 2 == 1) {
-					screenX += TILE_WIDTH / 2;
-				}
-				return super.screenToMapCords(screenX, screenY);
-			}
-		};
+		);
 		mapRenderer.setMapRendererSize(PREF_WIDTH, PREF_HEIGHT);
 		mapRenderer.centerCameraOnTileCords(colonyTile.x, colonyTile.y);
 		mapRenderer.showColonyLockedTiles(colony);
