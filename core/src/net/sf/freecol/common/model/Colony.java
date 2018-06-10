@@ -1117,7 +1117,7 @@ public class Colony extends Settlement {
 		return requiredTurn;
 	}
 	
-	public void initDefaultBuildings() {
+	protected void initDefaultBuildings() {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
     		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
@@ -1126,7 +1126,7 @@ public class Colony extends Settlement {
 	}
 	
 	private boolean isAutoBuildable(BuildingType buildingType) {
-	    return buildingType.isAutomaticBuild() && isAutoBuildableInColony(buildingType);
+	    return buildingType.isAutomaticBuild() || isAutoBuildableInColony(buildingType);
 	}
 	
     private boolean isAutoBuildableInColony(BuildingType buildingType) {
