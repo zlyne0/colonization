@@ -3,7 +3,7 @@ package promitech.colonization.screen.colony;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
+import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
@@ -23,7 +24,7 @@ import promitech.colonization.screen.ui.UnitDragAndDropTarget;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.QuestionDialog;
 
-public class TerrainPanel extends Table implements 
+public class TerrainPanel extends Group implements 
 	DragAndDropSourceContainer<UnitActor>, 
 	DragAndDropTargetContainer<UnitActor>,
 	DragAndDropPreHandlerTargetContainer<UnitActor>
@@ -44,21 +45,11 @@ public class TerrainPanel extends Table implements
 	private final ChangeColonyStateListener changeColonyStateListener;
 	private final DoubleClickedListener unitActorDoubleClickListener;
 	
-	@Override
-	public float getPrefWidth() {
-		return PREF_WIDTH;
-	}
-	
-	@Override
-	public float getPrefHeight() {
-		return PREF_HEIGHT;
-	}
-	
 	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 	    this.changeColonyStateListener = changeColonyStateListener;
 	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
-		setWidth(getPrefWidth());
-		setHeight(getPrefHeight());
+		setWidth(PREF_WIDTH);
+		setHeight(PREF_HEIGHT);
 		
 		for (int i=0; i<productionQuantityDrawModels.length; i++) {
 			productionQuantityDrawModels[i] = new ProductionQuantityDrawModel();
@@ -194,6 +185,7 @@ public class TerrainPanel extends Table implements
 				GameResources.instance, 
 				shapeRenderer
 		) {
+			@Override
 			public void mapToScreenCords(int x, int y, Vector2 p) {
 				super.mapToScreenCords(x, y, p);
 				
@@ -201,6 +193,14 @@ public class TerrainPanel extends Table implements
 		    		p.x -= TILE_WIDTH / 2;
 		    	}
 			};
+			
+			@Override
+			public Point screenToMapCords(int screenX, int screenY) {
+				if (TerrainPanel.this.colonyTile.y % 2 == 1) {
+					screenX += TILE_WIDTH / 2;
+				}
+				return super.screenToMapCords(screenX, screenY);
+			}
 		};
 		mapRenderer.setMapRendererSize(PREF_WIDTH, PREF_HEIGHT);
 		mapRenderer.centerCameraOnTileCords(colonyTile.x, colonyTile.y);
