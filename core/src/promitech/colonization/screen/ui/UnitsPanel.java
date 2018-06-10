@@ -248,6 +248,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		System.out.println("take unit [" + unitActor.unit + "] from unitLocation " + unitLocation);
 
 		unitActor.dragAndDropSourceContainer = null;
+		unitActor.removeListener(unitClickListener);
 		unitActor.disableUnitChip();
 		
 		unitLocation.removeUnit(unitActor.unit);
@@ -271,6 +272,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);
+		unitActor.addListener(unitClickListener);
 		widgets.addActor(unitActor);
 		
 		validate();
