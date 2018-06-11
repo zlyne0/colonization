@@ -3,7 +3,7 @@ package promitech.colonization.screen.colony;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.math.Vector2;
-import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.scenes.scene2d.Group;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
+import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
@@ -23,7 +24,7 @@ import promitech.colonization.screen.ui.UnitDragAndDropTarget;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.QuestionDialog;
 
-public class TerrainPanel extends Table implements 
+public class TerrainPanel extends Group implements 
 	DragAndDropSourceContainer<UnitActor>, 
 	DragAndDropTargetContainer<UnitActor>,
 	DragAndDropPreHandlerTargetContainer<UnitActor>
@@ -44,21 +45,11 @@ public class TerrainPanel extends Table implements
 	private final ChangeColonyStateListener changeColonyStateListener;
 	private final DoubleClickedListener unitActorDoubleClickListener;
 	
-	@Override
-	public float getPrefWidth() {
-		return PREF_WIDTH;
-	}
-	
-	@Override
-	public float getPrefHeight() {
-		return PREF_HEIGHT;
-	}
-	
 	public TerrainPanel(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
 	    this.changeColonyStateListener = changeColonyStateListener;
 	    this.unitActorDoubleClickListener = unitActorDoubleClickListener;
-		setWidth(getPrefWidth());
-		setHeight(getPrefHeight());
+		setWidth(PREF_WIDTH);
+		setHeight(PREF_HEIGHT);
 		
 		for (int i=0; i<productionQuantityDrawModels.length; i++) {
 			productionQuantityDrawModels[i] = new ProductionQuantityDrawModel();

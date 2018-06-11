@@ -72,10 +72,10 @@ public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDi
 	private void createButtonsPanel() {
 		TextButton allUnitsButton = new TextButton(Messages.msg("all"), GameResources.instance.getUiSkin());
 		TextButton noneUnitsButton = new TextButton(Messages.msg("disembark.cancel"), GameResources.instance.getUiSkin());
-		allUnitsButton.align(Align.right);
-		noneUnitsButton.align(Align.left);
-		getButtonTable().add(allUnitsButton).right().pad(0, 20, 20, 20);
-		getButtonTable().add(noneUnitsButton).left().pad(0, 20, 20, 20);
+		
+		buttonTableLayoutExtendX();
+		getButtonTable().add(allUnitsButton).pad(10).fillX().expandX();
+		getButtonTable().add(noneUnitsButton).pad(10).fillX().expandX();
 		
 		allUnitsButton.addListener(new ChangeListener() {
 			@Override

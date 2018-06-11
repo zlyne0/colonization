@@ -86,6 +86,7 @@ public class MapRenderer {
 
     private final ShapeRenderer shapeRenderer;
     public final Vector2 cameraPosition = new Vector2();
+    private final Point viewCenteredMapPos = new Point(0, 0);
     private int screenWidth = -1;
     private int screenHeight = -1;
     
@@ -261,6 +262,10 @@ public class MapRenderer {
         p.y += cameraPosition.y;
     	
         p.y = screenHeight - p.y;
+        
+    	if (viewCenteredMapPos.y % 2 == 1) {
+    		p.x -= TILE_WIDTH / 2;
+    	}
     }
 
 	private final Point oneUsePoint = new Point();
@@ -270,6 +275,10 @@ public class MapRenderer {
     }
 	
     public void screenToMapCords(int screenX, int screenY, Point p) {
+		if (viewCenteredMapPos.y % 2 == 1) {
+			screenX += TILE_WIDTH / 2;
+		}
+    	
         double x, y, pX, pY;
         screenY = screenHeight - screenY;
         
@@ -290,6 +299,8 @@ public class MapRenderer {
 		if (screenWidth == -1 && screenHeight == -1) {
 			throw new IllegalStateException("screen size not set");
 		}
+		viewCenteredMapPos.set(mapx, mapy);
+				
 		cameraPosition.set(0, 0);
 		// there is transformation screenY = screenHeight - screenY;
     	screenToMapCords(0-TILE_WIDTH, screenHeight + TILE_HEIGHT, screenMin);

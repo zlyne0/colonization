@@ -153,4 +153,9 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     		event.handle(null);
     	}
     }
+    
+	protected void buttonTableLayoutExtendX() {
+		dialog.getCell(dialog.getButtonTable()).expandX().fillX();
+	}
+    
 }

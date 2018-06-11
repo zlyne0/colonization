@@ -13,7 +13,7 @@ import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.resources.Messages;
 
-public class ColonyNameDialog extends ClosableDialog {
+public class ColonyNameDialog extends ClosableDialog<ColonyNameDialog> {
 
 	private final Table dialogLayout = new Table();
 	

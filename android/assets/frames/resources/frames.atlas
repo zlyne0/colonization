@@ -1,0 +1,26 @@
+
+frames.png
+format: RGBA8888
+filter: Nearest,Nearest
+repeat: none
+frame-corner
+  rotate: false
+  xy: 1, 5
+  size: 25, 26
+  orig: 25, 26
+  offset: 0, 0
+  index: -1
+frame-left
+  rotate: false
+  xy: 1, 1
+  size: 8, 2
+  orig: 8, 2
+  offset: 0, 0
+  index: -1
+frame-bottom
+  rotate: false
+  xy: 28, 24
+  size: 2, 7
+  orig: 2, 7
+  offset: 0, 0
+  index: -1

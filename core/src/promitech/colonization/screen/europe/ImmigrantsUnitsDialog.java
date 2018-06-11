@@ -22,7 +22,7 @@ import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class ImmigrantsUnitsDialog extends ClosableDialog implements STableSelectListener {
+public class ImmigrantsUnitsDialog extends ClosableDialog<ImmigrantsUnitsDialog> implements STableSelectListener {
 
 	private final ShapeRenderer shape;
 	private final Player player;
@@ -84,22 +84,18 @@ public class ImmigrantsUnitsDialog extends ClosableDialog implements STableSelec
 		dialogLayout.add(unitsTable).row();
 		
 		getContentTable().add(dialogLayout);
-		getButtonTable().add(buttonsPanel()).expandX();
+		buttonTableLayoutExtendX();
+		getButtonTable().add(okButtons()).padTop(20);
 	}
 
-	private Actor buttonsPanel() {
+	private Actor okButtons() {
 		TextButton okButton = new TextButton("cancel", GameResources.instance.getUiSkin());
-		okButton.align(Align.right);
 		okButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
 				hideWithFade();
 			}
 		});
-		
-		Table panel = new Table();
-		panel.setFillParent(true);
-		panel.add(okButton).right().pad(0, 20, 20, 20);
-		return panel;
+		return okButton;
 	}
 }

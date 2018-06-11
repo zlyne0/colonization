@@ -126,11 +126,14 @@ public class Map extends ObjectWithId {
             Tile row[] = tiles[y];
             for (int x=0; x<width; x++) {
                 Tile t = row[x];
+                tileLandConnection(t);
+                
                 if (t.hasSettlement() && t.getSettlement().isColony()) {
                     Colony colony = t.getSettlement().getColony();
                     colony.initColonyTilesTile(t, this);
+            		colony.updateColonyPopulation();
+            		colony.updateColonyFeatures();
                 }
-                tileLandConnection(t);
             }
         }
     }

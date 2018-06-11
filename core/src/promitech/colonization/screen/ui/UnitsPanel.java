@@ -1,7 +1,9 @@
 package promitech.colonization.screen.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.Touchable;
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
@@ -12,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
+import com.sun.prism.GraphicsPipeline.ShaderType;
 
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.Specification;
@@ -36,6 +39,7 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 	private final DragAndDrop goodsDragAndDrop;
 	private UnitActor unitActor;
 	private final float prefHeight;
+	private final ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	CargoPanel(DragAndDrop goodsDragAndDrop, ChangeColonyStateListener changeColonyStateListener) {
 		setTouchable(Touchable.enabled);
@@ -100,11 +104,37 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 		updateCargoPanelData();
 		changeColonyStateListener.transfereGoods();
 	}
+	
+	@Override
+	public void draw(Batch batch, float parentAlpha) {
+		drawBorders(batch);
+		super.draw(batch, parentAlpha);
+	}
+
+	private void drawBorders(Batch batch) {
+		batch.end();
+		
+		shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+		shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+		
+		shapeRenderer.begin(ShapeType.Line);
+		shapeRenderer.setColor(Color.BLACK);
+		
+		float oneBox = LabelGoodActor.goodsImgWidth() + ITEMS_SPACE;
+		for (int i=0; i<unitActor.unit.unitType.getSpace(); i++) {
+			shapeRenderer.rect(getX() + (oneBox * i), getY(), oneBox, prefHeight);
+		}
+		shapeRenderer.end();
+		
+		batch.begin();
+	}
 }
 
 public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
 
 	
+	private static final float CORNER_SKIN_DECORATION_SIZE = 25;
+
 	private final HorizontalGroup widgets = new HorizontalGroup();
 	
     private ChangeColonyStateListener changeColonyStateListener;
@@ -134,9 +164,12 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	    }
 	};
     
-    
 	public UnitsPanel() {
 		super(null, GameResources.instance.getUiSkin());
+		ScrollPaneStyle frameStyle = new ScrollPaneStyle(this.getStyle());
+		frameStyle.background = new FrameWithCornersDrawableSkin(GameResources.instance);
+		setStyle(frameStyle);
+		
 		setWidget(widgets);
 		
         setForceScroll(false, false);
@@ -144,6 +177,8 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
         setOverscroll(true, true);
         setScrollBarPositions(false, true);
         
+        widgets.padLeft(CORNER_SKIN_DECORATION_SIZE);
+        widgets.padRight(CORNER_SKIN_DECORATION_SIZE);
         widgets.align(Align.center);
         widgets.space(15);
 	}
@@ -202,7 +237,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
     public void draw(Batch batch, float parentAlpha) {
     	super.draw(batch, parentAlpha);
     	if (label != null) {
-	    	label.setX(getX());
+	    	label.setX(getX() + CORNER_SKIN_DECORATION_SIZE);
 	    	label.setY(getY() + getHeight() - label.getHeight());
 	    	label.draw(batch, parentAlpha);
     	}
@@ -213,6 +248,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		System.out.println("take unit [" + unitActor.unit + "] from unitLocation " + unitLocation);
 
 		unitActor.dragAndDropSourceContainer = null;
+		unitActor.removeListener(unitClickListener);
 		unitActor.disableUnitChip();
 		
 		unitLocation.removeUnit(unitActor.unit);
@@ -236,6 +272,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);
+		unitActor.addListener(unitClickListener);
 		widgets.addActor(unitActor);
 		
 		validate();

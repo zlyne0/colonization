@@ -7,8 +7,8 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup;
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane;
+import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
@@ -37,13 +37,16 @@ import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.screen.ui.GoodTransferActorBridge;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog;
-import promitech.colonization.screen.ui.UnitActor;
-import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog.ActionTypes;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog.UnitActionOrderItem;
+import promitech.colonization.screen.ui.UnitActor;
+import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.resources.Messages;
 
+// Szukaj swobody a staniesz sie niewolnikiem wlasnych pragnien.
+// Szukaj dyscypliny a znajdziesz wolnosc.
+// Herbert Frank - Diuna Kapitularz
 public class ColonyApplicationScreen extends ApplicationScreen {
 
 	private class ColonyUnitOrders implements UnitActionOrdersDialog.UnitOrderExecutor {
@@ -299,10 +302,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         colGroup1.addActor(populationPanel);
         colGroup1.addActor(actualBuildableItemActor);
         
-        HorizontalGroup unitsGroup = new HorizontalGroup();
-        unitsGroup.addActor(carrierUnitsPanel);
-        unitsGroup.addActor(outsideUnitsPanel);
-        
+        SplitPane unitsPanel = new SplitPane(carrierUnitsPanel, outsideUnitsPanel, false, GameResources.instance.getUiSkin());
         
         Table spComponents = new Table();
         spComponents.add(colGroup1);
@@ -325,12 +325,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         tableLayout.add(centerComponents).fill().expand();
         tableLayout.row();
-        tableLayout.add(unitsGroup).fillX();
+        tableLayout.add(unitsPanel).fillX();
         tableLayout.row();
         tableLayout.add(warehousePanel);
 		
         stage.addActor(tableLayout);
-        stage.setDebugAll(true);
+        //stage.setDebugAll(true);
 	}
 
 	private TextButton createBuildQueueButton() {

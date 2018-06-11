@@ -25,7 +25,7 @@ import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class BuyableUnitsDialog extends ClosableDialog implements STableSelectListener {
+class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements STableSelectListener {
 
 	private final ShapeRenderer shape;
 	private final List<UnitType> unitsTypes;
@@ -93,13 +93,13 @@ class BuyableUnitsDialog extends ClosableDialog implements STableSelectListener 
 		Table dialogLayout = new Table();
 		dialogLayout.add(unitsScrollPane).pad(20);
 		
+		buttonTableLayoutExtendX();
 		getContentTable().add(dialogLayout);
-		getButtonTable().add(buttonsPanel()).expandX();
+		getButtonTable().add(buttonsPanel()).expandX().fillX();
 	}
 
 	private Actor buttonsPanel() {
 		TextButton okButton = new TextButton("cancel", GameResources.instance.getUiSkin());
-		okButton.align(Align.right);
 		okButton.addListener(new ChangeListener() {
 			@Override
 			public void changed(ChangeEvent event, Actor actor) {
@@ -109,7 +109,7 @@ class BuyableUnitsDialog extends ClosableDialog implements STableSelectListener 
 		
 		Table panel = new Table();
 		panel.setFillParent(true);
-		panel.add(okButton).right().pad(0, 20, 20, 20);
+		panel.add(okButton).right().pad(0, 10, 10, 10).fillX().expandX();
 		return panel;
 	}
 
