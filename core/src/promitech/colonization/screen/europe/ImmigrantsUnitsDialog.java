@@ -29,7 +29,6 @@ public class ImmigrantsUnitsDialog extends ClosableDialog<ImmigrantsUnitsDialog>
 	private final ChangeColonyStateListener changeColonyStateListener;
 	
 	public ImmigrantsUnitsDialog(float maxHeight, ShapeRenderer shape, Player player, ChangeColonyStateListener changeColonyStateListener) {
-		super("", GameResources.instance.getUiSkin());
 		this.shape = shape;
 		this.player = player;
 		this.changeColonyStateListener = changeColonyStateListener;

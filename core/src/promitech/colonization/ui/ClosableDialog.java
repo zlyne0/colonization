@@ -16,6 +16,8 @@ import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 
+import promitech.colonization.GameResources;
+
 public class ClosableDialog<T extends ClosableDialog<?>> {
     private static final long CLOSE_AFTER_CREATE_TIMEOUT = 1000;
 
@@ -26,6 +28,17 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     private ClosableDialog childDialog = null;
     private ClosableDialogSize prefWidth;
     private ClosableDialogSize prefHeight;
+
+    public ClosableDialog() {
+    	this("", GameResources.instance.getUiSkin(), 
+			ClosableDialogSize.def(), 
+			ClosableDialogSize.def()
+		);
+    }
+    
+    public ClosableDialog(final ClosableDialogSize prefWidth, final ClosableDialogSize prefHeight) {
+    	this("", GameResources.instance.getUiSkin(), prefWidth, prefHeight);
+    }
     
     public ClosableDialog(String title, Skin skin, final ClosableDialogSize prefWidth, final ClosableDialogSize prefHeight) {
     	this.prefWidth = prefWidth;
@@ -35,11 +48,17 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
         dialog = new Dialog(title, skin) {
         	@Override
         	public float getPrefHeight() {
+        		if (prefHeight == null) {
+        			return super.getPrefHeight();
+        		}
         		return prefHeight.get();
         	}
         	
         	@Override
         	public float getPrefWidth() {
+        		if (prefWidth == null) {
+        			return super.getPrefWidth();
+        		}
         		return prefWidth.get();
         	}
         };
@@ -58,22 +77,6 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     	dialog.getButtonTable().defaults().pad(0, 10, 5, 10).fillX().expandX().bottom();
     }
     
-    // TODO: refactoring remove constructor
-    public ClosableDialog(String title, Skin skin, final float maxHeight) {
-    	createTime = System.currentTimeMillis();
-    	
-        dialog = new Dialog(title, skin) {
-        	@Override
-        	public float getMaxHeight() {
-        		return maxHeight;
-        	}
-        	@Override
-        	public float getPrefHeight() {
-        		return maxHeight;
-        	}
-        };
-    }
-
 	public void init(ShapeRenderer shapeRenderer) {
 	}
     
@@ -150,9 +153,9 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
         );        
     }
     
-    public Stage getStage() {
-        return dialog.getStage();
-    }
+	protected void showDialog(SimpleMessageDialog confirmationDialog) {
+		confirmationDialog.show(dialog.getStage());
+	}
 
     public void pack() {
     	dialog.pack();

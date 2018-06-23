@@ -22,6 +22,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.ui.ClosableDialog;
+import promitech.colonization.ui.ClosableDialogSize;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
@@ -34,8 +35,8 @@ public class GoToCityDialogList extends ClosableDialog<GoToCityDialogList> {
 	
 	private LabelStyle cityNameLabelStyle;
 	
-	public GoToCityDialogList(final MoveController moveController, ShapeRenderer shape, float maxHeight, GUIGameModel guiGameModel) {
-		super("", GameResources.instance.getUiSkin(), maxHeight);
+	public GoToCityDialogList(final MoveController moveController, ShapeRenderer shape, GUIGameModel guiGameModel) {
+		super(ClosableDialogSize.def(), ClosableDialogSize.height75());
 		this.moveController = moveController;
 		
 		locationList = new STable(shape);

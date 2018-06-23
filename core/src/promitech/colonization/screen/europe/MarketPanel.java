@@ -57,7 +57,7 @@ public class MarketPanel extends Container<ScrollPane> implements DragAndDropTar
     
     private void payArrearsDoubleClickListener(final MarketData marketData, final MarketGoodsActor marketGoodsActor) {
 		if (player.hasNotGold(marketData.getArrears())) {
-			SimpleMessageDialog okDialog = new SimpleMessageDialog("", GameResources.instance.getUiSkin());
+			SimpleMessageDialog okDialog = new SimpleMessageDialog();
 			okDialog.withContent(StringTemplate.template("model.europe.cantPayArrears")
 				.addAmount("%amount%", marketData.getArrears())
 			);

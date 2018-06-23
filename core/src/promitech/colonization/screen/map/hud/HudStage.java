@@ -565,10 +565,9 @@ public class HudStage extends Stage {
 	
     private void showGotoLocationDialog() {
 		GoToCityDialogList gotoCityDialogList = new GoToCityDialogList(
-				moveController,
-				shapeRenderer,
-				HudStage.this.getHeight() * 0.75f,
-				guiGameModel
+			moveController,
+			shapeRenderer,
+			guiGameModel
 		);
 		HudStage.this.showDialog(gotoCityDialogList);
     }

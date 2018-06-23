@@ -22,7 +22,7 @@ import net.sf.freecol.common.model.Unit
 import promitech.colonization.DI
 
 class DebugConsole(val commandExecutor : CommandExecutor)
-	: ClosableDialog<DebugConsole>("", GameResources.instance.getUiSkin()), ConsoleOutput
+	: ClosableDialog<DebugConsole>(), ConsoleOutput
 {
 	private val dialogLayout = Table()
 	private val textField = TextField("", GameResources.instance.getUiSkin())

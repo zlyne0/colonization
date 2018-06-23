@@ -39,7 +39,10 @@ public abstract class ClosableDialogSize {
 			}
 		};
 	}
-	
+
+	public static ClosableDialogSize def() {
+		return null;
+	}
 	
 	protected float val;
 	public abstract void init(Stage stage);
@@ -47,4 +50,5 @@ public abstract class ClosableDialogSize {
 	public float get() {
 		return val;
 	}
+
 }

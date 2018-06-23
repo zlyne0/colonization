@@ -32,7 +32,7 @@ public class CheatConsole extends ClosableDialog<CheatConsole> {
 	private Tile selectedTile;
 	
 	public CheatConsole(GUIGameController gameControler, GUIGameModel guiGameModel) {
-		super("", GameResources.instance.getUiSkin());
+		super();
 		this.gameController = gameControler;
 		this.guiGameModel = guiGameModel;
 		

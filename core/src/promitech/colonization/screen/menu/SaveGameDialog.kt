@@ -21,8 +21,6 @@ class SaveGameDialog(
 	private val shapeRenderer : ShapeRenderer
 )
 	: ClosableDialog<SaveGameDialog>(
-		"",
-		GameResources.instance.getUiSkin(),
 		ClosableDialogSize.width50(), ClosableDialogSize.height75()
 	)
 {

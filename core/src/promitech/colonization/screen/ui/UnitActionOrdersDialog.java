@@ -133,7 +133,6 @@ public class UnitActionOrdersDialog extends ClosableDialog<UnitActionOrdersDialo
     };
     
 	public UnitActionOrdersDialog(ShapeRenderer shape, UnitActor unitActor, UnitOrderExecutor unitOrderExecutor) {
-        super("", GameResources.instance.getUiSkin());
         this.unitActor = unitActor;
         this.shape = shape;
         this.unitOrderExecutor = unitOrderExecutor;

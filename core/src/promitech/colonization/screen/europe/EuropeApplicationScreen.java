@@ -263,7 +263,6 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
-						stage.getHeight() * 0.75f, 
 						shape,
 						Specification.instance.unitTypesPurchasedInEurope.sortedEntities(),
 						player,
@@ -281,7 +280,6 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
 				BuyableUnitsDialog buyableUnitsDialog = new BuyableUnitsDialog(
-					stage.getHeight() * 0.75f, 
 					shape,
 					Specification.instance.unitTypesTrainedInEurope.sortedEntities(),
 					player,

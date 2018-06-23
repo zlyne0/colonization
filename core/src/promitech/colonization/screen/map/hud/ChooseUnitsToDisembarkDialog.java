@@ -26,7 +26,6 @@ public class ChooseUnitsToDisembarkDialog extends ClosableDialog<ChooseUnitsToDi
 	private final MoveContext moveContext;
 	
 	public ChooseUnitsToDisembarkDialog(MoveContext moveContext, MoveController moveController) {
-		super("", GameResources.instance.getUiSkin());
 		this.moveController = moveController;
 		this.moveContext = moveContext;
 	}

@@ -340,7 +340,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
 				BuildingQueueDialog dialog = new BuildingQueueDialog(
-						stage.getHeight() * 0.75f,
 						shape, guiGameModel.game, 
 						colony, changeColonyStateListener
 				);
