@@ -23,6 +23,7 @@ import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
 import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
+import promitech.colonization.screen.menu.MenuApplicationScreen;
 import promitech.colonization.ui.resources.Messages;
 
 public class ApplicationScreenManager extends ApplicationAdapter {
@@ -84,6 +85,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.EUROPE, new EuropeApplicationScreen());
+		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(di.guiGameController));
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;
@@ -93,7 +95,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 			screen.create();
 		}
 		
-		setScreen(ApplicationScreenType.MAP_VIEW);
+		setScreen(ApplicationScreenType.MAIN_MENU);
 		Gdx.graphics.setContinuousRendering(false);
 	}
 	

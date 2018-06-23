@@ -10,6 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.EventListener;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -23,15 +24,41 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     private LinkedList<EventListener> onCloseListeners = new LinkedList<EventListener>();
     
     private ClosableDialog childDialog = null;
+    private ClosableDialogSize prefWidth;
+    private ClosableDialogSize prefHeight;
+    
+    public ClosableDialog(String title, Skin skin, final ClosableDialogSize prefWidth, final ClosableDialogSize prefHeight) {
+    	this.prefWidth = prefWidth;
+    	this.prefHeight = prefHeight;
+    	
+    	createTime = System.currentTimeMillis();    	
+        dialog = new Dialog(title, skin) {
+        	@Override
+        	public float getPrefHeight() {
+        		return prefHeight.get();
+        	}
+        	
+        	@Override
+        	public float getPrefWidth() {
+        		return prefWidth.get();
+        	}
+        };
+        
+        buttonTableLayoutExtendX()
+	    	.bottom();
+		dialog.getButtonTable().defaults().pad(0, 10, 5, 10).fillX().expandX().bottom();
+    }
     
     public ClosableDialog(String title, Skin skin) {
     	createTime = System.currentTimeMillis();
     	dialog = new Dialog(title, skin);
     	
-    	dialog.getCell(dialog.getButtonTable()).expandX().fillX().bottom();
+        buttonTableLayoutExtendX()
+        	.bottom();
     	dialog.getButtonTable().defaults().pad(0, 10, 5, 10).fillX().expandX().bottom();
     }
     
+    // TODO: refactoring remove constructor
     public ClosableDialog(String title, Skin skin, final float maxHeight) {
     	createTime = System.currentTimeMillis();
     	
@@ -106,6 +133,12 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     };
     
     public void show(Stage stage) {
+    	if (prefWidth != null) {
+    		prefWidth.init(stage);
+    	}
+    	if (prefHeight != null) {
+    		prefHeight.init(stage);
+    	}
 		stage.addListener(onStageClickListener);
         dialog.show(stage);
     }
@@ -154,8 +187,8 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
     	}
     }
     
-	protected void buttonTableLayoutExtendX() {
-		dialog.getCell(dialog.getButtonTable()).expandX().fillX();
+	protected Cell<Table> buttonTableLayoutExtendX() {
+		return dialog.getCell(dialog.getButtonTable()).expandX().fillX();
 	}
     
 }
