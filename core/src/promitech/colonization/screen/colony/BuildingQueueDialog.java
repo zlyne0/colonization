@@ -236,7 +236,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 				.addAmount("%amount%", price);
 		
 		SimpleMessageDialog confirmationDialog = new SimpleMessageDialog();
-		this.addChildDialog(confirmationDialog);
 		confirmationDialog.withContent(st)
 			.withButton("payForBuilding.no")
 			.withButton("payForBuilding.yes", new SimpleMessageDialog.ButtonActionListener() {
@@ -247,6 +246,8 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 				}
 			});
 
+		// TODO: polaczenie?
+		this.addChildDialog(confirmationDialog);
 		showDialog(confirmationDialog);
 	}
 	

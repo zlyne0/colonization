@@ -42,6 +42,10 @@ class SaveGameListData {
 		return null;
 	}
 	
+	public List<SaveGameElement> getSaves() {
+		return saves;
+	}
+	
 	@Override
 	public String toString() {
 		return "SaveGameListData [saves=" + saves + "]";

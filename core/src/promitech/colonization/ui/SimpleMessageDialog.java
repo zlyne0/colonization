@@ -55,12 +55,12 @@ public class SimpleMessageDialog extends ClosableDialog<SimpleMessageDialog> {
 		return this;
 	}
 
-	public SimpleMessageDialog withButton(String tileCode) {
-		return withButton(tileCode, null);
+	public SimpleMessageDialog withButton(String titleCode) {
+		return withButton(titleCode, null);
 	}
 	
-	public SimpleMessageDialog withButton(String tileCode, ButtonActionListener buttonActionListener) {
-		String st = Messages.msg(tileCode);
+	public SimpleMessageDialog withButton(String titleCode, ButtonActionListener buttonActionListener) {
+		String st = Messages.msg(titleCode);
 		TextButton button = new TextButton(st, skin);
 		button.align(Align.center);
 		

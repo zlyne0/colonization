@@ -23,6 +23,7 @@ class MenuApplicationScreen (
 	private val stage: Stage
 	private val newGameButton: TextButton
 	private val loadGameButton: TextButton
+	private val loadLastGameButton: TextButton
 	private val saveGameButton: TextButton
 	private val optionsButton: TextButton
 	private val exitButton: TextButton
@@ -33,6 +34,7 @@ class MenuApplicationScreen (
 		
 		newGameButton = TextButton(Messages.msg("newAction.name"), GameResources.instance.getUiSkin())
 		loadGameButton = TextButton(Messages.msg("openAction.name"), GameResources.instance.getUiSkin())
+		loadLastGameButton = TextButton(Messages.msg("openAction.name"), GameResources.instance.getUiSkin())
 		saveGameButton = TextButton(Messages.msg("saveAction.name"), GameResources.instance.getUiSkin())
 		optionsButton = TextButton(Messages.msg("preferencesAction.name"), GameResources.instance.getUiSkin())
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
@@ -41,6 +43,10 @@ class MenuApplicationScreen (
 			override fun touchDown(event : InputEvent, x : Float, y : Float, pointer : Int, button : Int) : Boolean {
 				if (event.getListenerActor() == newGameButton) {
 					guiGameController.showMapScreenOnStartNewGame()
+					return true
+				}
+				if (event.getListenerActor() == loadGameButton) {
+					showDialog(LoadGameDialog(shape))
 					return true
 				}
 				if (event.getListenerActor() == exitButton) {
@@ -69,6 +75,7 @@ class MenuApplicationScreen (
 	override fun create() {
 		newGameButton.addListener(buttonListener)
 		loadGameButton.addListener(buttonListener)
+		loadLastGameButton.addListener(buttonListener)
 		saveGameButton.addListener(buttonListener)
 		optionsButton.addListener(buttonListener)
 		exitButton.addListener(buttonListener)
@@ -82,6 +89,7 @@ class MenuApplicationScreen (
 			.padTop(20f)
 		buttonTable.add(newGameButton).row()
 		buttonTable.add(loadGameButton).row()
+		buttonTable.add(loadLastGameButton).row()
 		buttonTable.add(saveGameButton).row()
 		buttonTable.add(optionsButton).row()
 		buttonTable.add(exitButton).row()
