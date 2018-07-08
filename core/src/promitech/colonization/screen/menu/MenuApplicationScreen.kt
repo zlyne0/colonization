@@ -1,65 +1,61 @@
 package promitech.colonization.screen.menu
 
-import promitech.colonization.screen.ApplicationScreen
-import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.Gdx
 import com.badlogic.gdx.graphics.GL20
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import promitech.colonization.ui.resources.Messages
-import promitech.colonization.GameResources
+import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.badlogic.gdx.utils.Align
-import com.badlogic.gdx.utils.viewport.ScreenViewport
-import com.badlogic.gdx.scenes.scene2d.InputListener
-import com.badlogic.gdx.scenes.scene2d.InputEvent
-import promitech.colonization.GameCreator
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import promitech.colonization.GameResources
+import promitech.colonization.savegame.SaveGameList
+import promitech.colonization.screen.ApplicationScreen
 import promitech.colonization.screen.map.hud.GUIGameController
+import promitech.colonization.screen.map.hud.GUIGameModel
 import promitech.colonization.ui.ClosableDialog
+import promitech.colonization.ui.addListener
+import promitech.colonization.ui.resources.Messages
 
 class MenuApplicationScreen (
-	private val guiGameController : GUIGameController
+	private val guiGameController : GUIGameController,
+	private val guiGameModel : GUIGameModel
 ) : ApplicationScreen() {
 
 	private val stage: Stage
 	private val newGameButton: TextButton
+	private val backButton: TextButton
 	private val loadGameButton: TextButton
 	private val loadLastGameButton: TextButton
 	private val saveGameButton: TextButton
 	private val optionsButton: TextButton
 	private val exitButton: TextButton
-	private val buttonListener : InputListener
 
 	init {
 		stage = Stage()
 		
 		newGameButton = TextButton(Messages.msg("newAction.name"), GameResources.instance.getUiSkin())
+		backButton = TextButton(Messages.msg("mainmenu.back.name"), GameResources.instance.getUiSkin())
 		loadGameButton = TextButton(Messages.msg("openAction.name"), GameResources.instance.getUiSkin())
 		loadLastGameButton = TextButton(Messages.msg("openAction.name"), GameResources.instance.getUiSkin())
 		saveGameButton = TextButton(Messages.msg("saveAction.name"), GameResources.instance.getUiSkin())
 		optionsButton = TextButton(Messages.msg("preferencesAction.name"), GameResources.instance.getUiSkin())
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
 		
-		buttonListener = object : InputListener() {
-			override fun touchDown(event : InputEvent, x : Float, y : Float, pointer : Int, button : Int) : Boolean {
-				if (event.getListenerActor() == newGameButton) {
-					guiGameController.showMapScreenOnStartNewGame()
-					return true
-				}
-				if (event.getListenerActor() == loadGameButton) {
-					showDialog(LoadGameDialog(shape))
-					return true
-				}
-				if (event.getListenerActor() == exitButton) {
-					exitFromGame()
-					return true
-				}
-				
-				if (event.getListenerActor() == saveGameButton) {
-					showDialog(SaveGameDialog(shape))
-					return true
-				}
-				return false
-			}
+		newGameButton.addListener { _, _ -> 
+			guiGameController.showMapScreenOnStartNewGame()
+		}
+		backButton.addListener { _, _ ->
+			guiGameController.showMapScreenAndActiveNextUnit()
+		}
+		loadGameButton.addListener { _, _ ->
+			showDialog(LoadGameDialog(shape, guiGameController))
+		}
+		loadLastGameButton.addListener { _, _ ->
+			guiGameController.showMapScreenAndLoadLastGame()
+		}
+		exitButton.addListener { _, _ ->
+			exitFromGame()
+		}
+		saveGameButton.addListener { _, _ ->
+			showDialog(SaveGameDialog(shape, guiGameModel))
 		}
 	}
 	
@@ -73,12 +69,6 @@ class MenuApplicationScreen (
 	}
 	
 	override fun create() {
-		newGameButton.addListener(buttonListener)
-		loadGameButton.addListener(buttonListener)
-		loadLastGameButton.addListener(buttonListener)
-		saveGameButton.addListener(buttonListener)
-		optionsButton.addListener(buttonListener)
-		exitButton.addListener(buttonListener)
 		
 		val buttonTable = Table()
 		
@@ -87,18 +77,36 @@ class MenuApplicationScreen (
 			.center()
 			.width(stage.getWidth() * 0.50f)
 			.padTop(20f)
+		buttonTable.add(loadLastGameButton).padBottom(40f).row()
 		buttonTable.add(newGameButton).row()
+		buttonTable.add(backButton).row()
 		buttonTable.add(loadGameButton).row()
-		buttonTable.add(loadLastGameButton).row()
 		buttonTable.add(saveGameButton).row()
 		buttonTable.add(optionsButton).row()
 		buttonTable.add(exitButton).row()
 		
 		stage.addActor(buttonTable)
-//		stage.setDebugAll(true)
 	}
 
 	override fun onShow() {
+		if (guiGameModel.game == null) {
+			backButton.setDisabled(true)
+			saveGameButton.setDisabled(true)
+		} else {
+			backButton.setDisabled(false)
+			saveGameButton.setDisabled(false)
+		}
+		
+		var lastSaveName = SaveGameList().lastOneSaveName() 
+		if (lastSaveName != null) {
+			loadGameButton.setDisabled(false)
+			loadLastGameButton.setDisabled(false)
+			loadLastGameButton.setText(Messages.msg("openAction.name") + " " + lastSaveName)
+		} else {
+			loadLastGameButton.setText(Messages.msg("openAction.name"))
+			loadGameButton.setDisabled(true)
+			loadLastGameButton.setDisabled(true)
+		}
 		Gdx.input.setInputProcessor(stage)
 	}
 	

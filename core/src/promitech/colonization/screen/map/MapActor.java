@@ -91,9 +91,7 @@ public class MapActor extends Widget {
 			}
 		});
 		
-		mapDrawModel.initialize(guiGameModel.game, gameResources);
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
-		centerCameraOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());
 	}
 	
 	public void resetUnexploredBorders() {

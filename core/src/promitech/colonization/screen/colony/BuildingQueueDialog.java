@@ -246,8 +246,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 				}
 			});
 
-		// TODO: polaczenie?
-		this.addChildDialog(confirmationDialog);
 		showDialog(confirmationDialog);
 	}
 	

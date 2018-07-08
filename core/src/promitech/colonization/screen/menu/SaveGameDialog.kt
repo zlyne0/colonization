@@ -20,9 +20,15 @@ import promitech.colonization.ui.SimpleMessageDialog
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.addSelectListener
 import promitech.colonization.ui.withButton
+import promitech.colonization.ui.addKeyTypedListener
+import promitech.colonization.screen.map.hud.GUIGameModel
+import promitech.colonization.savegame.SaveGameList
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
+import net.sf.freecol.common.util.StringUtils
 
 class SaveGameDialog(
-	private val shapeRenderer : ShapeRenderer
+	private val shapeRenderer : ShapeRenderer,
+	private val guiGameModel : GUIGameModel
 )
 	: ClosableDialog<SaveGameDialog>(
 		ClosableDialogSize.width50(), ClosableDialogSize.height75()
@@ -31,27 +37,38 @@ class SaveGameDialog(
 	
 	private val skin : Skin
 	private val gameNameTextField : TextField
+	private val okButton : TextButton
 	private var gamesTable : STable
 	
 	init {
 		skin = GameResources.instance.getUiSkin()
-		withHidingOnEsc()
 		
-		gameNameTextField = TextField("", skin)
+		okButton = TextButton(Messages.msg("ok"), skin)
 		gamesTable = STable(shapeRenderer)
 		
+		gameNameTextField = TextField("", skin)
+		gameNameTextField.addKeyTypedListener { _, _ ->
+			if (gameNameTextField.getText().isNullOrBlank()) {
+				okButton.setDisabled(true)
+			} else {
+				okButton.setDisabled(false)
+			}
+		}
+		
+		withHidingOnEsc()
 		createLayout()
 	}
 	
 	override fun init(shapeRenderer : ShapeRenderer) {
-		// TODO: from game nation name, data
-		gameNameTextField.setText("save game turn 40")
-		for (i in 1 .. 100) {
-			gamesTable.addRow("one" + i, intArrayOf(Align.left), *arrayOf(Label("one" + i, skin)) )
-		}
-//		gamesTable.addRow("two", intArrayOf(Align.left), *arrayOf(Label("two", skin)) )
-//		gamesTable.addRow("three", intArrayOf(Align.left), *arrayOf(Label("thre", skin)) )
+		var defaultSaveName = Messages.message(guiGameModel.game.playingPlayer.getNationName()) +
+			" " + Messages.message(guiGameModel.game.turn.getTurnDateLabel());
 		
+		gameNameTextField.setText(defaultSaveName)
+		
+		SaveGameList().loadGameNames()
+			.forEach { name ->
+				gamesTable.addRow(name, intArrayOf(Align.left), *arrayOf(Label(name, skin)) )
+			}
 	}
 	
 	private fun createLayout() {
@@ -86,31 +103,33 @@ class SaveGameDialog(
 
 	private fun createButtons() {
 		buttonTableLayoutExtendX()
-		val okButton = TextButton(Messages.msg("ok"), skin)
 		val cancelButton = TextButton(Messages.msg("cancel"), skin)
 		getButtonTable().add(cancelButton).pad(10f).fillX().expandX()
 		getButtonTable().add(okButton).pad(10f).fillX().expandX()
 
 		okButton.addListener { _, _ ->
-			// TODO: save
-			hideWithFade()
+			var saves = SaveGameList()
+			if (saves.isSaveNameExists(gameNameTextField.getText())) {
+				showConfirmation(saves)
+			} else {
+				saves.saveAs(gameNameTextField.getText(), guiGameModel.game)
+				hideWithFade()
+			}
 		}
 		cancelButton.addListener { _, _ ->
 			hideWithFade()
 		}		
 	}
 	
-	private fun showConfirmation() {
+	private fun showConfirmation(saves : SaveGameList) {
 		val confirmationDialog = SimpleMessageDialog()
 		confirmationDialog.withContent("saveConfirmationDialog.areYouSure.text")
 			.withButton("no")
-			.withButton("yes", { d -> 
-				// TODO: save
+			.withButton("yes", { d ->
+				saves.saveAs(gameNameTextField.getText(), guiGameModel.game) 
 				d.hideWithoutFade()
 				hideWithoutFade()
 			})
-		// TODO: polaczenie dwuch ponizszych?
-		this.addChildDialog(confirmationDialog)
 		showDialog(confirmationDialog)
 	}
 		

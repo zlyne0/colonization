@@ -27,8 +27,6 @@ public class GameCreator {
 
 	public void initGameFromSavegame() throws IOException, ParserConfigurationException, SAXException {
 		guiGameModel.game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600.xml");
-		guiGameModel.game.playingPlayer = guiGameModel.game.players.getById("player:1");
-		guiGameModel.game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
         System.out.println("init game from classpath 1600.xml = " + guiGameModel.game);
 		postCreateGame();
 	}
@@ -64,16 +62,16 @@ public class GameCreator {
 		postCreateGame();
 	}
 	
-	public void loadLastGame() throws IOException, ParserConfigurationException, SAXException {
+	public void loadLastGame() {
 		SaveGameList saveGameList = new SaveGameList();
-		
 		guiGameModel.game = saveGameList.loadLast();
-        if (guiGameModel.game != null) {
-        	guiGameModel.game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
-        	postCreateGame();
-        } else {
-        	initNewGame();
-        }
+		postCreateGame();
+	}
+	
+	public void load(String savename) {
+		SaveGameList saveGameList = new SaveGameList();
+		guiGameModel.game = saveGameList.loadGame(savename);
+    	postCreateGame();
 	}
 	
 	public void quickSaveGame() {
@@ -81,12 +79,11 @@ public class GameCreator {
 	}
 	
 	private void postCreateGame() {
+		guiGameModel.game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
 		guiGameModel.unitIterator = new UnitIterator(guiGameModel.game.playingPlayer, new Unit.ActivePredicate());
 		
 		for (Player player : guiGameModel.game.players.entities()) {
 			player.fogOfWar.resetFogOfWar(player);
 		}
 	}
-	
-	
 }

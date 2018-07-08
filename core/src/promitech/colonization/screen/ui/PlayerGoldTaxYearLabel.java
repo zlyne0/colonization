@@ -7,7 +7,6 @@ import net.sf.freecol.common.model.Turn;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
 import promitech.colonization.ui.resources.Messages;
-import promitech.colonization.ui.resources.StringTemplate;
 
 public class PlayerGoldTaxYearLabel extends Label {
 	private Player player;
@@ -27,7 +26,7 @@ public class PlayerGoldTaxYearLabel extends Label {
 			String str = 
 					Messages.msg("goldTitle") + ": " + player.getGold() + ", " + 
 					Messages.msg("tax") + ": " + player.getTax() + "%, " +
-					Messages.message(StringTemplate.template("year." + turn.getSeason()).addAmount("%year%", turn.getYear())); 
+					Messages.message(turn.getTurnDateLabel()); 
 			setText(str);
 			this.gold = player.getGold();
 			this.tax = player.getTax();

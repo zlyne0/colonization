@@ -116,17 +116,6 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
         executeCloseListener();
     }
 
-    public void addChildDialog(ClosableDialog childDialog) {
-    	this.childDialog = childDialog;
-    	this.childDialog.addOnCloseListener(new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				ClosableDialog.this.childDialog = null;
-				return true;
-			}
-		});
-    }
-    
     private final ClickListener onStageClickListener = new ClickListener() {
     	public void clicked(InputEvent event, float x, float y) {
     		if (childDialog == null && canCloseBecauseClickOutsideDialog(x, y)) {
@@ -153,8 +142,16 @@ public class ClosableDialog<T extends ClosableDialog<?>> {
         );        
     }
     
-	protected void showDialog(SimpleMessageDialog confirmationDialog) {
-		confirmationDialog.show(dialog.getStage());
+	protected void showDialog(SimpleMessageDialog dialogToShow) {
+    	this.childDialog = dialogToShow;
+    	this.childDialog.addOnCloseListener(new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				ClosableDialog.this.childDialog = null;
+				return true;
+			}
+		});
+    	dialogToShow.show(dialog.getStage());
 	}
 
     public void pack() {

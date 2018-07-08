@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import promitech.colonization.ui.resources.StringTemplate;
+
 public class Turn {
 
     public static enum Season { YEAR, SPRING, AUTUMN }
@@ -45,5 +47,9 @@ public class Turn {
 	public int getNumber() {
 		return turn;
 	}
-    
+
+	public StringTemplate getTurnDateLabel() {
+		return StringTemplate.template("year." + getSeason()).addAmount("%year%", getYear());
+	}
+	
 }

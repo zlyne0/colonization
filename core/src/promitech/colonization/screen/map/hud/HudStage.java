@@ -24,11 +24,13 @@ import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.DI;
 import promitech.colonization.Direction;
+import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.MoveController;
+import promitech.colonization.screen.ApplicationScreenManager;
+import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.GUIGameModel.ChangeStateListener;
-import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 
 public class HudStage extends Stage {
@@ -55,6 +57,7 @@ public class HudStage extends Stage {
     private final GUIGameController gameController;
     private final MoveController moveController;
     private final GUIGameModel guiGameModel;
+    private final ApplicationScreenManager screenManager;
     private final DebugShortcutsKeys debugShortcutsKeys;
     
     private final EndOfTurnActor endOfTurnActor; 
@@ -100,12 +103,13 @@ public class HudStage extends Stage {
 		}
 	};
 
-    public HudStage(Viewport viewport, DI di, MapActor mapActor) {
+    public HudStage(Viewport viewport, DI di, MapActor mapActor, ApplicationScreenManager screenManager) {
         super(viewport);
         this.gameController = di.guiGameController;
         this.moveController = di.moveController;
         this.guiGameModel = di.guiGameModel;
         this.shapeRenderer = new ShapeRenderer();
+        this.screenManager = screenManager;
 
         debugShortcutsKeys = new DebugShortcutsKeys(this, di, mapActor);
         
@@ -332,8 +336,7 @@ public class HudStage extends Stage {
     			return true;
     		}
     		if (event.getListenerActor() == exitActionButton) {
-    			gameController.quickSaveGame();
-    			Gdx.app.exit();
+    			screenManager.setScreen(ApplicationScreenType.MAIN_MENU);
     			return true;
     		}
     		return false;

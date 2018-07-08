@@ -16,7 +16,6 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.utils.BufferUtils;
 
 import promitech.colonization.DI;
-import promitech.colonization.GameCreator;
 import promitech.colonization.GameResources;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -72,9 +71,9 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             
             //gameController.initGameFromSavegame();
             //gameController.initNewGame();
-            new GameCreator(di.guiGameModel)
-            	//.initGameFromSavegame();
-            	.loadLastGame();
+//            new GameCreator(di.guiGameModel)
+//            	//.initGameFromSavegame();
+//            	.loadLastGame();
             
             long length = System.currentTimeMillis() - s;
             System.out.println("loading timeout: " + length);
@@ -85,7 +84,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.EUROPE, new EuropeApplicationScreen());
-		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(di.guiGameController));
+		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(di.guiGameController, di.guiGameModel));
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;
