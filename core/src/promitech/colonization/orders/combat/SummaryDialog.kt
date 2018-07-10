@@ -15,7 +15,7 @@ import promitech.colonization.ui.resources.Messages
 internal class SummaryDialog (
 	val attackConfirmation : java.lang.Runnable,
 	val combat : Combat
-) : ClosableDialog<SummaryDialog>("", GameResources.instance.getUiSkin()) {
+) : ClosableDialog<SummaryDialog>() {
 	
 	val combatMsg : CombatMsg
 	

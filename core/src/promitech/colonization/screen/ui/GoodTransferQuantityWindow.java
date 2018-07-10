@@ -35,7 +35,6 @@ public class GoodTransferQuantityWindow extends ClosableDialog<GoodTransferQuant
 			DragAndDropSourceContainer<AbstractGoods> sourceContainer, 
 			DragAndDropTargetContainer<AbstractGoods> targetContainer
 	) {
-		super("", GameResources.instance.getUiSkin());
 		this.sourceContainer = sourceContainer;
 		this.targetContainer = targetContainer;
 		this.goodTypeId = abstractGoods.getTypeId();

@@ -22,7 +22,6 @@ public class ColonyNameDialog extends ClosableDialog<ColonyNameDialog> {
 	private final GUIGameController guiGameController;
 	
 	public ColonyNameDialog(final GUIGameController guiGameController, float maxWidth, String initialColonyName) {
-		super("", GameResources.instance.getUiSkin());
 		this.skin = GameResources.instance.getUiSkin();
 		this.guiGameController = guiGameController;
 

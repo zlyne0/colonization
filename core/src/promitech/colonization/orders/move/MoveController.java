@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
@@ -15,6 +16,7 @@ import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
+import promitech.colonization.screen.map.hud.NewLandNameDialog;
 import promitech.colonization.screen.map.unitanimation.MoveView;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.StringTemplate;
@@ -256,5 +258,9 @@ public class MoveController {
         ChooseUnitsToDisembarkDialog chooseUnitsDialog = new ChooseUnitsToDisembarkDialog(moveContext, this);
         guiGameController.showDialog(chooseUnitsDialog);
 	}
+
+    public void showNewLandNameDialog(Player player, String defaultName) {
+        guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
+    }
 	
 }

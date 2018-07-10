@@ -33,13 +33,30 @@ class SaveGameListData {
 		return saves.get(0);
 	}
 	
-	public SaveGameElement getSaveByName(String name) {
+	public SaveGameElement findSaveByName(String name) {
 		for (SaveGameElement save : saves) {
 			if (save.name.equals(name)) {
 				return save;
 			}
 		}
 		return null;
+	}
+	
+	public SaveGameElement findOrCreateSaveByName(String name) {
+		SaveGameElement save = findSaveByName(name);
+		if (save == null) {
+			save = new SaveGameElement("" + System.currentTimeMillis() + ".xml", name);
+			add(save);
+		}
+		return save;
+	}
+	
+	public List<SaveGameElement> getSaves() {
+		return saves;
+	}
+	
+	public boolean isNotEmpty() {
+		return saves.size() > 0;
 	}
 	
 	@Override
@@ -85,17 +102,46 @@ public class SaveGameList {
 	private static final String QUICK_SAVE_NAME = "Quick save";
 	private static final String SAVE_GAME_LIST_FILE_NAME = "saveGameList";
 
-	public void saveAsQuick(Game game) {
-		
+	public List<String> loadGameNames() {
 		SaveGameListData saveGameList = loadGameList();
-		SaveGameElement quickSaveElement = saveGameList.getSaveByName(QUICK_SAVE_NAME);
-		if (quickSaveElement == null) {
-			quickSaveElement = new SaveGameElement("" + System.currentTimeMillis() + ".xml", QUICK_SAVE_NAME);
-			saveGameList.add(quickSaveElement);
-		} else {
-			quickSaveElement.updateDateToNow();
+		List<String> l = new ArrayList<String>(saveGameList.getSaves().size());
+		for (SaveGameElement saveGameElement : saveGameList.getSaves()) {
+			l.add(saveGameElement.name);
 		}
-
+		return l;
+	}
+	
+	public boolean isSaveNameExists(String name) {
+		SaveGameListData saveGameList = loadGameList();
+		return saveGameList.findSaveByName(name) != null;
+	}
+	
+	public String lastOneSaveName() {
+		SaveGameListData saveGameList = loadGameList();
+		SaveGameElement last = saveGameList.last();
+		if (last != null) {
+			return last.name;
+		}
+		return null;
+	}
+	
+	public void saveAs(String saveName, Game game) {
+		SaveGameListData saveGameList = loadGameList();
+		SaveGameElement saveElement = saveGameList.findOrCreateSaveByName(saveName);
+		saveGameDataToFile(saveElement, game);
+		saveGameList(saveGameList);
+	}
+	
+	public void saveAsQuick(Game game) {
+		SaveGameListData saveGameList = loadGameList();
+		SaveGameElement saveElement = saveGameList.findOrCreateSaveByName(QUICK_SAVE_NAME);
+		saveGameDataToFile(saveElement, game);
+		saveGameList(saveGameList);
+	}
+	
+	private void saveGameDataToFile(SaveGameElement quickSaveElement, Game game) {
+		quickSaveElement.updateDateToNow();
+		
         SavedGame savedGameObj = new SavedGame();
         savedGameObj.game = game;
 		
@@ -112,20 +158,28 @@ public class SaveGameList {
 				throw new IllegalStateException(e);
 			}
 		}
-		
-		saveGameList(saveGameList);
+	}
+	
+	public Game loadGame(String name) {
+		SaveGameListData loadGameList = loadGameList();
+		SaveGameElement gameElement = loadGameList.findSaveByName(name);
+		if (gameElement == null) {
+			throw new IllegalStateException("can not find game by name " + name);
+		}
+		return loadGame(gameElement);
 	}
 	
 	public Game loadLast() {
 		SaveGameListData loadGameList = loadGameList();
-		
 		SaveGameElement lastElement = loadGameList.last();
 		if (lastElement == null) {
-			return null;
+			throw new IllegalStateException("can not load last save game because no last save game");
 		}
-		
-		FileHandle sgfh = Gdx.files.local(lastElement.fileName);
-		
+		return loadGame(lastElement);
+	}
+
+	private Game loadGame(SaveGameElement saveGameElement) {
+		FileHandle sgfh = Gdx.files.local(saveGameElement.fileName);
 		try {
 			return SaveGameParser.loadGameFromFile(sgfh.file());
 		} catch (Exception e) {

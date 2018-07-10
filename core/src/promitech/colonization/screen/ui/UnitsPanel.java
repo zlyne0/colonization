@@ -14,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.utils.Align;
-import com.sun.prism.GraphicsPipeline.ShaderType;
 
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.Specification;

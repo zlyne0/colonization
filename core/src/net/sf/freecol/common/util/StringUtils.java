@@ -27,6 +27,10 @@ import java.util.List;
  */
 public class StringUtils {
 
+	public static boolean isBlank(String str) {
+		return str == null || str.trim().isEmpty();
+	}
+	
     /**
      * Joins the given strings.
      *

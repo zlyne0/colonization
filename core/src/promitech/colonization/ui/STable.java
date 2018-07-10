@@ -20,6 +20,7 @@ public class STable extends Table {
     private final ShapeRenderer shape;
     private int rowIndexCounter = 0;
     private STableSelectListener onSelectListener;
+    private STableSelectListener onSingleClickSelectListener;
     private float top, left, bottom, right;
     
     public STable(ShapeRenderer shape) {
@@ -68,6 +69,9 @@ public class STable extends Table {
                     STableItem item = (STableItem)a;
                     if (item.rowIndex == selectedRow) {
                         item.setSelected();
+                        if (onSingleClickSelectListener != null) {
+                        	onSingleClickSelectListener.onSelect(item.payload);
+                        }
                     } else {
                         item.setUnselected();
                     }
@@ -84,6 +88,10 @@ public class STable extends Table {
             }
         };
     };
+    
+    public void addSingleClickSelectListener(STableSelectListener selectListener) {
+    	this.onSingleClickSelectListener = selectListener;
+    }
     
     public void addSelectListener(STableSelectListener selectListener) {
         this.onSelectListener = selectListener;
