@@ -18,12 +18,13 @@ import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
+import promitech.colonization.ui.resources.Messages;
 
 public class MoveService {
 
     public abstract static class AfterMoveProcessor {
     	
-    	public static AfterMoveProcessor DO_NOTHING = new AfterMoveProcessor() {
+    	public static final AfterMoveProcessor DO_NOTHING = new AfterMoveProcessor() {
 		};
     	
         public void afterMove(MoveContext moveContext) {
@@ -146,14 +147,31 @@ public class MoveService {
     private void postMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         moveContext.handleMove();
         
-        boolean exloredNewTiles = false;
+        boolean exploredNewTiles = false;
         if (moveContext.isMoveTypeRevealMap()) {
-            exloredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+            exploredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
-        if (exloredNewTiles) {
+        if (exploredNewTiles) {
             guiGameController.resetUnexploredBorders();
+            
+            if (isNotDiscoveredNewLand(moveContext.unit)) {
+                discoverNewLand(moveContext.unit.getOwner());
+            }
         }
         afterMoveProcessor.afterMove(moveContext);
+    }
+    
+    private boolean isNotDiscoveredNewLand(Unit unit) {
+        return unit.getOwner().isEuropean() && unit.getOwner().getNewLandName() == null && unit.getTile().isNextToLand();
+    }
+    
+    private void discoverNewLand(Player player) {
+        String defaultLandName = Messages.msg(player.nation().getId() + ".newLandName");
+        if (player.isAi()) {
+            player.setNewLandName(defaultLandName);
+        } else {
+            moveController.showNewLandNameDialog(player, defaultLandName);
+        }
     }
     
     private void aiPostMoveProcessor(MoveContext moveContext) {

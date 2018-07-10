@@ -549,6 +549,10 @@ public class Player extends ObjectWithId {
 		return newLandName;
 	}
 	
+    public void setNewLandName(String newLandName) {
+        this.newLandName = newLandName;
+    }
+	
     public boolean isAttackedByPrivateers() {
         return attackedByPrivateers;
     }
