@@ -13,6 +13,7 @@ import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.map.MapActor
+import promitech.colonization.screen.map.hud.FirstContactDialog
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -145,6 +146,14 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 					.map { it.toFormatedString() }
 					.forEach { console.addConsoleLine(it)}
 				return false
+			}
+		},
+		object : Task("firstContactDialog") {
+			override fun run(console: ConsoleOutput) : Boolean {
+				// TODO: remove
+				val contactPlayer = guiGameModel.game.players.getById("player:19")
+				gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
+				return true
 			}
 		}
 	);

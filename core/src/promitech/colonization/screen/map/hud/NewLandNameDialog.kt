@@ -64,9 +64,6 @@ class NewLandNameDialog(
 	    getButtonTable().add(okButton).pad(10f).fillX().expandX()
 	}
 	
-	override fun init(shapeRenderer : ShapeRenderer) {
-	}
-	
 	override fun show(stage : Stage) {
 		super.show(stage)
 		resetPositionToCenter()

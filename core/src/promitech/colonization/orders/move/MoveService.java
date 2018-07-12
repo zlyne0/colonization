@@ -1,6 +1,10 @@
 package promitech.colonization.orders.move;
 
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -12,7 +16,9 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Stance;
 import promitech.colonization.orders.combat.CombatController;
+import promitech.colonization.Direction;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatService;
@@ -158,7 +164,50 @@ public class MoveService {
                 discoverNewLand(moveContext.unit.getOwner());
             }
         }
+        
+        firstContact(moveContext.destTile, moveContext.unit.getOwner());
+        // TODO: budzenie jednostek sprawdzenie czy nie sa budzone przy nowej turze
+        
         afterMoveProcessor.afterMove(moveContext);
+    }
+    
+    private void firstContact(Tile tile, Player player) {
+        // TODO: jak rusza sie ai i ma kontakt z human, jak rozwiazac pokazywanie okna podczas konca tury
+        java.util.Map<String,Player> firstContactPlayers = null;
+        if (tile.getType().isWater()) {
+            return;
+        }
+        for (Direction direction : Direction.allDirections) {
+            Tile neighbourTile = guiGameModel.game.map.getTile(tile, direction);
+            if (neighbourTile == null || neighbourTile.getType().isWater()) {
+                continue;
+            }
+            Player neighbourTilePlayer = null;
+            if (neighbourTile.hasSettlement()) {
+                neighbourTilePlayer = neighbourTile.getSettlement().getOwner();
+            } else {
+                if (neighbourTile.getUnits().isNotEmpty()) {
+                    neighbourTilePlayer = neighbourTile.getUnits().first().getOwner();
+                }
+            }
+            if (neighbourTilePlayer == null || player.equalsId(neighbourTilePlayer) || player.hasContacted(neighbourTilePlayer)) {
+                continue;
+            }
+            if (firstContactPlayers == null) {
+                firstContactPlayers = new HashMap<String, Player>();
+            }
+            firstContactPlayers.put(neighbourTilePlayer.getId(), neighbourTilePlayer);
+        }
+        
+        if (firstContactPlayers != null) {
+            for (Entry<String, Player> neighbourPlayerEntry : firstContactPlayers.entrySet()) {
+                if (player.isAi()) {
+                    player.changeStance(neighbourPlayerEntry.getValue(), Stance.PEACE);
+                } else {
+                    moveController.showFirstContactDialod(player, neighbourPlayerEntry.getValue());
+                }
+            }
+        }
     }
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
@@ -167,9 +216,8 @@ public class MoveService {
     
     private void discoverNewLand(Player player) {
         String defaultLandName = Messages.msg(player.nation().getId() + ".newLandName");
-        if (player.isAi()) {
-            player.setNewLandName(defaultLandName);
-        } else {
+        player.setNewLandName(defaultLandName);
+        if (player.isHuman()) {
             moveController.showNewLandNameDialog(player, defaultLandName);
         }
     }

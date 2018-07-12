@@ -215,6 +215,11 @@ public class Player extends ObjectWithId {
     	Stance old = getStance(otherPlayer);
     	
     	if (old != newStance) {
+            System.out.println("player " + this.getId() + "[" + this.nation.getId() 
+                + "] change stance to player " + otherPlayer.getId() + "[" + otherPlayer.nation.getId() 
+                + "] from " + old + " to " + newStance 
+            );
+
     		modifyStance(otherPlayer, newStance);
     		int modifier = old.getTensionModifier(newStance);
 			modifyTension(otherPlayer, modifier);

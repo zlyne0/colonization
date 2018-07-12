@@ -14,6 +14,7 @@ import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
+import promitech.colonization.screen.map.hud.FirstContactDialog;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.hud.NewLandNameDialog;
@@ -261,6 +262,10 @@ public class MoveController {
 
     public void showNewLandNameDialog(Player player, String defaultName) {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
+    }
+
+    public void showFirstContactDialod(Player player, Player contactPlayer) {
+        guiGameController.showDialog(new FirstContactDialog(player, contactPlayer));
     }
 	
 }
