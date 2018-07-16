@@ -13,6 +13,9 @@ import promitech.colonization.ui.resources.Messages
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Image
+import promitech.colonization.ui.addListener
+import net.sf.freecol.common.model.player.Stance
+import net.sf.freecol.common.model.player.Tension
 
 class FirstContactDialog(
 	val player : Player,
@@ -22,42 +25,58 @@ class FirstContactDialog(
 {
 	
 	val skin : Skin
+	val yesButton : TextButton
+	val noButton : TextButton
 	
 	init {
 		skin = GameResources.instance.getUiSkin()
+		yesButton = TextButton(Messages.msg("welcome.yes"), skin)
+		noButton = TextButton(Messages.msg("welcome.no"), skin)
 		
-		var headerKey = "event.meeting." + contactPlayer.nation().getNationNameKey()
-		var imageKey = "EventImage.meeting." + contactPlayer.nation().getNationNameKey()
-		if (!Messages.containsKey(headerKey)) {
-            headerKey = "event.meeting.natives"
-            imageKey = "EventImage.meeting.natives"
+		yesButton.addListener { _, _ ->
+			player.changeStance(contactPlayer, Stance.PEACE)
+			hideWithFade()
 		}
 		
-		val headerLabel = Label(Messages.msg(headerKey), skin)
-		var imgFrame = GameResources.instance.getFrame(imageKey)
-		val contactImage = Image(imgFrame.texture)
-		
-		val settlementType = contactPlayer.nationType().getSettlementRegularType().getId() + ".plural"
-		val nativeMsg = StringTemplate.template("welcomeSimple.text")
+		noButton.addListener { _, _ ->
+			player.changeStance(contactPlayer, Stance.PEACE)
+			player.modifyTension(contactPlayer, Tension.TENSION_ADD_MAJOR)
+			player.addMissionBan(contactPlayer)
+			hideWithFade()
+		}
+	}
+	
+	private fun createLayout() {
+	    var headerKey = "event.meeting." + contactPlayer.nation().getNationNameKey()
+        var imageKey = "EventImage.meeting." + contactPlayer.nation().getNationNameKey()
+        if (!Messages.containsKey(headerKey)) {
+            headerKey = "event.meeting.natives"
+            imageKey = "EventImage.meeting.natives"
+        }
+	    
+	    val headerLabel = Label(Messages.msg(headerKey), skin)
+        var imgFrame = GameResources.instance.getFrame(imageKey)
+        val contactImage = Image(imgFrame.texture)
+        
+        val settlementType = contactPlayer.nationType().getSettlementRegularType().getId() + ".plural"
+        val nativeMsg = StringTemplate.template("welcomeSimple.text")
             .addStringTemplate("%nation%", contactPlayer.getNationName())
             .add("%camps%", Integer.toString(contactPlayer.settlements.size()))
             .addKey("%settlementType%", settlementType)
         val contactLabel = Label(Messages.message(nativeMsg), skin)
-		contactLabel.setWrap(true)
-		
+        contactLabel.setWrap(true)
+        
         getContentTable().add(headerLabel).pad(20f).row()
-		getContentTable().add(contactImage).row()
-		getContentTable().add(contactLabel).pad(20f).fillX().expandX().row()
+        getContentTable().add(contactImage).row()
+        getContentTable().add(contactLabel).pad(20f).fillX().expandX().row()
 		
-		var yesButton = TextButton(Messages.msg("welcome.yes"), skin)
-		var noButton = TextButton(Messages.msg("welcome.no"), skin)
-		
-	    buttonTableLayoutExtendX()
-	    getButtonTable().add(noButton).pad(10f).fillX().expandX()
-		getButtonTable().add(yesButton).pad(10f).fillX().expandX()
+        buttonTableLayoutExtendX()
+        getButtonTable().add(noButton).pad(10f).fillX().expandX()
+        getButtonTable().add(yesButton).pad(10f).fillX().expandX()
 	}
 	
 	override fun init(shapeRenderer : ShapeRenderer) {
+		createLayout()
 	}
 	
 	override fun show(stage : Stage) {

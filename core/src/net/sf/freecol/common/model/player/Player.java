@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.xml.sax.SAXException;
@@ -84,7 +86,8 @@ public class Player extends ObjectWithId {
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
-
+    protected List<String> banMission = null;
+    
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
     	Player player = new Player(idGenerator.nextId(Player.class));
     	player.ai = true; 
@@ -278,6 +281,13 @@ public class Player extends ObjectWithId {
             return new Tension(Tension.TENSION_MIN);
         }
         return tensionObj;
+    }
+    
+    public void addMissionBan(Player player) {
+        if (banMission == null) {
+            banMission = new ArrayList<String>();
+        }
+        banMission.add(player.getId());
     }
     
     private void changePlayerType(PlayerType type) {
@@ -607,6 +617,7 @@ public class Player extends ObjectWithId {
 		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
 		private static final String ELEMENT_STANCE = "stance";
+		private static final String ELEMENT_BAN_MISSION = "ban-mission";
 		private static final String ATTR_PLAYER_TYPE = "playerType";
 		private static final String ATTR_ENTRY_LOCATION_Y = "entryLocationY";
 		private static final String ATTR_ENTRY_LOCATION_X = "entryLocationX";
@@ -684,6 +695,12 @@ public class Player extends ObjectWithId {
         	        nodeObject.addFoundingFathers(father);
         	    }
         	}
+        	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
+        	    if (nodeObject.banMission == null) {
+        	        nodeObject.banMission = new ArrayList<String>();
+        	    }
+        	    nodeObject.banMission.add(attr.getStrAttributeNotNull(ATTR_PLAYER));
+        	}
         }
 
         @Override
@@ -741,6 +758,13 @@ public class Player extends ObjectWithId {
         			ffIndex++;
         		}
         		attr.xml.pop();
+        	}
+        	if (player.banMission != null) {
+        	    for (String playerId : player.banMission) {
+        	        attr.xml.element(ELEMENT_BAN_MISSION);
+        	        attr.set(ATTR_PLAYER, playerId);
+        	        attr.xml.pop();
+        	    }
         	}
         }
         

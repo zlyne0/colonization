@@ -5000,6 +5000,8 @@
       </historyEvent>
       <foundingFathers xLength="0"/>
       <offeredFathers xLength="0"/>
+      <ban-mission player="player:1" />
+      <ban-mission player="player:2" />
     </player>
     <player id="player:40" username="Moctezuma II" nationId="model.nation.aztec" nationType="model.nationType.aztec" admin="false" ready="false" dead="false" playerType="native" ai="true" bankrupt="false" tax="0" gold="-2147483648" immigration="0" liberty="0" interventionBells="0" immigrationRequired="0" attackedByPrivateers="false" oldSoL="0" score="0">
       <market id="market:41" owner="player:40">

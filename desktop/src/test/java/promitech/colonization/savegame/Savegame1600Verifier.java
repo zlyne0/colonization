@@ -47,6 +47,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static net.sf.freecol.common.model.TileAssert.assertThat;
+import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
@@ -228,6 +229,7 @@ public class Savegame1600Verifier {
         assertEquals(MonarchAction.MONARCH_MERCENARIES, man1236.getAction());
         assertEquals(1500, man1236.getPrice());
         assertEquals(3, man1236.getMercenaries().size());
+        assertThat(game.players.getById("player:22")).containsExactlyBanMissions("player:1", "player:2");
         
         verifyPlayerMonarch(player);
 	}

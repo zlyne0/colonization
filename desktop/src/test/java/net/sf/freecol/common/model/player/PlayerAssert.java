@@ -1,7 +1,10 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.player;
 
 import org.assertj.core.api.AbstractAssert;
 
+import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 
 public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
@@ -61,6 +64,13 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 	    if (actual.settlements.containsId(colony)) {
 	        failWithMessage("expected player <%s> has not colony <%s>", actual.getId(), colony.getId());
 	    }
+	    return this;
+	}
+	
+	public PlayerAssert containsExactlyBanMissions(String ... playerIds) {
+	    org.assertj.core.api.Assertions.assertThat(actual.banMission)
+	        .isNotNull()
+	        .containsExactly(playerIds);
 	    return this;
 	}
     

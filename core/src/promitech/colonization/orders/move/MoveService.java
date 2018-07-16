@@ -202,7 +202,8 @@ public class MoveService {
         if (firstContactPlayers != null) {
             for (Entry<String, Player> neighbourPlayerEntry : firstContactPlayers.entrySet()) {
                 if (player.isAi()) {
-                    player.changeStance(neighbourPlayerEntry.getValue(), Stance.PEACE);
+                    // TODO: message to player with first native contact
+                    //player.changeStance(neighbourPlayerEntry.getValue(), Stance.PEACE);
                 } else {
                     moveController.showFirstContactDialod(player, neighbourPlayerEntry.getValue());
                 }
