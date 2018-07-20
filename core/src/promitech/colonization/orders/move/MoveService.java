@@ -1,8 +1,6 @@
 package promitech.colonization.orders.move;
 
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -14,8 +12,6 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.player.Stance;
-import promitech.colonization.Direction;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatController;
@@ -47,6 +43,7 @@ public class MoveService {
     private GUIGameController guiGameController;
     private MoveController moveController;
     private CombatController combatController;
+    private FirstContactService firstContactService;
 
     // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
@@ -56,6 +53,7 @@ public class MoveService {
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
         this.combatController = new CombatController(guiGameController, combatService, guiGameModel);
+        this.firstContactService = new FirstContactService(moveController, guiGameModel);
     }
 
     private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
@@ -100,7 +98,7 @@ public class MoveService {
     private void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
     	for (MoveContext mc : moveContextList) {
             showMoveIfRequired(mc);
-            postMoveProcessor(mc, AfterMoveProcessor.DO_NOTHING);
+            processMove(mc);
     	}
     	afterMoveProcessor.afterMove(moveContextList);
     }
@@ -111,7 +109,8 @@ public class MoveService {
     
     private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         showMoveIfRequired(moveContext);
-        postMoveProcessor(moveContext, afterMoveProcessor);
+        processMove(moveContext);
+        afterMoveProcessor.afterMove(moveContext);
     }
     
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
@@ -125,7 +124,7 @@ public class MoveService {
     
     public void aiConfirmedMoveProcessor(MoveContext moveContext) {
         showMoveIfRequired(moveContext);
-        aiPostMoveProcessor(moveContext);
+        processMove(moveContext);
     }
     
     private void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -141,22 +140,19 @@ public class MoveService {
                 return;
             }
             showMoveIfRequired(moveContext);
-            postMoveProcessor(moveContext, afterMoveProcessor);
+            processMove(moveContext);
+            afterMoveProcessor.afterMove(moveContext);
         }
     }
-
-    public void postMoveProcessor(MoveContext moveContext) {
-        postMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
-    }
     
-    private void postMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void processMove(MoveContext moveContext) {
         moveContext.handleMove();
         
         boolean exploredNewTiles = false;
         if (moveContext.isMoveTypeRevealMap()) {
             exploredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
-        if (exploredNewTiles) {
+        if (exploredNewTiles && moveContext.isHuman()) {
             guiGameController.resetUnexploredBorders();
             
             if (isNotDiscoveredNewLand(moveContext.unit)) {
@@ -164,54 +160,8 @@ public class MoveService {
             }
         }
         
-        firstContact(moveContext.destTile, moveContext.unit.getOwner());
+        firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
         // TODO: budzenie jednostek sprawdzenie czy nie sa budzone przy nowej turze
-        
-        afterMoveProcessor.afterMove(moveContext);
-    }
-    
-    private void firstContact(Tile tile, Player player) {
-        // TODO: jak rusza sie ai i ma kontakt z human, jak rozwiazac pokazywanie okna podczas konca tury
-        java.util.Map<String,Player> firstContactPlayers = null;
-        if (tile.getType().isWater()) {
-            return;
-        }
-        for (Direction direction : Direction.allDirections) {
-            Tile neighbourTile = guiGameModel.game.map.getTile(tile, direction);
-            if (neighbourTile == null || neighbourTile.getType().isWater()) {
-                continue;
-            }
-            Player neighbourTilePlayer = null;
-            if (neighbourTile.hasSettlement()) {
-                neighbourTilePlayer = neighbourTile.getSettlement().getOwner();
-            } else {
-                if (neighbourTile.getUnits().isNotEmpty()) {
-                    neighbourTilePlayer = neighbourTile.getUnits().first().getOwner();
-                }
-            }
-            if (neighbourTilePlayer == null || player.equalsId(neighbourTilePlayer) || player.hasContacted(neighbourTilePlayer)) {
-                continue;
-            }
-            if (firstContactPlayers == null) {
-                firstContactPlayers = new HashMap<String, Player>();
-            }
-            firstContactPlayers.put(neighbourTilePlayer.getId(), neighbourTilePlayer);
-        }
-        
-        if (firstContactPlayers != null) {
-            for (Entry<String, Player> neighbourPlayerEntry : firstContactPlayers.entrySet()) {
-                Player neighbour = neighbourPlayerEntry.getValue();
-                if (player.isAi() && neighbour.isAi()) {
-                    player.changeStance(neighbour, Stance.PEACE);
-                } else {
-                    if (player.isAi()) {
-                        moveController.showFirstContactDialog(neighbour, player);
-                    } else {
-                        //moveController.showFirstContactDialog(player, neighbour);
-                    }
-                }
-            }
-        }
     }
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
@@ -223,13 +173,6 @@ public class MoveService {
         player.setNewLandName(defaultLandName);
         if (player.isHuman()) {
             moveController.showNewLandNameDialog(player, defaultLandName);
-        }
-    }
-    
-    private void aiPostMoveProcessor(MoveContext moveContext) {
-    	moveContext.handleMove();
-        if (moveContext.isMoveTypeRevealMap()) {
-            moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
     }
     
@@ -349,7 +292,7 @@ public class MoveService {
             }
 
             showMoveIfRequired(moveContext);
-            postMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
+            processMove(moveContext);
             
             moveContext.initNextPathStep();
             

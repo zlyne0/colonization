@@ -71,7 +71,7 @@ public class CombatService {
         if (captureConvertMove != null) {
         	moveService.blockedShowMove(captureConvertMove);
         }
-        moveService.postMoveProcessor(moveContext);
+        moveService.processMove(moveContext);
     }
     
     public boolean canBombardTile(Colony colony, Tile tile, Unit tileUnit) {
