@@ -24,6 +24,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
     private final MoveDrawerSemaphore unitAnimationSemaphore = new MoveDrawerSemaphore();
+    private final HumanPlayerInteractionSemaphore humanPlayerInteractionSemaphore = new HumanPlayerInteractionSemaphore();
 	
     private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
@@ -264,8 +265,16 @@ public class MoveController {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
     }
 
-    public void showFirstContactDialod(Player player, Player contactPlayer) {
-        guiGameController.showDialog(new FirstContactDialog(player, contactPlayer));
+    /**
+     * Method wait until human answer on first contact
+     * @param player
+     * @param contactPlayer
+     */
+    public void showFirstContactDialog(Player player, Player contactPlayer) {
+        // TODO:
+        System.out.println("showFirstContactDialog player = " + player.getId() + ", contactPlayer = " + contactPlayer.getId());
+        guiGameController.showDialog(new FirstContactDialog(player, contactPlayer, humanPlayerInteractionSemaphore));
+        humanPlayerInteractionSemaphore.waitForInteraction();
     }
 	
 }

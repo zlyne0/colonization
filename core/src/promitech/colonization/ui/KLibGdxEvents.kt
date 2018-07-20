@@ -5,6 +5,18 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
+import com.badlogic.gdx.scenes.scene2d.Event
+import com.badlogic.gdx.scenes.scene2d.EventListener
+
+inline public fun ClosableDialog<*>.kAddOnCloseListener(crossinline listener : () -> Unit) : ClosableDialog<*> {
+	this.addOnCloseListener(object : EventListener {
+		override fun handle(event : Event?) : Boolean {
+			listener()
+			return true
+		}
+	})
+	return this
+}
 
 inline public fun SimpleMessageDialog.withButton(
 	titleCode: String, 

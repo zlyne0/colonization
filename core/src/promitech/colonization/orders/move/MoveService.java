@@ -1,10 +1,8 @@
 package promitech.colonization.orders.move;
 
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Set;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -12,15 +10,15 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
-import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.Direction;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
+import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
@@ -50,6 +48,7 @@ public class MoveService {
     private MoveController moveController;
     private CombatController combatController;
 
+    // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
     
     public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, CombatService combatService) {
@@ -201,11 +200,15 @@ public class MoveService {
         
         if (firstContactPlayers != null) {
             for (Entry<String, Player> neighbourPlayerEntry : firstContactPlayers.entrySet()) {
-                if (player.isAi()) {
-                    // TODO: message to player with first native contact
-                    //player.changeStance(neighbourPlayerEntry.getValue(), Stance.PEACE);
+                Player neighbour = neighbourPlayerEntry.getValue();
+                if (player.isAi() && neighbour.isAi()) {
+                    player.changeStance(neighbour, Stance.PEACE);
                 } else {
-                    moveController.showFirstContactDialod(player, neighbourPlayerEntry.getValue());
+                    if (player.isAi()) {
+                        moveController.showFirstContactDialog(neighbour, player);
+                    } else {
+                        //moveController.showFirstContactDialog(player, neighbour);
+                    }
                 }
             }
         }

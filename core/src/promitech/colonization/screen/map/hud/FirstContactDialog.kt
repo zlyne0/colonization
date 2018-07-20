@@ -14,12 +14,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton.TextButtonStyle
 import com.badlogic.gdx.scenes.scene2d.ui.Image
 import promitech.colonization.ui.addListener
+import promitech.colonization.ui.kAddOnCloseListener
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
+import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore
 
 class FirstContactDialog(
 	val player : Player,
-	val contactPlayer : Player
+	val contactPlayer : Player,
+	val humanPlayerInteractionSemaphore : HumanPlayerInteractionSemaphore = HumanPlayerInteractionSemaphore()
 )
 	: ClosableDialog<NewLandNameDialog>(ClosableDialogSize.width50(), ClosableDialogSize.def())
 {
@@ -33,6 +36,7 @@ class FirstContactDialog(
 		yesButton = TextButton(Messages.msg("welcome.yes"), skin)
 		noButton = TextButton(Messages.msg("welcome.no"), skin)
 		
+		// TODO: jak rozwiazac ze gdy zamknie okno przez klik poza, trzeba zrobic aby nie bylo to closable dialog, 
 		yesButton.addListener { _, _ ->
 			player.changeStance(contactPlayer, Stance.PEACE)
 			hideWithFade()
@@ -43,6 +47,10 @@ class FirstContactDialog(
 			player.modifyTension(contactPlayer, Tension.TENSION_ADD_MAJOR)
 			player.addMissionBan(contactPlayer)
 			hideWithFade()
+		}
+		
+		kAddOnCloseListener {
+		    humanPlayerInteractionSemaphore.release()
 		}
 	}
 	
