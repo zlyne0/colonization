@@ -31,7 +31,7 @@ import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.GUIGameModel.ChangeStateListener;
-import promitech.colonization.ui.ClosableDialog;
+import promitech.colonization.ui.ModalDialog;
 
 public class HudStage extends Stage {
     private static Direction[][] BUTTON_DIRECTIONS = new Direction[][] { 
@@ -139,15 +139,15 @@ public class HudStage extends Stage {
 			}
     	});
     }
-    
-    public void showDialog(final ClosableDialog<?> closableDialog) {
+
+    public void showDialog(final ModalDialog<?> modalDialog) {
     	Gdx.app.postRunnable(new Runnable() {
 			@Override
 			public void run() {
 				HudStage.this.removeListener(inputListener);    	
-				closableDialog.addOnCloseListener(HudStage.this.addInputListenerToStageEvent);
-				closableDialog.init(shapeRenderer);
-				closableDialog.show(HudStage.this);
+				modalDialog.addOnCloseListener(HudStage.this.addInputListenerToStageEvent);
+				modalDialog.init(shapeRenderer);
+				modalDialog.show(HudStage.this);
 			}
 		});
     }

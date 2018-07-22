@@ -11,7 +11,7 @@ import promitech.colonization.GameResources
 import promitech.colonization.savegame.SaveGameList
 import promitech.colonization.screen.map.hud.GUIGameController
 import promitech.colonization.ui.ClosableDialog
-import promitech.colonization.ui.ClosableDialogSize
+import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.STable
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
@@ -21,16 +21,14 @@ class LoadGameDialog(
 	private val guiGameController : GUIGameController
 )
 : ClosableDialog<SaveGameDialog>(
-	ClosableDialogSize.width50(), ClosableDialogSize.height75()
+	ModalDialogSize.width50(), ModalDialogSize.height75()
 ) {
 	
-	private val skin : Skin
 	private val gameNameLabel : Label
 	private var gamesTable : STable
 	private val okButton : TextButton
 	
 	init {
-		skin = GameResources.instance.getUiSkin()
 		withHidingOnEsc()
 		
 		okButton = TextButton(Messages.msg("ok"), skin)

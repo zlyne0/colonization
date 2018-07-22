@@ -33,7 +33,7 @@ import promitech.colonization.screen.map.ColonyNameDialog;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
-import promitech.colonization.ui.ClosableDialog;
+import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
 
 public class GUIGameController {
@@ -505,7 +505,7 @@ public class GUIGameController {
 		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
 
-	public void showDialog(ClosableDialog<?> dialog) {
+	public void showDialog(ModalDialog<?> dialog) {
 		mapHudStage.showDialog(dialog);
 	}
 

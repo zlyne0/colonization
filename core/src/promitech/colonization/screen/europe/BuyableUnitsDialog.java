@@ -20,7 +20,7 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
-import promitech.colonization.ui.ClosableDialogSize;
+import promitech.colonization.ui.ModalDialogSize;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
@@ -34,7 +34,7 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 	private final ChangeColonyStateListener changeColonyStateListener;
 	
 	public BuyableUnitsDialog(ShapeRenderer shape, List<UnitType> unitsTypes, Player player, ChangeColonyStateListener changeColonyStateListener) {
-		super(ClosableDialogSize.def(), ClosableDialogSize.height75());
+		super(ModalDialogSize.def(), ModalDialogSize.height75());
 		this.shape = shape;
 		this.unitsTypes = unitsTypes;
 		this.player = player;

@@ -12,12 +12,12 @@ import promitech.colonization.GameResources;
 import promitech.colonization.ui.ClosableDialog;
 import promitech.colonization.ui.resources.Messages;
 
-public class NotificationDialog extends ClosableDialog {
+public class NotificationDialog extends ClosableDialog<NotificationDialog> {
 
 	private final Table dialogLayout = new Table();
 	
 	public NotificationDialog(Notification notification) {
-		super(Messages.msg("message"), GameResources.instance.getUiSkin());
+		super(Messages.msg("message"));
 
 		String text;
 		if (notification instanceof MessageNotification) {

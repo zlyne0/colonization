@@ -15,7 +15,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import promitech.colonization.ui.STableSelectListener
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import promitech.colonization.ui.ClosableDialogSize
+import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.SimpleMessageDialog
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.addSelectListener
@@ -31,18 +31,15 @@ class SaveGameDialog(
 	private val guiGameModel : GUIGameModel
 )
 	: ClosableDialog<SaveGameDialog>(
-		ClosableDialogSize.width50(), ClosableDialogSize.height75()
+		ModalDialogSize.width50(), ModalDialogSize.height75()
 	)
 {
 	
-	private val skin : Skin
 	private val gameNameTextField : TextField
 	private val okButton : TextButton
 	private var gamesTable : STable
 	
 	init {
-		skin = GameResources.instance.getUiSkin()
-		
 		okButton = TextButton(Messages.msg("ok"), skin)
 		gamesTable = STable(shapeRenderer)
 		

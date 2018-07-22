@@ -5,7 +5,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import promitech.colonization.GameResources
 import promitech.colonization.ui.ClosableDialog
-import promitech.colonization.ui.ClosableDialogSize
+import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.resources.StringTemplate
 import net.sf.freecol.common.model.player.Player
 import com.badlogic.gdx.scenes.scene2d.ui.Label
@@ -18,25 +18,23 @@ import promitech.colonization.ui.kAddOnCloseListener
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
 import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore
+import promitech.colonization.ui.ModalDialog
 
 class FirstContactDialog(
 	val player : Player,
 	val contactPlayer : Player,
 	val humanPlayerInteractionSemaphore : HumanPlayerInteractionSemaphore = HumanPlayerInteractionSemaphore()
 )
-	: ClosableDialog<NewLandNameDialog>(ClosableDialogSize.width50(), ClosableDialogSize.def())
+	: ModalDialog<FirstContactDialog>(ModalDialogSize.width50(), ModalDialogSize.def())
 {
 	
-	val skin : Skin
 	val yesButton : TextButton
 	val noButton : TextButton
 	
 	init {
-		skin = GameResources.instance.getUiSkin()
 		yesButton = TextButton(Messages.msg("welcome.yes"), skin)
 		noButton = TextButton(Messages.msg("welcome.no"), skin)
 		
-		// TODO: jak rozwiazac ze gdy zamknie okno przez klik poza, trzeba zrobic aby nie bylo to closable dialog, 
 		yesButton.addListener { _, _ ->
 			player.changeStance(contactPlayer, Stance.PEACE)
 			hideWithFade()

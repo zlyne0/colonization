@@ -30,7 +30,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
-import promitech.colonization.ui.ClosableDialogSize;
+import promitech.colonization.ui.ModalDialogSize;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.SimpleMessageDialog;
@@ -100,7 +100,7 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
     private int[] buildQueueItemsAligment = new int[] { Align.center, Align.left };
 	
 	BuildingQueueDialog(ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
-		super(ClosableDialogSize.def(), ClosableDialogSize.height75());
+		super(ModalDialogSize.def(), ModalDialogSize.height75());
 		
 		this.game = game;
 		this.colony = colony;

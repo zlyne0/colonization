@@ -8,13 +8,14 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
 import com.badlogic.gdx.scenes.scene2d.Event
 import com.badlogic.gdx.scenes.scene2d.EventListener
 
-inline public fun ClosableDialog<*>.kAddOnCloseListener(crossinline listener : () -> Unit) : ClosableDialog<*> {
-	this.addOnCloseListener(object : EventListener {
+inline public fun ModalDialog<*>.kAddOnCloseListener(crossinline listener : () -> Unit) : ModalDialog<*> {
+	val eventListener = object : EventListener {
 		override fun handle(event : Event?) : Boolean {
 			listener()
 			return true
 		}
-	})
+	}
+	this.addOnCloseListener(eventListener)
 	return this
 }
 

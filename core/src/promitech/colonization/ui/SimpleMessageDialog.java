@@ -2,12 +2,10 @@ package promitech.colonization.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
-import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton;
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener;
 import com.badlogic.gdx.utils.Align;
 
-import promitech.colonization.GameResources;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -23,22 +21,12 @@ public class SimpleMessageDialog extends ClosableDialog<SimpleMessageDialog> {
 		public abstract void buttonPressed(SimpleMessageDialog dialog);
 	}
 	
-	private final Skin skin;
 	private ChangeListener hideChangeListener = new ChangeListener() {
 		@Override
 		public void changed(ChangeEvent event, Actor actor) {
 			hide();
 		}
 	};
-
-	public SimpleMessageDialog() {
-		this("", GameResources.instance.getUiSkin());
-	}
-	
-	public SimpleMessageDialog(String title, Skin skin) {
-		super(title, skin);
-		this.skin = skin;
-	}
 
 	public SimpleMessageDialog withContent(StringTemplate st) {
 		return withContentMsg(Messages.message(st));
