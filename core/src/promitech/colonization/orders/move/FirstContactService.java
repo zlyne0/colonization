@@ -50,6 +50,9 @@ class FirstContactService {
         if (firstContactPlayers != null) {
             for (Entry<String, Player> neighbourPlayerEntry : firstContactPlayers.entrySet()) {
                 Player neighbour = neighbourPlayerEntry.getValue();
+                
+                System.out.println("First contact. Player " + player.getId() + " met player = " + neighbour.getId());
+                
                 if (player.isAi() && neighbour.isAi()) {
                     player.changeStance(neighbour, Stance.PEACE);
                 } else {

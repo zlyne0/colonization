@@ -14,6 +14,7 @@ import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.FirstContactDialog
+import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -151,8 +152,10 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		object : Task("firstContactDialog") {
 			override fun run(console: ConsoleOutput) : Boolean {
 				// TODO: remove
-				val contactPlayer = guiGameModel.game.players.getById("player:19")
-				gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
+				val player = guiGameModel.game.players.getById("player:1")
+				val contactPlayer = guiGameModel.game.players.getById("player:9")
+				//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
+				gameController.showDialog(DiplomacyContactDialog(player, contactPlayer))
 				return true
 			}
 		}

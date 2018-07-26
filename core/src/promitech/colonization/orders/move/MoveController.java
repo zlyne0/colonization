@@ -271,8 +271,6 @@ public class MoveController {
      * @param contactPlayer
      */
     public void showFirstContactDialog(Player player, Player contactPlayer) {
-        // TODO:
-        System.out.println("showFirstContactDialog player = " + player.getId() + ", contactPlayer = " + contactPlayer.getId());
         guiGameController.showDialog(new FirstContactDialog(player, contactPlayer, humanPlayerInteractionSemaphore));
         humanPlayerInteractionSemaphore.waitForInteraction();
     }
