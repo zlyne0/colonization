@@ -153,9 +153,11 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			override fun run(console: ConsoleOutput) : Boolean {
 				// TODO: remove
 				val player = guiGameModel.game.players.getById("player:1")
-				val contactPlayer = guiGameModel.game.players.getById("player:9")
+				//val contactPlayer = guiGameModel.game.players.getById("player:9")
+				val contactPlayer = guiGameModel.game.players.getById("player:133")
+				
 				//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
-				gameController.showDialog(DiplomacyContactDialog(player, contactPlayer))
+				gameController.showDialog(DiplomacyContactDialog(guiGameModel.game, player, contactPlayer))
 				return true
 			}
 		}

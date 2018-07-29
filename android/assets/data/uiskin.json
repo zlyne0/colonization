@@ -8,7 +8,8 @@ com.badlogic.gdx.graphics.Color: {
 	gray: { hex: 696969ff }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Skin$TintedDrawable: {
-	dialogDim: { name: white, color: { r: 0, g: 0, b: 0, a: 0.45 } }
+	dialogDim: { name: white, color: { r: 0, g: 0, b: 0, a: 0.45 } },
+	grayBackground: { name: gray, color: gray }
 },
 com.badlogic.gdx.scenes.scene2d.ui.Button$ButtonStyle: {
 	default: { down: default-round-down, up: default-round },
@@ -25,7 +26,7 @@ com.badlogic.gdx.scenes.scene2d.ui.SelectBox$SelectBoxStyle: {
 	default: {
 		font: default-font, fontColor: white, background: default-select,
 		scrollStyle: default,
-		listStyle: { font: default-font, selection: default-select-selection }
+		listStyle: { font: default-font, selection: default-select-selection, background: grayBackground }
 	}
 },
 com.badlogic.gdx.scenes.scene2d.ui.SplitPane$SplitPaneStyle: {

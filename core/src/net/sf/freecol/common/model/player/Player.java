@@ -448,6 +448,10 @@ public class Player extends ObjectWithId {
 		return dead;
 	}
 	
+	public boolean isLive() {
+		return !dead;
+	}
+	
     public boolean isLiveEuropeanPlayer() {
         return !isDead() && isEuropean();
     }
