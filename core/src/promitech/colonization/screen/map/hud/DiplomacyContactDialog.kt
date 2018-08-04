@@ -18,6 +18,9 @@ import net.sf.freecol.common.model.Settlement
 import com.badlogic.gdx.utils.Array
 import net.sf.freecol.common.model.Game
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
+import promitech.colonization.GameResources
+import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
+import net.sf.freecol.common.model.player.Stance
 
 class ColonySelectItem(val colony : Colony)  {
 	override fun toString() : String {
@@ -30,6 +33,18 @@ class PlayerSelectItem(val player : Player) {
 	
 	init {
 		name = Messages.message(player.nationName)
+	}
+	
+	override fun toString() : String {
+		return name
+	}
+}
+
+class StanceSelectItem(val stance : Stance) {
+	val name : String
+	
+	init {
+		name = Messages.msg("model.stance." + stance.name.toLowerCase())
 	}
 	
 	override fun toString() : String {
@@ -77,8 +92,7 @@ class DiplomacyContactDialog(
 		var situationLabel = Label(
 			Messages.message(
 				StringTemplate.template("negotiationDialog.send.diplomatic")
-				.addStringTemplate("%nation%", contactPlayer.getNationName()
-						)
+					.addStringTemplate("%nation%", contactPlayer.getNationName())
 				),
 			skin
 		)
@@ -86,24 +100,28 @@ class DiplomacyContactDialog(
 				
 		
 		val demandLayout = Table()
+		demandLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
 		demandLayout.add(demandLabel).row()
 		demandLayout.add(createGoldBox()).row()
 		demandLayout.add(createColonyBox(contactPlayer)).row()
 		demandLayout.add(createInciteBox(contactPlayer)).row()
 		
 		val sentItemsLayout = Table()
+		sentItemsLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
 		sentItemsLayout.add(situationLabel).row()
 		
 		val offerLayout = Table()
+		offerLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
 		offerLayout.add(offerLabel).row()
 		offerLayout.add(createGoldBox()).row()
 		offerLayout.add(createColonyBox(player)).row()
+		offerLayout.add(createStanceBox(player)).row()
 		offerLayout.add(createInciteBox(player)).row()
 		
 		val layoutTable = Table()
-		layoutTable.add(demandLayout)
-		layoutTable.add(sentItemsLayout)
-		layoutTable.add(offerLayout)
+		layoutTable.add(demandLayout).align(Align.top)
+		layoutTable.add(sentItemsLayout).align(Align.top)
+		layoutTable.add(offerLayout).align(Align.top)
 				
 		getContentTable().add(headerLabel).row()
 		getContentTable().add(layoutTable).row()
@@ -127,11 +145,14 @@ class DiplomacyContactDialog(
 		addButton.setDisabled(true)
 
 		val box = Table()
-		box.defaults().pad(10f, 10f, 0f, 10f)
-		box.add(label).align(Align.left).row()
+		box.defaults()
+			.padLeft(20f)
+			.padRight(20f)
+		box.add(label).align(Align.left).padTop(20f).row()
 		box.add(goldAmountTextField).row()
-		box.add(addButton).expandX().fillX().row()
+		box.add(addButton).expandX().fillX().padBottom(20f).row()
 
+		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
 		return box
 	}
 
@@ -152,11 +173,38 @@ class DiplomacyContactDialog(
 		}
 		
 		val box = Table()
-		box.defaults().pad(10f, 10f, 0f, 10f)
-		box.add(label).align(Align.left).row()
-		box.add(colonySelectBox).row()
-		box.add(addButton).expandX().fillX().row()
+		box.defaults()
+			.padLeft(20f)
+			.padRight(20f)
+		box.add(label).align(Align.left).padTop(20f).row()
+		box.add(colonySelectBox).expandX().fillX().row()
+		box.add(addButton).expandX().fillX().padBottom(20f).row()
 		
+		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
+		return box
+	}
+	
+	fun createStanceBox(player : Player) : Table {
+		val label = Label(Messages.msg("tradeItem.stance"), skin)
+		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
+
+		var items = Array<StanceSelectItem>()
+		items.add(StanceSelectItem(Stance.ALLIANCE))
+		items.add(StanceSelectItem(Stance.CEASE_FIRE))
+		items.add(StanceSelectItem(Stance.PEACE))
+		
+		val stanceSelectBox = SelectBox<StanceSelectItem>(skin)
+		stanceSelectBox.setItems(items)
+
+		val box = Table()
+		box.defaults()
+			.padLeft(20f)
+			.padRight(20f)
+		box.add(label).align(Align.left).padTop(20f).row()
+		box.add(stanceSelectBox).fillX().expandX().row()
+		box.add(addButton).expandX().fillX().padBottom(20f).row()
+		
+		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
 		return box
 	}
 	
@@ -179,10 +227,14 @@ class DiplomacyContactDialog(
 		playerSelectBox.setItems(items)
 				
 		val box = Table()
-		box.defaults().pad(10f, 10f, 0f, 10f)
-		box.add(label).align(Align.left).row()
-		box.add(playerSelectBox).row()
-		box.add(addButton).expandX().fillX().row()
+		box.defaults()
+			.padLeft(20f)
+			.padRight(20f)
+		box.add(label).align(Align.left).padTop(20f).row()
+		box.add(playerSelectBox).fillX().expandX().row()
+		box.add(addButton).expandX().fillX().padBottom(20f).row()
+		
+		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
 		return box
 	}
 	
