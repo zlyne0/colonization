@@ -175,16 +175,14 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		stage = new Stage();		
 		marketLog = new MarketLog();
         marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog, goodTransferActorBridge);
-        carrierUnitsPanel = new UnitsPanel()
+        carrierUnitsPanel = new UnitsPanel(Messages.msg("inPort"))
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener)
-				.withLabel(Messages.msg("inPort"));
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
         
-        outsideUnitsPanel = new UnitsPanel()
+        outsideUnitsPanel = new UnitsPanel(Messages.msg("docks"))
         		.withUnitChips(shape)
-        		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withLabel(Messages.msg("docks"));
+        		.withUnitDoubleClick(unitActorDoubleClickListener);
         highSeasUnitsPanel = new HighSeasUnitsPanel();
         
 		goodTransferActorBridge.set(marketPanel);

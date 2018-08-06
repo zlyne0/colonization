@@ -145,7 +145,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	
 	private boolean showUnitChip = false;
 	private boolean withUnitFocus = false;
-    private Label label;
     private UnitActor selectedActor;
     private CargoPanel cargoPanel;
 	
@@ -162,11 +161,15 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	        updateCargo(selectedActor);
 	    }
 	};
-    
+
 	public UnitsPanel() {
+		this(null);
+	}
+    
+	public UnitsPanel(String title) {
 		super(null, GameResources.instance.getUiSkin());
 		ScrollPaneStyle frameStyle = new ScrollPaneStyle(this.getStyle());
-		frameStyle.background = new FrameWithCornersDrawableSkin(GameResources.instance);
+		frameStyle.background = new FrameWithCornersDrawableSkin(title, FontResource.getUnitBoxFont(), GameResources.instance);
 		setStyle(frameStyle);
 		
 		setWidget(widgets);
@@ -217,30 +220,9 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		return this;
 	}
 	
-    public UnitsPanel withLabel(String labelStr) {
-    	if (label == null) {
-    		label = new Label(labelStr, labelStyle());
-    	} else {
-    		label.setText(labelStr);
-    	}
-    	return this;
-    }
-    
-    private LabelStyle labelStyle() {
-        LabelStyle labelStyle = GameResources.instance.getUiSkin().get("black", LabelStyle.class);
-        labelStyle.font = FontResource.getUnitBoxFont();
-        return labelStyle;
-    }	
-
-    @Override
-    public void draw(Batch batch, float parentAlpha) {
-    	super.draw(batch, parentAlpha);
-    	if (label != null) {
-	    	label.setX(getX() + CORNER_SKIN_DECORATION_SIZE);
-	    	label.setY(getY() + getHeight() - label.getHeight());
-	    	label.draw(batch, parentAlpha);
-    	}
-    }
+	public void changeLabel(String title) {
+		((FrameWithCornersDrawableSkin)getStyle().background).changeTitle(title, FontResource.getUnitBoxFont()); 
+	}
 	
 	@Override
 	public void takePayload(UnitActor unitActor, float x, float y) {

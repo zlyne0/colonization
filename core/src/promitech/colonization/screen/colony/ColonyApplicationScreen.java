@@ -270,17 +270,15 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener, goodTransferActorBridge);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
-        outsideUnitsPanel = new UnitsPanel()
+        outsideUnitsPanel = new UnitsPanel(Messages.msg("outsideColony"))
         		.withUnitChips(shape)
         		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)
-        		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withLabel(Messages.msg("outsideColony"));
+        		.withUnitDoubleClick(unitActorDoubleClickListener);
 		
-        carrierUnitsPanel = new UnitsPanel()
+        carrierUnitsPanel = new UnitsPanel(Messages.msg("inPort"))
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener)
-        		.withLabel(Messages.msg("inPort"));
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
         
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();

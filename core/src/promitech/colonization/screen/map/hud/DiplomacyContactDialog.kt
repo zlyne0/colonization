@@ -21,6 +21,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
 import promitech.colonization.GameResources
 import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
 import net.sf.freecol.common.model.player.Stance
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 
 class ColonySelectItem(val colony : Colony)  {
 	override fun toString() : String {
@@ -128,7 +129,6 @@ class DiplomacyContactDialog(
 	}
 
 	fun createGoldBox(): Table {
-		val label = Label(Messages.msg("tradeItem.gold"), skin)
 		val goldAmountTextField = TextField("0", skin)
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 		
@@ -148,17 +148,18 @@ class DiplomacyContactDialog(
 		box.defaults()
 			.padLeft(20f)
 			.padRight(20f)
-		box.add(label).align(Align.left).padTop(20f).row()
-		box.add(goldAmountTextField).row()
+		box.add(goldAmountTextField).padTop(20f).row()
 		box.add(addButton).expandX().fillX().padBottom(20f).row()
 
-		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
+		box.background = FrameWithCornersDrawableSkin(
+			Messages.msg("tradeItem.gold"),
+			skin.get(LabelStyle::class.java).font,				
+			GameResources.instance
+		)
 		return box
 	}
 
 	fun createColonyBox(player : Player) : Table {
-		val label = Label(Messages.msg("tradeItem.colony"), skin)
-		
 		var items = Array<ColonySelectItem>(player.settlements.size())
 		player.settlements.entities()
 			.forEach {
@@ -176,16 +177,18 @@ class DiplomacyContactDialog(
 		box.defaults()
 			.padLeft(20f)
 			.padRight(20f)
-		box.add(label).align(Align.left).padTop(20f).row()
-		box.add(colonySelectBox).expandX().fillX().row()
+		box.add(colonySelectBox).expandX().fillX().padTop(20f).row()
 		box.add(addButton).expandX().fillX().padBottom(20f).row()
 		
-		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
+		box.background = FrameWithCornersDrawableSkin(
+			Messages.msg("tradeItem.colony"),
+			skin.get(LabelStyle::class.java).font,				
+			GameResources.instance
+		)
 		return box
 	}
 	
 	fun createStanceBox(player : Player) : Table {
-		val label = Label(Messages.msg("tradeItem.stance"), skin)
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 
 		var items = Array<StanceSelectItem>()
@@ -200,11 +203,14 @@ class DiplomacyContactDialog(
 		box.defaults()
 			.padLeft(20f)
 			.padRight(20f)
-		box.add(label).align(Align.left).padTop(20f).row()
-		box.add(stanceSelectBox).fillX().expandX().row()
+		box.add(stanceSelectBox).fillX().expandX().padTop(20f).row()
 		box.add(addButton).expandX().fillX().padBottom(20f).row()
 		
-		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
+		box.background = FrameWithCornersDrawableSkin(
+			Messages.msg("tradeItem.stance"),
+			skin.get(LabelStyle::class.java).font,				
+			GameResources.instance
+		)
 		return box
 	}
 	
