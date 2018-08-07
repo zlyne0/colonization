@@ -1,27 +1,32 @@
 package promitech.colonization.screen.map.hud
 
-import promitech.colonization.ui.ModalDialog
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
-import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import promitech.colonization.ui.resources.Messages
-import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ui.resources.StringTemplate
-import com.badlogic.gdx.scenes.scene2d.ui.Table
-import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter
-import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox
-import net.sf.freecol.common.model.Colony
-import net.sf.freecol.common.model.Settlement
-import com.badlogic.gdx.utils.Array
-import net.sf.freecol.common.model.Game
+import com.badlogic.gdx.scenes.scene2d.ui.Table
+import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.ui.TextField
+import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
+import com.badlogic.gdx.utils.Align
+import com.badlogic.gdx.utils.Array
+import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.player.Stance
 import promitech.colonization.GameResources
 import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
-import net.sf.freecol.common.model.player.Stance
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
+import promitech.colonization.ui.ModalDialog
+import promitech.colonization.ui.addListener
+import promitech.colonization.ui.resources.Messages
+import promitech.colonization.ui.resources.StringTemplate
+import promitech.colonization.screen.map.diplomacy.TradeItem
+import promitech.colonization.screen.map.diplomacy.GoldTradeItem
+import promitech.colonization.screen.map.diplomacy.ColonyTradeItem
+import promitech.colonization.screen.map.diplomacy.TradeType
+import promitech.colonization.screen.map.diplomacy.ColonyBox
 
 class ColonySelectItem(val colony : Colony)  {
 	override fun toString() : String {
@@ -76,7 +81,26 @@ class DiplomacyContactDialog(
 		}
 	}	
 	
+	private val offers = ArrayList<TradeItem>()
+	private val demands = ArrayList<TradeItem>()
+	private var tradeItemsLayout = Table()
+	
+	private val demandGoldBox : Table
+	private val offerGoldBox : Table
+	private val demandColonyBox : ColonyBox
+	private val offerColonyBox : ColonyBox
+	
 	init {
+		demandGoldBox = createGoldBox(TradeType.Demand, this::addTradeItem)
+		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
+		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::addTradeItem, demands)
+		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::addTradeItem, offers)
+		
+		createLayout()
+		refreshSummaryBox()
+	}
+
+	private fun createLayout() {
 		val headerLabel = Label(Messages.msg("negotiationDialog.title.diplomatic"), skin)
 
 		val demandLabelStr = Messages.message(
@@ -87,7 +111,6 @@ class DiplomacyContactDialog(
 			StringTemplate.template("negotiationDialog.offer")
 				.addStringTemplate("%nation%", player.getNationName())
 		)
-		
 
 		val demandLabel = Label(demandLabelStr, skin)
 		var situationLabel = Label(
@@ -98,44 +121,112 @@ class DiplomacyContactDialog(
 			skin
 		)
 		val offerLabel = Label(offerLabelStr, skin)
-				
 		
 		val demandLayout = Table()
 		demandLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
 		demandLayout.add(demandLabel).row()
-		demandLayout.add(createGoldBox()).row()
-		demandLayout.add(createColonyBox(contactPlayer)).row()
+		demandLayout.add(demandGoldBox).row()
+		demandLayout.add(demandColonyBox.box).row()
 		demandLayout.add(createInciteBox(contactPlayer)).row()
 		
 		val sentItemsLayout = Table()
-		sentItemsLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
+		sentItemsLayout.defaults()
+			.padTop(10f).padLeft(10f).padRight(10f)
+			.align(Align.top or Align.left)
 		sentItemsLayout.add(situationLabel).row()
+		sentItemsLayout.add(tradeItemsLayout).row()
+		
 		
 		val offerLayout = Table()
 		offerLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
 		offerLayout.add(offerLabel).row()
-		offerLayout.add(createGoldBox()).row()
-		offerLayout.add(createColonyBox(player)).row()
+		offerLayout.add(offerGoldBox).row()
+		offerLayout.add(offerColonyBox.box).row()
 		offerLayout.add(createStanceBox(player)).row()
 		offerLayout.add(createInciteBox(player)).row()
 		
 		val layoutTable = Table()
-		layoutTable.add(demandLayout).align(Align.top)
-		layoutTable.add(sentItemsLayout).align(Align.top)
-		layoutTable.add(offerLayout).align(Align.top)
+		layoutTable.defaults().align(Align.top or Align.left)
+		layoutTable.add(demandLayout)
+		layoutTable.add(sentItemsLayout)
+		layoutTable.add(offerLayout)
 				
 		getContentTable().add(headerLabel).row()
 		getContentTable().add(layoutTable).row()
 	}
+	
+	private fun addTradeItem(item : TradeItem) {
+		when (item.tradeType) {
+			TradeType.Demand -> demands.add(item)
+			TradeType.Offer -> offers.add(item)
+		}
+		refreshSummaryBox()
+	}
 
-	fun createGoldBox(): Table {
-		val goldAmountTextField = TextField("0", skin)
+	private fun refreshSummaryBox() {
+		tradeItemsLayout.clear()
+		
+		val offerLabelStr = Messages.message(
+			StringTemplate.template("negotiationDialog.offer")
+				.addStringTemplate("%nation%", player.getNationName())
+		)
+		val demandLabelStr = Messages.message(
+			StringTemplate.template("negotiationDialog.demand")
+				.addStringTemplate("%nation%", player.getNationName())
+		)
+		val exchengeLabelStr = Messages.msg("negotiationDialog.exchange")
+		
+		tradeItemsLayout.defaults().align(Align.top or Align.left)
+		if (offers.isEmpty()) {
+			if (demands.isNotEmpty()) {
+				tradeItemsLayout.add(Label(demandLabelStr, skin)).row()
+				for (item : TradeItem in demands) {
+					addTradeItemDescription(item)
+				}
+			}
+		} else {
+			tradeItemsLayout.add(Label(offerLabelStr, skin)).row()
+			for (item : TradeItem in offers) {
+				addTradeItemDescription(item)
+			}
+			if (demands.isNotEmpty()) {
+				tradeItemsLayout.add(Label(exchengeLabelStr, skin)).row()
+				for (item : TradeItem in demands) {
+					addTradeItemDescription(item)
+				}
+			}
+		}
+	}
+	
+	private fun addTradeItemDescription(tradeItem : TradeItem) {
+		val label = tradeItem.createLabel(skin)
+		tradeItemsLayout.add(label).padLeft(20f)
+		
+		val deleteButton = TextButton(Messages.msg("list.remove"), skin)
+		deleteButton.addListener { _, _ ->
+			when (tradeItem.tradeType) {
+				TradeType.Demand -> demands.remove(tradeItem)
+				TradeType.Offer -> offers.remove(tradeItem)
+			}
+			when (tradeItem) {
+				is ColonyTradeItem -> {
+					demandColonyBox.refreshList()
+					offerColonyBox.refreshList()
+				}
+			}
+			refreshSummaryBox()
+		}
+		tradeItemsLayout.add(deleteButton).padLeft(20f).row()
+	}
+	
+	private fun createGoldBox(tradeType : TradeType, addListener : (TradeItem) -> Unit) : Table {
+		val goldAmountTextField = TextField("", skin)
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 		
 		goldAmountTextField.setTextFieldFilter(TextFieldFilter.DigitsOnlyFilter())
 		goldAmountTextField.setTextFieldListener( object : TextFieldListener {
 			override fun keyTyped(textField: TextField, c: Char) {
-				if (goldAmountTextField.getText().equals("0")) {
+				if (goldAmountTextField.getText().equals("") || goldAmountTextField.getText().toInt() == 0) {
 					addButton.setDisabled(true)
 				} else {
 					addButton.setDisabled(false)
@@ -143,6 +234,13 @@ class DiplomacyContactDialog(
 			}
 		})
 		addButton.setDisabled(true)
+		
+		addButton.addListener { _, _ ->
+			val item = GoldTradeItem(goldAmountTextField.getText().toInt(), tradeType)
+			addListener(item)
+			goldAmountTextField.setText("")
+			addButton.setDisabled(true)
+		}
 
 		val box = Table()
 		box.defaults()
@@ -159,35 +257,6 @@ class DiplomacyContactDialog(
 		return box
 	}
 
-	fun createColonyBox(player : Player) : Table {
-		var items = Array<ColonySelectItem>(player.settlements.size())
-		player.settlements.entities()
-			.forEach {
-				items.add(ColonySelectItem(it.getColony()))
-			}
-		val colonySelectBox = SelectBox<ColonySelectItem>(skin)
-		colonySelectBox.setItems(items)
-		
-		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
-		if (items.size == 0) {
-			addButton.setDisabled(true)
-		}
-		
-		val box = Table()
-		box.defaults()
-			.padLeft(20f)
-			.padRight(20f)
-		box.add(colonySelectBox).expandX().fillX().padTop(20f).row()
-		box.add(addButton).expandX().fillX().padBottom(20f).row()
-		
-		box.background = FrameWithCornersDrawableSkin(
-			Messages.msg("tradeItem.colony"),
-			skin.get(LabelStyle::class.java).font,				
-			GameResources.instance
-		)
-		return box
-	}
-	
 	fun createStanceBox(player : Player) : Table {
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 
