@@ -20,6 +20,8 @@ import promitech.colonization.GameResources
 import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
 import promitech.colonization.ui.ModalDialog
 import promitech.colonization.ui.addListener
+import promitech.colonization.isEmpty
+import promitech.colonization.toGdxArray
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.resources.StringTemplate
 import promitech.colonization.screen.map.diplomacy.TradeItem
@@ -287,15 +289,15 @@ class DiplomacyContactDialog(
 		val label = Label(Messages.msg("tradeItem.incite"), skin)
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 		
-		var items = Array<PlayerSelectItem>(game.players.size())
-		game.players.entities()
+		var items = game.players.entities()
 			.filter { it.isLive }
 			.filter { player.hasContacted(it) }
 			.filter { player.notEqualsId(it) }
-			.forEach { items.add(PlayerSelectItem(it)) }
+			.map { PlayerSelectItem(it) }
+			.toGdxArray(game.players.size())
 		items.sort(selectBoxPlayerComparator)
 
-		if (items.size == 0) {
+		if (items.isEmpty()) {
 			addButton.setDisabled(true)
 		}
 		val playerSelectBox = SelectBox<PlayerSelectItem>(skin)

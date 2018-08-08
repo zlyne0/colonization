@@ -1,19 +1,20 @@
 package promitech.colonization.screen.map.diplomacy
 
-import net.sf.freecol.common.model.player.Player
-import com.badlogic.gdx.utils.Align
-import com.badlogic.gdx.utils.Array
-import com.badlogic.gdx.scenes.scene2d.ui.Table
-import promitech.colonization.screen.map.hud.ColonySelectItem
+import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
-import promitech.colonization.ui.resources.Messages
-import promitech.colonization.ui.addListener
-import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
-import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
-import promitech.colonization.GameResources
+import com.badlogic.gdx.utils.Array
 import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.player.Player
+import promitech.colonization.GameResources
+import promitech.colonization.isEmpty
+import promitech.colonization.screen.map.hud.ColonySelectItem
+import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
+import promitech.colonization.toGdxArray
+import promitech.colonization.ui.addListener
+import promitech.colonization.ui.resources.Messages
 
 internal class ColonyBox(
 	val player : Player,
@@ -44,13 +45,12 @@ internal class ColonyBox(
 	}
 	
 	public fun refreshList() {
-		var items = Array<ColonySelectItem>(player.settlements.size())
-		player.settlements.entities()
+		var items = player.settlements.entities()
 			.filter { wasNotAdded(it.getColony()) }
 			.map { ColonySelectItem(it.getColony()) }
-			.forEach { items.add(it) }
+			.toGdxArray(player.settlements.size())
 		colonySelectBox.setItems(items)
-		if (colonySelectBox.getItems().size == 0) {
+		if (colonySelectBox.getItems().isEmpty()) {
 			addButton.setDisabled(true)
 		}
 	}
