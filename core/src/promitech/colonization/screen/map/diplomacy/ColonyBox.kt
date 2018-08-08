@@ -10,11 +10,16 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.GameResources
 import promitech.colonization.isEmpty
-import promitech.colonization.screen.map.hud.ColonySelectItem
 import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
 import promitech.colonization.toGdxArray
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
+
+class ColonySelectItem(val colony : Colony)  {
+	override fun toString() : String {
+		return colony.getName()
+	} 
+}
 
 internal class ColonyBox(
 	val player : Player,
@@ -35,15 +40,6 @@ internal class ColonyBox(
 		createLayout()
 	}
 	
-	private fun wasNotAdded(colony : Colony) : Boolean {
-		for (item : TradeItem in tradeItems) {
-			if (item is ColonyTradeItem && item.colony.equalsId(colony)) {
-				return false 
-			}
-		}
-		return true
-	}
-	
 	public fun refreshList() {
 		var items = player.settlements.entities()
 			.filter { wasNotAdded(it.getColony()) }
@@ -53,6 +49,15 @@ internal class ColonyBox(
 		if (colonySelectBox.getItems().isEmpty()) {
 			addButton.setDisabled(true)
 		}
+	}
+
+	private fun wasNotAdded(colony : Colony) : Boolean {
+		for (item : TradeItem in tradeItems) {
+			if (item is ColonyTradeItem && item.colony.equalsId(colony)) {
+				return false 
+			}
+		}
+		return true
 	}
 	
 	private fun createLayout() {

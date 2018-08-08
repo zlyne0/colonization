@@ -29,24 +29,8 @@ import promitech.colonization.screen.map.diplomacy.GoldTradeItem
 import promitech.colonization.screen.map.diplomacy.ColonyTradeItem
 import promitech.colonization.screen.map.diplomacy.TradeType
 import promitech.colonization.screen.map.diplomacy.ColonyBox
-
-class ColonySelectItem(val colony : Colony)  {
-	override fun toString() : String {
-		return colony.getName()
-	} 
-}
-
-class PlayerSelectItem(val player : Player) {
-	val name : String
-	
-	init {
-		name = Messages.message(player.nationName)
-	}
-	
-	override fun toString() : String {
-		return name
-	}
-}
+import promitech.colonization.screen.map.diplomacy.InciteBox
+import promitech.colonization.screen.map.diplomacy.InciteTradeItem
 
 class StanceSelectItem(val stance : Stance) {
 	val name : String
@@ -67,21 +51,6 @@ class DiplomacyContactDialog(
 )
 	: ModalDialog<DiplomacyContactDialog>()
 {
-
-	val selectBoxPlayerComparator = object : Comparator<PlayerSelectItem> {
-		// first european than indian 
-		override fun compare(p1: PlayerSelectItem, p2: PlayerSelectItem): Int {
-			if (p1.player.isIndian() && p2.player.isIndian()) {
-				return p1.name.compareTo(p2.name)
-			} else {
-				if (p1.player.isIndian) {
-					return 1
-				} else {
-					return -1
-				}
-			}
-		}
-	}	
 	
 	private val offers = ArrayList<TradeItem>()
 	private val demands = ArrayList<TradeItem>()
@@ -92,11 +61,17 @@ class DiplomacyContactDialog(
 	private val demandColonyBox : ColonyBox
 	private val offerColonyBox : ColonyBox
 	
+	private val demandInciteBox : InciteBox
+	private val offerInciteBox : InciteBox
+	
 	init {
 		demandGoldBox = createGoldBox(TradeType.Demand, this::addTradeItem)
-		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
 		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::addTradeItem, demands)
+		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::addTradeItem, demands)
+		
+		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
 		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::addTradeItem, offers)
+		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::addTradeItem, offers)
 		
 		createLayout()
 		refreshSummaryBox()
@@ -129,7 +104,7 @@ class DiplomacyContactDialog(
 		demandLayout.add(demandLabel).row()
 		demandLayout.add(demandGoldBox).row()
 		demandLayout.add(demandColonyBox.box).row()
-		demandLayout.add(createInciteBox(contactPlayer)).row()
+		demandLayout.add(demandInciteBox.box).row()
 		
 		val sentItemsLayout = Table()
 		sentItemsLayout.defaults()
@@ -145,7 +120,7 @@ class DiplomacyContactDialog(
 		offerLayout.add(offerGoldBox).row()
 		offerLayout.add(offerColonyBox.box).row()
 		offerLayout.add(createStanceBox(player)).row()
-		offerLayout.add(createInciteBox(player)).row()
+		offerLayout.add(offerInciteBox.box).row()
 		
 		val layoutTable = Table()
 		layoutTable.defaults().align(Align.top or Align.left)
@@ -215,6 +190,10 @@ class DiplomacyContactDialog(
 					demandColonyBox.refreshList()
 					offerColonyBox.refreshList()
 				}
+				is InciteTradeItem -> {
+					demandInciteBox.refreshList()
+					offerInciteBox.refreshList()
+				}
 			}
 			refreshSummaryBox()
 		}
@@ -282,36 +261,6 @@ class DiplomacyContactDialog(
 			skin.get(LabelStyle::class.java).font,				
 			GameResources.instance
 		)
-		return box
-	}
-	
-	fun createInciteBox(player : Player) : Table {
-		val label = Label(Messages.msg("tradeItem.incite"), skin)
-		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
-		
-		var items = game.players.entities()
-			.filter { it.isLive }
-			.filter { player.hasContacted(it) }
-			.filter { player.notEqualsId(it) }
-			.map { PlayerSelectItem(it) }
-			.toGdxArray(game.players.size())
-		items.sort(selectBoxPlayerComparator)
-
-		if (items.isEmpty()) {
-			addButton.setDisabled(true)
-		}
-		val playerSelectBox = SelectBox<PlayerSelectItem>(skin)
-		playerSelectBox.setItems(items)
-				
-		val box = Table()
-		box.defaults()
-			.padLeft(20f)
-			.padRight(20f)
-		box.add(label).align(Align.left).padTop(20f).row()
-		box.add(playerSelectBox).fillX().expandX().row()
-		box.add(addButton).expandX().fillX().padBottom(20f).row()
-		
-		box.background = FrameWithCornersDrawableSkin(GameResources.instance)
 		return box
 	}
 	
