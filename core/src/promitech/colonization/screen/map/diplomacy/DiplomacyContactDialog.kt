@@ -31,6 +31,9 @@ import promitech.colonization.screen.map.diplomacy.TradeType
 import promitech.colonization.screen.map.diplomacy.ColonyBox
 import promitech.colonization.screen.map.diplomacy.InciteBox
 import promitech.colonization.screen.map.diplomacy.InciteTradeItem
+import promitech.colonization.ui.ModalDialogSize
+import promitech.colonization.screen.map.diplomacy.StanceTradeItem
+import promitech.colonization.screen.map.diplomacy.StanceBox
 
 class StanceSelectItem(val stance : Stance) {
 	val name : String
@@ -49,7 +52,7 @@ class DiplomacyContactDialog(
 	val player : Player,
 	val contactPlayer : Player
 )
-	: ModalDialog<DiplomacyContactDialog>()
+	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width75(), ModalDialogSize.def())
 {
 	
 	private val offers = ArrayList<TradeItem>()
@@ -64,6 +67,8 @@ class DiplomacyContactDialog(
 	private val demandInciteBox : InciteBox
 	private val offerInciteBox : InciteBox
 	
+	private val offerStanceBox : StanceBox
+	
 	init {
 		demandGoldBox = createGoldBox(TradeType.Demand, this::addTradeItem)
 		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::addTradeItem, demands)
@@ -72,6 +77,7 @@ class DiplomacyContactDialog(
 		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
 		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::addTradeItem, offers)
 		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::addTradeItem, offers)
+		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::addTradeItem, offers)
 		
 		createLayout()
 		refreshSummaryBox()
@@ -83,10 +89,12 @@ class DiplomacyContactDialog(
 		val demandLabelStr = Messages.message(
 			StringTemplate.template("negotiationDialog.demand")
 				.addStringTemplate("%nation%", player.getNationName())
+				.addStringTemplate("%otherNation%", contactPlayer.getNationName())
 		)
 		val offerLabelStr = Messages.message(
 			StringTemplate.template("negotiationDialog.offer")
 				.addStringTemplate("%nation%", player.getNationName())
+				.addStringTemplate("%otherNation%", contactPlayer.getNationName())
 		)
 
 		val demandLabel = Label(demandLabelStr, skin)
@@ -119,7 +127,7 @@ class DiplomacyContactDialog(
 		offerLayout.add(offerLabel).row()
 		offerLayout.add(offerGoldBox).row()
 		offerLayout.add(offerColonyBox.box).row()
-		offerLayout.add(createStanceBox(player)).row()
+		offerLayout.add(offerStanceBox.box).row()
 		offerLayout.add(offerInciteBox.box).row()
 		
 		val layoutTable = Table()
@@ -129,7 +137,7 @@ class DiplomacyContactDialog(
 		layoutTable.add(offerLayout)
 				
 		getContentTable().add(headerLabel).row()
-		getContentTable().add(layoutTable).row()
+		getContentTable().add(layoutTable).expandX().fillX().row()
 	}
 	
 	private fun addTradeItem(item : TradeItem) {
@@ -146,10 +154,12 @@ class DiplomacyContactDialog(
 		val offerLabelStr = Messages.message(
 			StringTemplate.template("negotiationDialog.offer")
 				.addStringTemplate("%nation%", player.getNationName())
+				.addStringTemplate("%otherNation%", contactPlayer.getNationName())
 		)
 		val demandLabelStr = Messages.message(
 			StringTemplate.template("negotiationDialog.demand")
 				.addStringTemplate("%nation%", player.getNationName())
+				.addStringTemplate("%otherNation%", contactPlayer.getNationName())
 		)
 		val exchengeLabelStr = Messages.msg("negotiationDialog.exchange")
 		
@@ -194,6 +204,9 @@ class DiplomacyContactDialog(
 					demandInciteBox.refreshList()
 					offerInciteBox.refreshList()
 				}
+				is StanceTradeItem -> {
+					offerStanceBox.refresh()
+				}
 			}
 			refreshSummaryBox()
 		}
@@ -232,32 +245,6 @@ class DiplomacyContactDialog(
 
 		box.background = FrameWithCornersDrawableSkin(
 			Messages.msg("tradeItem.gold"),
-			skin.get(LabelStyle::class.java).font,				
-			GameResources.instance
-		)
-		return box
-	}
-
-	fun createStanceBox(player : Player) : Table {
-		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
-
-		var items = Array<StanceSelectItem>()
-		items.add(StanceSelectItem(Stance.ALLIANCE))
-		items.add(StanceSelectItem(Stance.CEASE_FIRE))
-		items.add(StanceSelectItem(Stance.PEACE))
-		
-		val stanceSelectBox = SelectBox<StanceSelectItem>(skin)
-		stanceSelectBox.setItems(items)
-
-		val box = Table()
-		box.defaults()
-			.padLeft(20f)
-			.padRight(20f)
-		box.add(stanceSelectBox).fillX().expandX().padTop(20f).row()
-		box.add(addButton).expandX().fillX().padBottom(20f).row()
-		
-		box.background = FrameWithCornersDrawableSkin(
-			Messages.msg("tradeItem.stance"),
 			skin.get(LabelStyle::class.java).font,				
 			GameResources.instance
 		)

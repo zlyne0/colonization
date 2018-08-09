@@ -38,7 +38,7 @@ internal class InciteBox(
 )
 {
 	
-	val selectBoxPlayerComparator = object : Comparator<PlayerSelectItem> {
+	private val selectBoxPlayerComparator = object : Comparator<PlayerSelectItem> {
 		// first european than indian 
 		override fun compare(p1: PlayerSelectItem, p2: PlayerSelectItem): Int {
 			if (p1.player.isIndian() && p2.player.isIndian()) {
