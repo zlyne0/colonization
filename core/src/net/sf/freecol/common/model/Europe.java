@@ -292,6 +292,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
     }
 
+    public int getUnitPrice(UnitType unitType) {
+    	if (!unitType.hasPrice()) {
+    		return UnitType.DEFAULT_PRICE;
+    	}
+    	return unitType.getPrice();
+    }
+    
 	public int getUnitPrice(UnitType unitType, UnitRole unitRole, int amount) {
 		if (!unitType.hasPrice()) {
 			return Integer.MAX_VALUE;

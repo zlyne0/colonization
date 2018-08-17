@@ -34,18 +34,7 @@ import promitech.colonization.screen.map.diplomacy.InciteTradeItem
 import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.screen.map.diplomacy.StanceTradeItem
 import promitech.colonization.screen.map.diplomacy.StanceBox
-
-class StanceSelectItem(val stance : Stance) {
-	val name : String
-	
-	init {
-		name = Messages.msg("model.stance." + stance.name.toLowerCase())
-	}
-	
-	override fun toString() : String {
-		return name
-	}
-}
+import promitech.colonization.screen.map.diplomacy.ScoreService
 
 class DiplomacyContactDialog(
 	val game : Game,
@@ -80,6 +69,35 @@ class DiplomacyContactDialog(
 		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::addTradeItem, offers)
 		
 		createLayout()
+		
+		val cancelButton = TextButton(Messages.msg("negotiationDialog.cancel"), skin)
+		val sendButton = TextButton(Messages.msg("negotiationDialog.send"), skin)
+
+		cancelButton.addListener { _, _ ->
+			hideWithFade()
+		}
+		sendButton.addListener { _, _ ->
+			val ss = ScoreService()
+			
+			for (item : TradeItem in demands) {
+				if (item is ColonyTradeItem) {
+					val scoreColony = ss.scoreColony(game, item.colony, player)
+					System.out.println("colony " + item.colony.getName() + " " + scoreColony)
+				}
+			}
+			
+			for (item : TradeItem in offers) {
+				if (item is ColonyTradeItem) {
+					val scoreColony = ss.scoreColony(game, item.colony, player)
+					System.out.println("colony " + item.colony.getName() + " " + scoreColony)
+				}
+			}
+			
+		}
+
+		getButtonTable().add(cancelButton).pad(10f).fillX().expandX()
+        getButtonTable().add(sendButton).pad(10f).fillX().expandX()
+		
 		refreshSummaryBox()
 	}
 

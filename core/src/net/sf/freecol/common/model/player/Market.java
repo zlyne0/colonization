@@ -74,6 +74,14 @@ public class Market extends ObjectWithId {
     	return marketGoodsPrice.price(goodsType, amount);
     }
 
+    public int getSalePrice(GoodsType type, int amount) {
+    	MarketData data = marketGoods.getByIdOrNull(type.getId());
+    	if (data == null) {
+    		return 0;
+    	}
+    	return data.getCostToSell(amount);
+    }
+    
 	public boolean hasArrears(GoodsType type) {
         MarketData data = marketGoods.getByIdOrNull(type.getId());
         if (data == null) {

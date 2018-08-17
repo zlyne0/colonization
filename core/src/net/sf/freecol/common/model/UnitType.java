@@ -35,6 +35,8 @@ public class UnitType extends BuildableType {
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
 
+	public static final int DEFAULT_PRICE = 100;
+
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();
     

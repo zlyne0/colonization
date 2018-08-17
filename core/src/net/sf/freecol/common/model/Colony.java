@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.xml.sax.SAXException;
-
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
@@ -188,21 +186,33 @@ public class Colony extends Settlement {
 	}
 	
 	public boolean hasStockade() {
-	    for (Building building : buildings.entities()) {
-	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
-	            return true;
-	        }
-	    }
-	    return false;
+		Building stockade = getStockade();
+		return stockade != null;
+	}
+	
+	public int getStockadeLevel() {
+		Building stockade = getStockade();
+		if (stockade != null) {
+			return stockade.buildingType.getLevel();
+		}
+		return 1;
 	}
 	
     private String getStockadeKey() {
-    	for (Building building : buildings.entities()) {
-    		if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
-    			return StringUtils.lastPart(building.buildingType.getId(), ".");
-    		}
-    	}
-    	return null;
+		Building stockade = getStockade();
+		if (stockade == null) {
+			return null;
+		}
+		return StringUtils.lastPart(stockade.buildingType.getId(), ".");
+    }
+    
+    private Building getStockade() {
+	    for (Building building : buildings.entities()) {
+	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
+	            return building;
+	        }
+	    }
+	    return null;
     }
 
 	@Override

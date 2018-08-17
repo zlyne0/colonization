@@ -9,10 +9,21 @@ import com.badlogic.gdx.utils.Array
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Stance
 import promitech.colonization.GameResources
-import promitech.colonization.screen.map.hud.StanceSelectItem
 import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
+
+class StanceSelectItem(val stance : Stance) {
+	val name : String
+	
+	init {
+		name = Messages.msg("model.stance." + stance.name.toLowerCase())
+	}
+	
+	override fun toString() : String {
+		return name
+	}
+}
 
 internal class StanceBox(
 	val tradeType : TradeType,
