@@ -35,6 +35,8 @@ import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.screen.map.diplomacy.StanceTradeItem
 import promitech.colonization.screen.map.diplomacy.StanceBox
 import promitech.colonization.screen.map.diplomacy.ScoreService
+import net.sf.freecol.common.model.specification.Ability
+import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement
 
 class DiplomacyContactDialog(
 	val game : Game,
@@ -44,6 +46,7 @@ class DiplomacyContactDialog(
 	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width75(), ModalDialogSize.def())
 {
 	
+	private val diplomacyAggrement : DiplomacyAggrement
 	private val offers = ArrayList<TradeItem>()
 	private val demands = ArrayList<TradeItem>()
 	private var tradeItemsLayout = Table()
@@ -59,13 +62,15 @@ class DiplomacyContactDialog(
 	private val offerStanceBox : StanceBox
 	
 	init {
+		diplomacyAggrement = DiplomacyAggrement(game, player, contactPlayer)
+		
 		demandGoldBox = createGoldBox(TradeType.Demand, this::addTradeItem)
 		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::addTradeItem, demands)
-		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::addTradeItem, demands)
+		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::addTradeItem, demands, player)
 		
 		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
 		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::addTradeItem, offers)
-		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::addTradeItem, offers)
+		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::addTradeItem, offers, contactPlayer)
 		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::addTradeItem, offers)
 		
 		createLayout()
@@ -77,22 +82,9 @@ class DiplomacyContactDialog(
 			hideWithFade()
 		}
 		sendButton.addListener { _, _ ->
-			val ss = ScoreService()
+			val (demandsValue, offersValue) = diplomacyAggrement.calculate(offers, demands)
 			
-			for (item : TradeItem in demands) {
-				if (item is ColonyTradeItem) {
-					val scoreColony = ss.scoreColony(game, item.colony, player)
-					System.out.println("colony " + item.colony.getName() + " " + scoreColony)
-				}
-			}
-			
-			for (item : TradeItem in offers) {
-				if (item is ColonyTradeItem) {
-					val scoreColony = ss.scoreColony(game, item.colony, player)
-					System.out.println("colony " + item.colony.getName() + " " + scoreColony)
-				}
-			}
-			
+			System.out.println("demands $demandsValue, offers $offersValue")
 		}
 
 		getButtonTable().add(cancelButton).pad(10f).fillX().expandX()
@@ -100,7 +92,7 @@ class DiplomacyContactDialog(
 		
 		refreshSummaryBox()
 	}
-
+	
 	private fun createLayout() {
 		val headerLabel = Label(Messages.msg("negotiationDialog.title.diplomatic"), skin)
 

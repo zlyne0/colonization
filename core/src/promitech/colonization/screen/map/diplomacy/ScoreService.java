@@ -16,9 +16,12 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.Direction;
+import promitech.colonization.orders.combat.OffencePower;
 
 // EuropeanAIPlayer.acceptDiplomaticTrade
 public class ScoreService {
+
+	private OffencePower offencePower = new OffencePower();
 	
 	/**
 	 * Method score Colony from player point of view
@@ -81,5 +84,28 @@ public class ScoreService {
 
 	int scoreUnit(Europe unitMarket, Unit unit) {
 		return unitMarket.getUnitPrice(unit.unitType);
+	}
+
+	void scoreOffencePower(Player player, NationSummary nationSummary) {
+		nationSummary.navyPower = 0;
+		nationSummary.militaryPower = 0;
+		
+		for (Unit unit : player.units.entities()) {
+			if (unit.isNaval()) {
+				nationSummary.navyPower += offencePower.calculateUnitOffencePower(unit);
+			} else {
+				nationSummary.militaryPower += offencePower.calculateUnitOffencePower(unit);
+			}
+		}
+	}
+	
+	public double strengthRatio(Player p1, Player p2) {
+		NationSummary ns1 = new NationSummary();
+		NationSummary ns2 = new NationSummary();
+		
+		scoreOffencePower(p1, ns1);
+		scoreOffencePower(p2, ns2);
+		
+		return (double)ns1.militaryPower / ((double)ns1.militaryPower + ns2.militaryPower);
 	}
 }

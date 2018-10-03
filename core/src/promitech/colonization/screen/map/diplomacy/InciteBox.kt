@@ -34,7 +34,8 @@ internal class InciteBox(
 	val player : Player,
 	val skin : Skin,
 	val addListener : (TradeItem) -> Unit,
-	val tradeItems : ArrayList<TradeItem>
+	val tradeItems : ArrayList<TradeItem>,
+	val withoutPlayer : Player
 )
 {
 	
@@ -68,6 +69,7 @@ internal class InciteBox(
 	fun refreshList() {
 		var items = game.players.entities()
 			.filter { it.isLive }
+			.filter { it.notEqualsId(withoutPlayer) }	
 			.filter { player.hasContacted(it) }
 			.filter { player.notEqualsId(it) }
 			.filter { wasNotAdded(it) }

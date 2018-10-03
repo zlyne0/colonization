@@ -5,6 +5,7 @@ import promitech.colonization.ui.resources.StringTemplate
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.GameResources
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import net.sf.freecol.common.model.player.Player
 
 internal class GoldTradeItem(val gold : Int, tradeType : TradeType)
 	: TradeItem(tradeType)
