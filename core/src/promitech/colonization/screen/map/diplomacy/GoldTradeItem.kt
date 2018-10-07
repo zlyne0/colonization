@@ -18,4 +18,8 @@ internal class GoldTradeItem(val gold : Int, tradeType : TradeType)
 		) 
 	}
 	
+	override fun toString() : String {
+		return "GoldTradeItem gold: $gold, aggrementValue: $aggrementValue"
+	}
+	
 }

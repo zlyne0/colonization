@@ -37,13 +37,15 @@ import promitech.colonization.screen.map.diplomacy.StanceBox
 import promitech.colonization.screen.map.diplomacy.ScoreService
 import net.sf.freecol.common.model.specification.Ability
 import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
+import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement.TradeStatus
 
 class DiplomacyContactDialog(
 	val game : Game,
 	val player : Player,
 	val contactPlayer : Player
 )
-	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width75(), ModalDialogSize.def())
+	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width90(), ModalDialogSize.def())
 {
 	
 	private val diplomacyAggrement : DiplomacyAggrement
@@ -61,31 +63,31 @@ class DiplomacyContactDialog(
 	
 	private val offerStanceBox : StanceBox
 	
+	private val sendButton : TextButton
+	
 	init {
 		diplomacyAggrement = DiplomacyAggrement(game, player, contactPlayer)
 		
-		demandGoldBox = createGoldBox(TradeType.Demand, this::addTradeItem)
-		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::addTradeItem, demands)
-		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::addTradeItem, demands, player)
+		demandGoldBox = createGoldBox(TradeType.Demand, this::onAddTradeItem)
+		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::onAddTradeItem, demands)
+		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::onAddTradeItem, demands, player)
 		
-		offerGoldBox = createGoldBox(TradeType.Offer, this::addTradeItem)
-		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::addTradeItem, offers)
-		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::addTradeItem, offers, contactPlayer)
-		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::addTradeItem, offers)
+		offerGoldBox = createGoldBox(TradeType.Offer, this::onAddTradeItem)
+		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::onAddTradeItem, offers)
+		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::onAddTradeItem, offers, contactPlayer)
+		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::onAddTradeItem, offers)
 		
 		createLayout()
 		
 		val cancelButton = TextButton(Messages.msg("negotiationDialog.cancel"), skin)
-		val sendButton = TextButton(Messages.msg("negotiationDialog.send"), skin)
-
 		cancelButton.addListener { _, _ ->
 			hideWithFade()
 		}
+		
+		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
-			val (demandsValue, offersValue) = diplomacyAggrement.calculate(offers, demands)
-			
-			System.out.println("demands $demandsValue, offers $offersValue")
 		}
+		tradeStatusRejectedButtonMsg()
 
 		getButtonTable().add(cancelButton).pad(10f).fillX().expandX()
         getButtonTable().add(sendButton).pad(10f).fillX().expandX()
@@ -131,6 +133,13 @@ class DiplomacyContactDialog(
 		sentItemsLayout.add(situationLabel).row()
 		sentItemsLayout.add(tradeItemsLayout).row()
 		
+		var tradeItemsScrollPane = ScrollPane(sentItemsLayout, skin)
+        tradeItemsScrollPane.setFlickScroll(false)
+        tradeItemsScrollPane.setScrollingDisabled(true, false)
+        tradeItemsScrollPane.setForceScroll(false, false)
+        tradeItemsScrollPane.setFadeScrollBars(false)
+        tradeItemsScrollPane.setOverscroll(true, true)
+        tradeItemsScrollPane.setScrollBarPositions(false, true)
 		
 		val offerLayout = Table()
 		offerLayout.defaults().fillX().expandX().padTop(10f).padLeft(10f).padRight(10f)
@@ -143,21 +152,52 @@ class DiplomacyContactDialog(
 		val layoutTable = Table()
 		layoutTable.defaults().align(Align.top or Align.left)
 		layoutTable.add(demandLayout)
-		layoutTable.add(sentItemsLayout)
+		layoutTable.add(tradeItemsScrollPane)
 		layoutTable.add(offerLayout)
 				
 		getContentTable().add(headerLabel).row()
 		getContentTable().add(layoutTable).expandX().fillX().row()
 	}
 	
-	private fun addTradeItem(item : TradeItem) {
+	private fun onAddTradeItem(item : TradeItem) {
 		when (item.tradeType) {
 			TradeType.Demand -> demands.add(item)
 			TradeType.Offer -> offers.add(item)
 		}
 		refreshSummaryBox()
+		refreshSendButton()
+	}
+	
+	private fun refreshSendButton() {
+		val tradeStatus = diplomacyAggrement.calculate(offers, demands)
+		when (tradeStatus) {
+			TradeStatus.ACCEPT -> {
+				tradeStatusAcceptedButtonMsg()
+			}
+			TradeStatus.REJECT -> {
+				tradeStatusRejectedButtonMsg()
+			}
+		}
 	}
 
+	private fun tradeStatusAcceptedButtonMsg() {
+		var buttonText = Messages.message(
+			StringTemplate.template("negotiationDialog.offerAccepted")
+				.addStringTemplate("%nation%", contactPlayer.getNationName())
+		)
+		sendButton.setText(buttonText)
+		sendButton.setDisabled(false)
+	}
+	
+	private fun tradeStatusRejectedButtonMsg() {
+		var buttonText = Messages.message(
+			StringTemplate.template("negotiationDialog.offerRejected")
+				.addStringTemplate("%nation%", contactPlayer.getNationName())
+		)
+		sendButton.setText(buttonText)
+		sendButton.setDisabled(true)
+	}
+	
 	private fun refreshSummaryBox() {
 		tradeItemsLayout.clear()
 		
@@ -219,6 +259,7 @@ class DiplomacyContactDialog(
 				}
 			}
 			refreshSummaryBox()
+			refreshSendButton()
 		}
 		tradeItemsLayout.add(deleteButton).padLeft(20f).row()
 	}

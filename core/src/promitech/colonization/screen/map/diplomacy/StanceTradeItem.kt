@@ -13,4 +13,8 @@ internal class StanceTradeItem(val stance: Stance, tradeType: TradeType)
 		val labelStr = Messages.msg("model.stance." + stance.getKey())
 		return Label(labelStr, skin)
 	}
+	
+	override fun toString() : String {
+		return "StanceTradeItem stance: $stance, aggrementValue: $aggrementValue"
+	}
 }

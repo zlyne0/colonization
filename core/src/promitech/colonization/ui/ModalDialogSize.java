@@ -22,6 +22,15 @@ public abstract class ModalDialogSize {
 		};
 	}
 
+	public static ModalDialogSize width90() {
+		return new ModalDialogSize() {
+			@Override
+			public void init(Stage stage) {
+				this.val = stage.getWidth() * 0.9f;
+			}
+		};
+	}
+	
 	public static ModalDialogSize height50() {
 		return new ModalDialogSize() {
 			@Override

@@ -7,15 +7,34 @@ import net.sf.freecol.common.model.specification.Ability
 
 // You need drags to make stars come down.
 internal class DiplomacyAggrement(val game : Game, val player : Player, val contactPlayer : Player) {
+	
+	enum class TradeStatus {
+		ACCEPT, REJECT
+	}
+	
 	private val UnacceptableTradeValue = Integer.MIN_VALUE
 	
 	private val ss = ScoreService()
 	
-	public fun calculate(offers: List<TradeItem>, demands : List<TradeItem>) : Pair<Int, Int> {
-		return Pair(
-			calculateTradeAggrements(demands, player, contactPlayer),
-			calculateTradeAggrements(offers, player, player)
-		)
+	public fun calculate(offers: List<TradeItem>, demands : List<TradeItem>) : TradeStatus {
+		val demandsValue = calculateTradeAggrements(demands, player, contactPlayer)
+		val offersValue = calculateTradeAggrements(offers, player, player)
+		
+		val tradeStatus = status(demandsValue, offersValue)
+		var logs = "tradeStatus: $tradeStatus, demands($demandsValue): " + demands.toString() + ", offers($offersValue): " + offers.toString()
+		System.out.println(logs)
+		return tradeStatus
+	}
+	
+	private fun status(demandsValue : Int, offersValue : Int) : TradeStatus {
+		if (demandsValue == UnacceptableTradeValue || offersValue == UnacceptableTradeValue) {
+			return TradeStatus.REJECT
+		}
+		if (offersValue >= demandsValue) {
+			return TradeStatus.ACCEPT
+		} else {
+			return TradeStatus.REJECT
+		}
 	}
 	
 	private fun calculateTradeAggrements(items : List<TradeItem>, offerer : Player, demandFromPlayer : Player) : Int {

@@ -16,4 +16,9 @@ internal class InciteTradeItem(val player : Player, tradeType : TradeType)
 		)
 		return Label(labelStr, skin)
 	}
+	
+	override fun toString() : String {
+		return "InciteTradeItem player: ${player.getId()}, aggrementValue: $aggrementValue"
+	}
+	
 }
