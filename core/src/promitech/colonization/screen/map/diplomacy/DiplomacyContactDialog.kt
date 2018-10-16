@@ -4,43 +4,37 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle
-import com.badlogic.gdx.scenes.scene2d.ui.SelectBox
+import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldFilter
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
 import com.badlogic.gdx.utils.Align
-import com.badlogic.gdx.utils.Array
-import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.player.Stance
 import promitech.colonization.GameResources
-import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
-import promitech.colonization.ui.ModalDialog
-import promitech.colonization.ui.addListener
-import promitech.colonization.isEmpty
-import promitech.colonization.toGdxArray
-import promitech.colonization.ui.resources.Messages
-import promitech.colonization.ui.resources.StringTemplate
-import promitech.colonization.screen.map.diplomacy.TradeItem
-import promitech.colonization.screen.map.diplomacy.GoldTradeItem
-import promitech.colonization.screen.map.diplomacy.ColonyTradeItem
-import promitech.colonization.screen.map.diplomacy.TradeType
+import promitech.colonization.screen.map.Map
 import promitech.colonization.screen.map.diplomacy.ColonyBox
+import promitech.colonization.screen.map.diplomacy.ColonyTradeItem
+import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement
+import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement.TradeStatus
+import promitech.colonization.screen.map.diplomacy.GoldTradeItem
 import promitech.colonization.screen.map.diplomacy.InciteBox
 import promitech.colonization.screen.map.diplomacy.InciteTradeItem
-import promitech.colonization.ui.ModalDialogSize
-import promitech.colonization.screen.map.diplomacy.StanceTradeItem
 import promitech.colonization.screen.map.diplomacy.StanceBox
-import promitech.colonization.screen.map.diplomacy.ScoreService
-import net.sf.freecol.common.model.specification.Ability
-import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
-import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement.TradeStatus
+import promitech.colonization.screen.map.diplomacy.StanceTradeItem
+import promitech.colonization.screen.map.diplomacy.TradeItem
+import promitech.colonization.screen.map.diplomacy.TradeType
+import promitech.colonization.screen.ui.FrameWithCornersDrawableSkin
+import promitech.colonization.ui.ModalDialog
+import promitech.colonization.ui.ModalDialogSize
+import promitech.colonization.ui.addListener
+import promitech.colonization.ui.resources.Messages
+import promitech.colonization.ui.resources.StringTemplate
 
 class DiplomacyContactDialog(
+	val map : Map,
 	val game : Game,
 	val player : Player,
 	val contactPlayer : Player
@@ -86,6 +80,9 @@ class DiplomacyContactDialog(
 		
 		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
+			diplomacyAggrement.acceptTrade(offers, demands)
+			map.resetMapModel()
+			hideWithFade()
 		}
 		tradeStatusRejectedButtonMsg()
 

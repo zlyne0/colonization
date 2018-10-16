@@ -18,7 +18,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.Direction;
 import promitech.colonization.orders.combat.OffencePower;
 
-// EuropeanAIPlayer.acceptDiplomaticTrade
+// In Freecol: EuropeanAIPlayer.acceptDiplomaticTrade
 public class ScoreService {
 
 	private OffencePower offencePower = new OffencePower();

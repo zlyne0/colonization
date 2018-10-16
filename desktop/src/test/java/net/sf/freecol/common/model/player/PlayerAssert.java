@@ -67,6 +67,16 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 	    return this;
 	}
 	
+	public PlayerAssert hasColony(Colony colony) {
+		if (!actual.settlements.containsId(colony)) {
+			failWithMessage("expected player <%s> has colony <%s>", actual.getId(), colony.getId());
+		}
+		if (actual.notEqualsId(colony.getOwner())) {
+			failWithMessage("expected player <%s> has colony <%s>", actual.getId(), colony.getId());
+		}
+		return this;
+	}
+	
 	public PlayerAssert containsExactlyBanMissions(String ... playerIds) {
 	    org.assertj.core.api.Assertions.assertThat(actual.banMission)
 	        .isNotNull()
@@ -74,4 +84,10 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 	    return this;
 	}
     
+	public PlayerAssert hasGold(int gold) {
+		if (actual.getGold() != gold) {
+			failWithMessage("expected player <%s> has gold equals <%s> but has <%s>", actual.getId(), gold, actual.getGold());
+		}
+		return this;
+	}
 }

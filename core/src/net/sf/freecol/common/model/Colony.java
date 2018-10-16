@@ -1140,7 +1140,7 @@ public class Colony extends Settlement {
 	}
 	
     private boolean isAutoBuildableInColony(BuildingType buildingType) {
-    	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100);
+    	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100, buildingType);
     	NoBuildReason noBuildReason = getNoBuildReason(buildingType);
     	return modified == 0f && noBuildReason == NoBuildReason.NONE;
     }
@@ -1250,7 +1250,7 @@ public class Colony extends Settlement {
 		
 		if (oldOwner != null) {
 			for (ColonyTile colonyTile : colonyTiles.entities()) {
-				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId() != null && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
 					colonyTile.tile.changeOwner(newOwner);
 				}
 			}
@@ -1268,6 +1268,7 @@ public class Colony extends Settlement {
 			}
 			if (!foundBuildingType && isAutoBuildable(buildingType)) {
 				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+				colonyProduction.setAsNeedUpdate();
 			}
 		}
 	}

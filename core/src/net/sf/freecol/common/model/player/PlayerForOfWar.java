@@ -50,9 +50,13 @@ public class PlayerForOfWar {
 
     private void fogOfWarForSettlements(Player player) {
         for (Settlement settlement : player.settlements.entities()) {
-            int visibleRadius = settlement.settlementType.getVisibleRadius();
-            initFogOfWarForNeighboursTiles(player, settlement.tile, visibleRadius);
+        	resetFogOfWarForSettlement(player, settlement);
         }
+    }
+    
+    public void resetFogOfWarForSettlement(Player player, Settlement settlement) {
+    	int visibleRadius = settlement.settlementType.getVisibleRadius();
+    	initFogOfWarForNeighboursTiles(player, settlement.tile, visibleRadius);
     }
 
     private void fogOfWarForUnits(Player player) {

@@ -409,6 +409,11 @@ public class Player extends ObjectWithId {
         }
     }
     
+    public void transferGoldToPlayer(int gold, Player player) {
+    	this.subtractGold(gold);
+    	player.addGold(gold);
+    }
+    
     public boolean hasGold() {
         return this.gold > 0;
     }

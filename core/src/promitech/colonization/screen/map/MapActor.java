@@ -20,7 +20,7 @@ import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.unitanimation.UnitTileAnimation;
 
-public class MapActor extends Widget {
+public class MapActor extends Widget implements Map {
 
 	private final GameResources gameResources;
 	private final GUIGameModel guiGameModel;
@@ -98,6 +98,7 @@ public class MapActor extends Widget {
 		mapDrawModel.resetUnexploredBorders(gameResources);
 	}
 	
+	@Override
 	public void resetMapModel() {
 		mapDrawModel.initialize(guiGameModel.game, gameResources);
 	}

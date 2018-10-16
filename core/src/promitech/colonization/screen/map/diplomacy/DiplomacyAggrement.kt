@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.Ability
+import net.sf.freecol.common.model.Colony
 
 // You need drags to make stars come down.
 internal class DiplomacyAggrement(val game : Game, val player : Player, val contactPlayer : Player) {
@@ -128,4 +129,43 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 			item.aggrementValue = 1000
 		}
 	}
+	public fun acceptTrade(offers: List<TradeItem>, demands : List<TradeItem>) {
+		// In freecol InGameController.csAcceptGold
+		for (item in offers) {
+			when (item) {
+				is GoldTradeItem -> {
+					player.transferGoldToPlayer(item.gold, contactPlayer)
+				}
+				is ColonyTradeItem -> {
+					transferColony(item.colony, contactPlayer)
+				}
+				is InciteTradeItem -> {
+				}
+				is StanceTradeItem -> {
+				}
+			}
+		}
+		for (item in demands) {
+			when (item) {
+				is GoldTradeItem -> {
+					contactPlayer.transferGoldToPlayer(item.gold, player)
+				}
+				is ColonyTradeItem -> {
+					transferColony(item.colony, player)
+				}
+				is InciteTradeItem -> {
+				}
+				is StanceTradeItem -> {
+				}
+			}
+		}
+	}
+
+	private fun transferColony(colony : Colony, to : Player) {
+		colony.changeOwner(to)
+		colony.updateColonyFeatures()
+		colony.updateColonyPopulation()
+		to.fogOfWar.resetFogOfWarForSettlement(to, colony)
+	}
+	
 }

@@ -157,7 +157,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				val contactPlayer = guiGameModel.game.players.getById("player:133")
 				
 				//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
-				gameController.showDialog(DiplomacyContactDialog(guiGameModel.game, player, contactPlayer))
+				gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
 				return true
 			}
 		}

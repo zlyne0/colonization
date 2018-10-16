@@ -8,9 +8,7 @@ import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -41,9 +39,6 @@ import promitech.colonization.ui.resources.Messages;
 
 public class ColonyCombatTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
-	
 	private Game game;
     private Player spanish;
     private Player dutch;
@@ -92,7 +87,7 @@ public class ColonyCombatTest {
     }
     
     @Test
-    public void spanishVsEmptyColony() throws Exception {
+    public void spanishWinVsEmptyColony() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 
