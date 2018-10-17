@@ -81,7 +81,7 @@ class DiplomacyContactDialog(
 		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
 			diplomacyAggrement.acceptTrade(offers, demands)
-			map.resetMapModel()
+			map.resetUnexploredBorders()
 			hideWithFade()
 		}
 		tradeStatusRejectedButtonMsg()

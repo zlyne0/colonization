@@ -94,6 +94,7 @@ public class MapActor extends Widget implements Map {
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
 	}
 	
+	@Override
 	public void resetUnexploredBorders() {
 		mapDrawModel.resetUnexploredBorders(gameResources);
 	}

@@ -5,6 +5,9 @@ import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.Ability
 import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.Tile
+import promitech.colonization.Direction
 
 // You need drags to make stars come down.
 internal class DiplomacyAggrement(val game : Game, val player : Player, val contactPlayer : Player) {
@@ -162,10 +165,42 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 	}
 
 	private fun transferColony(colony : Colony, to : Player) {
+		if (colony.isCoastland()) {
+			moveNavyToFreeNeighbourTile(colony)
+		}
+		
 		colony.changeOwner(to)
 		colony.updateColonyFeatures()
 		colony.updateColonyPopulation()
 		to.fogOfWar.resetFogOfWarForSettlement(to, colony)
+	}
+	
+	private fun moveNavyToFreeNeighbourTile(colony : Colony) {
+		var seaTile = firstSeaNeighbourTile(colony.tile, colony.getOwner())
+		if (seaTile != null) {
+			for (unit : Unit in ArrayList(colony.tile.units.entities())) {
+				if (unit.isNaval()) {
+					unit.changeUnitLocation(seaTile)
+					unit.setState(Unit.UnitState.ACTIVE)
+				}
+			}
+		}
+	}
+	
+	private fun firstSeaNeighbourTile(tile : Tile, player : Player) : Tile? {
+		for (direction : Direction in Direction.allDirections) {
+			var neighbourTile = game.map.getTile(tile, direction)
+			if (neighbourTile != null && neighbourTile.type.isWater()) {
+				if (neighbourTile.units.isEmpty()) {
+					return neighbourTile  
+				}
+				var unit = neighbourTile.units.first()
+				if (player.equalsId(unit.getOwner())) {
+					return neighbourTile
+				}
+			}
+		}
+		return null
 	}
 	
 }

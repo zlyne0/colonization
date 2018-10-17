@@ -4,4 +4,6 @@ public interface Map {
 
 	void resetMapModel();	
 	
+	void resetUnexploredBorders();
+	
 }
