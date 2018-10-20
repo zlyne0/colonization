@@ -45,7 +45,11 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 		for (item : TradeItem in items) {
 			when (item) {
 				is ColonyTradeItem -> {
-					item.aggrementValue = ss.scoreColony(game, item.colony, demandFromPlayer)
+					if (item.tradeType == TradeType.Demand && demandFromPlayer.settlements.size() < 5) {
+						item.aggrementValue = UnacceptableTradeValue
+					} else {
+						item.aggrementValue = ss.scoreColony(game, item.colony, demandFromPlayer)
+					}
 				}
 				is GoldTradeItem -> {
 					if (demandFromPlayer.hasGold(item.gold)) {
@@ -143,8 +147,10 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 					transferColony(item.colony, contactPlayer)
 				}
 				is InciteTradeItem -> {
+					player.changeStance(item.player, Stance.WAR)
 				}
 				is StanceTradeItem -> {
+					player.changeStance(contactPlayer, item.stance)
 				}
 			}
 		}
@@ -157,8 +163,10 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 					transferColony(item.colony, player)
 				}
 				is InciteTradeItem -> {
+					contactPlayer.changeStance(item.player, Stance.WAR)
 				}
 				is StanceTradeItem -> {
+					player.changeStance(contactPlayer, item.stance)
 				}
 			}
 		}

@@ -90,4 +90,14 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		}
 		return this;
 	}
+
+	public PlayerAssert hasStance(Player player, Stance stance) {
+		Stance actualStance = actual.getStance(player);
+		if (actualStance != stance) {
+			failWithMessage("expected player <%s> has stance <%s> with player <%s> but has <%s>", 
+				actual.getId(), stance, player.getId(), actualStance
+			);
+		}
+		return this;
+	}
 }
