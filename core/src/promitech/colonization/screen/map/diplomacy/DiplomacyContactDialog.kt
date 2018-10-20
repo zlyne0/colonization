@@ -17,8 +17,8 @@ import promitech.colonization.GameResources
 import promitech.colonization.screen.map.Map
 import promitech.colonization.screen.map.diplomacy.ColonyBox
 import promitech.colonization.screen.map.diplomacy.ColonyTradeItem
-import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement
-import promitech.colonization.screen.map.diplomacy.DiplomacyAggrement.TradeStatus
+import promitech.colonization.screen.map.diplomacy.DiplomacyAgreement
+import promitech.colonization.screen.map.diplomacy.DiplomacyAgreement.TradeStatus
 import promitech.colonization.screen.map.diplomacy.GoldTradeItem
 import promitech.colonization.screen.map.diplomacy.InciteBox
 import promitech.colonization.screen.map.diplomacy.InciteTradeItem
@@ -42,7 +42,7 @@ class DiplomacyContactDialog(
 	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width90(), ModalDialogSize.def())
 {
 	
-	private val diplomacyAggrement : DiplomacyAggrement
+	private val diplomacyAgreement : DiplomacyAgreement
 	private val offers = ArrayList<TradeItem>()
 	private val demands = ArrayList<TradeItem>()
 	private var tradeItemsLayout = Table()
@@ -60,7 +60,7 @@ class DiplomacyContactDialog(
 	private val sendButton : TextButton
 	
 	init {
-		diplomacyAggrement = DiplomacyAggrement(game, player, contactPlayer)
+		diplomacyAgreement = DiplomacyAgreement(game, player, contactPlayer)
 		
 		demandGoldBox = createGoldBox(TradeType.Demand, this::onAddTradeItem)
 		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::onAddTradeItem, demands)
@@ -80,8 +80,8 @@ class DiplomacyContactDialog(
 		
 		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
-			diplomacyAggrement.acceptTrade(offers, demands)
-			map.resetUnexploredBorders()
+			diplomacyAgreement.acceptTrade(offers, demands)
+			map.resetMapModel()
 			hideWithFade()
 		}
 		tradeStatusRejectedButtonMsg()
@@ -166,7 +166,7 @@ class DiplomacyContactDialog(
 	}
 	
 	private fun refreshSendButton() {
-		val tradeStatus = diplomacyAggrement.calculate(offers, demands)
+		val tradeStatus = diplomacyAgreement.calculate(offers, demands)
 		when (tradeStatus) {
 			TradeStatus.ACCEPT -> {
 				tradeStatusAcceptedButtonMsg()

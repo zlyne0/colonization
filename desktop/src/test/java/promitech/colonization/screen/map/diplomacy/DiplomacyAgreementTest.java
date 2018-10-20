@@ -25,12 +25,12 @@ import net.sf.freecol.common.model.player.Stance;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
-public class DiplomacyAggrementTest {
+public class DiplomacyAgreementTest {
 
 	private Game game;
     private Player spanish;
     private Player dutch;
-    private DiplomacyAggrement sut;
+    private DiplomacyAgreement sut;
 	
     @BeforeClass
     public static void beforeClass() throws Exception {
@@ -45,11 +45,11 @@ public class DiplomacyAggrementTest {
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
     	
-    	sut = new DiplomacyAggrement(game, dutch, spanish);
+    	sut = new DiplomacyAgreement(game, dutch, spanish);
     }
 	
     @Test 
-	public void canAcceptTradeGoldAggrement() throws Exception {
+	public void canAcceptTradeGoldAgreement() throws Exception {
 		// given
 		List<TradeItem> offers = new ArrayList<>();
 		List<TradeItem> demands = new ArrayList<>();
@@ -68,7 +68,7 @@ public class DiplomacyAggrementTest {
 	}
 
     @Test 
-	public void canAcceptTradeColonyAggrement() throws Exception {
+	public void canAcceptTradeColonyAgreement() throws Exception {
 		// given
     	Colony santoDomingo = (Colony)spanish.settlements.getById("colony:6730");
 
@@ -91,7 +91,7 @@ public class DiplomacyAggrementTest {
 	}
     
     @Test 
-	public void canAcceptInciteDemandAggrement() throws Exception {
+	public void canAcceptInciteDemandAgreement() throws Exception {
 		// given
 		List<TradeItem> offers = new ArrayList<>();
 		List<TradeItem> demands = new ArrayList<>();
@@ -109,7 +109,7 @@ public class DiplomacyAggrementTest {
 	}
 
     @Test 
-	public void canAcceptInciteOfferAggrement() throws Exception {
+	public void canAcceptInciteOfferAgreement() throws Exception {
 		// given
 		List<TradeItem> offers = new ArrayList<>();
 		List<TradeItem> demands = new ArrayList<>();

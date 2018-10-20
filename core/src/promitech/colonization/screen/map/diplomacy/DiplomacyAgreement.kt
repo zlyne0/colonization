@@ -10,7 +10,7 @@ import net.sf.freecol.common.model.Tile
 import promitech.colonization.Direction
 
 // You need drags to make stars come down.
-internal class DiplomacyAggrement(val game : Game, val player : Player, val contactPlayer : Player) {
+internal class DiplomacyAgreement(val game : Game, val player : Player, val contactPlayer : Player) {
 	
 	enum class TradeStatus {
 		ACCEPT, REJECT
@@ -21,8 +21,8 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 	private val ss = ScoreService()
 	
 	public fun calculate(offers: List<TradeItem>, demands : List<TradeItem>) : TradeStatus {
-		val demandsValue = calculateTradeAggrements(demands, player, contactPlayer)
-		val offersValue = calculateTradeAggrements(offers, player, player)
+		val demandsValue = calculateTradeAgreements(demands, player, contactPlayer)
+		val offersValue = calculateTradeAgreements(offers, player, player)
 		
 		val tradeStatus = status(demandsValue, offersValue)
 		var logs = "tradeStatus: $tradeStatus, demands($demandsValue): " + demands.toString() + ", offers($offersValue): " + offers.toString()
@@ -41,52 +41,52 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 		}
 	}
 	
-	private fun calculateTradeAggrements(items : List<TradeItem>, offerer : Player, demandFromPlayer : Player) : Int {
+	private fun calculateTradeAgreements(items : List<TradeItem>, offerer : Player, demandFromPlayer : Player) : Int {
 		for (item : TradeItem in items) {
 			when (item) {
 				is ColonyTradeItem -> {
 					if (item.tradeType == TradeType.Demand && demandFromPlayer.settlements.size() < 5) {
-						item.aggrementValue = UnacceptableTradeValue
+						item.agreementValue = UnacceptableTradeValue
 					} else {
-						item.aggrementValue = ss.scoreColony(game, item.colony, demandFromPlayer)
+						item.agreementValue = ss.scoreColony(game, item.colony, demandFromPlayer)
 					}
 				}
 				is GoldTradeItem -> {
 					if (demandFromPlayer.hasGold(item.gold)) {
-						item.aggrementValue = item.gold
+						item.agreementValue = item.gold
 					} else {
-						item.aggrementValue = UnacceptableTradeValue
+						item.agreementValue = UnacceptableTradeValue
 					}
 				}
-				is InciteTradeItem -> inciteTradeItemAggrementValue(item, offerer, demandFromPlayer)
-				is StanceTradeItem -> stanceTradeItemAggrementValue(item)
+				is InciteTradeItem -> inciteTradeItemAgreementValue(item, offerer, demandFromPlayer)
+				is StanceTradeItem -> stanceTradeItemAgreementValue(item)
 			}
 		}
 		
-		var aggrementValue = 0
+		var agreementValue = 0
 		for (item : TradeItem in items) {
-			if (item.aggrementValue == UnacceptableTradeValue) {
+			if (item.agreementValue == UnacceptableTradeValue) {
 				return UnacceptableTradeValue
 			}
-			aggrementValue += item.aggrementValue
+			agreementValue += item.agreementValue
 		}
-		return aggrementValue
+		return agreementValue
 	}
 	
-	private fun inciteTradeItemAggrementValue(item : InciteTradeItem, offerer : Player, demandFromPlayer : Player) {
+	private fun inciteTradeItemAgreementValue(item : InciteTradeItem, offerer : Player, demandFromPlayer : Player) {
 		val victim = item.player
 		when (demandFromPlayer.getStance(victim)) {
-			Stance.ALLIANCE -> item.aggrementValue = UnacceptableTradeValue
-			Stance.WAR -> item.aggrementValue = 0
+			Stance.ALLIANCE -> item.agreementValue = UnacceptableTradeValue
+			Stance.WAR -> item.agreementValue = 0
 			else -> {
 				// AI never initiate negotiations
 				// so calculate strength ratio for player and victim
-				item.aggrementValue = (ss.strengthRatio(offerer, victim) * 30).toInt()
+				item.agreementValue = (ss.strengthRatio(offerer, victim) * 30).toInt()
 			} 
 		}
 	}
 	
-	private fun stanceTradeItemAggrementValue(item : StanceTradeItem) {
+	private fun stanceTradeItemAgreementValue(item : StanceTradeItem) {
 		// only in case human init contact with ai
 		val franklin = player.features.hasAbility(Ability.ALWAYS_OFFERED_PEACE)
 		val ratio = ss.strengthRatio(player, contactPlayer)
@@ -94,46 +94,46 @@ internal class DiplomacyAggrement(val game : Game, val player : Player, val cont
 			Stance.WAR -> {
 				if (ratio < 0.33) {
 					// ai much stronger than human  
-					item.aggrementValue = UnacceptableTradeValue
+					item.agreementValue = UnacceptableTradeValue
 				} else if (ratio < 0.5) {
 					// when human is weak, ai unlike declare war
-					item.aggrementValue = -(100 * ratio).toInt()
+					item.agreementValue = -(100 * ratio).toInt()
 				} else {
 					// when human is strong, ai more like declare war 
-					item.aggrementValue = (100 * ratio).toInt()
+					item.agreementValue = (100 * ratio).toInt()
 				}
 			}
 			Stance.PEACE -> {
 				if (!player.hasContacted(contactPlayer)) {
 					// peace on first contact
-					item.aggrementValue = 0
+					item.agreementValue = 0
 				} else {
-					allianceTradeItemAggrementValue(item, franklin, ratio)
+					allianceTradeItemAgreementValue(item, franklin, ratio)
 				}
 			}
 			Stance.CEASE_FIRE, Stance.ALLIANCE -> {
-				allianceTradeItemAggrementValue(item, franklin, ratio)
+				allianceTradeItemAgreementValue(item, franklin, ratio)
 			}
 			else -> {}
 		}
 	}
 	
-	private fun allianceTradeItemAggrementValue(item : StanceTradeItem, franklin : Boolean, ratio : Double) {
+	private fun allianceTradeItemAgreementValue(item : StanceTradeItem, franklin : Boolean, ratio : Double) {
 		if (franklin) {
 			// peace from begining
-			item.aggrementValue = 0
+			item.agreementValue = 0
 		} else if (ratio > 0.77) {
 			// human is much stronger than ai
-			item.aggrementValue = UnacceptableTradeValue
+			item.agreementValue = UnacceptableTradeValue
 		} else if (ratio > 0.5) {
 			// human is stronger than ai, only small drawback 
-			item.aggrementValue = -(100 * ratio).toInt()
+			item.agreementValue = -(100 * ratio).toInt()
 		} else if (ratio > 0.33) {
 			// human is much stronger than ai, so it give advantage
-			item.aggrementValue = (100 * ratio).toInt()
+			item.agreementValue = (100 * ratio).toInt()
 		} else {
 			// human is much, much stronger than ai, so it give advantage
-			item.aggrementValue = 1000
+			item.agreementValue = 1000
 		}
 	}
 	public fun acceptTrade(offers: List<TradeItem>, demands : List<TradeItem>) {

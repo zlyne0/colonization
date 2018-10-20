@@ -15,6 +15,6 @@ internal class StanceTradeItem(val stance: Stance, tradeType: TradeType)
 	}
 	
 	override fun toString() : String {
-		return "StanceTradeItem stance: $stance, aggrementValue: $aggrementValue"
+		return "StanceTradeItem stance: $stance, agreementValue: $agreementValue"
 	}
 }

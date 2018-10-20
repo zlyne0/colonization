@@ -18,7 +18,7 @@ internal class InciteTradeItem(val player : Player, tradeType : TradeType)
 	}
 	
 	override fun toString() : String {
-		return "InciteTradeItem player: ${player.getId()}, aggrementValue: $aggrementValue"
+		return "InciteTradeItem player: ${player.getId()}, agreementValue: $agreementValue"
 	}
 	
 }

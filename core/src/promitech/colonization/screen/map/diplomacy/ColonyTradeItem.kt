@@ -15,7 +15,7 @@ internal class ColonyTradeItem(tradeType : TradeType, val colony : Colony) : Tra
 	}
 	
 	override fun toString() : String {
-		return "ColonyTradeItem colony: ${colony.getName()}, aggrementValue: $aggrementValue"
+		return "ColonyTradeItem colony: ${colony.getName()}, agreementValue: $agreementValue"
 	}
 	
 }
