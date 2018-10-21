@@ -62,14 +62,14 @@ class DiplomacyContactDialog(
 	init {
 		diplomacyAgreement = DiplomacyAgreement(game, player, contactPlayer)
 		
-		demandGoldBox = createGoldBox(TradeType.Demand, this::onAddTradeItem)
-		demandColonyBox = ColonyBox(contactPlayer, TradeType.Demand, skin, this::onAddTradeItem, demands)
-		demandInciteBox = InciteBox(game, TradeType.Demand, contactPlayer, skin, this::onAddTradeItem, demands, player)
+		demandGoldBox = createGoldBox(contactPlayer, player, this::onAddTradeItem)
+		demandColonyBox = ColonyBox(contactPlayer, player, skin, this::onAddTradeItem, demands)
+		demandInciteBox = InciteBox(game, contactPlayer, player, skin, this::onAddTradeItem, demands)
 		
-		offerGoldBox = createGoldBox(TradeType.Offer, this::onAddTradeItem)
-		offerColonyBox = ColonyBox(player, TradeType.Offer, skin, this::onAddTradeItem, offers)
-		offerInciteBox = InciteBox(game, TradeType.Offer, player, skin, this::onAddTradeItem, offers, contactPlayer)
-		offerStanceBox = StanceBox(TradeType.Offer, player, contactPlayer, skin, this::onAddTradeItem, offers)
+		offerGoldBox = createGoldBox(player, contactPlayer, this::onAddTradeItem)
+		offerColonyBox = ColonyBox(player, contactPlayer, skin, this::onAddTradeItem, offers)
+		offerInciteBox = InciteBox(game, player, contactPlayer, skin, this::onAddTradeItem, offers)
+		offerStanceBox = StanceBox(player, contactPlayer, skin, this::onAddTradeItem, offers)
 		
 		createLayout()
 		
@@ -157,9 +157,10 @@ class DiplomacyContactDialog(
 	}
 	
 	private fun onAddTradeItem(item : TradeItem) {
-		when (item.tradeType) {
-			TradeType.Demand -> demands.add(item)
-			TradeType.Offer -> offers.add(item)
+		if (diplomacyAgreement.isDemand(item)) {
+			demands.add(item)
+		} else {
+			offers.add(item)
 		}
 		refreshSummaryBox()
 		refreshSendButton()
@@ -238,9 +239,10 @@ class DiplomacyContactDialog(
 		
 		val deleteButton = TextButton(Messages.msg("list.remove"), skin)
 		deleteButton.addListener { _, _ ->
-			when (tradeItem.tradeType) {
-				TradeType.Demand -> demands.remove(tradeItem)
-				TradeType.Offer -> offers.remove(tradeItem)
+			if (diplomacyAgreement.isDemand(tradeItem)) {
+				demands.remove(tradeItem)
+			} else {
+				offers.remove(tradeItem)
 			}
 			when (tradeItem) {
 				is ColonyTradeItem -> {
@@ -261,7 +263,7 @@ class DiplomacyContactDialog(
 		tradeItemsLayout.add(deleteButton).padLeft(20f).row()
 	}
 	
-	private fun createGoldBox(tradeType : TradeType, addListener : (TradeItem) -> Unit) : Table {
+	private fun createGoldBox(fromPlayer : Player, toPlayer : Player, addListener : (TradeItem) -> Unit) : Table {
 		val goldAmountTextField = TextField("", skin)
 		val addButton = TextButton(Messages.msg("negotiationDialog.add"), skin)
 		
@@ -278,7 +280,7 @@ class DiplomacyContactDialog(
 		addButton.setDisabled(true)
 		
 		addButton.addListener { _, _ ->
-			val item = GoldTradeItem(goldAmountTextField.getText().toInt(), tradeType)
+			val item = GoldTradeItem(goldAmountTextField.getText().toInt(), fromPlayer, toPlayer)
 			addListener(item)
 			goldAmountTextField.setText("")
 			addButton.setDisabled(true)

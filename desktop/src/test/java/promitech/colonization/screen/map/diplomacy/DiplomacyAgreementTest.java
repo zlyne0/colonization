@@ -53,7 +53,7 @@ public class DiplomacyAgreementTest {
 		// given
 		List<TradeItem> offers = new ArrayList<>();
 		List<TradeItem> demands = new ArrayList<>();
-		demands.add(new GoldTradeItem(500, TradeType.Demand));
+		demands.add(new GoldTradeItem(500, spanish, dutch));
 		
 		spanish.addGold(10000);
 		int initialSpanishGold = spanish.getGold(); 
@@ -76,7 +76,7 @@ public class DiplomacyAgreementTest {
     	
 		List<TradeItem> offers = new ArrayList<>();
 		List<TradeItem> demands = new ArrayList<>();
-		demands.add(new ColonyTradeItem(TradeType.Demand, santoDomingo));
+		demands.add(new ColonyTradeItem(santoDomingo, spanish, dutch));
     	
 		// when
 		sut.acceptTrade(offers, demands);
@@ -99,7 +99,7 @@ public class DiplomacyAgreementTest {
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(spanish).hasStance(victim, Stance.PEACE);
-		demands.add(new InciteTradeItem(victim, TradeType.Demand));
+		demands.add(new InciteTradeItem(victim, spanish, dutch));
 		
 		// when
     	sut.acceptTrade(offers, demands);
@@ -117,7 +117,7 @@ public class DiplomacyAgreementTest {
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(dutch).hasStance(victim, Stance.PEACE);
-		offers.add(new InciteTradeItem(victim, TradeType.Offer));
+		offers.add(new InciteTradeItem(victim, dutch, spanish));
 		
 		// when
     	sut.acceptTrade(offers, demands);
@@ -133,7 +133,7 @@ public class DiplomacyAgreementTest {
 		List<TradeItem> demands = new ArrayList<>();
 
 		PlayerAssert.assertThat(dutch).hasStance(spanish, Stance.WAR);
-		offers.add(new StanceTradeItem(Stance.PEACE, TradeType.Offer));
+		offers.add(new StanceTradeItem(Stance.PEACE, dutch, spanish));
 		
 		// when
     	sut.acceptTrade(offers, demands);

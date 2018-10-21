@@ -30,12 +30,11 @@ class PlayerSelectItem(val player : Player) {
 
 internal class InciteBox(
 	val game : Game,
-	val tradeType : TradeType,
-	val player : Player,
+	val fromPlayer : Player,
+	val toPlayer : Player,
 	val skin : Skin,
 	val addListener : (TradeItem) -> Unit,
-	val tradeItems : ArrayList<TradeItem>,
-	val withoutPlayer : Player
+	val tradeItems : ArrayList<TradeItem>
 )
 {
 	
@@ -69,9 +68,9 @@ internal class InciteBox(
 	fun refreshList() {
 		var items = game.players.entities()
 			.filter { it.isLive }
-			.filter { it.notEqualsId(withoutPlayer) }	
-			.filter { player.hasContacted(it) }
-			.filter { player.notEqualsId(it) }
+			.filter { it.notEqualsId(toPlayer) }	
+			.filter { fromPlayer.hasContacted(it) }
+			.filter { fromPlayer.notEqualsId(it) }
 			.filter { wasNotAdded(it) }
 			.map { PlayerSelectItem(it) }
 			.toGdxArray(game.players.size())
@@ -91,7 +90,7 @@ internal class InciteBox(
 	
 	private fun wasNotAdded(player : Player) : Boolean {
 		for (item : TradeItem in tradeItems) {
-			if (item is InciteTradeItem && item.player.equalsId(player)) {
+			if (item is InciteTradeItem && item.victim.equalsId(player)) {
 				return false
 			}
 		}
@@ -109,7 +108,7 @@ internal class InciteBox(
 				inciteSelectBox.setItems(tmpItems)
 				disableAddButtonIfEmptyList()
 				
-				addListener(InciteTradeItem(selectedItem.player, tradeType))
+				addListener(InciteTradeItem(selectedItem.player, fromPlayer, toPlayer))
 			}
 		}
 				

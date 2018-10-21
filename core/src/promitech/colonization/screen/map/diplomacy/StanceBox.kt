@@ -26,9 +26,8 @@ class StanceSelectItem(val stance : Stance) {
 }
 
 internal class StanceBox(
-	val tradeType : TradeType,
-	val player : Player,
-	val contactPlayer : Player,
+	val fromPlayer : Player,
+	val toPlayer : Player,
 	val skin : Skin,
 	val addListener : (TradeItem) -> Unit,
 	val tradeItems : ArrayList<TradeItem>
@@ -64,7 +63,7 @@ internal class StanceBox(
 			if (selectedStance != null) {
 				stanceSelectBox.setDisabled(true)
 				addButton.setDisabled(true)
-				addListener(StanceTradeItem(selectedStance.stance, tradeType))
+				addListener(StanceTradeItem(selectedStance.stance, fromPlayer, toPlayer))
 			}
 		}
 		stanceSelectBox.setItems(stanceBoxItems())
@@ -85,7 +84,7 @@ internal class StanceBox(
 	private fun stanceBoxItems() : Array<StanceSelectItem> {
 		var items = Array<StanceSelectItem>()
 		
-		val stance = player.getStance(contactPlayer);
+		val stance = fromPlayer.getStance(toPlayer);
 		if (stance != Stance.WAR) {
 			items.add(StanceSelectItem(Stance.WAR))
 		} else {

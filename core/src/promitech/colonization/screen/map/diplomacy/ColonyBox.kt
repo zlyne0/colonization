@@ -22,8 +22,8 @@ class ColonySelectItem(val colony : Colony)  {
 }
 
 internal class ColonyBox(
-	val player : Player,
-	val tradeType : TradeType,
+	val fromPlayer : Player,
+	val toPlayer : Player,
 	val skin : Skin,
 	val addListener : (TradeItem) -> Unit,
 	val tradeItems : ArrayList<TradeItem>
@@ -41,10 +41,10 @@ internal class ColonyBox(
 	}
 	
 	public fun refreshList() {
-		var items = player.settlements.entities()
+		var items = fromPlayer.settlements.entities()
 			.filter { wasNotAdded(it.getColony()) }
 			.map { ColonySelectItem(it.getColony()) }
-			.toGdxArray(player.settlements.size())
+			.toGdxArray(fromPlayer.settlements.size())
 		colonySelectBox.setItems(items)
 		if (colonySelectBox.getItems().isEmpty()) {
 			addButton.setDisabled(true)
@@ -69,8 +69,7 @@ internal class ColonyBox(
 				val tmpItems = Array(colonySelectBox.getItems())
 				tmpItems.removeValue(selectedItem, true)
 				colonySelectBox.setItems(tmpItems)
-				
-				addListener(ColonyTradeItem(tradeType, selectedItem.colony))
+				addListener(ColonyTradeItem(selectedItem.colony, fromPlayer, toPlayer))
 			}
 		}
 		

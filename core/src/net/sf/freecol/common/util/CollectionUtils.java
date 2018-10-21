@@ -55,7 +55,7 @@ public class CollectionUtils {
      */
     //@SafeVarargs
     public static <T> List<T> makeUnmodifiableList(T... members) {
-        List<T> tmp = new ArrayList<T>();
+        List<T> tmp = new ArrayList<T>(members.length);
         for (T t : members) tmp.add(t);
         return Collections.<T>unmodifiableList(tmp);
     }
