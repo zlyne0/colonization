@@ -1,8 +1,6 @@
 package promitech.colonization.screen.map.diplomacy;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -51,16 +49,14 @@ public class DiplomacyAgreementTest {
     @Test 
 	public void canAcceptTradeGoldAgreement() throws Exception {
 		// given
-		List<TradeItem> offers = new ArrayList<>();
-		List<TradeItem> demands = new ArrayList<>();
-		demands.add(new GoldTradeItem(500, spanish, dutch));
+    	sut.getDemands().add(new GoldTradeItem(500, spanish, dutch));
 		
 		spanish.addGold(10000);
 		int initialSpanishGold = spanish.getGold(); 
 		int initialDutchGold = dutch.getGold(); 
 		
 		// when
-		sut.acceptTrade(offers, demands);
+		sut.acceptTrade();
 
 		// then
 		PlayerAssert.assertThat(spanish).hasGold(initialSpanishGold - 500);
@@ -71,15 +67,13 @@ public class DiplomacyAgreementTest {
 	public void canAcceptTradeColonyAgreement() throws Exception {
 		// given
     	Colony santoDomingo = (Colony)spanish.settlements.getById("colony:6730");
-
     	MapIdEntities<Unit> santoDomingoUnits = new MapIdEntities<>(santoDomingo.getUnits());
     	
-		List<TradeItem> offers = new ArrayList<>();
-		List<TradeItem> demands = new ArrayList<>();
-		demands.add(new ColonyTradeItem(santoDomingo, spanish, dutch));
+    	// TODO: jak zrobic aby nie generowal getterow
+		sut.getDemands().add(new ColonyTradeItem(santoDomingo, spanish, dutch));
     	
 		// when
-		sut.acceptTrade(offers, demands);
+		sut.acceptTrade();
 
 		// then
 		PlayerAssert.assertThat(spanish)
@@ -93,16 +87,13 @@ public class DiplomacyAgreementTest {
     @Test 
 	public void canAcceptInciteDemandAgreement() throws Exception {
 		// given
-		List<TradeItem> offers = new ArrayList<>();
-		List<TradeItem> demands = new ArrayList<>();
-		
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(spanish).hasStance(victim, Stance.PEACE);
-		demands.add(new InciteTradeItem(victim, spanish, dutch));
+		sut.getDemands().add(new InciteTradeItem(victim, spanish, dutch));
 		
 		// when
-    	sut.acceptTrade(offers, demands);
+    	sut.acceptTrade();
 
 		// then
 		PlayerAssert.assertThat(spanish).hasStance(victim, Stance.WAR);
@@ -111,16 +102,13 @@ public class DiplomacyAgreementTest {
     @Test 
 	public void canAcceptInciteOfferAgreement() throws Exception {
 		// given
-		List<TradeItem> offers = new ArrayList<>();
-		List<TradeItem> demands = new ArrayList<>();
-		
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(dutch).hasStance(victim, Stance.PEACE);
-		offers.add(new InciteTradeItem(victim, dutch, spanish));
+		sut.getOffers().add(new InciteTradeItem(victim, dutch, spanish));
 		
 		// when
-    	sut.acceptTrade(offers, demands);
+    	sut.acceptTrade();
 
 		// then
 		PlayerAssert.assertThat(dutch).hasStance(victim, Stance.WAR);
@@ -129,14 +117,11 @@ public class DiplomacyAgreementTest {
     @Test 
 	public void canAcceptPeace() throws Exception {
 		// given
-		List<TradeItem> offers = new ArrayList<>();
-		List<TradeItem> demands = new ArrayList<>();
-
 		PlayerAssert.assertThat(dutch).hasStance(spanish, Stance.WAR);
-		offers.add(new StanceTradeItem(Stance.PEACE, dutch, spanish));
+		sut.getOffers().add(new StanceTradeItem(Stance.PEACE, dutch, spanish));
 		
 		// when
-    	sut.acceptTrade(offers, demands);
+    	sut.acceptTrade();
 		
 		// then
 		PlayerAssert.assertThat(dutch).hasStance(spanish, Stance.PEACE);

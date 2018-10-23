@@ -18,7 +18,10 @@ internal class DiplomacyAgreement(val game : Game, val player : Player, val cont
 	
 	private val ss = ScoreService()
 	
-	public fun calculate(offers: List<TradeItem>, demands : List<TradeItem>) : TradeStatus {
+	val offers = ArrayList<TradeItem>()
+	val demands = ArrayList<TradeItem>()
+	
+	public fun calculate() : TradeStatus {
 		val demandsValue = calculateTradeAgreements(demands)
 		val offersValue = calculateTradeAgreements(offers)
 		
@@ -54,11 +57,27 @@ internal class DiplomacyAgreement(val game : Game, val player : Player, val cont
 		return agreementValue
 	}
 	
-	fun isDemand(item : TradeItem) : Boolean {
+	fun remove(item : TradeItem) {
+		if (isDemand(item)) {
+			demands.remove(item)
+		} else {
+			offers.remove(item)
+		}
+	}
+	
+	fun add(item : TradeItem) {
+		if (isDemand(item)) {
+			demands.add(item)
+		} else {
+			offers.add(item)
+		}
+	}
+	
+	private fun isDemand(item : TradeItem) : Boolean {
 		return item.fromPlayer.equalsId(contactPlayer) 
 	}
 	
-	public fun acceptTrade(offers: List<TradeItem>, demands : List<TradeItem>) {
+	public fun acceptTrade() {
 		// In freecol InGameController.csAcceptGold
 		for (item in offers) {
 			item.acceptTrade(game)

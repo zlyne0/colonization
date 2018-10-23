@@ -43,8 +43,6 @@ class DiplomacyContactDialog(
 {
 	
 	private val diplomacyAgreement : DiplomacyAgreement
-	private val offers = ArrayList<TradeItem>()
-	private val demands = ArrayList<TradeItem>()
 	private var tradeItemsLayout = Table()
 	
 	private val demandGoldBox : Table
@@ -63,13 +61,13 @@ class DiplomacyContactDialog(
 		diplomacyAgreement = DiplomacyAgreement(game, player, contactPlayer)
 		
 		demandGoldBox = createGoldBox(contactPlayer, player, this::onAddTradeItem)
-		demandColonyBox = ColonyBox(contactPlayer, player, skin, this::onAddTradeItem, demands)
-		demandInciteBox = InciteBox(game, contactPlayer, player, skin, this::onAddTradeItem, demands)
+		demandColonyBox = ColonyBox(contactPlayer, player, skin, this::onAddTradeItem, diplomacyAgreement.demands)
+		demandInciteBox = InciteBox(game, contactPlayer, player, skin, this::onAddTradeItem, diplomacyAgreement.demands)
 		
 		offerGoldBox = createGoldBox(player, contactPlayer, this::onAddTradeItem)
-		offerColonyBox = ColonyBox(player, contactPlayer, skin, this::onAddTradeItem, offers)
-		offerInciteBox = InciteBox(game, player, contactPlayer, skin, this::onAddTradeItem, offers)
-		offerStanceBox = StanceBox(player, contactPlayer, skin, this::onAddTradeItem, offers)
+		offerColonyBox = ColonyBox(player, contactPlayer, skin, this::onAddTradeItem, diplomacyAgreement.offers)
+		offerInciteBox = InciteBox(game, player, contactPlayer, skin, this::onAddTradeItem, diplomacyAgreement.offers)
+		offerStanceBox = StanceBox(player, contactPlayer, skin, this::onAddTradeItem, diplomacyAgreement.offers)
 		
 		createLayout()
 		
@@ -80,7 +78,7 @@ class DiplomacyContactDialog(
 		
 		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
-			diplomacyAgreement.acceptTrade(offers, demands)
+			diplomacyAgreement.acceptTrade()
 			map.resetMapModel()
 			hideWithFade()
 		}
@@ -157,17 +155,13 @@ class DiplomacyContactDialog(
 	}
 	
 	private fun onAddTradeItem(item : TradeItem) {
-		if (diplomacyAgreement.isDemand(item)) {
-			demands.add(item)
-		} else {
-			offers.add(item)
-		}
+		diplomacyAgreement.add(item)
 		refreshSummaryBox()
 		refreshSendButton()
 	}
 	
 	private fun refreshSendButton() {
-		val tradeStatus = diplomacyAgreement.calculate(offers, demands)
+		val tradeStatus = diplomacyAgreement.calculate()
 		when (tradeStatus) {
 			TradeStatus.ACCEPT -> {
 				tradeStatusAcceptedButtonMsg()
@@ -212,21 +206,21 @@ class DiplomacyContactDialog(
 		val exchengeLabelStr = Messages.msg("negotiationDialog.exchange")
 		
 		tradeItemsLayout.defaults().align(Align.top or Align.left)
-		if (offers.isEmpty()) {
-			if (demands.isNotEmpty()) {
+		if (diplomacyAgreement.offers.isEmpty()) {
+			if (diplomacyAgreement.demands.isNotEmpty()) {
 				tradeItemsLayout.add(Label(demandLabelStr, skin)).row()
-				for (item : TradeItem in demands) {
+				for (item : TradeItem in diplomacyAgreement.demands) {
 					addTradeItemDescription(item)
 				}
 			}
 		} else {
 			tradeItemsLayout.add(Label(offerLabelStr, skin)).row()
-			for (item : TradeItem in offers) {
+			for (item : TradeItem in diplomacyAgreement.offers) {
 				addTradeItemDescription(item)
 			}
-			if (demands.isNotEmpty()) {
+			if (diplomacyAgreement.demands.isNotEmpty()) {
 				tradeItemsLayout.add(Label(exchengeLabelStr, skin)).row()
-				for (item : TradeItem in demands) {
+				for (item : TradeItem in diplomacyAgreement.demands) {
 					addTradeItemDescription(item)
 				}
 			}
@@ -239,11 +233,7 @@ class DiplomacyContactDialog(
 		
 		val deleteButton = TextButton(Messages.msg("list.remove"), skin)
 		deleteButton.addListener { _, _ ->
-			if (diplomacyAgreement.isDemand(tradeItem)) {
-				demands.remove(tradeItem)
-			} else {
-				offers.remove(tradeItem)
-			}
+			diplomacyAgreement.remove(tradeItem) 
 			when (tradeItem) {
 				is ColonyTradeItem -> {
 					demandColonyBox.refreshList()
