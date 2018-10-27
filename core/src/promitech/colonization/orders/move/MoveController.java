@@ -14,11 +14,13 @@ import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
+import promitech.colonization.screen.map.hud.DiplomacyContactDialog;
 import promitech.colonization.screen.map.hud.FirstContactDialog;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.hud.NewLandNameDialog;
 import promitech.colonization.screen.map.unitanimation.MoveView;
+import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -267,11 +269,20 @@ public class MoveController {
 
     /**
      * Method wait until human answer on first contact
-     * @param player
-     * @param contactPlayer
+     * @param humanPlayer
+     * @param aiPlayer
      */
-    public void showFirstContactDialog(Player player, Player contactPlayer) {
-        guiGameController.showDialog(new FirstContactDialog(player, contactPlayer, humanPlayerInteractionSemaphore));
+    public void showFirstContactDialog(Player humanPlayer, Player aiPlayer) {
+    	ModalDialog<?> dialog = null; 
+    	if (aiPlayer.isEuropean()) {
+    		dialog = new DiplomacyContactDialog(mapActor, guiGameModel.game, 
+				humanPlayer, aiPlayer, 
+				humanPlayerInteractionSemaphore
+			).addPeaceOffer();
+    	} else {
+    		dialog = new FirstContactDialog(humanPlayer, aiPlayer, humanPlayerInteractionSemaphore);
+    	}
+        guiGameController.showDialog(dialog);
         humanPlayerInteractionSemaphore.waitForInteraction();
     }
 	

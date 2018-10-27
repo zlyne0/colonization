@@ -32,12 +32,15 @@ import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.resources.StringTemplate
+import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore
+import promitech.colonization.ui.kAddOnCloseListener
 
 class DiplomacyContactDialog(
-	val map : Map,
+	val screenMap : Map,
 	val game : Game,
 	val player : Player,
-	val contactPlayer : Player
+	val contactPlayer : Player,
+	val humanPlayerInteractionSemaphore : HumanPlayerInteractionSemaphore = HumanPlayerInteractionSemaphore()
 )
 	: ModalDialog<DiplomacyContactDialog>(ModalDialogSize.width90(), ModalDialogSize.def())
 {
@@ -79,7 +82,7 @@ class DiplomacyContactDialog(
 		sendButton = TextButton("", skin)
 		sendButton.addListener { _, _ ->
 			diplomacyAgreement.acceptTrade()
-			map.resetMapModel()
+			screenMap.resetMapModel()
 			hideWithFade()
 		}
 		tradeStatusRejectedButtonMsg()
@@ -88,6 +91,10 @@ class DiplomacyContactDialog(
         getButtonTable().add(sendButton).pad(10f).fillX().expandX()
 		
 		refreshSummaryBox()
+		
+		kAddOnCloseListener {
+		    humanPlayerInteractionSemaphore.release()
+		}
 	}
 	
 	private fun createLayout() {
@@ -154,6 +161,11 @@ class DiplomacyContactDialog(
 		getContentTable().add(layoutTable).expandX().fillX().row()
 	}
 	
+	fun addPeaceOffer() : DiplomacyContactDialog {
+		offerStanceBox.addPeace()
+		return this
+	}
+	
 	private fun onAddTradeItem(item : TradeItem) {
 		diplomacyAgreement.add(item)
 		refreshSummaryBox()
@@ -203,7 +215,7 @@ class DiplomacyContactDialog(
 				.addStringTemplate("%nation%", player.getNationName())
 				.addStringTemplate("%otherNation%", contactPlayer.getNationName())
 		)
-		val exchengeLabelStr = Messages.msg("negotiationDialog.exchange")
+		val exchangeLabelStr = Messages.msg("negotiationDialog.exchange")
 		
 		tradeItemsLayout.defaults().align(Align.top or Align.left)
 		if (diplomacyAgreement.offers.isEmpty()) {
@@ -219,7 +231,7 @@ class DiplomacyContactDialog(
 				addTradeItemDescription(item)
 			}
 			if (diplomacyAgreement.demands.isNotEmpty()) {
-				tradeItemsLayout.add(Label(exchengeLabelStr, skin)).row()
+				tradeItemsLayout.add(Label(exchangeLabelStr, skin)).row()
 				for (item : TradeItem in diplomacyAgreement.demands) {
 					addTradeItemDescription(item)
 				}

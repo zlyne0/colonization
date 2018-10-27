@@ -81,16 +81,20 @@ internal class StanceBox(
 		)
 	}
 	
+	fun addPeace() {
+		addListener(StanceTradeItem(Stance.PEACE, fromPlayer, toPlayer))
+	}
+	
 	private fun stanceBoxItems() : Array<StanceSelectItem> {
 		var items = Array<StanceSelectItem>()
 		
-		val stance = fromPlayer.getStance(toPlayer);
+		val stance = fromPlayer.getStance(toPlayer)
 		if (stance != Stance.WAR) {
 			items.add(StanceSelectItem(Stance.WAR))
 		} else {
 			items.add(StanceSelectItem(Stance.CEASE_FIRE))
 		}
-		if (stance != Stance.PEACE && stance != Stance.UNCONTACTED) {
+		if (stance != Stance.PEACE) {
 			items.add(StanceSelectItem(Stance.PEACE))
 		}
 		if (stance == Stance.PEACE) {
