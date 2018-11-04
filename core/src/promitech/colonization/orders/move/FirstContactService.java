@@ -20,7 +20,6 @@ class FirstContactService {
 	}
 	
     void firstContact(Tile tile, Player player) {
-    	// TODO: european first contact
         java.util.Map<String,Player> firstContactPlayers = null;
         if (tile.getType().isWater()) {
             return;
@@ -57,9 +56,9 @@ class FirstContactService {
                     player.changeStance(neighbour, Stance.PEACE);
                 } else {
                     if (player.isAi()) {
-                        moveController.showFirstContactDialog(neighbour, player);
+                        moveController.blockedShowFirstContactDialog(neighbour, player);
                     } else {
-                        moveController.showFirstContactDialog(player, neighbour);
+                        moveController.blockedShowFirstContactDialog(player, neighbour);
                     }
                 }
             }

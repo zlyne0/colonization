@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -271,8 +272,14 @@ public class MoveController {
      * Method wait until human answer on first contact
      * @param humanPlayer
      * @param aiPlayer
+     * @param humanPlayerInteractionSemaphore 
      */
-    public void showFirstContactDialog(Player humanPlayer, Player aiPlayer) {
+    public void blockedShowFirstContactDialog(Player humanPlayer, Player aiPlayer) {
+    	showFirstContactDialog(humanPlayer, aiPlayer);
+        humanPlayerInteractionSemaphore.waitForInteraction();
+    }
+
+    private void showFirstContactDialog(Player humanPlayer, Player aiPlayer) {
     	ModalDialog<?> dialog = null; 
     	if (aiPlayer.isEuropean()) {
     		dialog = new DiplomacyContactDialog(mapActor, guiGameModel.game, 
@@ -283,7 +290,42 @@ public class MoveController {
     		dialog = new FirstContactDialog(humanPlayer, aiPlayer, humanPlayerInteractionSemaphore);
     	}
         guiGameController.showDialog(dialog);
-        humanPlayerInteractionSemaphore.waitForInteraction();
     }
+    
+	public void showScoutMoveToForeignColonyQuestion(MoveContext moveContext) {
+
+        final QuestionDialog.OptionAction<MoveContext> negotiateAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            	showFirstContactDialog(
+        			payload.unit.getOwner(), 
+        			payload.destTile.getSettlement().getOwner()
+    			);
+            }
+        };
+        final QuestionDialog.OptionAction<MoveContext> spyAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            	guiGameController.showColonyScreenSpyMode(payload.destTile);
+            }
+        };
+        final QuestionDialog.OptionAction<MoveContext> attackAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            }
+        };
+        
+        StringTemplate head = StringTemplate.template("scoutColony.text")
+    		.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(moveContext.unit))
+    		.add("%colony%", moveContext.destTile.getSettlement().getName());
+        QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.addQuestion(head);
+        questionDialog.addAnswer("scoutColony.negotiate", negotiateAnswer, moveContext);
+        questionDialog.addAnswer("scoutColony.spy", spyAnswer, moveContext);
+        questionDialog.addAnswer("scoutColony.attack", attackAnswer, moveContext);
+        questionDialog.addOnlyCloseAnswer("cancel");
+        
+        guiGameController.showDialog(questionDialog);
+	}
 	
 }

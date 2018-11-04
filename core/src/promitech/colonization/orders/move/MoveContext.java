@@ -125,6 +125,7 @@ public class MoveContext {
 				}
 				moveUnit();
 			break;
+			case ENTER_FOREIGN_COLONY_WITH_SCOUT: 
 			case ATTACK_UNIT:
 			case ATTACK_SETTLEMENT:
 			    if (moveAfterAttack) {
@@ -168,7 +169,8 @@ public class MoveContext {
 				MoveType.DISEMBARK.equals(moveType) ||
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
 				MoveType.ATTACK_UNIT.equals(moveType) ||
-				MoveType.ATTACK_SETTLEMENT.equals(moveType)
+				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
+				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType)
 		);
 	}
 
@@ -199,6 +201,7 @@ public class MoveContext {
 		}
 		case ATTACK_UNIT: 
 		case ATTACK_SETTLEMENT:
+		case ENTER_FOREIGN_COLONY_WITH_SCOUT:
 			return true;
 		default:
 			return false;

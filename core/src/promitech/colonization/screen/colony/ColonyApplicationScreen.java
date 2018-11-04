@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -208,6 +209,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private Tile colonyTile;
     private GUIGameController guiGameController;
     private GUIGameModel guiGameModel;
+	private TextButton closeButton;
+	private boolean colonySpyMode = false;
     
     private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
 	
@@ -256,7 +259,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		guiGameModel = di.guiGameModel;
 		
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        stage = new Stage();
+        stage = new Stage() {
+        	@Override
+        	public Actor hit(float stageX, float stageY, boolean touchable) {
+        		Actor hit = super.hit(stageX, stageY, touchable);
+        		
+        		if (!colonySpyMode || (closeButton == hit || closeButton.getLabel() == hit)) {
+        			return hit;
+        		}
+        		return null;
+        	}
+        };
         
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
@@ -349,7 +362,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	
 	private TextButton createCloseButton() {
 		String msg = Messages.msg("close");
-		TextButton closeButton = new TextButton(msg, GameResources.instance.getUiSkin());
+		closeButton = new TextButton(msg, GameResources.instance.getUiSkin());
 		closeButton.addListener(new InputListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
@@ -361,6 +374,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	}
 	
     public void initColony(Colony colony, Tile colonyTile) {
+    	this.colonySpyMode = false;
     	this.colony = colony;
     	this.colonyTile = colonyTile;
     	unitsDragAndDrop.clear();
@@ -378,6 +392,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         actualBuildableItemActor.updateBuildItem(colony);
     }
 	
+    public void setColonySpyMode() {
+    	this.colonySpyMode = true;
+    }
+    
     private void showUnitOrders(UnitActor unitActor) {
     	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(shape, unitActor, colonyUnitOrders);
     	colonyUnitOrders.createOrders(unitActor.unit, dialog);

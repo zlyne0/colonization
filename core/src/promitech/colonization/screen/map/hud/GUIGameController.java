@@ -176,6 +176,18 @@ public class GUIGameController {
 			}
     	});
 	}
+
+	public void showColonyScreenSpyMode(final Tile tile) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				screenManager.setScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.setColonySpyMode();
+			}
+    	});
+	}
 	
 	public void rightClickOnTile(Point p) {
 	}

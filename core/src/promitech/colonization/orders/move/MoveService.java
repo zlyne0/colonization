@@ -197,6 +197,9 @@ public class MoveService {
             case MOVE_HIGH_SEAS: {
                 moveController.showHighSeasQuestion(moveContext);
             } break;
+            case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
+            	moveController.showScoutMoveToForeignColonyQuestion(moveContext);
+            } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
             } break;
