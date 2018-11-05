@@ -3,6 +3,7 @@ package promitech.colonization.screen.map.hud;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
@@ -177,11 +178,12 @@ public class GUIGameController {
     	});
 	}
 
-	public void showColonyScreenSpyMode(final Tile tile) {
+	public void showColonyScreenSpyMode(final Tile tile, final EventListener onCloseColonyListener) {
     	Gdx.app.postRunnable(new Runnable() {
 			@Override
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
 				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.setColonySpyMode();

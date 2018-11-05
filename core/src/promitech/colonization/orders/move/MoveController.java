@@ -4,6 +4,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import com.badlogic.gdx.scenes.scene2d.Event;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
+
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLabel;
@@ -279,7 +283,7 @@ public class MoveController {
         humanPlayerInteractionSemaphore.waitForInteraction();
     }
 
-    private void showFirstContactDialog(Player humanPlayer, Player aiPlayer) {
+    private ModalDialog<?> showFirstContactDialog(Player humanPlayer, Player aiPlayer) {
     	ModalDialog<?> dialog = null; 
     	if (aiPlayer.isEuropean()) {
     		dialog = new DiplomacyContactDialog(mapActor, guiGameModel.game, 
@@ -290,9 +294,18 @@ public class MoveController {
     		dialog = new FirstContactDialog(humanPlayer, aiPlayer, humanPlayerInteractionSemaphore);
     	}
         guiGameController.showDialog(dialog);
+        return dialog;
     }
     
-	public void showScoutMoveToForeignColonyQuestion(MoveContext moveContext) {
+	public void showScoutMoveToForeignColonyQuestion(final MoveContext moveContext) {
+		final EventListener onEndScoutActionListener = new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				moveContext.unit.reduceMovesLeftToZero();
+				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);						
+				return true;
+			}
+		};
 
         final QuestionDialog.OptionAction<MoveContext> negotiateAnswer = new QuestionDialog.OptionAction<MoveContext>() {
             @Override
@@ -300,18 +313,20 @@ public class MoveController {
             	showFirstContactDialog(
         			payload.unit.getOwner(), 
         			payload.destTile.getSettlement().getOwner()
-    			);
+    			).addOnCloseListener(onEndScoutActionListener);
             }
         };
         final QuestionDialog.OptionAction<MoveContext> spyAnswer = new QuestionDialog.OptionAction<MoveContext>() {
             @Override
-            public void executeAction(MoveContext payload) {
-            	guiGameController.showColonyScreenSpyMode(payload.destTile);
+            public void executeAction(final MoveContext payload) {
+				guiGameController.showColonyScreenSpyMode(payload.destTile, onEndScoutActionListener);
             }
         };
         final QuestionDialog.OptionAction<MoveContext> attackAnswer = new QuestionDialog.OptionAction<MoveContext>() {
             @Override
             public void executeAction(MoveContext payload) {
+            	payload.moveType = MoveType.ATTACK_SETTLEMENT;
+            	moveService.preMoveProcessorInNewThread(payload, ifRequiredNextActiveUnit);
             }
         };
         

@@ -415,6 +415,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		goodsDragAndDrop.clear();
 		this.colony = null;
 		this.colonyTile = null;
+		
+		super.onLeave();
 	}
 	
 	@Override

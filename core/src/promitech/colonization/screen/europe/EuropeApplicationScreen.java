@@ -326,6 +326,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	@Override
 	public void onLeave() {
 		Gdx.input.setInputProcessor(null);
+		super.onLeave();
 	}
 	
 	@Override
