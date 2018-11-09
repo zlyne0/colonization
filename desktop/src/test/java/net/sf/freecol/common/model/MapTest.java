@@ -32,7 +32,7 @@ public class MapTest {
     @Test
     public void shouldReturnOnlyNeighboursTiles() throws Exception {
         // given
-        Tile sourceTile = game.map.getSafeTile(24,78);
+        Tile sourceTile = game.map.getSafeTile(24, 78);
         List<String> tiles = new ArrayList<String>();
         
         // when
@@ -56,7 +56,7 @@ public class MapTest {
     @Test
     public void shouldReturnNeighbourLandTiles() throws Exception {
         // given
-        Tile sourceTile = game.map.getSafeTile(24,78);
+        Tile sourceTile = game.map.getSafeTile(24, 78);
         List<String> tiles = new ArrayList<String>();
         
         // when
@@ -77,7 +77,7 @@ public class MapTest {
     @Test
     public void shouldReturnNeighbourSeaTiles() throws Exception {
         // given
-        Tile sourceTile = game.map.getSafeTile(24,78);
+        Tile sourceTile = game.map.getSafeTile(24, 78);
         List<String> tiles = new ArrayList<String>();
         
         // when
@@ -90,6 +90,25 @@ public class MapTest {
             "tile:3393",
             "tile:3432",
             "tile:3472"                
+        );
+    }
+    
+    @Test
+    public void canReturnNeighbourTilesOnMapEdge() throws Exception {
+        // given
+        Tile sourceTile = game.map.getSafeTile(39, 99);
+        List<String> tiles = new ArrayList<String>();
+        
+        // when
+        for (Tile tile : game.map.neighbourTiles(sourceTile)) {
+            tiles.add(tile.getId());
+        }
+
+        // then
+        assertThat(tiles).containsExactly(
+            "tile:4167",
+            "tile:4246",
+            "tile:4207"                
         );
     }
 }
