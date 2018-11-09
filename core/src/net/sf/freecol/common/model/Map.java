@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.xml.sax.SAXException;
@@ -9,12 +10,88 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.Predicate;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+
+class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
+    
+    public static final Predicate<Tile> ALL = new Predicate<Tile>() {
+        @Override
+        public boolean test(Tile tile) {
+            return true;
+        }
+    };
+
+    public static final Predicate<Tile> LAND_TILES = new Predicate<Tile>() {
+        @Override
+        public boolean test(Tile tile) {
+            return tile.getType().isLand();
+        }
+    };
+
+    public static final Predicate<Tile> WATER_TILES = new Predicate<Tile>() {
+        @Override
+        public boolean test(Tile tile) {
+            return tile.getType().isWater();
+        }
+    };
+    
+    private final Map map;
+    private final Tile sourceTile;
+    private final Predicate<Tile> tileFilter;
+
+    private int cursor = 0;
+    private int foundFirstIndex = 0;
+    private Tile cursorObject = null;
+    
+    NeighbourTilesIterable(Map map, Tile sourceTile, Predicate<Tile> tileFilter) {
+        this.map = map;
+        this.sourceTile = sourceTile;
+        this.tileFilter = tileFilter;
+    }
+    
+    @Override
+    public Iterator<Tile> iterator() {
+        return this;
+            
+    }
+        
+    @Override
+    public boolean hasNext() {
+        Tile t = found(cursor);
+        cursor = foundFirstIndex;
+        if (t == null) {
+            return false;
+        }
+        cursorObject = t;
+        return cursor < Direction.allDirections.size();
+    }
+
+    private Tile found(int ic) {
+        Direction direction = null;
+        Tile tile = null;
+        for (foundFirstIndex = ic; foundFirstIndex < Direction.allDirections.size(); foundFirstIndex++) {
+            direction = Direction.allDirections.get(foundFirstIndex);
+            tile = map.getTile(sourceTile, direction);
+            if (tile == null || !tileFilter.test(tile)) {
+                continue;
+            }
+            return tile;
+        }
+        return null;
+    }
+    
+    @Override
+    public Tile next() {
+        cursor++;
+        return cursorObject;
+    }
+}
 
 public class Map extends ObjectWithId {
 
@@ -246,7 +323,19 @@ public class Map extends ObjectWithId {
             radius++;
 	    }
 	}
-	
+
+    public Iterable<Tile> neighbourTiles(final Tile sourceTile) {
+        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.ALL);
+    }
+
+    public Iterable<Tile> neighbourLandTiles(final Tile sourceTile) {
+        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.LAND_TILES);
+    }
+
+    public Iterable<Tile> neighbourWaterTiles(final Tile sourceTile) {
+        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.WATER_TILES);
+    }
+    
 	public static class Xml extends XmlNodeParser<Map> {
 		
 		private static final String ATTR_HEIGHT = "height";
@@ -307,5 +396,4 @@ public class Map extends ObjectWithId {
 		}
 		
 	}
-
 }

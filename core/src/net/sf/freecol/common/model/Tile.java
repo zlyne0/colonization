@@ -99,7 +99,7 @@ public class Tile implements UnitLocation, Identifiable {
     }
     
 	public String toString() {
-		return "id: " + id + ", type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
+		return "id: " + id + ", [" + x + "," + y + "], type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}
 	
 	public Collection<TileImprovement> getTileImprovements() {
