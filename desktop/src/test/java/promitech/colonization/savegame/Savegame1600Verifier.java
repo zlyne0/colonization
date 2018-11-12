@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
@@ -43,6 +44,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
@@ -87,6 +89,9 @@ public class Savegame1600Verifier {
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.furs", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
+		
+		IndianSettlementAssert.assertThat(settlement.getIndianSettlement())
+			.hasWantedGoods("model.goods.tradeGoods", "model.goods.rum", "model.goods.cigars");
 		
 		verifyMissionary(game);
 	}
@@ -283,7 +288,19 @@ public class Savegame1600Verifier {
         verifySpecificationUnitRoles(specification, game);
         verifySpecificationUnitTypes(specification, game);
         verifySpecificationFoundingFathers(specification);
+        verifySpecificationSettlementType(specification);
     }
+
+	private void verifySpecificationSettlementType(Specification specification) {
+		NationType apache = specification.nationTypes.getById("model.nationType.apache");
+		SettlementType campSettlementType = apache.settlementTypes.getById("model.settlement.camp");
+		RandomRangeAssert.assertThat(campSettlementType.getGift())
+			.equalsProbMinMaxFactor(100, 2, 3, 100);
+		
+		SettlementType capitalSettlementType = apache.settlementTypes.getById("model.settlement.camp.capital");
+		RandomRangeAssert.assertThat(capitalSettlementType.getGift())
+			.equalsProbMinMaxFactor(100, 3, 6, 200);
+	}
 
 	private void verifySpecificationModifiers(Specification spec) {
 		assertNotNull(spec.modifiers.getById("model.modifier.smallMovementPenalty"));

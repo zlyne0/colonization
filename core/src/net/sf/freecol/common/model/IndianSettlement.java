@@ -1,11 +1,14 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -20,8 +23,22 @@ public class IndianSettlement extends Settlement {
         SCOUTED          // Scouting bonus consumed
     };
 	
+    /** Radius of native tales map reveal. */
+    public static final int TALES_RADIUS = 6;
+    
 	/** The missionary at this settlement. */
     private IndianSettlementMissionary missionary;
+    
+    /** The number of the turn during which the last tribute was paid. */
+    private int lastTribute = 0;
+    
+    /**
+     * This is the skill that can be learned by Europeans at this
+     * settlement.  Its value will be null when the
+     * skill has already been taught to a European.  
+     */
+    protected UnitType learnableSkill = null;
+	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(3); 
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
@@ -52,6 +69,15 @@ public class IndianSettlement extends Settlement {
     	return level != ContactLevel.UNCONTACTED;
     }
     
+    public boolean hasAnyScouted() {
+    	for (Entry<String, ContactLevel> entrySet : contactLevelByPlayer.entrySet()) {
+    		if (entrySet.getValue() == ContactLevel.SCOUTED) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+    
 	public void modifyTension(Player player, int tensionValue) {
 		Tension tension = tensionByPlayer.get(player.getId());
 		if (tension == null) {
@@ -72,6 +98,15 @@ public class IndianSettlement extends Settlement {
         }
     }
 	
+    public Tension getTension(Player player) {
+    	Tension tension = tensionByPlayer.get(player.getId());
+    	if (tension == null) {
+    		tension = new Tension();
+    		tensionByPlayer.put(player.getId(), tension);
+    	}
+    	return tension;
+    }
+    
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;
@@ -148,6 +183,9 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_SETTLEMENT_TYPE = "settlementType";
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_NAME = "name";
+		private static final String ATTR_LAST_TRIBUTE = "lastTribute";		
+		private static final String ATTR_LEARNABLE_SKILL = "learnableSkill";		
+		private static final String ATTR_WANTED_GOODS = "wantedGoods";
 
 		public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<IndianSettlement, Unit>() {
@@ -179,11 +217,21 @@ public class IndianSettlement extends Settlement {
     		);
             is.name = attr.getStrAttribute(ATTR_NAME);
             is.owner = owner;
+            is.lastTribute = attr.getIntAttribute(ATTR_LAST_TRIBUTE, 0);
+            is.learnableSkill = attr.getEntity(ATTR_LEARNABLE_SKILL, Specification.instance.unitTypes);
             
             owner.settlements.add(is);
             
+            String goodsId = null;
+            int goodsIdIndex = 0;
+			while ((goodsId = attr.getStrAttribute(ATTR_WANTED_GOODS + goodsIdIndex)) != null) {
+            	is.wantedGoods.add(Specification.instance.goodsTypes.getById(goodsId));
+            	goodsIdIndex++;
+            }
+            
             nodeObject = is;
         }
+		
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
@@ -207,6 +255,12 @@ public class IndianSettlement extends Settlement {
         	attr.set(ATTR_NAME, is.name);
         	attr.set(ATTR_OWNER, is.owner);
         	attr.set(ATTR_SETTLEMENT_TYPE, is.settlementType);
+        	attr.set(ATTR_LAST_TRIBUTE, is.lastTribute, 0);
+        	attr.set(ATTR_LEARNABLE_SKILL, is.learnableSkill);
+        	
+        	for (int i=0; i<is.wantedGoods.size(); i++) {
+        		attr.set(ATTR_WANTED_GOODS + i, is.wantedGoods.get(i));
+        	}
         	
         	for (Entry<String, ContactLevel> contactEntry : is.contactLevelByPlayer.entrySet()) {
 				attr.xml.element(ELEMENT_CONTACT_LEVEL);
@@ -257,6 +311,10 @@ public class IndianSettlement extends Settlement {
 		throw new IllegalStateException("not implemented");
 	}
 
+	public UnitType getLearnableSkill() {
+		return learnableSkill;
+	}
+	
 	@Override
 	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
@@ -309,5 +367,9 @@ public class IndianSettlement extends Settlement {
 		m.getOwner().removeUnit(m);
 		missionary.unit = null;
 		missionary = null;
+	}
+
+	public List<GoodsType> getWantedGoods() {
+		return wantedGoods;
 	}
 }

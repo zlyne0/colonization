@@ -85,6 +85,10 @@ public abstract class NationType extends ObjectWithFeatures {
 		return Collections.emptySet();
 	}
 
+	public String regularSettlementTypePluralMsgKey() {
+		return getSettlementRegularType().getId() + ".plural";
+	}
+	
 	public SettlementType getSettlementRegularType() {
 		for (SettlementType type : settlementTypes.entities()) {
 			if (!type.isCapital()) {

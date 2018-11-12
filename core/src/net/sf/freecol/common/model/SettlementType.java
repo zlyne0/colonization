@@ -74,6 +74,7 @@ public class SettlementType extends ObjectWithFeatures {
     private int convertThreshold = 100;
 
     private List<SettlementPlunderRange> plunderRanges = new ArrayList<SettlementPlunderRange>();
+    private SettlementTypeGift gift;
     
     public SettlementType(String id) {
 		super(id);
@@ -184,6 +185,10 @@ public class SettlementType extends ObjectWithFeatures {
         return plunderRanges;
     }
 
+	public SettlementTypeGift getGift() {
+		return gift;
+	}
+    
 	public int plunderGold(Unit attacker) {
 		SettlementPlunderRange range = plunderGoldRange(attacker);
 		if (range != null) {
@@ -228,6 +233,8 @@ public class SettlementType extends ObjectWithFeatures {
                     xmlGenerator.generateXmlFromCollection(source.plunderRanges);
                 }
             });
+			
+			addNode(SettlementTypeGift.class, "gift");
     	}
     	
         @Override

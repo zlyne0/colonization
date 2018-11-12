@@ -91,6 +91,11 @@ class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
         cursor++;
         return cursorObject;
     }
+
+	@Override
+	public void remove() {
+		throw new UnsupportedOperationException();
+	}
 }
 
 public class Map extends ObjectWithId {

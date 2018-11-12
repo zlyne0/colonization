@@ -170,7 +170,8 @@ public class MoveContext {
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
 				MoveType.ATTACK_UNIT.equals(moveType) ||
 				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
-				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType)
+				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType)
 		);
 	}
 
@@ -202,6 +203,7 @@ public class MoveContext {
 		case ATTACK_UNIT: 
 		case ATTACK_SETTLEMENT:
 		case ENTER_FOREIGN_COLONY_WITH_SCOUT:
+		case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
 			return true;
 		default:
 			return false;

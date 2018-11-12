@@ -25,7 +25,7 @@ public class PlayerForOfWar {
     	return fogOfWar.setAndReturnDifference(tile.x, tile.y, false);
     }
     
-    boolean removeFogOfWar(int tileCoordsIndex) {
+    public boolean removeFogOfWar(int tileCoordsIndex) {
     	return fogOfWar.setAndReturnDifference(tileCoordsIndex, false);
     }
     

@@ -4,6 +4,8 @@ import org.xml.sax.Attributes;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class XmlNodeAttributes {
@@ -74,6 +76,14 @@ public class XmlNodeAttributes {
     
     public <T extends Enum<T>> T getEnumAttribute(Class<T> enumClass, String name) {
     	return getEnumAttribute(enumClass, name, null);
+    }
+    
+    public <T extends Identifiable> T getEntity(String attrName, MapIdEntitiesReadOnly<T> entities) {
+    	String entityId = getStrAttribute(attrName);
+    	if (entityId != null) {
+    		return entities.getById(entityId);
+    	}
+    	return null;
     }
     
     public String getId() {
