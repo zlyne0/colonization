@@ -26,6 +26,7 @@ import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
@@ -48,7 +49,7 @@ public class GUIGameController {
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
-	
+
 	public GUIGameController() {
 	}
 	
@@ -112,6 +113,16 @@ public class GUIGameController {
         });
 	}
 	
+    private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
+        @Override
+        public void afterMove(MoveContext moveContext) {
+        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);
+        }
+    };
+    public AfterMoveProcessor ifRequiredNextActiveUnit() {
+    	return ifRequiredNextActiveUnit;
+    }
+    
 	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(MoveContext moveContext) {
         if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
         	nextActiveUnitAsGdxPostRunnable();

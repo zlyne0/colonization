@@ -1,4 +1,4 @@
-package promitech.colonization.screen.map.diplomacy;
+package promitech.colonization.orders.diplomacy;
 
 public class NationSummary {
 

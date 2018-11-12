@@ -1,4 +1,4 @@
-package promitech.colonization.screen.map.diplomacy;
+package promitech.colonization.orders.diplomacy;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 

@@ -16,6 +16,8 @@ import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.orders.diplomacy.FirstContactController;
+import promitech.colonization.orders.diplomacy.FirstContactService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.Messages;
@@ -43,17 +45,25 @@ public class MoveService {
     private GUIGameController guiGameController;
     private MoveController moveController;
     private CombatController combatController;
+    private FirstContactController firstContactController;
     private FirstContactService firstContactService;
-
+    
     // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
     
-    public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, CombatService combatService) {
+    public void inject(
+    		GUIGameController guiGameController, 
+    		MoveController moveController, 
+    		GUIGameModel guiGameModel, 
+    		CombatService combatService,
+    		FirstContactController firstContactController
+	) {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
         this.combatController = new CombatController(guiGameController, combatService, guiGameModel);
-        this.firstContactService = new FirstContactService(moveController, guiGameModel);
+        this.firstContactController = firstContactController;
+        this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }
 
     private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
@@ -161,7 +171,6 @@ public class MoveService {
         }
         
         firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
-        // TODO: budzenie jednostek sprawdzenie czy nie sa budzone przy nowej turze
     }
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
@@ -198,10 +207,10 @@ public class MoveService {
                 moveController.showHighSeasQuestion(moveContext);
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
-            	moveController.showScoutMoveToForeignColonyQuestion(moveContext);
+            	firstContactController.showScoutMoveToForeignColonyQuestion(moveContext);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
-            	moveController.showScoutMoveToIndianSettlementQuestion(moveContext);
+            	firstContactController.showScoutMoveToIndianSettlementQuestion(moveContext);
             } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);

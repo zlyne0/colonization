@@ -1,4 +1,4 @@
-package promitech.colonization.orders.move;
+package promitech.colonization.orders.diplomacy;
 
 import java.util.HashMap;
 import java.util.Map.Entry;
@@ -16,17 +16,17 @@ import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 
-class FirstContactService {
-
-	private final MoveController moveController;
-	private final GUIGameModel guiGameModel;
+public class FirstContactService {
 	
-	public FirstContactService(MoveController moveController, GUIGameModel guiGameModel) {
-		this.moveController = moveController;
+	private final GUIGameModel guiGameModel;
+	private final FirstContactController firstContactController;
+	
+	public FirstContactService(FirstContactController firstContactController, GUIGameModel guiGameModel) {
+		this.firstContactController = firstContactController;
 		this.guiGameModel = guiGameModel;
 	}
 	
-    void firstContact(Tile tile, Player player) {
+    public void firstContact(Tile tile, Player player) {
         java.util.Map<String,Player> firstContactPlayers = null;
         if (tile.getType().isWater()) {
             return;
@@ -63,20 +63,16 @@ class FirstContactService {
                     player.changeStance(neighbour, Stance.PEACE);
                 } else {
                     if (player.isAi()) {
-                        moveController.blockedShowFirstContactDialog(neighbour, player);
+                    	firstContactController.blockedShowFirstContactDialog(neighbour, player);
                     } else {
-                        moveController.blockedShowFirstContactDialog(player, neighbour);
+                    	firstContactController.blockedShowFirstContactDialog(player, neighbour);
                     }
                 }
             }
         }
     }
 	
-    enum SpeakToChiefResult {
-    	DIE, NOTHING, EXPERT, TALES, BEADS
-    }
-    
-	SpeakToChiefResult scoutSpeakWithIndianSettlementChief(IndianSettlement is, Unit scout) {
+    SpeakToChiefResult scoutSpeakWithIndianSettlementChief(IndianSettlement is, Unit scout) {
 		Tension tension = is.getTension(scout.getOwner());
 		if (tension.getLevel() == Tension.Level.HATEFUL) {
         	scout.removeFromLocation();

@@ -1,13 +1,13 @@
 package promitech.colonization.screen.map.diplomacy
 
-import net.sf.freecol.common.model.player.Stance
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import promitech.colonization.ui.resources.Messages
-import promitech.colonization.ui.resources.StringTemplate
-import net.sf.freecol.common.model.player.Player
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.specification.Ability
+import promitech.colonization.orders.diplomacy.ScoreService
+import promitech.colonization.ui.resources.Messages
 
 internal class StanceTradeItem(val stance: Stance, fromPlayer : Player, toPlayer : Player)
 	: TradeItem(fromPlayer, toPlayer)

@@ -1,12 +1,12 @@
 package promitech.colonization.screen.map.diplomacy
 
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import promitech.colonization.ui.resources.StringTemplate
-import promitech.colonization.ui.resources.Messages
-import promitech.colonization.GameResources
 import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.player.Player
+import promitech.colonization.orders.diplomacy.ScoreService
+import promitech.colonization.ui.resources.Messages
+import promitech.colonization.ui.resources.StringTemplate
 
 internal class GoldTradeItem(val gold : Int, fromPlayer : Player, toPlayer : Player)
 	: TradeItem(fromPlayer, toPlayer)

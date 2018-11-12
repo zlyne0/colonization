@@ -1,9 +1,10 @@
 package promitech.colonization.screen.map.diplomacy
 
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Label
-import net.sf.freecol.common.model.player.Player
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.player.Player
+import promitech.colonization.orders.diplomacy.ScoreService
 
 internal abstract class TradeItem(val fromPlayer : Player, val toPlayer : Player) {
 	

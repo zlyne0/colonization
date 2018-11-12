@@ -1,12 +1,13 @@
 package promitech.colonization.screen.map.diplomacy
 
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
+import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.player.Stance
+import promitech.colonization.orders.diplomacy.ScoreService
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.resources.StringTemplate
-import net.sf.freecol.common.model.Game
-import net.sf.freecol.common.model.player.Stance
 
 internal class InciteTradeItem(val victim : Player, fromPlayer : Player, toPlayer : Player)
 	: TradeItem(fromPlayer, toPlayer)
