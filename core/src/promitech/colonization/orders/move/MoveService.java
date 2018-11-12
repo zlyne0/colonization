@@ -200,6 +200,9 @@ public class MoveService {
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	moveController.showScoutMoveToForeignColonyQuestion(moveContext);
             } break;
+            case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
+            	moveController.showScoutMoveToIndianSettlementQuestion(moveContext);
+            } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
             } break;

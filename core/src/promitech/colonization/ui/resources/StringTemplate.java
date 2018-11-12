@@ -484,4 +484,8 @@ public class StringTemplate extends ObjectWithId {
         }
         return sb.toString();
     }
+    
+    public String eval() {
+    	return Messages.message(this);
+    }
 }

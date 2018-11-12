@@ -7,6 +7,7 @@ import java.util.List;
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -14,10 +15,13 @@ import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Direction;
+import promitech.colonization.orders.move.FirstContactService.SpeakToChiefResult;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
+import promitech.colonization.screen.map.diplomacy.SpeakResultMsgDialog;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog;
 import promitech.colonization.screen.map.hud.FirstContactDialog;
@@ -27,6 +31,7 @@ import promitech.colonization.screen.map.hud.NewLandNameDialog;
 import promitech.colonization.screen.map.unitanimation.MoveView;
 import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
@@ -342,5 +347,99 @@ public class MoveController {
         
         guiGameController.showDialog(questionDialog);
 	}
+
+	public void showScoutMoveToIndianSettlementQuestion(MoveContext moveContext) {
+		
+		final FirstContactService firstContactService = new FirstContactService(this, guiGameModel);
+		
+		
+        final QuestionDialog.OptionAction<MoveContext> nothing = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            	int oldGold = payload.unit.getOwner().getGold();
+            	SpeakToChiefResult speakResult = firstContactService.scoutSpeakWithIndianSettlementChief(
+        			payload.destTile.getSettlement().getIndianSettlement(), 
+        			payload.unit
+    			);
+            	System.out.println("speak to chief result " + speakResult);
+            	speakToChiefResultMessage(speakResult, payload, oldGold);
+            }
+        };
+
+        IndianSettlement indianSettlement = moveContext.destTile.getSettlement().getIndianSettlement();
+        String settlementTypeKey = indianSettlement.getOwner().nationType().regularSettlementTypePluralMsgKey();
+        
+        String headStr = StringTemplate.template("scoutSettlement.greetings")
+        	.addStringTemplate("%nation%", indianSettlement.getOwner().getNationName())
+        	.add("%settlement%", indianSettlement.getName())
+        	.add("%number%", Integer.toString(indianSettlement.getOwner().settlements.size()))
+        	.addKey("%settlementType%", settlementTypeKey)
+        	.eval();
+        
+        if (indianSettlement.getLearnableSkill() != null) {
+        	headStr += "\r\n" + StringTemplate.template("scoutSettlement.skill")
+        		.addName("%skill%", indianSettlement.getLearnableSkill())
+        		.eval();
+        }
+        
+        List<GoodsType> wantedGoods = indianSettlement.getWantedGoods();
+        if (wantedGoods.size() > 0) {
+        	StringTemplate template = StringTemplate.template("scoutSettlement.trade." + wantedGoods.size());
+        	for (int i=0; i<wantedGoods.size(); i++) {
+        		template.addName("%goods" + Integer.toString(i+1) + "%", wantedGoods.get(i));
+        	}
+        	headStr += "\r\n" + template.eval();
+        }
+        
+        QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.addQuestion(headStr);
+        questionDialog.addAnswer("scoutSettlement.speak", nothing, moveContext);
+        questionDialog.addAnswer("scoutSettlement.tribute", nothing, moveContext);
+        questionDialog.addAnswer("scoutSettlement.attack", nothing, moveContext);
+        questionDialog.addOnlyCloseAnswer("cancel");
+        
+        guiGameController.showDialog(questionDialog);
+	}
 	
+	private void speakToChiefResultMessage(SpeakToChiefResult speakResult, final MoveContext moveContext, int oldGold) {
+		String msg = null;
+		
+		switch (speakResult) {
+		case DIE:
+			msg = Messages.msg("scoutSettlement.speakDie");
+			break;
+		case NOTHING:
+			msg = StringTemplate.template("scoutSettlement.speakNothing")
+				.addStringTemplate("%nation%", moveContext.unit.getOwner().getNationName())
+				.eval();
+			break;
+		case BEADS:
+			msg = StringTemplate.template("scoutSettlement.speakBeads")
+					.addAmount("%amount%", moveContext.unit.getOwner().getGold() - oldGold)
+					.eval();
+			break;
+		case EXPERT:
+			msg = StringTemplate.template("scoutSettlement.expertScout")
+				.addName("%unit%", moveContext.unit.unitType)
+				.eval();
+			break;
+		case TALES:
+			mapActor.resetMapModel();
+			msg = Messages.msg("scoutSettlement.speakTales");
+			break;
+		default:
+			throw new IllegalStateException("speak result " + speakResult + " not implemented");
+		}
+
+		final EventListener onEndScoutActionListener = new EventListener() {
+			@Override
+			public boolean handle(Event event) {
+				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);						
+				return true;
+			}
+		};		
+		guiGameController.showDialog(
+			new SpeakResultMsgDialog(msg).addOnCloseListener(onEndScoutActionListener)
+		);
+	}
 }
