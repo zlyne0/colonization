@@ -9,11 +9,13 @@ import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
 import promitech.colonization.ui.SimpleMessageDialog
 import promitech.colonization.ui.resources.StringTemplate
+import promitech.colonization.orders.diplomacy.FirstContactController
 
 class CombatController (
 	private val guiGameController: GUIGameController,
 	private val combatService: CombatService,
-	private val guiGameModel: GUIGameModel 
+	private val guiGameModel: GUIGameModel,
+	private val firstContactController: FirstContactController 
 ) {
 	
 	private val combat: Combat = Combat()
@@ -52,7 +54,12 @@ class CombatController (
 
 		var questionDialog = QuestionDialog()
 		questionDialog.addQuestion(questionMsg)
-		questionDialog.addAnswer("armedUnitSettlement.tribute", QuestionDialog.DO_NOTHING_ACTION, moveContext)
+		questionDialog.addAnswer("armedUnitSettlement.tribute",
+			QuestionDialog.OptionAction {
+				mc -> firstContactController.demandTributeFromSettlement(mc)
+			},
+			moveContext
+		)
 		questionDialog.addAnswer("armedUnitSettlement.attack",
 			QuestionDialog.OptionAction {
 				mc -> confirmCombat(mc)

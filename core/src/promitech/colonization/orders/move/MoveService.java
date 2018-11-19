@@ -61,7 +61,7 @@ public class MoveService {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
-        this.combatController = new CombatController(guiGameController, combatService, guiGameModel);
+        this.combatController = new CombatController(guiGameController, combatService, guiGameModel, firstContactController);
         this.firstContactController = firstContactController;
         this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }

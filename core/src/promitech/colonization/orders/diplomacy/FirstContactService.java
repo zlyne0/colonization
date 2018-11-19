@@ -3,6 +3,7 @@ package promitech.colonization.orders.diplomacy;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
@@ -106,7 +107,7 @@ public class FirstContactService {
 				result = SpeakToChiefResult.BEADS;
 			}
 		}
-		
+		is.scoutedBy(scout.getOwner());
 		scout.reduceMovesLeftToZero();
 		return result;
 	}
@@ -126,5 +127,16 @@ public class FirstContactService {
 				player.fogOfWar.removeFogOfWar(coordsIndex);
 			}
 		}
+	}
+	
+	int demandTributeFromIndian(Game game, IndianSettlement is, Unit unit) {
+		int gold = is.demandTribute(game.getTurn(), unit.getOwner());
+		if (gold > 0) {
+			is.getOwner().subtractGold(gold);
+			unit.getOwner().addGold(gold);
+		}
+		unit.reduceMovesLeftToZero();
+		System.out.println("Player " + unit.getOwner().getId() + " demand " + gold + " gold from indian settlement " + is.getId());
+		return gold;
 	}
 }

@@ -121,9 +121,8 @@ public class FirstContactController {
         guiGameController.showDialog(questionDialog);
 	}
 	
-	public void showScoutMoveToIndianSettlementQuestion(MoveContext moveContext) {
-		
-        final QuestionDialog.OptionAction<MoveContext> nothing = new QuestionDialog.OptionAction<MoveContext>() {
+	public void showScoutMoveToIndianSettlementQuestion(final MoveContext moveContext) {
+        final QuestionDialog.OptionAction<MoveContext> speakToChiefAction = new QuestionDialog.OptionAction<MoveContext>() {
             @Override
             public void executeAction(MoveContext payload) {
             	int oldGold = payload.unit.getOwner().getGold();
@@ -136,6 +135,14 @@ public class FirstContactController {
             }
         };
 
+        final QuestionDialog.OptionAction<MoveContext> attackAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            	payload.moveType = MoveType.ATTACK_SETTLEMENT;
+            	moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
+            }
+        };
+        
         IndianSettlement indianSettlement = moveContext.destTile.getSettlement().getIndianSettlement();
         String settlementTypeKey = indianSettlement.getOwner().nationType().regularSettlementTypePluralMsgKey();
         
@@ -163,12 +170,63 @@ public class FirstContactController {
         
         QuestionDialog questionDialog = new QuestionDialog();
 		questionDialog.addQuestion(headStr);
-        questionDialog.addAnswer("scoutSettlement.speak", nothing, moveContext);
-        questionDialog.addAnswer("scoutSettlement.tribute", nothing, moveContext);
-        questionDialog.addAnswer("scoutSettlement.attack", nothing, moveContext);
+        questionDialog.addAnswer("scoutSettlement.speak", speakToChiefAction, moveContext);
+        questionDialog.addAnswer("scoutSettlement.tribute", new QuestionDialog.OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+            	demandTributeFromIndian(payload);
+            }
+        }, moveContext);
+        questionDialog.addAnswer("scoutSettlement.attack", attackAnswer, moveContext);
         questionDialog.addOnlyCloseAnswer("cancel");
         
         guiGameController.showDialog(questionDialog);
+	}
+
+	public void demandTributeFromSettlement(MoveContext moveContext) {
+		if (moveContext.destTile.getSettlement().isColony()) {
+			demandTributeFromColony(moveContext);
+		} else {
+			demandTributeFromIndian(moveContext);
+		}
+	}
+	
+	private void demandTributeFromColony(MoveContext moveContext) {
+		ModalDialog<?> dialog;
+		Player colonyOwner = moveContext.destTile.getSettlement().getOwner();
+		if (!colonyOwner.hasGold()) {
+			String msg = StringTemplate.template("confirmTribute.broke")
+				.addStringTemplate("%nation%", colonyOwner.getNationName())
+				.eval();
+			dialog = new SpeakResultMsgDialog(msg)
+				.addOnCloseListener(createOnEndScoutActionListener(moveContext));
+		} else {
+			dialog = new DiplomacyContactDialog(screenMap, guiGameModel.game, 
+				moveContext.unit.getOwner(), 
+				colonyOwner, 
+				humanPlayerInteractionSemaphore
+			).addDemandTributeAggrement(1000);
+		}
+		guiGameController.showDialog(dialog);
+	}
+	
+	private void demandTributeFromIndian(final MoveContext moveContext) {
+    	int demandedGold = firstContactService.demandTributeFromIndian(
+			guiGameModel.game, 
+			moveContext.destTile.getSettlement().getIndianSettlement(), 
+			moveContext.unit
+		);
+    	String msg;
+    	if (demandedGold != 0) {
+    		msg = StringTemplate.template("scoutSettlement.tributeAgree")
+				.addAmount("%amount%", demandedGold)
+				.eval();
+    	} else {
+    		msg = Messages.msg("scoutSettlement.tributeDisagree");
+    	}
+		guiGameController.showDialog(
+			new SpeakResultMsgDialog(msg).addOnCloseListener(createOnEndScoutActionListener(moveContext))
+		);
 	}
 	
 	private void speakToChiefResultMessage(SpeakToChiefResult speakResult, final MoveContext moveContext, int oldGold) {
@@ -201,18 +259,21 @@ public class FirstContactController {
 			throw new IllegalStateException("speak result " + speakResult + " not implemented");
 		}
 
-		final EventListener onEndScoutActionListener = new EventListener() {
+		guiGameController.showDialog(
+			new SpeakResultMsgDialog(msg).addOnCloseListener(createOnEndScoutActionListener(moveContext))
+		);
+	}
+
+	private EventListener createOnEndScoutActionListener(final MoveContext moveContext) {
+		return new EventListener() {
 			@Override
 			public boolean handle(Event event) {
 				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);						
 				return true;
 			}
-		};		
-		guiGameController.showDialog(
-			new SpeakResultMsgDialog(msg).addOnCloseListener(onEndScoutActionListener)
-		);
+		};
 	}
-
+	
 	public void setScreenMap(Map screenMap) {
 		this.screenMap = screenMap;
 	}

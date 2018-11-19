@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
+import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -61,6 +62,32 @@ public class IndianSettlement extends Settlement {
 		goodsContainer = new GoodsContainer();
 	}
 
+    public void visitedBy(Player player) {
+    	ContactLevel contactLevel = contactLevelByPlayer.get(player.getId());
+    	if (contactLevel == null) {
+    		contactLevel = ContactLevel.UNCONTACTED;
+    	}
+    	if (contactLevel == ContactLevel.UNCONTACTED || contactLevel == ContactLevel.CONTACTED) {
+    		if (contactLevel == ContactLevel.UNCONTACTED) {
+    			setTension(player, getOwner().getTension(player).getValue());
+    		}
+    		contactLevelByPlayer.put(player.getId(), ContactLevel.VISITED);
+    	}
+    }
+    
+    public void scoutedBy(Player player) {
+    	ContactLevel contactLevel = contactLevelByPlayer.get(player.getId());
+    	if (contactLevel == null) {
+    		contactLevel = ContactLevel.UNCONTACTED;
+    	}
+    	if (contactLevel != ContactLevel.SCOUTED) {
+    		if (contactLevel == ContactLevel.UNCONTACTED) {
+    			setTension(player, getOwner().getTension(player).getValue());
+    		}
+    		contactLevelByPlayer.put(player.getId(), ContactLevel.SCOUTED);
+    	}
+    }
+    
     public boolean hasContact(Player player) {
     	ContactLevel level = contactLevelByPlayer.get(player.getId());
     	if (level == null) {
@@ -77,6 +104,11 @@ public class IndianSettlement extends Settlement {
     	}
     	return false;
     }
+
+	public void modifyTensionWithOwnerTension(Player player, int tensionValue) {
+		modifyTension(player, tensionValue);
+		getOwner().modifyTension(player, settlementType.isCapital() ? tensionValue : tensionValue / 2);
+	}
     
 	public void modifyTension(Player player, int tensionValue) {
 		Tension tension = tensionByPlayer.get(player.getId());
@@ -152,6 +184,35 @@ public class IndianSettlement extends Settlement {
 		return settlementType.plunderGold(attacker);
 	}
 
+	public int demandTribute(Turn turn, Player demander) {
+		final int TURNS_PER_TRIBUTE = 5;
+		
+		int gold = 0;
+		SettlementTypeGift giftRange = settlementType.getGift();
+		if (lastTribute + TURNS_PER_TRIBUTE < turn.getNumber() && giftRange != null) {
+			Level tensionLevel = owner.getTension(demander).getLevel();
+			switch (tensionLevel) {
+			case HAPPY:
+			case CONTENT:
+				gold = Math.min(giftRange.randomValue() / 10, 100);
+				break;
+			case DISPLEASED:
+				gold = Math.min(giftRange.randomValue() / 20, 100);
+				break;
+			case ANGRY:
+			case HATEFUL:
+				gold = 0;
+			default:
+				break;
+			}
+		}
+
+		visitedBy(demander);
+		modifyTensionWithOwnerTension(demander, Tension.TENSION_ADD_NORMAL);		
+		lastTribute = turn.getNumber();
+		return gold;
+	}
+	
 	public Entry<String, Tension> mostHatedPlayer(MapIdEntities<Player> players) {
 		Entry<String, Tension> mostHatedPlayer = null;
 		int playerTensionLevel = Integer.MIN_VALUE;
