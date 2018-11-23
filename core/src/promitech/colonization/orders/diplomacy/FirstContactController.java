@@ -198,7 +198,7 @@ public class FirstContactController {
 			String msg = StringTemplate.template("confirmTribute.broke")
 				.addStringTemplate("%nation%", colonyOwner.getNationName())
 				.eval();
-			dialog = new SpeakResultMsgDialog(msg)
+			dialog = new SpeakResultMsgDialog(moveContext.destTile.getSettlement(), msg)
 				.addOnCloseListener(createOnEndScoutActionListener(moveContext));
 		} else {
 			dialog = new DiplomacyContactDialog(screenMap, guiGameModel.game, 
@@ -211,9 +211,10 @@ public class FirstContactController {
 	}
 	
 	private void demandTributeFromIndian(final MoveContext moveContext) {
-    	int demandedGold = firstContactService.demandTributeFromIndian(
+    	IndianSettlement indianSettlement = moveContext.destTile.getSettlement().getIndianSettlement();
+		int demandedGold = firstContactService.demandTributeFromIndian(
 			guiGameModel.game, 
-			moveContext.destTile.getSettlement().getIndianSettlement(), 
+			indianSettlement, 
 			moveContext.unit
 		);
     	String msg;
@@ -225,7 +226,7 @@ public class FirstContactController {
     		msg = Messages.msg("scoutSettlement.tributeDisagree");
     	}
 		guiGameController.showDialog(
-			new SpeakResultMsgDialog(msg).addOnCloseListener(createOnEndScoutActionListener(moveContext))
+			new SpeakResultMsgDialog(indianSettlement, msg).addOnCloseListener(createOnEndScoutActionListener(moveContext))
 		);
 	}
 	
@@ -260,7 +261,10 @@ public class FirstContactController {
 		}
 
 		guiGameController.showDialog(
-			new SpeakResultMsgDialog(msg).addOnCloseListener(createOnEndScoutActionListener(moveContext))
+			new SpeakResultMsgDialog(
+				moveContext.destTile.getSettlement(),
+				msg
+			).addOnCloseListener(createOnEndScoutActionListener(moveContext))
 		);
 	}
 

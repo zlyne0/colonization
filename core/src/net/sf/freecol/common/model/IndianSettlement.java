@@ -62,11 +62,21 @@ public class IndianSettlement extends Settlement {
 		goodsContainer = new GoodsContainer();
 	}
 
-    public void visitedBy(Player player) {
+    public boolean isVisitedBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
+    	return contactLevel == ContactLevel.VISITED || contactLevel == ContactLevel.SCOUTED;
+    }
+    
+    private ContactLevel contactLevel(Player player) {
     	ContactLevel contactLevel = contactLevelByPlayer.get(player.getId());
     	if (contactLevel == null) {
-    		contactLevel = ContactLevel.UNCONTACTED;
+    		return ContactLevel.UNCONTACTED;
     	}
+    	return contactLevel;
+    }
+    
+    public void visitBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
     	if (contactLevel == ContactLevel.UNCONTACTED || contactLevel == ContactLevel.CONTACTED) {
     		if (contactLevel == ContactLevel.UNCONTACTED) {
     			setTension(player, getOwner().getTension(player).getValue());
@@ -75,11 +85,8 @@ public class IndianSettlement extends Settlement {
     	}
     }
     
-    public void scoutedBy(Player player) {
-    	ContactLevel contactLevel = contactLevelByPlayer.get(player.getId());
-    	if (contactLevel == null) {
-    		contactLevel = ContactLevel.UNCONTACTED;
-    	}
+    public void scoutBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
     	if (contactLevel != ContactLevel.SCOUTED) {
     		if (contactLevel == ContactLevel.UNCONTACTED) {
     			setTension(player, getOwner().getTension(player).getValue());
@@ -89,11 +96,7 @@ public class IndianSettlement extends Settlement {
     }
     
     public boolean hasContact(Player player) {
-    	ContactLevel level = contactLevelByPlayer.get(player.getId());
-    	if (level == null) {
-    		return false;
-    	}
-    	return level != ContactLevel.UNCONTACTED;
+    	return contactLevel(player) != ContactLevel.UNCONTACTED;
     }
     
     public boolean hasAnyScouted() {
@@ -207,7 +210,7 @@ public class IndianSettlement extends Settlement {
 			}
 		}
 
-		visitedBy(demander);
+		visitBy(demander);
 		modifyTensionWithOwnerTension(demander, Tension.TENSION_ADD_NORMAL);		
 		lastTribute = turn.getNumber();
 		return gold;

@@ -107,7 +107,7 @@ public class FirstContactService {
 				result = SpeakToChiefResult.BEADS;
 			}
 		}
-		is.scoutedBy(scout.getOwner());
+		is.scoutBy(scout.getOwner());
 		scout.reduceMovesLeftToZero();
 		return result;
 	}

@@ -34,6 +34,7 @@ import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.ColonyNameDialog;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
+import promitech.colonization.screen.map.diplomacy.IndianSettlementInformationDialog;
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
 import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
@@ -174,6 +175,12 @@ public class GUIGameController {
 		if (tile.hasSettlement()) {
 		    if (tile.getSettlement().isColony()) {
 		    	showColonyScreen(tile);
+		    } else {
+		    	showDialog(new IndianSettlementInformationDialog(
+	    			guiGameModel.game,
+	    			tile.getSettlement().getIndianSettlement(), 
+	    			guiGameModel.game.playingPlayer)
+    			);
 		    }
 		}
 	}

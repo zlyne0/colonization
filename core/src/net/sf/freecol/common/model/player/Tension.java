@@ -157,7 +157,7 @@ public class Tension {
      * @return A message id string.
      */
     public String getKey() {
-        return "tension." + toString().toLowerCase(Locale.US);
+        return "tension." + getLevel().toString().toLowerCase(Locale.US);
     }
 
     /**
