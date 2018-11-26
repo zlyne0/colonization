@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.IndianNationType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -236,6 +237,10 @@ public class IndianSettlement extends Settlement {
 			}
 		}
 		return mostHatedPlayer;
+	}
+	
+	public IndianNationType indianNationType() {
+		return (IndianNationType)owner.nationType();
 	}
 	
     public static class Xml extends XmlNodeParser<IndianSettlement> {

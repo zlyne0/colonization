@@ -42,6 +42,8 @@ import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.IndianNationType;
+import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RandomRangeAssert;
@@ -364,7 +366,13 @@ public class Savegame1600Verifier {
 
 	private void verifyNationTypes(Specification specification) {
 		assertEquals(18, specification.nationTypes.size());
-        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
+		IndianNationType arawakNationType = (IndianNationType)specification.nationTypes.getById("model.nationType.arawak");
+        
+		assertThat(arawakNationType.getSkills()).hasSize(3);
+		assertThat(arawakNationType).hasSkill("model.unit.masterSugarPlanter", 20);
+		assertThat(arawakNationType).hasSkill("model.unit.expertFisherman", 10);
+		assertThat(arawakNationType).hasSkill("model.unit.masterFurTrader", 3);
+        
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
         assertNotNull(settlementType);
         assertThat(settlementType.getPlunderRanges()).hasSize(2);

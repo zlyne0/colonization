@@ -1,16 +1,21 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianNationType extends NationType {
 
-	private final Set<String> regionNames = new HashSet<String>(); 
+	private final Set<String> regionNames = new HashSet<String>();
+	private final List<RandomChoice<UnitType>> skills = new ArrayList<RandomChoice<UnitType>>();
 	
     public IndianNationType(String id) {
 		super(id);
@@ -24,12 +29,18 @@ public class IndianNationType extends NationType {
 		return true;
 	}
 
+	public List<RandomChoice<UnitType>> getSkills() {
+		return skills;
+	}
+	
 	public Set<String> getRegionNames() {
 		return regionNames;
 	}
 	
     public static class Xml extends XmlNodeParser<IndianNationType> {
-        private static final String ATTR_REGION = "region";
+		private static final String ATTR_REGION = "region";
+        private static final String TAG_SKILL = "skill";
+        private static final String ATTR_PROBABILITY = "probability";
 
 		public Xml() {
 			NationType.Xml.abstractAddNodes(this);
@@ -49,6 +60,12 @@ public class IndianNationType extends NationType {
         	if (attr.isQNameEquals(ATTR_REGION)) {
         		nodeObject.regionNames.add(attr.getStrAttributeNotNull(ATTR_ID));
         	}
+        	if (attr.isQNameEquals(TAG_SKILL)) {
+        		nodeObject.skills.add(new RandomChoice<UnitType>(
+    				attr.getEntityId(Specification.instance.unitTypes), 
+    				attr.getIntAttribute(ATTR_PROBABILITY)
+				));
+        	}
         }
         
         @Override
@@ -61,6 +78,12 @@ public class IndianNationType extends NationType {
         		attr.set(ATTR_ID, regionName);
         		attr.xml.pop();
         	}
+        	for (RandomChoice<UnitType> skill : nationType.skills) {
+        		attr.xml.element(TAG_SKILL);
+        		attr.setId(skill.probabilityObject());
+        		attr.set(ATTR_PROBABILITY, skill.getOccureProbability());
+        		attr.xml.pop();
+			}
         }
         
         @Override

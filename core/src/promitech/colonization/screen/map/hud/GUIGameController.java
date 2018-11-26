@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.EventListener;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -499,7 +500,7 @@ public class GUIGameController {
 	
 	public void buildColonyEnterColonyName() {
 		Unit unit = guiGameModel.getActiveUnit();
-		String colonyName = Settlement.generateSettlmentName(unit.getOwner());
+		String colonyName = SettlementFactory.generateSettlmentName(unit.getOwner());
 		
 		ColonyNameDialog cnd = new ColonyNameDialog(this, mapHudStage.getWidth() * 0.5f, colonyName);
 		mapHudStage.showDialog(cnd);

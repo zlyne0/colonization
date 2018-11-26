@@ -5,6 +5,7 @@ import java.util.Set;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
@@ -37,7 +38,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
         BuildColonyOrder buildColonyOrder = new BuildColonyOrder(game.map);
         OrderStatus check = buildColonyOrder.check(mission.unit, mission.destTile);
         if (check == OrderStatus.OK) {
-            String colonyName = Settlement.generateSettlmentName(mission.unit.getOwner());
+            String colonyName = SettlementFactory.generateSettlmentName(mission.unit.getOwner());
             Settlement.buildColony(game.map, mission.unit, mission.destTile, colonyName);
             
             playerMissionsContainer.unblockUnitsFromMission(mission);

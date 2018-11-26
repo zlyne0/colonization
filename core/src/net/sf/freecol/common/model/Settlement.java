@@ -2,8 +2,6 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.Randomizer;
-import promitech.colonization.ui.resources.Messages;
 
 public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
@@ -14,37 +12,6 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     protected Player owner;
     public Tile tile;
     protected boolean coastland = false;
-    
-    public static IndianSettlement createIndianSettlement(Player player, Tile tile, SettlementType settlementType) {
-    	String settlmentName = generateSettlmentName(player);
-    	
-    	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-    	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
-    	tile.addImprovement(tileImprovement);
-    	
-		IndianSettlement indianSettlement = new IndianSettlement(Game.idGenerator, settlementType);
-		indianSettlement.name = settlmentName;
-		indianSettlement.tile = tile;
-		tile.setSettlement(indianSettlement);
-		
-		player.addSettlement(indianSettlement);
-		
-		generateIndianUnits(player, indianSettlement);
-		return indianSettlement;
-    }
-
-	private static void generateIndianUnits(Player player, IndianSettlement indianSettlement) {
-		int settlementUnitsNumber = Randomizer.instance().randomInt(
-			indianSettlement.settlementType.getMinimumSize(), 
-			indianSettlement.settlementType.getMaximumSize()
-		);
-		final UnitType brave = Specification.instance.unitTypes.getById("model.unit.brave");
-		for (int i=0; i<settlementUnitsNumber; i++) {
-			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
-			unit.setIndianSettlement(indianSettlement);
-			unit.changeUnitLocation(indianSettlement);
-		}
-	}
     
     public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
     	Colony colony = new Colony(
@@ -65,19 +32,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	tile.changeOwner(buildByUnit.getOwner(), colony);
     	return colony;
     }
-    
-    public static String generateSettlmentName(Player player) {
-    	String key = "" + player.nation().getId() + ".settlementName." + player.settlements.size();
-    	
-    	if (!Messages.containsKey(key)) {
-    		key = player.nation().getId() + ".settlementName.freecol." + player.settlements.size();
-    	}
-    	if (Messages.containsKey(key)) {
-    		return Messages.msg(key);
-    	}
-		return Integer.toString(player.settlements.size());
-    }
-    
+
     public Settlement(String id, SettlementType settlementType) {
 		super(id);
 		this.settlementType = settlementType;

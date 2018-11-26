@@ -15,6 +15,9 @@ import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.FirstContactDialog
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.Settlement
+import net.sf.freecol.common.model.IndianSettlement
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -68,6 +71,20 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		object : Task("map show owners") {
 			override fun run(console: ConsoleOutput) : Boolean {
 			    gameController.showTilesOwners();
+				return true
+			}
+		},
+		object : Task("map scout all") {
+			override fun run(console: ConsoleOutput): Boolean {
+				for (player : Player in guiGameModel.game.players.entities()) {
+					if (player.isIndian()) {
+						for (indianSettlement : Settlement in player.settlements.entities()) {
+							if (indianSettlement is IndianSettlement) {
+								indianSettlement.scoutBy(guiGameModel.game.playingPlayer)
+							}
+						}
+					}
+				}
 				return true
 			}
 		},

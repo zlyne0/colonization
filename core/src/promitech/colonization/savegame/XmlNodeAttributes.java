@@ -90,6 +90,11 @@ public class XmlNodeAttributes {
         return getStrAttributeNotNull(XmlNodeParser.ATTR_ID);
     }
 
+    public <T extends Identifiable> T getEntityId(MapIdEntitiesReadOnly<T> entities) {
+    	String id = getStrAttributeNotNull(XmlNodeParser.ATTR_ID);
+        return entities.getById(id);
+    }
+    
     public GridPoint2 getPoint(String name) {
     	String pointStr = getStrAttributeNotNull(name);
     	String[] t = pointStr.split(",");

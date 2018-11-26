@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -53,11 +53,13 @@ class IndianSettlementsGenerator {
 	private final Map map;
 	private final MapIdEntities<Player> players;
 	private SpiralIterator spiralIterator;
+	private final SettlementFactory factory;
 	
 	IndianSettlementsGenerator(MapGenerator mapGenerator, MapIdEntities<Player> players, Map map) {
 		this.mapGenerator = mapGenerator;
 		this.map = map;
 		this.players = players;
+		this.factory = new SettlementFactory(map);
 		
 		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
@@ -134,7 +136,7 @@ class IndianSettlementsGenerator {
 	        });
         	if (!settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		changeTileOwner(Settlement.createIndianSettlement(territory.player, tile, capitalType));
+        		changeTileOwner(factory.create(territory.player, tile, capitalType));
         		territory.centerTile = tile;
         		territory.numberOfSettlements--;
         	}
@@ -152,7 +154,7 @@ class IndianSettlementsGenerator {
         	SettlementType settlementRegularType = territory.player.nationType().getSettlementRegularType();
         	while (territory.numberOfSettlements > 0 && !settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		changeTileOwner(Settlement.createIndianSettlement(territory.player, tile, settlementRegularType));
+        		changeTileOwner(factory.create(territory.player, tile, settlementRegularType));
         		territory.numberOfSettlements--;
         	}
         }
