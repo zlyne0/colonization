@@ -5,6 +5,7 @@ import java.util.Map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Label;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -46,6 +47,10 @@ public class QuestionDialog extends Dialog {
         addQuestion(question);
     }
 
+    public Cell<Actor> addDialogActor(Actor actor) {
+    	return dialogLayout.add(actor);
+    }
+    
     public void addQuestion(String question) {
         Label lable = new Label(question, GameResources.instance.getUiSkin());
         lable.setWrap(true);

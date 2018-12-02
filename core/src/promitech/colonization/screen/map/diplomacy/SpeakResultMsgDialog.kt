@@ -21,20 +21,12 @@ public class SpeakResultMsgDialog(val settlement : Settlement, msg : String)
 	init {
 		withHidingOnEsc()
 		
-		val img = Image(TextureRegionDrawable(
-			GameResources.instance.getCenterAdjustFrameTexture(settlement.getImageKey()).texture
-		), Scaling.none, Align.center)
-		
-		var settlementInfo = HorizontalGroup()
-		settlementInfo.addActor(img)
-		settlementInfo.addActor(Label(settlement.getName(), skin))
-		
 		val label = Label(msg, skin)
 		label.setWrap(true)
 		
 		val layoutTable = Table()
 		layoutTable.defaults().align(Align.top or Align.left)
-		layoutTable.add(settlementInfo).align(Align.center).row()
+		layoutTable.add(SettlementImageLabel(settlement)).align(Align.center).row()
 		layoutTable.add(label).fillX().expandX().pad(20f)
 		
 		getContentTable().add(layoutTable).expandX().fillX().row()

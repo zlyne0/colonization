@@ -212,6 +212,9 @@ public class MoveService {
             case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
             	firstContactController.showScoutMoveToIndianSettlementQuestion(moveContext);
             } break;
+            case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST: {
+            	firstContactController.learnSkill(moveContext);
+            } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
             } break;

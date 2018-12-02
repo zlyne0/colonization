@@ -6,15 +6,19 @@ import java.util.Map.Entry;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
+import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 
 public class FirstContactService {
@@ -138,5 +142,36 @@ public class FirstContactService {
 		unit.reduceMovesLeftToZero();
 		System.out.println("Player " + unit.getOwner().getId() + " demand " + gold + " gold from indian settlement " + is.getId());
 		return gold;
+	}
+
+	public LearnSkillResult learnSkill(IndianSettlement is, MoveContext moveContext) {
+		Unit unit = moveContext.unit;
+		
+		if (is.getLearnableSkill() == null) {
+			throw new IllegalStateException("indian settlement " + is.getId() + " has no learnable skill");
+		}
+		if (!unit.unitType.canBeUpgraded(is.getLearnableSkill(), ChangeType.NATIVES)) {
+			throw new IllegalStateException(
+				"indian settlement " + is.getId() + 
+				", unit " + unit.getId() + 
+				" can not learn skill " + is.getLearnableSkill().getId()
+			);
+		}
+		
+		unit.reduceMovesLeftToZero();
+		is.visitBy(unit.getOwner());
+		
+		switch (is.getTension(unit.getOwner()).getLevel()) {
+		case HATEFUL:
+			unit.getOwner().removeUnit(unit);
+			moveContext.setUnitKilled();
+			return LearnSkillResult.KILL;
+		case ANGRY:
+			return LearnSkillResult.NOTHING;
+		default:
+			unit.changeUnitType(is.getLearnableSkill());
+			is.learnSkill(unit, Specification.options.getBoolean(GameOptions.ENHANCED_MISSIONARIES));
+			return LearnSkillResult.LEARN;
+		}
 	}
 }

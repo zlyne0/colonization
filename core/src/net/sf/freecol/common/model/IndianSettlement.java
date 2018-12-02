@@ -239,6 +239,13 @@ public class IndianSettlement extends Settlement {
 		return mostHatedPlayer;
 	}
 	
+	public void learnSkill(Unit unit, boolean enhancedMissionaries) {
+		unit.changeUnitType(learnableSkill);
+		if (!settlementType.isCapital() && !(hasMissionary(unit.getOwner()) && enhancedMissionaries)) {
+			learnableSkill = null;
+		}
+	}
+	
 	public IndianNationType indianNationType() {
 		return (IndianNationType)owner.nationType();
 	}
