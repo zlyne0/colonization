@@ -172,7 +172,8 @@ public class MoveContext {
 				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
 				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
-				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType)
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType)
 		);
 	}
 
@@ -206,6 +207,7 @@ public class MoveContext {
 		case ENTER_FOREIGN_COLONY_WITH_SCOUT:
 		case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
 		case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST:
+		case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY:
 			return true;
 		default:
 			return false;

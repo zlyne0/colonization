@@ -18,8 +18,8 @@ import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.screen.map.hud.GUIGameModel;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class FirstContactService {
 	
@@ -144,9 +144,7 @@ public class FirstContactService {
 		return gold;
 	}
 
-	public LearnSkillResult learnSkill(IndianSettlement is, MoveContext moveContext) {
-		Unit unit = moveContext.unit;
-		
+	public LearnSkillResult learnSkill(IndianSettlement is, Unit unit) {
 		if (is.getLearnableSkill() == null) {
 			throw new IllegalStateException("indian settlement " + is.getId() + " has no learnable skill");
 		}
@@ -164,7 +162,6 @@ public class FirstContactService {
 		switch (is.getTension(unit.getOwner()).getLevel()) {
 		case HATEFUL:
 			unit.getOwner().removeUnit(unit);
-			moveContext.setUnitKilled();
 			return LearnSkillResult.KILL;
 		case ANGRY:
 			return LearnSkillResult.NOTHING;
@@ -173,5 +170,49 @@ public class FirstContactService {
 			is.learnSkill(unit, Specification.options.getBoolean(GameOptions.ENHANCED_MISSIONARIES));
 			return LearnSkillResult.LEARN;
 		}
+	}
+
+	public void establishMission(IndianSettlement is, Unit missionary) {
+		is.visitBy(missionary.getOwner());
+		missionary.reduceMovesLeftToZero();
+
+		Tension tension = is.getTension(missionary.getOwner());
+		switch (tension.getLevel()) {
+		case HATEFUL:
+		case ANGRY:
+			missionary.getOwner().removeUnit(missionary);
+			break;
+		default:
+			is.changeMissionary(missionary);
+		}
+	}
+	
+	public DenouceMissionResult denounceMission(IndianSettlement is, Unit newMissionary) {
+		is.visitBy(newMissionary.getOwner());
+		newMissionary.reduceMovesLeftToZero();
+		
+		float realProbability = Randomizer.instance().realProbability();
+		float denounce = realProbability * is.missionaryOwner().getImmigration() / (newMissionary.getOwner().getImmigration() + 1);
+		if (is.getMissionary().unit.hasAbility(Ability.EXPERT_MISSIONARY)) {
+			denounce += 0.2;
+		}
+		if (newMissionary.hasAbility(Ability.EXPERT_MISSIONARY)) {
+			denounce -= 0.2;
+		}
+		if (denounce < 0.5) { // Success, remove old mission and establish ours
+			establishMission(is, newMissionary);
+			return DenouceMissionResult.SUCCESS;
+		}
+		
+		is.missionaryOwner().eventsNotifications.addMessageNotification(
+			StringTemplate.template("indianSettlement.mission.enemyDenounce")
+				.addStringTemplate("%enemy%", newMissionary.getOwner().getNationName())
+				.add("%settlement%", is.getName())
+				.addStringTemplate("%nation%", is.getOwner().getNationName())
+		);
+		
+		newMissionary.getOwner().removeUnit(newMissionary);
+		
+		return DenouceMissionResult.FAILURE; 
 	}
 }

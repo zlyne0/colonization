@@ -49,6 +49,8 @@ public class Tension {
     public static final int TENSION_ADD_CAPITAL_ATTACKED = 600;
     // War inciter
     public static final int TENSION_ADD_WAR_INCITER = 250;
+    // Alarm added when a new missionary is added. 
+    public static final int ALARM_NEW_MISSIONARY = -100;
 
     // Tension modifiers
     public static final int CONTACT_MODIFIER = 0;
@@ -60,8 +62,7 @@ public class Tension {
     public static final int RESUME_WAR_MODIFIER = 750; // War from cease fire
 
     /** Tension level to set when surrendering. */
-    public static final int SURRENDERED
-        = (Level.CONTENT.limit + Level.HAPPY.limit) / 2;
+    public static final int SURRENDERED = (Level.CONTENT.limit + Level.HAPPY.limit) / 2;
     
     /** 
      * Constants for describing alarm levels.

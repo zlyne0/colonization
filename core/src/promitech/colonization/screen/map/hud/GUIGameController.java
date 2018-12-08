@@ -126,7 +126,7 @@ public class GUIGameController {
     }
     
 	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(MoveContext moveContext) {
-        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
+        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled() || moveContext.unit.isDisposed()) {
         	nextActiveUnitAsGdxPostRunnable();
         }
 	}

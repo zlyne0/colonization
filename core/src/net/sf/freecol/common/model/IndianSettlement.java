@@ -15,6 +15,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class IndianSettlement extends Settlement {
     
@@ -40,6 +41,7 @@ public class IndianSettlement extends Settlement {
      * skill has already been taught to a European.  
      */
     protected UnitType learnableSkill = null;
+    private int convertProgress;
 	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(3); 
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
@@ -262,7 +264,8 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_LAST_TRIBUTE = "lastTribute";		
 		private static final String ATTR_LEARNABLE_SKILL = "learnableSkill";		
 		private static final String ATTR_WANTED_GOODS = "wantedGoods";
-
+		private static final String ATTR_CONVERT_PROGRESS = "convertProgress";
+		
 		public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<IndianSettlement, Unit>() {
                 @Override
@@ -295,6 +298,7 @@ public class IndianSettlement extends Settlement {
             is.owner = owner;
             is.lastTribute = attr.getIntAttribute(ATTR_LAST_TRIBUTE, 0);
             is.learnableSkill = attr.getEntity(ATTR_LEARNABLE_SKILL, Specification.instance.unitTypes);
+            is.convertProgress = attr.getIntAttribute(ATTR_CONVERT_PROGRESS, 0);
             
             owner.settlements.add(is);
             
@@ -333,6 +337,7 @@ public class IndianSettlement extends Settlement {
         	attr.set(ATTR_SETTLEMENT_TYPE, is.settlementType);
         	attr.set(ATTR_LAST_TRIBUTE, is.lastTribute, 0);
         	attr.set(ATTR_LEARNABLE_SKILL, is.learnableSkill);
+        	attr.set(ATTR_CONVERT_PROGRESS, is.convertProgress);
         	
         	for (int i=0; i<is.wantedGoods.size(); i++) {
         		attr.set(ATTR_WANTED_GOODS + i, is.wantedGoods.get(i));
@@ -416,8 +421,8 @@ public class IndianSettlement extends Settlement {
 		return false;
 	}
 
-    private boolean hasMissionary() {
-        return missionary != null;
+    public boolean hasMissionary() {
+        return missionary != null && missionary.unit != null;
     }
 
     public boolean hasMissionary(Player player) {
@@ -437,6 +442,24 @@ public class IndianSettlement extends Settlement {
     public Player missionaryOwner() {
     	return missionary.unit.getOwner();
     }
+
+    public void changeMissionary(Unit newMissionary) {
+    	if (missionary != null && missionary.unit != null) {
+    		missionary.unit.getOwner().eventsNotifications.addMessageNotification(
+				StringTemplate.template("indianSettlement.mission.denounced")
+					.add("%settlement%", getName())
+			);
+    		missionary.unit.getOwner().removeUnit(missionary.unit);
+    	}
+    	if (missionary == null) {
+    		missionary = new IndianSettlementMissionary();
+    	}
+    	newMissionary.changeUnitLocation(missionary);
+    	newMissionary.reduceMovesLeftToZero();
+    	resetConvertProgress();
+    	modifyTensionWithOwnerTension(newMissionary.getOwner(), Tension.ALARM_NEW_MISSIONARY);
+    	newMissionary.getOwner().fogOfWar.fogOfWarForMissionary(this, newMissionary.getOwner());
+    }
     
 	public void removeMissionary() {
 		Unit m = missionary.unit;
@@ -445,6 +468,10 @@ public class IndianSettlement extends Settlement {
 		missionary = null;
 	}
 
+	public void resetConvertProgress() {
+		convertProgress = 0;
+	}
+	
 	public List<GoodsType> getWantedGoods() {
 		return wantedGoods;
 	}

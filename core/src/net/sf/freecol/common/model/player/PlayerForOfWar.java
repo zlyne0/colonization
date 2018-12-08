@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.player;
 
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -41,11 +43,32 @@ public class PlayerForOfWar {
     	return fogOfWar.get(x, y);
     }
     
-    public void resetFogOfWar(Player player) {
+    public void resetFogOfWar(Game game, Player player) {
         fogOfWar.set(true);
         
         fogOfWarForUnits(player);
         fogOfWarForSettlements(player);
+        fogOfWarForMissionary(player, game);
+    }
+    
+    private void fogOfWarForMissionary(Player player, Game game) {
+    	if (player.isEuropean()) {
+    		for (Player indianPlayer : game.players.entities()) {
+    			if (indianPlayer.isIndian()) {
+    				for (Settlement settlement : indianPlayer.settlements.entities()) {
+    					IndianSettlement is = settlement.getIndianSettlement();
+    					if (is.hasMissionary(player)) {
+    						fogOfWarForMissionary(is, player);
+    					}
+    				}
+    			}
+    		}
+    	}
+    }
+    
+    public void fogOfWarForMissionary(IndianSettlement is, Player player) {
+    	int radius = is.getMissionary().lineOfSight(is.settlementType);
+    	initFogOfWarForNeighboursTiles(player, is.tile, radius);
     }
 
     private void fogOfWarForSettlements(Player player) {
