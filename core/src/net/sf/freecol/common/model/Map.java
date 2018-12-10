@@ -8,6 +8,7 @@ import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+import net.sf.freecol.common.model.map.AutoFreePoolableTileIterable;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
@@ -330,15 +331,27 @@ public class Map extends ObjectWithId {
 	}
 
     public Iterable<Tile> neighbourTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.ALL);
+        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.ALL);
     }
 
     public Iterable<Tile> neighbourLandTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.LAND_TILES);
+        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.LAND_TILES);
     }
 
     public Iterable<Tile> neighbourWaterTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(this, sourceTile, NeighbourTilesIterable.WATER_TILES);
+        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.WATER_TILES);
+    }
+    
+    /**
+     * Important: Do not break loop. Iterable is put back to pool when Iterator.hasNext return false 
+     * @param sourceTile
+     * @param radius
+     * @return
+     */
+    public Iterable<Tile> neighbourTiles(final Tile sourceTile, int radius) {
+        AutoFreePoolableTileIterable iterable = AutoFreePoolableTileIterable.obtain();
+        iterable.reset(Map.this, sourceTile, radius);
+        return iterable;
     }
     
 	public static class Xml extends XmlNodeParser<Map> {

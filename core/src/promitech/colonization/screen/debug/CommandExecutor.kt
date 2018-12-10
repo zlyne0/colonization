@@ -19,7 +19,6 @@ import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Game
-import kotlin.reflect.jvm.internal.impl.load.java.structure.JavaClass
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.UnitRole
