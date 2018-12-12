@@ -4,16 +4,21 @@ import java.util.List;
 
 import com.badlogic.gdx.scenes.scene2d.Event;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
+import com.badlogic.gdx.scenes.scene2d.ui.Image;
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.Scaling;
 
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
@@ -26,6 +31,7 @@ import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -366,12 +372,74 @@ public class FirstContactController {
 		questionDialog.addAnswer("missionarySettlement.incite", new QuestionDialog.OptionAction<MoveContext>() {
 		    @Override
 		    public void executeAction(MoveContext payload) {
+		    	showIncitePlayers(payload);
 		    }
 		}, moveContext);
 		questionDialog.addOnlyCloseAnswer("cancel");
 		guiGameController.showDialog(questionDialog);
 	}
 
+	protected void showIncitePlayers(final MoveContext moveContext) {
+		final Image unitImage = new Image(new TextureRegionDrawable(
+			GameResources.instance.getFrame(moveContext.unit.resourceImageKey()).texture
+		), Scaling.none, Align.center);
+		
+		final OptionAction<Player> incitePlayerAction = new OptionAction<Player>() {
+			@Override
+			public void executeAction(Player enemy) {
+				incitePriceConfirmation(moveContext.destTile.getSettlement().getOwner(), enemy, moveContext.unit);
+			}
+		};
+		
+		QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.addDialogActor(unitImage).align(Align.center).row();
+		questionDialog.addQuestion(StringTemplate.template("missionarySettlement.inciteQuestion"));
+		for (Player player : guiGameModel.game.players.entities()) {
+			if (player.isLiveEuropeanPlayer()) {
+				questionDialog.addAnswer(player.getNationName(), incitePlayerAction, player);
+			}
+		}
+		questionDialog.addOnlyCloseAnswer("missionarySettlement.cancel");
+		guiGameController.showDialog(questionDialog);
+	}
+
+	private void incitePriceConfirmation(final Player nativePlayer, final Player enemy, final Unit missionary) {
+		final int incitePrice = firstContactService.inciteIndianPrice(
+			nativePlayer, 
+			enemy, 
+			missionary
+		);
+
+		final Image unitImage = new Image(new TextureRegionDrawable(
+			GameResources.instance.getFrame(missionary.resourceImageKey()).texture
+		), Scaling.none, Align.center);
+		QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.addDialogActor(unitImage).align(Align.center).row();
+		
+		if (missionary.getOwner().hasNotGold(incitePrice)) {
+			questionDialog.addQuestion(
+				StringTemplate.template("missionarySettlement.inciteGoldFail")
+					.add("%player%", enemy.getName())
+					.addAmount("%amount%", incitePrice)
+			);
+			questionDialog.addOnlyCloseAnswer("ok");
+		} else {
+			questionDialog.addQuestion(
+				StringTemplate.template("missionarySettlement.inciteConfirm")
+	                .add("%player%", enemy.getName())
+	                .addAmount("%amount%", incitePrice)
+			);
+			questionDialog.addAnswer("yes", new OptionAction<Player>() {
+				@Override
+				public void executeAction(Player payload) {
+					firstContactService.inciteIndian(nativePlayer, enemy, missionary, incitePrice);
+				}
+			}, enemy);
+			questionDialog.addOnlyCloseAnswer("no");
+		}
+		guiGameController.showDialog(questionDialog);
+	}
+	
 	private void successfullyEstablishMissionMsg(MoveContext moveContext, IndianSettlement is) {
 		Tension tension = is.getTension(moveContext.unit.getOwner());
 		String msg = StringTemplate.template("indianSettlement.mission." + tension.getKey())

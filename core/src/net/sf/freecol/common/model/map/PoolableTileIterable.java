@@ -36,4 +36,9 @@ public class PoolableTileIterable implements Iterable<Tile>, Iterator<Tile> {
         return spiralIterator2.next();
     }
 
+	@Override
+	public void remove() {
+		throw new IllegalStateException("not implemented");
+	}
+
 }

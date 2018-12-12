@@ -455,28 +455,24 @@ public class Tile implements UnitLocation, Identifiable {
 	
 	public void demandTileByPlayer(Player player) {
 		if (getOwningSettlementId() != null) {
-			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
-			
 			if (owner.isIndian()) {
-				for (Settlement settlement : owner.settlements.entities()) {
-					IndianSettlement indianSett = (IndianSettlement)settlement;
-					if (indianSett.settlementType.isCapital() || indianSett.equalsId(getOwningSettlementId())) {
-						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
+				Settlement tileSettlement = owner.settlements.getByIdOrNull(getOwningSettlementId());
+				if (tileSettlement != null && tileSettlement.isIndianSettlement()) {
+					IndianSettlement is = tileSettlement.getIndianSettlement();
+					if (is.settlementType.isCapital()) {
+						owner.modifyTensionAndPropagateToAllSettlements(player, Tension.TENSION_ADD_LAND_TAKEN);
 					} else {
-						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN/2);
+						owner.modifyTensionAndPropagateToAllSettlements(player, Tension.TENSION_ADD_LAND_TAKEN/2);
 					}
 				}
+			} else {
+				owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
 			}
 		} else {
-			owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
-			
 			if (owner.isIndian()) {
-				for (Settlement settlement : owner.settlements.entities()) {
-					IndianSettlement indianSett = (IndianSettlement)settlement;
-					if (indianSett.hasContact(player)) {
-						indianSett.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
-					}
-				}
+				owner.modifyTensionAndPropagateToAllSettlements(player, Tension.TENSION_ADD_LAND_TAKEN);
+			} else {
+				owner.modifyTension(player, Tension.TENSION_ADD_LAND_TAKEN);
 			}
 		}
 	}

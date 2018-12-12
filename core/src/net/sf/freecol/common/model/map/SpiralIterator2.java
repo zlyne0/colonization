@@ -115,5 +115,10 @@ public class SpiralIterator2 implements Iterator<Tile> {
         nextTile();
         return result;
     }
+
+	@Override
+	public void remove() {
+		throw new IllegalStateException("not implemented");
+	}
     
 }

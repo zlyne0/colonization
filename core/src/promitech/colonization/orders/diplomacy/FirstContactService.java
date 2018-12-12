@@ -215,4 +215,20 @@ public class FirstContactService {
 		
 		return DenouceMissionResult.FAILURE; 
 	}
+	
+	public int inciteIndianPrice(Player nativePlayer, Player enemy, Unit missionary) {
+        int payingValue = nativePlayer.getTension(missionary.getOwner()).getValue();
+        int targetValue = nativePlayer.getTension(enemy).getValue();
+        int goldToPay = (payingValue > targetValue) ? 10000 : 5000;
+        goldToPay += 20 * (payingValue - targetValue);
+        goldToPay = Math.max(goldToPay, 650);
+        return goldToPay;
+	}
+	
+	public void inciteIndian(Player nativePlayer, Player enemy, Unit missionary, int incitePrice) {
+		nativePlayer.modifyTension(enemy, Tension.WAR_MODIFIER);
+		enemy.modifyTension(missionary.getOwner(), Tension.TENSION_ADD_WAR_INCITER);
+		nativePlayer.modifyTensionAndPropagateToAllSettlements(enemy, Tension.WAR_MODIFIER);
+		missionary.getOwner().transferGoldToPlayer(incitePrice, nativePlayer);
+	}
 }

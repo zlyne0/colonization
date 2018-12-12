@@ -449,7 +449,7 @@ public class IndianSettlement extends Settlement {
 				StringTemplate.template("indianSettlement.mission.denounced")
 					.add("%settlement%", getName())
 			);
-    		missionary.unit.getOwner().removeUnit(missionary.unit);
+    		removeMissionary();
     	}
     	if (missionary == null) {
     		missionary = new IndianSettlementMissionary();
