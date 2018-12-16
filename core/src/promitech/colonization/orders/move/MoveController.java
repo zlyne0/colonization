@@ -162,7 +162,7 @@ public class MoveController {
 		        if (moveContext.isEndOfPath() && moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
                     guiGameController.showColonyScreen(moveContext.destTile);
 		        }
-		        guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);
+		        guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
 		    }
         });
 	}

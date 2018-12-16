@@ -9,6 +9,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.Scaling;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Settlement;
@@ -84,80 +85,82 @@ public class FirstContactController {
         return dialog;
     }
 	
-	public void showScoutMoveToForeignColonyQuestion(final MoveContext moveContext) {
+	public void showScoutMoveToForeignColonyQuestion(final Colony colony, final Unit scout) {
 		final EventListener onEndScoutActionListener = new EventListener() {
 			@Override
 			public boolean handle(Event event) {
-				moveContext.unit.reduceMovesLeftToZero();
-				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);						
+				scout.reduceMovesLeftToZero();
+				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();						
 				return true;
 			}
 		};
 
-        final QuestionDialog.OptionAction<MoveContext> negotiateAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        final QuestionDialog.OptionAction<Unit> negotiateAnswer = new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(MoveContext payload) {
+            public void executeAction(Unit scout) {
             	ModalDialog<?> dialog = new DiplomacyContactDialog(screenMap, guiGameModel.game, 
-    				payload.unit.getOwner(), 
-    				payload.destTile.getSettlement().getOwner(), 
+    				scout.getOwner(), 
+    				colony.getOwner(), 
     				humanPlayerInteractionSemaphore
     			).addOnCloseListener(onEndScoutActionListener);
                 guiGameController.showDialog(dialog);
             }
         };
-        final QuestionDialog.OptionAction<MoveContext> spyAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        final QuestionDialog.OptionAction<Unit> spyAnswer = new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(final MoveContext payload) {
-				guiGameController.showColonyScreenSpyMode(payload.destTile, onEndScoutActionListener);
+            public void executeAction(final Unit scout) {
+				guiGameController.showColonyScreenSpyMode(colony.tile, onEndScoutActionListener);
             }
         };
-        final QuestionDialog.OptionAction<MoveContext> attackAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        final QuestionDialog.OptionAction<Unit> attackAnswer = new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(MoveContext payload) {
-            	payload.moveType = MoveType.ATTACK_SETTLEMENT;
-            	moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
+            public void executeAction(Unit scout) {
+            	MoveContext mc = new MoveContext(scout.getTile(), colony.tile, scout);
+            	mc.moveType = MoveType.ATTACK_SETTLEMENT;
+            	moveService.preMoveProcessorInNewThread(mc, guiGameController.ifRequiredNextActiveUnit());
             }
         };
-        
-        Settlement colony = moveContext.destTile.getSettlement();
         
         StringTemplate head = StringTemplate.template("scoutColony.text")
-    		.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(moveContext.unit))
+    		.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(scout))
     		.add("%colony%", colony.getName());
         QuestionDialog questionDialog = new QuestionDialog();
         questionDialog.addDialogActor(new SettlementImageLabel(colony)).align(Align.center).row();
 		questionDialog.addQuestion(head);
-        questionDialog.addAnswer("scoutColony.negotiate", negotiateAnswer, moveContext);
-        questionDialog.addAnswer("scoutColony.spy", spyAnswer, moveContext);
-        questionDialog.addAnswer("scoutColony.attack", attackAnswer, moveContext);
+        questionDialog.addAnswer("scoutColony.negotiate", negotiateAnswer, scout);
+        questionDialog.addAnswer("scoutColony.spy", spyAnswer, scout);
+        questionDialog.addAnswer("scoutColony.attack", attackAnswer, scout);
         questionDialog.addOnlyCloseAnswer("cancel");
         
         guiGameController.showDialog(questionDialog);
 	}
 	
-	public void showScoutMoveToIndianSettlementQuestion(final MoveContext moveContext) {
-        final QuestionDialog.OptionAction<MoveContext> speakToChiefAction = new QuestionDialog.OptionAction<MoveContext>() {
+	public void showScoutMoveToIndianSettlementQuestion(
+		final IndianSettlement indianSettlement, 
+		final Unit scout 
+	) {
+        final QuestionDialog.OptionAction<Unit> speakToChiefAction = new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(MoveContext payload) {
-            	int oldGold = payload.unit.getOwner().getGold();
+            public void executeAction(Unit scout) {
+            	int oldGold = scout.getOwner().getGold();
             	SpeakToChiefResult speakResult = firstContactService.scoutSpeakWithIndianSettlementChief(
-        			payload.destTile.getSettlement().getIndianSettlement(), 
-        			payload.unit
+        			indianSettlement, 
+        			scout
     			);
             	System.out.println("speak to chief result " + speakResult);
-            	speakToChiefResultMessage(speakResult, payload, oldGold);
+            	speakToChiefResultMessage(speakResult, indianSettlement, scout, oldGold);
             }
         };
 
-        final QuestionDialog.OptionAction<MoveContext> attackAnswer = new QuestionDialog.OptionAction<MoveContext>() {
+        final QuestionDialog.OptionAction<Unit> attackAnswer = new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(MoveContext payload) {
-            	payload.moveType = MoveType.ATTACK_SETTLEMENT;
-            	moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
+            public void executeAction(Unit scout) {
+            	MoveContext moveContext = new MoveContext(scout.getTile(), indianSettlement.tile, scout);
+            	moveContext.moveType = MoveType.ATTACK_SETTLEMENT;
+            	moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
             }
         };
         
-        IndianSettlement indianSettlement = moveContext.destTile.getSettlement().getIndianSettlement();
         String settlementTypeKey = indianSettlement.getOwner().nationType().regularSettlementTypePluralMsgKey();
         
         String headStr = StringTemplate.template("scoutSettlement.greetings")
@@ -185,39 +188,39 @@ public class FirstContactController {
         QuestionDialog questionDialog = new QuestionDialog();
         questionDialog.addDialogActor(new SettlementImageLabel(indianSettlement)).align(Align.center).row();
 		questionDialog.addQuestion(headStr);
-        questionDialog.addAnswer("scoutSettlement.speak", speakToChiefAction, moveContext);
-        questionDialog.addAnswer("scoutSettlement.tribute", new QuestionDialog.OptionAction<MoveContext>() {
+        questionDialog.addAnswer("scoutSettlement.speak", speakToChiefAction, scout);
+        questionDialog.addAnswer("scoutSettlement.tribute", new QuestionDialog.OptionAction<Unit>() {
             @Override
-            public void executeAction(MoveContext payload) {
-            	demandTributeFromIndian(payload);
+            public void executeAction(Unit scout) {
+            	demandTributeFromIndian(indianSettlement, scout);
             }
-        }, moveContext);
-        questionDialog.addAnswer("scoutSettlement.attack", attackAnswer, moveContext);
+        }, scout);
+        questionDialog.addAnswer("scoutSettlement.attack", attackAnswer, scout);
         questionDialog.addOnlyCloseAnswer("cancel");
         
         guiGameController.showDialog(questionDialog);
 	}
 
-	public void demandTributeFromSettlement(MoveContext moveContext) {
-		if (moveContext.destTile.getSettlement().isColony()) {
-			demandTributeFromColony(moveContext);
+	public void demandTributeFromSettlement(Settlement settlement, Unit unit) {
+		if (settlement.isColony()) {
+			demandTributeFromColony(settlement.getColony(), unit);
 		} else {
-			demandTributeFromIndian(moveContext);
+			demandTributeFromIndian(settlement.getIndianSettlement(), unit);
 		}
 	}
 	
-	private void demandTributeFromColony(MoveContext moveContext) {
+	private void demandTributeFromColony(Colony colony, Unit unit) {
 		ModalDialog<?> dialog;
-		Player colonyOwner = moveContext.destTile.getSettlement().getOwner();
+		Player colonyOwner = colony.getOwner();
 		if (!colonyOwner.hasGold()) {
 			String msg = StringTemplate.template("confirmTribute.broke")
 				.addStringTemplate("%nation%", colonyOwner.getNationName())
 				.eval();
-			dialog = new SpeakResultMsgDialog(moveContext.destTile.getSettlement(), msg)
-				.addOnCloseListener(createOnEndScoutActionListener(moveContext));
+			dialog = new SpeakResultMsgDialog(colony, msg)
+				.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable());
 		} else {
 			dialog = new DiplomacyContactDialog(screenMap, guiGameModel.game, 
-				moveContext.unit.getOwner(), 
+				unit.getOwner(), 
 				colonyOwner, 
 				humanPlayerInteractionSemaphore
 			).addDemandTributeAggrement(1000);
@@ -225,12 +228,11 @@ public class FirstContactController {
 		guiGameController.showDialog(dialog);
 	}
 	
-	private void demandTributeFromIndian(final MoveContext moveContext) {
-    	IndianSettlement indianSettlement = moveContext.destTile.getSettlement().getIndianSettlement();
+	private void demandTributeFromIndian(IndianSettlement indianSettlement, Unit unit) {
 		int demandedGold = firstContactService.demandTributeFromIndian(
 			guiGameModel.game, 
 			indianSettlement, 
-			moveContext.unit
+			unit
 		);
     	String msg;
     	if (demandedGold != 0) {
@@ -240,10 +242,15 @@ public class FirstContactController {
     	} else {
     		msg = Messages.msg("scoutSettlement.tributeDisagree");
     	}
-    	showSpeakResultMsg(moveContext, indianSettlement, msg);
+    	showSpeakResultMsg(indianSettlement, msg);
 	}
 	
-	private void speakToChiefResultMessage(SpeakToChiefResult speakResult, final MoveContext moveContext, int oldGold) {
+	private void speakToChiefResultMessage(
+		SpeakToChiefResult speakResult, 
+		IndianSettlement indianSettlement,
+		Unit unit,
+		int oldGold
+	) {
 		String msg = null;
 		
 		switch (speakResult) {
@@ -252,17 +259,17 @@ public class FirstContactController {
 			break;
 		case NOTHING:
 			msg = StringTemplate.template("scoutSettlement.speakNothing")
-				.addStringTemplate("%nation%", moveContext.unit.getOwner().getNationName())
+				.addStringTemplate("%nation%", unit.getOwner().getNationName())
 				.eval();
 			break;
 		case BEADS:
 			msg = StringTemplate.template("scoutSettlement.speakBeads")
-					.addAmount("%amount%", moveContext.unit.getOwner().getGold() - oldGold)
+					.addAmount("%amount%", unit.getOwner().getGold() - oldGold)
 					.eval();
 			break;
 		case EXPERT:
 			msg = StringTemplate.template("scoutSettlement.expertScout")
-				.addName("%unit%", moveContext.unit.unitType)
+				.addName("%unit%", unit.unitType)
 				.eval();
 			break;
 		case TALES:
@@ -273,48 +280,46 @@ public class FirstContactController {
 			throw new IllegalStateException("speak result " + speakResult + " not implemented");
 		}
 
-		showSpeakResultMsg(moveContext, moveContext.destTile.getSettlement(), msg);
+		showSpeakResultMsg(indianSettlement, msg);
 	}
 
 	public void setScreenMap(Map screenMap) {
 		this.screenMap = screenMap;
 	}
 
-	public void learnSkill(MoveContext moveContext) {
-		final IndianSettlement is = moveContext.destTile.getSettlement().getIndianSettlement();
-		
+	public void learnSkill(final Unit studentUnit, final IndianSettlement is) {
 		if (is.getLearnableSkill() == null) {
-			showSpeakResultMsg(moveContext, moveContext.destTile.getSettlement(), Messages.msg("indianSettlement.noMoreSkill"));
-		} else if (!moveContext.unit.unitType.canBeUpgraded(is.getLearnableSkill(), ChangeType.NATIVES)) {
+			showSpeakResultMsg(is, Messages.msg("indianSettlement.noMoreSkill"));
+		} else if (!studentUnit.unitType.canBeUpgraded(is.getLearnableSkill(), ChangeType.NATIVES)) {
 			String msg = StringTemplate.template("indianSettlement.cantLearnSkill")
-				.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(moveContext.unit))
+				.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(studentUnit))
 				.addName("%skill%", is.getLearnableSkill())
 				.eval();
-			showSpeakResultMsg(moveContext, moveContext.destTile.getSettlement(), msg);
+			showSpeakResultMsg(is, msg);
 		} else {
-			confirmLearnSkill(moveContext, is);
+			confirmLearnSkill(studentUnit, is);
 		}
 	}
 
-	private void confirmLearnSkill(MoveContext moveContext, final IndianSettlement is) {
-		QuestionDialog.OptionAction<MoveContext> yesLearnSkillAction = new QuestionDialog.OptionAction<MoveContext>() {
+	private void confirmLearnSkill(Unit studentUnit, final IndianSettlement is) {
+		QuestionDialog.OptionAction<Unit> yesLearnSkillAction = new QuestionDialog.OptionAction<Unit>() {
 			@Override
-			public void executeAction(MoveContext payload) {
-				LearnSkillResult learnSkill = firstContactService.learnSkill(is, payload.unit);
+			public void executeAction(Unit studentUnit) {
+				LearnSkillResult learnSkill = firstContactService.learnSkill(is, studentUnit);
 				String msg = null;
 				switch (learnSkill) {
 				case KILL:
 					msg = Messages.msg("learnSkill.die");
 					break;
 				case LEARN:
-					guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(payload);
+					guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
 					break;
 				case NOTHING:
 					msg = Messages.msg("learnSkill.leave");
 					break;
 				}
 				if (msg != null) {
-			    	showSpeakResultMsg(payload, payload.destTile.getSettlement(), msg);
+			    	showSpeakResultMsg(is, msg);
 				}
 			}
 		};
@@ -325,19 +330,17 @@ public class FirstContactController {
 		QuestionDialog questionDialog = new QuestionDialog();
 		questionDialog.addDialogActor(new SettlementImageLabel(is)).align(Align.center).row();
 		questionDialog.addQuestion(headStr);
-		questionDialog.addAnswer("learnSkill.yes", yesLearnSkillAction, moveContext);
-		questionDialog.addAnswer("learnSkill.no", new QuestionDialog.OptionAction<MoveContext>() {
+		questionDialog.addAnswer("learnSkill.yes", yesLearnSkillAction, studentUnit);
+		questionDialog.addAnswer("learnSkill.no", new QuestionDialog.OptionAction<Unit>() {
 		    @Override
-		    public void executeAction(MoveContext payload) {
-		    	showSpeakResultMsg(payload, payload.destTile.getSettlement(), Messages.msg("learnSkill.leave"));
+		    public void executeAction(Unit studentUnit) {
+		    	showSpeakResultMsg(is, Messages.msg("learnSkill.leave"));
 		    }
-		}, moveContext);
+		}, studentUnit);
 		guiGameController.showDialog(questionDialog);
 	}
 
-	public void indianSettlementMissionary(MoveContext moveContext) {
-		final IndianSettlement is = moveContext.destTile.getSettlement().getIndianSettlement();
-		
+	public void indianSettlementMissionary(Unit missionary, final IndianSettlement is) {
 		String headStr = StringTemplate.template("missionarySettlement.question")
 			.add("%settlement%", is.getName())
 			.eval();
@@ -345,49 +348,49 @@ public class FirstContactController {
 		questionDialog.addDialogActor(new SettlementImageLabel(is)).align(Align.center).row();
 		questionDialog.addQuestion(headStr);
 		if (!is.hasMissionary()) {
-			questionDialog.addAnswer("missionarySettlement.establish", new QuestionDialog.OptionAction<MoveContext>() {
+			questionDialog.addAnswer("missionarySettlement.establish", new QuestionDialog.OptionAction<Unit>() {
 				@Override
-				public void executeAction(MoveContext payload) {
-					firstContactService.establishMission(is, payload.unit);
-					successfullyEstablishMissionMsg(payload, is);
+				public void executeAction(Unit missionary) {
+					firstContactService.establishMission(is, missionary);
+					successfullyEstablishMissionMsg(missionary, is);
 				}
-			}, moveContext);
+			}, missionary);
 		}
-		if (is.hasMissionaryNotPlayer(moveContext.unit.getOwner())) {
-			questionDialog.addAnswer("missionarySettlement.heresy", new QuestionDialog.OptionAction<MoveContext>() {
+		if (is.hasMissionaryNotPlayer(missionary.getOwner())) {
+			questionDialog.addAnswer("missionarySettlement.heresy", new QuestionDialog.OptionAction<Unit>() {
 			    @Override
-			    public void executeAction(MoveContext payload) {
-			    	DenouceMissionResult denounceMission = firstContactService.denounceMission(is, payload.unit);
+			    public void executeAction(Unit missionary) {
+			    	DenouceMissionResult denounceMission = firstContactService.denounceMission(is, missionary);
 			    	if (denounceMission == DenouceMissionResult.FAILURE) {
 			    		String msg = StringTemplate.template("indianSettlement.mission.noDenounce")
-		    				.addStringTemplate("%nation%", payload.unit.getOwner().getNationName())
+		    				.addStringTemplate("%nation%", missionary.getOwner().getNationName())
 		    				.eval();
-			    		showSpeakResultMsg(payload, payload.destTile.getSettlement(), msg);
+			    		showSpeakResultMsg(is, msg);
 			    	} else if (denounceMission == DenouceMissionResult.SUCCESS) {
-			    		successfullyEstablishMissionMsg(payload, is);
+			    		successfullyEstablishMissionMsg(missionary, is);
 			    	}
 			    }
-			}, moveContext);
+			}, missionary);
 		}
-		questionDialog.addAnswer("missionarySettlement.incite", new QuestionDialog.OptionAction<MoveContext>() {
+		questionDialog.addAnswer("missionarySettlement.incite", new QuestionDialog.OptionAction<Unit>() {
 		    @Override
-		    public void executeAction(MoveContext payload) {
-		    	showIncitePlayers(payload);
+		    public void executeAction(Unit missionary) {
+		    	showIncitePlayers(missionary, is);
 		    }
-		}, moveContext);
+		}, missionary);
 		questionDialog.addOnlyCloseAnswer("cancel");
 		guiGameController.showDialog(questionDialog);
 	}
 
-	protected void showIncitePlayers(final MoveContext moveContext) {
+	protected void showIncitePlayers(final Unit inciteUnit, final Settlement settlement) {
 		final Image unitImage = new Image(new TextureRegionDrawable(
-			GameResources.instance.getFrame(moveContext.unit.resourceImageKey()).texture
+			GameResources.instance.getFrame(inciteUnit.resourceImageKey()).texture
 		), Scaling.none, Align.center);
 		
 		final OptionAction<Player> incitePlayerAction = new OptionAction<Player>() {
 			@Override
 			public void executeAction(Player enemy) {
-				incitePriceConfirmation(moveContext.destTile.getSettlement().getOwner(), enemy, moveContext.unit);
+				incitePriceConfirmation(settlement.getOwner(), enemy, inciteUnit);
 			}
 		};
 		
@@ -395,7 +398,7 @@ public class FirstContactController {
 		questionDialog.addDialogActor(unitImage).align(Align.center).row();
 		questionDialog.addQuestion(StringTemplate.template("missionarySettlement.inciteQuestion"));
 		for (Player player : guiGameModel.game.players.entities()) {
-			if (player.isLiveEuropeanPlayer()) {
+			if (player.isLiveEuropeanPlayer() && player.notEqualsId(inciteUnit.getOwner())) {
 				questionDialog.addAnswer(player.getNationName(), incitePlayerAction, player);
 			}
 		}
@@ -440,29 +443,18 @@ public class FirstContactController {
 		guiGameController.showDialog(questionDialog);
 	}
 	
-	private void successfullyEstablishMissionMsg(MoveContext moveContext, IndianSettlement is) {
-		Tension tension = is.getTension(moveContext.unit.getOwner());
+	private void successfullyEstablishMissionMsg(Unit missionary, IndianSettlement is) {
+		Tension tension = is.getTension(missionary.getOwner());
 		String msg = StringTemplate.template("indianSettlement.mission." + tension.getKey())
-			.addStringTemplate("%nation%", moveContext.unit.getOwner().getNationName())
+			.addStringTemplate("%nation%", missionary.getOwner().getNationName())
 			.eval();
-		showSpeakResultMsg(moveContext, is, msg);
+		showSpeakResultMsg(is, msg);
 	}
 	
-	private void showSpeakResultMsg(MoveContext moveContext, Settlement settlement, String msg) {
+	private void showSpeakResultMsg(Settlement settlement, String msg) {
 		guiGameController.showDialog(
 			new SpeakResultMsgDialog(settlement, msg)
-				.addOnCloseListener(createOnEndScoutActionListener(moveContext))
+				.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
 		);
 	}
-
-	private EventListener createOnEndScoutActionListener(final MoveContext moveContext) {
-		return new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);						
-				return true;
-			}
-		};
-	}
-	
 }

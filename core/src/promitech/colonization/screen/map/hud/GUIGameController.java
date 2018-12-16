@@ -115,18 +115,28 @@ public class GUIGameController {
         });
 	}
 	
-    private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
+    private final AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
         public void afterMove(MoveContext moveContext) {
-        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);
+        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
         }
     };
     public AfterMoveProcessor ifRequiredNextActiveUnit() {
     	return ifRequiredNextActiveUnit;
     }
     
-	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(MoveContext moveContext) {
-        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled() || moveContext.unit.isDisposed()) {
+    private final Runnable ifRequiredNextActiveUnitRunnable = new Runnable() {
+		@Override
+		public void run() {
+			nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
+		}
+	};
+    public Runnable ifRequiredNextActiveUnitRunnable() {
+    	return ifRequiredNextActiveUnitRunnable;
+    }
+    
+	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable() {
+        if (!guiGameModel.getActiveUnit().couldMove() || guiGameModel.getActiveUnit().isDisposed()) {
         	nextActiveUnitAsGdxPostRunnable();
         }
 	}

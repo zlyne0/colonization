@@ -19,7 +19,6 @@ public class MoveContext {
 	private final Path path;
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
-	private boolean unitKilled = false;
 	private boolean moveViaHighSea = false;
 	private boolean moveAfterAttack = false;
 
@@ -226,14 +225,6 @@ public class MoveContext {
 		return moveType.equals(this.moveType);
 	}
 
-	public void setUnitKilled() {
-		unitKilled = true;
-	}
-	
-	public boolean isUnitKilled() {
-		return unitKilled;
-	}
-	
 	public void setMoveViaHighSea() {
 	    moveViaHighSea = true;
 	}

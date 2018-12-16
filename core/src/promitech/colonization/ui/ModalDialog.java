@@ -25,6 +25,7 @@ public class ModalDialog<T extends ModalDialog<?>> {
     protected final ModalDialogSize prefHeight;
 
     private LinkedList<EventListener> onCloseListeners = new LinkedList<EventListener>();
+    private LinkedList<Runnable> onCloseRunnableListeners = new LinkedList<Runnable>();
 
     public ModalDialog() {
         this("", GameResources.instance.getUiSkin(),
@@ -141,9 +142,18 @@ public class ModalDialog<T extends ModalDialog<?>> {
         return (T)this;
     }
 
+    @SuppressWarnings("unchecked")
+    public T addOnCloseListener(final Runnable onCloseListener) {
+    	onCloseRunnableListeners.add(onCloseListener);
+    	return (T)this;
+    }
+    
     private void executeCloseListener() {
         for (EventListener event : onCloseListeners) {
             event.handle(null);
+        }
+        for (Runnable r : onCloseRunnableListeners) {
+        	r.run();
         }
     }
 

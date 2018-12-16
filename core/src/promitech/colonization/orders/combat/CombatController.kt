@@ -26,12 +26,6 @@ class CombatController (
     private val nextActiveUnitAction = Runnable {
         guiGameController.nextActiveUnitAsGdxPostRunnable()
     }
-	private val nextActiveUnitActionEventListener = object : EventListener {
-		override fun handle(event: Event?) : Boolean {
-		    guiGameController.nextActiveUnitAsGdxPostRunnable()
-			return true
-		}
-	}
 
     fun confirmCombat(moveContext: MoveContext) {
 		combat.init(guiGameModel.game, moveContext.unit, moveContext.destTile)
@@ -56,7 +50,7 @@ class CombatController (
 		questionDialog.addQuestion(questionMsg)
 		questionDialog.addAnswer("armedUnitSettlement.tribute",
 			QuestionDialog.OptionAction {
-				mc -> firstContactController.demandTributeFromSettlement(mc)
+				mc -> firstContactController.demandTributeFromSettlement(mc.destTile.getSettlement(), mc.unit)
 			},
 			moveContext
 		)
@@ -89,7 +83,7 @@ class CombatController (
     				guiGameController.showDialog(SimpleMessageDialog()
     					.withContent(combat.getBlockingCombatNotifications().first())
     					.withButton("ok")
-    					.addOnCloseListener(nextActiveUnitActionEventListener)
+    					.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
     				);
 				}
 			})

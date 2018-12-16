@@ -59,7 +59,6 @@ public class CombatService {
             }
         }
         if (combatResult.equals(Combat.CombatResult.LOSE)) {
-            moveContext.setUnitKilled();
             moveService.blockedShowFailedAttackMove(moveContext);
         }
         if (combatResult.equals(Combat.CombatResult.EVADE_ATTACK)) {

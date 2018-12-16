@@ -207,16 +207,28 @@ public class MoveService {
                 moveController.showHighSeasQuestion(moveContext);
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
-            	firstContactController.showScoutMoveToForeignColonyQuestion(moveContext);
+            	firstContactController.showScoutMoveToForeignColonyQuestion(
+        			moveContext.destTile.getSettlement().getColony(),
+        			moveContext.unit
+    			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
-            	firstContactController.showScoutMoveToIndianSettlementQuestion(moveContext);
+            	firstContactController.showScoutMoveToIndianSettlementQuestion(
+        			moveContext.destTile.getSettlement().getIndianSettlement(),
+        			moveContext.unit
+    			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST: {
-            	firstContactController.learnSkill(moveContext);
+            	firstContactController.learnSkill(
+        			moveContext.unit,
+        			moveContext.destTile.getSettlement().getIndianSettlement()
+    			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY: {
-            	firstContactController.indianSettlementMissionary(moveContext);
+            	firstContactController.indianSettlementMissionary(
+        			moveContext.unit, 
+        			moveContext.destTile.getSettlement().getIndianSettlement()
+    			);
             } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
