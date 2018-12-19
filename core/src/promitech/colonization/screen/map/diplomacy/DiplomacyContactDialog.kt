@@ -159,6 +159,12 @@ class DiplomacyContactDialog(
 		return this
 	}
 	
+	fun disableColonyTrade() : DiplomacyContactDialog {
+		offerColonyBox.disable()
+		demandColonyBox.disable()
+		return this
+	}
+	
 	fun addDemandTributeAggrement(gold : Int) : DiplomacyContactDialog {
 		offerStanceBox.addPeace()
 		demandGoldBox.addGold(gold)

@@ -51,6 +51,11 @@ internal class ColonyBox(
 		}
 	}
 
+	internal fun disable() {
+		addButton.setDisabled(true)
+		colonySelectBox.setDisabled(true)
+	}
+	
 	private fun wasNotAdded(colony : Colony) : Boolean {
 		for (item : TradeItem in tradeItems) {
 			if (item is ColonyTradeItem && item.colony.equalsId(colony)) {

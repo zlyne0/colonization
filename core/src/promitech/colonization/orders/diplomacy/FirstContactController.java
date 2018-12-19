@@ -77,7 +77,9 @@ public class FirstContactController {
     		dialog = new DiplomacyContactDialog(screenMap, guiGameModel.game, 
 				humanPlayer, aiPlayer, 
 				humanPlayerInteractionSemaphore
-			).addPeaceOffer();
+			)
+			.addPeaceOffer()
+			.disableColonyTrade();
     	} else {
     		dialog = new FirstContactDialog(humanPlayer, aiPlayer, humanPlayerInteractionSemaphore);
     	}
