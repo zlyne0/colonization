@@ -90,6 +90,10 @@ public class Colony extends Settlement {
     public int getColonyUnitsCount() {
 		return colonyWorkers.size();
 	}
+    
+    public boolean isColonyEmpty() {
+    	return colonyWorkers.isEmpty();
+    }
 
     public boolean canReducePopulation() {
     	return getColonyUnitsCount() > colonyUpdatableFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 

@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
@@ -33,6 +34,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
+import promitech.colonization.screen.map.diplomacy.SettlementImageLabel;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
@@ -43,7 +45,10 @@ import promitech.colonization.screen.ui.UnitActionOrdersDialog.UnitActionOrderIt
 import promitech.colonization.screen.ui.UnitActor;
 import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 // Szukaj swobody a staniesz sie niewolnikiem wlasnych pragnien.
 // Szukaj dyscypliny a znajdziesz wolnosc.
@@ -366,11 +371,32 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		closeButton.addListener(new InputListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				guiGameController.closeColonyView(colony);
+				if (colony.isColonyEmpty()) {
+					confirmAbandonColony();
+				} else {
+					guiGameController.closeColonyView(colony);
+				}
 				return true;
 			}
 		});
 		return closeButton;
+	}
+	
+	private void confirmAbandonColony() {
+		OptionAction<Colony> abandonColony = new OptionAction<Colony>() {
+			@Override
+			public void executeAction(Colony payload) {
+			    colony.removeFromMap(guiGameModel.game);
+			    colony.removeFromPlayer();
+				guiGameController.closeColonyView(colony);
+			}
+		};
+        QuestionDialog questionDialog = new QuestionDialog();
+        questionDialog.addDialogActor(new SettlementImageLabel(colony)).align(Align.center).row();
+		questionDialog.addQuestion(StringTemplate.template("abandonColony.text"));
+		questionDialog.addAnswer("abandonColony.yes", abandonColony, colony);
+        questionDialog.addAnswer("abandonColony.no", QuestionDialog.DO_NOTHING_ACTION, colony);
+        questionDialog.show(stage);
 	}
 	
     public void initColony(Colony colony, Tile colonyTile) {
