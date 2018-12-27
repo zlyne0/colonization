@@ -65,6 +65,9 @@ public class MoveController {
 			Tile sourceTile = selectedUnit.getTile();
 			
 			Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
+			if (destTile == null) {
+				return;
+			}
 			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
 			mapActor.mapDrawModel().unitPath = null;
