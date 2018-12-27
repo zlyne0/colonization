@@ -56,6 +56,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 
     @Override
     public void removeUnit(Unit unit) {
+    	unit.reduceMovesLeftToZero();
         worker = null;
         productionInfo.clear();
     }
