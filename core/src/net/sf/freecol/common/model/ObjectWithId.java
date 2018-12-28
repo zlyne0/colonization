@@ -1,6 +1,9 @@
 package net.sf.freecol.common.model;
 
 import java.util.Comparator;
+import java.util.Locale;
+
+import net.sf.freecol.common.util.StringUtils;
 
 public abstract class ObjectWithId implements Identifiable {
     public static final Comparator<ObjectWithId> INSERT_ORDER_ASC_COMPARATOR = new Comparator<ObjectWithId>() {
@@ -48,4 +51,9 @@ public abstract class ObjectWithId implements Identifiable {
 	public String toString() {
 	    return id;
 	}
+	
+	public String getSuffix() {
+		return StringUtils.lastPart(getId(), ".").toLowerCase(Locale.US);
+	}
+	
 }

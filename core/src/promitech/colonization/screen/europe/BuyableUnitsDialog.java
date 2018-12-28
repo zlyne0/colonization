@@ -48,10 +48,11 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 	@Override
 	public void onSelect(Object payload) {
 		UnitType unitType = (UnitType)payload;
+		int price = player.getEurope().getUnitPrice(unitType);
 		
-		if (player.hasGold(unitType.getPrice())) {
+		if (player.hasGold(price)) {
 			System.out.println("buy unit in europe " + unitType);
-			player.getEurope().buyUnit(unitType, unitType.getPrice());
+			player.getEurope().buyUnit(unitType, price);
 			
 			changeColonyStateListener.changeUnitAllocation();
 			
@@ -77,7 +78,8 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 			
 			Label label = new Label(Messages.message(labelSt), GameResources.instance.getUiSkin());
 			
-			StringTemplate priceSt = StringTemplate.template("goldAmount").addAmount("%amount%", unitType.getPrice());
+			StringTemplate priceSt = StringTemplate.template("goldAmount")
+				.addAmount("%amount%", player.getEurope().getUnitPrice(unitType));
 			Label priceLabel = new Label(Messages.message(priceSt), GameResources.instance.getUiSkin());
 			
 			unitsTable.addRow(unitType, labelAlign, image, label, priceLabel);
@@ -94,9 +96,10 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 		Table dialogLayout = new Table();
 		dialogLayout.add(unitsScrollPane).pad(20);
 		
-		buttonTableLayoutExtendX();
 		getContentTable().add(dialogLayout);
-		getButtonTable().add(buttonsPanel()).expandX().fillX();
+		getButtonTable()
+			.add(buttonsPanel())
+			.pad(0, 20, 20, 20);
 	}
 
 	private Actor buttonsPanel() {
@@ -107,11 +110,7 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 				hideWithFade();
 			}
 		});
-		
-		Table panel = new Table();
-		panel.setFillParent(true);
-		panel.add(okButton).right().pad(0, 10, 10, 10).fillX().expandX();
-		return panel;
+		return okButton;
 	}
 
 }

@@ -51,6 +51,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static net.sf.freecol.common.model.TileAssert.assertThat;
+import static net.sf.freecol.common.model.EuropeAssert.assertThat;
 import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
@@ -201,9 +202,13 @@ public class Savegame1600Verifier {
 	}
 
 	private void verifyPlayer(Game game) {
+		Player spanish = game.players.getById("player:133");
+		assertThat(spanish.getEurope()).hasUnitPrice(Specification.instance.unitTypes.getById(UnitType.ARTILLERY), 600);
+		
 		Player player = game.players.getById("player:1");
+		assertThat(player.getEurope()).hasUnitPrice(Specification.instance.unitTypes.getById(UnitType.ARTILLERY), 500);
 
-        assertEquals(Stance.WAR, player.getStance(game.players.getById("player:133")));
+        assertEquals(Stance.WAR, player.getStance(spanish));
 		
         assertNotNull(player.getEurope());
         
