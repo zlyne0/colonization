@@ -34,7 +34,7 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
     public IndianSettlementAssert hasWantedGoods(String ... goodsId) {
     	Assertions.assertThat(actual.wantedGoods)
     		.extracting("id")
-    		.containsExactly(goodsId);
+    		.containsExactly((Object[])goodsId);
     	return this;
     }
 }
