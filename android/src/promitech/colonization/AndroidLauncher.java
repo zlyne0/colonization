@@ -1,10 +1,10 @@
-package promitech.colonization.android;
-
-import android.os.Bundle;
-import promitech.colonization.screen.ApplicationScreenManager;
+package promitech.colonization;
 
 import com.badlogic.gdx.backends.android.AndroidApplication;
 import com.badlogic.gdx.backends.android.AndroidApplicationConfiguration;
+
+import android.os.Bundle;
+import promitech.colonization.screen.ApplicationScreenManager;
 
 public class AndroidLauncher extends AndroidApplication {
 	@Override
