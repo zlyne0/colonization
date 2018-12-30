@@ -716,6 +716,7 @@ class Combat {
 	        StringTemplate t = StringTemplate.template("indianSettlement.mission.destroyed")
                 .add("%settlement%", is.getName());
 	        is.missionaryOwner().eventsNotifications.addMessageNotification(t);
+	        is.removeMissionary();
 		}
 		
 		is.removeFromMap(game);

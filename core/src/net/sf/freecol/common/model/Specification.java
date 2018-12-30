@@ -44,15 +44,27 @@ public class Specification {
             return option.getValue();
         }
 
+        public int getIntValue(String code, int defaultValue) {
+        	ObjectWithId option = optionValues.getByIdOrNull(code);
+        	if (option == null) {
+        		return defaultValue;
+        	}
+        	return getIntValue(option);
+        }
+
         public int getIntValue(String code) {
         	ObjectWithId option = optionValues.getById(code);
+        	return getIntValue(option);
+        }
+        
+        private int getIntValue(ObjectWithId option) {
         	if (option instanceof RangeOption) {
-                return ((RangeOption)option).getValueAsInt();
+        		return ((RangeOption)option).getValueAsInt();
         	}
         	if (option instanceof PercentageOption) {
         		return ((PercentageOption)option).getValue();
         	}
-            return ((IntegerOption)option).getValue();
+        	return ((IntegerOption)option).getValue();
         }
 
         public String getStringValue(String code) {

@@ -3,6 +3,9 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map.Entry;
+
+import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ProductionInfo {
 	public final List<Production> productions = new ArrayList<Production>();
@@ -40,6 +43,18 @@ public class ProductionInfo {
 			}
 		}
 		return prodInfo;
+	}
+	
+	public int unattendedProductions(String goodsTypeId) {
+		int sum = 0;
+		for (Production production : unattendedProductions) {
+			for (Entry<GoodsType, Integer> entry : production.outputEntries()) {
+				if (entry.getKey().equalsId(goodsTypeId)) {
+					sum += entry.getValue();
+				}
+			}
+		}
+		return sum;
 	}
 	
 	public String toString() {

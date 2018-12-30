@@ -24,13 +24,6 @@ import promitech.colonization.ui.resources.StringTemplate;
 public class MoveController {
     private final MoveDrawerSemaphore unitAnimationSemaphore = new MoveDrawerSemaphore();
 	
-    private AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
-        @Override
-        public void afterMove(MoveContext moveContext) {
-        	guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(moveContext);
-        }
-    };
-	
 	private MapActor mapActor;
 	private MoveView moveView;
 	private MoveService moveService;
@@ -72,13 +65,16 @@ public class MoveController {
 			Tile sourceTile = selectedUnit.getTile();
 			
 			Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
+			if (destTile == null) {
+				return;
+			}
 			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 			
 			mapActor.mapDrawModel().unitPath = null;
 			selectedUnit.clearDestination();
 			System.out.println("moveContext.pressDirectionKey = " + moveContext);
 			
-            moveService.preMoveProcessorInNewThread(moveContext, ifRequiredNextActiveUnit);
+            moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
 		}
 	}
 	
@@ -169,7 +165,7 @@ public class MoveController {
 		        if (moveContext.isEndOfPath() && moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
                     guiGameController.showColonyScreen(moveContext.destTile);
 		        }
-		        ifRequiredNextActiveUnit.afterMove(moveContext);
+		        guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
 		    }
         });
 	}
@@ -236,7 +232,7 @@ public class MoveController {
             @Override
             public void executeAction(MoveContext payload) {
                 payload.setMoveViaHighSea();
-                moveService.preMoveProcessorInNewThread(payload, ifRequiredNextActiveUnit);
+                moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
             }
         };
 		
@@ -262,5 +258,4 @@ public class MoveController {
     public void showNewLandNameDialog(Player player, String defaultName) {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
     }
-	
 }

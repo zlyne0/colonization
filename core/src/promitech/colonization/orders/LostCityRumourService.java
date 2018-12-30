@@ -2,9 +2,6 @@ package promitech.colonization.orders;
 
 import java.util.List;
 
-import com.badlogic.gdx.scenes.scene2d.Event;
-import com.badlogic.gdx.scenes.scene2d.EventListener;
-
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -60,19 +57,18 @@ public class LostCityRumourService {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(st)
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 			break;
 		case EXPEDITION_VANISHES:
 			unit.getOwner().removeUnit(unit);
-			mc.setUnitKilled();
 			
 			if (unit.getOwner().isHuman()) {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.expeditionVanishes")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 			break;
@@ -88,7 +84,7 @@ public class LostCityRumourService {
 						.add("%unit%", oldName)
 						.addName("%type%", newUnitType)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 			break;
@@ -103,7 +99,7 @@ public class LostCityRumourService {
 					.withContent(StringTemplate.template(msgKey)
 							.addAmount("%money%", gold)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 		} break;
@@ -123,7 +119,7 @@ public class LostCityRumourService {
             	guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.colonist")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
             }
 		} break;
@@ -149,7 +145,7 @@ public class LostCityRumourService {
 						.addKey("%city%", cityOfCibolaName)
 						.addAmount("%money%", treasureAmount)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
             }
 		} break;
@@ -178,7 +174,7 @@ public class LostCityRumourService {
 					.withContent(StringTemplate.template(msgKey)
 						.addAmount("%money%", treasureAmount)
 					).withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 		} break;
@@ -190,7 +186,7 @@ public class LostCityRumourService {
 				guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent("lostCityRumour.fountainOfYouth")
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener(mc))
+					.addOnCloseListener(createOnCloseActionListener())
 				);
 			}
 		} break;
@@ -203,7 +199,7 @@ public class LostCityRumourService {
 					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.moundsNothing")
 						.withButton("ok")
-						.addOnCloseListener(createOnCloseActionListener(mc))
+						.addOnCloseListener(createOnCloseActionListener())
 					);
 				} else {
 					int keyMessagePrefixCount = Messages.keyMessagePrefixCount("lostCityRumour.nothing.");
@@ -212,7 +208,7 @@ public class LostCityRumourService {
 					guiGameController.showDialog(new SimpleMessageDialog()
 						.withContent("lostCityRumour.nothing." + msgIdx)
 						.withButton("ok")
-						.addOnCloseListener(createOnCloseActionListener(mc))
+						.addOnCloseListener(createOnCloseActionListener())
 					);
 				}
 			}
@@ -220,16 +216,10 @@ public class LostCityRumourService {
 		}
 	}
 
-	private EventListener createOnCloseActionListener(final MoveContext mc) {
-		return new EventListener() {
-			@Override
-			public boolean handle(Event event) {
-				guiGameController.nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(mc);
-				return true;
-			}
-		};
+	private Runnable createOnCloseActionListener() {
+		return guiGameController.ifRequiredNextActiveUnitRunnable();
 	}	
-
+	
 	public LostCityRumourService aiHandle(MoveContext moveContext) {
 		moveService.confirmedMoveProcessor(moveContext);
 		processExploration(moveContext);

@@ -6,8 +6,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
-import org.xml.sax.SAXException;
-
 import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
@@ -92,6 +90,10 @@ public class Colony extends Settlement {
     public int getColonyUnitsCount() {
 		return colonyWorkers.size();
 	}
+    
+    public boolean isColonyEmpty() {
+    	return colonyWorkers.isEmpty();
+    }
 
     public boolean canReducePopulation() {
     	return getColonyUnitsCount() > colonyUpdatableFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 
@@ -188,21 +190,33 @@ public class Colony extends Settlement {
 	}
 	
 	public boolean hasStockade() {
-	    for (Building building : buildings.entities()) {
-	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
-	            return true;
-	        }
-	    }
-	    return false;
+		Building stockade = getStockade();
+		return stockade != null;
+	}
+	
+	public int getStockadeLevel() {
+		Building stockade = getStockade();
+		if (stockade != null) {
+			return stockade.buildingType.getLevel();
+		}
+		return 1;
 	}
 	
     private String getStockadeKey() {
-    	for (Building building : buildings.entities()) {
-    		if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
-    			return StringUtils.lastPart(building.buildingType.getId(), ".");
-    		}
-    	}
-    	return null;
+		Building stockade = getStockade();
+		if (stockade == null) {
+			return null;
+		}
+		return StringUtils.lastPart(stockade.buildingType.getId(), ".");
+    }
+    
+    private Building getStockade() {
+	    for (Building building : buildings.entities()) {
+	        if (building.buildingType.hasModifier(Modifier.DEFENCE)) {
+	            return building;
+	        }
+	    }
+	    return null;
     }
 
 	@Override
@@ -1130,7 +1144,7 @@ public class Colony extends Settlement {
 	}
 	
     private boolean isAutoBuildableInColony(BuildingType buildingType) {
-    	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100);
+    	float modified = owner.getFeatures().applyModifier(Modifier.BUILDING_PRICE_BONUS, 100, buildingType);
     	NoBuildReason noBuildReason = getNoBuildReason(buildingType);
     	return modified == 0f && noBuildReason == NoBuildReason.NONE;
     }
@@ -1240,7 +1254,7 @@ public class Colony extends Settlement {
 		
 		if (oldOwner != null) {
 			for (ColonyTile colonyTile : colonyTiles.entities()) {
-				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId() != null && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
 					colonyTile.tile.changeOwner(newOwner);
 				}
 			}
@@ -1258,6 +1272,7 @@ public class Colony extends Settlement {
 			}
 			if (!foundBuildingType && isAutoBuildable(buildingType)) {
 				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+				colonyProduction.setAsNeedUpdate();
 			}
 		}
 	}

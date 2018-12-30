@@ -34,7 +34,7 @@ public class UnitLabel {
                 // Currently only used for missionary which does not
                 // have equipment that directly corresponds to goods.
                 extra = StringTemplate.template("model.goods.goodsAmount")
-                    .add("%goods%", equipmentKey)
+                    .addKey("%goods%", equipmentKey)
                     .addAmount("%amount%", 1);
             } else {
                 // Other roles can be characterized by their goods.

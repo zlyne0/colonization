@@ -20,7 +20,7 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.GameResources;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
-import promitech.colonization.ui.ClosableDialogSize;
+import promitech.colonization.ui.ModalDialogSize;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.resources.Messages;
@@ -34,7 +34,7 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 	private final ChangeColonyStateListener changeColonyStateListener;
 	
 	public BuyableUnitsDialog(ShapeRenderer shape, List<UnitType> unitsTypes, Player player, ChangeColonyStateListener changeColonyStateListener) {
-		super(ClosableDialogSize.def(), ClosableDialogSize.height75());
+		super(ModalDialogSize.def(), ModalDialogSize.height75());
 		this.shape = shape;
 		this.unitsTypes = unitsTypes;
 		this.player = player;
@@ -48,10 +48,11 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 	@Override
 	public void onSelect(Object payload) {
 		UnitType unitType = (UnitType)payload;
+		int price = player.getEurope().getUnitPrice(unitType);
 		
-		if (player.hasGold(unitType.getPrice())) {
+		if (player.hasGold(price)) {
 			System.out.println("buy unit in europe " + unitType);
-			player.getEurope().buyUnit(unitType, unitType.getPrice());
+			player.getEurope().buyUnit(unitType, price);
 			
 			changeColonyStateListener.changeUnitAllocation();
 			
@@ -77,7 +78,8 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 			
 			Label label = new Label(Messages.message(labelSt), GameResources.instance.getUiSkin());
 			
-			StringTemplate priceSt = StringTemplate.template("goldAmount").addAmount("%amount%", unitType.getPrice());
+			StringTemplate priceSt = StringTemplate.template("goldAmount")
+				.addAmount("%amount%", player.getEurope().getUnitPrice(unitType));
 			Label priceLabel = new Label(Messages.message(priceSt), GameResources.instance.getUiSkin());
 			
 			unitsTable.addRow(unitType, labelAlign, image, label, priceLabel);
@@ -94,9 +96,10 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 		Table dialogLayout = new Table();
 		dialogLayout.add(unitsScrollPane).pad(20);
 		
-		buttonTableLayoutExtendX();
 		getContentTable().add(dialogLayout);
-		getButtonTable().add(buttonsPanel()).expandX().fillX();
+		getButtonTable()
+			.add(buttonsPanel())
+			.pad(0, 20, 20, 20);
 	}
 
 	private Actor buttonsPanel() {
@@ -107,11 +110,7 @@ class BuyableUnitsDialog extends ClosableDialog<BuyableUnitsDialog> implements S
 				hideWithFade();
 			}
 		});
-		
-		Table panel = new Table();
-		panel.setFillParent(true);
-		panel.add(okButton).right().pad(0, 10, 10, 10).fillX().expandX();
-		return panel;
+		return okButton;
 	}
 
 }

@@ -30,7 +30,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.ui.ClosableDialog;
-import promitech.colonization.ui.ClosableDialogSize;
+import promitech.colonization.ui.ModalDialogSize;
 import promitech.colonization.ui.STable;
 import promitech.colonization.ui.STableSelectListener;
 import promitech.colonization.ui.SimpleMessageDialog;
@@ -100,7 +100,7 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
     private int[] buildQueueItemsAligment = new int[] { Align.center, Align.left };
 	
 	BuildingQueueDialog(ShapeRenderer shape, Game game, Colony colony, ChangeColonyStateListener changeColonyStateListener) {
-		super(ClosableDialogSize.def(), ClosableDialogSize.height75());
+		super(ModalDialogSize.width75(), ModalDialogSize.height75());
 		
 		this.game = game;
 		this.colony = colony;
@@ -154,9 +154,10 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		buildQueueScrollPane.setOverscroll(true, true);
 		buildQueueScrollPane.setScrollBarPositions(false, true);
 		
+		// wrap scrollpane in table for better layout look 
 		SplitPane lists = new SplitPane(
-			buildQueueScrollPane, 
-			buildableItemsScrollPane, 
+			fillXTableWrapper(buildQueueScrollPane),
+			fillXTableWrapper(buildableItemsScrollPane), 
 			false, 
 			GameResources.instance.getUiSkin()
 		);
@@ -167,6 +168,14 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 		getButtonTable().add(buttonsPanel()).expandX().fillX();
         
 		withHidingOnEsc();
+	}
+	
+	private Table fillXTableWrapper(ScrollPane widget) {
+		Table t = new Table();
+		t.add(widget).align(Align.top)
+			.fillX()
+			.expand();
+		return t;
 	}
 	
 	private Actor buttonsPanel() {
@@ -312,7 +321,6 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 	@Override
 	public void show(Stage stage) {
 		super.show(stage);
-		dialog.setWidth(stage.getWidth() * 0.75f);
 		resetPositionToCenter();
 	}
 	

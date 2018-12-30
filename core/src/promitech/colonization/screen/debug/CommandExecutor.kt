@@ -13,6 +13,17 @@ import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.map.MapActor
+import promitech.colonization.screen.map.hud.FirstContactDialog
+import promitech.colonization.screen.map.hud.DiplomacyContactDialog
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.Settlement
+import net.sf.freecol.common.model.IndianSettlement
+import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.UnitType
+import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.UnitRole
+import promitech.colonization.orders.diplomacy.FirstContactService
+import promitech.colonization.orders.move.MoveContext
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -33,9 +44,10 @@ class Alias(cmd: String, val task: Task) : Task(cmd) {
 }
 
 class CommandExecutor(var di: DI, val mapActor: MapActor) {
-    var gameController = di.guiGameController
+    val gameController = di.guiGameController
 	var guiGameModel = di.guiGameModel
-		
+	val firstContactService = FirstContactService(di.firstContactController, guiGameModel)
+			
 	var tasks : List<Task> = mutableListOf<Task>(
 		object : Task("map show") {
 			override fun run(console: ConsoleOutput) : Boolean {
@@ -66,6 +78,20 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		object : Task("map show owners") {
 			override fun run(console: ConsoleOutput) : Boolean {
 			    gameController.showTilesOwners();
+				return true
+			}
+		},
+		object : Task("map scout all") {
+			override fun run(console: ConsoleOutput): Boolean {
+				for (player : Player in guiGameModel.game.players.entities()) {
+					if (player.isIndian()) {
+						for (indianSettlement : Settlement in player.settlements.entities()) {
+							if (indianSettlement is IndianSettlement) {
+								indianSettlement.scoutBy(guiGameModel.game.playingPlayer)
+							}
+						}
+					}
+				}
 				return true
 			}
 		},
@@ -138,6 +164,26 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
+		object : Task("ai missionary") {
+			override fun run(console: ConsoleOutput): Boolean {
+				ThreadsResources.instance.executeMovement(object : Runnable {
+					override fun run() {
+						val m = Unit(
+							Game.idGenerator.nextId(Unit::class.java), 
+							Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+							Specification.instance.unitRoles.getById("model.role.missionary"),
+							guiGameModel.game.players.getById("player:112")
+						)
+						val sourceTile = guiGameModel.game.map.getSafeTile(26, 70)
+						val destTile = guiGameModel.game.map.getSafeTile(25, 71)
+						
+						m.changeUnitLocation(sourceTile)
+						firstContactService.denounceMission(destTile.settlement as IndianSettlement, m)						
+					}
+				})
+				return true
+			}
+		},
 		object : Task("pools") {
 			override fun run(console: ConsoleOutput) : Boolean {
 				console.addConsoleLine(PoolsStat.Stat.header())
@@ -145,6 +191,18 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 					.map { it.toFormatedString() }
 					.forEach { console.addConsoleLine(it)}
 				return false
+			}
+		},
+		object : Task("firstContactDialog") {
+			override fun run(console: ConsoleOutput) : Boolean {
+				// TODO: remove
+				val player = guiGameModel.game.players.getById("player:1")
+				//val contactPlayer = guiGameModel.game.players.getById("player:9")
+				val contactPlayer = guiGameModel.game.players.getById("player:133")
+				
+				//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
+				gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+				return true
 			}
 		}
 	);

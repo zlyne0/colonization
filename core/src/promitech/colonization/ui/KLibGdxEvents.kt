@@ -5,6 +5,19 @@ import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
+import com.badlogic.gdx.scenes.scene2d.Event
+import com.badlogic.gdx.scenes.scene2d.EventListener
+
+inline public fun ModalDialog<*>.kAddOnCloseListener(crossinline listener : () -> Unit) : ModalDialog<*> {
+	val eventListener = object : EventListener {
+		override fun handle(event : Event?) : Boolean {
+			listener()
+			return true
+		}
+	}
+	this.addOnCloseListener(eventListener)
+	return this
+}
 
 inline public fun SimpleMessageDialog.withButton(
 	titleCode: String, 

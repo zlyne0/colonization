@@ -75,7 +75,7 @@ public class GameLogic {
         	bombardEnemyShip(player);
         }
         
-		player.fogOfWar.resetFogOfWar(player);
+		player.fogOfWar.resetFogOfWar(guiGameModel.game, player);
 	}
 
 	private void bombardEnemyShip(Player player) {

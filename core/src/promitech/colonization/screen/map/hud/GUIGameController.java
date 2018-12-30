@@ -3,9 +3,11 @@ package promitech.colonization.screen.map.hud;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.EventListener;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -25,6 +27,7 @@ import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
@@ -32,8 +35,9 @@ import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.ColonyNameDialog;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.MapDrawModel;
+import promitech.colonization.screen.map.diplomacy.IndianSettlementInformationDialog;
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
-import promitech.colonization.ui.ClosableDialog;
+import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
 
 public class GUIGameController {
@@ -47,7 +51,7 @@ public class GUIGameController {
 	private ApplicationScreenManager screenManager;
 	
 	private boolean blockUserInteraction = false;
-	
+
 	public GUIGameController() {
 	}
 	
@@ -111,8 +115,28 @@ public class GUIGameController {
         });
 	}
 	
-	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable(MoveContext moveContext) {
-        if (!moveContext.unit.couldMove() || moveContext.isUnitKilled()) {
+    private final AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
+        @Override
+        public void afterMove(MoveContext moveContext) {
+        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
+        }
+    };
+    public AfterMoveProcessor ifRequiredNextActiveUnit() {
+    	return ifRequiredNextActiveUnit;
+    }
+    
+    private final Runnable ifRequiredNextActiveUnitRunnable = new Runnable() {
+		@Override
+		public void run() {
+			nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
+		}
+	};
+    public Runnable ifRequiredNextActiveUnitRunnable() {
+    	return ifRequiredNextActiveUnitRunnable;
+    }
+    
+	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable() {
+        if (!guiGameModel.getActiveUnit().couldMove() || guiGameModel.getActiveUnit().isDisposed()) {
         	nextActiveUnitAsGdxPostRunnable();
         }
 	}
@@ -162,6 +186,12 @@ public class GUIGameController {
 		if (tile.hasSettlement()) {
 		    if (tile.getSettlement().isColony()) {
 		    	showColonyScreen(tile);
+		    } else {
+		    	showDialog(new IndianSettlementInformationDialog(
+	    			guiGameModel.game,
+	    			tile.getSettlement().getIndianSettlement(), 
+	    			guiGameModel.game.playingPlayer)
+    			);
 		    }
 		}
 	}
@@ -173,6 +203,19 @@ public class GUIGameController {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
+			}
+    	});
+	}
+
+	public void showColonyScreenSpyMode(final Tile tile, final EventListener onCloseColonyListener) {
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
+				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				screenManager.setScreen(ApplicationScreenType.COLONY);
+				colonyApplicationScreen.setColonySpyMode();
 			}
     	});
 	}
@@ -467,7 +510,7 @@ public class GUIGameController {
 	
 	public void buildColonyEnterColonyName() {
 		Unit unit = guiGameModel.getActiveUnit();
-		String colonyName = Settlement.generateSettlmentName(unit.getOwner());
+		String colonyName = SettlementFactory.generateSettlmentName(unit.getOwner());
 		
 		ColonyNameDialog cnd = new ColonyNameDialog(this, mapHudStage.getWidth() * 0.5f, colonyName);
 		mapHudStage.showDialog(cnd);
@@ -505,7 +548,7 @@ public class GUIGameController {
 		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
 
-	public void showDialog(ClosableDialog<?> dialog) {
+	public void showDialog(ModalDialog<?> dialog) {
 		mapHudStage.showDialog(dialog);
 	}
 

@@ -8,14 +8,16 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
+import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.orders.diplomacy.FirstContactController;
+import promitech.colonization.orders.diplomacy.FirstContactService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.Messages;
@@ -43,14 +45,25 @@ public class MoveService {
     private GUIGameController guiGameController;
     private MoveController moveController;
     private CombatController combatController;
-
+    private FirstContactController firstContactController;
+    private FirstContactService firstContactService;
+    
+    // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
     
-    public void inject(GUIGameController guiGameController, MoveController moveController, GUIGameModel guiGameModel, CombatService combatService) {
+    public void inject(
+    		GUIGameController guiGameController, 
+    		MoveController moveController, 
+    		GUIGameModel guiGameModel, 
+    		CombatService combatService,
+    		FirstContactController firstContactController
+	) {
         this.guiGameController = guiGameController;
         this.moveController = moveController;
         this.guiGameModel = guiGameModel;
-        this.combatController = new CombatController(guiGameController, combatService, guiGameModel);
+        this.combatController = new CombatController(guiGameController, combatService, guiGameModel, firstContactController);
+        this.firstContactController = firstContactController;
+        this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }
 
     private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
@@ -95,7 +108,7 @@ public class MoveService {
     private void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
     	for (MoveContext mc : moveContextList) {
             showMoveIfRequired(mc);
-            postMoveProcessor(mc, AfterMoveProcessor.DO_NOTHING);
+            processMove(mc);
     	}
     	afterMoveProcessor.afterMove(moveContextList);
     }
@@ -106,7 +119,8 @@ public class MoveService {
     
     private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         showMoveIfRequired(moveContext);
-        postMoveProcessor(moveContext, afterMoveProcessor);
+        processMove(moveContext);
+        afterMoveProcessor.afterMove(moveContext);
     }
     
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
@@ -120,7 +134,7 @@ public class MoveService {
     
     public void aiConfirmedMoveProcessor(MoveContext moveContext) {
         showMoveIfRequired(moveContext);
-        aiPostMoveProcessor(moveContext);
+        processMove(moveContext);
     }
     
     private void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -136,29 +150,27 @@ public class MoveService {
                 return;
             }
             showMoveIfRequired(moveContext);
-            postMoveProcessor(moveContext, afterMoveProcessor);
+            processMove(moveContext);
+            afterMoveProcessor.afterMove(moveContext);
         }
     }
-
-    public void postMoveProcessor(MoveContext moveContext) {
-        postMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
-    }
     
-    private void postMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void processMove(MoveContext moveContext) {
         moveContext.handleMove();
         
         boolean exploredNewTiles = false;
         if (moveContext.isMoveTypeRevealMap()) {
             exploredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
-        if (exploredNewTiles) {
+        if (exploredNewTiles && moveContext.isHuman()) {
             guiGameController.resetUnexploredBorders();
             
             if (isNotDiscoveredNewLand(moveContext.unit)) {
                 discoverNewLand(moveContext.unit.getOwner());
             }
         }
-        afterMoveProcessor.afterMove(moveContext);
+        
+        firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
     }
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
@@ -167,17 +179,9 @@ public class MoveService {
     
     private void discoverNewLand(Player player) {
         String defaultLandName = Messages.msg(player.nation().getId() + ".newLandName");
-        if (player.isAi()) {
-            player.setNewLandName(defaultLandName);
-        } else {
+        player.setNewLandName(defaultLandName);
+        if (player.isHuman()) {
             moveController.showNewLandNameDialog(player, defaultLandName);
-        }
-    }
-    
-    private void aiPostMoveProcessor(MoveContext moveContext) {
-    	moveContext.handleMove();
-        if (moveContext.isMoveTypeRevealMap()) {
-            moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
         }
     }
     
@@ -201,6 +205,30 @@ public class MoveService {
             } break;
             case MOVE_HIGH_SEAS: {
                 moveController.showHighSeasQuestion(moveContext);
+            } break;
+            case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
+            	firstContactController.showScoutMoveToForeignColonyQuestion(
+        			moveContext.destTile.getSettlement().getColony(),
+        			moveContext.unit
+    			);
+            } break;
+            case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
+            	firstContactController.showScoutMoveToIndianSettlementQuestion(
+        			moveContext.destTile.getSettlement().getIndianSettlement(),
+        			moveContext.unit
+    			);
+            } break;
+            case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST: {
+            	firstContactController.learnSkill(
+        			moveContext.unit,
+        			moveContext.destTile.getSettlement().getIndianSettlement()
+    			);
+            } break;
+            case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY: {
+            	firstContactController.indianSettlementMissionary(
+        			moveContext.unit, 
+        			moveContext.destTile.getSettlement().getIndianSettlement()
+    			);
             } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);
@@ -297,7 +325,7 @@ public class MoveService {
             }
 
             showMoveIfRequired(moveContext);
-            postMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
+            processMove(moveContext);
             
             moveContext.initNextPathStep();
             

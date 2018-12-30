@@ -128,8 +128,12 @@ class CombatSides {
 		combatModifiersNames.put(Modifier.ARTILLERY_AGAINST_RAID, INDIAN_RAID_BONUS);
 		combatModifiersNames.put(Modifier.AMPHIBIOUS_ATTACK, AMPHIBIOUS_ATTACK_PENALTY);
 	}
+
+	float getOffencePower(Unit unit) {
+		return getOffencePower(unit, null);
+	}
 	
-	public float getOffencePower(Unit attacker, Unit defender) {
+	private float getOffencePower(Unit attacker, Unit defender) {
 		offenceModifers.clearLists();
 		
 		if (attacker.unitType.getBaseOffence() != 0) {
@@ -315,12 +319,12 @@ class CombatSides {
 		
 		// Ambush bonus in the open = defender's defence
 		// bonus, if defender is REF, or attacker is indian.
-		if (isAmbush(offenceUnit, defenderUnit)) {
+		if (defenderUnit != null && isAmbush(offenceUnit, defenderUnit)) {
 			Tile defenceTile = defenderUnit.getTileLocationOrNull();
 			mods.addModifierFrom(defenceTile.getType(), Modifier.DEFENCE);
 		}
 		
-		if (offenceUnit.hasAbility(Ability.BOMBARD)
+		if (defenderUnit != null && offenceUnit.hasAbility(Ability.BOMBARD)
 				&& offenceUnit.getTileLocationOrNull() != null
 				&& offenceUnit.getTileLocationOrNull().hasSettlement() == false
 				&& offenceUnit.getState() != Unit.UnitState.FORTIFIED

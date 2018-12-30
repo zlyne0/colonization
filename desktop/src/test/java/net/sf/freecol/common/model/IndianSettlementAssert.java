@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import org.assertj.core.api.Assertions;
 import org.assertj.core.api.AbstractAssert;
 
 import net.sf.freecol.common.model.player.Player;
@@ -27,6 +28,13 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 				actual.getId(), player.getId()
 			);
     	}
+    	return this;
+    }
+    
+    public IndianSettlementAssert hasWantedGoods(String ... goodsId) {
+    	Assertions.assertThat(actual.wantedGoods)
+    		.extracting("id")
+    		.containsExactly((Object[])goodsId);
     	return this;
     }
 }

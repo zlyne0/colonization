@@ -19,7 +19,6 @@ public class MoveContext {
 	private final Path path;
 	private boolean endOfPath = false;
 	private boolean hasMovePoints = false;
-	private boolean unitKilled = false;
 	private boolean moveViaHighSea = false;
 	private boolean moveAfterAttack = false;
 
@@ -125,6 +124,7 @@ public class MoveContext {
 				}
 				moveUnit();
 			break;
+			case ENTER_FOREIGN_COLONY_WITH_SCOUT: 
 			case ATTACK_UNIT:
 			case ATTACK_SETTLEMENT:
 			    if (moveAfterAttack) {
@@ -168,7 +168,11 @@ public class MoveContext {
 				MoveType.DISEMBARK.equals(moveType) ||
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
 				MoveType.ATTACK_UNIT.equals(moveType) ||
-				MoveType.ATTACK_SETTLEMENT.equals(moveType)
+				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
+				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType)
 		);
 	}
 
@@ -199,6 +203,10 @@ public class MoveContext {
 		}
 		case ATTACK_UNIT: 
 		case ATTACK_SETTLEMENT:
+		case ENTER_FOREIGN_COLONY_WITH_SCOUT:
+		case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
+		case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST:
+		case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY:
 			return true;
 		default:
 			return false;
@@ -217,14 +225,6 @@ public class MoveContext {
 		return moveType.equals(this.moveType);
 	}
 
-	public void setUnitKilled() {
-		unitKilled = true;
-	}
-	
-	public boolean isUnitKilled() {
-		return unitKilled;
-	}
-	
 	public void setMoveViaHighSea() {
 	    moveViaHighSea = true;
 	}

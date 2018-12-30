@@ -26,7 +26,6 @@ public class HighSeasUnitsPanel extends ScrollPane {
         setScrollBarPositions(true, true);
         setScrollingDisabled(false, false);
 		
-		
 		ingoingUnits = new UnitsPanel();
 		outgoingUnits = new UnitsPanel();
 
@@ -38,8 +37,9 @@ public class HighSeasUnitsPanel extends ScrollPane {
 	public void initUnits(Player player) {
 		StringTemplate st = StringTemplate.template("goingTo")
 	        .add("%type%", "ship")
-	        .addStringTemplate("%location%", StringTemplate.key(player.nation().getId() + ".europe"));		
-		ingoingUnits.withLabel(Messages.message(st));
+	        .addStringTemplate("%location%", StringTemplate.key(player.nation().getId() + ".europe"));
+		
+		ingoingUnits.changeLabel(Messages.message(st));
 		
 		String landName = player.getNewLandName();
 		if (landName == null) {
@@ -48,7 +48,7 @@ public class HighSeasUnitsPanel extends ScrollPane {
 		st = StringTemplate.template("goingTo")
 		        .add("%type%", "ship")
 		        .add("%location%", landName);		
-		outgoingUnits.withLabel(Messages.message(st));
+		outgoingUnits.changeLabel(Messages.message(st));
 		
 		
 		ingoingUnits.clearUnits();

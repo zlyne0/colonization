@@ -1,18 +1,18 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.specification;
 
 import org.assertj.core.api.AbstractAssert;
 
-public class SettlementPlunderRangeAssert extends AbstractAssert<SettlementPlunderRangeAssert, SettlementPlunderRange> {
+public class RandomRangeAssert extends AbstractAssert<RandomRangeAssert, RandomRange> {
 
-	public SettlementPlunderRangeAssert(SettlementPlunderRange actual, Class<?> selfType) {
+	public RandomRangeAssert(RandomRange actual, Class<?> selfType) {
 		super(actual, selfType);
 	}
 
-	public static SettlementPlunderRangeAssert assertThat(SettlementPlunderRange range) {
-		return new SettlementPlunderRangeAssert(range, SettlementPlunderRangeAssert.class);
+	public static RandomRangeAssert assertThat(RandomRange range) {
+		return new RandomRangeAssert(range, RandomRangeAssert.class);
 	}
 
-	public SettlementPlunderRangeAssert equalsProbMinMaxFactor(
+	public RandomRangeAssert equalsProbMinMaxFactor(
 		int probability, int minimum, 
 		int maximum, int factor
 	) {

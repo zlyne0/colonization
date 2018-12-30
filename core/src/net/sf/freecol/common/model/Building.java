@@ -219,6 +219,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 
     @Override
     public void removeUnit(Unit unit) {
+    	unit.reduceMovesLeftToZero();
         workers.removeId(unit);
     }
     

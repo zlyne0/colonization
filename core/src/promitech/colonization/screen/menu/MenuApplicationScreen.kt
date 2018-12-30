@@ -112,6 +112,7 @@ class MenuApplicationScreen (
 	
 	override fun onLeave() {
 		Gdx.input.setInputProcessor(null)
+		super.onLeave()
 	}
 	
 	override fun render() {

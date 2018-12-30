@@ -8,9 +8,7 @@ import java.util.Locale;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Rule;
 import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -23,7 +21,6 @@ import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
-import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -33,6 +30,7 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerAssert;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.orders.combat.Combat.CombatResult;
 import promitech.colonization.orders.combat.Combat.CombatResultDetails;
@@ -41,9 +39,6 @@ import promitech.colonization.ui.resources.Messages;
 
 public class ColonyCombatTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
-	
 	private Game game;
     private Player spanish;
     private Player dutch;
@@ -92,7 +87,7 @@ public class ColonyCombatTest {
     }
     
     @Test
-    public void spanishVsEmptyColony() throws Exception {
+    public void spanishWinVsEmptyColony() throws Exception {
         // given
         Unit dragoon = new Unit(
             Game.idGenerator.nextId(Unit.class), 

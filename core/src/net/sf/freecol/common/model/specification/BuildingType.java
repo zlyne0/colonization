@@ -36,7 +36,11 @@ public class BuildingType extends BuildableType {
 	public boolean isBuildingType() {
 		return true;
 	}
-    
+
+	public int getLevel() {
+		return level;
+	}
+	
     /**
      * Gets the reason why a given unit type can not be added to a
      * building of this type.

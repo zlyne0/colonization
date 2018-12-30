@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.Align
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.GameResources
 import promitech.colonization.ui.ClosableDialog
-import promitech.colonization.ui.ClosableDialogSize
+import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.addKeyTypedListener
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
@@ -19,16 +19,13 @@ class NewLandNameDialog(
 	val player : Player,
 	val defaultName : String
 )
-	: ClosableDialog<NewLandNameDialog>(ClosableDialogSize.width50(), ClosableDialogSize.def())
+	: ClosableDialog<NewLandNameDialog>(ModalDialogSize.width50(), ModalDialogSize.def())
 {
 
-	val skin : Skin
 	val okButton : TextButton
 	val nameField : TextField
 	
 	init {
-		skin = GameResources.instance.getUiSkin()
-		
         nameField = TextField(defaultName, skin)
         okButton = TextButton(Messages.msg("newLand.yes"), skin)
 
@@ -62,9 +59,6 @@ class NewLandNameDialog(
 	    
 	    buttonTableLayoutExtendX()
 	    getButtonTable().add(okButton).pad(10f).fillX().expandX()
-	}
-	
-	override fun init(shapeRenderer : ShapeRenderer) {
 	}
 	
 	override fun show(stage : Stage) {

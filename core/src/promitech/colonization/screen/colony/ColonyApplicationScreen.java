@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
@@ -15,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.VerticalGroup;
 import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.Align;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
@@ -32,6 +34,7 @@ import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
+import promitech.colonization.screen.map.diplomacy.SettlementImageLabel;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
@@ -42,7 +45,10 @@ import promitech.colonization.screen.ui.UnitActionOrdersDialog.UnitActionOrderIt
 import promitech.colonization.screen.ui.UnitActor;
 import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.ui.DoubleClickedListener;
+import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 // Szukaj swobody a staniesz sie niewolnikiem wlasnych pragnien.
 // Szukaj dyscypliny a znajdziesz wolnosc.
@@ -208,6 +214,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private Tile colonyTile;
     private GUIGameController guiGameController;
     private GUIGameModel guiGameModel;
+	private TextButton closeButton;
+	private boolean colonySpyMode = false;
     
     private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
 	
@@ -256,7 +264,17 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		guiGameModel = di.guiGameModel;
 		
 		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        stage = new Stage();
+        stage = new Stage() {
+        	@Override
+        	public Actor hit(float stageX, float stageY, boolean touchable) {
+        		Actor hit = super.hit(stageX, stageY, touchable);
+        		
+        		if (!colonySpyMode || (closeButton == hit || closeButton.getLabel() == hit)) {
+        			return hit;
+        		}
+        		return null;
+        	}
+        };
         
         unitsDragAndDrop = new DragAndDrop();
         unitsDragAndDrop.setDragActorPosition(0, 0);
@@ -270,17 +288,15 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         buildingsPanelActor = new BuildingsPanelActor(changeColonyStateListener, unitActorDoubleClickListener);
         warehousePanel = new WarehousePanel(changeColonyStateListener, goodTransferActorBridge);
         terrainPanel = new TerrainPanel(changeColonyStateListener, unitActorDoubleClickListener);
-        outsideUnitsPanel = new UnitsPanel()
+        outsideUnitsPanel = new UnitsPanel(Messages.msg("outsideColony"))
         		.withUnitChips(shape)
         		.withDragAndDrop(unitsDragAndDrop, changeColonyStateListener)
-        		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withLabel(Messages.msg("outsideColony"));
+        		.withUnitDoubleClick(unitActorDoubleClickListener);
 		
-        carrierUnitsPanel = new UnitsPanel()
+        carrierUnitsPanel = new UnitsPanel(Messages.msg("inPort"))
         		.withUnitChips(shape)
         		.withUnitDoubleClick(unitActorDoubleClickListener)
-        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener)
-        		.withLabel(Messages.msg("inPort"));
+        		.withUnitFocus(shape, goodsDragAndDrop, changeColonyStateListener);
         
         populationPanel = new PopulationPanel();
         productionPanel = new ProductionPanel();
@@ -351,18 +367,40 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	
 	private TextButton createCloseButton() {
 		String msg = Messages.msg("close");
-		TextButton closeButton = new TextButton(msg, GameResources.instance.getUiSkin());
+		closeButton = new TextButton(msg, GameResources.instance.getUiSkin());
 		closeButton.addListener(new InputListener() {
 			@Override
 			public boolean touchDown(InputEvent event, float x, float y, int pointer, int button) {
-				guiGameController.closeColonyView(colony);
+				if (colony.isColonyEmpty()) {
+					confirmAbandonColony();
+				} else {
+					guiGameController.closeColonyView(colony);
+				}
 				return true;
 			}
 		});
 		return closeButton;
 	}
 	
+	private void confirmAbandonColony() {
+		OptionAction<Colony> abandonColony = new OptionAction<Colony>() {
+			@Override
+			public void executeAction(Colony payload) {
+			    colony.removeFromMap(guiGameModel.game);
+			    colony.removeFromPlayer();
+				guiGameController.closeColonyView(colony);
+			}
+		};
+        QuestionDialog questionDialog = new QuestionDialog();
+        questionDialog.addDialogActor(new SettlementImageLabel(colony)).align(Align.center).row();
+		questionDialog.addQuestion(StringTemplate.template("abandonColony.text"));
+		questionDialog.addAnswer("abandonColony.yes", abandonColony, colony);
+        questionDialog.addAnswer("abandonColony.no", QuestionDialog.DO_NOTHING_ACTION, colony);
+        questionDialog.show(stage);
+	}
+	
     public void initColony(Colony colony, Tile colonyTile) {
+    	this.colonySpyMode = false;
     	this.colony = colony;
     	this.colonyTile = colonyTile;
     	unitsDragAndDrop.clear();
@@ -380,6 +418,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         actualBuildableItemActor.updateBuildItem(colony);
     }
 	
+    public void setColonySpyMode() {
+    	this.colonySpyMode = true;
+    }
+    
     private void showUnitOrders(UnitActor unitActor) {
     	UnitActionOrdersDialog dialog = new UnitActionOrdersDialog(shape, unitActor, colonyUnitOrders);
     	colonyUnitOrders.createOrders(unitActor.unit, dialog);
@@ -399,6 +441,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		goodsDragAndDrop.clear();
 		this.colony = null;
 		this.colonyTile = null;
+		
+		super.onLeave();
 	}
 	
 	@Override

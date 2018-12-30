@@ -9,11 +9,13 @@ import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.ui.QuestionDialog
 import promitech.colonization.ui.SimpleMessageDialog
 import promitech.colonization.ui.resources.StringTemplate
+import promitech.colonization.orders.diplomacy.FirstContactController
 
 class CombatController (
 	private val guiGameController: GUIGameController,
 	private val combatService: CombatService,
-	private val guiGameModel: GUIGameModel 
+	private val guiGameModel: GUIGameModel,
+	private val firstContactController: FirstContactController 
 ) {
 	
 	private val combat: Combat = Combat()
@@ -24,12 +26,6 @@ class CombatController (
     private val nextActiveUnitAction = Runnable {
         guiGameController.nextActiveUnitAsGdxPostRunnable()
     }
-	private val nextActiveUnitActionEventListener = object : EventListener {
-		override fun handle(event: Event?) : Boolean {
-		    guiGameController.nextActiveUnitAsGdxPostRunnable()
-			return true
-		}
-	}
 
     fun confirmCombat(moveContext: MoveContext) {
 		combat.init(guiGameModel.game, moveContext.unit, moveContext.destTile)
@@ -52,7 +48,12 @@ class CombatController (
 
 		var questionDialog = QuestionDialog()
 		questionDialog.addQuestion(questionMsg)
-		questionDialog.addAnswer("armedUnitSettlement.tribute", QuestionDialog.DO_NOTHING_ACTION, moveContext)
+		questionDialog.addAnswer("armedUnitSettlement.tribute",
+			QuestionDialog.OptionAction {
+				mc -> firstContactController.demandTributeFromSettlement(mc.destTile.getSettlement(), mc.unit)
+			},
+			moveContext
+		)
 		questionDialog.addAnswer("armedUnitSettlement.attack",
 			QuestionDialog.OptionAction {
 				mc -> confirmCombat(mc)
@@ -82,7 +83,7 @@ class CombatController (
     				guiGameController.showDialog(SimpleMessageDialog()
     					.withContent(combat.getBlockingCombatNotifications().first())
     					.withButton("ok")
-    					.addOnCloseListener(nextActiveUnitActionEventListener)
+    					.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
     				);
 				}
 			})

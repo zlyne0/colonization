@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
@@ -41,12 +42,17 @@ import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.IndianNationType;
+import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 import static net.sf.freecol.common.model.TileAssert.assertThat;
+import static net.sf.freecol.common.model.EuropeAssert.assertThat;
+import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
@@ -86,6 +92,9 @@ public class Savegame1600Verifier {
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.furs", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
+		
+		IndianSettlementAssert.assertThat(settlement.getIndianSettlement())
+			.hasWantedGoods("model.goods.tradeGoods", "model.goods.rum", "model.goods.cigars");
 		
 		verifyMissionary(game);
 	}
@@ -193,9 +202,13 @@ public class Savegame1600Verifier {
 	}
 
 	private void verifyPlayer(Game game) {
+		Player spanish = game.players.getById("player:133");
+		assertThat(spanish.getEurope()).hasUnitPrice(Specification.instance.unitTypes.getById(UnitType.ARTILLERY), 600);
+		
 		Player player = game.players.getById("player:1");
+		assertThat(player.getEurope()).hasUnitPrice(Specification.instance.unitTypes.getById(UnitType.ARTILLERY), 500);
 
-        assertEquals(Stance.WAR, player.getStance(game.players.getById("player:133")));
+        assertEquals(Stance.WAR, player.getStance(spanish));
 		
         assertNotNull(player.getEurope());
         
@@ -228,6 +241,7 @@ public class Savegame1600Verifier {
         assertEquals(MonarchAction.MONARCH_MERCENARIES, man1236.getAction());
         assertEquals(1500, man1236.getPrice());
         assertEquals(3, man1236.getMercenaries().size());
+        assertThat(game.players.getById("player:22")).containsExactlyBanMissions("player:1", "player:2");
         
         verifyPlayerMonarch(player);
 	}
@@ -281,7 +295,19 @@ public class Savegame1600Verifier {
         verifySpecificationUnitRoles(specification, game);
         verifySpecificationUnitTypes(specification, game);
         verifySpecificationFoundingFathers(specification);
+        verifySpecificationSettlementType(specification);
     }
+
+	private void verifySpecificationSettlementType(Specification specification) {
+		NationType apache = specification.nationTypes.getById("model.nationType.apache");
+		SettlementType campSettlementType = apache.settlementTypes.getById("model.settlement.camp");
+		RandomRangeAssert.assertThat(campSettlementType.getGift())
+			.equalsProbMinMaxFactor(100, 2, 3, 100);
+		
+		SettlementType capitalSettlementType = apache.settlementTypes.getById("model.settlement.camp.capital");
+		RandomRangeAssert.assertThat(capitalSettlementType.getGift())
+			.equalsProbMinMaxFactor(100, 3, 6, 200);
+	}
 
 	private void verifySpecificationModifiers(Specification spec) {
 		assertNotNull(spec.modifiers.getById("model.modifier.smallMovementPenalty"));
@@ -345,7 +371,13 @@ public class Savegame1600Verifier {
 
 	private void verifyNationTypes(Specification specification) {
 		assertEquals(18, specification.nationTypes.size());
-        NationType arawakNationType = specification.nationTypes.getById("model.nationType.arawak");
+		IndianNationType arawakNationType = (IndianNationType)specification.nationTypes.getById("model.nationType.arawak");
+        
+		assertThat(arawakNationType.getSkills()).hasSize(3);
+		assertThat(arawakNationType).hasSkill("model.unit.masterSugarPlanter", 20);
+		assertThat(arawakNationType).hasSkill("model.unit.expertFisherman", 10);
+		assertThat(arawakNationType).hasSkill("model.unit.masterFurTrader", 3);
+        
         SettlementType settlementType = arawakNationType.settlementTypes.getById("model.settlement.village");
         assertNotNull(settlementType);
         assertThat(settlementType.getPlunderRanges()).hasSize(2);

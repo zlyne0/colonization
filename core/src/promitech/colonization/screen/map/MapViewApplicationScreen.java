@@ -33,6 +33,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
         di.guiGameController.setApplicationScreenManager(this.screenManager);
         di.moveController.setMapActor(mapActor);
         di.moveView.setMapActor(mapActor);
+        di.firstContactController.setScreenMap(mapActor);
         
         hudStage = new HudStage(new ScreenViewport(), di, mapActor, this.screenManager);
         
@@ -85,6 +86,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     @Override
     public void onLeave() {
     	Gdx.input.setInputProcessor(null);
+    	super.onLeave();
     }
     
     @Override

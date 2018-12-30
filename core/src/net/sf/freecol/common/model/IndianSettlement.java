@@ -1,15 +1,21 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
+import net.sf.freecol.common.model.player.Tension.Level;
+import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.IndianNationType;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class IndianSettlement extends Settlement {
     
@@ -20,8 +26,23 @@ public class IndianSettlement extends Settlement {
         SCOUTED          // Scouting bonus consumed
     };
 	
+    /** Radius of native tales map reveal. */
+    public static final int TALES_RADIUS = 6;
+    
 	/** The missionary at this settlement. */
     private IndianSettlementMissionary missionary;
+    
+    /** The number of the turn during which the last tribute was paid. */
+    private int lastTribute = 0;
+    
+    /**
+     * This is the skill that can be learned by Europeans at this
+     * settlement.  Its value will be null when the
+     * skill has already been taught to a European.  
+     */
+    protected UnitType learnableSkill = null;
+    private int convertProgress;
+	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(3); 
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
@@ -44,13 +65,56 @@ public class IndianSettlement extends Settlement {
 		goodsContainer = new GoodsContainer();
 	}
 
-    public boolean hasContact(Player player) {
-    	ContactLevel level = contactLevelByPlayer.get(player.getId());
-    	if (level == null) {
-    		return false;
-    	}
-    	return level != ContactLevel.UNCONTACTED;
+    public boolean isVisitedBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
+    	return contactLevel == ContactLevel.VISITED || contactLevel == ContactLevel.SCOUTED;
     }
+    
+    private ContactLevel contactLevel(Player player) {
+    	ContactLevel contactLevel = contactLevelByPlayer.get(player.getId());
+    	if (contactLevel == null) {
+    		return ContactLevel.UNCONTACTED;
+    	}
+    	return contactLevel;
+    }
+    
+    public void visitBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
+    	if (contactLevel == ContactLevel.UNCONTACTED || contactLevel == ContactLevel.CONTACTED) {
+    		if (contactLevel == ContactLevel.UNCONTACTED) {
+    			setTension(player, getOwner().getTension(player).getValue());
+    		}
+    		contactLevelByPlayer.put(player.getId(), ContactLevel.VISITED);
+    	}
+    }
+    
+    public void scoutBy(Player player) {
+    	ContactLevel contactLevel = contactLevel(player);
+    	if (contactLevel != ContactLevel.SCOUTED) {
+    		if (contactLevel == ContactLevel.UNCONTACTED) {
+    			setTension(player, getOwner().getTension(player).getValue());
+    		}
+    		contactLevelByPlayer.put(player.getId(), ContactLevel.SCOUTED);
+    	}
+    }
+    
+    public boolean hasContact(Player player) {
+    	return contactLevel(player) != ContactLevel.UNCONTACTED;
+    }
+    
+    public boolean hasAnyScouted() {
+    	for (Entry<String, ContactLevel> entrySet : contactLevelByPlayer.entrySet()) {
+    		if (entrySet.getValue() == ContactLevel.SCOUTED) {
+    			return true;
+    		}
+    	}
+    	return false;
+    }
+
+	public void modifyTensionWithOwnerTension(Player player, int tensionValue) {
+		modifyTension(player, tensionValue);
+		getOwner().modifyTension(player, settlementType.isCapital() ? tensionValue : tensionValue / 2);
+	}
     
 	public void modifyTension(Player player, int tensionValue) {
 		Tension tension = tensionByPlayer.get(player.getId());
@@ -72,6 +136,15 @@ public class IndianSettlement extends Settlement {
         }
     }
 	
+    public Tension getTension(Player player) {
+    	Tension tension = tensionByPlayer.get(player.getId());
+    	if (tension == null) {
+    		tension = new Tension();
+    		tensionByPlayer.put(player.getId(), tension);
+    	}
+    	return tension;
+    }
+    
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;
@@ -117,6 +190,35 @@ public class IndianSettlement extends Settlement {
 		return settlementType.plunderGold(attacker);
 	}
 
+	public int demandTribute(Turn turn, Player demander) {
+		final int TURNS_PER_TRIBUTE = 5;
+		
+		int gold = 0;
+		SettlementTypeGift giftRange = settlementType.getGift();
+		if (lastTribute + TURNS_PER_TRIBUTE < turn.getNumber() && giftRange != null) {
+			Level tensionLevel = owner.getTension(demander).getLevel();
+			switch (tensionLevel) {
+			case HAPPY:
+			case CONTENT:
+				gold = Math.min(giftRange.randomValue() / 10, 100);
+				break;
+			case DISPLEASED:
+				gold = Math.min(giftRange.randomValue() / 20, 100);
+				break;
+			case ANGRY:
+			case HATEFUL:
+				gold = 0;
+			default:
+				break;
+			}
+		}
+
+		visitBy(demander);
+		modifyTensionWithOwnerTension(demander, Tension.TENSION_ADD_NORMAL);		
+		lastTribute = turn.getNumber();
+		return gold;
+	}
+	
 	public Entry<String, Tension> mostHatedPlayer(MapIdEntities<Player> players) {
 		Entry<String, Tension> mostHatedPlayer = null;
 		int playerTensionLevel = Integer.MIN_VALUE;
@@ -139,6 +241,17 @@ public class IndianSettlement extends Settlement {
 		return mostHatedPlayer;
 	}
 	
+	public void learnSkill(Unit unit, boolean enhancedMissionaries) {
+		unit.changeUnitType(learnableSkill);
+		if (!settlementType.isCapital() && !(hasMissionary(unit.getOwner()) && enhancedMissionaries)) {
+			learnableSkill = null;
+		}
+	}
+	
+	public IndianNationType indianNationType() {
+		return (IndianNationType)owner.nationType();
+	}
+	
     public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
@@ -148,7 +261,11 @@ public class IndianSettlement extends Settlement {
 		private static final String ATTR_SETTLEMENT_TYPE = "settlementType";
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_NAME = "name";
-
+		private static final String ATTR_LAST_TRIBUTE = "lastTribute";		
+		private static final String ATTR_LEARNABLE_SKILL = "learnableSkill";		
+		private static final String ATTR_WANTED_GOODS = "wantedGoods";
+		private static final String ATTR_CONVERT_PROGRESS = "convertProgress";
+		
 		public Xml() {
             addNode(Unit.class, new ObjectFromNodeSetter<IndianSettlement, Unit>() {
                 @Override
@@ -179,11 +296,22 @@ public class IndianSettlement extends Settlement {
     		);
             is.name = attr.getStrAttribute(ATTR_NAME);
             is.owner = owner;
+            is.lastTribute = attr.getIntAttribute(ATTR_LAST_TRIBUTE, 0);
+            is.learnableSkill = attr.getEntity(ATTR_LEARNABLE_SKILL, Specification.instance.unitTypes);
+            is.convertProgress = attr.getIntAttribute(ATTR_CONVERT_PROGRESS, 0);
             
             owner.settlements.add(is);
             
+            String goodsId = null;
+            int goodsIdIndex = 0;
+			while ((goodsId = attr.getStrAttribute(ATTR_WANTED_GOODS + goodsIdIndex)) != null) {
+            	is.wantedGoods.add(Specification.instance.goodsTypes.getById(goodsId));
+            	goodsIdIndex++;
+            }
+            
             nodeObject = is;
         }
+		
 
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
@@ -207,6 +335,13 @@ public class IndianSettlement extends Settlement {
         	attr.set(ATTR_NAME, is.name);
         	attr.set(ATTR_OWNER, is.owner);
         	attr.set(ATTR_SETTLEMENT_TYPE, is.settlementType);
+        	attr.set(ATTR_LAST_TRIBUTE, is.lastTribute, 0);
+        	attr.set(ATTR_LEARNABLE_SKILL, is.learnableSkill);
+        	attr.set(ATTR_CONVERT_PROGRESS, is.convertProgress);
+        	
+        	for (int i=0; i<is.wantedGoods.size(); i++) {
+        		attr.set(ATTR_WANTED_GOODS + i, is.wantedGoods.get(i));
+        	}
         	
         	for (Entry<String, ContactLevel> contactEntry : is.contactLevelByPlayer.entrySet()) {
 				attr.xml.element(ELEMENT_CONTACT_LEVEL);
@@ -257,6 +392,10 @@ public class IndianSettlement extends Settlement {
 		throw new IllegalStateException("not implemented");
 	}
 
+	public UnitType getLearnableSkill() {
+		return learnableSkill;
+	}
+	
 	@Override
 	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return units;
@@ -282,8 +421,8 @@ public class IndianSettlement extends Settlement {
 		return false;
 	}
 
-    private boolean hasMissionary() {
-        return missionary != null;
+    public boolean hasMissionary() {
+        return missionary != null && missionary.unit != null;
     }
 
     public boolean hasMissionary(Player player) {
@@ -303,11 +442,37 @@ public class IndianSettlement extends Settlement {
     public Player missionaryOwner() {
     	return missionary.unit.getOwner();
     }
+
+    public void changeMissionary(Unit newMissionary) {
+    	if (missionary != null && missionary.unit != null) {
+    		missionary.unit.getOwner().eventsNotifications.addMessageNotification(
+				StringTemplate.template("indianSettlement.mission.denounced")
+					.add("%settlement%", getName())
+			);
+    		removeMissionary();
+    	}
+    	if (missionary == null) {
+    		missionary = new IndianSettlementMissionary();
+    	}
+    	newMissionary.changeUnitLocation(missionary);
+    	newMissionary.reduceMovesLeftToZero();
+    	resetConvertProgress();
+    	modifyTensionWithOwnerTension(newMissionary.getOwner(), Tension.ALARM_NEW_MISSIONARY);
+    	newMissionary.getOwner().fogOfWar.fogOfWarForMissionary(this, newMissionary.getOwner());
+    }
     
 	public void removeMissionary() {
 		Unit m = missionary.unit;
 		m.getOwner().removeUnit(m);
 		missionary.unit = null;
 		missionary = null;
+	}
+
+	public void resetConvertProgress() {
+		convertProgress = 0;
+	}
+	
+	public List<GoodsType> getWantedGoods() {
+		return wantedGoods;
 	}
 }

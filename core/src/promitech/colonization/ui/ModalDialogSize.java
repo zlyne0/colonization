@@ -2,10 +2,10 @@ package promitech.colonization.ui;
 
 import com.badlogic.gdx.scenes.scene2d.Stage;
 
-public abstract class ClosableDialogSize {
+public abstract class ModalDialogSize {
 
-	public static ClosableDialogSize width50() {
-		return new ClosableDialogSize() {
+	public static ModalDialogSize width50() {
+		return new ModalDialogSize() {
 			@Override
 			public void init(Stage stage) {
 				this.val = stage.getWidth() * 0.5f;
@@ -13,8 +13,8 @@ public abstract class ClosableDialogSize {
 		};
 	}
 
-	public static ClosableDialogSize width75() {
-		return new ClosableDialogSize() {
+	public static ModalDialogSize width75() {
+		return new ModalDialogSize() {
 			@Override
 			public void init(Stage stage) {
 				this.val = stage.getWidth() * 0.75f;
@@ -22,8 +22,17 @@ public abstract class ClosableDialogSize {
 		};
 	}
 
-	public static ClosableDialogSize height50() {
-		return new ClosableDialogSize() {
+	public static ModalDialogSize width90() {
+		return new ModalDialogSize() {
+			@Override
+			public void init(Stage stage) {
+				this.val = stage.getWidth() * 0.9f;
+			}
+		};
+	}
+	
+	public static ModalDialogSize height50() {
+		return new ModalDialogSize() {
 			@Override
 			public void init(Stage stage) {
 				this.val = stage.getHeight() * 0.5f;
@@ -31,8 +40,8 @@ public abstract class ClosableDialogSize {
 		};
 	}
 	
-	public static ClosableDialogSize height75() {
-		return new ClosableDialogSize() {
+	public static ModalDialogSize height75() {
+		return new ModalDialogSize() {
 			@Override
 			public void init(Stage stage) {
 				this.val = stage.getHeight() * 0.75f;
@@ -40,7 +49,7 @@ public abstract class ClosableDialogSize {
 		};
 	}
 
-	public static ClosableDialogSize def() {
+	public static ModalDialogSize def() {
 		return null;
 	}
 	

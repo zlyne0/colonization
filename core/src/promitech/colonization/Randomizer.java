@@ -53,14 +53,14 @@ public final class Randomizer {
 		return randomInt(100) < percentProbability;
 	}
 	
-	public boolean isHappen(WithProbability event) {
+	public boolean isHappen(WithProbability<?> event) {
 		if (event.getOccureProbability() <= 0) {
 			return false;
 		}
 		return randomInt(100) < event.getOccureProbability();
 	}
 
-	public <T extends WithProbability> T randomOne(Collection<T> events) {
+	public <T extends WithProbability<?>> T randomOne(Collection<T> events) {
 		if (events.isEmpty()) {
 			return null;
 		}

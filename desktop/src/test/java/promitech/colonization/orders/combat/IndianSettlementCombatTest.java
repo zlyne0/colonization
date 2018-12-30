@@ -2,7 +2,6 @@ package promitech.colonization.orders.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 import static org.assertj.core.api.Assertions.*;
-import static org.junit.Assert.*;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
@@ -20,9 +19,7 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
-import net.sf.freecol.common.model.PlayerAssert;
 import net.sf.freecol.common.model.SettlementPlunderRange;
-import net.sf.freecol.common.model.SettlementPlunderRangeAssert;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -32,8 +29,10 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerAssert;
 import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import promitech.colonization.MockedRandomizer;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.Combat.CombatResult;
@@ -256,7 +255,7 @@ public class IndianSettlementCombatTest {
     	SettlementPlunderRange range = incaSettlementType.plunderGoldRange(dutchDragoon);
 
 		// then
-    	SettlementPlunderRangeAssert.assertThat(range)
+    	RandomRangeAssert.assertThat(range)
     		.equalsProbMinMaxFactor(100, 2, 6, 2100);
 	}
 
@@ -273,7 +272,7 @@ public class IndianSettlementCombatTest {
     	SettlementPlunderRange range = incaSettlementType.plunderGoldRange(dutchDragoon);
 
 		// then
-    	SettlementPlunderRangeAssert.assertThat(range)
+    	RandomRangeAssert.assertThat(range)
     		.equalsProbMinMaxFactor(100, 2, 6, 3100);
 	}
     

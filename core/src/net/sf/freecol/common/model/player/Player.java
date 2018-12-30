@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.xml.sax.SAXException;
@@ -9,6 +11,7 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IdGenerator;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Nation;
@@ -54,6 +57,7 @@ public class Player extends ObjectWithId {
     private int entryLocationX = 0;
     private int entryLocationY = 0;
     private String newLandName;
+    private String name;
     
     /**
      * The number of immigration points.  Immigration points are an
@@ -84,7 +88,8 @@ public class Player extends ObjectWithId {
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
-
+    protected List<String> banMission = null;
+    
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
     	Player player = new Player(idGenerator.nextId(Player.class));
     	player.ai = true; 
@@ -215,6 +220,11 @@ public class Player extends ObjectWithId {
     	Stance old = getStance(otherPlayer);
     	
     	if (old != newStance) {
+            System.out.println("player " + this.getId() + "[" + this.nation.getId() 
+                + "] change stance to player " + otherPlayer.getId() + "[" + otherPlayer.nation.getId() 
+                + "] from " + old + " to " + newStance 
+            );
+
     		modifyStance(otherPlayer, newStance);
     		int modifier = old.getTensionModifier(newStance);
 			modifyTension(otherPlayer, modifier);
@@ -267,12 +277,30 @@ public class Player extends ObjectWithId {
     	tensionObj.modify(val);
     }
     
+	public void modifyTensionAndPropagateToAllSettlements(Player player, int tensionValue) {
+		modifyTension(player, tensionValue);
+		for (Settlement settlement : settlements.entities()) {
+			IndianSettlement indianSettlement = settlement.getIndianSettlement();
+			if (indianSettlement.hasContact(player)) {
+				int tension = indianSettlement.settlementType.isCapital() ? tensionValue : tensionValue / 2; 
+				indianSettlement.modifyTension(player, tension);
+			}
+		}
+	}
+    
     public Tension getTension(Player p) {
         Tension tensionObj = tension.get(p.getId());
         if (tensionObj == null) {
             return new Tension(Tension.TENSION_MIN);
         }
         return tensionObj;
+    }
+    
+    public void addMissionBan(Player player) {
+        if (banMission == null) {
+            banMission = new ArrayList<String>();
+        }
+        banMission.add(player.getId());
     }
     
     private void changePlayerType(PlayerType type) {
@@ -394,6 +422,11 @@ public class Player extends ObjectWithId {
         }
     }
     
+    public void transferGoldToPlayer(int gold, Player player) {
+    	this.subtractGold(gold);
+    	player.addGold(gold);
+    }
+    
     public boolean hasGold() {
         return this.gold > 0;
     }
@@ -431,6 +464,10 @@ public class Player extends ObjectWithId {
     
 	public boolean isDead() {
 		return dead;
+	}
+	
+	public boolean isLive() {
+		return !dead;
 	}
 	
     public boolean isLiveEuropeanPlayer() {
@@ -595,6 +632,10 @@ public class Player extends ObjectWithId {
 		this.ai = false; 
 	}
 
+	public String getName() {
+		return name;
+	}
+	
 	public static class Xml extends XmlNodeParser<Player> {
         private static final String ATTR_AI = "ai";
 		private static final String ATTR_X_LENGTH = "xLength";
@@ -602,6 +643,7 @@ public class Player extends ObjectWithId {
 		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
 		private static final String ELEMENT_STANCE = "stance";
+		private static final String ELEMENT_BAN_MISSION = "ban-mission";
 		private static final String ATTR_PLAYER_TYPE = "playerType";
 		private static final String ATTR_ENTRY_LOCATION_Y = "entryLocationY";
 		private static final String ATTR_ENTRY_LOCATION_X = "entryLocationX";
@@ -617,6 +659,7 @@ public class Player extends ObjectWithId {
 		private static final String ATTR_DEAD = "dead";
 		private static final String ATTR_NATION_TYPE = "nationType";
 		private static final String ATTR_NATION_ID = "nationId";
+		private static final String ATTR_USERNAME = "username";
 
 		public Xml() {
 			addNode(EventsNotifications.class, "eventsNotifications");
@@ -644,6 +687,7 @@ public class Player extends ObjectWithId {
             
             String nationIdStr = attr.getStrAttribute(ATTR_NATION_ID);
             player.nation = Specification.instance.nations.getById(nationIdStr);
+            player.name = attr.getStrAttribute(ATTR_USERNAME);
 
             String nationTypeStr = attr.getStrAttribute(ATTR_NATION_TYPE);
             if (nationTypeStr != null) {
@@ -679,6 +723,12 @@ public class Player extends ObjectWithId {
         	        nodeObject.addFoundingFathers(father);
         	    }
         	}
+        	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
+        	    if (nodeObject.banMission == null) {
+        	        nodeObject.banMission = new ArrayList<String>();
+        	    }
+        	    nodeObject.banMission.add(attr.getStrAttributeNotNull(ATTR_PLAYER));
+        	}
         }
 
         @Override
@@ -709,6 +759,7 @@ public class Player extends ObjectWithId {
 
         	attr.set(ATTR_NATION_ID, player.nation);
         	attr.set(ATTR_NATION_TYPE, player.nationType);
+        	attr.set(ATTR_USERNAME, player.name);
         	attr.set(ATTR_INDEPENDENT_NATION_NAME, player.independentNationName);
         	attr.set(ATTR_ENTRY_LOCATION_X, player.entryLocationX);
         	attr.set(ATTR_ENTRY_LOCATION_Y, player.entryLocationY);
@@ -736,6 +787,13 @@ public class Player extends ObjectWithId {
         			ffIndex++;
         		}
         		attr.xml.pop();
+        	}
+        	if (player.banMission != null) {
+        	    for (String playerId : player.banMission) {
+        	        attr.xml.element(ELEMENT_BAN_MISSION);
+        	        attr.set(ATTR_PLAYER, playerId);
+        	        attr.xml.pop();
+        	    }
         	}
         }
         

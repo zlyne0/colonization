@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
@@ -40,6 +41,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitLowerCap = LOWER_CAP_INITIAL;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     private final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
+	private final ObjectIntMap<UnitType> unitPrices = new ObjectIntMap<UnitType>();
 
     public static Europe newStartingEurope(IdGenerator idGenerator, Player player) {
     	Europe europe = new Europe();
@@ -181,7 +183,21 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     public void buyUnit(UnitType unitType, int price) {
     	owner.subtractGold(price);
     	createUnit(unitType);
+    	increasePrice(unitType, price);
     }
+
+	private void increasePrice(UnitType unitType, int actualPrice) {
+		String option;
+    	if (Specification.options.getBoolean(GameOptions.PRICE_INCREASE_PER_TYPE)) {
+    		option = "model.option.priceIncrease." + unitType.getSuffix();
+    	} else {
+    		option = "model.option.priceIncrease";
+    	}
+    	int increasePrice = Specification.options.getIntValue(option, 0);
+    	if (increasePrice != 0) {
+    		unitPrices.getAndIncrement(unitType, actualPrice, increasePrice);
+    	}
+	}
     
 	private Unit emigrate() {
 		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
@@ -292,6 +308,16 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
     }
 
+    public int getUnitPrice(UnitType unitType) {
+    	if (unitPrices.containsKey(unitType)) {
+    		return unitPrices.get(unitType, UnitType.DEFAULT_PRICE);
+    	}
+    	if (!unitType.hasPrice()) {
+    		return UnitType.DEFAULT_PRICE;
+    	}
+    	return unitType.getPrice();
+    }
+    
 	public int getUnitPrice(UnitType unitType, UnitRole unitRole, int amount) {
 		if (!unitType.hasPrice()) {
 			return Integer.MAX_VALUE;
@@ -305,7 +331,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 
     public static class Xml extends XmlNodeParser<Europe> {
 
-        private static final String ELEMENT_RECRUIT = "recruit";
+        private static final String ATTR_UNIT_TYPE_PRICE = "price";
+		private static final String ATTR_UNIT_TYPE = "unitType";
+		private static final String ELEMENT_RECRUIT = "recruit";
+        private static final String ELEMENT_UNITPRICE = "unitPrice";
 		private static final String ATTR_RECRUIT_LOWER_CAP = "recruitLowerCap";
 		private static final String ATTR_RECRUIT_PRICE = "recruitPrice";
 
@@ -339,6 +368,11 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         		UnitType unitType = Specification.instance.unitTypes.getById(attr.getStrAttribute(ATTR_ID));
         		nodeObject.recruitables.add(unitType);
         	}
+        	if (attr.isQNameEquals(ELEMENT_UNITPRICE)) {
+        		UnitType unitType = attr.getEntity(ATTR_UNIT_TYPE, Specification.instance.unitTypes);
+        		int price = attr.getIntAttribute(ATTR_UNIT_TYPE_PRICE);
+        		nodeObject.unitPrices.put(unitType, price);
+        	}
         }
         
         @Override
@@ -351,6 +385,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         		attr.set(ATTR_ID, ut);
         		attr.xml.pop();
         	}
+        	
+        	for (Entry<UnitType> entry : eu.unitPrices) {
+				attr.xml.element(ELEMENT_UNITPRICE);
+				attr.set(ATTR_UNIT_TYPE, entry.key);
+				attr.set(ATTR_UNIT_TYPE_PRICE, entry.value);
+				attr.xml.pop();
+			}
         }
         
         @Override

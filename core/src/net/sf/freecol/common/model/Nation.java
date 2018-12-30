@@ -1,6 +1,9 @@
 package net.sf.freecol.common.model;
 
+import static net.sf.freecol.common.util.StringUtils.lastPart;
+
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Set;
 
 import com.badlogic.gdx.graphics.Color;
@@ -68,6 +71,10 @@ public class Nation extends ObjectWithId {
 
     public Nation getRebelNation() {
         return rebelNation;
+    }
+    
+    public String getNationNameKey() {
+        return lastPart(getId(), ".").toUpperCase(Locale.US);
     }
     
     public void updateReferences() {

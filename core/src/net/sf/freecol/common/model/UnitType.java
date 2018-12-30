@@ -10,8 +10,8 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
-import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import net.sf.freecol.common.model.specification.WithProbability;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -29,11 +29,14 @@ public class UnitType extends BuildableType {
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
 	public static final String ARTILLERY = "model.unit.artillery";
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
+	public static final String SCOUT = "model.unit.seasonedScout";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
     public static final int DEFAULT_OFFENCE = 0;
     public static final int DEFAULT_DEFENCE = 1;
+
+	public static final int DEFAULT_PRICE = 100;
 
     public final MapIdEntities<UnitTypeChange> unitTypeChanges = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<UnitConsumption> unitConsumption = new MapIdEntities<UnitConsumption>();

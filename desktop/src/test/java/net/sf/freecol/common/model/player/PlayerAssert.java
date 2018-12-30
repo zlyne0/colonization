@@ -1,7 +1,10 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.player;
 
 import org.assertj.core.api.AbstractAssert;
 
+import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 
 public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
@@ -63,5 +66,38 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 	    }
 	    return this;
 	}
+	
+	public PlayerAssert hasColony(Colony colony) {
+		if (!actual.settlements.containsId(colony)) {
+			failWithMessage("expected player <%s> has colony <%s>", actual.getId(), colony.getId());
+		}
+		if (actual.notEqualsId(colony.getOwner())) {
+			failWithMessage("expected player <%s> has colony <%s>", actual.getId(), colony.getId());
+		}
+		return this;
+	}
+	
+	public PlayerAssert containsExactlyBanMissions(String ... playerIds) {
+	    org.assertj.core.api.Assertions.assertThat(actual.banMission)
+	        .isNotNull()
+	        .containsExactly(playerIds);
+	    return this;
+	}
     
+	public PlayerAssert hasGold(int gold) {
+		if (actual.getGold() != gold) {
+			failWithMessage("expected player <%s> has gold equals <%s> but has <%s>", actual.getId(), gold, actual.getGold());
+		}
+		return this;
+	}
+
+	public PlayerAssert hasStance(Player player, Stance stance) {
+		Stance actualStance = actual.getStance(player);
+		if (actualStance != stance) {
+			failWithMessage("expected player <%s> has stance <%s> with player <%s> but has <%s>", 
+				actual.getId(), stance, player.getId(), actualStance
+			);
+		}
+		return this;
+	}
 }
