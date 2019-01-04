@@ -370,9 +370,10 @@ public class Player extends ObjectWithId {
 	}
     
 	/**
-	 * @return return true when explore new tiles
+	 * Method populate {@link MoveExploredTiles} <code>exploredTiles</code> with explored
+	 * tiles
 	 */
-	public boolean revealMapAfterUnitMove(Map map, Unit unit) {
+	public void revealMapAfterUnitMove(Map map, Unit unit, MoveExploredTiles exploredTiles) {
 		Tile unitTileLocation = unit.getTile();
 		
 		setTileAsExplored(unitTileLocation);
@@ -382,19 +383,18 @@ public class Player extends ObjectWithId {
 		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
 		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
 		
-		boolean unexploredTile = false;
 		while (spiralIterator.hasNext()) {
 			int coordsIndex = spiralIterator.getCoordsIndex();
-			spiralIterator.next();
 			
 			if (setTileAsExplored(coordsIndex)) {
-				unexploredTile = true;
+				exploredTiles.addExploredTile(spiralIterator.getX(), spiralIterator.getY());
 			}
 			if (fogOfWar.removeFogOfWar(coordsIndex)) {
-				unexploredTile = true;
+				exploredTiles.addRemoveFogOfWar(spiralIterator.getX(), spiralIterator.getY());
 			}
+			
+			spiralIterator.next();
 		}
-		return unexploredTile;
 	}
 
     public Europe getEurope() {

@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
@@ -37,6 +38,14 @@ class TileDrawModel {
 	
 	public boolean isNotExplored() {
 		return !explored;
+	}
+	
+	public void setExplored(boolean explored) {
+		this.explored = explored;
+	}
+	
+	public void setFogOfWar(boolean fogOfWar) {
+		this.fogOfWar = fogOfWar;
 	}
 	
 	public void setTileVisibility(boolean explored, boolean fogOfWar) {
@@ -111,9 +120,9 @@ class TileDrawModel {
 
 class TileDrawModelInitializer {
 	private final GameResources gameResources;
-	private final Game game;
-	private final Map map; 
-	private final Player player;
+	private Game game;
+	private Map map; 
+	private Player player;
 	
 	private int x, y;
 	private Tile tile;
@@ -124,13 +133,15 @@ class TileDrawModelInitializer {
 	
 	private Frame frame;
 	
-	public TileDrawModelInitializer(MapDrawModel mapDrawModel, Game game, GameResources gameResources) {
-		this.game = game;
+	public TileDrawModelInitializer(MapDrawModel mapDrawModel, GameResources gameResources) {
 		this.mapDrawModel = mapDrawModel;
+		this.gameResources = gameResources;
+	}
+	
+	public void init(Game game) {
+		this.game = game;
 		this.map = game.map;
 		this.player = game.playingPlayer;
-		this.gameResources = gameResources;
-		
 		if (player == null) {
 			throw new IllegalArgumentException("player should not be null");
 		}
@@ -175,24 +186,47 @@ class TileDrawModelInitializer {
 	public void initBordersForUnexploredTiles() {
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getSafeTile(x, y);
-				tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
-				tileDrawModel.resetUnexploredBorders();
-				tileDrawModel.setTileVisibility(
-					player.isTileExplored(x, y),
-					player.fogOfWar.hasFogOfWar(x, y)
-				);
-				
-				for (Direction direction : Direction.values()) {
-					borderTile = map.getTile(x, y, direction);
-					if (borderTile == null) {
-						continue;
-					}
-					if (!player.isTileExplored(borderTile.x, borderTile.y)) {
-						frame = gameResources.unexploredBorder(direction, x, y);
-						tileDrawModel.addUnexploredBorders(frame);
-					}
-				}
+				determineUnexploredBordersForCords(x, y);
+			}
+		}
+	}
+
+	public void initBordersForUnexploredTiles(MoveExploredTiles exploredTiles) {
+		for (int i=0; i<exploredTiles.removeFogOfWarX.size; i++) {
+			tileDrawModel = mapDrawModel.getTileDrawModel(
+				exploredTiles.removeFogOfWarX.get(i),
+				exploredTiles.removeFogOfWarY.get(i)
+			);
+			tileDrawModel.setFogOfWar(false);
+		}
+		
+		for (int i=0; i<exploredTiles.exploredTilesX.size; i++) {
+			x = exploredTiles.exploredTilesX.get(i);
+			y = exploredTiles.exploredTilesY.get(i);
+
+			determineUnexploredBordersForCords(x, y);
+			// when one explore, border moves so reset neighbours 
+			for (Tile bt : map.neighbourTiles(x, y)) {
+				determineUnexploredBordersForCords(bt.x, bt.y);
+			}
+		}
+	}
+
+	private void determineUnexploredBordersForCords(int x, int y) {
+		tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
+		tileDrawModel.resetUnexploredBorders();
+		tileDrawModel.setTileVisibility(
+			player.isTileExplored(x, y),
+			player.fogOfWar.hasFogOfWar(x, y)
+		);
+		for (Direction direction : Direction.values()) {
+			borderTile = map.getTile(x, y, direction);
+			if (borderTile == null) {
+				continue;
+			}
+			if (!player.isTileExplored(borderTile.x, borderTile.y)) {
+				frame = gameResources.unexploredBorder(direction, x, y);
+				tileDrawModel.addUnexploredBorders(frame);
 			}
 		}
 	}
@@ -312,14 +346,17 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	protected Map map;
-	private Game game;
+	private TileDrawModelInitializer initializer;
 	
 	protected UnitTileAnimation unitTileAnimation = UnitTileAnimation.NoAnimation;
 	
 	public Path unitPath;
 	
-	protected void initialize(Game game, GameResources gameResources) {
-		this.game = game;
+	public MapDrawModel(GameResources gameResources) {
+		this.initializer = new TileDrawModelInitializer(this, gameResources);
+	}
+	
+	protected void initialize(Game game) {
 		this.map = game.map;
 		this.playingPlayer = game.playingPlayer;
 		width = map.width;
@@ -343,10 +380,10 @@ public class MapDrawModel {
 			}
 		}
 
-		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, game, gameResources);
+		initializer.init(game);
 		initializer.initMapTiles();
 	}
-
+	
 	public TileDrawModel getTileDrawModel(int x, int y, Direction direction) {
 		return getTileDrawModel(direction.stepX(x, y), direction.stepY(x, y));
 	}
@@ -356,9 +393,6 @@ public class MapDrawModel {
 			return null;
 		}
 		TileDrawModel tile = tilesDrawModel[y][x];
-		if (tile == null) {
-			throw new RuntimeException("not implementd, shoud return empty tile or default");
-		}
 		return tile;
 	}
 
@@ -366,9 +400,12 @@ public class MapDrawModel {
 		return x >= 0 && x < width && y >= 0 && y < height;
 	}
 
-	public void resetUnexploredBorders(GameResources gameResources) {
-		TileDrawModelInitializer initializer = new TileDrawModelInitializer(this, game, gameResources);
+	public void resetUnexploredBorders() {
 		initializer.initBordersForUnexploredTiles();
+	}
+
+	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
+		initializer.initBordersForUnexploredTiles(exploredTiles);
 	}
 	
 	public void addChangeSelectedUnitListener(ChangeSelectedUnitListener listener) {

@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -378,7 +379,7 @@ public class GUIGameController {
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
-		resetUnexploredBorders();
+		mapActor.resetUnexploredBorders();
 		
 		logicNextActiveUnit();
 		
@@ -533,10 +534,11 @@ public class GUIGameController {
 		mapActor.hideTileOwners();
 	}
 	
+	private final MoveExploredTiles exploredTiles = new MoveExploredTiles();
 	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
 		@Override
 		public void run() {
-			mapActor.resetUnexploredBorders();
+			mapActor.resetUnexploredBorders(exploredTiles);
 		}
 		
 		public String toString() {
@@ -544,10 +546,11 @@ public class GUIGameController {
 		}
 	};
 	
-	public void resetUnexploredBorders() {
+	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
+		this.exploredTiles.init(exploredTiles);
 		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
-
+	
 	public void showDialog(ModalDialog<?> dialog) {
 		mapHudStage.showDialog(dialog);
 	}

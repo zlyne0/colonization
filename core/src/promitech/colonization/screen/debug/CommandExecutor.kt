@@ -127,7 +127,6 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			    guiGameModel.unitIterator = UnitIterator(guiGameModel.game.playingPlayer, Unit.ActivePredicate());
 			    guiGameModel.game.playingPlayer.setAi(false);
 			    
-			    gameController.resetUnexploredBorders();
 			    gameController.resetMapModel();
 			    
 			    gameController.centerOnTile(guiGameModel.game.playingPlayer.getEntryLocationX(), guiGameModel.game.playingPlayer.getEntryLocationY());

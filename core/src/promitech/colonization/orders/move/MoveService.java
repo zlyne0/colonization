@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
@@ -50,6 +51,8 @@ public class MoveService {
     
     // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
+    
+    private final MoveExploredTiles exploredTiles = new MoveExploredTiles();
     
     public void inject(
     		GUIGameController guiGameController, 
@@ -157,19 +160,21 @@ public class MoveService {
     
     public void processMove(MoveContext moveContext) {
         moveContext.handleMove();
-        
-        boolean exploredNewTiles = false;
         if (moveContext.isMoveTypeRevealMap()) {
-            exploredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+            moveContext.unit.getOwner().revealMapAfterUnitMove(
+        		guiGameModel.game.map, 
+        		moveContext.unit, 
+        		exploredTiles
+    		);
         }
-        if (exploredNewTiles && moveContext.isHuman()) {
-            guiGameController.resetUnexploredBorders();
+        if (exploredTiles.isExploredNewTiles() && moveContext.isHuman()) {
+            guiGameController.resetUnexploredBorders(exploredTiles);
+            exploredTiles.clear();
             
             if (isNotDiscoveredNewLand(moveContext.unit)) {
                 discoverNewLand(moveContext.unit.getOwner());
             }
         }
-        
         firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
     }
     

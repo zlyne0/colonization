@@ -43,16 +43,18 @@ class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
     };
     
     private final Map map;
-    private final Tile sourceTile;
+    private final int sourceX;
+    private final int sourceY; 
     private final Predicate<Tile> tileFilter;
 
     private int cursor = 0;
     private int foundFirstIndex = 0;
     private Tile cursorObject = null;
     
-    NeighbourTilesIterable(Map map, Tile sourceTile, Predicate<Tile> tileFilter) {
+    NeighbourTilesIterable(Map map, int sourceX, int sourceY, Predicate<Tile> tileFilter) {
+    	this.sourceX = sourceX;
+    	this.sourceY = sourceY;
         this.map = map;
-        this.sourceTile = sourceTile;
         this.tileFilter = tileFilter;
     }
     
@@ -78,7 +80,7 @@ class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
         Tile tile = null;
         for (foundFirstIndex = ic; foundFirstIndex < Direction.allDirections.size(); foundFirstIndex++) {
             direction = Direction.allDirections.get(foundFirstIndex);
-            tile = map.getTile(sourceTile, direction);
+            tile = map.getTile(sourceX, sourceY, direction);
             if (tile == null || !tileFilter.test(tile)) {
                 continue;
             }
@@ -330,16 +332,20 @@ public class Map extends ObjectWithId {
 	    }
 	}
 
+	public Iterable<Tile> neighbourTiles(int x, int y) {
+		return new NeighbourTilesIterable(Map.this, x, y, NeighbourTilesIterable.ALL);
+	}
+	
     public Iterable<Tile> neighbourTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.ALL);
+        return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.ALL);
     }
 
     public Iterable<Tile> neighbourLandTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.LAND_TILES);
+        return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.LAND_TILES);
     }
 
     public Iterable<Tile> neighbourWaterTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.WATER_TILES);
+        return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.WATER_TILES);
     }
     
     /**

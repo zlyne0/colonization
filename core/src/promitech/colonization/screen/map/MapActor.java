@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import promitech.colonization.GameResources;
 import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -22,9 +23,8 @@ import promitech.colonization.screen.map.unitanimation.UnitTileAnimation;
 
 public class MapActor extends Widget implements Map {
 
-	private final GameResources gameResources;
 	private final GUIGameModel guiGameModel;
-	private final MapDrawModel mapDrawModel = new MapDrawModel();
+	private final MapDrawModel mapDrawModel;
 	private final MapRenderer mapRenderer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
@@ -34,7 +34,7 @@ public class MapActor extends Widget implements Map {
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	public MapActor(final GUIGameController gameController, GameResources gameResources, GUIGameModel guiGameModel) {
-		this.gameResources = gameResources;
+		this.mapDrawModel = new MapDrawModel(gameResources);
 		this.guiGameModel = guiGameModel;
 		
 		addListener(new InputListener() {
@@ -96,12 +96,16 @@ public class MapActor extends Widget implements Map {
 	
 	@Override
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(gameResources);
+		mapDrawModel.resetUnexploredBorders();
+	}
+	
+	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
+		mapDrawModel.resetUnexploredBorders(exploredTiles);
 	}
 	
 	@Override
 	public void resetMapModel() {
-		mapDrawModel.initialize(guiGameModel.game, gameResources);
+		mapDrawModel.initialize(guiGameModel.game);
 	}
 	
 	@Override
