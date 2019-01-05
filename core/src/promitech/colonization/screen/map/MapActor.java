@@ -24,8 +24,9 @@ import promitech.colonization.screen.map.unitanimation.UnitTileAnimation;
 public class MapActor extends Widget implements Map {
 
 	private final GUIGameModel guiGameModel;
-	private final MapDrawModel mapDrawModel;
+	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
+	private final TileDrawModelInitializer initializer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 
@@ -34,7 +35,6 @@ public class MapActor extends Widget implements Map {
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	public MapActor(final GUIGameController gameController, GameResources gameResources, GUIGameModel guiGameModel) {
-		this.mapDrawModel = new MapDrawModel(gameResources);
 		this.guiGameModel = guiGameModel;
 		
 		addListener(new InputListener() {
@@ -92,20 +92,21 @@ public class MapActor extends Widget implements Map {
 		});
 		
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
+		initializer = new TileDrawModelInitializer(gameResources);
 	}
 	
 	@Override
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders();
+		mapDrawModel.resetUnexploredBorders(initializer);
 	}
 	
 	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
-		mapDrawModel.resetUnexploredBorders(exploredTiles);
+		mapDrawModel.resetUnexploredBorders(initializer, exploredTiles);
 	}
 	
 	@Override
 	public void resetMapModel() {
-		mapDrawModel.initialize(guiGameModel.game);
+		mapDrawModel.initialize(initializer, guiGameModel.game);
 	}
 	
 	@Override

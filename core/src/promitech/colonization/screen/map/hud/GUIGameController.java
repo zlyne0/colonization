@@ -261,12 +261,9 @@ public class GUIGameController {
         System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
             System.out.println("tile: " + tile);
+        	System.out.println("drawmodel = " + mapActor.mapDrawModel().tileDrawModelToString(p.x, p.y));
         } else {
             System.out.println("tile is null");
-        }
-        Object tileDrawModel = mapActor.mapDrawModel().getTileDrawModel(p.x, p.y);
-        if (tileDrawModel != null) {
-            System.out.println("drawmodel = " + tileDrawModel.toString());
         }
 	}
 	

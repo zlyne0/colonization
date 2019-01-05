@@ -464,6 +464,7 @@ public class MapRenderer {
 		for (Direction direction : Direction.allDirections) {
 			x = direction.stepX(colonyTile.x, colonyTile.y);
 			y = direction.stepY(colonyTile.x, colonyTile.y);
+			// assume colony can never be on map edge so do not check if x,y is on map
 			tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 			if (tileDrawModel.settlementImage != null) {
 				v = mapToScreenCords(x, y);

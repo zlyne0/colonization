@@ -12,7 +12,6 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
-import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
@@ -46,36 +45,29 @@ public class MoveController {
 	}
 	
 	public void pressDirectionKey(Direction direction) {
-		
-		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (guiGameModel.isViewMode()) {
-			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			mapDrawModel.selectedTile = guiGameModel.game.map.getTile(x, y);
-			
-			if (mapActor.isTileOnScreenEdge(mapDrawModel.selectedTile)) {
-				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
-			}
-		} else {
-			if (guiGameModel.isActiveUnitNotSet()) {
-				return;
-			}
-			
-			Unit selectedUnit = guiGameModel.getActiveUnit();
-			Tile sourceTile = selectedUnit.getTile();
-			
-			Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
-			if (destTile == null) {
-				return;
-			}
-			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
-			
-			mapActor.mapDrawModel().unitPath = null;
-			selectedUnit.clearDestination();
-			System.out.println("moveContext.pressDirectionKey = " + moveContext);
-			
-            moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
+			// no cursor move by direction key in view mode
+			return;
 		}
+		
+		if (guiGameModel.isActiveUnitNotSet()) {
+			return;
+		}
+		
+		Unit selectedUnit = guiGameModel.getActiveUnit();
+		Tile sourceTile = selectedUnit.getTile();
+		
+		Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
+		if (destTile == null) {
+			return;
+		}
+		MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
+		
+		mapActor.mapDrawModel().unitPath = null;
+		selectedUnit.clearDestination();
+		System.out.println("moveContext.pressDirectionKey = " + moveContext);
+		
+        moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
 	}
 	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {

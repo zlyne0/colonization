@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
-import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
