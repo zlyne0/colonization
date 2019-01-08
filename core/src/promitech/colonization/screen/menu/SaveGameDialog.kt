@@ -109,7 +109,8 @@ class SaveGameDialog(
 			if (saves.isSaveNameExists(gameNameTextField.getText())) {
 				showConfirmation(saves)
 			} else {
-				saves.saveAs(gameNameTextField.getText(), guiGameModel.game)
+				saveInWaitDialog(saves)
+				
 				hideWithFade()
 			}
 		}
@@ -123,11 +124,19 @@ class SaveGameDialog(
 		confirmationDialog.withContent("saveConfirmationDialog.areYouSure.text")
 			.withButton("no")
 			.withButton("yes", { d ->
-				saves.saveAs(gameNameTextField.getText(), guiGameModel.game) 
+				saveInWaitDialog(saves)
+
 				d.hideWithoutFade()
 				hideWithoutFade()
 			})
 		showDialog(confirmationDialog)
+	}
+	
+	private fun saveInWaitDialog(saves : SaveGameList) {
+		WaitDialog(Messages.msg("status.savingGame"), {
+			saves.saveAs(gameNameTextField.getText(), guiGameModel.game)
+		}, {})
+			.show(this@SaveGameDialog.dialog.getStage())
 	}
 		
 	override fun show(stage : Stage) {

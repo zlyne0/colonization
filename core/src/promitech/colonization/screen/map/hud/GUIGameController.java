@@ -267,31 +267,6 @@ public class GUIGameController {
         }
 	}
 	
-	public void showMapScreenOnStartNewGame() {
-		try {
-			new GameCreator(guiGameModel).initNewGame();
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-	}
-	
-	public void showMapScreenAndLoadGame(String gameName) {
-		new GameCreator(guiGameModel).load(gameName);
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-	}
-	
-	public void showMapScreenAndLoadLastGame() {
-		new GameCreator(guiGameModel).loadLastGame();
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-	}
-	
     public void showMapScreenAndActiveNextUnit() {
     	screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
     	logicNextActiveUnit();

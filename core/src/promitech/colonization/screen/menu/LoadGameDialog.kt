@@ -15,10 +15,13 @@ import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.STable
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
+import promitech.colonization.GameCreator
+import promitech.colonization.screen.map.hud.GUIGameModel
 
 class LoadGameDialog(
 	private val shapeRenderer : ShapeRenderer,
-	private val guiGameController : GUIGameController
+	private val guiGameController : GUIGameController,
+	private val guiGameModel : GUIGameModel
 )
 : ClosableDialog<SaveGameDialog>(
 	ModalDialogSize.width50(), ModalDialogSize.height75()
@@ -84,7 +87,14 @@ class LoadGameDialog(
 		getButtonTable().add(okButton).pad(10f).fillX().expandX()
 		
 		okButton.addListener { _, _ ->
-			guiGameController.showMapScreenAndLoadGame(gameNameLabel.text.toString())
+			
+			WaitDialog(Messages.msg("status.loadingGame"), {
+				GameCreator(guiGameModel).load(gameNameLabel.text.toString())
+			}, {
+				guiGameController.resetMapModel()
+				guiGameController.showMapScreenAndActiveNextUnit()
+			}).show(this@LoadGameDialog.dialog.getStage())
+			
 			hideWithoutFade()
 		}
 		cancelButton.addListener { _, _ ->

@@ -14,6 +14,7 @@ import promitech.colonization.ui.ClosableDialog
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import com.badlogic.gdx.utils.viewport.FitViewport
+import promitech.colonization.GameCreator
 
 class MenuApplicationScreen (
 	private val guiGameController : GUIGameController,
@@ -40,17 +41,27 @@ class MenuApplicationScreen (
 		optionsButton = TextButton(Messages.msg("preferencesAction.name"), GameResources.instance.getUiSkin())
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
 		
-		newGameButton.addListener { _, _ -> 
-			guiGameController.showMapScreenOnStartNewGame()
+		newGameButton.addListener { _, _ ->
+			WaitDialog(Messages.msg("status.startingGame"), {
+				GameCreator(guiGameModel).initNewGame()
+			}, {
+				guiGameController.resetMapModel()
+				guiGameController.showMapScreenAndActiveNextUnit()
+			}).show(stage)
 		}
 		backButton.addListener { _, _ ->
 			guiGameController.showMapScreenAndActiveNextUnit()
 		}
 		loadGameButton.addListener { _, _ ->
-			showDialog(LoadGameDialog(shape, guiGameController))
+			showDialog(LoadGameDialog(shape, guiGameController, guiGameModel))
 		}
 		loadLastGameButton.addListener { _, _ ->
-			guiGameController.showMapScreenAndLoadLastGame()
+			WaitDialog(Messages.msg("status.loadingGame"), {
+				GameCreator(guiGameModel).loadLastGame()
+			}, {
+				guiGameController.resetMapModel()
+				guiGameController.showMapScreenAndActiveNextUnit()
+			}).show(stage)
 		}
 		exitButton.addListener { _, _ ->
 			exitFromGame()
