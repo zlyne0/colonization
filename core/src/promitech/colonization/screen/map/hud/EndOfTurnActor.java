@@ -73,9 +73,13 @@ public class EndOfTurnActor extends Actor {
 
 	private EndOfTurnPhaseListener endOfTurnPhaseListener = new EndOfTurnPhaseListener() {
 		@Override
-		public void nextAIturn(Player player) {
-			playerTurn.set(player);
-			Gdx.graphics.requestRendering();
+		public void nextAIturn(final Player player) {
+			Gdx.app.postRunnable(new Runnable() {
+				@Override
+				public void run() {
+					playerTurn.set(player);
+				}
+			});
 		}
 
 		private final Runnable removeEndOfTurnActor = new Runnable() {

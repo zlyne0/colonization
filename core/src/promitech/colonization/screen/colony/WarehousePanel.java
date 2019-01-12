@@ -129,4 +129,13 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
         colony.getGoodsContainer().decreaseGoodsQuantity(payload);
         changeColonyStateListener.transfereGoods();
     }
+    
+	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+    
 }

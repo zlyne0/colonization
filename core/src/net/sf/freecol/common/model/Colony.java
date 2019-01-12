@@ -1176,8 +1176,15 @@ public class Colony extends Settlement {
 	    return colonyTiles.containsId(tile);
 	}
 	
-	public boolean isTileLocked(Tile tile) {
+	public boolean isTileLockedBecauseNoDock(Tile tile) {
 		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean isTileLocked(Tile tile) {
+		if (isTileLockedBecauseNoDock(tile)) {
 			return true;
 		}
 		if (tile.getOwner() != null) {

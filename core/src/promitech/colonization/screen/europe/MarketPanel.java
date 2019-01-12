@@ -183,4 +183,13 @@ public class MarketPanel extends Container<ScrollPane> implements DragAndDropTar
 			}
 		}
 	}
+	
+	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
 }

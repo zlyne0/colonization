@@ -22,9 +22,19 @@ public class UnitDragAndDropTarget extends Target {
 	@Override
 	public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
     	Validation.instanceOf(source.getActor(), UnitActor.class);
-    	return targetContainer.canPutPayload((UnitActor)source.getActor(), x, y);
+    	
+    	if (targetContainer.canPutPayload((UnitActor)source.getActor(), x, y)) {
+    		targetContainer.onDragPayload(x, y);
+    		return true;
+    	}
+    	return false;
 	}
 
+	@Override
+	public void reset(Source source, Payload payload) {
+		targetContainer.onLeaveDragPayload();
+	}
+	
 	@Override
 	public void drop(Source source, Payload payload, float x, float y, int pointer) {
     	Validation.instanceOf(source.getActor(), UnitActor.class);

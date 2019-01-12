@@ -103,6 +103,14 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 	}
 	
 	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
+	@Override
 	public void draw(Batch batch, float parentAlpha) {
 		drawBorders(batch);
 		super.draw(batch, parentAlpha);
@@ -260,6 +268,14 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		changeColonyStateListener.changeUnitAllocation();
 	}
 
+	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
 	public void clearUnits() {
 		widgets.clear();
 	}

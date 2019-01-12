@@ -494,7 +494,7 @@ public class GUIGameController {
 		Tile tile = unit.getTile();
 		
 		Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
-		changeActiveUnit(null);
+		nextActiveUnit();
 		resetMapModel();
 	}
 	

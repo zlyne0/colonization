@@ -2,6 +2,7 @@ package promitech.colonization.screen.colony;
 
 import java.util.List;
 
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
@@ -16,6 +17,7 @@ import promitech.colonization.ui.DoubleClickedListener;
 class BuildingsPanelActor extends Table {
     private final ChangeColonyStateListener changeColonyStateListener;
     private final DoubleClickedListener unitActorDoubleClickListener;
+    private final ShapeRenderer shapeRenderer = new ShapeRenderer();
     
     BuildingsPanelActor(ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
         this.changeColonyStateListener = changeColonyStateListener;
@@ -29,7 +31,7 @@ class BuildingsPanelActor extends Table {
         
         int i = 0;
         for (Building building : buildings) {
-            BuildingActor buildingActor = new BuildingActor(colony, building, changeColonyStateListener, unitActorDoubleClickListener);
+            BuildingActor buildingActor = new BuildingActor(shapeRenderer, colony, building, changeColonyStateListener, unitActorDoubleClickListener);
             buildingActor.initWorkers(dragAndDrop);
             dragAndDrop.addTarget(new UnitDragAndDropTarget(buildingActor, buildingActor));
             

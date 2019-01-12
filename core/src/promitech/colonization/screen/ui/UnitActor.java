@@ -152,4 +152,13 @@ public class UnitActor extends Widget implements DragAndDropTargetContainer<Abst
 		anAbstractGood.setQuantity(Math.min(anAbstractGood.getQuantity(), maxGoodsAmountToFillFreeSlots));
 		return true;
 	}
+	
+	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
 }
