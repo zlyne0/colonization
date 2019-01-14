@@ -72,8 +72,8 @@ public class SettlementFactory {
 			}
 		}
 		
-		for (Tile t : map.neighbourTiles(tile)) {
-			ProductionInfo productionInfo = t.getType().productionInfo;
+		for (NeighbourIterableTile it : map.neighbourTiles(tile)) {
+			ProductionInfo productionInfo = it.tile.getType().productionInfo;
 			for (Entry<String> scaleEntry : scale.entries()) {
 				int goodsAmount = productionInfo.unattendedProductions(scaleEntry.key);
 				scale.put(scaleEntry.key, scaleEntry.value + goodsAmount);

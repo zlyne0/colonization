@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.xml.sax.SAXException;
@@ -11,95 +10,12 @@ import com.badlogic.gdx.math.GridPoint2;
 import net.sf.freecol.common.model.map.AutoFreePoolableTileIterable;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.util.Predicate;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
-
-class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
-    
-    public static final Predicate<Tile> ALL = new Predicate<Tile>() {
-        @Override
-        public boolean test(Tile tile) {
-            return true;
-        }
-    };
-
-    public static final Predicate<Tile> LAND_TILES = new Predicate<Tile>() {
-        @Override
-        public boolean test(Tile tile) {
-            return tile.getType().isLand();
-        }
-    };
-
-    public static final Predicate<Tile> WATER_TILES = new Predicate<Tile>() {
-        @Override
-        public boolean test(Tile tile) {
-            return tile.getType().isWater();
-        }
-    };
-    
-    private final Map map;
-    private final int sourceX;
-    private final int sourceY; 
-    private final Predicate<Tile> tileFilter;
-
-    private int cursor = 0;
-    private int foundFirstIndex = 0;
-    private Tile cursorObject = null;
-    
-    NeighbourTilesIterable(Map map, int sourceX, int sourceY, Predicate<Tile> tileFilter) {
-    	this.sourceX = sourceX;
-    	this.sourceY = sourceY;
-        this.map = map;
-        this.tileFilter = tileFilter;
-    }
-    
-    @Override
-    public Iterator<Tile> iterator() {
-        return this;
-            
-    }
-        
-    @Override
-    public boolean hasNext() {
-        Tile t = found(cursor);
-        cursor = foundFirstIndex;
-        if (t == null) {
-            return false;
-        }
-        cursorObject = t;
-        return cursor < Direction.allDirections.size();
-    }
-
-    private Tile found(int ic) {
-        Direction direction = null;
-        Tile tile = null;
-        for (foundFirstIndex = ic; foundFirstIndex < Direction.allDirections.size(); foundFirstIndex++) {
-            direction = Direction.allDirections.get(foundFirstIndex);
-            tile = map.getTile(sourceX, sourceY, direction);
-            if (tile == null || !tileFilter.test(tile)) {
-                continue;
-            }
-            return tile;
-        }
-        return null;
-    }
-    
-    @Override
-    public Tile next() {
-        cursor++;
-        return cursorObject;
-    }
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-}
 
 public class Map extends ObjectWithId {
 
@@ -185,7 +101,7 @@ public class Map extends ObjectWithId {
 		}
 		Tile tile = tiles[y][x];
 		if (tile == null) {
-			throw new RuntimeException("not implementd, should return empty tile or default");
+			throw new RuntimeException("no tile for cords [" + x + ", " + y + "]");
 		}
 		return tile;
 	}
@@ -332,19 +248,19 @@ public class Map extends ObjectWithId {
 	    }
 	}
 
-	public Iterable<Tile> neighbourTiles(int x, int y) {
+	public Iterable<NeighbourIterableTile> neighbourTiles(int x, int y) {
 		return new NeighbourTilesIterable(Map.this, x, y, NeighbourTilesIterable.ALL);
 	}
 	
-    public Iterable<Tile> neighbourTiles(final Tile sourceTile) {
+    public Iterable<NeighbourIterableTile> neighbourTiles(final Tile sourceTile) {
         return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.ALL);
     }
 
-    public Iterable<Tile> neighbourLandTiles(final Tile sourceTile) {
+    public Iterable<NeighbourIterableTile> neighbourLandTiles(final Tile sourceTile) {
         return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.LAND_TILES);
     }
 
-    public Iterable<Tile> neighbourWaterTiles(final Tile sourceTile) {
+    public Iterable<NeighbourIterableTile> neighbourWaterTiles(final Tile sourceTile) {
         return new NeighbourTilesIterable(Map.this, sourceTile.x, sourceTile.y, NeighbourTilesIterable.WATER_TILES);
     }
     
@@ -356,7 +272,7 @@ public class Map extends ObjectWithId {
      */
     public Iterable<Tile> neighbourTiles(final Tile sourceTile, int radius) {
         AutoFreePoolableTileIterable iterable = AutoFreePoolableTileIterable.obtain();
-        iterable.reset(Map.this, sourceTile, radius);
+        iterable.reset(Map.this, sourceTile.x, sourceTile.y, radius);
         return iterable;
     }
     

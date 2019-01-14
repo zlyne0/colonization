@@ -43,8 +43,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile it : game.map.neighbourTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -67,8 +67,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourLandTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile it : game.map.neighbourLandTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -88,8 +88,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourWaterTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile it : game.map.neighbourWaterTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -107,8 +107,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile it : game.map.neighbourTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then

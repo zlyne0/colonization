@@ -17,8 +17,8 @@ public class PoolableTileIterable implements Iterable<Tile>, Iterator<Tile> {
         return pool.obtain();
     }
     
-    public void reset(Map map, Tile sourceTile, int radius) {
-        spiralIterator2.reset(map, sourceTile, radius);
+    public void reset(Map map, int centerX, int centerY, int radius) {
+        spiralIterator2.reset(map, centerX, centerY, radius);
     }
 
     @Override
