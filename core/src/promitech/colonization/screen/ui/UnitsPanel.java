@@ -178,7 +178,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		frameStyle.background = new FrameWithCornersDrawableSkin(title, FontResource.getUnitBoxFont(), GameResources.instance);
 		setStyle(frameStyle);
 		
-		setWidget(widgets);
+		setActor(widgets);
 		
         setForceScroll(false, false);
         setFadeScrollBars(false);
@@ -187,7 +187,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
         
         widgets.padLeft(CORNER_SKIN_DECORATION_SIZE);
         widgets.padRight(CORNER_SKIN_DECORATION_SIZE);
-        widgets.align(Align.center);
+        widgets.align(Align.left);
         widgets.space(15);
 	}
 	
@@ -222,7 +222,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		
 		cargoPanel = new CargoPanel(goodsDragAndDrop, changeColonyStateListener);
-		goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
 		return this;
 	}
 	
@@ -320,6 +319,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		if (withUnitFocus) {
 			unitActor.withCargoPanel(cargoPanel, changeColonyStateListener);
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(unitActor, unitActor));
+			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
 		}
 		
 		widgets.addActor(unitActor);
@@ -329,6 +329,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	private void updateCargo(UnitActor unitActor) {
 		if (withUnitFocus) {
 	        cargoPanel.initCargoForUnit(unitActor);
+	        widgets.removeActor(cargoPanel);
 	        widgets.addActorAfter(selectedActor, cargoPanel);
 		}
 	}
