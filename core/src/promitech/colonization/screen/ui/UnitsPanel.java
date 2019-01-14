@@ -258,7 +258,9 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);
-		unitActor.addListener(unitClickListener);
+		if (withUnitFocus) {
+			unitActor.addListener(unitClickListener);
+		}
 		widgets.addActor(unitActor);
 		
 		validate();
@@ -304,9 +306,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 
 	public UnitActor addUnit(Unit unit) {
 		UnitActor unitActor = new UnitActor(unit, unitActorDoubleClickListener);
-		if (unitClickListener != null) {
-			unitActor.addListener(unitClickListener);
-		}
 		if (showUnitChip) {
 			unitActor.enableUnitChip(shapeRenderer);
 		}
@@ -317,6 +316,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		}
 
 		if (withUnitFocus) {
+			unitActor.addListener(unitClickListener);
 			unitActor.withCargoPanel(cargoPanel, changeColonyStateListener);
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(unitActor, unitActor));
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));

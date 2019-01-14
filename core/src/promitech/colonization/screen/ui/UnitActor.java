@@ -15,7 +15,7 @@ import promitech.colonization.ui.DoubleClickedListener;
 
 public class UnitActor extends Widget implements DragAndDropTargetContainer<AbstractGoods> {
     public final Unit unit;
-    private boolean drawUnitChip;
+    private boolean drawUnitChip = false;
     private boolean drawFocus = false;
     private ShapeRenderer shapeRenderer;
     private TextureRegion texture;
