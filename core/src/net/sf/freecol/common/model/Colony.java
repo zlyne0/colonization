@@ -1183,8 +1183,14 @@ public class Colony extends Settlement {
 		return false;
 	}
 	
+	/**
+	 * Is tile locked for colony worker. 
+	 */
 	public boolean isTileLocked(Tile tile) {
 		if (isTileLockedBecauseNoDock(tile)) {
+			return true;
+		}
+		if (tile.hasLostCityRumour()) {
 			return true;
 		}
 		if (tile.getOwner() != null) {

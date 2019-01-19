@@ -101,6 +101,9 @@ public class TerrainPanel extends Group implements
 		if (ct.tile.hasSettlement()) {
 			return false;
 		}
+		if (ct.tile.hasLostCityRumour()) {
+			return false;
+		}
 		if (colony.isTileLockedBecauseNoDock(ct.tile)) {
 			return false;
 		}
