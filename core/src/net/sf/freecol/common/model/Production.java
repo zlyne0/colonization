@@ -12,6 +12,19 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class Production {
+	
+	public static final Production EMPTY_READONLY = new Production(false) {
+		@Override
+		public void applyModifiers(Collection<? extends ObjectWithFeatures> features) {
+			throw new IllegalStateException("can not modify readonly object");
+		}
+		
+		@Override
+		public void applyTileImprovementsModifiers(Tile aTile) {
+			throw new IllegalStateException("can not modify readonly object");
+		}
+	};
+	
     private boolean unattended = false;
     private final java.util.Map<GoodsType,Integer> input = new HashMap<GoodsType, Integer>(2); 
     private final java.util.Map<GoodsType,Integer> output = new HashMap<GoodsType, Integer>(2); 

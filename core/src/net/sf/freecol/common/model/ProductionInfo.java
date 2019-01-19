@@ -95,7 +95,7 @@ public class ProductionInfo {
 			}
 		}
 		if (maxProduction == null) {
-			throw new IllegalStateException("can not find max produtions in " + this.toString());
+			return Production.EMPTY_READONLY;
 		}
 		return maxProduction;
 	}
