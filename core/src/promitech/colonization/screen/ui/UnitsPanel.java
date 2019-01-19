@@ -23,12 +23,17 @@ import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.screen.colony.DragAndDropPreHandlerTargetContainer;
 import promitech.colonization.screen.colony.DragAndDropSourceContainer;
 import promitech.colonization.screen.colony.DragAndDropTargetContainer;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
+class CargoPanel extends Table implements 
+	DragAndDropSourceContainer<AbstractGoods>, 
+	DragAndDropTargetContainer<AbstractGoods>,
+	DragAndDropPreHandlerTargetContainer<AbstractGoods>	
+{
 	private static final float ITEMS_SPACE = 15;
 	
 	private final ChangeColonyStateListener changeColonyStateListener;
@@ -132,6 +137,18 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 		shapeRenderer.end();
 		
 		batch.begin();
+	}
+
+	@Override
+	public boolean isPrePutPayload(AbstractGoods payload, float x, float y) {
+		return unitActor.isPrePutPayload(payload, x, y);
+	}
+
+	@Override
+	public void prePutPayload(AbstractGoods payload, float x, float y,
+			DragAndDropSourceContainer<AbstractGoods> sourceContainer) 
+	{
+		unitActor.prePutPayload(payload, x, y, sourceContainer);
 	}
 }
 

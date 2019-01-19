@@ -8,12 +8,16 @@ import com.badlogic.gdx.scenes.scene2d.ui.Widget;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.GameResources;
+import promitech.colonization.screen.colony.DragAndDropPreHandlerTargetContainer;
 import promitech.colonization.screen.colony.DragAndDropSourceContainer;
 import promitech.colonization.screen.colony.DragAndDropTargetContainer;
 import promitech.colonization.screen.map.UnitDrawer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-public class UnitActor extends Widget implements DragAndDropTargetContainer<AbstractGoods> {
+public class UnitActor extends Widget implements 
+	DragAndDropTargetContainer<AbstractGoods>,
+	DragAndDropPreHandlerTargetContainer<AbstractGoods>
+{
     public final Unit unit;
     private boolean drawUnitChip = false;
     private boolean drawFocus = false;
@@ -149,7 +153,6 @@ public class UnitActor extends Widget implements DragAndDropTargetContainer<Abst
 		if (maxGoodsAmountToFillFreeSlots <= 0) {
 			return false;
 		}
-		anAbstractGood.setQuantity(Math.min(anAbstractGood.getQuantity(), maxGoodsAmountToFillFreeSlots));
 		return true;
 	}
 	
@@ -159,6 +162,21 @@ public class UnitActor extends Widget implements DragAndDropTargetContainer<Abst
 
 	@Override
 	public void onLeaveDragPayload() {
+	}
+
+	@Override
+	public boolean isPrePutPayload(AbstractGoods anAbstractGood, float x, float y) {
+		int maxGoodsAmountToFillFreeSlots = unit.maxGoodsAmountToFillFreeSlots(anAbstractGood.getTypeId());
+		return maxGoodsAmountToFillFreeSlots > 0;
+	}
+
+	@Override
+	public void prePutPayload(AbstractGoods anAbstractGood, float x, float y,
+			DragAndDropSourceContainer<AbstractGoods> sourceContainer) {
+		int maxGoodsAmountToFillFreeSlots = unit.maxGoodsAmountToFillFreeSlots(anAbstractGood.getTypeId());
+		if (maxGoodsAmountToFillFreeSlots > 0) {
+			anAbstractGood.setQuantity(Math.min(anAbstractGood.getQuantity(), maxGoodsAmountToFillFreeSlots));
+		}
 	}
 	
 }
