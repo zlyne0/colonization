@@ -2,7 +2,6 @@ package promitech.colonization.screen.map;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.NeighbourIterableTile;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -12,6 +11,7 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
+import promitech.map.isometric.NeighbourIterableTile;
 
 class TileDrawModelInitializer {
 	private final GameResources gameResources;
@@ -96,7 +96,7 @@ class TileDrawModelInitializer {
 
 			determineUnexploredBordersForCords(x, y);
 			// when one explore, border moves so reset neighbours 
-			for (NeighbourIterableTile it : map.neighbourTiles(x, y)) {
+			for (NeighbourIterableTile<Tile> it : map.neighbourTiles(x, y)) {
 				determineUnexploredBordersForCords(it.tile.x, it.tile.y);
 			}
 		}

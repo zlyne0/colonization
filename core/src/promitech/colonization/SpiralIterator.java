@@ -45,7 +45,9 @@ public final class SpiralIterator extends AbstractArray2D implements Iterator<Bo
     		x = Direction.NE.stepX(x, y);
     		y = Direction.NE.stepY(x, y);
     	}
-    	if (!isCoordinateValid(x, y)) nextTile();
+    	if (!isCoordinateValid(x, y)) {
+    	    nextTile();
+    	}
     }
     
     private boolean isCoordinateValid(int px, int py) {

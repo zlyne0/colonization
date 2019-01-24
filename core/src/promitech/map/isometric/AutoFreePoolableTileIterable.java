@@ -1,9 +1,9 @@
-package net.sf.freecol.common.model.map;
+package promitech.map.isometric;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 
-public class AutoFreePoolableTileIterable extends PoolableTileIterable {
+class AutoFreePoolableTileIterable extends PoolableTileIterable {
 
     private static final Pool<AutoFreePoolableTileIterable> autoFreePool = Pools.get(AutoFreePoolableTileIterable.class);    
     
@@ -11,11 +11,15 @@ public class AutoFreePoolableTileIterable extends PoolableTileIterable {
         return autoFreePool.obtain();
     }
     
+    public static void release(AutoFreePoolableTileIterable obj) {
+        autoFreePool.free(obj);
+    }
+    
     @Override
     public boolean hasNext() {
         boolean hn = spiralIterator2.hasNext();
         if (!hn) {
-            autoFreePool.free(this);
+            release(this);
         }
         return hn;
     }

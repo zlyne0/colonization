@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.resources.Messages;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class SettlementFactory {
 
@@ -72,7 +73,7 @@ public class SettlementFactory {
 			}
 		}
 		
-		for (NeighbourIterableTile it : map.neighbourTiles(tile)) {
+		for (NeighbourIterableTile<Tile> it : map.neighbourTiles(tile)) {
 			ProductionInfo productionInfo = it.tile.getType().productionInfo;
 			for (Entry<String> scaleEntry : scale.entries()) {
 				int goodsAmount = productionInfo.unattendedProductions(scaleEntry.key);

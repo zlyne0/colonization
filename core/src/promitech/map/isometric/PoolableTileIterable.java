@@ -1,28 +1,27 @@
-package net.sf.freecol.common.model.map;
+package promitech.map.isometric;
 
 import java.util.Iterator;
 
 import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 
-import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Tile;
-
-public class PoolableTileIterable implements Iterable<Tile>, Iterator<Tile> {
+class PoolableTileIterable<TILE_TYPE> implements Iterable<TILE_TYPE>, Iterator<TILE_TYPE> {
+    @SuppressWarnings("rawtypes")
     private static final Pool<PoolableTileIterable> pool = Pools.get(PoolableTileIterable.class);
     
-    protected final SpiralIterator2 spiralIterator2 = new SpiralIterator2();
+    protected final SpiralIterator2<TILE_TYPE> spiralIterator2 = new SpiralIterator2<TILE_TYPE>();
 
-    public static PoolableTileIterable obtain() {
+    @SuppressWarnings("unchecked")
+    public static <T> PoolableTileIterable<T> obtain() {
         return pool.obtain();
     }
     
-    public void reset(Map map, int centerX, int centerY, int radius) {
+    public void reset(IsometricMap<TILE_TYPE> map, int centerX, int centerY, int radius) {
         spiralIterator2.reset(map, centerX, centerY, radius);
     }
 
     @Override
-    public Iterator<Tile> iterator() {
+    public Iterator<TILE_TYPE> iterator() {
         return this;
     }
 
@@ -32,7 +31,7 @@ public class PoolableTileIterable implements Iterable<Tile>, Iterator<Tile> {
     }
 
     @Override
-    public Tile next() {
+    public TILE_TYPE next() {
         return spiralIterator2.next();
     }
 

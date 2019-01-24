@@ -11,11 +11,10 @@ import org.junit.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
-import net.sf.freecol.common.model.map.AutoFreePoolableTileIterable;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.map.isometric.IsometricMapAssert;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class MapTest {
     
@@ -30,9 +29,7 @@ public class MapTest {
 
     @AfterClass
     public static void afterClass() {
-        Pool<AutoFreePoolableTileIterable> pool = Pools.get(AutoFreePoolableTileIterable.class);
-        assertThat(pool.peak).isEqualTo(1);
-        
+        IsometricMapAssert.hasAutoFreePoolableTileIterablePoolSize(1);        
         game = null;
     }
     
@@ -43,7 +40,7 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (NeighbourIterableTile it : game.map.neighbourTiles(sourceTile)) {
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourTiles(sourceTile)) {
             tiles.add(it.tile.getId());
         }
 
@@ -67,7 +64,7 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (NeighbourIterableTile it : game.map.neighbourLandTiles(sourceTile)) {
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourLandTiles(sourceTile)) {
             tiles.add(it.tile.getId());
         }
 
@@ -88,7 +85,7 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (NeighbourIterableTile it : game.map.neighbourWaterTiles(sourceTile)) {
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourWaterTiles(sourceTile)) {
             tiles.add(it.tile.getId());
         }
 
@@ -107,7 +104,7 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (NeighbourIterableTile it : game.map.neighbourTiles(sourceTile)) {
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourTiles(sourceTile)) {
             tiles.add(it.tile.getId());
         }
 

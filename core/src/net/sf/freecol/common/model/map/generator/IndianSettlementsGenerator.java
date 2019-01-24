@@ -9,9 +9,9 @@ import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sf.freecol.common.model.IndianSettlement;
-import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -20,7 +20,6 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
-import promitech.colonization.SpiralIterator;
 
 class IndianSettlementsGenerator {
 
@@ -52,7 +51,6 @@ class IndianSettlementsGenerator {
 	private final MapGenerator mapGenerator;
 	private final Map map;
 	private final MapIdEntities<Player> players;
-	private SpiralIterator spiralIterator;
 	private final SettlementFactory factory;
 	
 	IndianSettlementsGenerator(MapGenerator mapGenerator, MapIdEntities<Player> players, Map map) {
@@ -60,8 +58,6 @@ class IndianSettlementsGenerator {
 		this.map = map;
 		this.players = players;
 		this.factory = new SettlementFactory(map);
-		
-		spiralIterator = new SpiralIterator(map.width, map.height);
 	}
 	
 	void makeNativeSettlements() {
@@ -161,18 +157,13 @@ class IndianSettlementsGenerator {
 	}
 
 	private void changeTileOwner(IndianSettlement settlement) {
-		spiralIterator.reset(settlement.tile.x, settlement.tile.y, true, settlement.settlementType.getClaimableRadius()+1);
-		
 		settlement.tile.changeOwner(settlement.getOwner(), settlement);
 		
-		Tile tile;
-		while (spiralIterator.hasNext()) {
-			tile = map.getTile(spiralIterator.getX(), spiralIterator.getY());
-			if (tile != null && !tile.hasOwnerOrOwningSettlement() && !tile.getType().isWater()) {
-				tile.changeOwner(settlement.getOwner(), settlement);
-			}
-			spiralIterator.next();
-		}
+		for (Tile tile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius()+1)) {
+		    if (!tile.hasOwnerOrOwningSettlement() && !tile.getType().isWater()) {
+		        tile.changeOwner(settlement.getOwner(), settlement);
+		    }
+        }
 	}
 	
 	public Tile centerOfRegion(Region region) {
