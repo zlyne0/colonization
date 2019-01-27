@@ -101,14 +101,6 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
-		object : Task("new game") {
-			override fun run(console: ConsoleOutput) : Boolean {
-			    GameCreator(guiGameModel).initNewGame();
-			    gameController.resetMapModel();
-			    gameController.nextActiveUnit();
-				return true
-			}
-		},
 		object : Task("load game") {
 			override fun run(console: ConsoleOutput) : Boolean {
 			    GameCreator(guiGameModel).initGameFromSavegame();

@@ -19,6 +19,7 @@ import promitech.colonization.DI;
 import promitech.colonization.GameResources;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ThreadsResources;
+import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
 import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
@@ -68,6 +69,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             Messages.instance().load();
             FontResource.load();
             gameResources.load();
+            SaveGameParser.loadDefaultSpecification();
             
             //gameController.initGameFromSavegame();
             //gameController.initNewGame();

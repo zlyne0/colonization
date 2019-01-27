@@ -8,6 +8,7 @@ import net.sf.freecol.common.i18n.Number;
 import net.sf.freecol.common.i18n.NumberRules;
 import net.sf.freecol.common.i18n.Selector;
 import net.sf.freecol.common.i18n.TurnSelector;
+import net.sf.freecol.common.model.Identifiable;
 import promitech.colonization.ui.resources.StringTemplate.TemplateType;
 
 import com.badlogic.gdx.Gdx;
@@ -55,6 +56,14 @@ public class Messages {
 	public static String msgName(String key) {
 		return messagesResources.msgBundle.get(nameKey(key));
 	}
+
+	public static String msgName(Identifiable identifiable) {
+		return msg(nameKey(identifiable.getId()));
+	}
+	
+	public static String shortDescriptionMsg(Identifiable identifiable) {
+		return msg(shortDescriptionKey(identifiable.getId()));
+	}
 	
 	public void dispose() {
 	}
@@ -65,6 +74,10 @@ public class Messages {
 
 	public static String descriptionKey(String id) {
 		return id + ".description";
+	}
+	
+	public static String shortDescriptionKey(String id) {
+		return id + ".shortDescription";
 	}
 	
     public static boolean containsKey(String key) {

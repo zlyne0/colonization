@@ -42,12 +42,7 @@ class MenuApplicationScreen (
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
 		
 		newGameButton.addListener { _, _ ->
-			WaitDialog(Messages.msg("status.startingGame"), {
-				GameCreator(guiGameModel).initNewGame()
-			}, {
-				guiGameController.resetMapModel()
-				guiGameController.showMapScreenAndActiveNextUnit()
-			}).show(stage)
+			NewGameDialog(guiGameController, guiGameModel).show(stage)
 		}
 		backButton.addListener { _, _ ->
 			guiGameController.showMapScreenAndActiveNextUnit()

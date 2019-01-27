@@ -90,11 +90,12 @@ public class Player extends ObjectWithId {
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
     protected List<String> banMission = null;
     
-    public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
+    public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation, String name) {
     	Player player = new Player(idGenerator.nextId(Player.class));
     	player.ai = true; 
         player.nation = nation;
         player.nationType = nation.nationType;
+        player.name = name;
         player.updatableFeatures.addFeaturesAndOverwriteExisted(nation.nationType);
         if (nation.nationType.isEuropean()) {
         	player.changePlayerType(PlayerType.COLONIAL);
