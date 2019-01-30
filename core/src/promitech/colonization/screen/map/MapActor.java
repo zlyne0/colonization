@@ -29,7 +29,8 @@ public class MapActor extends Widget implements Map {
 	private final TileDrawModelInitializer initializer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
-
+	private boolean needResetMapModel = true;
+	
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
@@ -106,12 +107,16 @@ public class MapActor extends Widget implements Map {
 	
 	@Override
 	public void resetMapModel() {
-		mapDrawModel.initialize(initializer, guiGameModel.game);
+		needResetMapModel = true;
 	}
 	
 	@Override
 	public void act(float delta) {
 		super.act(delta);
+		if (needResetMapModel) {
+			mapDrawModel.initialize(initializer, guiGameModel.game);
+			needResetMapModel = false;
+		}
 	}
 	
 	@Override

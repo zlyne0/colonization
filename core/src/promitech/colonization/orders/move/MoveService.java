@@ -161,6 +161,7 @@ public class MoveService {
     public void processMove(MoveContext moveContext) {
         moveContext.handleMove();
         if (moveContext.isMoveTypeRevealMap()) {
+        	exploredTiles.clear();
             moveContext.unit.getOwner().revealMapAfterUnitMove(
         		guiGameModel.game.map, 
         		moveContext.unit, 
