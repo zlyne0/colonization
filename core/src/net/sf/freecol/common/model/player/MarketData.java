@@ -50,6 +50,7 @@ public class MarketData extends ObjectWithId {
 		paidForSale = goodsType.getInitialSellPrice();
 		costToBuy = goodsType.getInitialBuyPrice();
 		amountInMarket = goodsType.getInitialAmount();
+		initialPrice = goodsType.getInitialSellPrice();
 		
         arrears = 0;
         sales = 0;
