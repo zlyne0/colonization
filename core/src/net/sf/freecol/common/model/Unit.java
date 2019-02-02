@@ -354,7 +354,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
     
     public boolean isNaval() {
-    	return unitType != null && unitType.isNaval();
+    	return unitType.isNaval();
     }
     
 	public boolean canMoveToHighSeas() {
