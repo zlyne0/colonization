@@ -100,6 +100,7 @@ public class MapActor extends Widget implements Map {
 	@Override
 	public void resetUnexploredBorders() {
 		needResetUnexploredBorders = true;
+		Gdx.graphics.requestRendering();
 	}
 	
 	private final MoveExploredTiles tilesToMarkAsExplored = new MoveExploredTiles();
@@ -122,6 +123,7 @@ public class MapActor extends Widget implements Map {
 	@Override
 	public void resetMapModel() {
 		needResetMapModel = true;
+		Gdx.graphics.requestRendering();
 	}
 	
 	@Override

@@ -434,12 +434,10 @@ public class GUIGameController {
 
 	public void resetMapModelOnTile(Tile tile) {
 		mapActor.resetMapModel();
-		Gdx.graphics.requestRendering();
 	}
 	
 	public void resetMapModel() {
 		mapActor.resetMapModel();
-		Gdx.graphics.requestRendering();
 	}
 
 	public void buildColony() {

@@ -30,6 +30,11 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	
     	colony.initColonyBuilderUnit(buildByUnit);
     	tile.changeOwner(buildByUnit.getOwner(), colony);
+    	
+    	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
+    	tile.addImprovement(tileImprovement);
+    	
     	return colony;
     }
 

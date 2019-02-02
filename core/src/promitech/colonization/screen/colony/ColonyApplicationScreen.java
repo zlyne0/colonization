@@ -25,6 +25,7 @@ import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
@@ -387,6 +388,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		OptionAction<Colony> abandonColony = new OptionAction<Colony>() {
 			@Override
 			public void executeAction(Colony payload) {
+			    colony.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
 			    colony.removeFromMap(guiGameModel.game);
 			    colony.removeFromPlayer();
 				guiGameController.closeColonyView(colony);

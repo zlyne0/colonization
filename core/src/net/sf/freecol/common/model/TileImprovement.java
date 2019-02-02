@@ -18,7 +18,7 @@ public class TileImprovement implements Identifiable {
 	private int turns = 0;
 	private long connected = 0L;
 
-	public TileImprovement(String id, TileImprovementType type, String style) {
+	private TileImprovement(String id, TileImprovementType type, String style) {
 		this.id = id;
 		this.magnitude = type.getMagnitude();
 		this.type = type;
