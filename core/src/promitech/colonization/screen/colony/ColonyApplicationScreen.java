@@ -332,8 +332,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         centerComponents.setScrollingDisabled(false, false);
         
         Table buttons = new Table();
-        buttons.add(createBuildQueueButton()).expandX().fillX();
-        buttons.add(createCloseButton()).expandX().fillX();
+        buttons.add(createBuildQueueButton()).expandX().fillX().pad(10f);
+        buttons.add(createCloseButton()).expandX().fillX().pad(10f);
         
         tableLayout.setFillParent(true);
         tableLayout.add(buttons).fillX().row();
