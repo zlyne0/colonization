@@ -30,6 +30,7 @@ public class MapActor extends Widget implements Map {
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 	private boolean needResetMapModel = true;
+	private boolean needResetUnexploredBorders = false;
 	
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
 	
@@ -98,11 +99,24 @@ public class MapActor extends Widget implements Map {
 	
 	@Override
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(initializer);
+		needResetUnexploredBorders = true;
 	}
 	
+	private final MoveExploredTiles tilesToMarkAsExplored = new MoveExploredTiles();
+	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mapDrawModel.resetUnexploredBorders(initializer, tilesToMarkAsExplored);
+		}
+		
+		public String toString() {
+			return "postRunnable.resetUnexploredBorders";
+		}
+	};
+	
 	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
-		mapDrawModel.resetUnexploredBorders(initializer, exploredTiles);
+		this.tilesToMarkAsExplored.init(exploredTiles);
+		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
 	
 	@Override
@@ -113,10 +127,6 @@ public class MapActor extends Widget implements Map {
 	@Override
 	public void act(float delta) {
 		super.act(delta);
-		if (needResetMapModel) {
-			mapDrawModel.initialize(initializer, guiGameModel.game);
-			needResetMapModel = false;
-		}
 	}
 	
 	@Override
@@ -125,6 +135,14 @@ public class MapActor extends Widget implements Map {
         shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
         shapeRenderer.translate(getX(), getY(), 0);
 
+		if (needResetMapModel) {
+			needResetMapModel = false;
+			mapDrawModel.initialize(initializer, guiGameModel.game);
+		}
+		if (needResetUnexploredBorders) {
+			needResetUnexploredBorders = false;
+			mapDrawModel.resetUnexploredBorders(initializer);
+		}
         if (mapCentered == false) {
 			mapCentered = true;
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);

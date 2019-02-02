@@ -508,21 +508,8 @@ public class GUIGameController {
 		mapActor.hideTileOwners();
 	}
 	
-	private final MoveExploredTiles exploredTiles = new MoveExploredTiles();
-	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
-		@Override
-		public void run() {
-			mapActor.resetUnexploredBorders(exploredTiles);
-		}
-		
-		public String toString() {
-			return "postRunnable.resetUnexploredBorders";
-		}
-	};
-	
 	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
-		this.exploredTiles.init(exploredTiles);
-		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
+		mapActor.resetUnexploredBorders(exploredTiles);
 	}
 	
 	public void showDialog(ModalDialog<?> dialog) {
