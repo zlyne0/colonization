@@ -325,6 +325,7 @@ public class GUIGameController {
 		guiGameModel.setAiMove(true);
 		System.out.println("end turn");
 
+		endOfTurnPhaseListener.nextAIturn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.playingPlayer.endTurn();
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());

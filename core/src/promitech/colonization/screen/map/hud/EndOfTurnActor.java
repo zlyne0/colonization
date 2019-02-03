@@ -1,5 +1,6 @@
 package promitech.colonization.screen.map.hud;
 
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 import com.badlogic.gdx.Gdx;
@@ -27,6 +28,8 @@ public class EndOfTurnActor extends Actor {
 	private final ShapeRenderer shapeRenderer;
 	private final AtomicReference<Player> playerTurn = new AtomicReference<Player>();
 	private final GUIGameController gameController;
+	
+	private Semaphore nextPlayerLock = new Semaphore(0);
 	
 	public EndOfTurnActor(ShapeRenderer shapeRenderer, final GUIGameController gameController) {
 		this.shapeRenderer = shapeRenderer;
@@ -69,17 +72,19 @@ public class EndOfTurnActor extends Actor {
 				y
 			);
 		}
+		nextPlayerLock.release();
 	}
 
 	private EndOfTurnPhaseListener endOfTurnPhaseListener = new EndOfTurnPhaseListener() {
 		@Override
 		public void nextAIturn(final Player player) {
-			Gdx.app.postRunnable(new Runnable() {
-				@Override
-				public void run() {
-					playerTurn.set(player);
-				}
-			});
+			playerTurn.set(player);
+			Gdx.graphics.requestRendering();
+			try {
+				nextPlayerLock.acquire();
+			} catch (InterruptedException e) {
+				throw new IllegalStateException(e);
+			}
 		}
 
 		private final Runnable removeEndOfTurnActor = new Runnable() {
