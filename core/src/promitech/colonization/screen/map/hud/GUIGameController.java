@@ -338,17 +338,12 @@ public class GUIGameController {
 			System.out.println("new turn for player " + player);
 			
 			aiLogic.aiNewTurn(player);
-			
-//			try {
-//				Thread.sleep(100);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
 		}
 		
 		gameLogic.comparePrices(guiGameModel.game.playingPlayer, marketSnapshoot);
 		
 		gameLogic.newTurn(guiGameModel.game.playingPlayer);
+		guiGameModel.game.getTurn().increaseTurnNumber();
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
