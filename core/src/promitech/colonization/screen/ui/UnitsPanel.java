@@ -337,6 +337,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 			unitActor.withCargoPanel(cargoPanel, changeColonyStateListener);
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(unitActor, unitActor));
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
+			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, cargoPanel));
 		}
 		
 		widgets.addActor(unitActor);
