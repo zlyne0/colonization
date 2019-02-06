@@ -374,6 +374,8 @@ public class Colony extends Settlement {
                 	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {
+            	// equalize to zero
+            	goodsContainer.increaseGoodsQuantity(GoodsType.FOOD, quantityToConsume);
             	
             	Unit unit = colonyWorkers.first();
             	unit.removeFromLocation();
