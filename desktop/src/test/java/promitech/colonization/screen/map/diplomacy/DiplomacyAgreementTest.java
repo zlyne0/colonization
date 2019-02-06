@@ -49,7 +49,7 @@ public class DiplomacyAgreementTest {
     @Test 
 	public void canAcceptTradeGoldAgreement() throws Exception {
 		// given
-    	sut.getDemands().add(new GoldTradeItem(500, spanish, dutch));
+    	sut.add(new GoldTradeItem(500, spanish, dutch));
 		
 		spanish.addGold(10000);
 		int initialSpanishGold = spanish.getGold(); 
@@ -69,8 +69,7 @@ public class DiplomacyAgreementTest {
     	Colony santoDomingo = (Colony)spanish.settlements.getById("colony:6730");
     	MapIdEntities<Unit> santoDomingoUnits = new MapIdEntities<>(santoDomingo.getUnits());
     	
-    	// TODO: jak zrobic aby nie generowal getterow
-		sut.getDemands().add(new ColonyTradeItem(santoDomingo, spanish, dutch));
+		sut.add(new ColonyTradeItem(santoDomingo, spanish, dutch));
     	
 		// when
 		sut.acceptTrade();
@@ -90,7 +89,7 @@ public class DiplomacyAgreementTest {
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(spanish).hasStance(victim, Stance.PEACE);
-		sut.getDemands().add(new InciteTradeItem(victim, spanish, dutch));
+		sut.add(new InciteTradeItem(victim, spanish, dutch));
 		
 		// when
     	sut.acceptTrade();
@@ -105,7 +104,7 @@ public class DiplomacyAgreementTest {
 		Player victim = game.players.getById("player:22");
 		
 		PlayerAssert.assertThat(dutch).hasStance(victim, Stance.PEACE);
-		sut.getOffers().add(new InciteTradeItem(victim, dutch, spanish));
+		sut.add(new InciteTradeItem(victim, dutch, spanish));
 		
 		// when
     	sut.acceptTrade();
@@ -118,7 +117,7 @@ public class DiplomacyAgreementTest {
 	public void canAcceptPeace() throws Exception {
 		// given
 		PlayerAssert.assertThat(dutch).hasStance(spanish, Stance.WAR);
-		sut.getOffers().add(new StanceTradeItem(Stance.PEACE, dutch, spanish));
+		sut.add(new StanceTradeItem(Stance.PEACE, dutch, spanish));
 		
 		// when
     	sut.acceptTrade();
