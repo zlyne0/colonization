@@ -13,8 +13,8 @@ internal class DiplomacyAgreement(val game : Game, val player : Player, val cont
 	
 	private val ss = ScoreService()
 	
-	val offers = ArrayList<TradeItem>()
-	val demands = ArrayList<TradeItem>()
+	internal val offers = ArrayList<TradeItem>()
+	internal val demands = ArrayList<TradeItem>()
 	
 	public fun calculate() : TradeStatus {
 		val demandsValue = calculateTradeAgreements(demands)

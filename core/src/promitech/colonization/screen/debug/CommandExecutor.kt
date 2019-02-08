@@ -186,7 +186,6 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		},
 		object : Task("firstContactDialog") {
 			override fun run(console: ConsoleOutput) : Boolean {
-				// TODO: remove
 				val player = guiGameModel.game.players.getById("player:1")
 				//val contactPlayer = guiGameModel.game.players.getById("player:9")
 				val contactPlayer = guiGameModel.game.players.getById("player:133")
