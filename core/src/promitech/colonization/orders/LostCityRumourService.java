@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
@@ -127,17 +128,8 @@ public class LostCityRumourService {
 		case CIBOLA: {
 			String cityOfCibolaName = game.removeNextCityOfCibola();
 			int treasureAmount = Randomizer.instance().randomInt(dx * 600) + dx * 300;
-			List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-			UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
 			
-			Unit newTreasureUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                treasureUnitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-            newTreasureUnit.changeUnitLocation(destTile);
-            newTreasureUnit.setTreasureAmount(treasureAmount);
+			UnitFactory.createTreasureTrain(unit.getOwner(), destTile, treasureAmount);
 			
             if (unit.getOwner().isHuman()) {
             	guiGameController.showDialog(new SimpleMessageDialog()

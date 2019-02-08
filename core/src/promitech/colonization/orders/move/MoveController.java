@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
@@ -18,6 +20,7 @@ import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.hud.NewLandNameDialog;
 import promitech.colonization.screen.map.unitanimation.MoveView;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
@@ -249,5 +252,30 @@ public class MoveController {
 
     public void showNewLandNameDialog(Player player, String defaultName) {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
+    }
+
+    public void showCashInTreasureConfirmation(MoveContext moveContext) {
+        QuestionDialog questionDialog = new QuestionDialog();
+        
+        int fee = moveContext.unit.treasureTransportFee();
+        if (fee == 0) {
+            questionDialog.addQuestion(StringTemplate.template("cashInTreasureTrain.free"));
+        } else {
+            int percent = Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE);
+            StringTemplate st = StringTemplate.template("cashInTreasureTrain.pay")
+                .addAmount("%fee%", percent);
+            questionDialog.addQuestion(st);
+        }
+
+        questionDialog.addAnswer("highseas.yes", new OptionAction<MoveContext>() {
+            @Override
+            public void executeAction(MoveContext payload) {
+                // TODO: obsluga cash in, niszczenie jednostki, dodanie zlota i komunikat
+                // zlikwidowanie nadmiarowych pol
+                // treasureAmount="0" roleCount="1" experience="0"
+                // <unit id="unit:-1" unitType="model.unit.treasureTrain" role="model.role.default" owner="player:1" state="ACTIVE" movesLeft="6" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="5" experience="0" workLeft="-1"/>
+            }
+        }, moveContext);
+        questionDialog.addAnswer("highseas.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
     }
 }

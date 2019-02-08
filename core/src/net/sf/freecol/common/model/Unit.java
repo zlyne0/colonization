@@ -487,6 +487,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
                     return MoveType.MOVE;
                 }
             } else if (owner.equalsId(settlement.getOwner())) {
+                if (hasAbility(Ability.CARRY_TREASURE) && canCashInTreasureInLocation(target)) {
+                    return MoveType.MOVE_CASH_IN_TREASURE;
+                }
                 return MoveType.MOVE;
             } else if (isTradingUnit()) {
                 return getTradeMoveType(settlement);
@@ -518,6 +521,36 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             }
             return MoveType.MOVE_NO_ACCESS_FULL;
         }
+    }
+    
+    private boolean canCashInTreasureInLocation(UnitLocation unitLocation) {
+        if (unitLocation == null) {
+            throw new IllegalStateException("can not cash in treasure in null location");
+        }
+        if (owner.getEurope() == null) {
+            // when inpedence any colony can cash in treasure
+            return unitLocation instanceof Tile && ((Tile)unitLocation).hasSettlement();
+        }
+        if (unitLocation instanceof Europe) {
+            return true;
+        }
+        if (unitLocation instanceof Tile) {
+            Tile locTile = (Tile)unitLocation;
+            if (locTile.hasSettlement() && locTile.getSettlement().isColony()) {
+                if (locTile.getSettlement().getColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public int treasureTransportFee() {
+        if (isAtLocation(Europe.class) || owner.getEurope() == null) {
+            return 0;
+        }
+        float fee = (Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE) * treasureAmount) / 100f;
+        return (int)owner.getFeatures().applyModifier(Modifier.TREASURE_TRANSPORT_FEE, fee);
     }
     
     private MoveType getLearnMoveType(Tile from, Settlement settlement) {

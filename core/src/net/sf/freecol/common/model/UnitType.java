@@ -32,6 +32,7 @@ public class UnitType extends BuildableType {
 	public static final String ARTILLERY = "model.unit.artillery";
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	public static final String SCOUT = "model.unit.seasonedScout";
+	public static final String GALLEON = "model.unit.galleon";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;

@@ -201,6 +201,7 @@ public class MoveContext {
 				return true;
 			}
 		}
+		case MOVE_CASH_IN_TREASURE:
 		case ATTACK_UNIT: 
 		case ATTACK_SETTLEMENT:
 		case ENTER_FOREIGN_COLONY_WITH_SCOUT:

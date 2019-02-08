@@ -212,6 +212,9 @@ public class MoveService {
             case MOVE_HIGH_SEAS: {
                 moveController.showHighSeasQuestion(moveContext);
             } break;
+            case MOVE_CASH_IN_TREASURE: {
+                moveController.showCashInTreasureConfirmation(moveContext);
+            } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	firstContactController.showScoutMoveToForeignColonyQuestion(
         			moveContext.destTile.getSettlement().getColony(),

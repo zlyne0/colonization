@@ -412,6 +412,16 @@ public class Player extends ObjectWithId {
     	return counter;
     }
     
+    public boolean hasUnitType(String unitTypeId) {
+        // TODO: przerobienie aby przeniesc do MapIdEntities
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.equalsId(unitTypeId)) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     public void addGold(int gold) {
     	this.gold += gold;
     }

@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 public enum MoveType {
     MOVE(null, true),
     MOVE_HIGH_SEAS(null, true),
+    MOVE_CASH_IN_TREASURE("", true),
     EXPLORE_LOST_CITY_RUMOUR(null, true),
     ATTACK_UNIT(null, false),
     ATTACK_SETTLEMENT(null, false),
@@ -31,7 +32,7 @@ public enum MoveType {
     MOVE_NO_EUROPE("Attempt to move to Europe by incapable unit"),
     MOVE_NO_REPAIR("Attempt to move a unit that is under repair"),
     MOVE_NO_TILE("Attempt to move when not on a tile"),
-    MOVE_ILLEGAL("Unspecified illegal move");
+    MOVE_ILLEGAL("Unspecified illegal move"); 
 
     /**
      * The reason why this move type is illegal.
