@@ -40,6 +40,7 @@ import promitech.colonization.screen.map.diplomacy.IndianSettlementInformationDi
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
 import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
@@ -363,8 +364,8 @@ public class GUIGameController {
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
 			return;
 		}
-		TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-		logicMakeImprovement(tile, unit, roadImprovement);
+		String improvementTypeId = TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID;
+		confirmTileImprovement(tile, unit, improvementTypeId);
 	}
 
 	public void plowOrClearForestImprovement() {
@@ -374,17 +375,42 @@ public class GUIGameController {
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
 			return;
 		}
-
-		TileImprovementType imprv = null;
+		String improvementTypeId = null;
 		if (tile.getType().isForested()) {
-			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
+			improvementTypeId = TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID;
 		} else {
-			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+			improvementTypeId = TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID;
 		}
-		logicMakeImprovement(tile, unit, imprv);
+		confirmTileImprovement(tile, unit, improvementTypeId);
+	}
+	
+	private void confirmTileImprovement(final Tile tile, final Unit unit, final String improvementTypeId) {
+		if (tile.getOwner() == null || unit.getOwner().equalsId(tile.getOwner())) {
+			makeTileImprovement(tile, unit, improvementTypeId);
+			return;
+		}
+		int landPrice = -1;
+		if (unit.getOwner().hasContacted(tile.getOwner())) {
+			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner());
+		}
+		if (landPrice == 0) {
+			makeTileImprovement(tile, unit, improvementTypeId);
+			return;
+		}
+		OptionAction<Unit> buildRoad = new OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit payload) {
+				tile.removeOwner();
+				makeTileImprovement(tile, unit, improvementTypeId);
+			}
+		};
+		QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, unit, tile, buildRoad);
+    	mapHudStage.showDialog(questionDialog);
 	}
 
-	private void logicMakeImprovement(Tile tile, Unit unit, TileImprovementType improvement) {
+	private void makeTileImprovement(Tile tile, Unit unit, String improvementId) {
+		TileImprovementType improvement = Specification.instance.tileImprovementTypes.getById(improvementId);
+		
 		if (tile.canBeImprovedByUnit(improvement, unit)) {
 			unit.startImprovement(tile, improvement);
 			System.out.println("unit[" + unit + "] build [" + improvement + "] on tile[" + tile + "]");

@@ -401,6 +401,10 @@ public class Tile implements UnitLocation, Identifiable {
 		return style;
 	}
 
+	public void removeOwner() {
+		this.owner = null;
+	}
+	
 	public void changeOwner(Player player) {
 		changeOwner(player, null);
 	}
