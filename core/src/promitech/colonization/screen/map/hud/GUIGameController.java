@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Notification;
@@ -47,6 +48,7 @@ public class GUIGameController {
 	private MoveController moveController;
 	private GameLogic gameLogic;
 	private MoveService moveService;
+	private PathFinder pathFinder;
 	
 	private MapActor mapActor;
 	private HudStage mapHudStage;
@@ -57,11 +59,15 @@ public class GUIGameController {
 	public GUIGameController() {
 	}
 	
-	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveService moveService) {
+	public void inject(
+		GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, 
+		MoveService moveService, PathFinder pathFinder
+	) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.gameLogic = gameLogic;
 		this.moveService = moveService;
+		this.pathFinder = pathFinder;
 	}
 	
 	public void quickSaveGame() {
@@ -514,8 +520,9 @@ public class GUIGameController {
 	public void buildColony(String colonyName) {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
+		Colony colony = Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
+		Settlement.determineEuropeSeaConnection(guiGameModel.game.map, pathFinder, colony);
 		
-		Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
 		nextActiveUnit();
 		resetMapModel();
 	}

@@ -223,7 +223,7 @@ public class PathFinder {
 	}
 
 	private void resetFinderBeforeSearching(Map map) {
-		if (grid == null) {
+		if (grid == null || !grid.sizeEquals(map.width, map.height)) {
 		    grid = new Object2dArray<Node>(map.width, map.height);
 		    
 		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {

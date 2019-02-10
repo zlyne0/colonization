@@ -69,6 +69,7 @@ public class Colony extends Settlement {
      * identical to bells, and subject to further modification.
      */
     protected int liberty = 0;
+    protected boolean seaConnectionToEurope = false;
     
     private Colony(String id, SettlementType settlementType) {
     	super(id, settlementType);
@@ -219,6 +220,10 @@ public class Colony extends Settlement {
 	    return null;
     }
 
+	public boolean hasSeaConnectionToEurope() {
+		return seaConnectionToEurope;
+	}
+    
 	@Override
 	public boolean isColony() {
 		return true;
@@ -853,6 +858,7 @@ public class Colony extends Settlement {
                 owner
             );
             unit.changeUnitLocation(tile);
+            owner.units.add(unit);
 	        
             StringTemplate st = StringTemplate.template("model.colony.newColonist")
                         .add("%colony%", getName());
@@ -928,6 +934,7 @@ public class Colony extends Settlement {
 				owner
 			);
 			unit.changeUnitLocation(tile);
+			owner.units.add(unit);
 			
 			StringTemplate unitNameSt = UnitLabel.getPlainUnitLabel(unit);
 			StringTemplate st = StringTemplate.template("model.colony.unitReady")
@@ -1300,6 +1307,7 @@ public class Colony extends Settlement {
 		private static final String ATTR_NAME = "name";
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_SETTLEMENT_TYPE = "settlementType";
+		private static final String ATTR_SEA_CONNECTION_TO_EUROPE = "seaConnectionToEurope";
 
 		public Xml() {
         	addNode(ColonyBuildingQueueItem.class, new ObjectFromNodeSetter<Colony, ColonyBuildingQueueItem>() {
@@ -1320,12 +1328,12 @@ public class Colony extends Settlement {
         
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String strAttribute = attr.getStrAttribute(ATTR_SETTLEMENT_TYPE);
+            String settlementTypeStr = attr.getStrAttribute(ATTR_SETTLEMENT_TYPE);
             Player owner = game.players.getById(attr.getStrAttribute(ATTR_OWNER));
             
             Colony colony = new Colony(
         		attr.getStrAttribute(ATTR_ID),
-        		owner.nationType().settlementTypes.getById(strAttribute)
+        		owner.nationType().settlementTypes.getById(settlementTypeStr)
     		);
             colony.name = attr.getStrAttribute(ATTR_NAME);
             colony.sonsOfLiberty = attr.getIntAttribute(ATTR_SONS_OF_LIBERTY, 0);
@@ -1333,6 +1341,7 @@ public class Colony extends Settlement {
             colony.productionBonus = attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0);
             colony.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             colony.owner = owner;
+            colony.seaConnectionToEurope = attr.getBooleanAttribute(ATTR_SEA_CONNECTION_TO_EUROPE, false);
             owner.settlements.add(colony);
             
             nodeObject = colony;
@@ -1350,6 +1359,7 @@ public class Colony extends Settlement {
         	attr.set(ATTR_TORIES, colony.tories, 0);
         	attr.set(ATTR_PRODUCTION_BONUS, colony.productionBonus);
         	attr.set(ATTR_LIBERTY, colony.liberty, 0);
+        	attr.set(ATTR_SEA_CONNECTION_TO_EUROPE, colony.seaConnectionToEurope, false);
         }
         
         @Override

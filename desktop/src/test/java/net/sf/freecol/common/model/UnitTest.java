@@ -72,7 +72,8 @@ public class UnitTest {
     		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
     		player
     	);
-    	unit.changeUnitLocation(srcTile);;
+		player.units.add(unit);
+    	unit.changeUnitLocation(srcTile);
 		
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
@@ -96,7 +97,8 @@ public class UnitTest {
     		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
     		indian
     	);
-    	unit.changeUnitLocation(srcTile);;
+    	indian.units.add(unit);
+    	unit.changeUnitLocation(srcTile);
     	
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);

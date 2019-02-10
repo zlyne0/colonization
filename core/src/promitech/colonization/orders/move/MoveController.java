@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
+import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
@@ -32,19 +33,21 @@ public class MoveController {
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
 
-	private final PathFinder finder = new PathFinder();
+	private PathFinder finder;
 	
 	public MoveController() {
 	}
 	
 	public void inject(
 		GUIGameModel guiGameModel, 
-		GUIGameController guiGameController, MoveView moveView, MoveService moveService
+		GUIGameController guiGameController, MoveView moveView, MoveService moveService,
+		PathFinder pathFinder
 	) {
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
 		this.moveService = moveService;
+		this.finder = pathFinder;
 	}
 	
 	public void pressDirectionKey(Direction direction) {
@@ -267,15 +270,19 @@ public class MoveController {
             questionDialog.addQuestion(st);
         }
 
-        questionDialog.addAnswer("highseas.yes", new OptionAction<MoveContext>() {
+        questionDialog.addAnswer("cashInTreasureTrain.yes", new OptionAction<MoveContext>() {
             @Override
             public void executeAction(MoveContext payload) {
-                // TODO: obsluga cash in, niszczenie jednostki, dodanie zlota i komunikat
-                // zlikwidowanie nadmiarowych pol
-                // treasureAmount="0" roleCount="1" experience="0"
-                // <unit id="unit:-1" unitType="model.unit.treasureTrain" role="model.role.default" owner="player:1" state="ACTIVE" movesLeft="6" hitPoints="0" visibleGoodsCount="-1" treasureAmount="0" roleCount="5" experience="0" workLeft="-1"/>
+            	moveService.confirmedMoveProcessorInNewThread(payload, new AfterMoveProcessor() {
+            		@Override
+            		public void afterMove(MoveContext moveContext) {
+            			new LostCityRumourService(guiGameController, moveService, guiGameModel.game)
+            				.cashInTreasureInColony(moveContext.unit);
+            		}
+				});
             }
         }, moveContext);
-        questionDialog.addAnswer("highseas.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
+        questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
+        guiGameController.showDialog(questionDialog);
     }
 }

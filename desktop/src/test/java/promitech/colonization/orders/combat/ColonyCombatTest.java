@@ -97,6 +97,7 @@ public class ColonyCombatTest {
         );
         Tile freeTileNextToColony = game.map.getSafeTile(21, 80);
         dragoon.changeUnitLocation(freeTileNextToColony);
+        spanish.units.add(dragoon);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
@@ -106,6 +107,7 @@ public class ColonyCombatTest {
             Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
             colony.getOwner()
         );
+        colony.getOwner().units.add(frigate);
         frigate.changeUnitLocation(emptyColonyTile);
         
         MapIdEntities<Unit> colonyUnitsBeforeCombat = new MapIdEntities<>();
@@ -612,6 +614,7 @@ public class ColonyCombatTest {
             Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
             dutch
         );
+        dutch.units.add(dragoon);
         Tile nextColonyTile = game.map.getSafeTile(29, 57);
         dragoon.changeUnitLocation(nextColonyTile);
         

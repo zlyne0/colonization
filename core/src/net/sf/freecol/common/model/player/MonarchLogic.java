@@ -110,6 +110,7 @@ public class MonarchLogic {
                 for (ArmyForceAbstractUnit af : supportUnits) {
                     for (int i=0; i<af.getAmount(); i++) {
                         Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), af.getUnitType(), af.getUnitRole(), player);
+                		player.units.add(unit);
                         unit.changeUnitLocation(player.getEurope());
                     }
                     if (!unitsLabel.isEmpty()) {
@@ -196,6 +197,7 @@ public class MonarchLogic {
 			for (ArmyForceAbstractUnit af : ntf.getMercenaries()) {
 				for (int i=0; i<af.getAmount(); i++) {
 					Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), af.getUnitType(), af.getUnitRole(), player);
+					player.units.add(unit);
 					unit.changeUnitLocation(player.getEurope());
 				}
 			}

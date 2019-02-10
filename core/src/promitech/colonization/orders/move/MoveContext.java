@@ -172,7 +172,8 @@ public class MoveContext {
 				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
-				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType)
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType) ||
+				MoveType.MOVE_CASH_IN_TREASURE.equals(moveType)
 		);
 	}
 

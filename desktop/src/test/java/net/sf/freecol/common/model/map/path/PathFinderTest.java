@@ -108,6 +108,7 @@ public class PathFinderTest {
     		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
     		fortressOwner
 		);
+        fortressOwner.units.add(freeColonist);
         freeColonist.changeUnitLocation(fortressTile);
         
 		Colony fortressColony = Settlement.buildColony(

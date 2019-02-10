@@ -222,6 +222,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		? unitType.getDefaultRole()
 				: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
 		Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
+		owner.units.add(unit);
 		unit.changeUnitLocation(this);
 		if (unit.isCarrier()) {
 			unit.setState(UnitState.ACTIVE);

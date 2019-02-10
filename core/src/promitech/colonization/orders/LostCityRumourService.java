@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.map.LostCityRumour.RumourType;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
@@ -114,6 +115,7 @@ public class LostCityRumourService {
                 Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
                 unit.getOwner()
             );
+			unit.getOwner().units.add(unit);
             newColonistUnit.changeUnitLocation(destTile);
 
             if (unit.getOwner().isHuman()) {
@@ -252,4 +254,52 @@ public class LostCityRumourService {
 		
 		handleLostCityRumourType(mc, type);
 	}
+	
+    public void cashInTreasureInColony(Unit unit) {
+    	String messageId = null;
+    	int cashInAmount = 0;
+    	int fullAmount = unit.getTreasureAmount();
+    	
+    	if (unit.getOwner().isColonial()) {
+    		// Charge transport fee and apply tax
+    		cashInAmount = (fullAmount - unit.treasureTransportFee()) * (100 - unit.getOwner().getTax()) / 100;
+    		messageId = "model.unit.cashInTreasureTrain.colonial";
+    	} else {
+            // No fee possible, no tax applies.
+            cashInAmount = fullAmount;
+            messageId = "model.unit.cashInTreasureTrain.independent";
+    	}
+    	unit.getOwner().addGold(cashInAmount);
+    	
+    	if (unit.getOwner().isHuman()) {
+    		StringTemplate msgStr = StringTemplate.template(messageId)
+				.addAmount("%amount%", fullAmount)
+				.addAmount("%cashInAmount%", cashInAmount);    		
+			guiGameController.showDialog(new SimpleMessageDialog()
+				.withContent(msgStr)
+				.withButton("ok")
+				.addOnCloseListener(createOnCloseActionListener())
+			);
+    	}
+    	
+    	if (unit.getOwner().isRebel() || unit.getOwner().isIndependent()) {
+    		messageId = "model.unit.cashInTreasureTrain.other.independent";
+    	} else {
+    		messageId = "model.unit.cashInTreasureTrain.other.colonial";
+    	}
+    	StringTemplate msgSt = StringTemplate.template(messageId)
+            .addAmount("%amount%", fullAmount)
+            .addStringTemplate("%nation%", unit.getOwner().getNationName());
+    	for (Player p : game.players.entities()) {
+    		if (!p.isEuropean()) {
+    			continue;
+    		}
+    		if (p.equalsId(unit.getOwner())) {
+    			continue;
+    		}
+    		p.eventsNotifications.addMessageNotification(msgSt);
+    	}
+    	unit.getOwner().removeUnit(unit);
+    }
+	
 }

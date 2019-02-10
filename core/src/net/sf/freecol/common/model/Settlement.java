@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 
@@ -37,6 +39,29 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	
     	return colony;
     }
+
+	public static void determineEuropeSeaConnection(Map map, PathFinder pathFinder, Colony colony) {
+		// tmp unit only for find path to europe
+    	Unit tmpGalleon = new Unit(
+			"tmp:buildColony:findToEurope:-1",
+			Specification.instance.unitTypes.getById(UnitType.GALLEON),
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+			colony.owner
+		);
+		colony.getOwner().units.add(tmpGalleon);
+    	tmpGalleon.setOwner(colony.getOwner());
+    	Path path = pathFinder.findToEurope(map, colony.tile, tmpGalleon);
+
+    	boolean foundPath = false;
+    	Tile lastPathStep = path.tiles.peek();
+    	if (lastPathStep.getType().isHighSea()) {
+    		foundPath = true;
+    	}
+    	tmpGalleon.changeUnitLocation(colony.tile);
+    	colony.getOwner().removeUnit(tmpGalleon);
+    	
+    	colony.seaConnectionToEurope = foundPath;
+	}
 
     public Settlement(String id, SettlementType settlementType) {
 		super(id);

@@ -60,6 +60,7 @@ public class SettlementFactory {
 		final UnitType brave = Specification.instance.unitTypes.getById("model.unit.brave");
 		for (int i=0; i<settlementUnitsNumber; i++) {
 			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
+			player.units.add(unit);
 			unit.setIndianSettlement(indianSettlement);
 			unit.changeUnitLocation(indianSettlement);
 		}

@@ -84,7 +84,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	this.unitType = aUnitType;
     	this.unitRole = aUnitRole;
     	this.owner = anOwner;
-    	this.owner.units.add(this);
     	
     	this.movesLeft = getInitialMovesLeft();
     	this.hitPoints = unitType.getHitPoints();
@@ -1161,16 +1160,18 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             String unitRoleStr = attr.getStrAttribute(ATTR_ROLE);
             String ownerStr = attr.getStrAttribute(ATTR_OWNER);
             
-            Unit unit = new Unit(
+            Player unitOwner = game.players.getById(ownerStr);
+			Unit unit = new Unit(
         		attr.getStrAttribute(ATTR_ID),
         		Specification.instance.unitTypes.getById(unitTypeStr),
         		Specification.instance.unitRoles.getById(unitRoleStr),
-        		game.players.getById(ownerStr)
+        		unitOwner
             );
+			unitOwner.units.add(unit);
             
             unit.state = attr.getEnumAttribute(UnitState.class, ATTR_STATE);
             unit.movesLeft = attr.getIntAttribute(ATTR_MOVES_LEFT);
-            unit.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS);
+            unit.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS, 0);
             unit.visibleGoodsCount = attr.getIntAttribute(ATTR_VISIBLE_GOODS_COUNT, -1);
             unit.treasureAmount = attr.getIntAttribute(ATTR_TREASURE_AMOUNT, 0);
             unit.roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT, -1);
@@ -1203,12 +1204,12 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             
         	attr.set(ATTR_STATE, unit.state);
         	attr.set(ATTR_MOVES_LEFT, unit.movesLeft);
-        	attr.set(ATTR_HIT_POINTS, unit.hitPoints);
-        	attr.set(ATTR_VISIBLE_GOODS_COUNT, unit.visibleGoodsCount);
-        	attr.set(ATTR_TREASURE_AMOUNT, unit.treasureAmount);
-        	attr.set(ATTR_ROLE_COUNT, unit.roleCount);
+        	attr.set(ATTR_HIT_POINTS, unit.hitPoints, 0);
+        	attr.set(ATTR_VISIBLE_GOODS_COUNT, unit.visibleGoodsCount, -1);
+        	attr.set(ATTR_TREASURE_AMOUNT, unit.treasureAmount, 0);
+        	attr.set(ATTR_ROLE_COUNT, unit.roleCount, -1);
         	attr.set(ATTR_NAME, unit.name);
-        	attr.set(ATTR_EXPERIENCE, unit.experience);
+        	attr.set(ATTR_EXPERIENCE, unit.experience, 0);
         	attr.set(ATTR_INDIAN_SETTLEMENT, unit.indianSettlement);
             
         	attr.set(ATTR_DESTINATION_TYPE, unit.destinationType);
@@ -1217,7 +1218,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             	attr.set(ATTR_DESTINATION_Y, unit.destinationY);
             }
             
-        	attr.set(ATTR_WORK_LEFT, unit.workLeft);
+        	attr.set(ATTR_WORK_LEFT, unit.workLeft, -1);
         	attr.set(ATTR_TILE_IMPROVEMENT_TYPE_ID, unit.tileImprovementType);
         }
         

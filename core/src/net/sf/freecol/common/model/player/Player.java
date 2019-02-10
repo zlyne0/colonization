@@ -465,6 +465,10 @@ public class Player extends ObjectWithId {
         return playerType == PlayerType.COLONIAL;
     }
     
+    public boolean isIndependent() {
+    	return playerType == PlayerType.INDEPENDENT;
+    }
+    
     public boolean isRebel() {
         return playerType == PlayerType.REBEL;
     }

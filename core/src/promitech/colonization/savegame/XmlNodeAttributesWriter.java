@@ -43,6 +43,12 @@ public class XmlNodeAttributesWriter {
 		xml.attribute(attrName, Boolean.toString(val));
 	}
 
+	public void set(String attrName, boolean val, boolean defaultVal) throws IOException {
+		if (val != defaultVal) {
+			xml.attribute(attrName, Boolean.toString(val));
+		}
+	}
+	
 	public void set(String attrName, float val) throws IOException {
 		xml.attribute(attrName, Float.toString(val));
 	}

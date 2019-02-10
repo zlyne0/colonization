@@ -159,6 +159,8 @@ public class MapGenerator {
 			
 			for (EuropeanStartingAbstractUnit eu : startedUnits.entities()) {
 				Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), eu.getType(), eu.getRole(), player);
+				player.units.add(unit);
+
 				if (unit.isCarrier()) {
 					unit.setState(Unit.UnitState.ACTIVE);
 					carriers.add(unit);

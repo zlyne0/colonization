@@ -24,5 +24,9 @@ public abstract class AbstractArray2D {
     public int toY(final int index) {
         return index / width;
     }
+
+    public boolean sizeEquals(int w, int h) {
+    	return width == w && height == h;
+    }
     
 }
