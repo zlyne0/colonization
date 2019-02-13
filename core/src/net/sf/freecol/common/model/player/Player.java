@@ -234,7 +234,7 @@ public class Player extends ObjectWithId {
 				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
 					.addName("%nation%", nation())
 				);
-				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				MessageNotification msg = new MessageNotification(Game.idGenerator, msgBody);
 				otherPlayer.eventsNotifications.addMessageNotification(msg);
 			}
     	}
@@ -249,7 +249,7 @@ public class Player extends ObjectWithId {
 				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
 					.addName("%nation%", otherPlayer.nation())
 				);
-				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				MessageNotification msg = new MessageNotification(Game.idGenerator, msgBody);
 				this.eventsNotifications.addMessageNotification(msg);
             }
     	}

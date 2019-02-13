@@ -109,14 +109,7 @@ public class LostCityRumourService {
 		case COLONIST: {
 			List<UnitType> unitTypes = Specification.instance.getUnitTypesWithAbility(Ability.FOUND_IN_LOST_CITY);
 			UnitType unitType = Randomizer.instance().randomMember(unitTypes);
-			Unit newColonistUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                unitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-			unit.getOwner().units.add(unit);
-            newColonistUnit.changeUnitLocation(destTile);
+            UnitFactory.create(unitType, unit.getOwner(), destTile);
 
             if (unit.getOwner().isHuman()) {
             	guiGameController.showDialog(new SimpleMessageDialog()
@@ -290,14 +283,11 @@ public class LostCityRumourService {
     	StringTemplate msgSt = StringTemplate.template(messageId)
             .addAmount("%amount%", fullAmount)
             .addStringTemplate("%nation%", unit.getOwner().getNationName());
+    	System.out.println("evel " + msgSt.eval());
     	for (Player p : game.players.entities()) {
-    		if (!p.isEuropean()) {
-    			continue;
+    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(unit.getOwner())) {
+    			p.eventsNotifications.addMessageNotification(msgSt);
     		}
-    		if (p.equalsId(unit.getOwner())) {
-    			continue;
-    		}
-    		p.eventsNotifications.addMessageNotification(msgSt);
     	}
     	unit.getOwner().removeUnit(unit);
     }

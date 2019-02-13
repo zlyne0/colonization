@@ -155,29 +155,6 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
-		object : Task("ai missionary") {
-			override fun run(console: ConsoleOutput): Boolean {
-				ThreadsResources.instance.executeMovement(object : Runnable {
-					override fun run() {
-						val unitOwner = guiGameModel.game.players.getById("player:112")
-						val m = Unit(
-							Game.idGenerator.nextId(Unit::class.java), 
-							Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-							Specification.instance.unitRoles.getById("model.role.missionary"),
-							unitOwner
-						)
-						unitOwner.units.add(m)
-
-						val sourceTile = guiGameModel.game.map.getSafeTile(26, 70)
-						val destTile = guiGameModel.game.map.getSafeTile(25, 71)
-						
-						m.changeUnitLocation(sourceTile)
-						firstContactService.denounceMission(destTile.settlement as IndianSettlement, m)						
-					}
-				})
-				return true
-			}
-		},
 		object : Task("pools") {
 			override fun run(console: ConsoleOutput) : Boolean {
 				console.addConsoleLine(PoolsStat.Stat.header())

@@ -67,13 +67,7 @@ public class UnitTest {
     	Tile destTile = game.map.getSafeTile(22, 79);
     	destTile.addLostCityRumors();
     	
-    	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		player
-    	);
-		player.units.add(unit);
-    	unit.changeUnitLocation(srcTile);
+    	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, player, srcTile);
 		
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
@@ -92,13 +86,7 @@ public class UnitTest {
     	destTile.addLostCityRumors();
     	((MapIdEntities<Unit>)destTile.getUnits()).clear();
 
-    	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		indian
-    	);
-    	indian.units.add(unit);
-    	unit.changeUnitLocation(srcTile);
+    	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, indian, srcTile);
     	
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);

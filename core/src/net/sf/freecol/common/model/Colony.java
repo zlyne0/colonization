@@ -851,14 +851,7 @@ public class Colony extends Settlement {
 	        goodsContainer.decreaseGoodsQuantity(GoodsType.FOOD, FOOD_PER_COLONIST);
 	        
 	        UnitType freeColonistUnitType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
-            Unit unit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                freeColonistUnitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                owner
-            );
-            unit.changeUnitLocation(tile);
-            owner.units.add(unit);
+	        UnitFactory.create(freeColonistUnitType, owner, tile);
 	        
             StringTemplate st = StringTemplate.template("model.colony.newColonist")
                         .add("%colony%", getName());
@@ -927,14 +920,7 @@ public class Colony extends Settlement {
 
 	private void finishBuilding(NewTurnContext newTurnContext, BuildableType buildableType) {
 		if (buildableType.isUnitType()) {
-			Unit unit = new Unit(
-				Game.idGenerator.nextId(Unit.class), 
-				(UnitType)buildableType,
-				Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-				owner
-			);
-			unit.changeUnitLocation(tile);
-			owner.units.add(unit);
+			Unit unit = UnitFactory.create((UnitType)buildableType, owner, tile);
 			
 			StringTemplate unitNameSt = UnitLabel.getPlainUnitLabel(unit);
 			StringTemplate st = StringTemplate.template("model.colony.unitReady")

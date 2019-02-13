@@ -27,4 +27,52 @@ public class UnitFactory {
 		return unit;
 	}
 
+	public static Unit create(UnitType unitType, Player owner, UnitLocation location) {
+		return create(
+			unitType, 
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+			owner, 
+			location
+		);
+	}
+
+	public static Unit create(String unitTypeId, Player owner, UnitLocation location) {
+		return create(
+			Specification.instance.unitTypes.getById(unitTypeId),
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
+			owner, 
+			location
+		);
+	}
+
+	public static Unit create(String unitTypeId, String unitRoleId, Player owner, UnitLocation location) {
+		return create(
+			Specification.instance.unitTypes.getById(unitTypeId),
+			Specification.instance.unitRoles.getById(unitRoleId), 
+			owner, 
+			location
+		);
+	}
+
+	public static Unit createDragoon(Player owner, UnitLocation location) {
+		return create(
+			Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
+			Specification.instance.unitRoles.getById(UnitRole.DRAGOON), 
+			owner, 
+			location
+		);
+	}
+	
+	public static Unit create(UnitType unitType, UnitRole unitRole, Player owner, UnitLocation location) {
+		Unit unit = new Unit(
+			Game.idGenerator.nextId(Unit.class), 
+			unitType,
+			unitRole,
+			owner
+		);
+		unit.changeUnitLocation(location);
+		owner.units.add(unit);
+		return unit;
+	}
+
 }

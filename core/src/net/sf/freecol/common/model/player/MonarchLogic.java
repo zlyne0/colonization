@@ -158,10 +158,7 @@ public class MonarchLogic {
 			StringTemplate st = StringTemplate.template(MonarchAction.FORCE_TAX.msgKey())
 					.addAmount("%amount%", ntf.getTax() + extraTax);
 			
-			MessageNotification msgNtf = new MessageNotification(
-				Game.idGenerator.nextId(MessageNotification.class), 
-				Messages.message(st)
-			);
+			MessageNotification msgNtf = new MessageNotification(Game.idGenerator, Messages.message(st));
 			player.eventsNotifications.addMessageNotification(msgNtf);
 		} else { // Tea party
 			colony.getGoodsContainer().decreaseGoodsQuantity(ntf.getGoodsType(), ntf.getGoodsAmount());
@@ -175,10 +172,7 @@ public class MonarchLogic {
 				.addAmount("%amount%", ntf.getGoodsAmount())
 				.addName("%goods%", ntf.getGoodsType());
 
-			MessageNotification msg = new MessageNotification(
-				Game.idGenerator.nextId(MessageNotification.class), 
-				Messages.message(st)
-			);
+			MessageNotification msg = new MessageNotification(Game.idGenerator, Messages.message(st));
 			player.eventsNotifications.addMessageNotification(msg);
 		}
 	}

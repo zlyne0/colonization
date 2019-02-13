@@ -26,8 +26,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.PlayerAssert;
 import net.sf.freecol.common.model.specification.FoundingFather;
@@ -69,14 +69,9 @@ public class IndianSettlementCombatTest {
         dutch = game.players.getById("player:1");
         indian = game.players.getById("player:154");
         
-        dutchDragoon = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
         freeTileNextToIndianSettlement = game.map.getSafeTile(20, 78);
-        dutchDragoon.changeUnitLocation(freeTileNextToIndianSettlement);
+        dutchDragoon = UnitFactory.createDragoon(dutch, freeTileNextToIndianSettlement);
+
         
         indianSettlementTile = game.map.getSafeTile(19, 78);
         indianSettlement = indianSettlementTile.getSettlement().getIndianSettlement();

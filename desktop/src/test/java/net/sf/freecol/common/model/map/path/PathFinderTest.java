@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -15,10 +16,8 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.path.Path;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -102,14 +101,7 @@ public class PathFinderTest {
         Tile fortressTile = game.map.getTile(27, 75);
         
         Player fortressOwner = game.players.getById("player:112");
-        Unit freeColonist = new Unit(
-    		Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		fortressOwner
-		);
-        fortressOwner.units.add(freeColonist);
-        freeColonist.changeUnitLocation(fortressTile);
+        Unit freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, fortressOwner, fortressTile);
         
 		Colony fortressColony = Settlement.buildColony(
 			game.map, 

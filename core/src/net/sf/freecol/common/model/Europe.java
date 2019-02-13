@@ -219,11 +219,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	
 	private Unit createUnit(UnitType unitType) {
 		UnitRole role = (Specification.options.getBoolean(GameOptions.EQUIP_EUROPEAN_RECRUITS))
-		? unitType.getDefaultRole()
-				: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-		Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
-		owner.units.add(unit);
-		unit.changeUnitLocation(this);
+			? unitType.getDefaultRole()
+			: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+		Unit unit = UnitFactory.create(unitType, role, owner, this);
 		if (unit.isCarrier()) {
 			unit.setState(UnitState.ACTIVE);
 		} else {

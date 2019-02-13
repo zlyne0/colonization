@@ -35,8 +35,7 @@ public class EventsNotifications {
 	
 	public void addMessageNotification(StringTemplate st) {
 		System.out.println("message notification: " + st);
-		String nextId = Game.idGenerator.nextId(MessageNotification.class);
-		this.addMessageNotification(new MessageNotification(nextId, Messages.message(st)));
+		this.addMessageNotification(new MessageNotification(Game.idGenerator, Messages.message(st)));
 	}
 
 	public Notification firstNotification() {
