@@ -2,6 +2,7 @@ package promitech.colonization.orders;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -248,7 +249,7 @@ public class LostCityRumourService {
 		handleLostCityRumourType(mc, type);
 	}
 	
-    public void cashInTreasureInColony(Unit unit) {
+    public void cashInTreasure(Unit unit) {
     	String messageId = null;
     	int cashInAmount = 0;
     	int fullAmount = unit.getTreasureAmount();
@@ -265,14 +266,19 @@ public class LostCityRumourService {
     	unit.getOwner().addGold(cashInAmount);
     	
     	if (unit.getOwner().isHuman()) {
-    		StringTemplate msgStr = StringTemplate.template(messageId)
+    		StringTemplate msgSt = StringTemplate.template(messageId)
 				.addAmount("%amount%", fullAmount)
-				.addAmount("%cashInAmount%", cashInAmount);    		
-			guiGameController.showDialog(new SimpleMessageDialog()
-				.withContent(msgStr)
-				.withButton("ok")
-				.addOnCloseListener(createOnCloseActionListener())
-			);
+				.addAmount("%cashInAmount%", cashInAmount);
+    		
+    		if (unit.isAtLocation(Europe.class)) {
+    			unit.getOwner().eventsNotifications.addMessageNotification(msgSt);
+    		} else {
+    			guiGameController.showDialog(new SimpleMessageDialog()
+					.withContent(msgSt)
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener())
+				);
+    		}
     	}
     	
     	if (unit.getOwner().isRebel() || unit.getOwner().isIndependent()) {
@@ -283,7 +289,7 @@ public class LostCityRumourService {
     	StringTemplate msgSt = StringTemplate.template(messageId)
             .addAmount("%amount%", fullAmount)
             .addStringTemplate("%nation%", unit.getOwner().getNationName());
-    	System.out.println("evel " + msgSt.eval());
+    	
     	for (Player p : game.players.entities()) {
     		if (p.isLiveEuropeanPlayer() && p.notEqualsId(unit.getOwner())) {
     			p.eventsNotifications.addMessageNotification(msgSt);

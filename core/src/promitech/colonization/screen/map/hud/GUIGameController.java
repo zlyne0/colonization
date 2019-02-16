@@ -265,12 +265,12 @@ public class GUIGameController {
 
 	private void clickOnTileDebugInfo(Point p) {
         Tile tile = guiGameModel.game.map.getTile(p.x, p.y);
-        System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
+        	System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
             System.out.println("tile: " + tile);
         	System.out.println("drawmodel = " + mapActor.mapDrawModel().tileDrawModelToString(p.x, p.y));
         } else {
-            System.out.println("tile is null");
+            System.out.println("tile is null at " + p);
         }
 	}
 	

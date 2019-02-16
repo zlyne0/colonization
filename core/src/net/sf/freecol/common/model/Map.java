@@ -117,11 +117,7 @@ public class Map extends ObjectWithId {
 	}
 	
 	public Tile getTile(int x, int y) {
-	    Tile tile = tiles.getTile(x, y);
-	    if (tile == null) {
-	        throw new RuntimeException("no tile for cords [" + x + ", " + y + "]");
-	    }
-	    return tile;
+	    return tiles.getTile(x, y);
 	}
 
 	public Tile getSafeTile(int x, int y) {

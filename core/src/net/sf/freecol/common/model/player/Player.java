@@ -413,7 +413,6 @@ public class Player extends ObjectWithId {
     }
     
     public boolean hasUnitType(String unitTypeId) {
-        // TODO: przerobienie aby przeniesc do MapIdEntities
         for (Unit unit : units.entities()) {
             if (unit.unitType.equalsId(unitTypeId)) {
                 return true;

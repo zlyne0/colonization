@@ -356,4 +356,9 @@ public class MoveService {
             afterMoveProcessor.afterMove(moveContext);
         }
     }
+    
+    public void cashinTreasure(Unit unit) {
+		new LostCityRumourService(guiGameController, this, guiGameModel.game)
+			.cashInTreasure(unit);
+    }
 }

@@ -1,6 +1,8 @@
 package promitech.colonization;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -24,6 +26,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -32,17 +35,24 @@ public class GameLogic {
 	private final GUIGameModel guiGameModel;
 	private final CombatService combatService;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
+	private final MoveService moveService;
 	
-	public GameLogic(GUIGameModel guiGameModel, CombatService combatService) {
+	private final List<Unit> playerUnits = new ArrayList<Unit>();
+	
+	public GameLogic(GUIGameModel guiGameModel, CombatService combatService, MoveService moveService) {
 		this.guiGameModel = guiGameModel;
 		this.combatService = combatService;
+		this.moveService = moveService;
 	}
 
 	public void newTurn(Player player) {
 		newTurnContext.restart();
 		System.out.println("newTurn for player " + player);
 
-		for (Unit unit : player.units.entities()) {
+		// copy units for safety remove
+		playerUnits.clear();
+		playerUnits.addAll(player.units.entities());
+		for (Unit unit : playerUnits) {
 			newTurnForUnit(unit);
 		}
 		
@@ -129,6 +139,8 @@ public class GameLogic {
                 StringTemplate st = StringTemplate.template("model.unit.arriveInEurope")
                     .addKey("%europe%", unit.getOwner().getEuropeNameKey());
                 unit.getOwner().eventsNotifications.addMessageNotification(st);
+                
+    		    checkAndCashInTreasureInEurope(unit.getOwner());
             }
             
             if (unit.isDestinationTile()) {
@@ -139,6 +151,22 @@ public class GameLogic {
         }
     }
 
+    private void checkAndCashInTreasureInEurope(Player player) {
+    	List<Unit> units = null; 
+        for (Unit u : player.getEurope().getUnits().entities()) {
+        	if (u.canCarryTreasure()) {
+        		units = new ArrayList<Unit>(player.getEurope().getUnits().entities());
+        	}
+        }
+        if (units != null) {
+        	for (Unit u : units) {
+        		if (u.canCarryTreasure()) {
+        			moveService.cashinTreasure(u);
+        		}
+        	}
+        }
+    }
+    
 	private void workOnImprovement(Unit unit) {
 		if (unit.workOnImprovement()) {
 			Tile improvingTile = unit.getTile();

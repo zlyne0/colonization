@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -12,7 +13,6 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
-import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
@@ -276,13 +276,18 @@ public class MoveController {
             	moveService.confirmedMoveProcessorInNewThread(payload, new AfterMoveProcessor() {
             		@Override
             		public void afterMove(MoveContext moveContext) {
-            			new LostCityRumourService(guiGameController, moveService, guiGameModel.game)
-            				.cashInTreasureInColony(moveContext.unit);
+            			moveService.cashinTreasure(moveContext.unit);
             		}
 				});
             }
         }, moveContext);
-        questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, moveContext);
+        questionDialog.addAnswer("cashInTreasureTrain.no", new OptionAction<MoveContext>() {
+			@Override
+			public void executeAction(MoveContext payload) {
+				payload.moveType = MoveType.MOVE;
+				moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
+			}
+		}, moveContext);
         guiGameController.showDialog(questionDialog);
     }
 }

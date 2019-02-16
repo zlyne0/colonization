@@ -31,7 +31,7 @@ public class DI {
 		pathFinder = new PathFinder();
 		
 		
-		GameLogic gameLogic = new GameLogic(guiGameModel, combatService);
+		GameLogic gameLogic = new GameLogic(guiGameModel, combatService, moveService);
 		
 		moveController.inject(guiGameModel, guiGameController, moveView, moveService, pathFinder);
 		moveService.inject(guiGameController, moveController, guiGameModel, combatService, firstContactController);
