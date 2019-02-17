@@ -177,7 +177,33 @@ public class MoveService {
             }
         }
         firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
+        
+        if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+        	checkCashInTreasureInCarrier(moveContext.unit, moveContext.destTile);
+        	moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+        }
     }
+
+	private void checkCashInTreasureInCarrier(Unit carrier, Tile tile) {
+		Unit treasureWagon = null;
+		
+		// check treasure in unit carrier
+		if (carrier.getUnitContainer() != null) {
+			for (Unit unit : carrier.getUnitContainer().getUnits().entities()) {
+				if (unit.canCarryTreasure()) {
+					treasureWagon = unit;
+				}
+			}
+		}
+		if (treasureWagon != null && treasureWagon.canCashInTreasureInLocation(tile)) {
+			if (carrier.getOwner().isHuman()) {
+				moveController.showCashInTreasureConfirmation(treasureWagon);
+			}
+			if (carrier.getOwner().isAi()) {
+				MoveService.this.cashInTreasure(treasureWagon);
+			}
+		}
+	}
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
         return unit.getOwner().isEuropean() && unit.getOwner().getNewLandName() == null && unit.getTile().isNextToLand();
@@ -213,7 +239,9 @@ public class MoveService {
                 moveController.showHighSeasQuestion(moveContext);
             } break;
             case MOVE_CASH_IN_TREASURE: {
-                moveController.showCashInTreasureConfirmation(moveContext);
+            	showMoveIfRequired(moveContext);
+            	processMove(moveContext);
+            	moveController.showCashInTreasureConfirmation(moveContext.unit);
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	firstContactController.showScoutMoveToForeignColonyQuestion(
@@ -357,7 +385,7 @@ public class MoveService {
         }
     }
     
-    public void cashinTreasure(Unit unit) {
+    public void cashInTreasure(Unit unit) {
 		new LostCityRumourService(guiGameController, this, guiGameModel.game)
 			.cashInTreasure(unit);
     }

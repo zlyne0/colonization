@@ -73,9 +73,4 @@ public class IndianSettlementMissionary implements UnitLocation {
 	public boolean canAutoLoadUnit() {
 		return false;
 	}
-
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
 }

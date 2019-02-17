@@ -154,9 +154,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 			}
 		}
 		newUnitLocation.addUnit(this);
-		if (newUnitLocation.canAutoUnloadUnits()) {
-			disembarkUnitsToLocation(newUnitLocation);
-		}
 		location = newUnitLocation;
 	}
 	
@@ -522,7 +519,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         }
     }
     
-    private boolean canCashInTreasureInLocation(UnitLocation unitLocation) {
+    public boolean canCashInTreasureInLocation(UnitLocation unitLocation) {
         if (unitLocation == null) {
             throw new IllegalStateException("can not cash in treasure in null location");
         }
@@ -819,11 +816,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
 	
 	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
-	
-	@Override
 	public boolean canAutoLoadUnit() {
 		return false;
 	}
@@ -976,7 +968,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 	}
 	
-	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
+	public void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
 		if (unitContainer != null && unitContainer.isNotEmpty()) {
 			for (Unit unit : unitContainer.getUnits().entities()) {
 				newUnitLocation.addUnit(unit);

@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -257,37 +256,26 @@ public class MoveController {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
     }
 
-    public void showCashInTreasureConfirmation(MoveContext moveContext) {
-        QuestionDialog questionDialog = new QuestionDialog();
-        
-        int fee = moveContext.unit.treasureTransportFee();
-        if (fee == 0) {
-            questionDialog.addQuestion(StringTemplate.template("cashInTreasureTrain.free"));
-        } else {
-            int percent = Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE);
-            StringTemplate st = StringTemplate.template("cashInTreasureTrain.pay")
-                .addAmount("%fee%", percent);
-            questionDialog.addQuestion(st);
-        }
-
-        questionDialog.addAnswer("cashInTreasureTrain.yes", new OptionAction<MoveContext>() {
-            @Override
-            public void executeAction(MoveContext payload) {
-            	moveService.confirmedMoveProcessorInNewThread(payload, new AfterMoveProcessor() {
-            		@Override
-            		public void afterMove(MoveContext moveContext) {
-            			moveService.cashinTreasure(moveContext.unit);
-            		}
-				});
-            }
-        }, moveContext);
-        questionDialog.addAnswer("cashInTreasureTrain.no", new OptionAction<MoveContext>() {
-			@Override
-			public void executeAction(MoveContext payload) {
-				payload.moveType = MoveType.MOVE;
-				moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
-			}
-		}, moveContext);
-        guiGameController.showDialog(questionDialog);
+    public void showCashInTreasureConfirmation(Unit treasureWagon) {
+    	QuestionDialog questionDialog = new QuestionDialog();
+    	
+    	int fee = treasureWagon.treasureTransportFee();
+    	if (fee == 0) {
+    		questionDialog.addQuestion(StringTemplate.template("cashInTreasureTrain.free"));
+    	} else {
+    		int percent = Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE);
+    		StringTemplate st = StringTemplate.template("cashInTreasureTrain.pay")
+    				.addAmount("%fee%", percent);
+    		questionDialog.addQuestion(st);
+    	}
+    	
+    	questionDialog.addAnswer("cashInTreasureTrain.yes", new OptionAction<Unit>() {
+    		@Override
+    		public void executeAction(Unit payload) {
+    			moveService.cashInTreasure(payload);
+    		}
+    	}, treasureWagon);
+    	questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, treasureWagon);
+    	guiGameController.showDialog(questionDialog);
     }
 }

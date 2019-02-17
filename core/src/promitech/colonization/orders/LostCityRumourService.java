@@ -249,29 +249,33 @@ public class LostCityRumourService {
 		handleLostCityRumourType(mc, type);
 	}
 	
-    public void cashInTreasure(Unit unit) {
+	/**
+	 * Cashin treasure and send notification to wagon owner and other players.
+	 * @param treasureWagon {@link Unit} - treasure wagon
+	 */
+    public void cashInTreasure(Unit treasureWagon) {
     	String messageId = null;
     	int cashInAmount = 0;
-    	int fullAmount = unit.getTreasureAmount();
+    	int fullAmount = treasureWagon.getTreasureAmount();
     	
-    	if (unit.getOwner().isColonial()) {
+    	if (treasureWagon.getOwner().isColonial()) {
     		// Charge transport fee and apply tax
-    		cashInAmount = (fullAmount - unit.treasureTransportFee()) * (100 - unit.getOwner().getTax()) / 100;
+    		cashInAmount = (fullAmount - treasureWagon.treasureTransportFee()) * (100 - treasureWagon.getOwner().getTax()) / 100;
     		messageId = "model.unit.cashInTreasureTrain.colonial";
     	} else {
             // No fee possible, no tax applies.
             cashInAmount = fullAmount;
             messageId = "model.unit.cashInTreasureTrain.independent";
     	}
-    	unit.getOwner().addGold(cashInAmount);
+    	treasureWagon.getOwner().addGold(cashInAmount);
     	
-    	if (unit.getOwner().isHuman()) {
+    	if (treasureWagon.getOwner().isHuman()) {
     		StringTemplate msgSt = StringTemplate.template(messageId)
 				.addAmount("%amount%", fullAmount)
 				.addAmount("%cashInAmount%", cashInAmount);
     		
-    		if (unit.isAtLocation(Europe.class)) {
-    			unit.getOwner().eventsNotifications.addMessageNotification(msgSt);
+    		if (treasureWagon.isAtLocation(Europe.class)) {
+    			treasureWagon.getOwner().eventsNotifications.addMessageNotification(msgSt);
     		} else {
     			guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(msgSt)
@@ -281,21 +285,21 @@ public class LostCityRumourService {
     		}
     	}
     	
-    	if (unit.getOwner().isRebel() || unit.getOwner().isIndependent()) {
+    	if (treasureWagon.getOwner().isRebel() || treasureWagon.getOwner().isIndependent()) {
     		messageId = "model.unit.cashInTreasureTrain.other.independent";
     	} else {
     		messageId = "model.unit.cashInTreasureTrain.other.colonial";
     	}
     	StringTemplate msgSt = StringTemplate.template(messageId)
             .addAmount("%amount%", fullAmount)
-            .addStringTemplate("%nation%", unit.getOwner().getNationName());
+            .addStringTemplate("%nation%", treasureWagon.getOwner().getNationName());
     	
     	for (Player p : game.players.entities()) {
-    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(unit.getOwner())) {
+    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(treasureWagon.getOwner())) {
     			p.eventsNotifications.addMessageNotification(msgSt);
     		}
     	}
-    	unit.getOwner().removeUnit(unit);
+    	treasureWagon.getOwner().removeUnit(treasureWagon);
     }
 	
 }

@@ -135,6 +135,7 @@ public class GameLogic {
             if (unit.isDestinationEurope()) {
                 unit.clearDestination();
                 unit.changeUnitLocation(unit.getOwner().getEurope());
+                unit.disembarkUnitsToLocation(unit.getOwner().getEurope());
                 
                 StringTemplate st = StringTemplate.template("model.unit.arriveInEurope")
                     .addKey("%europe%", unit.getOwner().getEuropeNameKey());
@@ -161,7 +162,7 @@ public class GameLogic {
         if (units != null) {
         	for (Unit u : units) {
         		if (u.canCarryTreasure()) {
-        			moveService.cashinTreasure(u);
+        			moveService.cashInTreasure(u);
         		}
         	}
         }

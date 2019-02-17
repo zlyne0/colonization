@@ -1251,11 +1251,6 @@ public class Colony extends Settlement {
 		return false;
 	}
 
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
-	
 	public void changeOwner(Player newOwner) {
 		Player oldOwner = owner;
 		super.changeOwner(newOwner);
