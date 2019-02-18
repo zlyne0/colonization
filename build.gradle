@@ -18,8 +18,15 @@ buildscript {
 allprojects {
     apply plugin: "eclipse"
     apply plugin: "idea"
-
     version = '1.0'
+    
+    tasks.withType(JavaCompile) {
+		options.encoding = 'UTF-8'
+    }
+	tasks.withType(Test) {
+		systemProperty "file.encoding", "UTF-8"
+    }    
+    
     ext {
         appName = "colonization"
         gdxVersion = '1.9.9'
@@ -49,8 +56,9 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-platform:$gdxVersion:natives-desktop"
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         
-        testCompile group: 'junit', name: 'junit', version: '4.+'
         testCompile 'org.assertj:assertj-core:2.6.0'
+        testCompile('org.junit.jupiter:junit-jupiter-api:5.4.0')
+        testRuntime('org.junit.jupiter:junit-jupiter:5.4.0')
     }
 }
 

@@ -1,11 +1,10 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -27,12 +26,12 @@ public class PathFinderTest {
     Game game;
     PathFinder sut = new PathFinder();
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }

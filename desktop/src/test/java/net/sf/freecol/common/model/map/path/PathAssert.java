@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.Assert.*;
-import static org.assertj.core.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class PathAssert {
 

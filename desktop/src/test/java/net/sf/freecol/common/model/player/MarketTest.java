@@ -1,14 +1,14 @@
 package net.sf.freecol.common.model.player;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
@@ -24,12 +24,12 @@ public class MarketTest {
 	SaveGameParser saveGameParser;
 	Game game;
 	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException, ParserConfigurationException, SAXException {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }

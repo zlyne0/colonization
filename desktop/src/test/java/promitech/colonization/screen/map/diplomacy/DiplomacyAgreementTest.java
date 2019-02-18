@@ -1,13 +1,15 @@
 package promitech.colonization.screen.map.diplomacy;
 
+import static org.assertj.core.api.Assertions.assertThat;
+
 import java.io.IOException;
 import java.util.Locale;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
@@ -30,14 +32,14 @@ public class DiplomacyAgreementTest {
     private Player dutch;
     private DiplomacyAgreement sut;
 	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws IOException, ParserConfigurationException, SAXException {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
@@ -61,6 +63,7 @@ public class DiplomacyAgreementTest {
 		// then
 		PlayerAssert.assertThat(spanish).hasGold(initialSpanishGold - 500);
 		PlayerAssert.assertThat(dutch).hasGold(initialDutchGold + 500);
+		assertThat(true).isFalse();
 	}
 
     @Test 

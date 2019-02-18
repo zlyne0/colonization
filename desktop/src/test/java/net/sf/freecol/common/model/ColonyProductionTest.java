@@ -1,15 +1,15 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
@@ -23,7 +23,7 @@ import promitech.colonization.ui.resources.Messages;
 
 public class ColonyProductionTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
         Messages.instance().load();
@@ -33,7 +33,7 @@ public class ColonyProductionTest {
     Colony colony;
     Player player;
     
-    @Before
+    @BeforeEach
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         player = game.players.getById("player:1");

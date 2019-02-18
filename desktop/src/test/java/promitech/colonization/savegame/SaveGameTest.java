@@ -1,13 +1,13 @@
 package promitech.colonization.savegame;
 
-import java.io.File;
-import java.io.FileWriter;
+import java.io.Writer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -17,16 +17,15 @@ import net.sf.freecol.common.model.SavedGame;
 
 public class SaveGameTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
+	@TempDir
+	Path tempFolder;
 	
-	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 	}
 
@@ -37,15 +36,16 @@ public class SaveGameTest {
         SavedGame savedGameObj = new SavedGame();
         savedGameObj.game = jUnitGame;
         
-        File tmpSaveFile = tempFolder.newFile();
-        System.out.println("tmp file " + tmpSaveFile);
+        Path tmpFile = Files.createTempFile(tempFolder, "save", "");
+        System.out.println("tmp file " + tmpFile);
         
 		// when
-        FileWriter saveXmlWriter = new FileWriter(tmpSaveFile);
-        new SaveGameCreator(saveXmlWriter).generateXmlFrom(savedGameObj);
-        saveXmlWriter.close();
+        Writer newBufferedWriter = Files.newBufferedWriter(tmpFile);
         
-        Game loadedGame = SaveGameParser.loadGameFromFile(tmpSaveFile);
+        new SaveGameCreator(newBufferedWriter).generateXmlFrom(savedGameObj);
+        newBufferedWriter.close();
+        
+        Game loadedGame = SaveGameParser.loadGameFromFile(tmpFile.toFile());
 		// then
 	
         new Savegame1600Verifier().verify(loadedGame);
@@ -61,5 +61,6 @@ public class SaveGameTest {
         // then
         new Savegame1600Verifier().verify(game);
     }
+
 	
 }

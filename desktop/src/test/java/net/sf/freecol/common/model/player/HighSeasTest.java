@@ -1,9 +1,9 @@
 package net.sf.freecol.common.model.player;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -16,7 +16,7 @@ import promitech.colonization.savegame.SaveGameParser;
 
 public class HighSeasTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
@@ -27,7 +27,7 @@ public class HighSeasTest {
         Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         
         Player player = game.players.getById("player:1");
-        assertNull("should not have father", player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN));
+        assertNull(player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
         
         Unit merchantman = player.units.getById("unit:6437");
         

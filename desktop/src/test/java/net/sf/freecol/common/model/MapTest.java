@@ -5,9 +5,9 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -20,14 +20,14 @@ public class MapTest {
     
     static Game game; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
         IsometricMapAssert.hasAutoFreePoolableTileIterablePoolSize(1);        
         game = null;

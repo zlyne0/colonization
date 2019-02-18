@@ -1,13 +1,13 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Locale;
 
 import net.sf.freecol.common.model.specification.Goods;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
 
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
@@ -17,7 +17,7 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 public class StringTemplateTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);

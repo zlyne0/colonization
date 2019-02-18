@@ -6,10 +6,10 @@ import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -54,14 +54,14 @@ public class IndianSettlementCombatTest {
     
     MapIdEntities<Unit> settlementUnits; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         Randomizer.changeRandomToRandomXS128();
         
@@ -79,7 +79,7 @@ public class IndianSettlementCombatTest {
         settlementUnits = unitsFromIndianSettlement();
     }
 
-    @After
+    @AfterEach
     public void after() {
         Randomizer.changeRandomToRandomXS128();
     }

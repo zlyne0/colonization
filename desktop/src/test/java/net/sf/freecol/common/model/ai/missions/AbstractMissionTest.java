@@ -4,8 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import java.util.LinkedList;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeEach;
 
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 
@@ -58,7 +58,7 @@ public class AbstractMissionTest {
 	TestMission g = new TestMission("G");
 	
 	
-	@Before
+	@BeforeEach
 	public void setup() {
 		/*
      G

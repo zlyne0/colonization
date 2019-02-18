@@ -4,11 +4,9 @@ import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -34,9 +32,6 @@ import promitech.colonization.ui.resources.Messages;
 
 public class NavyCombatTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
-	
 	private Game game;
 	private Player spanish;
 	private Player dutch;
@@ -44,14 +39,14 @@ public class NavyCombatTest {
 	private Unit spanishColonist;
     private Unit spanishColonist2;
 	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
@@ -273,7 +268,7 @@ public class NavyCombatTest {
     	Tile attackFromTile = dutchPrivater.getTile();
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	UnitFactory.create("model.unit.privateer", spanish, attackFromTile);
+    	UnitFactory.create("model.unit.privateer", spanish, attackTile);
 
 		// when
     	Combat combat = new Combat();
@@ -300,7 +295,7 @@ public class NavyCombatTest {
         Tile attackFromTile = dutchPrivater.getTile();
         
         Tile attackTile = game.map.getTile(12, 80);
-        Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackFromTile);
+        Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackTile);
 
         // when
         Combat combat = new Combat();

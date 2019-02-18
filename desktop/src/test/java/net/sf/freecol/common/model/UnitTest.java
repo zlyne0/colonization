@@ -1,10 +1,10 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -17,12 +17,12 @@ public class UnitTest {
 
     Game game; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
@@ -31,7 +31,7 @@ public class UnitTest {
     public void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        assertNull("should not have father", player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN));
+        assertNull(player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
