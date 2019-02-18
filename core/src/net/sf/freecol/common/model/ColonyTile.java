@@ -61,11 +61,6 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         productionInfo.clear();
     }
     
-    @Override
-    public boolean canAutoLoadUnit() {
-        return false;
-    }
-
     public static class Xml extends XmlNodeParser<ColonyTile> {
 
     	private static final String ATTR_WORK_TILE = "workTile";

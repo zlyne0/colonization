@@ -155,8 +155,10 @@ public class MoveContext {
 	private void moveUnit() {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
-		//System.out.println("moveUnit: " + unit + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		unit.reduceMovesLeft(moveCost);
+		if (sourceTile.hasSettlement()) {
+			unit.embarkUnitsFromLocation(sourceTile);
+		}
 		unit.changeUnitLocation(destTile);
 	}
 	

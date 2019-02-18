@@ -148,10 +148,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    UnitLocation oldLocation = location;
 		if (oldLocation != null) {
 		    removeFromLocation();
-			
-			if (oldLocation.canAutoLoadUnit()) {
-				embarkUnitsFromLocation(oldLocation);
-			}
 		}
 		newUnitLocation.addUnit(this);
 		location = newUnitLocation;
@@ -815,11 +811,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         unitContainer.getUnits().removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-
     public boolean canCarryTreasure() {
         return hasAbility(Ability.CARRY_TREASURE);
     }
@@ -953,7 +944,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    workLeft = getSailTurns();
 	}
 	
-	private void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
+	public void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
 		if (hasNoSpace()) {
 			return;
 		}
@@ -980,6 +971,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 	
 	public void sailUnitToNewWorld() {
+		embarkUnitsFromLocation(owner.getEurope());
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
 		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());

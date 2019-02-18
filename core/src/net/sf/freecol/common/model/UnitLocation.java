@@ -7,11 +7,4 @@ public interface UnitLocation {
     void removeUnit(Unit unit);
     
     MapIdEntitiesReadOnly<Unit> getUnits();
-	
-    /**
-     * Should be implemented in moveService
-     * @return
-     */
-    @Deprecated
-	boolean canAutoLoadUnit();
 }

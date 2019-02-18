@@ -80,11 +80,6 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return units.isNotEmpty();
-	}
-	
 	public List<UnitType> getRecruitables() {
 		return recruitables;
 	}

@@ -76,11 +76,6 @@ public class Tile implements UnitLocation, Identifiable {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return hasSettlement() && units.isNotEmpty();
-	}
-	
     public boolean equalsCoordinates(int x, int y) {
         return this.x == x && this.y == y;
     }

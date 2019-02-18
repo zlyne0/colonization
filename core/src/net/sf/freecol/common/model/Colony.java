@@ -1246,11 +1246,6 @@ public class Colony extends Settlement {
         throw new IllegalStateException("should remove unit directly from building or colony tile");
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-
 	public void changeOwner(Player newOwner) {
 		Player oldOwner = owner;
 		super.changeOwner(newOwner);
