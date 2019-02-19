@@ -143,17 +143,7 @@ public class LostCityRumourService {
 			if (treasureAmount < 500) {
 				unit.getOwner().addGold(treasureAmount);
 			} else {
-				List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-				UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
-				
-				Unit newTreasureUnit = new Unit(
-	                Game.idGenerator.nextId(Unit.class), 
-	                treasureUnitType,
-	                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-	                unit.getOwner()
-	            );
-	            newTreasureUnit.changeUnitLocation(destTile);
-	            newTreasureUnit.setTreasureAmount(treasureAmount);
+				UnitFactory.createTreasureTrain(unit.getOwner(), destTile, treasureAmount);
 			}
 
 			if (unit.getOwner().isHuman()) {
