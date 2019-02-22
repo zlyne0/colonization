@@ -15,10 +15,12 @@ import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import com.badlogic.gdx.utils.viewport.FitViewport
 import promitech.colonization.GameCreator
+import net.sf.freecol.common.model.map.path.PathFinder
 
 class MenuApplicationScreen (
 	private val guiGameController : GUIGameController,
-	private val guiGameModel : GUIGameModel
+	private val guiGameModel : GUIGameModel,
+	private val pathFinder : PathFinder
 ) : ApplicationScreen() {
 
 	private val stage: Stage
@@ -42,17 +44,17 @@ class MenuApplicationScreen (
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
 		
 		newGameButton.addListener { _, _ ->
-			NewGameDialog(guiGameController, guiGameModel).show(stage)
+			NewGameDialog(guiGameController, guiGameModel, pathFinder).show(stage)
 		}
 		backButton.addListener { _, _ ->
 			guiGameController.showMapScreenAndActiveNextUnit()
 		}
 		loadGameButton.addListener { _, _ ->
-			showDialog(LoadGameDialog(shape, guiGameController, guiGameModel))
+			showDialog(LoadGameDialog(shape, guiGameController, guiGameModel, pathFinder))
 		}
 		loadLastGameButton.addListener { _, _ ->
 			WaitDialog(Messages.msg("status.loadingGame"), {
-				GameCreator(guiGameModel).loadLastGame()
+				GameCreator(pathFinder, guiGameModel).loadLastGame()
 			}, {
 				guiGameController.resetMapModel()
 				guiGameController.showMapScreenAndActiveNextUnit()

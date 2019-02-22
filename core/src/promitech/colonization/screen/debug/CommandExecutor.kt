@@ -101,14 +101,6 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
-		object : Task("load game") {
-			override fun run(console: ConsoleOutput) : Boolean {
-			    GameCreator(guiGameModel).initGameFromSavegame();
-			    gameController.resetMapModel();
-			    gameController.nextActiveUnit();
-				return true
-			}
-		},
 		object : Task("sp") {
 			override fun run(console: ConsoleOutput) : Boolean {
 			    guiGameModel.game.playingPlayer.setAi(true);
@@ -178,7 +170,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 	);
 
 	init {
-		tasks = tasks.plus(createAlias("zzz", "load game"))
+		tasks = tasks.plus(createAlias("p", "pools"))
 		tasks = tasks.sortedBy { task -> task.cmd }
 	}
 	

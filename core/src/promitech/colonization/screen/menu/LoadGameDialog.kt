@@ -17,11 +17,13 @@ import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.GameCreator
 import promitech.colonization.screen.map.hud.GUIGameModel
+import net.sf.freecol.common.model.map.path.PathFinder
 
 class LoadGameDialog(
 	private val shapeRenderer : ShapeRenderer,
 	private val guiGameController : GUIGameController,
-	private val guiGameModel : GUIGameModel
+	private val guiGameModel : GUIGameModel,
+	private val pathFinder : PathFinder
 )
 : ClosableDialog<SaveGameDialog>(
 	ModalDialogSize.width50(), ModalDialogSize.height75()
@@ -89,7 +91,7 @@ class LoadGameDialog(
 		okButton.addListener { _, _ ->
 			
 			WaitDialog(Messages.msg("status.loadingGame"), {
-				GameCreator(guiGameModel).load(gameNameLabel.text.toString())
+				GameCreator(pathFinder, guiGameModel).load(gameNameLabel.text.toString())
 			}, {
 				guiGameController.resetMapModel()
 				guiGameController.showMapScreenAndActiveNextUnit()

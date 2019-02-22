@@ -20,7 +20,6 @@ import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.EndOfTurnPhaseListener;
-import promitech.colonization.GameCreator;
 import promitech.colonization.GameLogic;
 import promitech.colonization.ai.AILogic;
 import promitech.colonization.math.Point;
@@ -68,11 +67,6 @@ public class GUIGameController {
 		this.gameLogic = gameLogic;
 		this.moveService = moveService;
 		this.pathFinder = pathFinder;
-	}
-	
-	public void quickSaveGame() {
-		new GameCreator(guiGameModel)
-			.quickSaveGame();
 	}
 	
     public void skipUnit() {

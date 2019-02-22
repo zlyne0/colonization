@@ -25,10 +25,12 @@ import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.resources.StringTemplate
 import promitech.colonization.savegame.SaveGameParser
+import net.sf.freecol.common.model.map.path.PathFinder
 
 class NewGameDialog(
 	private val guiGameController : GUIGameController,
-	private val guiGameModel : GUIGameModel
+	private val guiGameModel : GUIGameModel,
+	private val pathFinder : PathFinder
 ) : ClosableDialog<SaveGameDialog>(
 	ModalDialogSize.width75(), ModalDialogSize.height75()
 ) {
@@ -86,7 +88,7 @@ class NewGameDialog(
 			System.out.println("start new game")
 			
 			WaitDialog(Messages.msg("status.startingGame"), {
-				GameCreator(guiGameModel).initNewGame(
+				GameCreator(pathFinder, guiGameModel).initNewGame(
 					nation,
 					playerName.getText(),
 					difficultyLevelSelectBox.getSelected().level.getId()

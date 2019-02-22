@@ -86,7 +86,9 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.EUROPE, new EuropeApplicationScreen());
-		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(di.guiGameController, di.guiGameModel));
+		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(
+			di.guiGameController, di.guiGameModel, di.pathFinder
+		));
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;
