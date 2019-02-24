@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.player.Player;
@@ -63,6 +64,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
+    private GridPoint2 enterHighSea;
     
     private String indianSettlement;
 
@@ -937,7 +939,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    workLeft -= 1;
 	}
 	
-	public void moveUnitToHighSea() {
+	public void sailUnitToEurope(Tile highSeaEntrence) {
+		enterHighSea = new GridPoint2(highSeaEntrence.x, highSeaEntrence.y);
 	    changeUnitLocation(owner.getHighSeas());
 	    reduceMovesLeftToZero();
 	    setDestinationEurope();
@@ -974,7 +977,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		embarkUnitsFromLocation(owner.getEurope());
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
-		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+		setDestination(enterHighSea.x, enterHighSea.y);
+		enterHighSea = null;
 		workLeft = getSailTurns();
 	}
 	
@@ -1104,7 +1108,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
     public static class Xml extends XmlNodeParser<Unit> {
         
-        private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
+    	private static final String ATTR_ENTER_HIGH_SEA = "enterHighSea";
+		private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
 		private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
 		private static final String ATTR_WORK_LEFT = "workLeft";
 		private static final String ATTR_DESTINATION_Y = "destinationY";
@@ -1168,6 +1173,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             	unit.destinationX = attr.getIntAttribute(ATTR_DESTINATION_X);
             	unit.destinationY = attr.getIntAttribute(ATTR_DESTINATION_Y);
             }
+            if (attr.hasAttr(ATTR_ENTER_HIGH_SEA)) {
+            	unit.enterHighSea = new GridPoint2(attr.getPoint(ATTR_ENTER_HIGH_SEA));
+            }
             
             unit.workLeft = attr.getIntAttribute(ATTR_WORK_LEFT, -1);
             String tileImprovementTypeId = attr.getStrAttribute(ATTR_TILE_IMPROVEMENT_TYPE_ID);
@@ -1200,6 +1208,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {
             	attr.set(ATTR_DESTINATION_X, unit.destinationX);
             	attr.set(ATTR_DESTINATION_Y, unit.destinationY);
+            }
+            if (unit.enterHighSea != null) {
+            	attr.setPoint(ATTR_ENTER_HIGH_SEA, unit.enterHighSea);
             }
             
         	attr.set(ATTR_WORK_LEFT, unit.workLeft, -1);

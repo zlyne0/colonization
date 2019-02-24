@@ -2,6 +2,7 @@ package promitech.colonization.savegame;
 
 import java.io.IOException;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.XmlWriter;
 
 import net.sf.freecol.common.model.Identifiable;
@@ -65,6 +66,10 @@ public class XmlNodeAttributesWriter {
 		}
 	}
 
+	public void setPoint(String attrName, GridPoint2 p) throws IOException {
+		setPoint(attrName, p.x, p.y);
+	}
+	
 	public void setPoint(String attrName, int x, int y) throws IOException {
 		xml.attribute(attrName, Integer.toString(x) + "," + Integer.toString(y));
 	}

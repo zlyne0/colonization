@@ -373,7 +373,7 @@ public class MoveService {
                 
             if (moveContext.isEndOfPath()) {
                 if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
-                    moveContext.unit.moveUnitToHighSea();
+                    moveContext.unit.sailUnitToEurope(moveContext.destTile);
                 } else {
                     moveContext.unit.clearDestination();
                 }

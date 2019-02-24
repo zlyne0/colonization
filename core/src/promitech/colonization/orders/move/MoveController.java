@@ -218,7 +218,7 @@ public class MoveController {
 			    moveService.confirmedMoveProcessorInNewThread(payload, new MoveService.AfterMoveProcessor() {
 			        @Override
 			        public void afterMove(MoveContext moveContext) {
-			            moveContext.unit.moveUnitToHighSea();
+			            moveContext.unit.sailUnitToEurope(moveContext.destTile);
 			            guiGameController.nextActiveUnitAsGdxPostRunnable();
 			        }
                 });
