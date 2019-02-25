@@ -83,6 +83,7 @@ public class MapRenderer {
     private TileOwnerDrawer tileOwnerDrawer;
     private TileDebugStringDrawer tileDebugStringDrawer;
     private ColonyLockedTileDrawer colonyLockedTileDrawer;
+    private IsometricTilePolygonSprite colonyDragUnitFocus;
 
     private final ShapeRenderer shapeRenderer;
     public final Vector2 cameraPosition = new Vector2();
@@ -411,8 +412,14 @@ public class MapRenderer {
 		colonyLockedTileDrawer.polyBatch.begin();
 		colonyLockedTileDrawer.polyBatch.enableBlending();
 		drawColonyTilesLayer(colonyTile, screenX, screenY, colonyLockedTileDrawer);
-		colonyLockedTileDrawer.polyBatch.end();
 		
+		if (mapDrawModel.selectedTile != null) {
+			Vector2 v = mapToScreenCords(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
+			colonyDragUnitFocus.polygonSprite.setPosition(screenX + v.x, screenY + v.y);
+			colonyDragUnitFocus.polygonSprite.draw(colonyLockedTileDrawer.polyBatch);
+		}
+		
+		colonyLockedTileDrawer.polyBatch.end();
 		colonyLockedTileDrawer.batch.begin();
 	}
 
@@ -464,6 +471,7 @@ public class MapRenderer {
 		for (Direction direction : Direction.allDirections) {
 			x = direction.stepX(colonyTile.x, colonyTile.y);
 			y = direction.stepY(colonyTile.x, colonyTile.y);
+			// assume colony can never be on map edge so do not check if x,y is on map
 			tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 			if (tileDrawModel.settlementImage != null) {
 				v = mapToScreenCords(x, y);
@@ -507,6 +515,7 @@ public class MapRenderer {
 	public void showColonyLockedTiles(Colony colony) {
 		if (colonyLockedTileDrawer == null) {
 			colonyLockedTileDrawer = new ColonyLockedTileDrawer(mapDrawModel);
+			colonyDragUnitFocus = new IsometricTilePolygonSprite(new Color(1f, 1f, 1f, 0.4f));
 		}
 		colonyLockedTileDrawer.update(colony);
 	}

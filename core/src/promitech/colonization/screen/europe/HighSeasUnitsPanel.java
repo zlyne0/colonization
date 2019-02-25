@@ -18,7 +18,7 @@ public class HighSeasUnitsPanel extends ScrollPane {
 	
 	public HighSeasUnitsPanel() {
 		super(null, GameResources.instance.getUiSkin());
-		super.setWidget(content);
+		super.setActor(content);
 
         setForceScroll(false, false);
         setFadeScrollBars(false);

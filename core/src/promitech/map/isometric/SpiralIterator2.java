@@ -1,17 +1,14 @@
-package net.sf.freecol.common.model.map;
+package promitech.map.isometric;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
 
-import net.sf.freecol.common.model.Map;
-import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 
-public class SpiralIterator2 implements Iterator<Tile> {
+class SpiralIterator2<TILE_TYPE> implements Iterator<TILE_TYPE> {
     public static final int UNDEFINED = Integer.MIN_VALUE;
     
-    private Map map;
-    private Tile center;
+    private IsometricMap<TILE_TYPE> map;
     
     /** The maximum radius. */
     private int radius;
@@ -25,22 +22,21 @@ public class SpiralIterator2 implements Iterator<Tile> {
     public SpiralIterator2() {
     }
     
-    public void reset(Map map, Tile sourceTile, int radius) {
+    public void reset(IsometricMap<TILE_TYPE> map, int centerX, int centerY, int radius) {
         this.map = map;
-        this.center = sourceTile;
         this.radius = radius;
         
         boolean isFilled = true;
         
         n = 0;
         if (isFilled || radius == 1) {
-            x = Direction.NE.stepX(center.x, center.y);
-            y = Direction.NE.stepY(center.x, center.y);
+            x = Direction.NE.stepX(centerX, centerY);
+            y = Direction.NE.stepY(centerX, centerY);
             currentRadius = 1;
         } else {
             this.currentRadius = radius;
-            x = center.x;
-            y = center.y;
+            x = centerX;
+            y = centerY;
             for (int i = 1; i < radius; i++) {
                 x = Direction.N.stepX(x, y);
                 y = Direction.N.stepY(x, y);
@@ -48,13 +44,9 @@ public class SpiralIterator2 implements Iterator<Tile> {
             x = Direction.NE.stepX(x, y);
             y = Direction.NE.stepY(x, y);
         }
-        if (!isCoordinateValid(x, y)) {
+        if (!map.isIndexValid(x, y)) {
             nextTile();
         }
-    }
-    
-    private boolean isCoordinateValid(int px, int py) {
-        return px >= 0 && px < map.width && py >= 0 && py < map.height;
     }
     
     private void nextTile() {
@@ -98,7 +90,7 @@ public class SpiralIterator2 implements Iterator<Tile> {
                 x = direction.stepX(x, y);
                 y = direction.stepY(x, y);
             }
-        } while (!isCoordinateValid(x, y));
+        } while (!map.isIndexValid(x, y));
     }
     
     @Override
@@ -107,11 +99,11 @@ public class SpiralIterator2 implements Iterator<Tile> {
     }
 
     @Override
-    public Tile next() {
+    public TILE_TYPE next() {
         if (!hasNext()) {
             throw new NoSuchElementException("CircleIterator exhausted");
         }
-        Tile result = map.getSafeTile(x, y);
+        TILE_TYPE result = map.getSafeTile(x, y);
         nextTile();
         return result;
     }

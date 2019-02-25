@@ -19,6 +19,7 @@ import promitech.colonization.DI;
 import promitech.colonization.GameResources;
 import promitech.colonization.infrastructure.FontResource;
 import promitech.colonization.infrastructure.ThreadsResources;
+import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
 import promitech.colonization.screen.europe.EuropeApplicationScreen;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
@@ -68,6 +69,7 @@ public class ApplicationScreenManager extends ApplicationAdapter {
             Messages.instance().load();
             FontResource.load();
             gameResources.load();
+            SaveGameParser.loadDefaultSpecification();
             
             //gameController.initGameFromSavegame();
             //gameController.initNewGame();
@@ -84,7 +86,9 @@ public class ApplicationScreenManager extends ApplicationAdapter {
 		applicationScreensByType.put(ApplicationScreenType.MAP_VIEW, new MapViewApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.COLONY, new ColonyApplicationScreen());
 		applicationScreensByType.put(ApplicationScreenType.EUROPE, new EuropeApplicationScreen());
-		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(di.guiGameController, di.guiGameModel));
+		applicationScreensByType.put(ApplicationScreenType.MAIN_MENU, new MenuApplicationScreen(
+			di.guiGameController, di.guiGameModel, di.pathFinder
+		));
 		for (ApplicationScreen screen : applicationScreensByType.values()) {
 			screen.batch = batch;
 			screen.shape = shape;

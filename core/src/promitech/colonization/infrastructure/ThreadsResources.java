@@ -13,6 +13,10 @@ public class ThreadsResources {
 	}
 	
 	public void executeMovement(Runnable command) {
+		execute(command);
+	}
+	
+	public void execute(Runnable command) {
 		if (executorService == null) {
 			executorService = Executors.newFixedThreadPool(1);
 		}

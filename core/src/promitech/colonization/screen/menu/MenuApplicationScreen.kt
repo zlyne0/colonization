@@ -13,10 +13,14 @@ import promitech.colonization.screen.map.hud.GUIGameModel
 import promitech.colonization.ui.ClosableDialog
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
+import com.badlogic.gdx.utils.viewport.FitViewport
+import promitech.colonization.GameCreator
+import net.sf.freecol.common.model.map.path.PathFinder
 
 class MenuApplicationScreen (
 	private val guiGameController : GUIGameController,
-	private val guiGameModel : GUIGameModel
+	private val guiGameModel : GUIGameModel,
+	private val pathFinder : PathFinder
 ) : ApplicationScreen() {
 
 	private val stage: Stage
@@ -29,7 +33,7 @@ class MenuApplicationScreen (
 	private val exitButton: TextButton
 
 	init {
-		stage = Stage()
+		stage = Stage(FitViewport(ApplicationScreen.PREFERED_SCREEN_WIDTH, ApplicationScreen.PREFERED_SCREEN_HEIGHT))
 		
 		newGameButton = TextButton(Messages.msg("newAction.name"), GameResources.instance.getUiSkin())
 		backButton = TextButton(Messages.msg("mainmenu.back.name"), GameResources.instance.getUiSkin())
@@ -39,17 +43,22 @@ class MenuApplicationScreen (
 		optionsButton = TextButton(Messages.msg("preferencesAction.name"), GameResources.instance.getUiSkin())
 		exitButton = TextButton(Messages.msg("quitAction.name"), GameResources.instance.getUiSkin())
 		
-		newGameButton.addListener { _, _ -> 
-			guiGameController.showMapScreenOnStartNewGame()
+		newGameButton.addListener { _, _ ->
+			NewGameDialog(guiGameController, guiGameModel, pathFinder).show(stage)
 		}
 		backButton.addListener { _, _ ->
 			guiGameController.showMapScreenAndActiveNextUnit()
 		}
 		loadGameButton.addListener { _, _ ->
-			showDialog(LoadGameDialog(shape, guiGameController))
+			showDialog(LoadGameDialog(shape, guiGameController, guiGameModel, pathFinder))
 		}
 		loadLastGameButton.addListener { _, _ ->
-			guiGameController.showMapScreenAndLoadLastGame()
+			WaitDialog(Messages.msg("status.loadingGame"), {
+				GameCreator(pathFinder, guiGameModel).loadLastGame()
+			}, {
+				guiGameController.resetMapModel()
+				guiGameController.showMapScreenAndActiveNextUnit()
+			}).show(stage)
 		}
 		exitButton.addListener { _, _ ->
 			exitFromGame()
@@ -106,7 +115,8 @@ class MenuApplicationScreen (
 			loadLastGameButton.setText(Messages.msg("openAction.name"))
 			loadGameButton.setDisabled(true)
 			loadLastGameButton.setDisabled(true)
-		}
+		}		
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Gdx.input.setInputProcessor(stage)
 	}
 	

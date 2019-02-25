@@ -222,8 +222,18 @@ public class PathFinder {
 		return path;
 	}
 
+	public void reset() {
+		nodes.clear();
+		if (grid != null) {
+			for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
+				grid.get(cellIndex).reset(0, INFINITY);
+			}
+			grid = null;
+		}
+	}
+	
 	private void resetFinderBeforeSearching(Map map) {
-		if (grid == null) {
+		if (grid == null || !grid.sizeEquals(map.width, map.height)) {
 		    grid = new Object2dArray<Node>(map.width, map.height);
 		    
 		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {

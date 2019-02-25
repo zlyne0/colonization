@@ -5,34 +5,31 @@ import static org.assertj.core.api.Assertions.assertThat;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.AfterClass;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-import com.badlogic.gdx.utils.Pool;
-import com.badlogic.gdx.utils.Pools;
 
-import net.sf.freecol.common.model.map.AutoFreePoolableTileIterable;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.map.isometric.IsometricMapAssert;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class MapTest {
     
     static Game game; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
 
-    @AfterClass
+    @AfterAll
     public static void afterClass() {
-        Pool<AutoFreePoolableTileIterable> pool = Pools.get(AutoFreePoolableTileIterable.class);
-        assertThat(pool.peak).isEqualTo(1);
-        
+        IsometricMapAssert.hasAutoFreePoolableTileIterablePoolSize(1);        
         game = null;
     }
     
@@ -43,8 +40,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -67,8 +64,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourLandTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourLandTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -88,8 +85,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourWaterTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourWaterTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then
@@ -107,8 +104,8 @@ public class MapTest {
         List<String> tiles = new ArrayList<String>();
         
         // when
-        for (Tile tile : game.map.neighbourTiles(sourceTile)) {
-            tiles.add(tile.getId());
+        for (NeighbourIterableTile<Tile> it : game.map.neighbourTiles(sourceTile)) {
+            tiles.add(it.tile.getId());
         }
 
         // then

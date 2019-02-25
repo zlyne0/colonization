@@ -23,12 +23,17 @@ import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.GameResources;
 import promitech.colonization.infrastructure.FontResource;
+import promitech.colonization.screen.colony.DragAndDropPreHandlerTargetContainer;
 import promitech.colonization.screen.colony.DragAndDropSourceContainer;
 import promitech.colonization.screen.colony.DragAndDropTargetContainer;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.ui.DoubleClickedListener;
 
-class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoods>, DragAndDropTargetContainer<AbstractGoods> {
+class CargoPanel extends Table implements 
+	DragAndDropSourceContainer<AbstractGoods>, 
+	DragAndDropTargetContainer<AbstractGoods>,
+	DragAndDropPreHandlerTargetContainer<AbstractGoods>	
+{
 	private static final float ITEMS_SPACE = 15;
 	
 	private final ChangeColonyStateListener changeColonyStateListener;
@@ -103,6 +108,14 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 	}
 	
 	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
+	@Override
 	public void draw(Batch batch, float parentAlpha) {
 		drawBorders(batch);
 		super.draw(batch, parentAlpha);
@@ -124,6 +137,18 @@ class CargoPanel extends Table implements DragAndDropSourceContainer<AbstractGoo
 		shapeRenderer.end();
 		
 		batch.begin();
+	}
+
+	@Override
+	public boolean isPrePutPayload(AbstractGoods payload, float x, float y) {
+		return unitActor.isPrePutPayload(payload, x, y);
+	}
+
+	@Override
+	public void prePutPayload(AbstractGoods payload, float x, float y,
+			DragAndDropSourceContainer<AbstractGoods> sourceContainer) 
+	{
+		unitActor.prePutPayload(payload, x, y, sourceContainer);
 	}
 }
 
@@ -170,7 +195,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		frameStyle.background = new FrameWithCornersDrawableSkin(title, FontResource.getUnitBoxFont(), GameResources.instance);
 		setStyle(frameStyle);
 		
-		setWidget(widgets);
+		setActor(widgets);
 		
         setForceScroll(false, false);
         setFadeScrollBars(false);
@@ -179,7 +204,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
         
         widgets.padLeft(CORNER_SKIN_DECORATION_SIZE);
         widgets.padRight(CORNER_SKIN_DECORATION_SIZE);
-        widgets.align(Align.center);
+        widgets.align(Align.left);
         widgets.space(15);
 	}
 	
@@ -214,7 +239,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		this.goodsDragAndDrop = goodsDragAndDrop;
 		
 		cargoPanel = new CargoPanel(goodsDragAndDrop, changeColonyStateListener);
-		goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
 		return this;
 	}
 	
@@ -251,7 +275,9 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		
 		unitActor.dragAndDropSourceContainer = this;
 		unitActor.enableUnitChip(shapeRenderer);
-		unitActor.addListener(unitClickListener);
+		if (withUnitFocus) {
+			unitActor.addListener(unitClickListener);
+		}
 		widgets.addActor(unitActor);
 		
 		validate();
@@ -260,6 +286,14 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		changeColonyStateListener.changeUnitAllocation();
 	}
 
+	@Override
+	public void onDragPayload(float x, float y) {
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+	}
+	
 	public void clearUnits() {
 		widgets.clear();
 	}
@@ -289,9 +323,6 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 
 	public UnitActor addUnit(Unit unit) {
 		UnitActor unitActor = new UnitActor(unit, unitActorDoubleClickListener);
-		if (unitClickListener != null) {
-			unitActor.addListener(unitClickListener);
-		}
 		if (showUnitChip) {
 			unitActor.enableUnitChip(shapeRenderer);
 		}
@@ -302,8 +333,11 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 		}
 
 		if (withUnitFocus) {
+			unitActor.addListener(unitClickListener);
 			unitActor.withCargoPanel(cargoPanel, changeColonyStateListener);
 			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(unitActor, unitActor));
+			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(cargoPanel, cargoPanel));
+			goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, cargoPanel));
 		}
 		
 		widgets.addActor(unitActor);
@@ -313,6 +347,7 @@ public class UnitsPanel extends ScrollPane implements DragAndDropSourceContainer
 	private void updateCargo(UnitActor unitActor) {
 		if (withUnitFocus) {
 	        cargoPanel.initCargoForUnit(unitActor);
+	        widgets.removeActor(cargoPanel);
 	        widgets.addActorAfter(selectedActor, cargoPanel);
 		}
 	}

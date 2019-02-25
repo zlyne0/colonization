@@ -13,7 +13,7 @@ public class OptionGroup extends ObjectWithId {
     public final MapIdEntities<OptionGroup> optionsGroup = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<ObjectWithId> abstractOptions = MapIdEntities.linkedMapIdEntities();
     
-    private boolean editable = false;
+    private boolean editable = true;
     
     public OptionGroup(String id) {
         super(id);
@@ -28,6 +28,10 @@ public class OptionGroup extends ObjectWithId {
         StringOption option = (StringOption)abstractOptions.getById(code);
         return option.getValue();
     }
+
+	public boolean isEditable() {
+		return editable;
+	}
     
     public static class Xml extends XmlNodeParser<OptionGroup> {
         
@@ -49,7 +53,7 @@ public class OptionGroup extends ObjectWithId {
         public void startElement(XmlNodeAttributes attr) {
             String id = attr.getStrAttribute(ATTR_ID);
             OptionGroup optionGroup = new OptionGroup(id);
-            optionGroup.editable = attr.getBooleanAttribute(ATTR_EDITABLE, false);
+            optionGroup.editable = attr.getBooleanAttribute(ATTR_EDITABLE, true);
             nodeObject = optionGroup;
         }
 

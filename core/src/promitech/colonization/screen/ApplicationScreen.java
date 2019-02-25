@@ -10,6 +10,9 @@ import promitech.colonization.GameResources;
 
 public abstract class ApplicationScreen {
 
+	public static final float PREFERED_SCREEN_WIDTH = 1280;
+	public static final float PREFERED_SCREEN_HEIGHT = 800;
+	
 	private final Array<EventListener> oneHitOnLeaveListeners = new Array<EventListener>();
 	protected ApplicationScreenManager screenManager;
 	protected SpriteBatch batch;

@@ -28,16 +28,6 @@ public class HighSeas implements UnitLocation {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-    
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
-	
     public static class Xml extends XmlNodeParser<HighSeas> {
 
         public Xml() {

@@ -90,11 +90,12 @@ public class Player extends ObjectWithId {
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
     protected List<String> banMission = null;
     
-    public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation) {
+    public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation, String name) {
     	Player player = new Player(idGenerator.nextId(Player.class));
     	player.ai = true; 
         player.nation = nation;
         player.nationType = nation.nationType;
+        player.name = name;
         player.updatableFeatures.addFeaturesAndOverwriteExisted(nation.nationType);
         if (nation.nationType.isEuropean()) {
         	player.changePlayerType(PlayerType.COLONIAL);
@@ -233,7 +234,7 @@ public class Player extends ObjectWithId {
 				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
 					.addName("%nation%", nation())
 				);
-				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				MessageNotification msg = new MessageNotification(Game.idGenerator, msgBody);
 				otherPlayer.eventsNotifications.addMessageNotification(msg);
 			}
     	}
@@ -248,7 +249,7 @@ public class Player extends ObjectWithId {
 				String msgBody = Messages.message(StringTemplate.template("model.diplomacy." + newStance + ".declared")
 					.addName("%nation%", otherPlayer.nation())
 				);
-				MessageNotification msg = new MessageNotification(Game.idGenerator.nextId(MessageNotification.class), msgBody);
+				MessageNotification msg = new MessageNotification(Game.idGenerator, msgBody);
 				this.eventsNotifications.addMessageNotification(msg);
             }
     	}
@@ -370,9 +371,10 @@ public class Player extends ObjectWithId {
 	}
     
 	/**
-	 * @return return true when explore new tiles
+	 * Method populate {@link MoveExploredTiles} <code>exploredTiles</code> with explored
+	 * tiles
 	 */
-	public boolean revealMapAfterUnitMove(Map map, Unit unit) {
+	public void revealMapAfterUnitMove(Map map, Unit unit, MoveExploredTiles exploredTiles) {
 		Tile unitTileLocation = unit.getTile();
 		
 		setTileAsExplored(unitTileLocation);
@@ -382,19 +384,18 @@ public class Player extends ObjectWithId {
 		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
 		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
 		
-		boolean unexploredTile = false;
 		while (spiralIterator.hasNext()) {
 			int coordsIndex = spiralIterator.getCoordsIndex();
-			spiralIterator.next();
 			
 			if (setTileAsExplored(coordsIndex)) {
-				unexploredTile = true;
+				exploredTiles.addExploredTile(spiralIterator.getX(), spiralIterator.getY());
 			}
 			if (fogOfWar.removeFogOfWar(coordsIndex)) {
-				unexploredTile = true;
+				exploredTiles.addRemoveFogOfWar(spiralIterator.getX(), spiralIterator.getY());
 			}
+			
+			spiralIterator.next();
 		}
-		return unexploredTile;
 	}
 
     public Europe getEurope() {
@@ -409,6 +410,15 @@ public class Player extends ObjectWithId {
     		}
     	}
     	return counter;
+    }
+    
+    public boolean hasUnitType(String unitTypeId) {
+        for (Unit unit : units.entities()) {
+            if (unit.unitType.equalsId(unitTypeId)) {
+                return true;
+            }
+        }
+        return false;
     }
     
     public void addGold(int gold) {
@@ -452,6 +462,10 @@ public class Player extends ObjectWithId {
 
     public boolean isColonial() {
         return playerType == PlayerType.COLONIAL;
+    }
+    
+    public boolean isIndependent() {
+    	return playerType == PlayerType.INDEPENDENT;
     }
     
     public boolean isRebel() {

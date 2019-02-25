@@ -2,8 +2,9 @@ package promitech.colonization.savegame;
 
 import static org.assertj.core.api.Assertions.*;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -21,7 +22,7 @@ import net.sf.freecol.common.model.specification.options.UnitListOption;
 
 public class LoadSpecificationTest {
 
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }

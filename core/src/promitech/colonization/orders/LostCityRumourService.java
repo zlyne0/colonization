@@ -2,15 +2,18 @@ package promitech.colonization.orders;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.map.LostCityRumour.RumourType;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
@@ -107,13 +110,7 @@ public class LostCityRumourService {
 		case COLONIST: {
 			List<UnitType> unitTypes = Specification.instance.getUnitTypesWithAbility(Ability.FOUND_IN_LOST_CITY);
 			UnitType unitType = Randomizer.instance().randomMember(unitTypes);
-			Unit newColonistUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                unitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-            newColonistUnit.changeUnitLocation(destTile);
+            UnitFactory.create(unitType, unit.getOwner(), destTile);
 
             if (unit.getOwner().isHuman()) {
             	guiGameController.showDialog(new SimpleMessageDialog()
@@ -127,17 +124,8 @@ public class LostCityRumourService {
 		case CIBOLA: {
 			String cityOfCibolaName = game.removeNextCityOfCibola();
 			int treasureAmount = Randomizer.instance().randomInt(dx * 600) + dx * 300;
-			List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-			UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
 			
-			Unit newTreasureUnit = new Unit(
-                Game.idGenerator.nextId(Unit.class), 
-                treasureUnitType,
-                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-                unit.getOwner()
-            );
-            newTreasureUnit.changeUnitLocation(destTile);
-            newTreasureUnit.setTreasureAmount(treasureAmount);
+			UnitFactory.createTreasureTrain(unit.getOwner(), destTile, treasureAmount);
 			
             if (unit.getOwner().isHuman()) {
             	guiGameController.showDialog(new SimpleMessageDialog()
@@ -155,17 +143,7 @@ public class LostCityRumourService {
 			if (treasureAmount < 500) {
 				unit.getOwner().addGold(treasureAmount);
 			} else {
-				List<UnitType> treasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
-				UnitType treasureUnitType = Randomizer.instance().randomMember(treasureUnitTypes);
-				
-				Unit newTreasureUnit = new Unit(
-	                Game.idGenerator.nextId(Unit.class), 
-	                treasureUnitType,
-	                Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-	                unit.getOwner()
-	            );
-	            newTreasureUnit.changeUnitLocation(destTile);
-	            newTreasureUnit.setTreasureAmount(treasureAmount);
+				UnitFactory.createTreasureTrain(unit.getOwner(), destTile, treasureAmount);
 			}
 
 			if (unit.getOwner().isHuman()) {
@@ -260,4 +238,58 @@ public class LostCityRumourService {
 		
 		handleLostCityRumourType(mc, type);
 	}
+	
+	/**
+	 * Cashin treasure and send notification to wagon owner and other players.
+	 * @param treasureWagon {@link Unit} - treasure wagon
+	 */
+    public void cashInTreasure(Unit treasureWagon) {
+    	String messageId = null;
+    	int cashInAmount = 0;
+    	int fullAmount = treasureWagon.getTreasureAmount();
+    	
+    	if (treasureWagon.getOwner().isColonial()) {
+    		// Charge transport fee and apply tax
+    		cashInAmount = (fullAmount - treasureWagon.treasureTransportFee()) * (100 - treasureWagon.getOwner().getTax()) / 100;
+    		messageId = "model.unit.cashInTreasureTrain.colonial";
+    	} else {
+            // No fee possible, no tax applies.
+            cashInAmount = fullAmount;
+            messageId = "model.unit.cashInTreasureTrain.independent";
+    	}
+    	treasureWagon.getOwner().addGold(cashInAmount);
+    	
+    	if (treasureWagon.getOwner().isHuman()) {
+    		StringTemplate msgSt = StringTemplate.template(messageId)
+				.addAmount("%amount%", fullAmount)
+				.addAmount("%cashInAmount%", cashInAmount);
+    		
+    		if (treasureWagon.isAtLocation(Europe.class)) {
+    			treasureWagon.getOwner().eventsNotifications.addMessageNotification(msgSt);
+    		} else {
+    			guiGameController.showDialog(new SimpleMessageDialog()
+					.withContent(msgSt)
+					.withButton("ok")
+					.addOnCloseListener(createOnCloseActionListener())
+				);
+    		}
+    	}
+    	
+    	if (treasureWagon.getOwner().isRebel() || treasureWagon.getOwner().isIndependent()) {
+    		messageId = "model.unit.cashInTreasureTrain.other.independent";
+    	} else {
+    		messageId = "model.unit.cashInTreasureTrain.other.colonial";
+    	}
+    	StringTemplate msgSt = StringTemplate.template(messageId)
+            .addAmount("%amount%", fullAmount)
+            .addStringTemplate("%nation%", treasureWagon.getOwner().getNationName());
+    	
+    	for (Player p : game.players.entities()) {
+    		if (p.isLiveEuropeanPlayer() && p.notEqualsId(treasureWagon.getOwner())) {
+    			p.eventsNotifications.addMessageNotification(msgSt);
+    		}
+    	}
+    	treasureWagon.getOwner().removeUnit(treasureWagon);
+    }
+	
 }

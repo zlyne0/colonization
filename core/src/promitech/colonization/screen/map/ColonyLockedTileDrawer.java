@@ -11,9 +11,8 @@ class ColonyLockedTileDrawer extends TileDrawer {
 	private static final Color LOCKED_TILE_COLOR = new Color(1f, 0f, 0f, 0.4f);
 	
 	private IsometricTilePolygonSprite polygonSprite;
+	protected PolygonSpriteBatch polyBatch;	
 	private Colony colony;
-	
-	PolygonSpriteBatch polyBatch;
 	
 	protected ColonyLockedTileDrawer(MapDrawModel mapDrawModel) {
 		super(mapDrawModel);

@@ -13,12 +13,13 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.MarketSnapshoot;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.EndOfTurnPhaseListener;
-import promitech.colonization.GameCreator;
 import promitech.colonization.GameLogic;
 import promitech.colonization.ai.AILogic;
 import promitech.colonization.math.Point;
@@ -39,12 +40,14 @@ import promitech.colonization.screen.map.diplomacy.IndianSettlementInformationDi
 import promitech.colonization.screen.ui.IndianLandDemandQuestionsDialog;
 import promitech.colonization.ui.ModalDialog;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
 	private GameLogic gameLogic;
 	private MoveService moveService;
+	private PathFinder pathFinder;
 	
 	private MapActor mapActor;
 	private HudStage mapHudStage;
@@ -55,16 +58,15 @@ public class GUIGameController {
 	public GUIGameController() {
 	}
 	
-	public void inject(GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, MoveService moveService) {
+	public void inject(
+		GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, 
+		MoveService moveService, PathFinder pathFinder
+	) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.gameLogic = gameLogic;
 		this.moveService = moveService;
-	}
-	
-	public void quickSaveGame() {
-		new GameCreator(guiGameModel)
-			.quickSaveGame();
+		this.pathFinder = pathFinder;
 	}
 	
     public void skipUnit() {
@@ -257,41 +259,13 @@ public class GUIGameController {
 
 	private void clickOnTileDebugInfo(Point p) {
         Tile tile = guiGameModel.game.map.getTile(p.x, p.y);
-        System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
         if (tile != null) {
+        	System.out.println("p = " + p + ", xml x=\"" + p.x + "\" y=\"" + p.y + "\"");
             System.out.println("tile: " + tile);
+        	System.out.println("drawmodel = " + mapActor.mapDrawModel().tileDrawModelToString(p.x, p.y));
         } else {
-            System.out.println("tile is null");
+            System.out.println("tile is null at " + p);
         }
-        Object tileDrawModel = mapActor.mapDrawModel().getTileDrawModel(p.x, p.y);
-        if (tileDrawModel != null) {
-            System.out.println("drawmodel = " + tileDrawModel.toString());
-        }
-	}
-	
-	public void showMapScreenOnStartNewGame() {
-		try {
-			new GameCreator(guiGameModel).initNewGame();
-		} catch (Exception e) {
-			throw new IllegalStateException(e);
-		}
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-	}
-	
-	public void showMapScreenAndLoadGame(String gameName) {
-		new GameCreator(guiGameModel).load(gameName);
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
-	}
-	
-	public void showMapScreenAndLoadLastGame() {
-		new GameCreator(guiGameModel).loadLastGame();
-		resetMapModel();
-		nextActiveUnit();
-		screenManager.setScreen(ApplicationScreenType.MAP_VIEW);
 	}
 	
     public void showMapScreenAndActiveNextUnit() {
@@ -352,6 +326,7 @@ public class GUIGameController {
 		guiGameModel.setAiMove(true);
 		System.out.println("end turn");
 
+		endOfTurnPhaseListener.nextAIturn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.playingPlayer.endTurn();
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
@@ -364,21 +339,16 @@ public class GUIGameController {
 			System.out.println("new turn for player " + player);
 			
 			aiLogic.aiNewTurn(player);
-			
-//			try {
-//				Thread.sleep(100);
-//			} catch (InterruptedException e) {
-//				e.printStackTrace();
-//			}
 		}
 		
 		gameLogic.comparePrices(guiGameModel.game.playingPlayer, marketSnapshoot);
 		
 		gameLogic.newTurn(guiGameModel.game.playingPlayer);
+		guiGameModel.game.getTurn().increaseTurnNumber();
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
 			mapActor.resetMapModel();
 		}
-		resetUnexploredBorders();
+		mapActor.resetUnexploredBorders();
 		
 		logicNextActiveUnit();
 		
@@ -394,8 +364,8 @@ public class GUIGameController {
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
 			return;
 		}
-		TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-		logicMakeImprovement(tile, unit, roadImprovement);
+		String improvementTypeId = TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID;
+		confirmTileImprovement(tile, unit, improvementTypeId);
 	}
 
 	public void plowOrClearForestImprovement() {
@@ -405,17 +375,42 @@ public class GUIGameController {
 		if (!unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
 			return;
 		}
-
-		TileImprovementType imprv = null;
+		String improvementTypeId = null;
 		if (tile.getType().isForested()) {
-			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
+			improvementTypeId = TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID;
 		} else {
-			imprv = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+			improvementTypeId = TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID;
 		}
-		logicMakeImprovement(tile, unit, imprv);
+		confirmTileImprovement(tile, unit, improvementTypeId);
+	}
+	
+	private void confirmTileImprovement(final Tile tile, final Unit unit, final String improvementTypeId) {
+		if (tile.getOwner() == null || unit.getOwner().equalsId(tile.getOwner())) {
+			makeTileImprovement(tile, unit, improvementTypeId);
+			return;
+		}
+		int landPrice = -1;
+		if (unit.getOwner().hasContacted(tile.getOwner())) {
+			landPrice = unit.getTile().getLandPriceForPlayer(unit.getOwner());
+		}
+		if (landPrice == 0) {
+			makeTileImprovement(tile, unit, improvementTypeId);
+			return;
+		}
+		OptionAction<Unit> buildRoad = new OptionAction<Unit>() {
+			@Override
+			public void executeAction(Unit payload) {
+				tile.removeOwner();
+				makeTileImprovement(tile, unit, improvementTypeId);
+			}
+		};
+		QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, unit, tile, buildRoad);
+    	mapHudStage.showDialog(questionDialog);
 	}
 
-	private void logicMakeImprovement(Tile tile, Unit unit, TileImprovementType improvement) {
+	private void makeTileImprovement(Tile tile, Unit unit, String improvementId) {
+		TileImprovementType improvement = Specification.instance.tileImprovementTypes.getById(improvementId);
+		
 		if (tile.canBeImprovedByUnit(improvement, unit)) {
 			unit.startImprovement(tile, improvement);
 			System.out.println("unit[" + unit + "] build [" + improvement + "] on tile[" + tile + "]");
@@ -519,9 +514,10 @@ public class GUIGameController {
 	public void buildColony(String colonyName) {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
+		Colony colony = Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
+		Settlement.determineEuropeSeaConnection(guiGameModel.game.map, pathFinder, colony);
 		
-		Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
-		changeActiveUnit(null);
+		nextActiveUnit();
 		resetMapModel();
 	}
 	
@@ -533,21 +529,10 @@ public class GUIGameController {
 		mapActor.hideTileOwners();
 	}
 	
-	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
-		@Override
-		public void run() {
-			mapActor.resetUnexploredBorders();
-		}
-		
-		public String toString() {
-			return "postRunnable.resetUnexploredBorders";
-		}
-	};
-	
-	public void resetUnexploredBorders() {
-		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
+	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
+		mapActor.resetUnexploredBorders(exploredTiles);
 	}
-
+	
 	public void showDialog(ModalDialog<?> dialog) {
 		mapHudStage.showDialog(dialog);
 	}

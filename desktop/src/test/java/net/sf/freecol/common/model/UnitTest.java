@@ -1,10 +1,10 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -17,12 +17,12 @@ public class UnitTest {
 
     Game game; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void before() throws Exception {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
@@ -31,7 +31,7 @@ public class UnitTest {
     public void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        assertNull("should not have father", player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN));
+        assertNull(player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
@@ -67,12 +67,7 @@ public class UnitTest {
     	Tile destTile = game.map.getSafeTile(22, 79);
     	destTile.addLostCityRumors();
     	
-    	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		player
-    	);
-    	unit.changeUnitLocation(srcTile);;
+    	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, player, srcTile);
 		
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
@@ -91,12 +86,7 @@ public class UnitTest {
     	destTile.addLostCityRumors();
     	((MapIdEntities<Unit>)destTile.getUnits()).clear();
 
-    	Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		indian
-    	);
-    	unit.changeUnitLocation(srcTile);;
+    	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, indian, srcTile);
     	
     	// when
     	MoveType moveType = unit.getMoveType(srcTile, destTile);

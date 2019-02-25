@@ -5,6 +5,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 
+import org.xml.sax.SAXException;
+
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
@@ -30,6 +32,8 @@ public class UnitType extends BuildableType {
 	public static final String ARTILLERY = "model.unit.artillery";
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	public static final String SCOUT = "model.unit.seasonedScout";
+	public static final String GALLEON = "model.unit.galleon";
+	public static final String BRAVE = "model.unit.brave";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -97,8 +101,9 @@ public class UnitType extends BuildableType {
     public String expertProductionForGoodsId;
 
 	protected String extendsId;
+	private boolean naval = false;
     
-    public UnitType(String id) {
+    private UnitType(String id) {
     	super(id);
     }
 
@@ -106,6 +111,7 @@ public class UnitType extends BuildableType {
     	return getId() + ".image";
     }
     
+    @Override
 	public boolean isUnitType() {
 		return true;
 	}
@@ -116,8 +122,12 @@ public class UnitType extends BuildableType {
 		return (int)base;
 	}
 
+	private void updateReferences() {
+		naval = hasAbility(Ability.NAVAL_UNIT);
+	}
+	
     public boolean isNaval() {
-    	return hasAbility(Ability.NAVAL_UNIT);
+    	return naval;
     }
 	
     public boolean canCarryUnits() {
@@ -369,6 +379,13 @@ public class UnitType extends BuildableType {
         public void startReadChildren(XmlNodeAttributes attr) {
         	if (attr.isQNameEquals(ELEMENT_DEFAULT_ROLE)) {
         		nodeObject.defaultRoleId = attr.getStrAttributeNotNull(ATTR_ID);
+        	}
+        }
+
+        @Override
+        public void endElement(String uri, String localName, String qName) throws SAXException {
+        	if (getTagName().equals(qName)) {
+        		nodeObject.updateReferences();
         	}
         }
         

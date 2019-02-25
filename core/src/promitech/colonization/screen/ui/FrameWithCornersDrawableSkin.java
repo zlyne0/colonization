@@ -76,9 +76,9 @@ public class FrameWithCornersDrawableSkin extends BaseDrawable {
 		f = gameResources.getFrame("frames.bottom.image");
 		bottom = new Sprite(f.texture);
 		bottom.flip(false, false);
-		
+
+		f = gameResources.getFrame("frames.top.image");
 		top = new Sprite(f.texture);
-		top.flip(false, true);
 	}
 	
 	@Override
@@ -109,7 +109,7 @@ public class FrameWithCornersDrawableSkin extends BaseDrawable {
 			bottom.draw(batch);
 			
 			rx = leftTop.getWidth() - 1 + x + i*top.getWidth();
-			ry = y + height - top.getHeight() - titleDy + 1;
+			ry = y + height - top.getHeight() - titleDy;
 			if (title == null || (rx <= titleStart + x || rx >= titleEnd + x)) {
 				top.setPosition(rx, ry);
 				top.draw(batch);

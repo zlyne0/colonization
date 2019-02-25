@@ -327,6 +327,10 @@ public class HudStage extends Stage {
     			gameController.fortify();
     			return true;
     		}
+    		if (event.getListenerActor() == sentryButton) {
+    			gameController.sentryUnit();
+    			return true;
+    		}
     		if (event.getListenerActor() == activeButton) {
     			gameController.activeUnit();
     			return true;

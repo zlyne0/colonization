@@ -2,6 +2,8 @@ package net.sf.freecol.common.model;
 
 import org.assertj.core.api.AbstractAssert;
 
+import net.sf.freecol.common.model.player.Player;
+
 public class TileAssert extends AbstractAssert<TileAssert, Tile> {
 
 	public TileAssert(Tile actual, Class<?> selfType) {
@@ -38,4 +40,18 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
         return this;
     }
 	
+    public TileAssert hasSettlementOwnBy(Player player) {
+    	if (!actual.hasSettlement()) {
+    		failWithMessage("expected tile id: %s has settlement", actual.getId());
+    	}
+    	if (actual.getSettlement().getColony().getOwner().notEqualsId(player)) {
+    		failWithMessage("expected settlement at tile id: %s has owner %s but own by %s", 
+				actual.getId(),
+				player.getId(),
+				actual.getSettlement().getColony().getOwner().getId()
+			);
+    	}
+    	return this;
+    }
+    
 }

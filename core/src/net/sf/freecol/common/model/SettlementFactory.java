@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import promitech.colonization.Randomizer;
 import promitech.colonization.ui.resources.Messages;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class SettlementFactory {
 
@@ -59,6 +60,7 @@ public class SettlementFactory {
 		final UnitType brave = Specification.instance.unitTypes.getById("model.unit.brave");
 		for (int i=0; i<settlementUnitsNumber; i++) {
 			Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), player);
+			player.units.add(unit);
 			unit.setIndianSettlement(indianSettlement);
 			unit.changeUnitLocation(indianSettlement);
 		}
@@ -72,8 +74,8 @@ public class SettlementFactory {
 			}
 		}
 		
-		for (Tile t : map.neighbourTiles(tile)) {
-			ProductionInfo productionInfo = t.getType().productionInfo;
+		for (NeighbourIterableTile<Tile> it : map.neighbourTiles(tile)) {
+			ProductionInfo productionInfo = it.tile.getType().productionInfo;
 			for (Entry<String> scaleEntry : scale.entries()) {
 				int goodsAmount = productionInfo.unattendedProductions(scaleEntry.key);
 				scale.put(scaleEntry.key, scaleEntry.value + goodsAmount);

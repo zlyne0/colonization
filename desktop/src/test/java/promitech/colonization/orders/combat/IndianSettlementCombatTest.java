@@ -6,10 +6,10 @@ import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -26,8 +26,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.PlayerAssert;
 import net.sf.freecol.common.model.specification.FoundingFather;
@@ -54,14 +54,14 @@ public class IndianSettlementCombatTest {
     
     MapIdEntities<Unit> settlementUnits; 
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
         Randomizer.changeRandomToRandomXS128();
         
@@ -69,14 +69,9 @@ public class IndianSettlementCombatTest {
         dutch = game.players.getById("player:1");
         indian = game.players.getById("player:154");
         
-        dutchDragoon = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
         freeTileNextToIndianSettlement = game.map.getSafeTile(20, 78);
-        dutchDragoon.changeUnitLocation(freeTileNextToIndianSettlement);
+        dutchDragoon = UnitFactory.createDragoon(dutch, freeTileNextToIndianSettlement);
+
         
         indianSettlementTile = game.map.getSafeTile(19, 78);
         indianSettlement = indianSettlementTile.getSettlement().getIndianSettlement();
@@ -84,7 +79,7 @@ public class IndianSettlementCombatTest {
         settlementUnits = unitsFromIndianSettlement();
     }
 
-    @After
+    @AfterEach
     public void after() {
         Randomizer.changeRandomToRandomXS128();
     }

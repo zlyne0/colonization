@@ -23,6 +23,9 @@ class HighSeaDistanceGenerator {
         poolIndexes = new IntArray(false, map.width * map.height);
     }
     
+    /**
+     * Generate influence map from group of highsea tiles to group of land tiles. 
+     */
     public void generate() {
     	highseaInfluenceMap.set(LACK_CONNECTION);
         for (int y=0; y<map.height; y++) {

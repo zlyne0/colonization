@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
@@ -21,6 +22,8 @@ import promitech.colonization.orders.diplomacy.FirstContactService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.Messages;
+import promitech.map.isometric.IterableSpiral;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class MoveService {
 
@@ -50,6 +53,9 @@ public class MoveService {
     
     // bombardment
 	private MoveContext artilleryUnitBombardAnimation;
+    
+    private final MoveExploredTiles exploredTiles = new MoveExploredTiles();
+    private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
     
     public void inject(
     		GUIGameController guiGameController, 
@@ -157,21 +163,61 @@ public class MoveService {
     
     public void processMove(MoveContext moveContext) {
         moveContext.handleMove();
-        
-        boolean exploredNewTiles = false;
         if (moveContext.isMoveTypeRevealMap()) {
-            exploredNewTiles = moveContext.unit.getOwner().revealMapAfterUnitMove(guiGameModel.game.map, moveContext.unit);
+        	exploredTiles.clear();
+            moveContext.unit.getOwner().revealMapAfterUnitMove(
+        		guiGameModel.game.map, 
+        		moveContext.unit, 
+        		exploredTiles
+    		);
         }
-        if (exploredNewTiles && moveContext.isHuman()) {
-            guiGameController.resetUnexploredBorders();
+        if (exploredTiles.isExploredNewTiles() && moveContext.isHuman()) {
+            guiGameController.resetUnexploredBorders(exploredTiles);
+            exploredTiles.clear();
             
             if (isNotDiscoveredNewLand(moveContext.unit)) {
                 discoverNewLand(moveContext.unit.getOwner());
             }
         }
-        
         firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
+        wakeUpSentryUnits(moveContext.unit.getOwner(), moveContext.destTile);
+        
+        if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+        	checkCashInTreasureInCarrier(moveContext.unit, moveContext.destTile);
+        	moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+        }
     }
+    
+    private void wakeUpSentryUnits(Player player, Tile tile) {
+    	for (NeighbourIterableTile<Tile> neighbourTile : guiGameModel.game.map.neighbourTiles(tile)) {
+    		for (Unit u : neighbourTile.tile.getUnits().entities()) {
+    			if (u.isSentry() && u.getOwner().notEqualsId(player)) {
+    				u.setState(UnitState.ACTIVE);
+    			}
+    		}
+		}
+    }
+
+	private void checkCashInTreasureInCarrier(Unit carrier, Tile tile) {
+		Unit treasureWagon = null;
+		
+		// check treasure in unit carrier
+		if (carrier.getUnitContainer() != null) {
+			for (Unit unit : carrier.getUnitContainer().getUnits().entities()) {
+				if (unit.canCarryTreasure()) {
+					treasureWagon = unit;
+				}
+			}
+		}
+		if (treasureWagon != null && treasureWagon.canCashInTreasureInLocation(tile)) {
+			if (carrier.getOwner().isHuman()) {
+				moveController.showCashInTreasureConfirmation(treasureWagon);
+			}
+			if (carrier.getOwner().isAi()) {
+				MoveService.this.cashInTreasure(treasureWagon);
+			}
+		}
+	}
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
         return unit.getOwner().isEuropean() && unit.getOwner().getNewLandName() == null && unit.getTile().isNextToLand();
@@ -205,6 +251,11 @@ public class MoveService {
             } break;
             case MOVE_HIGH_SEAS: {
                 moveController.showHighSeasQuestion(moveContext);
+            } break;
+            case MOVE_CASH_IN_TREASURE: {
+            	showMoveIfRequired(moveContext);
+            	processMove(moveContext);
+            	moveController.showCashInTreasureConfirmation(moveContext.unit);
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	firstContactController.showScoutMoveToForeignColonyQuestion(
@@ -329,14 +380,14 @@ public class MoveService {
             
             moveContext.initNextPathStep();
             
-            if (guiGameModel.game.map.isUnitSeeHostileUnit(moveContext.unit)) {
+            if (moveContext.unit.isSeeHostile(spiralIterator, guiGameModel.game.map)) {
                 System.out.println("unit: " + moveContext.unit + " see hostile unit");
                 break;
             }
                 
             if (moveContext.isEndOfPath()) {
                 if (moveContext.unit.isDestinationEurope() && moveContext.unit.getTile().getType().isHighSea()) {
-                    moveContext.unit.moveUnitToHighSea();
+                    moveContext.unit.sailUnitToEurope(moveContext.destTile);
                 } else {
                     moveContext.unit.clearDestination();
                 }
@@ -346,5 +397,10 @@ public class MoveService {
         if (runAfterMoveProcessor) {
             afterMoveProcessor.afterMove(moveContext);
         }
+    }
+    
+    public void cashInTreasure(Unit unit) {
+		new LostCityRumourService(guiGameController, this, guiGameModel.game)
+			.cashInTreasure(unit);
     }
 }

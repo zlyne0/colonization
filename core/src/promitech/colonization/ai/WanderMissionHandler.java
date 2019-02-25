@@ -102,7 +102,7 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 			}
 			moveContext.init(sourceTile, neighbourTile, mission.unit, direction);
 			
-			if (moveContext.canHandleMove()) {
+			if (moveContext.canHandleMove() && moveContext.isMoveType()) {
 				allowedDirections.add(direction);
 			}
 		}

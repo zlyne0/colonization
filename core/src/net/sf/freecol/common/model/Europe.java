@@ -80,16 +80,6 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return units.isNotEmpty();
-	}
-	
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return true;
-	}
-	
 	public List<UnitType> getRecruitables() {
 		return recruitables;
 	}
@@ -219,10 +209,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	
 	private Unit createUnit(UnitType unitType) {
 		UnitRole role = (Specification.options.getBoolean(GameOptions.EQUIP_EUROPEAN_RECRUITS))
-		? unitType.getDefaultRole()
-				: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-		Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), unitType, role, owner);
-		unit.changeUnitLocation(this);
+			? unitType.getDefaultRole()
+			: Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+		Unit unit = UnitFactory.create(unitType, role, owner, this);
 		if (unit.isCarrier()) {
 			unit.setState(UnitState.ACTIVE);
 		} else {

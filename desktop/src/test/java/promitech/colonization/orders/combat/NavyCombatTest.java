@@ -4,11 +4,9 @@ import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -20,6 +18,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
@@ -33,36 +32,25 @@ import promitech.colonization.ui.resources.Messages;
 
 public class NavyCombatTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
-	
 	private Game game;
 	private Player spanish;
 	private Player dutch;
 	
-	private Unit spanishPrivateer;
 	private Unit spanishColonist;
     private Unit spanishColonist2;
 	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
-    	
-    	spanishPrivateer = new Unit(
-			Game.idGenerator.nextId(Unit.class), 
-			Specification.instance.unitTypes.getById("model.unit.privateer"), 
-			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-			spanish
-		);
     	
     	spanishColonist = new Unit(
     	    Game.idGenerator.nextId(Unit.class), 
@@ -86,7 +74,7 @@ public class NavyCombatTest {
     	privateer.getGoodsContainer().decreaseAllToZero();
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	UnitFactory.create("model.unit.privateer", spanish, attackTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -102,7 +90,7 @@ public class NavyCombatTest {
     	Unit privateer = dutch.units.getById("unit:6900");
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	UnitFactory.create("model.unit.privateer", spanish, attackTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -123,7 +111,7 @@ public class NavyCombatTest {
 
     	spanish.addFoundingFathers(francisDrake);
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	UnitFactory.create("model.unit.privateer", spanish, attackTile);    	
     	
 		// when
     	Combat combat = new Combat();
@@ -142,7 +130,7 @@ public class NavyCombatTest {
     	createColonyNavyDefence(newAmsterdam);
 		
     	Tile seaTile = game.map.getSafeTile(24, 79);
-    	spanishPrivateer.changeUnitLocation(seaTile);
+    	Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, seaTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -168,14 +156,7 @@ public class NavyCombatTest {
     	createColonyNavyDefence(newAmsterdam);
 		
     	Tile seaTile = game.map.getSafeTile(24, 79);
-
-    	Unit spanishFrigate = new Unit(
-			Game.idGenerator.nextId(Unit.class), 
-			Specification.instance.unitTypes.getById("model.unit.frigate"), 
-			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-			spanish
-		);
-    	spanishFrigate.changeUnitLocation(seaTile);
+    	Unit spanishFrigate = UnitFactory.create("model.unit.frigate", spanish, seaTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -204,14 +185,7 @@ public class NavyCombatTest {
     	createColonyNavyDefence(newAmsterdam);
 		
     	Tile seaTile = game.map.getSafeTile(24, 79);
-
-    	Unit spanishCaravel = new Unit(
-			Game.idGenerator.nextId(Unit.class), 
-			Specification.instance.unitTypes.getById("model.unit.caravel"), 
-			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-			spanish
-		);
-    	spanishCaravel.changeUnitLocation(seaTile);
+    	Unit spanishCaravel = UnitFactory.create("model.unit.caravel", spanish, seaTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -236,7 +210,7 @@ public class NavyCombatTest {
     	dutchPrivater.getGoodsContainer().decreaseAllToZero();
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackTile);
     	
 		// when
     	Combat combat = new Combat();
@@ -262,7 +236,7 @@ public class NavyCombatTest {
     	dutchPrivater.getGoodsContainer().decreaseAllToZero();
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackTile);
     	spanishPrivateer.getGoodsContainer().decreaseAllToZero();
     	spanishPrivateer.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 100);
     	
@@ -294,7 +268,7 @@ public class NavyCombatTest {
     	Tile attackFromTile = dutchPrivater.getTile();
     	
     	Tile attackTile = game.map.getTile(12, 80);
-    	spanishPrivateer.changeUnitLocation(attackTile);
+    	UnitFactory.create("model.unit.privateer", spanish, attackTile);
 
 		// when
     	Combat combat = new Combat();
@@ -321,7 +295,7 @@ public class NavyCombatTest {
         Tile attackFromTile = dutchPrivater.getTile();
         
         Tile attackTile = game.map.getTile(12, 80);
-        spanishPrivateer.changeUnitLocation(attackTile);
+        Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackTile);
 
         // when
         Combat combat = new Combat();
@@ -351,7 +325,7 @@ public class NavyCombatTest {
         dutchPrivater.getGoodsContainer().decreaseAllToZero();
         
         Tile attackTile = game.map.getTile(12, 80);
-        spanishPrivateer.changeUnitLocation(attackTile);
+        Unit spanishPrivateer = UnitFactory.create("model.unit.privateer", spanish, attackTile);
         spanishPrivateer.getGoodsContainer().decreaseAllToZero();
         spanishPrivateer.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 100);
         
@@ -391,13 +365,8 @@ public class NavyCombatTest {
     	colony.addBuilding(Specification.instance.buildingTypes.getById("model.building.fort"));
 		colony.updateColonyFeatures();
     	
-		UnitType artilleryType = Specification.instance.unitTypes.getById(UnitType.ARTILLERY);
-		UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-		Unit artillery = new Unit(Game.idGenerator.nextId(Unit.class), artilleryType, defaultUnitRole, dutch);
-		Unit artillery2 = new Unit(Game.idGenerator.nextId(Unit.class), artilleryType, defaultUnitRole, dutch);
-		
-		artillery.changeUnitLocation(colony.tile);
-		artillery2.changeUnitLocation(colony.tile);
+		UnitFactory.create(UnitType.ARTILLERY, dutch, colony.tile);
+		UnitFactory.create(UnitType.ARTILLERY, dutch, colony.tile);
     }
     
 }

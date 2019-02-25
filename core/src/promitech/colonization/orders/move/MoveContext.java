@@ -155,8 +155,10 @@ public class MoveContext {
 	private void moveUnit() {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
-		//System.out.println("moveUnit: " + unit + ", moveLeft = " + unit.getMovesLeft() + ", moveCost = " + moveCost);
 		unit.reduceMovesLeft(moveCost);
+		if (sourceTile.hasSettlement()) {
+			unit.embarkUnitsFromLocation(sourceTile);
+		}
 		unit.changeUnitLocation(destTile);
 	}
 	
@@ -172,7 +174,8 @@ public class MoveContext {
 				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
-				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType)
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType) ||
+				MoveType.MOVE_CASH_IN_TREASURE.equals(moveType)
 		);
 	}
 
@@ -201,6 +204,7 @@ public class MoveContext {
 				return true;
 			}
 		}
+		case MOVE_CASH_IN_TREASURE:
 		case ATTACK_UNIT: 
 		case ATTACK_SETTLEMENT:
 		case ENTER_FOREIGN_COLONY_WITH_SCOUT:

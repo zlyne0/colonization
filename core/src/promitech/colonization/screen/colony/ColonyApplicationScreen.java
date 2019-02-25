@@ -4,6 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
@@ -17,12 +18,14 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.Align;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
@@ -263,8 +266,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		guiGameController = di.guiGameController;
 		guiGameModel = di.guiGameModel;
 		
-		//stage = new Stage(new FitViewport(Gdx.graphics.getWidth(), Gdx.graphics.getHeight()));
-        stage = new Stage() {
+		stage = new Stage(new FitViewport(ApplicationScreen.PREFERED_SCREEN_WIDTH, ApplicationScreen.PREFERED_SCREEN_HEIGHT)) {
         	@Override
         	public Actor hit(float stageX, float stageY, boolean touchable) {
         		Actor hit = super.hit(stageX, stageY, touchable);
@@ -331,8 +333,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         centerComponents.setScrollingDisabled(false, false);
         
         Table buttons = new Table();
-        buttons.add(createBuildQueueButton()).expandX().fillX();
-        buttons.add(createCloseButton()).expandX().fillX();
+        buttons.add(createBuildQueueButton()).expandX().fillX().pad(10f);
+        buttons.add(createCloseButton()).expandX().fillX().pad(10f);
         
         tableLayout.setFillParent(true);
         tableLayout.add(buttons).fillX().row();
@@ -386,6 +388,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		OptionAction<Colony> abandonColony = new OptionAction<Colony>() {
 			@Override
 			public void executeAction(Colony payload) {
+			    colony.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
 			    colony.removeFromMap(guiGameModel.game);
 			    colony.removeFromPlayer();
 				guiGameController.closeColonyView(colony);
@@ -430,6 +433,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     
 	@Override
 	public void onShow() {
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
 		Gdx.input.setInputProcessor(stage);
 	}
 
@@ -447,12 +451,15 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void render() {
+		Gdx.gl.glClearColor(0, 0, 0, 1);
+		Gdx.gl.glClear(GL20.GL_COLOR_BUFFER_BIT);
+		
         stage.act();
         stage.draw();
 	}
 	
 	@Override
 	public void resize(int width, int height) {
-		stage.getViewport().update(width, height, true);		
+		stage.getViewport().update(width, height, true);
 	}
 }

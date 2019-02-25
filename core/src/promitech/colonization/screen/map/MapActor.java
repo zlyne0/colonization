@@ -14,6 +14,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.ClickListener;
 import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import promitech.colonization.GameResources;
 import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -22,19 +23,20 @@ import promitech.colonization.screen.map.unitanimation.UnitTileAnimation;
 
 public class MapActor extends Widget implements Map {
 
-	private final GameResources gameResources;
 	private final GUIGameModel guiGameModel;
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
+	private final TileDrawModelInitializer initializer;
 	private final GridPoint2 mapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
-
+	private boolean needResetMapModel = true;
+	private boolean needResetUnexploredBorders = false;
+	
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
 	
 	private ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	public MapActor(final GUIGameController gameController, GameResources gameResources, GUIGameModel guiGameModel) {
-		this.gameResources = gameResources;
 		this.guiGameModel = guiGameModel;
 		
 		addListener(new InputListener() {
@@ -92,16 +94,36 @@ public class MapActor extends Widget implements Map {
 		});
 		
 		mapRenderer = new MapRenderer(mapDrawModel, gameResources, shapeRenderer);
+		initializer = new TileDrawModelInitializer(gameResources);
 	}
 	
 	@Override
 	public void resetUnexploredBorders() {
-		mapDrawModel.resetUnexploredBorders(gameResources);
+		needResetUnexploredBorders = true;
+		Gdx.graphics.requestRendering();
+	}
+	
+	private final MoveExploredTiles tilesToMarkAsExplored = new MoveExploredTiles();
+	private final Runnable resetUnexploredBordersPostRunnable = new Runnable() {
+		@Override
+		public void run() {
+			mapDrawModel.resetUnexploredBorders(initializer, tilesToMarkAsExplored);
+		}
+		
+		public String toString() {
+			return "postRunnable.resetUnexploredBorders";
+		}
+	};
+	
+	public void resetUnexploredBorders(MoveExploredTiles exploredTiles) {
+		this.tilesToMarkAsExplored.init(exploredTiles);
+		Gdx.app.postRunnable(resetUnexploredBordersPostRunnable);
 	}
 	
 	@Override
 	public void resetMapModel() {
-		mapDrawModel.initialize(guiGameModel.game, gameResources);
+		needResetMapModel = true;
+		Gdx.graphics.requestRendering();
 	}
 	
 	@Override
@@ -115,6 +137,14 @@ public class MapActor extends Widget implements Map {
         shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
         shapeRenderer.translate(getX(), getY(), 0);
 
+		if (needResetMapModel) {
+			needResetMapModel = false;
+			mapDrawModel.initialize(initializer, guiGameModel.game);
+		}
+		if (needResetUnexploredBorders) {
+			needResetUnexploredBorders = false;
+			mapDrawModel.resetUnexploredBorders(initializer);
+		}
         if (mapCentered == false) {
 			mapCentered = true;
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);

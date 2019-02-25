@@ -7,8 +7,4 @@ public interface UnitLocation {
     void removeUnit(Unit unit);
     
     MapIdEntitiesReadOnly<Unit> getUnits();
-	
-	boolean canAutoLoadUnit();
-
-	boolean canAutoUnloadUnits();
 }

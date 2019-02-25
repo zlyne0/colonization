@@ -411,16 +411,6 @@ public class IndianSettlement extends Settlement {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
-
     public boolean hasMissionary() {
         return missionary != null && missionary.unit != null;
     }

@@ -1,7 +1,7 @@
 package promitech.colonization.savegame;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
@@ -124,11 +124,11 @@ public class Savegame1600Verifier {
 	private void verifyMissionRecursion(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 		
-        assertThat(missions.getMission("foundColonyMission:4"))
+        AbstractMissionAssert.assertThat(missions.getMission("foundColonyMission:4"))
         	.isType(FoundColonyMission.class)
         	.hasDependMission("rellocationMission:3:1", RellocationMission.class);
         
-        assertThat(missions.getMission("explorerMission:5"))
+        AbstractMissionAssert.assertThat(missions.getMission("explorerMission:5"))
         	.isType(ExplorerMission.class)
         	.hasDependMission("explorerMission:5:1", ExplorerMission.class)
         	.hasDependMission("explorerMission:5:2", RellocationMission.class);

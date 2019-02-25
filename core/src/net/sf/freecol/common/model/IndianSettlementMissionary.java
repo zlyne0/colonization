@@ -68,14 +68,4 @@ public class IndianSettlementMissionary implements UnitLocation {
 	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		throw new IllegalStateException("Not implemented. No use case.");
 	}
-
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
 }

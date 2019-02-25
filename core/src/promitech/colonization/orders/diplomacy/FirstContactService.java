@@ -31,13 +31,13 @@ public class FirstContactService {
 		this.guiGameModel = guiGameModel;
 	}
 	
-    public void firstContact(Tile tile, Player player) {
+    public void firstContact(Tile moveDestTile, Player player) {
         java.util.Map<String,Player> firstContactPlayers = null;
-        if (tile.getType().isWater()) {
+        if (moveDestTile.getType().isWater()) {
             return;
         }
         for (Direction direction : Direction.allDirections) {
-            Tile neighbourTile = guiGameModel.game.map.getTile(tile, direction);
+            Tile neighbourTile = guiGameModel.game.map.getTile(moveDestTile, direction);
             if (neighbourTile == null || neighbourTile.getType().isWater()) {
                 continue;
             }

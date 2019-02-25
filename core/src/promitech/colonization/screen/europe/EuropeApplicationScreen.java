@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
+import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ObjectWithId;
@@ -172,7 +173,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		
         GoodTransferActorBridge goodTransferActorBridge = new GoodTransferActorBridge();
         
-		stage = new Stage();		
+        stage = new Stage(new FitViewport(ApplicationScreen.PREFERED_SCREEN_WIDTH, ApplicationScreen.PREFERED_SCREEN_HEIGHT));
+        
 		marketLog = new MarketLog();
         marketPanel = new MarketPanel(shape, goodsDragAndDrop, changeColonyStateListener, marketLog, goodTransferActorBridge);
         carrierUnitsPanel = new UnitsPanel(Messages.msg("inPort"))
@@ -319,6 +321,8 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	
 	@Override
 	public void onShow() {
+		resize(Gdx.graphics.getWidth(), Gdx.graphics.getHeight());
+		
 		marketLog.clearLog();
 		Gdx.input.setInputProcessor(stage);
 	}

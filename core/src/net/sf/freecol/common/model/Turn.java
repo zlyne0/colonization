@@ -51,5 +51,9 @@ public class Turn {
 	public StringTemplate getTurnDateLabel() {
 		return StringTemplate.template("year." + getSeason()).addAmount("%year%", getYear());
 	}
+
+	public void increaseTurnNumber() {
+		turn += 1;
+	}
 	
 }

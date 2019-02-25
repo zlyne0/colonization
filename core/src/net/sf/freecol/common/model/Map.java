@@ -1,33 +1,34 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
-import java.util.Iterator;
 import java.util.LinkedList;
 
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.math.GridPoint2;
 
-import net.sf.freecol.common.model.map.AutoFreePoolableTileIterable;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.Consumer;
 import net.sf.freecol.common.util.Predicate;
 import promitech.colonization.Direction;
-import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.map.isometric.IsometricMap;
+import promitech.map.isometric.IterableSpiral;
+import promitech.map.isometric.NeighbourIterableTile;
 
-class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
-    
-    public static final Predicate<Tile> ALL = new Predicate<Tile>() {
+public class Map extends ObjectWithId {
+
+    public static final Predicate<Tile> TILE_HAS_COLONY = new Predicate<Tile>() {
         @Override
-        public boolean test(Tile tile) {
-            return true;
+        public boolean test(Tile t) {
+            return t.hasSettlement() && t.getSettlement().isColony();
         }
     };
-
+    
     public static final Predicate<Tile> LAND_TILES = new Predicate<Tile>() {
         @Override
         public boolean test(Tile tile) {
@@ -42,65 +43,6 @@ class NeighbourTilesIterable implements Iterable<Tile>, Iterator<Tile> {
         }
     };
     
-    private final Map map;
-    private final Tile sourceTile;
-    private final Predicate<Tile> tileFilter;
-
-    private int cursor = 0;
-    private int foundFirstIndex = 0;
-    private Tile cursorObject = null;
-    
-    NeighbourTilesIterable(Map map, Tile sourceTile, Predicate<Tile> tileFilter) {
-        this.map = map;
-        this.sourceTile = sourceTile;
-        this.tileFilter = tileFilter;
-    }
-    
-    @Override
-    public Iterator<Tile> iterator() {
-        return this;
-            
-    }
-        
-    @Override
-    public boolean hasNext() {
-        Tile t = found(cursor);
-        cursor = foundFirstIndex;
-        if (t == null) {
-            return false;
-        }
-        cursorObject = t;
-        return cursor < Direction.allDirections.size();
-    }
-
-    private Tile found(int ic) {
-        Direction direction = null;
-        Tile tile = null;
-        for (foundFirstIndex = ic; foundFirstIndex < Direction.allDirections.size(); foundFirstIndex++) {
-            direction = Direction.allDirections.get(foundFirstIndex);
-            tile = map.getTile(sourceTile, direction);
-            if (tile == null || !tileFilter.test(tile)) {
-                continue;
-            }
-            return tile;
-        }
-        return null;
-    }
-    
-    @Override
-    public Tile next() {
-        cursor++;
-        return cursorObject;
-    }
-
-	@Override
-	public void remove() {
-		throw new UnsupportedOperationException();
-	}
-}
-
-public class Map extends ObjectWithId {
-
 	public static final String STANDARD_REGION_NAMES[][] = new String[][] {
 		{ "model.region.northWest", "model.region.north",  "model.region.northEast" },
 		{ "model.region.west",      "model.region.center", "model.region.east" },
@@ -146,9 +88,7 @@ public class Map extends ObjectWithId {
 	public final int width;
 	public final int height;
 	
-	private final Tile[][] tiles;
-	private final SpiralIterator spiralIterator;
-	
+	private final IsometricMap<Tile> tiles;
 	public final MapIdEntities<Region> regions = new MapIdEntities<Region>();
 	
 	public Map(String id, int width, int height) {
@@ -157,8 +97,7 @@ public class Map extends ObjectWithId {
 		this.width = width;
 		this.height = height;
 		
-		tiles = new Tile[height][width];
-		spiralIterator = new SpiralIterator(width, height);
+		tiles = new IsometricMap<Tile>(Tile.class, width, height);
 	}
 	
 	public boolean isPolar(Tile tile) {
@@ -170,62 +109,50 @@ public class Map extends ObjectWithId {
 	}
 	
 	public Tile getTile(int x, int y, Direction direction) {
-		return getTile(direction.stepX(x, y), direction.stepY(x, y));
+	    return tiles.getTile(x, y, direction);
 	}
 
 	public Tile getTile(Tile source, Direction direction) {
-		return getTile(direction.stepX(source.x, source.y), direction.stepY(source.x, source.y));
+	    return tiles.getTile(source.x, source.y, direction);
 	}
 	
 	public Tile getTile(int x, int y) {
-		if (!isCoordinateValid(x, y)) {
-			return null;
-		}
-		Tile tile = tiles[y][x];
-		if (tile == null) {
-			throw new RuntimeException("not implementd, should return empty tile or default");
-		}
-		return tile;
+	    return tiles.getTile(x, y);
 	}
 
 	public Tile getSafeTile(int x, int y) {
-		return tiles[y][x];
+	    return tiles.getSafeTile(x, y);
 	}
 	
 	public Tile getSafeTile(GridPoint2 p) {
-		return tiles[p.y][p.x];
-	}
-	
-	public boolean isCoordinateValid(int x, int y) {
-		return x >= 0 && x < width && y >= 0 && y < height;
+	    return tiles.getSafeTile(p.x, p.y);
 	}
 	
 	public void createTile(int x, int y, Tile tile) {
-		tiles[y][x] = tile;
+	    tiles.createTile(x, y, tile);
 	}
 	
     public void updateReferences() {
-        for (int y=0; y<height; y++) {
-            Tile row[] = tiles[y];
-            for (int x=0; x<width; x++) {
-                Tile t = row[x];
+        tiles.runOnAllTiles(new Consumer<Tile>() {
+            @Override
+            public void consume(Tile t) {
                 tileLandConnection(t);
                 
                 if (t.hasSettlement() && t.getSettlement().isColony()) {
                     Colony colony = t.getSettlement().getColony();
-                    colony.initColonyTilesTile(t, this);
-            		colony.updateColonyPopulation();
-            		colony.updateColonyFeatures();
+                    colony.initColonyTilesTile(t, Map.this);
+                    colony.updateColonyPopulation();
+                    colony.updateColonyFeatures();
                 }
             }
-        }
+        });
     }
 
     private void tileLandConnection(Tile tile) {
         tile.tileConnected = Tile.ALL_NEIGHBOUR_WATER_BITS_VALUE;
         
         for (Direction direction : Direction.allDirections) {
-            Tile neighbourTile = getTile(tile, direction);
+            Tile neighbourTile = tiles.getTile(tile.x, tile.y, direction);
             if (neighbourTile != null) {
                 if (neighbourTile.getType().isLand()) {
                     tile.tileConnected |= 1 << direction.ordinal();
@@ -240,36 +167,7 @@ public class Map extends ObjectWithId {
             player.initExploredMap(this);
         }
 	}
-    
-	public boolean isUnitSeeHostileUnit(Unit unit) {
-		Tile unitTile = unit.getTile();
-		int radius = unit.lineOfSight();
-		SpiralIterator spiralIterator = new SpiralIterator(width, height);
-		spiralIterator.reset(unitTile.x, unitTile.y, true, radius);
-		
-		while (spiralIterator.hasNext()) {
-			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
-			spiralIterator.next();
-			if (tile == null) {
-				continue;
-			}
-			Player tileOwner = null;
-			if (tile.hasSettlement()) {
-				tileOwner = tile.getSettlement().getOwner();
-			} else {
-				if (tile.getUnits().isNotEmpty()) {
-					tileOwner = tile.getUnits().first().getOwner();
-				}
-			}
-			if (tileOwner != null) {
-				if (unit.getOwner().atWarWith(tileOwner)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-    
+	
 	public String toString() {
 		return "width = " + width + ", height = " + height;
 	}
@@ -279,15 +177,12 @@ public class Map extends ObjectWithId {
 		if (sourceTile.hasSettlement()) {
 			ll.add(sourceTile.getSettlement());
 		}
-		Tile tile = null;
-		spiralIterator.reset(sourceTile.x, sourceTile.y, true, radius);
-		while (spiralIterator.hasNext()) {
-			tile = getTile(spiralIterator.getX(), spiralIterator.getY());
-			if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
-				ll.add(tile.settlement);
-			}
-			spiralIterator.next();
-		}
+		
+		for (Tile tile : tiles.neighbourTiles(sourceTile.x, sourceTile.y, radius)) {
+            if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
+                ll.add(tile.settlement);
+            }
+        }
 		return ll;
 	}
 	
@@ -295,51 +190,39 @@ public class Map extends ObjectWithId {
 		if (tile.hasSettlement() && tile.getSettlement().isColony()) {
 			return true;
 		}
-		spiralIterator.reset(tile.x, tile.y, true, radius);
-		Tile t;
-		while (spiralIterator.hasNext()) {
-			t = getTile(spiralIterator.getX(), spiralIterator.getY());
-			if (t.hasSettlement() && t.getSettlement().isColony()) {
-				return true;
-			}
-			spiralIterator.next();
-		}
-		return false;
+        return tiles.isTileExists(tile.x, tile.y, radius, TILE_HAS_COLONY);
 	}
 	
-	public Tile findFirstMovableHighSeasTile(Unit unit, int x, int y) {
-	    Tile tile = getTile(x, y);
+	public Tile findFirstMovableHighSeasTile(final Unit unit, int x, int y) {
+	    Tile tile = tiles.getSafeTile(x, y);
 	    MoveType navalMoveType = unit.getNavalMoveType(tile);
 	    if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
 	        return tile;
 	    }
-	    
-	    int radius = 1;
-        while (true) {
-            spiralIterator.reset(x, y, false, radius);
-            while (spiralIterator.hasNext()) {
-                tile = getTile(spiralIterator.getX(), spiralIterator.getY());
-                navalMoveType = unit.getNavalMoveType(tile);
-                
-                if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
-                    return tile;
-                }
-                spiralIterator.next();
+
+	    for (promitech.map.isometric.NeighbourIterableTile<Tile> neighbourIterableTile : tiles.neighbourTiles(x, y)) {
+            navalMoveType = unit.getNavalMoveType(neighbourIterableTile.tile);
+            if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
+                return neighbourIterableTile.tile;
             }
-            radius++;
-	    }
+        }
+	    return null;
 	}
 
-    public Iterable<Tile> neighbourTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.ALL);
+	public Iterable<NeighbourIterableTile<Tile>> neighbourTiles(int x, int y) {
+	    return tiles.neighbourTiles(x, y);
+	}
+	
+    public Iterable<NeighbourIterableTile<Tile>> neighbourTiles(final Tile sourceTile) {
+        return tiles.neighbourTiles(sourceTile.x, sourceTile.y);
     }
 
-    public Iterable<Tile> neighbourLandTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.LAND_TILES);
+    public Iterable<NeighbourIterableTile<Tile>> neighbourLandTiles(final Tile sourceTile) {
+        return tiles.neighbourTiles(sourceTile.x, sourceTile.y, LAND_TILES);
     }
 
-    public Iterable<Tile> neighbourWaterTiles(final Tile sourceTile) {
-        return new NeighbourTilesIterable(Map.this, sourceTile, NeighbourTilesIterable.WATER_TILES);
+    public Iterable<NeighbourIterableTile<Tile>> neighbourWaterTiles(final Tile sourceTile) {
+        return tiles.neighbourTiles(sourceTile.x, sourceTile.y, WATER_TILES);
     }
     
     /**
@@ -349,9 +232,23 @@ public class Map extends ObjectWithId {
      * @return
      */
     public Iterable<Tile> neighbourTiles(final Tile sourceTile, int radius) {
-        AutoFreePoolableTileIterable iterable = AutoFreePoolableTileIterable.obtain();
-        iterable.reset(Map.this, sourceTile, radius);
-        return iterable;
+        return tiles.neighbourTiles(sourceTile.x, sourceTile.y, radius);
+    }
+
+    /**
+     * Important: Do not break loop. Iterable is put back to pool when Iterator.hasNext return false 
+     * @param x
+     * @param y
+     * @param radius
+     * @return
+     */
+    public Iterable<Tile> neighbourTiles(int x, int y, int radius) {
+        return tiles.neighbourTiles(x, y, radius);
+    }
+    
+    public Iterable<Tile> neighbourTiles(IterableSpiral<Tile> is, Tile tile, int radius) {
+    	is.reset(tiles, tile.x, tile.y, radius);
+    	return is;
     }
     
 	public static class Xml extends XmlNodeParser<Map> {
@@ -368,12 +265,13 @@ public class Map extends ObjectWithId {
                     target.createTile(tile.x, tile.y, tile);
                 }
 				@Override
-				public void generateXml(Map source, ChildObject2XmlCustomeHandler<Tile> xmlGenerator) throws IOException {
-					for (int y=0; y<source.height; y++) {
-						for (int x=0; x<source.width; x++) {
-							xmlGenerator.generateXml(source.tiles[y][x]);
-						}
-					}
+				public void generateXml(Map source, final ChildObject2XmlCustomeHandler<Tile> xmlGenerator) throws IOException {
+				    source.tiles.runOnAllTiles(new Consumer<Tile>() {
+                        @Override
+                        public void consume(Tile obj) {
+                            xmlGenerator.generateXml(obj);
+                        }
+                    });
 				}
             });
 		}

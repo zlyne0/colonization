@@ -1,6 +1,11 @@
 package promitech.colonization.screen.colony;
 
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.graphics.Color;
+import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.graphics.g2d.Batch;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
+import com.badlogic.gdx.graphics.glutils.ShapeRenderer.ShapeType;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.ImageButton;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
@@ -18,6 +23,7 @@ import promitech.colonization.screen.ui.UnitDragAndDropSource;
 import promitech.colonization.ui.DoubleClickedListener;
 
 class BuildingActor extends ImageButton implements DragAndDropSourceContainer<UnitActor>, DragAndDropTargetContainer<UnitActor> {
+	private static final Color DRAG_UNIT_FOCUS_COLOR = new Color(1f, 1f, 1f, 0.3f);
 	
 	final Colony colony;
     final Building building;
@@ -25,14 +31,17 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     private ProductionQuantityDrawer productionQuantityDrawer;
     private final ChangeColonyStateListener changeColonyStateListener;
     private final DoubleClickedListener unitActorDoubleClickListener;
+    private final ShapeRenderer shapeRenderer;
+	private boolean showDragPayloadFocus = false;
 
     private static TextureRegionDrawable getBuildingTexture(Building building) {
     	Frame img = GameResources.instance.buildingTypeImage(building.buildingType);
     	return new TextureRegionDrawable(img.texture);
     }
     
-    BuildingActor(Colony colony, Building building, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
+    BuildingActor(ShapeRenderer shapeRenderer, Colony colony, Building building, ChangeColonyStateListener changeColonyStateListener, DoubleClickedListener unitActorDoubleClickListener) {
         super(getBuildingTexture(building));
+        this.shapeRenderer = shapeRenderer;
         this.changeColonyStateListener = changeColonyStateListener;
         this.unitActorDoubleClickListener = unitActorDoubleClickListener;
         this.building = building;
@@ -46,7 +55,28 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
         	productionQuantityDrawer = new ProductionQuantityDrawer(getWidth() - 20, getHeight());
         }
         productionQuantityDrawer.draw(batch, productionQuantityDrawModel, getX() + 10, getY());
+
+        if (showDragPayloadFocus) {
+        	drawDragFocus(batch);
+        }
     }
+
+	private void drawDragFocus(Batch batch) {
+		batch.end();
+		
+		shapeRenderer.setProjectionMatrix(batch.getProjectionMatrix());
+		shapeRenderer.setTransformMatrix(batch.getTransformMatrix());
+		
+		Gdx.gl.glEnable(GL20.GL_BLEND);
+		Gdx.gl.glBlendFunc(GL20.GL_SRC_ALPHA, GL20.GL_ONE_MINUS_SRC_ALPHA);
+		
+		shapeRenderer.begin(ShapeType.Filled);
+		shapeRenderer.setColor(DRAG_UNIT_FOCUS_COLOR);
+		shapeRenderer.rect(getX(), getY(), getWidth(), getHeight());
+		shapeRenderer.end();
+		
+		batch.begin();
+	}
     
     void initWorkers(DragAndDrop dragAndDrop) {
         int offsetX = 0; 
@@ -102,6 +132,16 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 		return building.canAddWorker(unitActor.unit);
 	}
 
+	@Override
+	public void onDragPayload(float x, float y) {
+		showDragPayloadFocus = true;
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+		showDragPayloadFocus = false;
+	}
+	
     void resetUnitActorPlacement() {
         float unitOffsetX = 0;
         for (Actor actor : getChildren()) {
@@ -115,5 +155,9 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
     void updateProductionDesc() {
     	ProductionConsumption productionSummary = colony.productionSummary(building);
     	productionQuantityDrawModel.init(productionSummary.realProduction);
+    }
+    
+    public String toString() {
+    	return "BuildingActor " + building.getId() + " " + super.toString();
     }
 }

@@ -223,16 +223,6 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         workers.removeId(unit);
     }
     
-    @Override
-    public boolean canAutoLoadUnit() {
-        return false;
-    }
-
-    @Override
-    public boolean canAutoUnloadUnits() {
-        return false;
-    }
-	
     public static class Xml extends XmlNodeParser<Building> {
 
         private static final String ATTR_BUILDING_TYPE = "buildingType";

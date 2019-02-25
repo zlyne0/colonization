@@ -1,10 +1,10 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -14,11 +14,11 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitAssert;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.path.Path;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -28,12 +28,12 @@ public class PathFinderTest {
     Game game;
     PathFinder sut = new PathFinder();
     
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }
@@ -102,13 +102,7 @@ public class PathFinderTest {
         Tile fortressTile = game.map.getTile(27, 75);
         
         Player fortressOwner = game.players.getById("player:112");
-        Unit freeColonist = new Unit(
-    		Game.idGenerator.nextId(Unit.class), 
-    		Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST), 
-    		Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID), 
-    		fortressOwner
-		);
-        freeColonist.changeUnitLocation(fortressTile);
+        Unit freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, fortressOwner, fortressTile);
         
 		Colony fortressColony = Settlement.buildColony(
 			game.map, 
@@ -205,5 +199,34 @@ public class PathFinderTest {
 	        .assertPathStep(23, 2, 30, 90)
 	        .assertPathStep(24, 2, 30, 88);    
     }
-	
+
+	@Test
+	public void shouldNotMoveViaAztec() throws Exception {
+		// given
+		Player dutch = game.players.getById("player:1");
+		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(24, 77));
+
+		Player aztec = game.players.getById("player:40");
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 79));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 78));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 77));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(24, 76));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(24, 75));
+		
+		Tile destTile = game.map.getSafeTile(23, 80);
+		
+		// when
+		path = sut.findToTile(game.map, colonist.getTile(), destTile, colonist);
+
+		// then
+		for (Tile t : path.tiles) {
+			if (t.hasSettlement()) {
+				TileAssert.assertThat(t).hasSettlementOwnBy(dutch);
+			}
+			if (t.getUnits().isNotEmpty()) {
+				UnitAssert.assertThat(t.getUnits().first()).isOwnedBy(dutch);
+			}
+		}
+		PathAssert.assertThat(path).lastStepEquals(destTile.x, destTile.y);
+	}
 }

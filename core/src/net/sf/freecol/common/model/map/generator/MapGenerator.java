@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.map.Region.RegionType;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Consumer;
 import net.sf.freecol.common.model.map.generator.WaveDistanceCreator.Initiator;
+import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.EuropeanStartingAbstractUnit;
@@ -158,6 +159,8 @@ public class MapGenerator {
 			
 			for (EuropeanStartingAbstractUnit eu : startedUnits.entities()) {
 				Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), eu.getType(), eu.getRole(), player);
+				player.units.add(unit);
+
 				if (unit.isCarrier()) {
 					unit.setState(Unit.UnitState.ACTIVE);
 					carriers.add(unit);
@@ -170,7 +173,7 @@ public class MapGenerator {
 				Unit carrier = carriers.get(0);
 				Tile tile = map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
 				carrier.changeUnitLocation(tile);
-				player.revealMapAfterUnitMove(map, carrier);
+				player.revealMapAfterUnitMove(map, carrier, new MoveExploredTiles());
 				
 				for (Unit passengerUnit : passengers) {
 					passengerUnit.changeUnitLocation(carrier);

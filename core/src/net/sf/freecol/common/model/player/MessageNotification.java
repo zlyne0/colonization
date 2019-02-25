@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.player;
 import java.io.IOException;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IdGenerator;
 import net.sf.freecol.common.model.ObjectWithId;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -22,13 +23,14 @@ public class MessageNotification extends ObjectWithId implements Notification {
 			.addName("%goods%", transaction.goodsTypeId)
 			.addAmount("%buy%", transaction.buyPriceAfterTransaction)
 			.addAmount("%sell%", transaction.sellPriceAfterTransaction);
-		return new MessageNotification(
-			Game.idGenerator.nextId(MessageNotification.class), 
-			Messages.message(st)
-		);
+		return new MessageNotification(Game.idGenerator,Messages.message(st));
 	}
 	
-	public MessageNotification(String id, String body) {
+	public MessageNotification(IdGenerator idGenerator, String body) {
+		this(idGenerator.nextId(MessageNotification.class), body);
+	}
+	
+	private MessageNotification(String id, String body) {
 		super(id);
 		this.body = body;
 	}

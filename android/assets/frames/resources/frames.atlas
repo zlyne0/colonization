@@ -6,8 +6,15 @@ repeat: none
 frame-corner
   rotate: false
   xy: 1, 5
-  size: 25, 26
-  orig: 25, 26
+  size: 24, 24
+  orig: 24, 24
+  offset: 0, 0
+  index: -1
+frame-top
+  rotate: false
+  xy: 27, 21
+  size: 2, 8
+  orig: 2, 8
   offset: 0, 0
   index: -1
 frame-left
@@ -19,8 +26,8 @@ frame-left
   index: -1
 frame-bottom
   rotate: false
-  xy: 28, 24
-  size: 2, 7
-  orig: 2, 7
+  xy: 27, 11
+  size: 2, 8
+  orig: 2, 8
   offset: 0, 0
   index: -1

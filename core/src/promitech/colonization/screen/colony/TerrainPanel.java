@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.GameResources;
-import promitech.colonization.math.Point;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
@@ -37,6 +36,7 @@ public class TerrainPanel extends Group implements
 	private Colony colony;
 	private Tile colonyTile;
 	private MapRenderer mapRenderer;
+	private MapDrawModel mapDrawModel;
 	
 	private ColonyTile[] colonyTiles = new ColonyTile[9];
 	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
@@ -98,9 +98,15 @@ public class TerrainPanel extends Group implements
 		if (ct == null) {
 			return false;
 		}
-		if (ct.equalsId(colonyTile)) {
+		if (ct.tile.hasSettlement()) {
 			return false;
-		}	
+		}
+		if (ct.tile.hasLostCityRumour()) {
+			return false;
+		}
+		if (colony.isTileLockedBecauseNoDock(ct.tile)) {
+			return false;
+		}
 		return ct.hasNotWorker();
 	}
 
@@ -125,6 +131,19 @@ public class TerrainPanel extends Group implements
 		return colony.isTileLocked(ct.tile);
 	}
 
+	@Override
+	public void onDragPayload(float screenX, float screenY) {
+		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)screenX, (int)screenY);
+		if (tile != null) {
+			mapDrawModel.selectedTile = tile;
+		}
+	}
+
+	@Override
+	public void onLeaveDragPayload() {
+		mapDrawModel.selectedTile = null;
+	}
+	
 	@Override
 	public void prePutPayload(final UnitActor worker, final float x, final float y, final DragAndDropSourceContainer<UnitActor> sourceContainer) {
 		final ColonyTile ct = getColonyTileNotNull(x, y);
@@ -160,8 +179,8 @@ public class TerrainPanel extends Group implements
 		return ct;
 	}
 	
-	private ColonyTile getColonyTile(float x, float y) {
-		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)x, (int)y);
+	private ColonyTile getColonyTile(float screenX, float screenY) {
+		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)screenX, (int)screenY);
 		if (tile == null) {
 			return null;
 		}
@@ -174,6 +193,7 @@ public class TerrainPanel extends Group implements
 	}
 	
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {
+		this.mapDrawModel = mapDrawModel;
 		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
 		clear();
 		

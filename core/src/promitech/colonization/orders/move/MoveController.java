@@ -4,21 +4,23 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
-import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.screen.map.hud.NewLandNameDialog;
 import promitech.colonization.screen.map.unitanimation.MoveView;
 import promitech.colonization.ui.QuestionDialog;
+import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class MoveController {
@@ -30,52 +32,47 @@ public class MoveController {
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
 
-	private final PathFinder finder = new PathFinder();
+	private PathFinder finder;
 	
 	public MoveController() {
 	}
 	
 	public void inject(
 		GUIGameModel guiGameModel, 
-		GUIGameController guiGameController, MoveView moveView, MoveService moveService
+		GUIGameController guiGameController, MoveView moveView, MoveService moveService,
+		PathFinder pathFinder
 	) {
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
 		this.moveService = moveService;
+		this.finder = pathFinder;
 	}
 	
 	public void pressDirectionKey(Direction direction) {
-		
-		MapDrawModel mapDrawModel = mapActor.mapDrawModel();
 		if (guiGameModel.isViewMode()) {
-			int x = direction.stepX(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			int y = direction.stepY(mapDrawModel.selectedTile.x, mapDrawModel.selectedTile.y);
-			mapDrawModel.selectedTile = guiGameModel.game.map.getTile(x, y);
-			
-			if (mapActor.isTileOnScreenEdge(mapDrawModel.selectedTile)) {
-				mapActor.centerCameraOnTile(mapDrawModel.selectedTile);
-			}
-		} else {
-			if (guiGameModel.isActiveUnitNotSet()) {
-				return;
-			}
-			
-			Unit selectedUnit = guiGameModel.getActiveUnit();
-			Tile sourceTile = selectedUnit.getTile();
-			
-			Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
-			if (destTile == null) {
-				return;
-			}
-			MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
-			
-			mapActor.mapDrawModel().unitPath = null;
-			selectedUnit.clearDestination();
-			System.out.println("moveContext.pressDirectionKey = " + moveContext);
-			
-            moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
+			// no cursor move by direction key in view mode
+			return;
 		}
+		
+		if (guiGameModel.isActiveUnitNotSet()) {
+			return;
+		}
+		
+		Unit selectedUnit = guiGameModel.getActiveUnit();
+		Tile sourceTile = selectedUnit.getTile();
+		
+		Tile destTile = guiGameModel.game.map.getTile(sourceTile.x, sourceTile.y, direction);
+		if (destTile == null) {
+			return;
+		}
+		MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
+		
+		mapActor.mapDrawModel().unitPath = null;
+		selectedUnit.clearDestination();
+		System.out.println("moveContext.pressDirectionKey = " + moveContext);
+		
+        moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
 	}
 	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
@@ -221,7 +218,7 @@ public class MoveController {
 			    moveService.confirmedMoveProcessorInNewThread(payload, new MoveService.AfterMoveProcessor() {
 			        @Override
 			        public void afterMove(MoveContext moveContext) {
-			            moveContext.unit.moveUnitToHighSea();
+			            moveContext.unit.sailUnitToEurope(moveContext.destTile);
 			            guiGameController.nextActiveUnitAsGdxPostRunnable();
 			        }
                 });
@@ -257,5 +254,28 @@ public class MoveController {
 
     public void showNewLandNameDialog(Player player, String defaultName) {
         guiGameController.showDialog(new NewLandNameDialog(player, defaultName));
+    }
+
+    public void showCashInTreasureConfirmation(Unit treasureWagon) {
+    	QuestionDialog questionDialog = new QuestionDialog();
+    	
+    	int fee = treasureWagon.treasureTransportFee();
+    	if (fee == 0) {
+    		questionDialog.addQuestion(StringTemplate.template("cashInTreasureTrain.free"));
+    	} else {
+    		int percent = Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE);
+    		StringTemplate st = StringTemplate.template("cashInTreasureTrain.pay")
+    				.addAmount("%fee%", percent);
+    		questionDialog.addQuestion(st);
+    	}
+    	
+    	questionDialog.addAnswer("cashInTreasureTrain.yes", new OptionAction<Unit>() {
+    		@Override
+    		public void executeAction(Unit payload) {
+    			moveService.cashInTreasure(payload);
+    		}
+    	}, treasureWagon);
+    	questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, treasureWagon);
+    	guiGameController.showDialog(questionDialog);
     }
 }

@@ -11,6 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;
+import promitech.colonization.screen.colony.DragAndDropPreHandlerTargetContainer;
 import promitech.colonization.screen.colony.DragAndDropSourceContainer;
 import promitech.colonization.screen.colony.DragAndDropTargetContainer;
 
@@ -52,6 +53,13 @@ public class QuantityGoodActor extends LabelGoodActor {
         public boolean drag(Source source, Payload payload, float x, float y, int pointer) {
             Validation.instanceOf(payload.getObject(), DragAndDropPayload.class);
             
+            if (source.getActor() instanceof LabelGoodActor) {
+            	// can not move goods from cargo panel to the same cargo panel
+            	if (((LabelGoodActor)source.getActor()).dragAndDropSourceContainer == targetContainer) {
+            		return false;
+            	}
+            }
+            
             DragAndDropPayload dadPayload = (DragAndDropPayload)payload.getObject();
             if (dadPayload.changeTransferGoodsQuantity) {
             	return true;
@@ -74,8 +82,17 @@ public class QuantityGoodActor extends LabelGoodActor {
             	);
             	window.show(source.getActor().getStage());
             } else {
-            	sourceContainer.takePayload(dadPayload.abstractGoods, x, y);
-            	targetContainer.putPayload(dadPayload.abstractGoods, x, y);
+            	if (targetContainer instanceof DragAndDropPreHandlerTargetContainer) {
+            		// if target container can not accept all payload, then can modify payload and 
+            		// accept how it is able
+            		DragAndDropPreHandlerTargetContainer<AbstractGoods> preHandler = 
+        				(DragAndDropPreHandlerTargetContainer<AbstractGoods>)targetContainer;
+					if (preHandler.isPrePutPayload(dadPayload.abstractGoods, x, y)) {
+            			preHandler.prePutPayload(dadPayload.abstractGoods, x, y, sourceContainer);
+            		}
+            	}
+        		sourceContainer.takePayload(dadPayload.abstractGoods, x, y);
+        		targetContainer.putPayload(dadPayload.abstractGoods, x, y);
             }
         }
     }

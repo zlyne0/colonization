@@ -7,6 +7,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.TextField
 import com.badlogic.gdx.scenes.scene2d.ui.TextField.TextFieldListener
 import com.badlogic.gdx.scenes.scene2d.Event
 import com.badlogic.gdx.scenes.scene2d.EventListener
+import com.badlogic.gdx.scenes.scene2d.ui.Button
 
 inline public fun ModalDialog<*>.kAddOnCloseListener(crossinline listener : () -> Unit) : ModalDialog<*> {
 	val eventListener = object : EventListener {
@@ -48,7 +49,7 @@ inline public fun STable.addSingleClickSelectListener( crossinline listener : (p
 	})
 }
 
-inline public fun TextButton.addListener(
+inline public fun Button.addListener(
 	crossinline listener : (event: ChangeListener.ChangeEvent?, actor: Actor?) -> Unit
 ) {
 

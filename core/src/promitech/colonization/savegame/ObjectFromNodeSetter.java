@@ -6,7 +6,7 @@ import java.util.Collection;
 public interface ObjectFromNodeSetter<T,R> {
 	
 	interface ChildObject2XmlCustomeHandler<R> {
-		public void generateXml(R obj) throws IOException;
+		public void generateXml(R obj);
 		public void generateXmlFromCollection(Collection<R> objs) throws IOException;
 	}
 	

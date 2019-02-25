@@ -20,7 +20,7 @@ public class SaveGameCreator {
 		XmlTagMetaData tagMetaData;
 		
 		@Override
-		public void generateXml(Object obj) throws IOException {
+		public void generateXml(Object obj) {
 			generateXmlFromObj(obj, tagMetaData, childXmlParser);
 		}
 		@Override
@@ -44,7 +44,7 @@ public class SaveGameCreator {
 			new ObjectFromNodeSetter.ChildObject2XmlCustomeHandler() 
 	{
 		@Override
-		public void generateXml(Object obj) throws IOException {
+		public void generateXml(Object obj) {
 			ChildObjectXmlGenerator collectionXmlGenerator = customeXmlGeneratorPool.obtain();
 			collectionXmlGenerator.generateXml(obj);
 			customeXmlGeneratorPool.free(collectionXmlGenerator);
@@ -82,7 +82,7 @@ public class SaveGameCreator {
 		customeXmlGeneratorPool.clear();
 	}
 	
-	protected void generateXmlFromObj(Object obj, XmlTagMetaData metaData, XmlNodeParser xmlParser) throws IOException {
+	protected void generateXmlFromObj(Object obj, XmlTagMetaData metaData, XmlNodeParser xmlParser) {
 		if (metaData == null || !metaData.entityClass.equals(obj.getClass())) {
 			metaData = new XmlTagMetaData((Class<? extends Identifiable>)obj.getClass());
 			xmlParser = metaData.createXmlParser();
@@ -90,12 +90,16 @@ public class SaveGameCreator {
 		if (xmlParser == null) {
 			xmlParser = metaData.createXmlParser();
 		}
-		xml.element(metaData.tagName);
-		xmlParser.startWriteAttr(obj, attrWriter);
-		
-		saveChildren(obj, xmlParser);
-		
-		xml.pop();
+		try {
+		    xml.element(metaData.tagName);
+		    xmlParser.startWriteAttr(obj, attrWriter);
+		    
+		    saveChildren(obj, xmlParser);
+		    
+		    xml.pop();
+		} catch (IOException e) {
+		    throw new IllegalStateException(e);
+		}
 	}
 	
 	protected void saveChildren(Object objWithChildren, XmlNodeParser xmlParser) throws IOException {

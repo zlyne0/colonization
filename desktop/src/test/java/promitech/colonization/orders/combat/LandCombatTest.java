@@ -3,11 +3,9 @@ package promitech.colonization.orders.combat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
@@ -25,18 +23,15 @@ import promitech.colonization.savegame.SaveGameParser;
 
 public class LandCombatTest {
 
-	@Rule
-	public TemporaryFolder tempFolder = new TemporaryFolder();
-	
 	private Game game;
 	private Player spanish;
 	
-    @BeforeClass
+    @BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
     }
 
-    @Before
+    @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 

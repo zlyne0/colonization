@@ -24,6 +24,8 @@ public final class TileType extends ObjectWithFeatures {
 	
 	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
+	private final boolean land;
+	private final boolean water;
 	private boolean canSettle;
 	private boolean elevation;
 	private int basicMoveCost;
@@ -34,6 +36,8 @@ public final class TileType extends ObjectWithFeatures {
 	public TileType(String id, boolean isForest) {
 		super(id);
 		this.isForest = isForest;
+		this.water = id.equals(OCEAN) || id.equals(HIGH_SEAS) || id.equals(GREAT_RIVER) || id.equals(MODEL_TILE_LAKE);
+		this.land = !water;
 	}
     
 	public String toString() {
@@ -41,7 +45,7 @@ public final class TileType extends ObjectWithFeatures {
 	}
 	
 	public boolean isWater() {
-		return id.equals(OCEAN) || id.equals(HIGH_SEAS) || id.equals(GREAT_RIVER) || id.equals(MODEL_TILE_LAKE);
+		return water;
 	}
 
 	public boolean isHighSea() {
@@ -49,7 +53,7 @@ public final class TileType extends ObjectWithFeatures {
 	}
 	
 	public boolean isLand() {
-		return !isWater();
+		return land;
 	}
 
 	public boolean hasTheSameTerain(TileType tType) {

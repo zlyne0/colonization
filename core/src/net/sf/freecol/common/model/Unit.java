@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 
+import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.player.Player;
@@ -20,6 +21,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.map.isometric.IterableSpiral;
 
 public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 
@@ -63,6 +65,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     private MoveDestinationType destinationType;
     private int destinationX;
     private int destinationY;
+    private GridPoint2 enterHighSea;
     
     private String indianSettlement;
 
@@ -84,7 +87,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	this.unitType = aUnitType;
     	this.unitRole = aUnitRole;
     	this.owner = anOwner;
-    	this.owner.units.add(this);
     	
     	this.movesLeft = getInitialMovesLeft();
     	this.hitPoints = unitType.getHitPoints();
@@ -149,15 +151,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    UnitLocation oldLocation = location;
 		if (oldLocation != null) {
 		    removeFromLocation();
-			
-			if (oldLocation.canAutoLoadUnit()) {
-				embarkUnitsFromLocation(oldLocation);
-			}
 		}
 		newUnitLocation.addUnit(this);
-		if (newUnitLocation.canAutoUnloadUnits()) {
-			disembarkUnitsToLocation(newUnitLocation);
-		}
 		location = newUnitLocation;
 	}
 	
@@ -341,6 +336,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return state;
     }
     
+    public boolean isSentry() {
+    	return state == UnitState.SENTRY;
+    }
+    
 	public TileImprovementType getTileImprovementType() {
 		return tileImprovementType;
 	}
@@ -354,7 +353,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
     
     public boolean isNaval() {
-    	return unitType != null && unitType.isNaval();
+    	return unitType.isNaval();
     }
     
 	public boolean canMoveToHighSeas() {
@@ -487,6 +486,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
                     return MoveType.MOVE;
                 }
             } else if (owner.equalsId(settlement.getOwner())) {
+                if (hasAbility(Ability.CARRY_TREASURE) && canCashInTreasureInLocation(target)) {
+                    return MoveType.MOVE_CASH_IN_TREASURE;
+                }
                 return MoveType.MOVE;
             } else if (isTradingUnit()) {
                 return getTradeMoveType(settlement);
@@ -518,6 +520,36 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             }
             return MoveType.MOVE_NO_ACCESS_FULL;
         }
+    }
+    
+    public boolean canCashInTreasureInLocation(UnitLocation unitLocation) {
+        if (unitLocation == null) {
+            throw new IllegalStateException("can not cash in treasure in null location");
+        }
+        if (owner.getEurope() == null) {
+            // when inpedence any colony can cash in treasure
+            return unitLocation instanceof Tile && ((Tile)unitLocation).hasSettlement();
+        }
+        if (unitLocation instanceof Europe) {
+            return true;
+        }
+        if (unitLocation instanceof Tile) {
+            Tile locTile = (Tile)unitLocation;
+            if (locTile.hasSettlement() && locTile.getSettlement().isColony()) {
+                if (locTile.getSettlement().getColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+    
+    public int treasureTransportFee() {
+        if (isAtLocation(Europe.class) || owner.getEurope() == null) {
+            return 0;
+        }
+        float fee = (Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE) * treasureAmount) / 100f;
+        return (int)owner.getFeatures().applyModifier(Modifier.TREASURE_TRANSPORT_FEE, fee);
     }
     
     private MoveType getLearnMoveType(Tile from, Settlement settlement) {
@@ -786,16 +818,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         unitContainer.getUnits().removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return false;
-	}
-	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return false;
-	}
-
     public boolean canCarryTreasure() {
         return hasAbility(Ability.CARRY_TREASURE);
     }
@@ -922,14 +944,15 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    workLeft -= 1;
 	}
 	
-	public void moveUnitToHighSea() {
+	public void sailUnitToEurope(Tile highSeaEntrence) {
+		enterHighSea = new GridPoint2(highSeaEntrence.x, highSeaEntrence.y);
 	    changeUnitLocation(owner.getHighSeas());
 	    reduceMovesLeftToZero();
 	    setDestinationEurope();
 	    workLeft = getSailTurns();
 	}
 	
-	private void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
+	public void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
 		if (hasNoSpace()) {
 			return;
 		}
@@ -944,7 +967,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 	}
 	
-	private void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
+	public void disembarkUnitsToLocation(UnitLocation newUnitLocation) {
 		if (unitContainer != null && unitContainer.isNotEmpty()) {
 			for (Unit unit : unitContainer.getUnits().entities()) {
 				newUnitLocation.addUnit(unit);
@@ -956,9 +979,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 	
 	public void sailUnitToNewWorld() {
+		embarkUnitsFromLocation(owner.getEurope());
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
-		setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+		setDestination(enterHighSea.x, enterHighSea.y);
+		enterHighSea = null;
 		workLeft = getSailTurns();
 	}
 	
@@ -1086,9 +1111,40 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return unitType.upgradeByChangeType(changeType, getOwner()) != null;
 	}
 	
+	public boolean isSeeEnemy(IterableSpiral<Tile> is, Map map) {
+		for (Tile tile : map.neighbourTiles(is, getTile(), lineOfSight())) {
+			if (tile.getUnits().isNotEmpty()) {
+				if (tile.getUnits().first().getOwner().notEqualsId(getOwner())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isSeeHostile(IterableSpiral<Tile> is, Map map) {
+		for (Tile tile : map.neighbourTiles(is, getTile(), lineOfSight())) {
+			Player tileOwner = null;
+			if (tile.hasSettlement()) {
+				tileOwner = tile.getSettlement().getOwner();
+			} else {
+				if (tile.getUnits().isNotEmpty()) {
+					tileOwner = tile.getUnits().first().getOwner();
+				}
+			}
+			if (tileOwner != null) {
+				if (getOwner().atWarWith(tileOwner)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
     public static class Xml extends XmlNodeParser<Unit> {
         
-        private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
+    	private static final String ATTR_ENTER_HIGH_SEA = "enterHighSea";
+		private static final String ATTR_INDIAN_SETTLEMENT = "indianSettlement";
 		private static final String ATTR_TILE_IMPROVEMENT_TYPE_ID = "tileImprovementTypeId";
 		private static final String ATTR_WORK_LEFT = "workLeft";
 		private static final String ATTR_DESTINATION_Y = "destinationY";
@@ -1128,16 +1184,18 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             String unitRoleStr = attr.getStrAttribute(ATTR_ROLE);
             String ownerStr = attr.getStrAttribute(ATTR_OWNER);
             
-            Unit unit = new Unit(
+            Player unitOwner = game.players.getById(ownerStr);
+			Unit unit = new Unit(
         		attr.getStrAttribute(ATTR_ID),
         		Specification.instance.unitTypes.getById(unitTypeStr),
         		Specification.instance.unitRoles.getById(unitRoleStr),
-        		game.players.getById(ownerStr)
+        		unitOwner
             );
+			unitOwner.units.add(unit);
             
             unit.state = attr.getEnumAttribute(UnitState.class, ATTR_STATE);
             unit.movesLeft = attr.getIntAttribute(ATTR_MOVES_LEFT);
-            unit.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS);
+            unit.hitPoints = attr.getIntAttribute(ATTR_HIT_POINTS, 0);
             unit.visibleGoodsCount = attr.getIntAttribute(ATTR_VISIBLE_GOODS_COUNT, -1);
             unit.treasureAmount = attr.getIntAttribute(ATTR_TREASURE_AMOUNT, 0);
             unit.roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT, -1);
@@ -1149,6 +1207,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             if (MoveDestinationType.TILE.equals(unit.destinationType)) {
             	unit.destinationX = attr.getIntAttribute(ATTR_DESTINATION_X);
             	unit.destinationY = attr.getIntAttribute(ATTR_DESTINATION_Y);
+            }
+            if (attr.hasAttr(ATTR_ENTER_HIGH_SEA)) {
+            	unit.enterHighSea = new GridPoint2(attr.getPoint(ATTR_ENTER_HIGH_SEA));
             }
             
             unit.workLeft = attr.getIntAttribute(ATTR_WORK_LEFT, -1);
@@ -1170,12 +1231,12 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             
         	attr.set(ATTR_STATE, unit.state);
         	attr.set(ATTR_MOVES_LEFT, unit.movesLeft);
-        	attr.set(ATTR_HIT_POINTS, unit.hitPoints);
-        	attr.set(ATTR_VISIBLE_GOODS_COUNT, unit.visibleGoodsCount);
-        	attr.set(ATTR_TREASURE_AMOUNT, unit.treasureAmount);
-        	attr.set(ATTR_ROLE_COUNT, unit.roleCount);
+        	attr.set(ATTR_HIT_POINTS, unit.hitPoints, 0);
+        	attr.set(ATTR_VISIBLE_GOODS_COUNT, unit.visibleGoodsCount, -1);
+        	attr.set(ATTR_TREASURE_AMOUNT, unit.treasureAmount, 0);
+        	attr.set(ATTR_ROLE_COUNT, unit.roleCount, -1);
         	attr.set(ATTR_NAME, unit.name);
-        	attr.set(ATTR_EXPERIENCE, unit.experience);
+        	attr.set(ATTR_EXPERIENCE, unit.experience, 0);
         	attr.set(ATTR_INDIAN_SETTLEMENT, unit.indianSettlement);
             
         	attr.set(ATTR_DESTINATION_TYPE, unit.destinationType);
@@ -1183,8 +1244,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             	attr.set(ATTR_DESTINATION_X, unit.destinationX);
             	attr.set(ATTR_DESTINATION_Y, unit.destinationY);
             }
+            if (unit.enterHighSea != null) {
+            	attr.setPoint(ATTR_ENTER_HIGH_SEA, unit.enterHighSea);
+            }
             
-        	attr.set(ATTR_WORK_LEFT, unit.workLeft);
+        	attr.set(ATTR_WORK_LEFT, unit.workLeft, -1);
         	attr.set(ATTR_TILE_IMPROVEMENT_TYPE_ID, unit.tileImprovementType);
         }
         

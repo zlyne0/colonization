@@ -76,16 +76,6 @@ public class Tile implements UnitLocation, Identifiable {
         units.removeId(unit);
     }
 	
-	@Override
-	public boolean canAutoLoadUnit() {
-		return hasSettlement() && units.isNotEmpty();
-	}
-	
-	@Override
-	public boolean canAutoUnloadUnits() {
-		return hasSettlement();
-	}
-	
     public boolean equalsCoordinates(int x, int y) {
         return this.x == x && this.y == y;
     }
@@ -401,6 +391,10 @@ public class Tile implements UnitLocation, Identifiable {
 		return style;
 	}
 
+	public void removeOwner() {
+		this.owner = null;
+	}
+	
 	public void changeOwner(Player player) {
 		changeOwner(player, null);
 	}
