@@ -21,6 +21,7 @@ import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.map.isometric.IterableSpiral;
 
 public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 
@@ -333,6 +334,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
     public UnitState getState() {
         return state;
+    }
+    
+    public boolean isSentry() {
+    	return state == UnitState.SENTRY;
     }
     
 	public TileImprovementType getTileImprovementType() {
@@ -1104,6 +1109,36 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public boolean canUpgradeByChangeType(ChangeType changeType) {
 		return unitType.upgradeByChangeType(changeType, getOwner()) != null;
+	}
+	
+	public boolean isSeeEnemy(IterableSpiral<Tile> is, Map map) {
+		for (Tile tile : map.neighbourTiles(is, getTile(), lineOfSight())) {
+			if (tile.getUnits().isNotEmpty()) {
+				if (tile.getUnits().first().getOwner().notEqualsId(getOwner())) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	
+	public boolean isSeeHostile(IterableSpiral<Tile> is, Map map) {
+		for (Tile tile : map.neighbourTiles(is, getTile(), lineOfSight())) {
+			Player tileOwner = null;
+			if (tile.hasSettlement()) {
+				tileOwner = tile.getSettlement().getOwner();
+			} else {
+				if (tile.getUnits().isNotEmpty()) {
+					tileOwner = tile.getUnits().first().getOwner();
+				}
+			}
+			if (tileOwner != null) {
+				if (getOwner().atWarWith(tileOwner)) {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 	
     public static class Xml extends XmlNodeParser<Unit> {

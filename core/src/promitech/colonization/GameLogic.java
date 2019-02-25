@@ -29,6 +29,7 @@ import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
+import promitech.map.isometric.IterableSpiral;
 
 public class GameLogic {
 
@@ -38,6 +39,7 @@ public class GameLogic {
 	private final MoveService moveService;
 	
 	private final List<Unit> playerUnits = new ArrayList<Unit>();
+	private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
 	
 	public GameLogic(GUIGameModel guiGameModel, CombatService combatService, MoveService moveService) {
 		this.guiGameModel = guiGameModel;
@@ -121,6 +123,9 @@ public class GameLogic {
 			case SKIPPED:
 				unit.setState(UnitState.ACTIVE);
 				break;
+			case SENTRY:
+				wakeUpWhenSeeEnemy(unit);
+				break;
 			default:
 				break;
 		}
@@ -129,7 +134,15 @@ public class GameLogic {
 		}
 	}
 
-    private void sailOnHighSeas(Unit unit) {
+    private void wakeUpWhenSeeEnemy(Unit unit) {
+    	if (unit.isAtLocation(Tile.class)) {
+    		if (unit.isSeeEnemy(spiralIterator, guiGameModel.game.map)) {
+    			unit.setState(UnitState.ACTIVE);
+    		}
+    	}
+	}
+
+	private void sailOnHighSeas(Unit unit) {
         unit.sailOnHighSea();
         if (unit.isWorkComplete()) {
             if (unit.isDestinationEurope()) {

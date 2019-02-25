@@ -22,6 +22,8 @@ import promitech.colonization.orders.diplomacy.FirstContactService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.Messages;
+import promitech.map.isometric.IterableSpiral;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class MoveService {
 
@@ -53,6 +55,7 @@ public class MoveService {
 	private MoveContext artilleryUnitBombardAnimation;
     
     private final MoveExploredTiles exploredTiles = new MoveExploredTiles();
+    private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
     
     public void inject(
     		GUIGameController guiGameController, 
@@ -177,11 +180,22 @@ public class MoveService {
             }
         }
         firstContactService.firstContact(moveContext.destTile, moveContext.unit.getOwner());
+        wakeUpSentryUnits(moveContext.unit.getOwner(), moveContext.destTile);
         
         if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
         	checkCashInTreasureInCarrier(moveContext.unit, moveContext.destTile);
         	moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
         }
+    }
+    
+    private void wakeUpSentryUnits(Player player, Tile tile) {
+    	for (NeighbourIterableTile<Tile> neighbourTile : guiGameModel.game.map.neighbourTiles(tile)) {
+    		for (Unit u : neighbourTile.tile.getUnits().entities()) {
+    			if (u.isSentry() && u.getOwner().notEqualsId(player)) {
+    				u.setState(UnitState.ACTIVE);
+    			}
+    		}
+		}
     }
 
 	private void checkCashInTreasureInCarrier(Unit carrier, Tile tile) {
@@ -366,7 +380,7 @@ public class MoveService {
             
             moveContext.initNextPathStep();
             
-            if (guiGameModel.game.map.isUnitSeeHostileUnit(moveContext.unit)) {
+            if (moveContext.unit.isSeeHostile(spiralIterator, guiGameModel.game.map)) {
                 System.out.println("unit: " + moveContext.unit + " see hostile unit");
                 break;
             }

@@ -12,12 +12,12 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Consumer;
 import net.sf.freecol.common.util.Predicate;
 import promitech.colonization.Direction;
-import promitech.colonization.SpiralIterator;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.map.isometric.IsometricMap;
+import promitech.map.isometric.IterableSpiral;
 import promitech.map.isometric.NeighbourIterableTile;
 
 public class Map extends ObjectWithId {
@@ -167,36 +167,7 @@ public class Map extends ObjectWithId {
             player.initExploredMap(this);
         }
 	}
-    
-	public boolean isUnitSeeHostileUnit(Unit unit) {
-		Tile unitTile = unit.getTile();
-		int radius = unit.lineOfSight();
-		SpiralIterator spiralIterator = new SpiralIterator(width, height);
-		spiralIterator.reset(unitTile.x, unitTile.y, true, radius);
-		
-		while (spiralIterator.hasNext()) {
-			Tile tile = getTile(spiralIterator.getX(), spiralIterator.getY());
-			spiralIterator.next();
-			if (tile == null) {
-				continue;
-			}
-			Player tileOwner = null;
-			if (tile.hasSettlement()) {
-				tileOwner = tile.getSettlement().getOwner();
-			} else {
-				if (tile.getUnits().isNotEmpty()) {
-					tileOwner = tile.getUnits().first().getOwner();
-				}
-			}
-			if (tileOwner != null) {
-				if (unit.getOwner().atWarWith(tileOwner)) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-    
+	
 	public String toString() {
 		return "width = " + width + ", height = " + height;
 	}
@@ -273,6 +244,11 @@ public class Map extends ObjectWithId {
      */
     public Iterable<Tile> neighbourTiles(int x, int y, int radius) {
         return tiles.neighbourTiles(x, y, radius);
+    }
+    
+    public Iterable<Tile> neighbourTiles(IterableSpiral<Tile> is, Tile tile, int radius) {
+    	is.reset(tiles, tile.x, tile.y, radius);
+    	return is;
     }
     
 	public static class Xml extends XmlNodeParser<Map> {
