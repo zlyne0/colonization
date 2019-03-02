@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.UnitRole
 import promitech.colonization.orders.diplomacy.FirstContactService
 import promitech.colonization.orders.move.MoveContext
+import promitech.colonization.screen.ChooseFoundingFatherDialog
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -164,6 +165,12 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				
 				//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
 				gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+				return true
+			}
+		},
+		object : Task("foundingFather") {
+			override fun run(console: ConsoleOutput): Boolean {
+				gameController.showDialog(ChooseFoundingFatherDialog())
 				return true
 			}
 		}

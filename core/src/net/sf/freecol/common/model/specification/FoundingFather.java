@@ -19,7 +19,11 @@ public class FoundingFather extends ObjectWithFeatures {
         EXPLORATION,
         MILITARY,
         POLITICAL,
-        RELIGIOUS
+        RELIGIOUS;
+    	
+    	public String msgKey() {
+    		return "model.foundingFather." + this.name().toLowerCase();
+    	}
     }
 
     /** The type of this FoundingFather. */
