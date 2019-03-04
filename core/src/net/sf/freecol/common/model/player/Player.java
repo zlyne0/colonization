@@ -77,6 +77,7 @@ public class Player extends ObjectWithId {
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
     public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    private FoundingFather currentFoundingFather;
     private HighSeas highSeas;
     protected Monarch monarch;
     private final ObjectWithFeatures updatableFeatures;
@@ -505,6 +506,34 @@ public class Player extends ObjectWithId {
 		}
 	}
 	
+	public int remainingFoundingFatherCost() {
+		int base = Specification.options.getIntValue(GameOptions.FOUNDING_FATHER_FACTOR);
+		int count = foundingFathers.size();
+		return (count == 0) ? base : 2 * (count + 1) * base + 1;
+	}
+	
+	public FoundingFather checkAddNewFoundingFathers() {
+		FoundingFather newFoundingFather = null;
+		int fatherCost = remainingFoundingFatherCost();
+		int remainingCost = fatherCost - liberty;
+		
+		System.out.println("FoundingFathers[" + getId() + "].check"  
+			+ " liberty/fatherCost " + liberty + "/" + fatherCost
+			+ ", currentFoundingFather: " + currentFoundingFather);
+		
+		if (remainingCost <= 0) {
+			boolean overflow = Specification.options.getBoolean(GameOptions.SAVE_PRODUCTION_OVERFLOW);
+			if (overflow) {
+				liberty = -remainingCost;
+			} else {
+				liberty = 0;
+			}
+			newFoundingFather = currentFoundingFather;
+			currentFoundingFather = null;
+		}
+		return newFoundingFather;
+	}
+	
     public void modifyImmigration(int amount) {
         immigration = Math.max(0, immigration + amount);
     }
@@ -651,7 +680,8 @@ public class Player extends ObjectWithId {
 	}
 	
 	public static class Xml extends XmlNodeParser<Player> {
-        private static final String ATTR_AI = "ai";
+        private static final String ATTR_CURRENT_FATHER = "currentFather";
+		private static final String ATTR_AI = "ai";
 		private static final String ATTR_X_LENGTH = "xLength";
 		private static final String ATTR_PLAYER = "player";
 		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
@@ -695,6 +725,10 @@ public class Player extends ObjectWithId {
             player.tax = attr.getIntAttribute(ATTR_TAX, 0);
             player.gold = attr.getIntAttribute(ATTR_GOLD, 0);
             player.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
+            player.currentFoundingFather = attr.getEntity(
+        		ATTR_CURRENT_FATHER, 
+        		Specification.instance.foundingFathers
+    		);
             player.interventionBells = attr.getIntAttribute(ATTR_INTERVENTION_BELLS, 0);
             player.immigration = attr.getIntAttribute(ATTR_IMMIGRATION, 0);
             player.immigrationRequired = attr.getIntAttribute(ATTR_IMMIGRATION_REQUIRED, 0);
@@ -767,6 +801,7 @@ public class Player extends ObjectWithId {
         	attr.set(ATTR_TAX, player.tax);
         	attr.set(ATTR_GOLD, player.gold);
         	attr.set(ATTR_LIBERTY, player.liberty);
+        	attr.set(ATTR_CURRENT_FATHER, player.currentFoundingFather);
         	attr.set(ATTR_INTERVENTION_BELLS, player.interventionBells);
         	attr.set(ATTR_IMMIGRATION, player.immigration);
         	attr.set(ATTR_IMMIGRATION_REQUIRED, player.immigrationRequired);
@@ -821,4 +856,19 @@ public class Player extends ObjectWithId {
         }
     }
 
+	public FoundingFather getCurrentFoundingFather() {
+		return currentFoundingFather;
+	}
+
+	public void setCurrentFoundingFather(FoundingFather currentFoundingFather) {
+		this.currentFoundingFather = currentFoundingFather;
+	}
+
+	public int getLiberty() {
+		return liberty;
+	}
+
+	public void setLiberty(int liberty) {
+		this.liberty = liberty;
+	}
 }

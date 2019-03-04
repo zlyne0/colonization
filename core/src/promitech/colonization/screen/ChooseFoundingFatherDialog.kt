@@ -18,6 +18,8 @@ import net.sf.freecol.common.model.specification.FoundingFather
 import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
 import com.badlogic.gdx.utils.Align
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.Turn
 
 class FoundingFatherInfoPanel(val skin : Skin) : Table() {
 	val nameLabel = Label("", skin)
@@ -29,26 +31,30 @@ class FoundingFatherInfoPanel(val skin : Skin) : Table() {
 		}
 	}
 	
+	var foundingFather : FoundingFather? = null
+	
 	init {
 		nameLabel.setWrap(true)
 		description.setWrap(true)
 		
 		add(nameLabel).colspan(1).align(Align.center).pad(10f).row()
-		add(ffImage).align(Align.left).pad(10f)
+		add(ffImage).align(Align.left or Align.top).pad(10f)
 		add(description).top().pad(10f)
 	}
 	
-	fun update(fft : FoundingFatherType, ffId : String) {
+	fun update(fft : FoundingFatherType, ff : FoundingFather) {
+		foundingFather = ff
+		
 		nameLabel.setText(
-			Messages.msg(ffId + ".name") + " (" + Messages.msg(fft.msgKey()) + ")"
+			Messages.msgName(ff) + " (" + Messages.msg(fft.msgKey()) + ")"
 		)
 		
-		val frame = GameResources.instance.getFrame(ffId + ".image")
+		val frame = GameResources.instance.getFrame(ff.getId() + ".image")
 		ffImage.setDrawable(TextureRegionDrawable(frame.texture))
 		
-		var descriptionStr = Messages.msg(ffId + ".description") +
+		var descriptionStr = Messages.msgDescription(ff) +
 			"\r\n\r\n" +
-			"[" + Messages.msg(ffId + ".birthAndDeath") + "] " + Messages.msg(ffId + ".text")
+			"[" + Messages.msg(ff.getId() + ".birthAndDeath") + "] " + Messages.msg(ff.getId() + ".text")
 		description.setText(descriptionStr)
 		
 		invalidateHierarchy()
@@ -56,21 +62,17 @@ class FoundingFatherInfoPanel(val skin : Skin) : Table() {
 	
 }
 
-class ChooseFoundingFatherDialog()
+class ChooseFoundingFatherDialog(
+	player : Player,
+	turn : Turn
+)
 	: ModalDialog<ChooseFoundingFatherDialog>(ModalDialogSize.width50(), ModalDialogSize.height75())
 {
 	private val typeButtons = Table()
 	private val ffInfoPanel = FoundingFatherInfoPanel(skin)
 	
 	init {
-		
-		val foundingFathers = linkedMapOf(
-			FoundingFatherType.TRADE to "model.foundingFather.adamSmith",
-			FoundingFatherType.EXPLORATION to "model.foundingFather.ferdinandMagellan",
-			FoundingFatherType.MILITARY to "model.foundingFather.hernanCortes", 
-			FoundingFatherType.POLITICAL to "model.foundingFather.thomasPaine",
-			FoundingFatherType.RELIGIOUS to "model.foundingFather.bartolomeDeLasCasas"
-		)
+		val foundingFathers = FoundingFatherService().generateRandomFoundingFathers(player, turn)
 		
 		foundingFathers.forEach { (fft, ff) ->
 			val button = TextButton(Messages.msg(fft.msgKey()), skin)
@@ -91,6 +93,13 @@ class ChooseFoundingFatherDialog()
 		layout.add(ffInfoPanel).left().row()
 		
 		getContentTable().add(layout).expandX().fillX().row()
+
+		val okButton = TextButton(Messages.msg("ok"), skin)
+		okButton.addListener { _, _ ->
+			player.currentFoundingFather = ffInfoPanel.foundingFather
+			hideWithFade()
+		}		
+		getButtonTable().add(okButton).pad(10f).fillX().expandX()
 	}
 		
 }

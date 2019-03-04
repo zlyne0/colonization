@@ -21,6 +21,7 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Notification;
+import net.sf.freecol.common.model.player.RecruitFoundingFatherNotification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.DI;
 import promitech.colonization.Direction;
@@ -28,6 +29,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
+import promitech.colonization.screen.ChooseFoundingFatherDialog;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.GUIGameModel.ChangeStateListener;
@@ -593,6 +595,14 @@ public class HudStage extends Stage {
 				(MonarchActionNotification)notification
 			);
 			dialog.show(HudStage.this);
+		}
+		
+		if (notification instanceof RecruitFoundingFatherNotification) {
+			ChooseFoundingFatherDialog dialog = new ChooseFoundingFatherDialog(
+				guiGameModel.game.playingPlayer, 
+				guiGameModel.game.getTurn()
+			);
+			HudStage.this.showDialog(dialog);
 		}
 	}
 

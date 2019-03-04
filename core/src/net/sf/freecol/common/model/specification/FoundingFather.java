@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Turn;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -40,6 +41,18 @@ public class FoundingFather extends ObjectWithFeatures {
 
     public FoundingFatherType getType() {
         return type;
+    }
+    
+    public boolean isAvailableTo(Player player) {
+    	return player.isLiveEuropeanPlayer();
+    }
+    
+    public int weightByAges(int ages) {
+    	return weight[ages];
+    }
+    
+    public String toString() {
+    	return getId();
     }
     
     public static class Xml extends XmlNodeParser<FoundingFather> {

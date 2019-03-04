@@ -44,6 +44,16 @@ public class Turn {
         return (year < seasonYear) ? year : seasonYear + (year - seasonYear)/2;
     }
 
+    public int getAges() {
+    	int year = getYear();
+    	for (int i=0; i<AGES.length; i++) {
+    		if (year < AGES[i]) {
+    			return i;
+    		}
+    	}
+    	return AGES.length - 1;
+    }
+    
 	public int getNumber() {
 		return turn;
 	}
