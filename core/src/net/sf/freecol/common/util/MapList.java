@@ -1,11 +1,11 @@
-package promitech.colonization.screen;
+package net.sf.freecol.common.util;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
-class MapList<K, V> {
+public class MapList<K, V> {
 	private Map<K, List<V>> map = new LinkedHashMap<K, List<V>>();
 	
 	public void add(K key, V value) {

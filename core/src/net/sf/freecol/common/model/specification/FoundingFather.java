@@ -14,6 +14,7 @@ public class FoundingFather extends ObjectWithFeatures {
 
     public static final String FERDINAND_MAGELLAN = "model.foundingFather.ferdinandMagellan";
     public static final String PETER_MINUIT = "model.foundingFather.peterMinuit";
+    public static final String PETER_STUYVESANT = "model.foundingFather.peterStuyvesant";
     
     public static enum FoundingFatherType {
         TRADE,

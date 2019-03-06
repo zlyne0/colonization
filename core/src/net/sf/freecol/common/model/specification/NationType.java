@@ -37,6 +37,11 @@ import promitech.colonization.savegame.XmlNodeParser;
  */
 public abstract class NationType extends ObjectWithFeatures {
 
+	public static final String TRADE = "model.nationType.trade";
+	public static final String COOPERATION = "model.nationType.cooperation";
+	public static final String IMMIGRATION = "model.nationType.immigration";
+	public static final String CONQUEST = "model.nationType.conquest";
+	
     private static final ObjectFromNodeSetter<NationType, SettlementType> SETTLEMENT_TYPE_NODE_SETTER = new ObjectFromNodeSetter<NationType, SettlementType>() {
         @Override
         public void set(NationType target, SettlementType entity) {
