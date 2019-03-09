@@ -52,7 +52,6 @@ public class Player extends ObjectWithId {
     private boolean ai;
     private int tax = 0;
     private int gold = 0;
-    private int liberty = 0;
     private int interventionBells = 0;
     private int entryLocationX = 0;
     private int entryLocationY = 0;
@@ -76,11 +75,10 @@ public class Player extends ObjectWithId {
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
-    public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
-    private FoundingFather currentFoundingFather;
     private HighSeas highSeas;
     protected Monarch monarch;
     private final ObjectWithFeatures updatableFeatures;
+    public FoundingFathers foundingFathers;
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
@@ -113,6 +111,7 @@ public class Player extends ObjectWithId {
         } else {
         	player.changePlayerType(PlayerType.NATIVE);
         }
+        player.foundingFathers = new FoundingFathers(player);
         
         player.market = new Market(idGenerator.nextId(Market.class));
         player.market.initGoods();
@@ -500,38 +499,10 @@ public class Player extends ObjectWithId {
 		if (!canHaveFoundingFathers()) {
 			return;
 		}
-		this.liberty = Math.max(0, this.liberty + libertyAmount);
+		foundingFathers.modifyLiberty(libertyAmount);
 		if (isRebel()) {
 			interventionBells += libertyAmount;
 		}
-	}
-	
-	public int remainingFoundingFatherCost() {
-		int base = Specification.options.getIntValue(GameOptions.FOUNDING_FATHER_FACTOR);
-		int count = foundingFathers.size();
-		return (count == 0) ? base : 2 * (count + 1) * base + 1;
-	}
-	
-	public FoundingFather checkAddNewFoundingFathers() {
-		FoundingFather newFoundingFather = null;
-		int fatherCost = remainingFoundingFatherCost();
-		int remainingCost = fatherCost - liberty;
-		
-		System.out.println("FoundingFathers[" + getId() + "].check"  
-			+ " liberty/fatherCost " + liberty + "/" + fatherCost
-			+ ", currentFoundingFather: " + currentFoundingFather);
-		
-		if (remainingCost <= 0) {
-			boolean overflow = Specification.options.getBoolean(GameOptions.SAVE_PRODUCTION_OVERFLOW);
-			if (overflow) {
-				liberty = -remainingCost;
-			} else {
-				liberty = 0;
-			}
-			newFoundingFather = currentFoundingFather;
-			currentFoundingFather = null;
-		}
-		return newFoundingFather;
 	}
 	
     public void modifyImmigration(int amount) {
@@ -582,7 +553,7 @@ public class Player extends ObjectWithId {
 		}
 	}
     
-    public boolean canHaveFoundingFathers() {
+    public final boolean canHaveFoundingFathers() {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
 	
@@ -650,13 +621,19 @@ public class Player extends ObjectWithId {
 		settlement.setOwner(this);
 	}
 
-	public void afterReadPlayer() {
+	private void afterReadPlayer() {
 		if (europe != null) {
 			europe.setOwner(this);
 		}
 		if (monarch != null) {
 			monarch.setPlayer(this);
 		}
+		if (foundingFathers == null) {
+			foundingFathers = new FoundingFathers(this);
+		} else {
+			foundingFathers.setPlayer(this);
+		}
+		updatableFeatures.addFeatures(foundingFathers.entities());			
 	}
 
 	public boolean isAi() {
@@ -680,11 +657,8 @@ public class Player extends ObjectWithId {
 	}
 	
 	public static class Xml extends XmlNodeParser<Player> {
-        private static final String ATTR_CURRENT_FATHER = "currentFather";
 		private static final String ATTR_AI = "ai";
-		private static final String ATTR_X_LENGTH = "xLength";
 		private static final String ATTR_PLAYER = "player";
-		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
 		private static final String ELEMENT_STANCE = "stance";
 		private static final String ELEMENT_BAN_MISSION = "ban-mission";
@@ -695,7 +669,6 @@ public class Player extends ObjectWithId {
 		private static final String ATTR_IMMIGRATION_REQUIRED = "immigrationRequired";
 		private static final String ATTR_IMMIGRATION = "immigration";
 		private static final String ATTR_INTERVENTION_BELLS = "interventionBells";
-		private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_GOLD = "gold";
 		private static final String ATTR_TAX = "tax";
 		private static final String ATTR_NEW_LAND_NAME = "newLandName";
@@ -711,36 +684,29 @@ public class Player extends ObjectWithId {
             addNode(HighSeas.class, "highSeas");
             addNode(Europe.class, "europe");
             addNode(Monarch.class, "monarch");
+            addNode(FoundingFathers.class, "foundingFathers");
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String idStr = attr.getStrAttribute(ATTR_ID);
-            
-            Player player = new Player(idStr);
+            Player player = new Player(attr.getId());
             player.dead = attr.getBooleanAttribute(ATTR_DEAD);
             player.ai = attr.getBooleanAttribute(ATTR_AI);
             player.attackedByPrivateers = attr.getBooleanAttribute(ATTR_ATTACKED_BY_PRIVATEERS, false);
             player.newLandName = attr.getStrAttribute(ATTR_NEW_LAND_NAME);
             player.tax = attr.getIntAttribute(ATTR_TAX, 0);
             player.gold = attr.getIntAttribute(ATTR_GOLD, 0);
-            player.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
-            player.currentFoundingFather = attr.getEntity(
-        		ATTR_CURRENT_FATHER, 
-        		Specification.instance.foundingFathers
-    		);
             player.interventionBells = attr.getIntAttribute(ATTR_INTERVENTION_BELLS, 0);
             player.immigration = attr.getIntAttribute(ATTR_IMMIGRATION, 0);
             player.immigrationRequired = attr.getIntAttribute(ATTR_IMMIGRATION_REQUIRED, 0);
             
-            String nationIdStr = attr.getStrAttribute(ATTR_NATION_ID);
-            player.nation = Specification.instance.nations.getById(nationIdStr);
             player.name = attr.getStrAttribute(ATTR_USERNAME);
 
-            String nationTypeStr = attr.getStrAttribute(ATTR_NATION_TYPE);
-            if (nationTypeStr != null) {
-                player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
-                player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
+			player.nation = attr.getEntity(ATTR_NATION_ID, Specification.instance.nations);
+            NationType nationType = attr.getEntity(ATTR_NATION_TYPE, Specification.instance.nationTypes);
+            if (nationType != null) {
+            	player.nationType = nationType;
+            	player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
             }
             player.independentNationName = attr.getStrAttribute(ATTR_INDEPENDENT_NATION_NAME);
 
@@ -763,14 +729,6 @@ public class Player extends ObjectWithId {
         		Tension tension = new Tension(attr.getIntAttribute(ATTR_VALUE));
         		nodeObject.tension.put(playerId, tension);
         	}
-        	if (attr.isQNameEquals(ELEMENT_FOUNDING_FATHERS)) {
-        	    int count = attr.getIntAttribute(ATTR_X_LENGTH, 0);
-        	    for (int i=0; i<count; i++) {
-        	        String fatherId = attr.getStrAttributeNotNull(foundingFatherAttr(i));
-        	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
-        	        nodeObject.addFoundingFathers(father);
-        	    }
-        	}
         	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
         	    if (nodeObject.banMission == null) {
         	        nodeObject.banMission = new ArrayList<String>();
@@ -786,10 +744,6 @@ public class Player extends ObjectWithId {
 		    }
         }
         
-		private String foundingFatherAttr(int index) {
-			return "x" + index;
-		}
-        
         @Override
         public void startWriteAttr(Player player, XmlNodeAttributesWriter attr) throws IOException {
         	attr.setId(player);
@@ -800,8 +754,6 @@ public class Player extends ObjectWithId {
         	attr.set(ATTR_NEW_LAND_NAME, player.newLandName);
         	attr.set(ATTR_TAX, player.tax);
         	attr.set(ATTR_GOLD, player.gold);
-        	attr.set(ATTR_LIBERTY, player.liberty);
-        	attr.set(ATTR_CURRENT_FATHER, player.currentFoundingFather);
         	attr.set(ATTR_INTERVENTION_BELLS, player.interventionBells);
         	attr.set(ATTR_IMMIGRATION, player.immigration);
         	attr.set(ATTR_IMMIGRATION_REQUIRED, player.immigrationRequired);
@@ -826,17 +778,6 @@ public class Player extends ObjectWithId {
 				attr.set(ATTR_VALUE, tensionEntry.getValue().getValue());
 				attr.xml.pop();
 			}
-        	
-        	if (player.foundingFathers.isNotEmpty()) {
-        		attr.xml.element(ELEMENT_FOUNDING_FATHERS);
-        		attr.set(ATTR_X_LENGTH, player.foundingFathers.size());
-        		int ffIndex = 0;
-        		for (FoundingFather foundingFather : player.foundingFathers.entities()) {
-        			attr.set(foundingFatherAttr(ffIndex), foundingFather);
-        			ffIndex++;
-        		}
-        		attr.xml.pop();
-        	}
         	if (player.banMission != null) {
         	    for (String playerId : player.banMission) {
         	        attr.xml.element(ELEMENT_BAN_MISSION);
@@ -855,20 +796,4 @@ public class Player extends ObjectWithId {
             return "player";
         }
     }
-
-	public FoundingFather getCurrentFoundingFather() {
-		return currentFoundingFather;
-	}
-
-	public void setCurrentFoundingFather(FoundingFather currentFoundingFather) {
-		this.currentFoundingFather = currentFoundingFather;
-	}
-
-	public int getLiberty() {
-		return liberty;
-	}
-
-	public void setLiberty(int liberty) {
-		this.liberty = liberty;
-	}
 }

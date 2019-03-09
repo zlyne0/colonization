@@ -31,7 +31,7 @@ public class UnitTest {
     public void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        assertNull(player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
+        assertFalse(player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
@@ -45,7 +45,7 @@ public class UnitTest {
     public void canCalculateInitialMovesForNavyWithFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        if (player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN) == null) {
+        if (!player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN)) {
             FoundingFather foundingFather = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
             player.addFoundingFathers(foundingFather);
         }

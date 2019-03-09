@@ -1,31 +1,27 @@
 package promitech.colonization.screen
 
-import com.badlogic.gdx.graphics.glutils.ShapeRenderer
+import com.badlogic.gdx.scenes.scene2d.ui.Image
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
+import com.badlogic.gdx.utils.Align
+import net.sf.freecol.common.model.Turn
+import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.specification.FoundingFather
 import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType
+import promitech.colonization.GameResources
 import promitech.colonization.ui.ModalDialog
 import promitech.colonization.ui.ModalDialogSize
-import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.addListener
-import promitech.colonization.GameResources
-import com.badlogic.gdx.scenes.scene2d.ui.ImageButton
-import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
-import com.badlogic.gdx.scenes.scene2d.ui.Image
-import net.sf.freecol.common.model.specification.FoundingFather
-import com.badlogic.gdx.scenes.scene2d.ui.HorizontalGroup
-import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
-import com.badlogic.gdx.utils.Align
-import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.Turn
+import promitech.colonization.ui.resources.Messages
 
-class FoundingFatherInfoPanel(val skin : Skin) : Table() {
-	val nameLabel = Label("", skin)
+class FoundingFatherInfoPanel(val panelSkin : Skin) : Table() {
+	val nameLabel = Label("", panelSkin)
 	val ffImage = Image()
 	
-	val description = object : Label("", skin) {
+	val description = object : Label("", panelSkin) {
 		override fun getPrefWidth() : Float {
 			return ffImage.width * 1.5f
 		}
@@ -72,7 +68,7 @@ class ChooseFoundingFatherDialog(
 	private val ffInfoPanel = FoundingFatherInfoPanel(skin)
 	
 	init {
-		val foundingFathers = FoundingFatherService().generateRandomFoundingFathers(player, turn)
+		val foundingFathers = player.foundingFathers.generateRandomFoundingFathers(turn)
 		
 		foundingFathers.forEach { (fft, ff) ->
 			val button = TextButton(Messages.msg(fft.msgKey()), skin)
@@ -96,7 +92,7 @@ class ChooseFoundingFatherDialog(
 
 		val okButton = TextButton(Messages.msg("ok"), skin)
 		okButton.addListener { _, _ ->
-			player.currentFoundingFather = ffInfoPanel.foundingFather
+			player.foundingFathers.setCurrentFoundingFather(ffInfoPanel.foundingFather)
 			hideWithFade()
 		}		
 		getButtonTable().add(okButton).pad(10f).fillX().expandX()
