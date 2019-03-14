@@ -421,7 +421,7 @@ class Combat {
             }
             
         } else if (pillage < burnable.size() + navy.size() + lootable.size()) {
-            GoodsType lootType = lootable.get(pillage - burnable.size() + navy.size());
+            GoodsType lootType = lootable.get(pillage - burnable.size() - navy.size());
             indianPillageColonyGoods(colony, lootType);
             
         } else {
