@@ -61,6 +61,10 @@ public class Messages {
 		return msg(nameKey(identifiable.getId()));
 	}
 	
+	public static String msgDescription(Identifiable identifiable) {
+		return msg(descriptionKey(identifiable.getId()));
+	}
+	
 	public static String shortDescriptionMsg(Identifiable identifiable) {
 		return msg(shortDescriptionKey(identifiable.getId()));
 	}
@@ -74,6 +78,14 @@ public class Messages {
 
 	public static String descriptionKey(String id) {
 		return id + ".description";
+	}
+
+	public static String nameKey(Identifiable identifiable) {
+		return identifiable.getId() + ".name";
+	}
+	
+	public static String descriptionKey(Identifiable identifiable) {
+		return identifiable.getId() + ".description";
 	}
 	
 	public static String shortDescriptionKey(String id) {

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -300,6 +301,12 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
     	for (Entry<String, List<Modifier>> entrySet : parent.modifiers.entrySet()) {
     		this.modifiers.put(entrySet.getKey(), new ArrayList<Modifier>(entrySet.getValue()));
     	}
+    }
+    
+    public void addFeatures(Collection<? extends ObjectWithFeatures> objects) {
+    	for (ObjectWithFeatures obj : objects) {
+    		addFeatures(obj);
+		}
     }
     
     public void addFeatures(ObjectWithFeatures parent) {

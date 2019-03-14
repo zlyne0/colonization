@@ -223,8 +223,8 @@ public class Savegame1600Verifier {
         assertNotNull(food);
         
         assertEquals(2, player.foundingFathers.size());
-        assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
-        assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
+        assertNotNull(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
+        assertNotNull(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
         
         // should add fathers modifiers to player features
         assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);

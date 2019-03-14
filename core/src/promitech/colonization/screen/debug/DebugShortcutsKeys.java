@@ -29,8 +29,9 @@ public class DebugShortcutsKeys {
         
         commandExecutor = new CommandExecutor(di, mapActor);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "ai attack");
+        commandByKeycode.put(Input.Keys.NUM_1, "foundingFather");
         commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
+        commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
 //        commandByKeycode.put(Input.Keys.NUM_1, "ai move");
 //        commandByKeycode.put(Input.Keys.NUM_2, "ai settlements");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");

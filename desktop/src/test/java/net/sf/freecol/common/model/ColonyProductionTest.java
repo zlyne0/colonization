@@ -53,7 +53,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColony() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
         
         // when
         colony.updateColonyFeatures();
@@ -90,7 +90,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurTraderHouse() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furTradingPost"));
@@ -131,7 +131,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurFactory() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furFactory"));
@@ -225,7 +225,7 @@ public class ColonyProductionTest {
     @Test
     public void fursProductionWithHenryHudson() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
 
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");

@@ -4528,7 +4528,7 @@
         <Nation id="model.nation.tupi" state="not_available"/>
       </Nations>
     </nationOptions>
-    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" liberty="137" interventionBells="0" currentFather="model.foundingFather.adamSmith" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
+    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" interventionBells="0" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
       <eventsNotificatioins>
       	<messageNotification id="messageNotification:1234" body="msg" />
       	<monarchActionNotification id="monarchActionNotification:1235" action="RAISE_TAX_ACT" goodsType="model.goods.furs" goodsAmount="100" tax="12" colonyId="colony:6528" />
@@ -4896,7 +4896,10 @@
         <destination id="europe:2"/>
         <destination id="map:247"/>
       </highSeas>
-      <foundingFathers xLength="2" x0="model.foundingFather.peterMinuit" x1="model.foundingFather.williamBrewster"/>
+      <foundingFathers currentFather="model.foundingFather.adamSmith" liberty="137">
+        <foundingFather id="model.foundingFather.williamBrewster"/>
+        <foundingFather id="model.foundingFather.peterMinuit"/>
+      </foundingFathers>
       <offeredFathers xLength="0"/>
       <europe id="europe:2" recruitPrice="710" recruitLowerCap="80" owner="player:1">
         <unit id="unit:7095" unitType="model.unit.freeColonist" movesLeft="12" state="sentry" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="europe:2" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>

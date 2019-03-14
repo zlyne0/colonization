@@ -5,6 +5,7 @@ import java.io.IOException;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Turn;
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -13,13 +14,18 @@ public class FoundingFather extends ObjectWithFeatures {
 
     public static final String FERDINAND_MAGELLAN = "model.foundingFather.ferdinandMagellan";
     public static final String PETER_MINUIT = "model.foundingFather.peterMinuit";
+    public static final String PETER_STUYVESANT = "model.foundingFather.peterStuyvesant";
     
     public static enum FoundingFatherType {
         TRADE,
         EXPLORATION,
         MILITARY,
         POLITICAL,
-        RELIGIOUS
+        RELIGIOUS;
+    	
+    	public String msgKey() {
+    		return "model.foundingFather." + this.name().toLowerCase();
+    	}
     }
 
     /** The type of this FoundingFather. */
@@ -36,6 +42,18 @@ public class FoundingFather extends ObjectWithFeatures {
 
     public FoundingFatherType getType() {
         return type;
+    }
+    
+    public boolean isAvailableTo(Player player) {
+    	return player.isLiveEuropeanPlayer();
+    }
+    
+    public int weightByAges(int ages) {
+    	return weight[ages];
+    }
+    
+    public String toString() {
+    	return getId();
     }
     
     public static class Xml extends XmlNodeParser<FoundingFather> {
