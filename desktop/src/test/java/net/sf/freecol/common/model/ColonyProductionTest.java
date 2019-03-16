@@ -15,6 +15,7 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -32,12 +33,14 @@ public class ColonyProductionTest {
     Game game;
     Colony colony;
     Player player;
+    FoundingFather henryHudson;
     
     @BeforeEach
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         player = game.players.getById("player:1");
         colony = (Colony)player.settlements.getById("colony:6528");
+        henryHudson = Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson");
     }
     
     @Test
@@ -53,7 +56,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColony() throws Exception {
         // given
-        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(game, henryHudson);
         
         // when
         colony.updateColonyFeatures();
@@ -90,7 +93,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurTraderHouse() throws Exception {
         // given
-        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(game, henryHudson);
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furTradingPost"));
@@ -131,7 +134,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurFactory() throws Exception {
         // given
-        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(game, henryHudson);
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furFactory"));
@@ -225,7 +228,7 @@ public class ColonyProductionTest {
     @Test
     public void fursProductionWithHenryHudson() throws Exception {
         // given
-        player.addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        player.addFoundingFathers(game, henryHudson);
 
         // move statesment from townHall to tile 
         Unit unit = player.units.getById("unit:7076");

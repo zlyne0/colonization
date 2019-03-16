@@ -12,7 +12,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class PlayerTest {
@@ -32,7 +31,7 @@ public class PlayerTest {
         player.getFeatures().addFeaturesAndOverwriteExisted(player.nationType());
 
         FoundingFather williamBrewster = Specification.instance.foundingFathers.getById("model.foundingFather.williamBrewster");
-		player.addFoundingFathers(williamBrewster);
+		player.addFoundingFathers(game, williamBrewster);
         
         UnitType indenturedServant = Specification.instance.unitTypes.getById("model.unit.indenturedServant");
         UnitType fisherman = Specification.instance.unitTypes.getById("model.unit.expertFisherman");

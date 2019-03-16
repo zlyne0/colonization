@@ -11,7 +11,6 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class HighSeasTest {
@@ -42,11 +41,11 @@ public class HighSeasTest {
     public void canCalculateSailTurnsWithFerdinandMagellan() throws Exception {
         // given
         Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+        FoundingFather ferfinandMagellan = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
 
         Player player = game.players.getById("player:1");
         if (!player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN)) {
-            FoundingFather foundingFather = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
-            player.addFoundingFathers(foundingFather);
+            player.addFoundingFathers(game, ferfinandMagellan);
         }
         
         Unit merchantman = player.units.getById("unit:6437");

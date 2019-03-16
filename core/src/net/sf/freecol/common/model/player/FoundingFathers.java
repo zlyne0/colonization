@@ -5,13 +5,14 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Turn;
-import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RandomChoice;
-import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.util.MapList;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -93,8 +94,28 @@ public class FoundingFathers {
 		this.liberty = Math.max(0, this.liberty + libertyAmount);
 	}
 
-	protected void add(FoundingFather father) {
+	protected void add(Game game, FoundingFather father) {
+		System.out.println("FoundingFathers[" + player.getId() + "].add " + father.getId());
 		foundingFathers.add(father);
+		
+		// handle founding fathers events
+		for (FoundingFatherEvent ffEvent : father.events.entities()) {
+			if (ffEvent.equalsId("model.event.boycottsLifted")) {
+				player.market().repayAllArrears();
+			}
+			
+			if (ffEvent.equalsId("model.event.seeAllColonies")) {
+				for (Player p : game.players.entities()) {
+					if (p.equalsId(this.player) || p.isNotLiveEuropeanPlayer()) {
+						continue;
+					}
+					
+					for (Settlement settlement : p.settlements.entities()) {
+						player.revealMapSeeColony(game.map, settlement.getColony());
+					}
+				}
+			}
+		}
 	}
 	
 	public boolean canRecruitFoundingFather() {

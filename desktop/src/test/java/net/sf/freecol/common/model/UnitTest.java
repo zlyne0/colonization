@@ -9,13 +9,14 @@ import org.junit.jupiter.api.BeforeEach;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class UnitTest {
 
     Game game; 
+    FoundingFather gerdinandMagellan;
     
     @BeforeAll
     public static void beforeClass() {
@@ -25,6 +26,7 @@ public class UnitTest {
     @BeforeEach
     public void before() throws Exception {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+        gerdinandMagellan = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
     }
 
     @Test
@@ -46,8 +48,7 @@ public class UnitTest {
         // given
         Player player = game.players.getById("player:1");
         if (!player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN)) {
-            FoundingFather foundingFather = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
-            player.addFoundingFathers(foundingFather);
+            player.addFoundingFathers(game, gerdinandMagellan);
         }
         Unit merchantman = player.units.getById("unit:6437");
         

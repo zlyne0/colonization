@@ -9,8 +9,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable
 import com.badlogic.gdx.utils.Align
 import net.sf.freecol.common.model.Turn
 import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.specification.FoundingFather
-import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType
+import net.sf.freecol.common.model.player.FoundingFather
+import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType
 import promitech.colonization.GameResources
 import promitech.colonization.ui.ModalDialog
 import promitech.colonization.ui.ModalDialogSize

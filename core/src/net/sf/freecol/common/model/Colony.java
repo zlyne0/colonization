@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.Player;
@@ -17,7 +18,6 @@ import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -374,8 +374,8 @@ public class Colony extends Settlement {
                 int turns = goodsContainer.goodsAmount(GoodsType.FOOD) / quantityToConsume;
                 if (turns < 3) {
                 	StringTemplate st = StringTemplate.template("model.colony.famineFeared")
-                				.add("%colony%", getName())
-                				.addAmount("%number%", turns);
+        				.add("%colony%", getName())
+        				.addAmount("%number%", turns);
                 	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {

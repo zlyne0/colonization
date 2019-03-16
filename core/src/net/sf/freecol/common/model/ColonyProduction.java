@@ -7,7 +7,7 @@ import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
-import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Validation;

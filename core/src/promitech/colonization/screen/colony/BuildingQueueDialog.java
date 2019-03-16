@@ -302,16 +302,19 @@ class BuildingQueueDialog extends ClosableDialog<BuildingQueueDialog> {
 
 	private void updateBuyButtonAvailability() {
 		if (!Specification.options.getBoolean(GameOptions.PAY_FOR_BUILDING)) {
+			System.out.println("Colony[" + colony.getId() + "] buy disabled because PAY_FOR_BUILDING option");
 			buyButton.setDisabled(true);
 			return;
 		}
 		BuildableType firstBuildableItem = colony.getFirstItemInBuildingQueue();
 		if (firstBuildableItem == null) {
+			System.out.println("Colony[" + colony.getId() + "] buy disabled because no item to build");
 			buyButton.setDisabled(true);
 			return;
 		}
 		int price = colony.getPriceForBuilding(firstBuildableItem);
 		if (price == 0 || colony.getOwner().hasNotGold(price)) {
+			System.out.println("Colony[" + colony.getId() + "] buy disabled because no gold " + price);
 			buyButton.setDisabled(true);
 		} else {
 			buyButton.setDisabled(false);

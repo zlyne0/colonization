@@ -7,10 +7,10 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.Modifier;

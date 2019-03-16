@@ -7,10 +7,10 @@ import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Turn;
+import net.sf.freecol.common.model.player.FoundingFather;
+import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.RecruitFoundingFatherNotification;
-import net.sf.freecol.common.model.specification.FoundingFather;
-import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import promitech.colonization.Randomizer;
@@ -38,7 +38,7 @@ public class FoundingFatherService {
 						.addKey("%description%", Messages.descriptionKey(foundingFathers));
 					player.eventsNotifications.addMessageNotification(st);
 				}
-				handleNewFoundingFather(player, foundingFathers);
+				handleNewFoundingFather(game, player, foundingFathers);
 			}
 		}
 	}
@@ -59,6 +59,10 @@ public class FoundingFatherService {
 		List<RandomChoice<FoundingFather>> ffToChoose = new ArrayList<RandomChoice<FoundingFather>>(ffs.size());
 		for (Entry<FoundingFatherType, FoundingFather> entry : ffs.entrySet()) {
 			float weight = entry.getValue().weightByAges(ages) * chooseFoundFatherWeight(player, entry.getKey());
+			
+			if (entry.getValue().equalsId("model.foundingFather.jacobFugger") && player.market().arrearsCount() <= 4) {
+				continue;
+			}
 			ffToChoose.add(new RandomChoice<FoundingFather>(entry.getValue(), (int)weight));
 		}
 		
@@ -104,8 +108,8 @@ public class FoundingFatherService {
 		return 1.0f;
 	}
 	
-	public void handleNewFoundingFather(Player player, FoundingFather foundingFathers) {
-		player.addFoundingFathers(foundingFathers);
+	private void handleNewFoundingFather(Game game, Player player, FoundingFather foundingFathers) {
+		player.addFoundingFathers(game, foundingFathers);
 	}
 	
 }

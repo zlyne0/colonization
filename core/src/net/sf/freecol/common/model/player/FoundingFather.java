@@ -1,11 +1,12 @@
-package net.sf.freecol.common.model.specification;
+package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Turn;
-import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;

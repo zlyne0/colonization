@@ -28,9 +28,9 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.PlayerAssert;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import promitech.colonization.MockedRandomizer;
@@ -258,7 +258,7 @@ public class IndianSettlementCombatTest {
 	public void canDeterminePlunderRangeWithHernanCortes() throws Exception {
 		// given
     	FoundingFather cortes = Specification.instance.foundingFathers.getById("model.foundingFather.hernanCortes");
-    	dutch.addFoundingFathers(cortes);
+    	dutch.addFoundingFathers(game, cortes);
     	
     	NationType inca = Specification.instance.nationTypes.getById("model.nationType.inca");
     	SettlementType incaSettlementType = inca.settlementTypes.getById("model.settlement.inca");

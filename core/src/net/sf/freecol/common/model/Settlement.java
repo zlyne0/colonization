@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.map.path.Path;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 
@@ -14,54 +12,6 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     protected Player owner;
     public Tile tile;
     protected boolean coastland = false;
-    
-    public static Colony buildColony(Map map, Unit buildByUnit, Tile tile, String name) {
-    	Colony colony = new Colony(
-			Game.idGenerator,
-			buildByUnit.getOwner().nationType().getSettlementRegularType()
-		);
-    	colony.name = name;
-    	
-    	tile.setSettlement(colony);
-    	buildByUnit.getOwner().addSettlement(colony);
-    	
-    	colony.createColonyTiles(map, tile);
-    	
-    	colony.initDefaultBuildings();
-    	colony.updateColonyFeatures();
-    	
-    	colony.initColonyBuilderUnit(buildByUnit);
-    	tile.changeOwner(buildByUnit.getOwner(), colony);
-    	
-    	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-    	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
-    	tile.addImprovement(tileImprovement);
-    	
-    	return colony;
-    }
-
-	public static void determineEuropeSeaConnection(Map map, PathFinder pathFinder, Colony colony) {
-		// tmp unit only for find path to europe
-    	Unit tmpGalleon = new Unit(
-			"tmp:buildColony:findToEurope:-1",
-			Specification.instance.unitTypes.getById(UnitType.GALLEON),
-			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-			colony.owner
-		);
-		colony.getOwner().units.add(tmpGalleon);
-    	tmpGalleon.setOwner(colony.getOwner());
-    	Path path = pathFinder.findToEurope(map, colony.tile, tmpGalleon);
-
-    	boolean foundPath = false;
-    	Tile lastPathStep = path.tiles.peek();
-    	if (lastPathStep.getType().isHighSea()) {
-    		foundPath = true;
-    	}
-    	tmpGalleon.changeUnitLocation(colony.tile);
-    	colony.getOwner().removeUnit(tmpGalleon);
-    	
-    	colony.seaConnectionToEurope = foundPath;
-	}
 
     public Settlement(String id, SettlementType settlementType) {
 		super(id);

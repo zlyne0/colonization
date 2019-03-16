@@ -21,8 +21,8 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.orders.combat.Combat;
 import promitech.colonization.orders.combat.Combat.CombatResult;
@@ -104,12 +104,12 @@ public class NavyCombatTest {
 	public void navyPrivateerWithDrakeWithoutCargoVsNavy() throws Exception {
 		// given
     	FoundingFather francisDrake = Specification.instance.foundingFathers.getById("model.foundingFather.francisDrake");
-    	dutch.addFoundingFathers(francisDrake);
+    	dutch.addFoundingFathers(game, francisDrake);
     	
     	Unit privateer = dutch.units.getById("unit:6900");
     	privateer.getGoodsContainer().decreaseAllToZero();
 
-    	spanish.addFoundingFathers(francisDrake);
+    	spanish.addFoundingFathers(game, francisDrake);
     	Tile attackTile = game.map.getTile(12, 80);
     	UnitFactory.create("model.unit.privateer", spanish, attackTile);    	
     	

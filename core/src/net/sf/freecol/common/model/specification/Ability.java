@@ -25,6 +25,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.player.FoundingFather;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;

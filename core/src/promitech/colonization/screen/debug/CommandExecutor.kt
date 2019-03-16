@@ -27,7 +27,7 @@ import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.screen.ChooseFoundingFatherDialog
 import promitech.colonization.screen.FoundingFatherService
 import net.sf.freecol.common.model.player.RecruitFoundingFatherNotification
-import net.sf.freecol.common.model.specification.FoundingFather
+import net.sf.freecol.common.model.player.FoundingFather
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -173,15 +173,17 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 		},
 		object : Task("foundingFather") {
 			override fun run(console: ConsoleOutput): Boolean {
-				val player = guiGameModel.game.players.getById("player:1")
+				val player = guiGameModel.game.playingPlayer
 				player.modifyLiberty(20)
-				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN))
-				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_MINUIT))
-				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_STUYVESANT))
+//				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN))
+//				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_MINUIT))
+//				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_STUYVESANT))
+				player.addFoundingFathers(guiGameModel.game, Specification.instance.foundingFathers.getById("model.foundingFather.franciscoDeCoronado"))
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//FoundingFatherService().checkFoundingFathers(player)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//player.eventsNotifications.addMessageNotification(RecruitFoundingFatherNotification())
+				gameController.resetMapModel();
 				return true
 			}
 		}

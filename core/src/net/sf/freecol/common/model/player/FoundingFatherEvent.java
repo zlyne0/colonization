@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.specification;
+package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
 

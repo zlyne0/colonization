@@ -123,6 +123,24 @@ public class Market extends ObjectWithId {
 		md.setArrears(md.getSalePrice() * Specification.options.getIntValue(GameOptions.ARREARS_FACTOR));
 	}
 	
+	public void repayAllArrears() {
+		for (MarketData md : marketGoods.entities()) {
+			if (md.hasArrears()) {
+				md.repayArrears();
+			}
+		}
+	}
+	
+	public int arrearsCount() {
+		int count = 0;
+		for (MarketData md : marketGoods.entities()) {
+			if (md.hasArrears()) {
+				count++;
+			}
+		}
+		return count;
+	}
+	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
 
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {

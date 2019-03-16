@@ -6,7 +6,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.scenes.scene2d.EventListener;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.ColonyFactory;
 import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -346,8 +346,8 @@ public class GUIGameController {
 		gameLogic.newTurn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.getTurn().increaseTurnNumber();
 		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
-			mapActor.resetMapModel();
 		}
+		mapActor.resetMapModel();
 		mapActor.resetUnexploredBorders();
 		
 		logicNextActiveUnit();
@@ -514,8 +514,9 @@ public class GUIGameController {
 	public void buildColony(String colonyName) {
 		Unit unit = guiGameModel.getActiveUnit();
 		Tile tile = unit.getTile();
-		Colony colony = Settlement.buildColony(guiGameModel.game.map, unit, tile, colonyName);
-		Settlement.determineEuropeSeaConnection(guiGameModel.game.map, pathFinder, colony);
+		
+		ColonyFactory colonyFactory = new ColonyFactory(guiGameModel.game, pathFinder);
+		colonyFactory.buildColony(unit, tile, colonyName);
 		
 		nextActiveUnit();
 		resetMapModel();

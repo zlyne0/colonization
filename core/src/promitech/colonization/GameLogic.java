@@ -52,6 +52,9 @@ public class GameLogic {
 		newTurnContext.restart();
 		System.out.println("newTurn for player " + player);
 
+		if (player.isEuropean()) {
+        	new FoundingFatherService().checkFoundingFathers(guiGameModel.game, player);
+		}
 		// copy units for safety remove
 		playerUnits.clear();
 		playerUnits.addAll(player.units.entities());
@@ -86,8 +89,6 @@ public class GameLogic {
         }
         if (player.isEuropean()) {
         	bombardEnemyShip(player);
-
-        	new FoundingFatherService().checkFoundingFathers(guiGameModel.game, player);
         }
         
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player);

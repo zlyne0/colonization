@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IdGenerator;
@@ -24,7 +25,6 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -398,6 +398,18 @@ public class Player extends ObjectWithId {
 		}
 	}
 
+	public void revealMapSeeColony(Map map, Colony colony) {
+		int radius = (int)getFeatures().applyModifier(
+			Modifier.LINE_OF_SIGHT_BONUS, 
+			colony.settlementType.getVisibleRadius()
+		);
+		
+		setTileAsExplored(colony.tile);
+		for (Tile t : map.neighbourTiles(colony.tile, radius)) {
+			setTileAsExplored(t);
+		}
+	}
+	
     public Europe getEurope() {
         return europe;
     }
@@ -577,10 +589,16 @@ public class Player extends ObjectWithId {
 	public ObjectWithFeatures getFeatures() {
 		return updatableFeatures;
 	}
-    
-	public void addFoundingFathers(FoundingFather father) {
-		foundingFathers.add(father);
+
+	public void addFoundingFathers(Game game, FoundingFather father) {
+		foundingFathers.add(game, father);
 		updatableFeatures.addFeatures(father);
+		
+		for (Settlement settlement : settlements.entities()) {
+			if (settlement.isColony()) {
+				settlement.getColony().updateColonyFeatures();
+			}
+		}
 	}
 
 	public int getEntryLocationX() {
