@@ -213,7 +213,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 	
 	public int lineOfSight() {
-		return unitType.lineOfSight();
+		float lineOfSight = unitType.lineOfSight();
+		lineOfSight = unitType.applyModifier(Modifier.LINE_OF_SIGHT_BONUS, unitType.lineOfSight());
+		lineOfSight = owner.getFeatures().applyModifier(Modifier.LINE_OF_SIGHT_BONUS, lineOfSight, unitType);
+		lineOfSight = unitRole.applyModifier(Modifier.LINE_OF_SIGHT_BONUS, lineOfSight, unitRole);
+		return (int)lineOfSight;
 	}
 	
     public boolean isDamaged() {

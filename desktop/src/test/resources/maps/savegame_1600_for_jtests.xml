@@ -2937,7 +2937,7 @@
         <founding-father id="model.foundingFather.hernandoDeSoto" type="exploration" weight1="5" weight2="10" weight3="5">
           <ability id="model.ability.rumoursAlwaysPositive" source="model.foundingFather.hernandoDeSoto" value="true"/>
           <modifier id="model.modifier.lineOfSightBonus" source="model.foundingFather.hernandoDeSoto" value="1.0" type="additive" index="0">
-            <scope matchNegated="false" matchesNull="true" ability-id="model.ability.navalUnit" ability-value="false"/>
+            <scope matchNegated="false" matchesNull="true" ability-id="model.ability.navalUnit" ability-value="true"/>
           </modifier>
         </founding-father>
         <founding-father id="model.foundingFather.henryHudson" type="exploration" weight1="10" weight2="1" weight3="1">

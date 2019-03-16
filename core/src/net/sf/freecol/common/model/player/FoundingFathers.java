@@ -6,6 +6,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -139,6 +140,10 @@ public class FoundingFathers {
 		return foundingFathers.containsId(foundingFatherId);
 	}
 
+	public boolean containsId(Identifiable identifiable) {
+		return foundingFathers.containsId(identifiable);
+	}
+	
 	public Collection<FoundingFather> entities() {
 		return foundingFathers.entities();
 	}

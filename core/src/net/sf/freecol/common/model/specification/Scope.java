@@ -29,7 +29,7 @@ public class Scope {
 			}
 		}
 		if (abilityId != null) {
-			// case when obj has not ability and ability value  is false sa its ok
+			// case when obj has not ability and ability value  is false so its ok
 		    if (obj.hasAbility(abilityId) != abilityValue) {
 		        return matchNegated;
 		    }

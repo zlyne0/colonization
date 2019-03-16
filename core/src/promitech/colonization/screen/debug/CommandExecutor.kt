@@ -53,6 +53,12 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 	val firstContactService = FirstContactService(di.firstContactController, guiGameModel)
 			
 	var tasks : List<Task> = mutableListOf<Task>(
+		object : Task("add gold") {
+			override fun run(console: ConsoleOutput) : Boolean {
+			    guiGameModel.game.playingPlayer.addGold(5000)
+				return true
+			}
+		},
 		object : Task("map show") {
 			override fun run(console: ConsoleOutput) : Boolean {
 			    guiGameModel.game.playingPlayer.explorAllTiles();
@@ -178,7 +184,9 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN))
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_MINUIT))
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_STUYVESANT))
-				player.addFoundingFathers(guiGameModel.game, Specification.instance.foundingFathers.getById("model.foundingFather.franciscoDeCoronado"))
+				player.addFoundingFathers(guiGameModel.game,
+					Specification.instance.foundingFathers.getById("model.foundingFather.hernandoDeSoto")
+				)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//FoundingFatherService().checkFoundingFathers(player)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))

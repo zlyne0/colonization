@@ -2165,7 +2165,7 @@
                      weight1="5" weight2="10" weight3="5">
       <modifier id="model.modifier.lineOfSightBonus"
                 type="additive" value="1">
-        <scope ability-id="model.ability.navalUnit" ability-value="false"/>
+        <scope ability-id="model.ability.navalUnit" ability-value="true"/>
       </modifier>
       <ability id="model.ability.rumoursAlwaysPositive" value="true"/>
     </founding-father>
