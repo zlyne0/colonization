@@ -33,12 +33,12 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 	
 	init {
 		label.setAlignment(Align.top or Align.left);
-		label.setFillParent(true)
+		//label.setFillParent(true)
 		
-		scrollPane.setForceScroll(false, false);
-		scrollPane.setFadeScrollBars(false);
-		scrollPane.setOverscroll(true, true);
-		scrollPane.setScrollBarPositions(false, true);
+		scrollPane.setForceScroll(false, false)
+		scrollPane.setFadeScrollBars(false)
+		scrollPane.setOverscroll(true, true)
+		scrollPane.setScrollBarPositions(false, true)
 		
 		dialogLayout.add(scrollPane).expand().fill().row();
 		dialogLayout.add(textField).fillX().expandX();
@@ -75,20 +75,56 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 	fun hintCommand() {
 		var enteredCmd = textField.getText();
 		addConsoleLine("  hints: ")
-		commandExecutor.filterTasksForHint(enteredCmd).forEach { task ->
+		val commandsHints = commandExecutor.filterTasksForHint(enteredCmd)
+		
+		commandsHints.forEach { task ->
 			if (task is Alias) {
 				addConsoleLine(task.cmd + " -> " + task.task.cmd)
 			} else {
 			    addConsoleLine(task.cmd)
 			}
 		}
+		
+		val hintCommand = enlargeCommandByHints(enteredCmd, commandsHints)
+		textField.setText(hintCommand)
+		textField.setCursorPosition(hintCommand.length)
+	}
+	
+	fun enlargeCommandByHints(command : String, hints : List<Task>) : String {
+		if (hints.isEmpty()) {
+			return command
+		}
+		var theShortestCommand = hints.sortedBy { it -> it.cmd.length }.first().cmd
+		if (command.length == theShortestCommand.length) {
+			return command
+		}
+		
+		var enlargeCommand = command
+		do {
+			if (enlargeCommand.length >= theShortestCommand.length) {
+				break
+			}
+		    var enlargeCommandCandidate = enlargeCommand + theShortestCommand[enlargeCommand.length]
+    		if (allTasksStartsWith(enlargeCommandCandidate, hints)) {
+				enlargeCommand = enlargeCommandCandidate 
+    		} else {
+    			break;
+    		}
+		} while (true)
+		return enlargeCommand
+	}
+	
+	fun allTasksStartsWith(command : String, tasks : List<Task>) : Boolean {
+		return tasks.filterNot {
+		    task -> task.cmd.startsWith(command, true)
+		}.isEmpty()
 	}
 	
 	override fun addConsoleLine(line: String) {
 		if (label.getText().toString().equals("")) {
 			label.setText(line);			
 		} else {
-			label.setText(label.getText().toString() + "\r\n" + line)
+			label.setText(label.getText().toString() + "\n" + line)
 		}
 		scrollPane.setScrollPercentY(100f);
 		scrollPane.layout();
