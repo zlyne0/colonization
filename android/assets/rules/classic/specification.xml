@@ -2213,7 +2213,7 @@
     </founding-father>
     <founding-father id="model.foundingFather.johnPaulJones" type="military"
                      weight1="0" weight2="6" weight3="7">
-      <event id="model.event.unit.model.unit.frigate" />
+      <unit id="model.unit.frigate" />
     </founding-father>
     <founding-father id="model.foundingFather.thomasJefferson" type="political"
                      weight1="4" weight2="5" weight3="6">

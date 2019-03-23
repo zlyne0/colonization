@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -35,6 +37,7 @@ public class FoundingFather extends ObjectWithFeatures {
     private final int[] weight = new int[Turn.NUMBER_OF_AGES];    
     
     public final MapIdEntities<FoundingFatherEvent> events = new MapIdEntities<FoundingFatherEvent>();
+    private List<String> unitTypes = new ArrayList<String>();
     
     public FoundingFather(String id, FoundingFatherType type) {
         super(id);
@@ -52,6 +55,10 @@ public class FoundingFather extends ObjectWithFeatures {
     public int weightByAges(int ages) {
     	return weight[ages];
     }
+
+	public List<String> getUnitTypes() {
+		return unitTypes;
+	}
     
     public String toString() {
     	return getId();
@@ -61,6 +68,7 @@ public class FoundingFather extends ObjectWithFeatures {
 
         private static final String ATTR_WEIGHT_PREFIX = "weight";
 		private static final String ATTR_TYPE = "type";
+		private static final String ELEMENT_UNIT = "unit";
 
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -91,7 +99,19 @@ public class FoundingFather extends ObjectWithFeatures {
         	for (int i=0; i<ff.weight.length; i++) {
         		attr.set(weightAttr(i), ff.weight[i]);
         	}
+			for (String unitTypeId : ff.unitTypes) {
+				attr.xml.element(ELEMENT_UNIT);
+				attr.set(ATTR_ID, unitTypeId);
+				attr.xml.pop();
+			}
         }
+        
+        @Override
+    	public void startReadChildren(XmlNodeAttributes attr) {
+			if (attr.isQNameEquals(ELEMENT_UNIT)) {
+				nodeObject.unitTypes.add(attr.getId());
+			}
+    	}
         
         @Override
         public String getTagName() {

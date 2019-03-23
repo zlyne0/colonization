@@ -367,6 +367,9 @@ public class Savegame1600Verifier {
         assertEquals(FoundingFatherType.POLITICAL, pocahontas.getType());
         assertNotNull(pocahontas.events.getById("model.event.resetNativeAlarm"));
         assertNotNull(pocahontas.events.getById("model.event.resetBannedMissions"));
+        
+        FoundingFather johnPaulJones = specification.foundingFathers.getById("model.foundingFather.johnPaulJones");
+        assertThat(johnPaulJones.getUnitTypes()).containsExactly("model.unit.frigate");
     }
 
 	private void verifyNationTypes(Specification specification) {

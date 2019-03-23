@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Turn;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -24,7 +25,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class FoundingFathers {
 
-    private final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
+    private final MapIdEntities<FoundingFather> foundingFathers = MapIdEntities.linkedMapIdEntities();
     private FoundingFather currentFoundingFather;
     private int liberty = 0;
     private Player player;
@@ -125,6 +126,12 @@ public class FoundingFathers {
 					Colony colony = (Colony) settlement;
 					colony.ifPossibleAddFreeBuilding(buildingType);
 				}
+			}
+		}
+		
+		if (player.getEurope() != null ) {
+			for (String unitTypeId : father.getUnitTypes()) {
+				UnitFactory.create(unitTypeId, player, player.getEurope());
 			}
 		}
 	}
