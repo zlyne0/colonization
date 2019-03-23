@@ -1,6 +1,7 @@
 package promitech.colonization.orders.combat;
 
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
+import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static promitech.colonization.orders.combat.CombatAssert.assertThat;
 
 import java.util.Locale;
@@ -16,8 +17,10 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.combat.Combat;
 import promitech.colonization.orders.combat.Combat.CombatResult;
@@ -31,6 +34,7 @@ public class LandVsLandCombatTest {
     private Player spanish;
     private Player dutch;
     private Tile freeTile;
+    private FoundingFather georgeWashington;
 	
     @BeforeAll
     public static void beforeClass() throws Exception {
@@ -44,19 +48,15 @@ public class LandVsLandCombatTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
-    	freeTile = game.map.getSafeTile(23, 80);    	
+    	freeTile = game.map.getSafeTile(23, 80);
+        georgeWashington = Specification.instance.foundingFathers.getById("model.foundingFather.georgeWashington");
     }
     
     @Test
     public void dragoonWinPromoteAndKillBrave() throws Exception {
         // given
-        Unit dragoon = new Unit(
-            Game.idGenerator.nextId(Unit.class), 
-            Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST),
-            Specification.instance.unitRoles.getById(UnitRole.DRAGOON),
-            dutch
-        );
-        dragoon.changeUnitLocation(freeTile);
+    	Unit dragoon = UnitFactory.createDragoon(dutch, freeTile);
+        assertThat(dutch).hasNotFoundingFather(georgeWashington);
         
         Tile braveTile = game.map.getSafeTile(22, 79);
         Unit braveUnit = braveTile.getUnits().getById("unit:5967");
@@ -76,6 +76,34 @@ public class LandVsLandCombatTest {
         assertThat(braveUnit).isDisposed();
         assertThat(dragoon).isUnitType(UnitType.VETERAN_SOLDIER);
     }
+    
+    @Test
+	public void dragoonWinPromoteWithGeorgeWashingtonAndKillBrave() throws Exception {
+		// given
+    	Unit dragoon = UnitFactory.createDragoon(dutch, freeTile);
+
+        Tile braveTile = game.map.getSafeTile(22, 79);
+        Unit braveUnit = braveTile.getUnits().getById("unit:5967");
+
+        if (!dutch.foundingFathers.containsId(georgeWashington)) {
+        	dutch.addFoundingFathers(game, georgeWashington);
+        }
+        
+        // when
+        Combat combat = new Combat();
+        combat.init(game, dragoon, braveTile);
+        combat.generateOrdinaryWin();
+        combat.processAttackResult();
+
+        // then
+        assertThat(combat)
+            .hasPowers(4.5f, 1.25f, 0.78f)
+            .hasResult(CombatResult.WIN, false)
+            .hasDetails(CombatResultDetails.SLAUGHTER_UNIT, CombatResultDetails.PROMOTE_UNIT);
+
+        assertThat(braveUnit).isDisposed();
+        assertThat(dragoon).isUnitType(UnitType.VETERAN_SOLDIER);
+	}
     
     @Test
     public void braveWinCaptureEquipment() throws Exception {

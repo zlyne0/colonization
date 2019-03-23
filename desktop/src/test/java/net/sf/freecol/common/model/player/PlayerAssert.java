@@ -100,4 +100,17 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		}
 		return this;
 	}
+
+	public PlayerAssert hasNotFoundingFather(FoundingFather ff) {
+		return hasNotFoundingFather(ff.getId());
+	}
+	
+	public PlayerAssert hasNotFoundingFather(String ffId) {
+		if (actual.foundingFathers.containsId(ffId)) {
+			failWithMessage("expected player <%s> has not founding father <%s> but player has", 
+				actual.getId(), ffId
+			);
+		}
+		return this;
+	}
 }
