@@ -596,7 +596,9 @@ public class Player extends ObjectWithId {
 		
 		for (Settlement settlement : settlements.entities()) {
 			if (settlement.isColony()) {
-				settlement.getColony().updateColonyFeatures();
+				Colony colony = settlement.getColony();
+				colony.updateColonyFeatures();
+				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 			}
 		}
 	}
