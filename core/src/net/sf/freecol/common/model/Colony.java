@@ -735,6 +735,32 @@ public class Colony extends Settlement {
         return buildingQueue.get(0).getType();
 	}
 	
+	public void ifPossibleAddFreeBuildings() {
+		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+			if (isAutoBuildableInColony(buildingType)) {
+				ifPossibleAddFreeBuilding(buildingType);
+			}
+		}
+	}
+	
+	public void ifPossibleAddFreeBuilding(BuildingType buildingType) {
+		if (isBuildingAlreadyBuilt(buildingType)) {
+			return;
+		}
+		NoBuildReason noBuildReason = getNoBuildReason(buildingType);
+		if (noBuildReason != NoBuildReason.NONE) {
+			System.out.println("addFreeBuilding[" + owner.getId() + "] reason " + noBuildReason);
+			return;
+		}
+    	for (ColonyBuildingQueueItem item : buildingQueue) {
+    		if (buildingType.equalsId(item.getId())) {
+    			buildingQueue.remove(item);
+    			break;
+    		}
+    	}		
+		finishBuilding(buildingType);
+	}
+	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
@@ -930,22 +956,11 @@ public class Colony extends Settlement {
 		}
 		if (buildableType.isBuildingType()) {
 			BuildingType buildingType = (BuildingType)buildableType;
-			BuildingType from = buildingType.getUpgradesFrom();
-			if (from != null) {
-				Building building = findBuildingByType(from.getId());
-				building.upgrade(buildingType);
-			} else {
-				Building building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
-				buildings.add(building);
-			}
+			finishBuilding(buildingType);
 			
 			if (buildableType.hasModifier(Modifier.DEFENCE)) {
 				newTurnContext.setRequireUpdateMapModel();
 			}
-			updateColonyFeatures();
-			updateColonyPopulation();
-			updateModelOnWorkerAllocationOrGoodsTransfer();
-			
 			StringTemplate st = StringTemplate.template("model.colony.buildingReady")
 		        .add("%colony%", getName())
 		        .addName("%building%", buildableType);
@@ -957,12 +972,28 @@ public class Colony extends Settlement {
 		buildingQueue.remove(0);
 	}
 	
+	private Building finishBuilding(BuildingType buildingType) {
+		BuildingType from = buildingType.getUpgradesFrom();
+		Building building;
+		if (from != null) {
+			building = findBuildingByType(from.getId());
+			building.upgrade(buildingType);
+		} else {
+			building = new Building(Game.idGenerator, buildingType);
+			buildings.add(building);
+		}
+		updateColonyFeatures();
+		updateColonyPopulation();
+		updateModelOnWorkerAllocationOrGoodsTransfer();
+		return building;
+	}
+	
 	public Building addBuilding(final BuildingType buildingType) {
 		Building building = findBuildingByBuildingTypeHierarchy(buildingType);
 		if (building != null) {
 			building.upgrade(buildingType);
 		} else {
-			building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
+			building = new Building(Game.idGenerator, buildingType);
 			buildings.add(building);
 		}
 		return building;
@@ -1129,7 +1160,8 @@ public class Colony extends Settlement {
 	protected void initDefaultBuildings() {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
     		if (isAutoBuildable(buildingType)) {
-    			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+    			buildings.add(new Building(Game.idGenerator, buildingType));
+    			colonyProduction.setAsNeedUpdate();
     		}
     	}
 	}
@@ -1259,20 +1291,7 @@ public class Colony extends Settlement {
 		}
 		
 		buildingQueue.clear();
-		
-		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
-			boolean foundBuildingType = false;
-			for (Building building : buildings.entities()) {
-				if (building.buildingType.equalsId(buildingType)) {
-					foundBuildingType = true;
-					break;
-				}
-			}
-			if (!foundBuildingType && isAutoBuildable(buildingType)) {
-				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
-				colonyProduction.setAsNeedUpdate();
-			}
-		}
+		ifPossibleAddFreeBuildings();
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {

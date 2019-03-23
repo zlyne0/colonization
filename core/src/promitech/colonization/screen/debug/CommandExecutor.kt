@@ -184,8 +184,14 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN))
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_MINUIT))
 //				player.addFoundingFathers(Specification.instance.foundingFathers.getById(FoundingFather.PETER_STUYVESANT))
+//				player.addFoundingFathers(guiGameModel.game,
+//					Specification.instance.foundingFathers.getById("model.foundingFather.hernandoDeSoto")
+//				)
+//				player.addFoundingFathers(guiGameModel.game,
+//					Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson")
+//				)
 				player.addFoundingFathers(guiGameModel.game,
-					Specification.instance.foundingFathers.getById("model.foundingFather.hernandoDeSoto")
+					Specification.instance.foundingFathers.getById("model.foundingFather.laSalle")
 				)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//FoundingFatherService().checkFoundingFathers(player)

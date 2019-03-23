@@ -15,6 +15,10 @@ class FoundingFatherEvent extends ObjectWithId {
         super(id);
     }
 
+	public String getValue() {
+		return value;
+	}
+    
     public static class Xml extends XmlNodeParser<FoundingFatherEvent> {
 
         @Override

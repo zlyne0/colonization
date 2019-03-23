@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -12,6 +13,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Turn;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import net.sf.freecol.common.util.MapList;
@@ -114,6 +116,14 @@ public class FoundingFathers {
 					for (Settlement settlement : p.settlements.entities()) {
 						player.revealMapSeeColony(game.map, settlement.getColony());
 					}
+				}
+			}
+			
+			if (ffEvent.equalsId("model.event.freeBuilding")) {
+				BuildingType buildingType = Specification.instance.buildingTypes.getById(ffEvent.getValue());
+				for (Settlement settlement : player.settlements.entities()) {
+					Colony colony = (Colony) settlement;
+					colony.ifPossibleAddFreeBuilding(buildingType);
 				}
 			}
 		}

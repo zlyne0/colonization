@@ -69,6 +69,7 @@ public class GameLogic {
 			Colony colony = (Colony)settlement;
 			System.out.println("calculate new turn for colony " + colony);
 			
+			colony.ifPossibleAddFreeBuildings();
 			colony.updateColonyFeatures();
 			colony.increaseWarehouseByProduction();
 			colony.reduceTileResourceQuantity(newTurnContext);

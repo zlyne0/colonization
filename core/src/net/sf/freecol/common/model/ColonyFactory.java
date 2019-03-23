@@ -33,7 +33,7 @@ public class ColonyFactory {
 		}
 	}
 
-    private Colony createColonyObject(Map map, Unit buildByUnit, Tile tile, String name) {
+    protected Colony createColonyObject(Map map, Unit buildByUnit, Tile tile, String name) {
     	Colony colony = new Colony(
 			Game.idGenerator,
 			buildByUnit.getOwner().nationType().getSettlementRegularType()
