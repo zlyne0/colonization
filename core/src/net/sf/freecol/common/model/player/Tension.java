@@ -83,6 +83,13 @@ public class Tension {
         public int getLimit() {
             return limit;
         }
+        
+        public boolean worst(Level level) {
+        	if (level == null) {
+        		return false;
+        	}
+        	return this.limit > level.limit;
+        }
     }
     
     private int value;
@@ -103,7 +110,6 @@ public class Tension {
     public Tension(int newTension) {
         setValue(newTension);
     }
-
 
     /**
      * Get the current tension value.
@@ -171,5 +177,6 @@ public class Tension {
 
     public void surrende() {
         setValue(SURRENDERED);
-    }    
+    }
+
 }

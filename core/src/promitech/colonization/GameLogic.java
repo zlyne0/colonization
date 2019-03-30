@@ -6,6 +6,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -63,6 +64,10 @@ public class GameLogic {
 		}
 		
         for (Settlement settlement : player.settlements.sortedEntities()) {
+        	if (settlement.isIndianSettlement()) {
+        		IndianSettlement indianSettlement = settlement.getIndianSettlement();
+        		indianSettlement.generateTension(guiGameModel.game);
+        	}
 			if (!settlement.isColony()) {
 				continue;
 			}

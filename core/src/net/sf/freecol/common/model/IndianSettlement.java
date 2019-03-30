@@ -6,18 +6,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectMap;
+
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class IndianSettlement extends Settlement {
+
+    private static final int ALARM_RADIUS = 2;
+    private static final int ALARM_TILE_IN_USE = 2;
+    private static final int ALARM_MISSIONARY_PRESENT = -10;
     
     public static enum ContactLevel {
         UNCONTACTED,     // Nothing known other than location?
@@ -143,6 +152,89 @@ public class IndianSettlement extends Settlement {
     		tensionByPlayer.put(player.getId(), tension);
     	}
     	return tension;
+    }
+    
+    public void generateTension(Game game) {
+		ObjectIntMap<Player> alarms = new ObjectIntMap<Player>();
+		ObjectMap<Player, Level> oldTension = new ObjectMap<Player, Tension.Level>();
+		
+		generateTensionFromNeighbourTiles(game.map, alarms);
+		generateTensionFromMissionary(alarms);
+		
+		for (ObjectIntMap.Entry<Player> alarmsEntry : alarms.entries()) {
+			int change = alarmsEntry.value;
+			if (change != 0) {
+				Player enemy = alarmsEntry.key;
+				change = (int)enemy.getFeatures().applyModifier(Modifier.NATIVE_ALARM_MODIFIER, change);
+				oldTension.put(enemy, owner.getTension(enemy).getLevel());
+				modifyTensionWithOwnerTension(enemy, change);
+			}
+		}
+		
+		// Calm down a bit at the whole-tribe level.
+		for (Player enemy : game.players.entities()) {
+			if (!enemy.isLiveEuropeanPlayer()) {
+				continue;
+			}
+			Tension enemyTension = owner.getTension(enemy);
+			if (enemyTension.getValue() > 0) {
+				int change = enemyTension.getValue() / 100 + 4;
+				owner.modifyTensionAndPropagateToAllSettlements(enemy, -change);
+			}
+			
+			Level newLevel = getTension(enemy).getLevel();
+			if (newLevel.worst(oldTension.get(enemy))) {
+				String key = "indianSettlement.alarmIncrease.tension." + newLevel.name().toLowerCase();
+				if (Messages.containsKey(key)) {
+					StringTemplate st = StringTemplate.template(key)
+                        .addStringTemplate("%nation%", owner.getNationName())
+                        .addStringTemplate("%enemy%", enemy.getNationName())
+                        .add("%settlement%", getName());
+					enemy.eventsNotifications.addMessageNotification(st);
+				}
+			}
+		}
+    }
+
+    private void generateTensionFromMissionary(ObjectIntMap<Player> alarms) {
+		if (hasMissionary()) {
+			Player enemy = missionaryOwner();
+			if (enemy.isLiveEuropeanPlayer()) {
+				int missionAlarm = ALARM_MISSIONARY_PRESENT;
+				if (getMissionary().isMissionaryExpert()) {
+					missionAlarm *= 2;
+				}
+				alarms.getAndIncrement(enemy, 0, missionAlarm);
+			}
+		}
+	}
+
+	private void generateTensionFromNeighbourTiles(Map map, ObjectIntMap<Player> alarms) {
+		int radius = settlementType.getClaimableRadius() + ALARM_RADIUS;
+		for (Tile neighbourTile : map.neighbourTiles(tile.x, tile.y, radius)) {
+			if (neighbourTile.getUnits().isNotEmpty()) {
+				Unit firstUnit = neighbourTile.getUnits().first();
+				Player enemy = firstUnit.getOwner();
+				
+				if (enemy.isLiveEuropeanPlayer()) {
+					int alarm = 0;
+					for (Unit unit : neighbourTile.getUnits().entities()) {
+						if (!unit.isNaval() && unit.isOffensiveUnit()) {
+							alarm += unit.unitType.getBaseOffence(); 
+						}
+					}
+					alarms.getAndIncrement(enemy, 0, alarm);
+				}
+			} else if (neighbourTile.hasSettlement() && neighbourTile.getSettlement().isColony()) {
+				Colony colony = neighbourTile.getSettlement().getColony();
+				alarms.getAndIncrement(colony.getOwner(), 0, ALARM_TILE_IN_USE + colony.getColonyUnitsCount());
+			} else if (neighbourTile.getOwner() != null) {
+				Player enemy = neighbourTile.getOwner();
+				if (neighbourTile.getOwner().isLiveEuropeanPlayer()) {
+					alarms.getAndIncrement(enemy, 0, ALARM_TILE_IN_USE);
+				}
+			}
+		}
     }
     
     @Override

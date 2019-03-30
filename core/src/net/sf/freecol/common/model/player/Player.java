@@ -1,10 +1,10 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
+import java.util.HashSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.xml.sax.SAXException;
 
@@ -87,7 +87,7 @@ public class Player extends ObjectWithId {
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
-    protected List<String> banMission = null;
+    protected Set<String> banMission = null;
     
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation, String name) {
     	Player player = new Player(idGenerator.nextId(Player.class));
@@ -267,6 +267,15 @@ public class Player extends ObjectWithId {
         stance.put(p.getId(), newStance);
     }
     
+    public void resetTension(Player p) {
+    	Tension tensionObj = tension.get(p.getId());
+    	if (tensionObj == null) {
+    		tensionObj = new Tension(Tension.TENSION_MIN);
+    	} else {
+    		tensionObj.setValue(Tension.TENSION_MIN);
+    	}
+    }
+    
     public void modifyTension(Player p, int val) {
 		if (val == 0) {
     		return;
@@ -297,13 +306,6 @@ public class Player extends ObjectWithId {
         return tensionObj;
     }
     
-    public void addMissionBan(Player player) {
-        if (banMission == null) {
-            banMission = new ArrayList<String>();
-        }
-        banMission.add(player.getId());
-    }
-    
     private void changePlayerType(PlayerType type) {
         if (playerType != PlayerType.REBEL && playerType != PlayerType.INDEPENDENT) {
             switch (type) {
@@ -318,11 +320,24 @@ public class Player extends ObjectWithId {
         }
         playerType = type;
     }
-    
-	public boolean missionsBanned(Player player) {
-    	return false;
+
+    public void addMissionBan(Player player) {
+        if (banMission == null) {
+            banMission = new HashSet<String>();
+        }
+        banMission.add(player.getId());
     }
     
+	public boolean missionsBanned(Player player) {
+		return banMission != null && banMission.contains(player.getId());
+    }
+    
+	public void removeMissionBan(Player player) {
+		if (banMission != null) {
+			banMission.remove(player.getId());
+		}
+	}
+	
     public boolean isIndian() {
         return playerType == PlayerType.NATIVE;
     }
@@ -751,7 +766,7 @@ public class Player extends ObjectWithId {
         	}
         	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
         	    if (nodeObject.banMission == null) {
-        	        nodeObject.banMission = new ArrayList<String>();
+        	        nodeObject.banMission = new HashSet<String>();
         	    }
         	    nodeObject.banMission.add(attr.getStrAttributeNotNull(ATTR_PLAYER));
         	}

@@ -127,6 +127,26 @@ public class FoundingFathers {
 					colony.ifPossibleAddFreeBuilding(buildingType);
 				}
 			}
+			
+			if (ffEvent.equalsId("model.event.resetNativeAlarm")) {
+				for (Player p : game.players.entities()) {
+					if (p.isLiveIndianPlayer() && player.hasContacted(p)) {
+						p.resetTension(player);
+						for (Settlement indianSettlements : p.settlements.entities()) {
+							indianSettlements.getIndianSettlement().setTension(player, Tension.TENSION_MIN);
+						}
+						p.changeStance(player, Stance.PEACE);
+					}
+				}
+			}
+			
+			if (ffEvent.equalsId("model.event.resetBannedMissions")) {
+				for (Player p : game.players.entities()) {
+					if (p.isLiveIndianPlayer() && player.hasContacted(p)) {
+						p.removeMissionBan(player);
+					}
+				}
+			}
 		}
 		
 		if (player.getEurope() != null ) {
