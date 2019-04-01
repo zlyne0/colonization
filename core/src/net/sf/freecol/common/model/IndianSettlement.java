@@ -183,7 +183,7 @@ public class IndianSettlement extends Settlement {
 			}
 			
 			Level newLevel = getTension(enemy).getLevel();
-			if (newLevel.worst(oldTension.get(enemy))) {
+			if (owner.hasContacted(enemy) && newLevel.worst(oldTension.get(enemy))) {
 				String key = "indianSettlement.alarmIncrease.tension." + newLevel.name().toLowerCase();
 				if (Messages.containsKey(key)) {
 					StringTemplate st = StringTemplate.template(key)

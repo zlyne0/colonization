@@ -152,8 +152,16 @@ public class Modifier implements Identifiable {
 		return value;
 	}
 	
+	public void setValue(float value) {
+		this.value = value;
+	}
+	
 	public String getSourceId() {
 		return sourceId;
+	}
+	
+	public boolean equalsSourceId(Ability ability) {
+		return sourceId != null && ability != null && sourceId.equals(ability.getSourceId());
 	}
 	
 	public static class Xml extends XmlNodeParser<Modifier> {

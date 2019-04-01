@@ -96,7 +96,7 @@ public class MonarchActionNotificationDialog extends QuestionDialog {
         OptionAction<MonarchActionNotification> confirmAnswer = new OptionAction<MonarchActionNotification>() {
 			@Override
 			public void executeAction(MonarchActionNotification payload) {
-				MonarchLogic.lowerRax(player, payload);
+				MonarchLogic.lowerTax(player, payload);
 			}
 		};
 		addAnswer(ntfhy.getAction().noMsgKey(), confirmAnswer, ntfhy);

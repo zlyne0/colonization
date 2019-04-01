@@ -364,6 +364,10 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
     	return st;
     }
     
+    public List<Modifier> getModifiers(String code) {
+    	return modifiers.get(code);
+    }
+    
     public java.util.Map<String,List<Modifier>> getModifiers() {
     	return modifiers;
     }

@@ -459,6 +459,10 @@ public final class Ability implements Identifiable {
 		return value != v;
 	}
     
+    protected String getSourceId() {
+    	return source;
+    }
+    
     @Override
     public String toString() {
         StringBuilder sb = new StringBuilder(32);

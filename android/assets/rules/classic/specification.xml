@@ -2230,12 +2230,11 @@
     </founding-father>
     <founding-father id="model.foundingFather.thomasPaine" type="political"
                      weight1="1" weight2="2" weight3="8">
-      <ability id="model.ability.addTaxToBells" value="true"/>
+      <ability id="model.ability.addTaxToBells" source="model.foundingFather.thomasPaine" value="true"/>
       <!-- The value of the modifier is intentionally zero.  This
            modifier is used as a template and the value in the copy is
            set to the current tax. -->
-      <modifier id="model.goods.bells" index="40"
-                type="percentage" value="0">
+      <modifier id="model.goods.bells" source="model.foundingFather.thomasPaine" index="40" type="percentage" value="0">
         <scope ability-id="model.ability.person" matchNegated="true"/>
       </modifier>
     </founding-father>

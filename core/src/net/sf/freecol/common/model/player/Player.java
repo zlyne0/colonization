@@ -1,8 +1,10 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
@@ -597,8 +599,27 @@ public class Player extends ObjectWithId {
         return tax;
     }
 
-	protected void setTax(int tax) {
+	public void setTax(int tax) {
 		this.tax = tax;
+		recalculateBellBonus();
+	}
+	
+	private void recalculateBellBonus() {
+		List<Ability> abilities = new ArrayList<Ability>();
+		getFeatures().getAbilities(Ability.ADD_TAX_TO_BELLS, abilities);
+		
+		if (!abilities.isEmpty()) {
+			List<Modifier> bellsModifiers = getFeatures().getModifiers(GoodsType.BELLS);
+			if (bellsModifiers != null) {
+				for (Ability addTaxToBellsAbility : abilities) {
+					for (Modifier m : bellsModifiers) {
+						if (m.equalsSourceId(addTaxToBellsAbility)) {
+							m.setValue(this.tax);
+						}
+					}
+				}
+			}
+		}
 	}
     
 	public ObjectWithFeatures getFeatures() {
@@ -608,6 +629,7 @@ public class Player extends ObjectWithId {
 	public void addFoundingFathers(Game game, FoundingFather father) {
 		foundingFathers.add(game, father);
 		updatableFeatures.addFeatures(father);
+		recalculateBellBonus();
 		
 		for (Settlement settlement : settlements.entities()) {
 			if (settlement.isColony()) {
@@ -668,7 +690,8 @@ public class Player extends ObjectWithId {
 		} else {
 			foundingFathers.setPlayer(this);
 		}
-		updatableFeatures.addFeatures(foundingFathers.entities());			
+		updatableFeatures.addFeatures(foundingFathers.entities());
+		recalculateBellBonus();
 	}
 
 	public boolean isAi() {
