@@ -628,7 +628,6 @@ public class Player extends ObjectWithId {
 
 	public void addFoundingFathers(Game game, FoundingFather father) {
 		foundingFathers.add(game, father);
-		updatableFeatures.addFeatures(father);
 		recalculateBellBonus();
 		
 		for (Settlement settlement : settlements.entities()) {

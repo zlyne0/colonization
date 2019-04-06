@@ -190,8 +190,9 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 //				player.addFoundingFathers(guiGameModel.game,
 //					Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson")
 //				)
+				player.setTax(50)
 				player.addFoundingFathers(guiGameModel.game,
-					Specification.instance.foundingFathers.getById("model.foundingFather.laSalle")
+					Specification.instance.foundingFathers.getById("model.foundingFather.williamBrewster")
 				)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//FoundingFatherService().checkFoundingFathers(player)
@@ -200,7 +201,16 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				gameController.resetMapModel();
 				return true
 			}
+		},
+		object : Task("add immigration") {
+			override fun run(console: ConsoleOutput): Boolean {
+				var player = guiGameModel.game.playingPlayer
+				player.modifyImmigration(player.getImmigrationRequired() + 1)
+				player.getEurope().handleImmigrationOnNewTurn()
+				return true
+			}
 		}
+	
 	);
 
 	init {

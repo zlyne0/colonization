@@ -101,6 +101,7 @@ public class FoundingFathers {
 	protected void add(Game game, FoundingFather father) {
 		System.out.println("FoundingFathers[" + player.getId() + "].add " + father.getId());
 		foundingFathers.add(father);
+		player.getFeatures().addFeatures(father);
 		
 		// handle founding fathers events
 		for (FoundingFatherEvent ffEvent : father.events.entities()) {
@@ -145,6 +146,12 @@ public class FoundingFathers {
 					if (p.isLiveIndianPlayer() && player.hasContacted(p)) {
 						p.removeMissionBan(player);
 					}
+				}
+			}
+			
+			if (ffEvent.equalsId("model.event.newRecruits")) {
+				if (player.isLiveEuropeanPlayer()) {
+					player.getEurope().replaceNotRecruitableUnits();
 				}
 			}
 		}

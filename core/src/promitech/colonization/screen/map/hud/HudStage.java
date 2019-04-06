@@ -18,6 +18,7 @@ import com.badlogic.gdx.utils.viewport.Viewport;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.ChooseEmigrantToRecruitNotification;
 import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Notification;
@@ -602,6 +603,11 @@ public class HudStage extends Stage {
 				guiGameModel.game.playingPlayer, 
 				guiGameModel.game.getTurn()
 			);
+			HudStage.this.showDialog(dialog);
+		}
+		
+		if (notification instanceof ChooseEmigrantToRecruitNotification) {
+			ChooseEmigrantToRecruitDialog dialog = new ChooseEmigrantToRecruitDialog(guiGameModel.game.playingPlayer);
 			HudStage.this.showDialog(dialog);
 		}
 	}
