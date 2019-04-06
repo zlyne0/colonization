@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -325,7 +326,7 @@ public class Player extends ObjectWithId {
 
     public void addMissionBan(Player player) {
         if (banMission == null) {
-            banMission = new HashSet<String>();
+            banMission = new LinkedHashSet<String>();
         }
         banMission.add(player.getId());
     }
@@ -788,7 +789,7 @@ public class Player extends ObjectWithId {
         	}
         	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
         	    if (nodeObject.banMission == null) {
-        	        nodeObject.banMission = new HashSet<String>();
+        	        nodeObject.banMission = new LinkedHashSet<String>();
         	    }
         	    nodeObject.banMission.add(attr.getStrAttributeNotNull(ATTR_PLAYER));
         	}

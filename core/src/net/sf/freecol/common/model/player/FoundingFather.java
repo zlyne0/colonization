@@ -2,7 +2,10 @@ package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -38,6 +41,7 @@ public class FoundingFather extends ObjectWithFeatures {
     
     public final MapIdEntities<FoundingFatherEvent> events = new MapIdEntities<FoundingFatherEvent>();
     private List<String> unitTypes = new ArrayList<String>();
+    private Map<String,String> upgrades; 
     
     public FoundingFather(String id, FoundingFatherType type) {
         super(id);
@@ -60,15 +64,22 @@ public class FoundingFather extends ObjectWithFeatures {
 		return unitTypes;
 	}
     
+	public Map<String, String> getUpgrades() {
+		return upgrades;
+	}
+	
     public String toString() {
     	return getId();
     }
     
     public static class Xml extends XmlNodeParser<FoundingFather> {
 
-        private static final String ATTR_WEIGHT_PREFIX = "weight";
+        private static final String ATTR_TO_ID = "to-id";
+		private static final String ATTR_FROM_ID = "from-id";
+		private static final String ATTR_WEIGHT_PREFIX = "weight";
 		private static final String ATTR_TYPE = "type";
 		private static final String ELEMENT_UNIT = "unit";
+		private static final String ELEMENT_UPGRADE = "upgrade";
 
 		public Xml() {
             addNode(Modifier.class, ObjectWithFeatures.OBJECT_MODIFIER_NODE_SETTER);
@@ -104,12 +115,26 @@ public class FoundingFather extends ObjectWithFeatures {
 				attr.set(ATTR_ID, unitTypeId);
 				attr.xml.pop();
 			}
+			if (ff.upgrades != null) {
+				for (Entry<String, String> upgradeEntry : ff.upgrades.entrySet()) {
+					attr.xml.element(ELEMENT_UPGRADE);
+					attr.set(ATTR_FROM_ID, upgradeEntry.getKey());
+					attr.set(ATTR_TO_ID, upgradeEntry.getValue());
+					attr.xml.pop();
+				}
+			}
         }
         
         @Override
     	public void startReadChildren(XmlNodeAttributes attr) {
 			if (attr.isQNameEquals(ELEMENT_UNIT)) {
 				nodeObject.unitTypes.add(attr.getId());
+			}
+			if (attr.isQNameEquals(ELEMENT_UPGRADE)) {
+				if (nodeObject.upgrades == null) {
+					nodeObject.upgrades = new HashMap<String, String>();
+				}
+				nodeObject.upgrades.put(attr.getStrAttribute(ATTR_FROM_ID), attr.getStrAttribute(ATTR_TO_ID));
 			}
     	}
         

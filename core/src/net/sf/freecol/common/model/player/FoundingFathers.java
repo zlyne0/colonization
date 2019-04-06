@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -12,7 +13,9 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Turn;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -159,6 +162,18 @@ public class FoundingFathers {
 		if (player.getEurope() != null ) {
 			for (String unitTypeId : father.getUnitTypes()) {
 				UnitFactory.create(unitTypeId, player, player.getEurope());
+			}
+		}
+		
+		if (father.getUpgrades() != null) {
+			for (Entry<String, String> upgradeEntry : father.getUpgrades().entrySet()) {
+				String fromUnitTypeId = upgradeEntry.getKey();
+				UnitType toUnitType = Specification.instance.unitTypes.getById(upgradeEntry.getValue());
+				for (Unit unit : player.units.entities()) {
+					if (unit.unitType.equalsId(fromUnitTypeId)) {
+						unit.changeUnitType(toUnitType);
+					}
+				}
 			}
 		}
 	}

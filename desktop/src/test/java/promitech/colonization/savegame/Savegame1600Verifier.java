@@ -370,6 +370,11 @@ public class Savegame1600Verifier {
         
         FoundingFather johnPaulJones = specification.foundingFathers.getById("model.foundingFather.johnPaulJones");
         assertThat(johnPaulJones.getUnitTypes()).containsExactly("model.unit.frigate");
+        
+        FoundingFather bartolomeDeLasCasas = specification.foundingFathers.getById("model.foundingFather.bartolomeDeLasCasas");
+        assertThat(bartolomeDeLasCasas.getUpgrades())
+        	.hasSize(1)
+        	.containsEntry("model.unit.indianConvert", "model.unit.freeColonist");
     }
 
 	private void verifyNationTypes(Specification specification) {

@@ -182,7 +182,6 @@ public class ColonyProductionTest {
 
         // move statesment from townHall to tile 
         Unit unit = dutch.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType("model.building.townHall");
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
@@ -237,7 +236,6 @@ public class ColonyProductionTest {
 
         // move statesment from townHall to tile 
         Unit unit = dutch.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType(BuildingType.TOWN_HALL);
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         

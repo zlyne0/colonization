@@ -192,7 +192,7 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 //				)
 				player.setTax(50)
 				player.addFoundingFathers(guiGameModel.game,
-					Specification.instance.foundingFathers.getById("model.foundingFather.williamBrewster")
+					Specification.instance.foundingFathers.getById("model.foundingFather.bartolomeDeLasCasas")
 				)
 				//gameController.showDialog(ChooseFoundingFatherDialog(player, guiGameModel.game.turn))
 				//FoundingFatherService().checkFoundingFathers(player)
