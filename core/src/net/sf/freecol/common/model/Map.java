@@ -186,6 +186,21 @@ public class Map extends ObjectWithId {
 		return ll;
 	}
 	
+	public Colony findColonyInRange(final Tile tile, final int radius, final Player colonyOwner) {
+		Tile colonyTile = tiles.findFirst(tile.x, tile.y, radius, new Predicate<Tile>() {
+			@Override
+			public boolean test(Tile t) {
+				return t.hasSettlement() 
+					&& t.getSettlement().isColony() 
+					&& t.getSettlement().getOwner().equalsId(colonyOwner);
+			}
+		});
+		if (colonyTile == null) {
+			return null;
+		}
+		return colonyTile.getSettlement().getColony();
+	}
+	
 	public boolean hasColonyInRange(Tile tile, int radius) {
 		if (tile.hasSettlement() && tile.getSettlement().isColony()) {
 			return true;

@@ -67,6 +67,7 @@ public class GameLogic {
         	if (settlement.isIndianSettlement()) {
         		IndianSettlement indianSettlement = settlement.getIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);
+        		indianSettlement.conversion(guiGameModel.game.map);
         	}
 			if (!settlement.isColony()) {
 				continue;

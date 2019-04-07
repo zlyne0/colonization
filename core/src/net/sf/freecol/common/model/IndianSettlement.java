@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -24,6 +26,9 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class IndianSettlement extends Settlement {
 
+    /** How far to search for a colony to add an Indian convert to. */
+    private static final int MAX_CONVERT_DISTANCE = 10;
+	
     private static final int ALARM_RADIUS = 2;
     private static final int ALARM_TILE_IN_USE = 2;
     private static final int ALARM_MISSIONARY_PRESENT = -10;
@@ -344,6 +349,53 @@ public class IndianSettlement extends Settlement {
 		return (IndianNationType)owner.nationType();
 	}
 	
+	public void conversion(Map map) {
+		if (!hasMissionary()) {
+			return;
+		}
+		
+		Unit missionary = getMissionary().unit;
+		float conversionSkill = missionary.unitType.applyModifier(Modifier.CONVERSION_SKILL, missionary.unitType.getSkill());
+		int alarm = Math.min(getTension(missionary.getOwner()).getValue(), Tension.TENSION_MAX);
+		int conversionAlarm = (int)missionary.unitType.applyModifier(Modifier.CONVERSION_ALARM_RATE, alarm);
+		int convert = convertProgress + (int)conversionSkill + (conversionAlarm - alarm);
+		
+		if (convert >= settlementType.getConvertThreshold() && (getUnits().size() + tile.getUnits().size() > 2)) {
+			Colony colony = map.findColonyInRange(tile, MAX_CONVERT_DISTANCE, missionary.getOwner()); 
+			if (colony == null) {
+				convertProgress = convert;
+				System.out.println("IndianConversion[" + getId() + "].no " + convert);
+				return;
+			}
+			System.out.println("IndianConversion[" + getId() + "].conversion " + convert + " to " + colony);
+			
+			convertToDest(colony.tile, missionary.getOwner());
+			colony.owner.eventsNotifications.addMessageNotification(
+				StringTemplate.template("model.colony.newConvert")
+					.addStringTemplate("%nation%", owner.getNationName())
+					.add("%colony%", colony.getName())
+			);
+		} else {
+			convertProgress = convert;
+			System.out.println("IndianConversion[" + getId() + "].no " + convert);
+		}
+	}
+
+    public Unit convertToDest(Tile toTile, Player toPlayer) {
+		List<Unit> units = new ArrayList<Unit>();
+		units.addAll(tile.getUnits().entities());
+		units.addAll(getUnits().entities());
+		
+		Unit convert = Randomizer.instance().randomMember(units);
+		convert.changeOwner(toPlayer);
+		convert.changeUnitType(ChangeType.CONVERSION);
+		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+        convert.reduceMovesLeftToZero();
+        convert.setState(Unit.UnitState.ACTIVE);
+        convert.changeUnitLocation(toTile);
+    	return convert;
+    }
+	
     public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
@@ -556,5 +608,9 @@ public class IndianSettlement extends Settlement {
 	
 	public List<GoodsType> getWantedGoods() {
 		return wantedGoods;
+	}
+
+	public void setConvertProgress(int convertProgress) {
+		this.convertProgress = convertProgress;
 	}
 }

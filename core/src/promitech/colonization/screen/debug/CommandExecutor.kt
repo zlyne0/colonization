@@ -209,8 +209,14 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				player.getEurope().handleImmigrationOnNewTurn()
 				return true
 			}
+		},
+		object : Task("add conversion") {
+			override fun run(console: ConsoleOutput): Boolean {
+				var tile = guiGameModel.game.map.getTile(19, 78)
+				tile.getSettlement().getIndianSettlement().setConvertProgress(100)
+				return true
+			}
 		}
-	
 	);
 
 	init {
