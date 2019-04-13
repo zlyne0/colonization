@@ -26,6 +26,7 @@ class IndianSettlementChip {
 	
 	private final String msg;
 	private final IndianSettlement indianSettlement;
+	private final boolean missionaryExpert;
 	private Player mostHatedPlayer;
 	private float tenstionLevel; 
 	
@@ -39,6 +40,12 @@ class IndianSettlementChip {
 			mostHatedPlayer = players.getById(playerTension.getKey());
 			float levelVal = Math.min(playerTension.getValue().getValue(), Tension.Level.HATEFUL.getLimit());
 			tenstionLevel = (levelVal / (float)Tension.Level.HATEFUL.getLimit()) * BOX_HEIGHT;
+		}
+		
+		if (indianSettlement.hasMissionary()) {
+			missionaryExpert = indianSettlement.getMissionary().isMissionaryExpert();
+		} else {
+			missionaryExpert = false;
 		}
 	}
 	
@@ -55,7 +62,7 @@ class IndianSettlementChip {
 		IndianSettlementMissionary missionary = indianSettlement.getMissionary();
 		if (missionary != null) {
 			xOffset += BOX_WIDTH + 2;
-			drawMissionary(missionary, batch, shapeRenderer, cx + xOffset, cy);
+			drawMissionary(batch, shapeRenderer, cx + xOffset, cy);
 		}
 		if (mostHatedPlayer != null) {
 			xOffset += BOX_WIDTH + 2;
@@ -77,7 +84,6 @@ class IndianSettlementChip {
 	}
 	
 	private void drawMissionary(
-		IndianSettlementMissionary missionary,
 		Batch batch, ShapeRenderer shapeRenderer,
 		float cx, float cy
 	) {
@@ -89,7 +95,7 @@ class IndianSettlementChip {
 		batch.begin();
 		
 		Color crossColor = Color.GRAY;
-		if (missionary.isMissionaryExpert()) {
+		if (missionaryExpert) {
 			crossColor = Color.BLACK;
 		}
 		
