@@ -6,29 +6,19 @@ import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.DI
-import promitech.colonization.GameCreator
 import promitech.colonization.ai.AILogicDebugRun
 import promitech.colonization.ai.BuildColony
 import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.map.MapActor
-import promitech.colonization.screen.map.hud.FirstContactDialog
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.IndianSettlement
-import net.sf.freecol.common.model.Game
-import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.UnitRole
 import promitech.colonization.orders.diplomacy.FirstContactService
-import promitech.colonization.orders.move.MoveContext
-import promitech.colonization.screen.ChooseFoundingFatherDialog
-import promitech.colonization.screen.FoundingFatherService
-import net.sf.freecol.common.model.player.RecruitFoundingFatherNotification
-import net.sf.freecol.common.model.player.FoundingFather
-import promitech.colonization.screen.ContinentalCongress
+import promitech.colonization.screen.ff.ContinentalCongress
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean

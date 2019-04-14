@@ -30,7 +30,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
-import promitech.colonization.screen.ChooseFoundingFatherDialog;
+import promitech.colonization.screen.ff.ChooseFoundingFatherDialog;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.GUIGameModel.ChangeStateListener;

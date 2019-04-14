@@ -1,4 +1,4 @@
-package promitech.colonization.screen;
+package promitech.colonization.screen.ff;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -65,11 +65,12 @@ public class FoundingFatherService {
 			}
 			ffToChoose.add(new RandomChoice<FoundingFather>(entry.getValue(), (int)weight));
 		}
-		
-		RandomChoice<FoundingFather> one = Randomizer.instance().randomOne(ffToChoose);
-		player.foundingFathers.setCurrentFoundingFather(ff);
-		
-		System.out.println("FoundingFathers[" + player.getId() + "].aiChoose " + one.probabilityObject());
+
+		if (!ffToChoose.isEmpty()) {
+            RandomChoice<FoundingFather> one = Randomizer.instance().randomOne(ffToChoose);
+            player.foundingFathers.setCurrentFoundingFather(one.probabilityObject());
+            System.out.println("FoundingFathers[" + player.getId() + "].aiChoose " + one.probabilityObject());
+        }
 	}
 	
 	private float chooseFoundFatherWeight(Player player, FoundingFatherType fft) {

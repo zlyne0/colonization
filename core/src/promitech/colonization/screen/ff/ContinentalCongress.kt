@@ -1,4 +1,4 @@
-package promitech.colonization.screen
+package promitech.colonization.screen.ff
 
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
@@ -74,7 +74,7 @@ class ContinentalCongress(val player : Player)
                 .row()
 
             val ffInfoPanel = FoundingFatherInfoPanel(skin)
-            ffInfoPanel.update(current.getType(), current)
+            ffInfoPanel.update(current)
             ffInfoList.add(ffInfoPanel).row()
         } else {
             println("ContinentalCongress[${player.id}].noCurrentFoundingFather")
@@ -93,17 +93,17 @@ class ContinentalCongress(val player : Player)
         for (ffType: FoundingFatherType in ffs.keySet()) {
             val ffTypeButton = TextButton(Messages.msg(ffType.msgKey()), skin)
             ffTypeButton.addListener { _, _ ->
-                updateInfoList(ffType, ffs.get(ffType))
+                updateInfoList(ffs.get(ffType))
             }
             typeButtons.add(ffTypeButton).padLeft(10f)
         }
     }
 
-    private fun updateInfoList(ffType : FoundingFatherType, foundingFathers : List<FoundingFather>) {
+    private fun updateInfoList(foundingFathers : List<FoundingFather>) {
 		ffInfoList.clear()
 		for (ff in foundingFathers) {
 			val ffInfoPanel = FoundingFatherInfoPanel(skin)
-			ffInfoPanel.update(ffType, ff)
+			ffInfoPanel.update(ff)
 			ffInfoList.add(ffInfoPanel).row()
 		}
         infoListScrollPane.setScrollPercentY(0f)

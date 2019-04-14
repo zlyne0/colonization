@@ -28,7 +28,7 @@ import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
-import promitech.colonization.screen.FoundingFatherService;
+import promitech.colonization.screen.ff.FoundingFatherService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 import promitech.map.isometric.IterableSpiral;
@@ -122,7 +122,7 @@ public class GameLogic {
 		}
 	}
 
-	public void newTurnForUnit(Unit unit) {
+	private void newTurnForUnit(Unit unit) {
 		unit.resetMovesLeftOnNewTurn();
 		switch (unit.getState()) {
 			case IMPROVING:
