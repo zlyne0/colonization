@@ -3,7 +3,6 @@ package net.sf.freecol.common.model.player;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
@@ -605,7 +604,7 @@ public class Player extends ObjectWithId {
 		recalculateBellBonus();
 	}
 	
-	private void recalculateBellBonus() {
+	protected void recalculateBellBonus() {
 		List<Ability> abilities = new ArrayList<Ability>();
 		getFeatures().getAbilities(Ability.ADD_TAX_TO_BELLS, abilities);
 		
@@ -629,15 +628,6 @@ public class Player extends ObjectWithId {
 
 	public void addFoundingFathers(Game game, FoundingFather father) {
 		foundingFathers.add(game, father);
-		recalculateBellBonus();
-		
-		for (Settlement settlement : settlements.entities()) {
-			if (settlement.isColony()) {
-				Colony colony = settlement.getColony();
-				colony.updateColonyFeatures();
-				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-			}
-		}
 	}
 
 	public int getEntryLocationX() {

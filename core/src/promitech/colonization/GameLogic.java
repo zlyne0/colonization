@@ -28,7 +28,6 @@ import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
-import promitech.colonization.screen.ff.FoundingFatherService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 import promitech.map.isometric.IterableSpiral;
@@ -54,7 +53,7 @@ public class GameLogic {
 		System.out.println("newTurn for player " + player);
 
 		if (player.isEuropean()) {
-        	new FoundingFatherService().checkFoundingFathers(guiGameModel.game, player);
+			player.foundingFathers.checkFoundingFathers(guiGameModel.game);
 		}
 		// copy units for safety remove
 		playerUnits.clear();

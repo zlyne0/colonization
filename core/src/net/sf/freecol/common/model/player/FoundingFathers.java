@@ -1,8 +1,10 @@
 package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -20,12 +22,15 @@ import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import net.sf.freecol.common.util.MapList;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class FoundingFathers {
 
@@ -78,14 +83,17 @@ public class FoundingFathers {
 		return ff;
 	}
     
+	public void fullFillLibertyForFoundingFather() {
+		this.liberty = remainingFoundingFatherCost();
+	}
+	
 	private int remainingFoundingFatherCost() {
 		int base = Specification.options.getIntValue(GameOptions.FOUNDING_FATHER_FACTOR);
 		int count = foundingFathers.size();
 		return (count == 0) ? base : 2 * (count + 1) * base + 1;
 	}
 
-	public FoundingFather checkAddNewFoundingFathers() {
-		FoundingFather newFoundingFather = null;
+	private FoundingFather checkAddNewFoundingFathers() {
 		int fatherCost = remainingFoundingFatherCost();
 		int remainingCost = fatherCost - liberty;
 		
@@ -100,13 +108,14 @@ public class FoundingFathers {
 			} else {
 				liberty = 0;
 			}
-			newFoundingFather = currentFoundingFather;
+			FoundingFather newFoundingFather = currentFoundingFather;
 			currentFoundingFather = null;
+			return newFoundingFather;
 		}
-		return newFoundingFather;
+		return null;
 	}
 
-	void modifyLiberty(int libertyAmount) {
+	protected void modifyLiberty(int libertyAmount) {
 		this.liberty = Math.max(0, this.liberty + libertyAmount);
 	}
 
@@ -115,6 +124,20 @@ public class FoundingFathers {
 		foundingFathers.add(father);
 		player.getFeatures().addFeatures(father);
 		
+		handleEvents(game, father);
+		
+		player.recalculateBellBonus();
+		
+		for (Settlement settlement : player.settlements.entities()) {
+			if (settlement.isColony()) {
+				Colony colony = settlement.getColony();
+				colony.updateColonyFeatures();
+				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+			}
+		}
+	}
+
+	private void handleEvents(Game game, FoundingFather father) {
 		// handle founding fathers events
 		for (FoundingFatherEvent ffEvent : father.events.entities()) {
 			if (ffEvent.equalsId("model.event.boycottsLifted")) {
@@ -187,7 +210,7 @@ public class FoundingFathers {
 		}
 	}
 	
-	public boolean canRecruitFoundingFather() {
+	private boolean canRecruitFoundingFather() {
 		if (player.isRebel() || player.isIndependent()) {
 			if (!Specification.options.getBoolean(GameOptions.CONTINUE_FOUNDING_FATHER_RECRUITMENT)) {
 				return false;
@@ -232,7 +255,7 @@ public class FoundingFathers {
 		return currentFoundingFather;
 	}
 
-	public void setPlayer(Player player) {
+	protected void setPlayer(Player player) {
 		this.player = player;
 	}
 	
@@ -249,6 +272,95 @@ public class FoundingFathers {
 		} else {
 			return "" + liberty + "+" + bellsPerTurn +" / " + fatherCost + " (Turns: never)";
 		}
+	}
+	
+	public void checkFoundingFathers(Game game) {
+		if (canRecruitFoundingFather()) {
+			System.out.println("FoundingFathers[" + player.getId() + "].generate");
+			if (player.isAi()) {
+				chooseFoundingFatherForAI(game.getTurn());
+			} else {
+				player.eventsNotifications.addMessageNotification(new RecruitFoundingFatherNotification());
+			}
+		} else {
+			FoundingFather foundingFather = checkAddNewFoundingFathers();
+			if (foundingFather != null) {
+				System.out.println("FoundingFathers[" + player.getId() + "].add " + foundingFather);
+				
+				if (player.isHuman()) {
+					StringTemplate st = StringTemplate.template("model.player.foundingFatherJoinedCongress")
+						.addKey("%foundingFather%", Messages.nameKey(foundingFather))
+						.addKey("%description%", Messages.descriptionKey(foundingFather));
+					player.eventsNotifications.addMessageNotification(st);
+				}
+				add(game, foundingFather);
+			}
+		}
+	}
+	
+	private void chooseFoundingFatherForAI(Turn turn) {
+		Map<FoundingFatherType, FoundingFather> ffs = generateRandomFoundingFathers(turn);
+		
+		// for ai always PETER_STUYVESANT
+		FoundingFather ff = ffs.get(FoundingFatherType.TRADE);
+		if (ff != null && ff.equalsId(FoundingFather.PETER_STUYVESANT)) {
+			setCurrentFoundingFather(ff);
+			System.out.println("FoundingFathers[" + player.getId() + "].aiChoose " + ff);
+			return;
+		}
+		int ages = turn.getAges();
+		
+		List<RandomChoice<FoundingFather>> ffToChoose = new ArrayList<RandomChoice<FoundingFather>>(ffs.size());
+		for (Entry<FoundingFatherType, FoundingFather> entry : ffs.entrySet()) {
+			float weight = entry.getValue().weightByAges(ages) * chooseFoundFatherWeight(player, entry.getKey());
+			
+			if (entry.getValue().equalsId("model.foundingFather.jacobFugger") && player.market().arrearsCount() <= 4) {
+				continue;
+			}
+			ffToChoose.add(new RandomChoice<FoundingFather>(entry.getValue(), (int)weight));
+		}
+
+		if (!ffToChoose.isEmpty()) {
+            RandomChoice<FoundingFather> one = Randomizer.instance().randomOne(ffToChoose);
+            currentFoundingFather = one.probabilityObject();
+            System.out.println("FoundingFathers[" + player.getId() + "].aiChoose " + one.probabilityObject());
+        }
+	}
+	
+	private float chooseFoundFatherWeight(Player player, FoundingFatherType fft) {
+		if (player.nationType().equalsId(NationType.TRADE)) {
+			if (fft == FoundingFatherType.TRADE) {
+				return 2.0f;
+			}
+			if (fft == FoundingFatherType.EXPLORATION) {
+				return 1.7f;
+			}
+		}
+		if (player.nationType().equalsId(NationType.CONQUEST)) {
+			if (fft == FoundingFatherType.MILITARY) {
+				return 2.0f;
+			}
+			if (fft == FoundingFatherType.RELIGIOUS) {
+				return 1.7f;
+			}
+		}
+		if (player.nationType().equalsId(NationType.COOPERATION)) {
+			if (fft == FoundingFatherType.RELIGIOUS) {
+				return 2.0f;
+			}
+			if (fft == FoundingFatherType.TRADE) {
+				return 1.7f;
+			}
+		}
+		if (player.nationType().equalsId(NationType.IMMIGRATION)) {
+			if (fft == FoundingFatherType.POLITICAL) {
+				return 2.0f;
+			}
+			if (fft == FoundingFatherType.MILITARY) {
+				return 1.7f;
+			}
+		}
+		return 1.0f;
 	}
 	
 	public static class Xml extends XmlNodeParser<FoundingFathers> {

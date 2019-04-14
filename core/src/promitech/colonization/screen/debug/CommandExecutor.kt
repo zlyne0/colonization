@@ -168,6 +168,12 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 				return true
 			}
 		},
+		object : Task("add liberty for founding father") {
+			override fun run(console: ConsoleOutput): Boolean {
+				guiGameModel.game.playingPlayer.foundingFathers.fullFillLibertyForFoundingFather()
+				return true
+			}
+		},
 		object : Task("foundingFather") {
 			override fun run(console: ConsoleOutput): Boolean {
 				val player = guiGameModel.game.playingPlayer
