@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import net.sf.freecol.common.util.MapList;
 import promitech.colonization.Randomizer;
@@ -36,8 +37,16 @@ public class FoundingFathers {
     private FoundingFathers() {
     }
     
-    public FoundingFathers(Player player) {
+    FoundingFathers(Player player) {
     	this.player = player;
+    }
+    
+    public MapList<FoundingFatherType, FoundingFather> foundingFathersByType() {
+    	MapList<FoundingFatherType, FoundingFather> ffs = new MapList<FoundingFather.FoundingFatherType, FoundingFather>();
+    	for (FoundingFather ff : foundingFathers.entities()) {
+    		ffs.add(ff.getType(), ff);
+    	}
+    	return ffs;
     }
     
 	public Map<FoundingFatherType, FoundingFather> generateRandomFoundingFathers(Turn turn) {
@@ -69,7 +78,7 @@ public class FoundingFathers {
 		return ff;
 	}
     
-	public int remainingFoundingFatherCost() {
+	private int remainingFoundingFatherCost() {
 		int base = Specification.options.getIntValue(GameOptions.FOUNDING_FATHER_FACTOR);
 		int count = foundingFathers.size();
 		return (count == 0) ? base : 2 * (count + 1) * base + 1;
@@ -97,7 +106,7 @@ public class FoundingFathers {
 		return newFoundingFather;
 	}
 
-	public void modifyLiberty(int libertyAmount) {
+	void modifyLiberty(int libertyAmount) {
 		this.liberty = Math.max(0, this.liberty + libertyAmount);
 	}
 
@@ -219,8 +228,27 @@ public class FoundingFathers {
 		this.currentFoundingFather = currentFoundingFather;
 	}
 
+	public FoundingFather getCurrentFoundingFather() {
+		return currentFoundingFather;
+	}
+
 	public void setPlayer(Player player) {
 		this.player = player;
+	}
+	
+	public String progressStr() {
+		int bellsPerTurn = 0;
+		for (Settlement settlement : player.settlements.entities()) {
+			bellsPerTurn += settlement.getColony().productionSummary().getQuantity(GoodsType.BELLS);
+		}
+		int fatherCost = remainingFoundingFatherCost();
+
+		if (bellsPerTurn > 0) {
+			int turns = (fatherCost - liberty) / bellsPerTurn;
+			return "" + liberty + "+" + bellsPerTurn +" / " + fatherCost + " (Turns: " + turns + ")";
+		} else {
+			return "" + liberty + "+" + bellsPerTurn +" / " + fatherCost + " (Turns: never)";
+		}
 	}
 	
 	public static class Xml extends XmlNodeParser<FoundingFathers> {

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 public class MapList<K, V> {
 	private Map<K, List<V>> map = new LinkedHashMap<K, List<V>>();
@@ -15,6 +16,10 @@ public class MapList<K, V> {
 			map.put(key, list);
 		}
 		list.add(value);
+	}
+	
+	public Set<K> keySet() {
+		return map.keySet();
 	}
 	
 	public boolean containsKey(K key) {

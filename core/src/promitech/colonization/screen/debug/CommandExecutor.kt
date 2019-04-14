@@ -28,6 +28,7 @@ import promitech.colonization.screen.ChooseFoundingFatherDialog
 import promitech.colonization.screen.FoundingFatherService
 import net.sf.freecol.common.model.player.RecruitFoundingFatherNotification
 import net.sf.freecol.common.model.player.FoundingFather
+import promitech.colonization.screen.ContinentalCongress
 
 abstract class Task(var cmd: String) {
 	abstract fun run(console: ConsoleOutput) : Boolean
@@ -214,6 +215,22 @@ class CommandExecutor(var di: DI, val mapActor: MapActor) {
 			override fun run(console: ConsoleOutput): Boolean {
 				var tile = guiGameModel.game.map.getTile(19, 78)
 				tile.getSettlement().getIndianSettlement().setConvertProgress(100)
+				return true
+			}
+		},
+		object : Task("show continental congress") {
+			override fun run(console: ConsoleOutput): Boolean {
+				gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
+				return true
+			}
+		},
+		object : Task("add all founding fathers") {
+			override fun run(console: ConsoleOutput): Boolean {
+				val player = guiGameModel.game.playingPlayer
+				for (ff in Specification.instance.foundingFathers.entities()) {
+					player.addFoundingFathers(guiGameModel.game, ff)
+				}
+				gameController.resetMapModel();
 				return true
 			}
 		}
