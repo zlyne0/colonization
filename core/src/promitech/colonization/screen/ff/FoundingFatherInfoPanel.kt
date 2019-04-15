@@ -10,7 +10,7 @@ import net.sf.freecol.common.model.player.FoundingFather
 import promitech.colonization.GameResources
 import promitech.colonization.ui.resources.Messages
 
-class FoundingFatherInfoPanel(val panelSkin : Skin) : Table() {
+internal class FoundingFatherInfoPanel(val panelSkin : Skin) : Table() {
 	val nameLabel = Label("", panelSkin)
 	val ffImage = Image()
 

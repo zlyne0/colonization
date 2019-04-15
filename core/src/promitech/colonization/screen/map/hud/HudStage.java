@@ -541,7 +541,9 @@ public class HudStage extends Stage {
 					
 					if (unit.unitType.isNaval() || unit.unitType.isWagonTrain()) {
 					} else {
-						buttonsGroup.addActor(fortifyButton);
+						if (unit.canChangeState(UnitState.FORTIFYING)) {
+							buttonsGroup.addActor(fortifyButton);
+						}
 						
 						buttonsGroup.addActor(buildColonyButton);
 						if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
