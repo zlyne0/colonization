@@ -105,13 +105,16 @@ public class GUIGameController {
 			mapActor.mapDrawModel().setSelectedUnit(null);
 			mapActor.mapDrawModel().unitPath = null;
 			guiGameModel.setActiveUnit(null);
-			mapActor.centerCameraOnTile(
-				guiGameModel.game.playingPlayer.getEntryLocationX(), 
-				guiGameModel.game.playingPlayer.getEntryLocationY()
-			);
 		}
 	}
 
+	public void centerMapOnEntryPoint() {
+		mapActor.centerCameraOnTile(
+			guiGameModel.game.playingPlayer.getEntryLocationX(), 
+			guiGameModel.game.playingPlayer.getEntryLocationY()
+		);
+	}
+	
 	public void nextActiveUnitAsGdxPostRunnable() {
         Gdx.app.postRunnable(new Runnable() {
             @Override
