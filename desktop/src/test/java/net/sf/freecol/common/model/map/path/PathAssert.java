@@ -38,4 +38,10 @@ public class PathAssert {
 		return this;
 	}
 	
+	public PathAssert isEmpty() {
+		if (path.tiles.size != 0) {
+			fail("expected path is empty but has " + path.tiles.size + " nodes");
+		}
+		return this;
+	}
 }

@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
@@ -225,5 +226,23 @@ public class PathFinderTest {
 			}
 		}
 		PathAssert.assertThat(path).lastStepEquals(destTile.x, destTile.y);
+	}
+	
+	@Test
+	public void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
+		// given
+		Tile startTile = game.map.getSafeTile(23, 70);
+    	Unit galleon = new Unit(
+			"tmp:buildColony:findToEurope:-1",
+			Specification.instance.unitTypes.getById(UnitType.GALLEON),
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+			game.playingPlayer
+		);
+    	
+		// when
+		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon);
+
+		// then
+		PathAssert.assertThat(pathToEurope).isEmpty();
 	}
 }

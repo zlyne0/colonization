@@ -72,9 +72,11 @@ public class ColonyFactory {
     	Path path = pathFinder.findToEurope(game.map, colony.tile, tmpGalleon, false);
 
     	boolean foundPath = false;
-    	Tile lastPathStep = path.tiles.peek();
-    	if (lastPathStep.getType().isHighSea()) {
-    		foundPath = true;
+    	if (!path.tiles.isEmpty()) {
+    		Tile lastPathStep = path.tiles.peek();
+    		if (lastPathStep.getType().isHighSea()) {
+    			foundPath = true;
+    		}
     	}
     	tmpGalleon.changeUnitLocation(colony.tile);
     	colony.getOwner().removeUnit(tmpGalleon);

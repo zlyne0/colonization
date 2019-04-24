@@ -217,6 +217,10 @@ public class PathFinder {
 			count++;
 		}
 
+		if (endPathNode == null) {
+			return new Path(moveUnit, startTile, startTile, 0);  
+		}
+		
 		Path path = new Path(moveUnit, startTile, endPathNode.tile, count);
 		n = begining;
 		while (n != null) {
