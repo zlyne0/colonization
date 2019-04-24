@@ -105,6 +105,10 @@ public class GUIGameController {
 			mapActor.mapDrawModel().setSelectedUnit(null);
 			mapActor.mapDrawModel().unitPath = null;
 			guiGameModel.setActiveUnit(null);
+			mapActor.centerCameraOnTile(
+				guiGameModel.game.playingPlayer.getEntryLocationX(), 
+				guiGameModel.game.playingPlayer.getEntryLocationY()
+			);
 		}
 	}
 
