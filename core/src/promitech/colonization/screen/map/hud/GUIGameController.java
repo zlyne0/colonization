@@ -108,6 +108,13 @@ public class GUIGameController {
 		}
 	}
 
+	public void centerMapOnEntryPoint() {
+		mapActor.centerCameraOnTile(
+			guiGameModel.game.playingPlayer.getEntryLocationX(), 
+			guiGameModel.game.playingPlayer.getEntryLocationY()
+		);
+	}
+	
 	public void nextActiveUnitAsGdxPostRunnable() {
         Gdx.app.postRunnable(new Runnable() {
             @Override

@@ -57,6 +57,7 @@ class MenuApplicationScreen (
 				GameCreator(pathFinder, guiGameModel).loadLastGame()
 			}, {
 				guiGameController.resetMapModel()
+				guiGameController.centerMapOnEntryPoint()
 				guiGameController.showMapScreenAndActiveNextUnit()
 			}).show(stage)
 		}
