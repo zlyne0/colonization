@@ -82,6 +82,7 @@ public class GameLogic {
 			colony.increaseColonySize();
 			colony.buildBuildings(newTurnContext);
 			
+			colony.exportGoods(guiGameModel.game);
 			colony.removeExcessedStorableGoods();
 			colony.handleLackOfResources(newTurnContext, guiGameModel.game);
 			colony.calculateSonsOfLiberty();

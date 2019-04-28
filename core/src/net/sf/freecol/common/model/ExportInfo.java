@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
-import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -15,8 +14,8 @@ public class ExportInfo extends ObjectWithId {
 	private int exportLevel = DEFAULT_LEVEL; 
 	private boolean export = DEFAULT_EXPORT_FLAG;
 	
-	public ExportInfo(GoodsType goodsType) {
-		super(goodsType.getId());
+	public ExportInfo(String goodsTypeId) {
+		super(goodsTypeId);
 	}
 
 	public boolean isNotDefaultSettings() {
@@ -39,13 +38,17 @@ public class ExportInfo extends ObjectWithId {
 		this.export = export;
 	}
 
+	public String toString() {
+		return getId() + " export: " + export + ", exportLevel: " + exportLevel;
+	}
+	
 	public static class Xml extends XmlNodeParser<ExportInfo> {
 		private static final String ATTR_EXPORT_LEVEL = "exportLevel";
 		private static final String ATTR_EXPORT_FLAG = "export";
 
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
-			nodeObject = new ExportInfo(attr.getEntityId(Specification.instance.goodsTypes));
+			nodeObject = new ExportInfo(attr.getId());
 			nodeObject.export = attr.getBooleanAttribute(ATTR_EXPORT_FLAG, DEFAULT_EXPORT_FLAG);
 			nodeObject.exportLevel = attr.getIntAttribute(ATTR_EXPORT_LEVEL, DEFAULT_LEVEL);
 		}

@@ -363,6 +363,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 					return;
 				}
 				WarehouseDialog dialog = new WarehouseDialog(shape, colony);
+				dialog.addOnCloseListener(new Runnable() {
+					@Override
+					public void run() {
+						warehousePanel.updateGoodsQuantity(colony);
+					}
+				});
 				dialog.show(stage);
 			}
 		});

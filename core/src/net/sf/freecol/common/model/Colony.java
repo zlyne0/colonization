@@ -1298,10 +1298,37 @@ public class Colony extends Settlement {
 	public ExportInfo exportInfo(GoodsType goodsType) {
 		ExportInfo info = exportInfos.getByIdOrNull(goodsType.getId());
 		if (info == null) {
-			info = new ExportInfo(goodsType);
+			info = new ExportInfo(goodsType.getId());
 			exportInfos.add(info);
 		}
 		return info;
+	}
+
+	public void exportGoods(Game game) {
+		if (!hasAbility(Ability.EXPORT)) {
+			return;
+		}
+		
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (!goodsType.isStorable()) {
+				continue;
+			}
+			ExportInfo exportInfo = exportInfo(goodsType);
+			if (!exportInfo.isExport() || !owner.market().canTradeInCustomHouse(game, owner, goodsType.getId())) {
+				continue;
+			}
+			int exportAmount = goodsContainer.goodsAmount(goodsType) - exportInfo.getExportLevel();
+			if (exportAmount <= 0) {
+				continue;
+			}
+			TransactionEffectOnMarket transaction = owner.market().sellGoods(game, owner, goodsType, exportAmount);
+			goodsContainer.decreaseGoodsQuantity(goodsType, exportAmount);
+			
+			System.out.println("exportGoods[" + owner.getId() + "].export " 
+				+ goodsType.getId() + " " + transaction.quantity 
+				+ " for price: " + transaction.netPrice
+			);
+		}
 	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
