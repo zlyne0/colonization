@@ -59,6 +59,16 @@ inline public fun Button.addListener(
 	
 }
 
+inline public fun Button.addListener(
+	crossinline listener : () -> Unit
+) : Button
+{
+	this.addListener(object : ChangeListener() {
+		override fun changed(event: ChangeListener.ChangeEvent?, actor: Actor?) = listener()
+	})
+	return this
+}
+
 inline public fun TextField.addKeyTypedListener(
 	crossinline listener : (textField: TextField?, c: Char) -> Unit 
 ) {

@@ -54,6 +54,7 @@ public class Colony extends Settlement {
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
+	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
     
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
@@ -1294,6 +1295,15 @@ public class Colony extends Settlement {
 		ifPossibleAddFreeBuildings();
 	}
 	
+	public ExportInfo exportInfo(GoodsType goodsType) {
+		ExportInfo info = exportInfos.getByIdOrNull(goodsType.getId());
+		if (info == null) {
+			info = new ExportInfo(goodsType);
+			exportInfos.add(info);
+		}
+		return info;
+	}
+	
     public static class Xml extends XmlNodeParser<Colony> {
         private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_PRODUCTION_BONUS = "productionBonus";
@@ -1315,6 +1325,22 @@ public class Colony extends Settlement {
 					xmlGenerator.generateXmlFromCollection(source.buildingQueue);
 				}
 			});
+        	
+        	addNode(ExportInfo.class, new ObjectFromNodeSetter<Colony, ExportInfo>() {
+				@Override
+				public void set(Colony target, ExportInfo entity) {
+					target.exportInfos.add(entity);
+				}
+
+				@Override
+				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<ExportInfo> xmlGenerator) throws IOException {
+					for (ExportInfo exportInfo : source.exportInfos.entities()) {
+						if (exportInfo.isNotDefaultSettings()) {
+							xmlGenerator.generateXml(exportInfo);
+						}
+					}
+				}
+        	});
         	
             addNode(GoodsContainer.class, "goodsContainer");
             addNodeForMapIdEntities("buildings", Building.class);

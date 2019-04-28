@@ -218,6 +218,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private GUIGameController guiGameController;
     private GUIGameModel guiGameModel;
 	private TextButton closeButton;
+	private TextButton warehouseButton;
 	private boolean colonySpyMode = false;
     
     private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
@@ -334,6 +335,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         Table buttons = new Table();
         buttons.add(createBuildQueueButton()).expandX().fillX().pad(10f);
+    	buttons.add(createWarehouseButton()).expandX().fillX().pad(10f);
         buttons.add(createCloseButton()).expandX().fillX().pad(10f);
         
         tableLayout.setFillParent(true);
@@ -349,6 +351,22 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		
         stage.addActor(tableLayout);
         //stage.setDebugAll(true);
+	}
+
+	private TextButton createWarehouseButton() {
+		String msg = Messages.msg("colonyPanel.warehouse");
+		warehouseButton = new TextButton(msg, GameResources.instance.getUiSkin());
+		warehouseButton.addListener(new ClickListener() {
+			@Override
+			public void clicked(InputEvent event, float x, float y) {
+				if (warehouseButton.isDisabled()) {
+					return;
+				}
+				WarehouseDialog dialog = new WarehouseDialog(shape, colony);
+				dialog.show(stage);
+			}
+		});
+		return warehouseButton;
 	}
 
 	private TextButton createBuildQueueButton() {
@@ -419,6 +437,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         populationPanel.update(colony);
         actualBuildableItemActor.updateBuildItem(colony);
+        
+    	warehouseButton.setDisabled(!colony.hasAbility(Ability.EXPORT));
     }
 	
     public void setColonySpyMode() {
