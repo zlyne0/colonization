@@ -218,7 +218,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
     private GUIGameController guiGameController;
     private GUIGameModel guiGameModel;
 	private TextButton closeButton;
-	private TextButton warehouseButton;
+	private TextButton customHouseButton;
 	private boolean colonySpyMode = false;
     
     private final ColonyUnitOrders colonyUnitOrders = new ColonyUnitOrders();
@@ -335,7 +335,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         
         Table buttons = new Table();
         buttons.add(createBuildQueueButton()).expandX().fillX().pad(10f);
-    	buttons.add(createWarehouseButton()).expandX().fillX().pad(10f);
+    	buttons.add(createCustomHouseButton()).expandX().fillX().pad(10f);
         buttons.add(createCloseButton()).expandX().fillX().pad(10f);
         
         tableLayout.setFillParent(true);
@@ -353,16 +353,16 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         //stage.setDebugAll(true);
 	}
 
-	private TextButton createWarehouseButton() {
-		String msg = Messages.msg("colonyPanel.warehouse");
-		warehouseButton = new TextButton(msg, GameResources.instance.getUiSkin());
-		warehouseButton.addListener(new ClickListener() {
+	private TextButton createCustomHouseButton() {
+		String msg = Messages.msg("model.building.customHouse.name");
+		customHouseButton = new TextButton(msg, GameResources.instance.getUiSkin());
+		customHouseButton.addListener(new ClickListener() {
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				if (warehouseButton.isDisabled()) {
+				if (customHouseButton.isDisabled()) {
 					return;
 				}
-				WarehouseDialog dialog = new WarehouseDialog(shape, colony);
+				CustomHouseDialog dialog = new CustomHouseDialog(shape, colony);
 				dialog.addOnCloseListener(new Runnable() {
 					@Override
 					public void run() {
@@ -372,7 +372,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 				dialog.show(stage);
 			}
 		});
-		return warehouseButton;
+		return customHouseButton;
 	}
 
 	private TextButton createBuildQueueButton() {
@@ -444,7 +444,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         populationPanel.update(colony);
         actualBuildableItemActor.updateBuildItem(colony);
         
-    	warehouseButton.setDisabled(!colony.hasAbility(Ability.EXPORT));
+    	customHouseButton.setDisabled(!colony.hasAbility(Ability.EXPORT));
     }
 	
     public void setColonySpyMode() {

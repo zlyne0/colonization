@@ -20,11 +20,11 @@ import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import promitech.colonization.ui.resources.StringTemplate
 
-class WarehouseDialog(
+class CustomHouseDialog(
 	val shape : ShapeRenderer,
 	val colony : Colony
 )
-	: ModalDialog<WarehouseDialog>(ModalDialogSize.def(), ModalDialogSize.height75())
+	: ModalDialog<CustomHouseDialog>(ModalDialogSize.def(), ModalDialogSize.height75())
 {
 	private val goodsListTable = Table()
 	
@@ -90,7 +90,7 @@ class WarehouseDialog(
 	fun okButton() : TextButton {
 		val okButton = TextButton(Messages.msg("ok"), skin)
 			okButton.addListener { ->
-			this@WarehouseDialog.hideWithFade()
+			this@CustomHouseDialog.hideWithFade()
 		}
 		return okButton
 	}
