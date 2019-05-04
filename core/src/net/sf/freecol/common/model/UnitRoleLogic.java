@@ -2,10 +2,14 @@ package net.sf.freecol.common.model;
 
 import static net.sf.freecol.common.model.UnitRole.DEFAULT_UNIT_ROLE_COUNT;
 
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class UnitRoleLogic {
 
+	private UnitRoleLogic() {
+	}
+	
 	public static int maximumAvailableRequiredGoods(final Unit unit, UnitRole newRole, GoodsContainer goodsContainer, ProductionSummary required) {
 		int maxRoleCount = DEFAULT_UNIT_ROLE_COUNT;
 		for (RequiredGoods g : newRole.requiredGoods.entities()) {
@@ -51,8 +55,25 @@ public class UnitRoleLogic {
 	    return required;
 	}
 	
+	public static int countRequiredGoodsToChangeRole(GoodsType goodsType, Unit unit, UnitRole newRole) {
+		int requiredAmount = 0;
+        for (RequiredGoods g : newRole.requiredGoods.entities()) {
+        	if (g.goodsType.equalsId(goodsType)) {
+        		requiredAmount += g.amount * newRole.getMaximumCount();
+        	}
+		}
+        for (RequiredGoods g : unit.unitRole.requiredGoods.entities()) {
+        	if (g.goodsType.equalsId(goodsType)) {
+        		requiredAmount -= g.amount * unit.roleCount;
+        	}
+        }
+        if (requiredAmount < 0) {
+        	requiredAmount = 0;
+        }
+		return requiredAmount;
+	}
+	
 	public static boolean hasContainerRequiredGoods(GoodsContainer container, UnitRole role) {
 		return container.hasGoodsQuantity(role.requiredGoods);
 	}
-	
 }

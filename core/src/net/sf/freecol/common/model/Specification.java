@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
@@ -170,6 +171,7 @@ public class Specification {
             if (unitType.isRecruitable()) {
             	unitTypeRecruitProbabilities.add(unitType.createRecruitProbability());
             }
+			updateGoodsTypeAsBuildingMaterials(unitType.requiredGoods);
         }
         
         immigrationGoodsTypeList.clear();
@@ -183,11 +185,20 @@ public class Specification {
 			if (ur.isOffensive()) {
 				militaryRoles.add(ur);
 			}
+			updateGoodsTypeAsBuildingMaterials(ur.requiredGoods);
 		}
-        
+        for (BuildingType buildingType : buildingTypes.entities()) {
+			updateGoodsTypeAsBuildingMaterials(buildingType.requiredGoods);
+		}
         createSupportUnitLists();
     }
 
+    private void updateGoodsTypeAsBuildingMaterials(MapIdEntities<RequiredGoods> requiredGoodsList) {
+		for (RequiredGoods requiredGoods : requiredGoodsList.entities()) {
+			requiredGoods.goodsType.setBuildingMaterial(true);
+		}
+    }
+    
 	private void updateEuropeanNations() {
         europeanNations.clear();
         for (Nation nation : nations.entities()) {

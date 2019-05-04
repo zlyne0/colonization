@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -15,7 +16,7 @@ public class ProductionSummary {
     
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
-	public static ProductionSummary EMPTY = new ProductionSummary();
+	public static final ProductionSummary EMPTY = new ProductionSummary();
 	
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
@@ -57,12 +58,18 @@ public class ProductionSummary {
 	    }
 	}
 
+	public void addGoods(Collection<? extends AbstractGoods> anAbstractGoods) {
+		for (AbstractGoods abstractGoods : anAbstractGoods) {
+			addGoods(abstractGoods);
+		}
+	}
+	
     public void addGoods(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() != 0) {
             goods.getAndIncrement(anAbstractGoods.getTypeId(), 0, anAbstractGoods.getQuantity());
         }
     }
-	
+    
     public void addGoods(ProductionSummary ps) {
         for (Entry<String> psEntry : ps.goods.entries()) {
             goods.getAndIncrement(psEntry.key, 0, psEntry.value);

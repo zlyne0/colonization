@@ -219,19 +219,20 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
 		return true;
 	}
 
+	/**
+	 * Method check whether ObjectWithFeature (this) is available to all places from arguments.
+	 */
     public boolean isAvailableTo(ObjectWithFeatures ... places) {
-        if (requiredAbilities != null) {
-            for (Ability aa : requiredAbilities.entities()) {
-                boolean found = false;
-            	for (int i=0; i<places.length; i++) {
-            		if (places[i].hasAbility(aa.getId())) {
-            			found = true;
-            			break;
-            		}
-            	}
-                if (aa.isValueNotEquals(found)) {
-                    return false;
-                }
+        for (Ability aa : requiredAbilities.entities()) {
+            boolean found = false;
+        	for (int i=0; i<places.length; i++) {
+        		if (places[i].hasAbility(aa.getId())) {
+        			found = true;
+        			break;
+        		}
+        	}
+            if (aa.isValueNotEquals(found)) {
+                return false;
             }
         }
         return true;

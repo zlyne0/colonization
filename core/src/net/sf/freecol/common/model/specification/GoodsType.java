@@ -32,12 +32,21 @@ public class GoodsType extends ObjectWithFeatures {
     boolean military;
     boolean ignoreLimit;
     boolean newWorldGoods;
+    /** Whether these are trade goods that can only be obtained in Europe. */
     boolean tradeGoods;
     boolean storable;
+    /**
+     * Whether this type of goods is required for building. (Derived
+     * attribute)
+     */
+    private boolean buildingMaterial = false;
     private String storedAs;
     private int breedingNumber;
     private int price;
+    /** What this goods type is made from. */
     private GoodsType madeFrom;
+    /** What this goods type can make.  (Derived attribute) */
+    private GoodsType makes;
 
     /** The initial market price difference for this type of goods. */
     private int priceDiff = 1;
@@ -84,6 +93,9 @@ public class GoodsType extends ObjectWithFeatures {
     
 	@Override
 	public boolean equals(Object obj) {
+		if (obj == null) {
+			return false;
+		}
 	    GoodsType gObj = (GoodsType)obj;
 	    return id.equals(gObj.id);
 	}
@@ -147,15 +159,20 @@ public class GoodsType extends ObjectWithFeatures {
     }
     
     public boolean isNewWorldOrigin() {
-    	return isNewWorldGoodsType() || getMadeFrom() != null && getMadeFrom().isNewWorldGoodsType();
+    	return isNewWorldGoodsType() || madeFrom != null && madeFrom.isNewWorldGoodsType();
     }
     
     public boolean isImmigrationType() {
         return hasModifier(Modifier.IMMIGRATION);
     }
     
-    public GoodsType getMadeFrom() {
-        return madeFrom;
+    /**
+     * Is this goods type made from somthing?
+     *
+     * @return True if this {@link GoodsType} is made from something.
+     */
+    public boolean isRefined() {
+        return madeFrom != null;
     }
     
     public boolean isFood() {
@@ -173,7 +190,40 @@ public class GoodsType extends ObjectWithFeatures {
 	public float getZeroProductionFactor() {
 		return zeroProductionFactor;
 	}
+
+	public boolean isMilitary() {
+		return military;
+	}
+
+	public boolean isTradeGoods() {
+		return tradeGoods;
+	}
 	
+    /**
+     * Is this type of goods required somewhere in the chain for
+     * producing a BuildableType, and is not itself buildable.
+     *
+     * @return True if a raw building type.
+     * @see BuildableType
+     */
+	public boolean isRawBuildingMaterial() {
+		if (madeFrom != null) {
+			return false;
+		}
+        GoodsType refinedType = makes;
+        while (refinedType != null) {
+            if (refinedType.buildingMaterial) {
+            	return true;
+            }
+            refinedType = refinedType.makes;
+        }
+        return false;
+	}
+	
+	public void setBuildingMaterial(boolean buildingMaterial) {
+		this.buildingMaterial = buildingMaterial;
+	}
+    
 	public static class Xml extends XmlNodeParser<GoodsType> {
 		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
 		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";
@@ -216,6 +266,7 @@ public class GoodsType extends ObjectWithFeatures {
             String madeFromStr = attr.getStrAttribute(ATTR_MADE_FROM);
             if (madeFromStr != null) {
             	gt.madeFrom = Specification.instance.goodsTypes.getById(madeFromStr);
+        		gt.madeFrom.makes = gt;
             }
             gt.productionWeight = attr.getFloatAttribute(ATTR_PRODUCTION_WEIGHT, DEFAULT_PRODUCTION_WEIGHT);
             gt.lowProductionThreshold = attr.getFloatAttribute(ATTR_LOW_PRODUCTION_THRESHOLD, DEFAULT_LOW_PRODUCTION_THRESHOLD);

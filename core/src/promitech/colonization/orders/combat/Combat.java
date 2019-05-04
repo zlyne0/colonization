@@ -701,7 +701,7 @@ class Combat {
 		}
 		
 		for (Unit settlementPlayerUnit : is.getOwner().units.entities()) {
-			if (is.equalsId(settlementPlayerUnit.getIndianSettlementId())) {
+			if (settlementPlayerUnit.isBelongToIndianSettlement(is)) {
 				settlementPlayerUnit.removeFromIndianSettlement();
 			}
 		}

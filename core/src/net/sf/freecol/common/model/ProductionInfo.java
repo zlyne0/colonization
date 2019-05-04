@@ -57,12 +57,20 @@ public class ProductionInfo {
 		return sum;
 	}
 	
-	public String toString() {
-		String st = "";
-		for (Production p : productions) {
-			st += p + "\n";
+	public void addUnattendedProductionToSummary(ProductionSummary ps) {
+		for (Production production : unattendedProductions) {
+			for (Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+				ps.addGoods(outputEntry.getKey().getId(), outputEntry.getValue());
+			}
 		}
-		return st;
+	}
+	
+	public String toString() {
+		StringBuilder st = new StringBuilder();
+		for (Production p : productions) {
+			st.append(p).append("\n");
+		}
+		return st.toString();
 	}
 
 	public void applyModifiers(Collection<? extends ObjectWithFeatures> features) {

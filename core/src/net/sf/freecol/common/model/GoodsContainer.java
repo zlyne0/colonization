@@ -95,6 +95,11 @@ public class GoodsContainer {
         updateTakenCargoSlots();
 	}
 	
+	public void decreaseToZero(String goodsTypeId) {
+		goods.setZero(goodsTypeId);
+		updateTakenCargoSlots();
+	}
+	
 	public void decreaseAllToZero() {
 		goods.decreaseAllToZero();
 		updateTakenCargoSlots();

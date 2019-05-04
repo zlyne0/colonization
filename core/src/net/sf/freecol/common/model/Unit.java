@@ -1028,6 +1028,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    return this.indianSettlement;
 	}
 	
+	public boolean isBelongToIndianSettlement(IndianSettlement is) {
+		return indianSettlement != null && is.equalsId(indianSettlement);
+	}
+	
 	public boolean hasRepairLocation() {
 	    return getRepairLocation() != null;
 	}

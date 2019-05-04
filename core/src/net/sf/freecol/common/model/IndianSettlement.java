@@ -28,12 +28,12 @@ public class IndianSettlement extends Settlement {
 
     /** How far to search for a colony to add an Indian convert to. */
     private static final int MAX_CONVERT_DISTANCE = 10;
-	
+
     private static final int ALARM_RADIUS = 2;
     private static final int ALARM_TILE_IN_USE = 2;
     private static final int ALARM_MISSIONARY_PRESENT = -10;
     
-    public static enum ContactLevel {
+    public enum ContactLevel {
         UNCONTACTED,     // Nothing known other than location?
         CONTACTED,       // Name, wanted-goods now visible
         VISITED,         // Skill now known
@@ -56,7 +56,7 @@ public class IndianSettlement extends Settlement {
      */
     protected UnitType learnableSkill = null;
     private int convertProgress;
-	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(3); 
+	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(IndianSettlementWantedGoods.MAX_WANTED_GOODS); 
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
@@ -324,10 +324,7 @@ public class IndianSettlement extends Settlement {
 			Tension tension = entry.getValue();
 			Player player = players.getById(entry.getKey());
 			
-			if (player.isNotLiveEuropeanPlayer()) {
-				continue;
-			}
-			if (tension.getLevel() == Tension.Level.HAPPY) {
+			if (player.isNotLiveEuropeanPlayer() || tension.getLevel() == Tension.Level.HAPPY) {
 				continue;
 			}
 			if (playerTensionLevel < tension.getValue()) {
@@ -382,11 +379,11 @@ public class IndianSettlement extends Settlement {
 	}
 
     public Unit convertToDest(Tile toTile, Player toPlayer) {
-		List<Unit> units = new ArrayList<Unit>();
-		units.addAll(tile.getUnits().entities());
-		units.addAll(getUnits().entities());
+		List<Unit> unitsToConvert = new ArrayList<Unit>();
+		unitsToConvert.addAll(tile.getUnits().entities());
+		unitsToConvert.addAll(getUnits().entities());
 		
-		Unit convert = Randomizer.instance().randomMember(units);
+		Unit convert = Randomizer.instance().randomMember(unitsToConvert);
 		convert.changeOwner(toPlayer);
 		convert.changeUnitType(ChangeType.CONVERSION);
 		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
@@ -395,8 +392,24 @@ public class IndianSettlement extends Settlement {
         convert.changeUnitLocation(toTile);
     	return convert;
     }
+
+	public void resetConvertProgress() {
+		convertProgress = 0;
+	}
+
+	public void setConvertProgress(int convertProgress) {
+		this.convertProgress = convertProgress;
+	}
+    
+	public List<GoodsType> getWantedGoods() {
+		return wantedGoods;
+	}
 	
-    public static class Xml extends XmlNodeParser<IndianSettlement> {
+	public int getGoodsCapacity() {
+		return ProductionSummary.CARRIER_SLOT_MAX_QUANTITY * settlementType.getClaimableRadius();
+	}
+
+	public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
 		private static final String ATTR_PLAYER = "player";
@@ -602,15 +615,4 @@ public class IndianSettlement extends Settlement {
 		missionary = null;
 	}
 
-	public void resetConvertProgress() {
-		convertProgress = 0;
-	}
-	
-	public List<GoodsType> getWantedGoods() {
-		return wantedGoods;
-	}
-
-	public void setConvertProgress(int convertProgress) {
-		this.convertProgress = convertProgress;
-	}
 }
