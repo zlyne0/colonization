@@ -73,7 +73,7 @@ public class ScoreService {
 				if (tile == null) {
 					continue;
 				}
-				if (colony.getId().equals(tile.getOwningSettlementId())) {
+				if (tile.isOwnBySettlement(colony)) {
 					sum += 200;
 				}
 			}

@@ -150,7 +150,7 @@ public class IndianSettlementWantedGoods {
 		
 		for (Tile claimableTile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius())) {
 			// own tile or tile without owner
-			if (claimableTile.getOwningSettlementId() == null || claimableTile.getOwningSettlementId().equals(settlement.getId())) {
+			if (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(settlement)) {
 				claimableTile.getType().productionInfo.addUnattendedProductionToSummary(maxProduction);
 			}
 		}

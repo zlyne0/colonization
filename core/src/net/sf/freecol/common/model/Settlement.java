@@ -97,9 +97,9 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	public void removeFromMap(Game game) {
 		for (int x=0; x<game.map.width; x++) {
 			for (int y=0; y<game.map.height; y++) {
-				Tile tile = game.map.getSafeTile(x, y);
-				if (tile.getOwningSettlementId() != null && this.equalsId(tile.getOwningSettlementId())) {
-					tile.resetOwningSettlement();
+				Tile t = game.map.getSafeTile(x, y);
+				if (t.isOwnBySettlement(this)) {
+					t.resetOwningSettlement();
 				}
 			}
 		}

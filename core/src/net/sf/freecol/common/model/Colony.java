@@ -1226,7 +1226,7 @@ public class Colony extends Settlement {
 				return !owner.foundingFathers.containsId(FoundingFather.PETER_MINUIT);
 			} else {
 				if (tile.getOwningSettlementId() != null) {
-					if (this.equalsId(tile.getOwningSettlementId())) {
+					if (tile.isOwnBySettlement(this)) {
 						return false;
 					}
 					if (tile.hasWorkerOnTile()) {
@@ -1285,7 +1285,7 @@ public class Colony extends Settlement {
 		
 		if (oldOwner != null) {
 			for (ColonyTile colonyTile : colonyTiles.entities()) {
-				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId() != null && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.isOwnBySettlement(this)) {
 					colonyTile.tile.changeOwner(newOwner);
 				}
 			}

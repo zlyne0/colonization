@@ -7,6 +7,7 @@ import java.util.List;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.IndianSettlementWantedGoods;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -38,6 +39,7 @@ public class GameLogic {
 	private final CombatService combatService;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
 	private final MoveService moveService;
+	private final IndianSettlementWantedGoods indianWantedGoods = new IndianSettlementWantedGoods();
 	
 	private final List<Unit> playerUnits = new ArrayList<Unit>();
 	private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
@@ -67,6 +69,7 @@ public class GameLogic {
         		IndianSettlement indianSettlement = settlement.getIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);
         		indianSettlement.conversion(guiGameModel.game.map);
+        		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
         	}
 			if (!settlement.isColony()) {
 				continue;
