@@ -223,7 +223,11 @@ public class GoodsType extends ObjectWithFeatures {
 	public void setBuildingMaterial(boolean buildingMaterial) {
 		this.buildingMaterial = buildingMaterial;
 	}
-    
+
+	public GoodsType getMakes() {
+		return makes;
+	}
+	
 	public static class Xml extends XmlNodeParser<GoodsType> {
 		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
 		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";

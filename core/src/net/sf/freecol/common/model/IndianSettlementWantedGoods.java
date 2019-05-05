@@ -57,12 +57,21 @@ public class IndianSettlementWantedGoods {
 		
 		Collections.sort(goodsTypeOrder, goodsTypePriceComparator);
 		
+		//printPotentialWantedGoods(settlement);
+		
 		settlement.wantedGoods.clear();
 		for (int i=0; i<goodsTypeOrder.size() && i < MAX_WANTED_GOODS; i++) {
 			settlement.wantedGoods.add(goodsTypeOrder.get(i));
 		}
 	}
 
+	private void printPotentialWantedGoods(IndianSettlement settlement) {
+		System.out.println("wantedGoods " + settlement.getName());
+		for (GoodsType goodsType : goodsTypeOrder) {
+			System.out.println(goodsType.getId() + " " + prices.get(goodsType, 0));
+		}
+	}
+	
     private int goodsPriceToBuy(IndianSettlement is, GoodsType goodsType) {
     	int capacity = is.getGoodsCapacity();
     	int current = is.getGoodsContainer().goodsAmount(goodsType);
@@ -147,13 +156,7 @@ public class IndianSettlementWantedGoods {
 	
 	private void calculateMaximumProduction(Map map, IndianSettlement settlement) {
 		maxProduction.decreaseAllToZero();
-		
-		for (Tile claimableTile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius())) {
-			// own tile or tile without owner
-			if (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(settlement)) {
-				claimableTile.getType().productionInfo.addUnattendedProductionToSummary(maxProduction);
-			}
-		}
+		settlement.initMaxProduction(map, maxProduction);
 	}
 	
 	private void determineOwnerMilitaryRole(IndianSettlement settlement) {
