@@ -1,5 +1,7 @@
 package promitech.colonization.screen.debug
 
+import java.lang.IllegalArgumentException
+
 class Commands() {
 	val commands : MutableList<Command> = mutableListOf<Command>()
 
@@ -7,9 +9,9 @@ class Commands() {
 		commands.addAll(cmd.commands)
 	}
 	
-	private constructor (cmds : List<Command>) : this() {
-		commands.addAll(cmds)
-	}
+//	private constructor (cmds : List<Command>) : this() {
+//		commands.addAll(cmds)
+//	}
 	
 	fun define(cmds : Commands.() -> Unit) : Commands {
 	    cmds(this)
@@ -17,12 +19,26 @@ class Commands() {
 	}
 	
 	fun command(name : String, cmdBody : Command.() -> Unit) {
+		val found = commands.filter {
+			cmd -> cmd.name == name
+		}.isNotEmpty()
+		if (found) {
+			throw IllegalArgumentException("command with name '${name}' already defined")
+		}
+		
 	    commands.add(Command(name, {
 			cmdBody()
 		}))
 	}
-
+	
 	fun commandArg(name : String, cmdBody : Command.(args : List<String>) -> Unit) : Command {
+		val found = commands.filter {
+			cmd -> cmd.name == name
+		}.isNotEmpty()
+		if (found) {
+			throw IllegalArgumentException("command with name '${name}' already defined")
+		}
+		
 		val command = Command(name, cmdBody)
 	    commands.add(command)
 		return command
@@ -36,7 +52,7 @@ class Commands() {
 		return cmdName
 	}
 	
-	fun execute(cmd : String) {
+	fun execute(cmd : String) : Command? {
 		val cmdName = cmdName(cmd)
 				
 		val filteredCmds = commands.filter {
@@ -44,16 +60,39 @@ class Commands() {
 		}
 		if (filteredCmds.isEmpty() || filteredCmds.size > 1) {
 			println("not single Command for name '${cmdName}' but ${filteredCmds.size}")
-			return
+			return null
 		}
 		val args : List<String> = cmd.split(" ").map { it -> it.trim() }
-		filteredCmds.first().execute(args)
+		val cmdToExecute = filteredCmds.first()
+		cmdToExecute.execute(args)
+		return cmdToExecute
 	}
 	
-	fun filterCommandsByPrefix(prefix : String) : Commands {
-		return Commands(
-			commands.filter { it -> it.name.startsWith(prefix) }
-		)
+	fun filterCommandsByPrefix(cmd : String) : List<String> {
+		if (cmd.indexOf(" ") != -1) {
+			val args = cmd.split(" ").map { it -> it.trim() }
+			val cmdName = args[0]
+			
+			val filteredCmds = commands.filter { it -> it.name == cmdName }
+			if (filteredCmds.isEmpty() || filteredCmds.size > 1) {
+				return filteredCmds.map { it -> it.name }
+			}
+			val execCmd : Command = filteredCmds.first()
+
+			val cmdDefinedArgs = execCmd.params()
+			if (cmdDefinedArgs.isEmpty()) {
+				return listOf(execCmd.name)
+			}
+			
+			val arg = args[1]
+			return cmdDefinedArgs
+				.filter { it -> it.startsWith(arg) }
+			    .map { it -> cmdName + " " + it }
+		}
+		
+		return commands
+    		.filter { it -> it.name.startsWith(cmd) }
+    	    .map { it -> it.name }
 	}
 	
 	fun enlargeHintCommandToBetterMatch(cmd : String) : String {
@@ -68,7 +107,7 @@ class Commands() {
 				return cmd
 			}
 			val execCmd : Command = filteredCmds.first()
-			println("execCmd ${execCmd.name}, params ${execCmd.params}")
+			println("enlargeHintCommand ${execCmd.name}, params ${execCmd.params}")
 			
 			val cmdDefinedArgs = execCmd.params()
 			if (cmdDefinedArgs.isEmpty()) {
@@ -113,15 +152,10 @@ class Commands() {
 }
 
 class Command(val name : String, val cmdBody : Command.(args : List<String>) -> Unit) {
-	var closeConsole = true
 	var params : () -> List<String> = { listOf() }
 		
 	fun execute(args : List<String>) {
 		cmdBody(this, args)
-	}
-	
-	fun doNotCloseConsole() {
-		closeConsole = false
 	}
 	
 	fun addParams(params : () -> List<String>) : Command {

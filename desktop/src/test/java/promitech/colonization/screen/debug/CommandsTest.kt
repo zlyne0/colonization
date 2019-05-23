@@ -11,9 +11,12 @@ class CommandsTest {
 	@BeforeEach
 	fun setup() {
     	commands = Commands().define {
-        	command("add_gold") { 
-        	    System.out.println("execute command " + this.name)
+        	commandArg("add_gold") { args -> 
+        	    System.out.println("execute command " + this.name + ", arg[0]=${args[0]}, argsSize " + args.size)
 				commandExecuted = "exec add_gold"
+				if (args.size > 1) {
+					commandExecuted += " ${args[1]}"
+				}
         	}
         	command("add_immigration") { 
 				System.out.println("execute command " + this.name)
@@ -30,8 +33,6 @@ class CommandsTest {
 				System.out.println("execute command " + this.name)
 			}
         	command("pools") { 
-        	    doNotCloseConsole()
-    			
     			System.out.println("execute command " + this.name)
         	}
     	}
@@ -43,9 +44,8 @@ class CommandsTest {
 		val prefixedCmds = commands.filterCommandsByPrefix("add")
 		
 		// then
-		assertThat(prefixedCmds.commands)
+		assertThat(prefixedCmds)
 			.hasSize(3)
-			.extracting("name")
 			.containsExactly("add_gold", "add_immigration", "add_foundingFather")
 	}
 	
@@ -70,6 +70,23 @@ class CommandsTest {
 	}
 	
 	@Test
+	fun `can hint command arguments`() {
+		// given
+		
+		// when
+		var hintCmds = commands.filterCommandsByPrefix("add_foundingFather mode")
+		
+		// then
+		assertThat(hintCmds)
+			.hasSize(3)
+			.containsExactly(
+				"add_foundingFather model.foundingFather.adamSmith",
+				"add_foundingFather model.foundingFather.jacobFugger",
+				"add_foundingFather model.foundingFather.peterMinuit"
+			)
+	}
+	
+	@Test
 	fun `can execute command with param`() {
 		// given
 		
@@ -90,4 +107,16 @@ class CommandsTest {
 		// then
 		assertThat(commandExecuted).isEqualTo("exec add_gold")
 	}
+	
+	@Test
+	fun `can execute command with argument`() {
+		// given
+		
+		// when
+		commands.execute("add_gold 345")
+		
+		// then
+		assertThat(commandExecuted).isEqualTo("exec add_gold 345")
+	}
+	
 }

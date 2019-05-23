@@ -4,9 +4,6 @@ import com.badlogic.gdx.Input;
 import com.badlogic.gdx.utils.IntMap;
 
 import promitech.colonization.DI;
-import promitech.colonization.screen.debug.CommandExecutor;
-import promitech.colonization.screen.debug.ConsoleOutput;
-import promitech.colonization.screen.debug.DebugConsole;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.HudStage;
 
@@ -14,20 +11,42 @@ public class DebugShortcutsKeys {
     private MapActor mapActor;
     private HudStage hudStage;
     private final IntMap<String> commandByKeycode = new IntMap<String>();
-    private final ConsoleOutput stdConsoleOutput = new ConsoleOutput() {
+    
+    private final ConsoleOutput routeOutput = new ConsoleOutput() {
         @Override
-        public void addConsoleLine(String line) {
+        public void out(String line) {
+            if (actualOutput != null) {
+                actualOutput.out(line);
+            }
+        }
+
+        @Override
+        public void keepOpen() {
+            if (actualOutput != null) {
+                actualOutput.keepOpen();
+            }
+        }
+    };
+
+    private final ConsoleOutput stdout = new ConsoleOutput() {
+        @Override
+        public void out(String line) {
             System.out.println("debugconsole: " + line);
+        }
+
+        @Override
+        public void keepOpen() {
         }
     };
     
-    private final CommandExecutor commandExecutor;
+    private ConsoleOutput actualOutput;
+    private Commands commands;
     
     public DebugShortcutsKeys(HudStage hudStage, DI di, MapActor mapActor) {
         this.hudStage = hudStage;
         this.mapActor = mapActor;
         
-        commandExecutor = new CommandExecutor(di, mapActor);
+        commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor);
         
         commandByKeycode.put(Input.Keys.NUM_1, "foundingFather");
         commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
@@ -51,12 +70,14 @@ public class DebugShortcutsKeys {
         }
         if (commandByKeycode.containsKey(keycode)) {
             String cmd = commandByKeycode.get(keycode);
-            commandExecutor.execute(cmd, stdConsoleOutput);
+            actualOutput = stdout;
+            commands.execute(cmd);
         }
     }
 
     public void showCheatConsoleDialog() {
-        DebugConsole debugConsole = new DebugConsole(commandExecutor);
+        DebugConsole debugConsole = new DebugConsole(commands);
+        actualOutput = debugConsole;
         debugConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
         hudStage.showDialog(debugConsole);
     }
