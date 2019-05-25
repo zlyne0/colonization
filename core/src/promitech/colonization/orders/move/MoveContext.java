@@ -175,6 +175,7 @@ public class MoveContext {
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
 				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType) ||
+				MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType) ||
 				MoveType.MOVE_CASH_IN_TREASURE.equals(moveType)
 		);
 	}
@@ -211,6 +212,7 @@ public class MoveContext {
 		case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
 		case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST:
 		case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY:
+		case ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS:
 			return true;
 		default:
 			return false;

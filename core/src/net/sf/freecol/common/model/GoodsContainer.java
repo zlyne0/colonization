@@ -21,6 +21,11 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public void moveGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goodsType, quantity);
+    	toContainer.increaseGoodsQuantity(goodsType, quantity);
+    }
+    
     public Entries<String> entries() {
     	return goods.entries();
     }
