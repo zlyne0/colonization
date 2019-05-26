@@ -1,16 +1,73 @@
 package net.sf.freecol.common.model;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 
 public class IndianSettlementProduction {
 
-    private static final int GOODS_BASE_PRICE = 12;
+    class GoodsAmountPrice extends AbstractGoods {
+    	private final GoodsType type;
+		private int price;
+		
+		public GoodsAmountPrice(GoodsType goodsType, int amount, int price) {
+			super(goodsType.getId(), amount);
+			this.type = goodsType;
+			this.price = price;
+		}
+		
+		@Override
+		public String toString() {
+			return type.getId() + " " + getQuantity() + " for " + price;
+		}
+
+		public GoodsType getType() {
+			return type;
+		}
+
+		public int getPrice() {
+			return price;
+		}
+    }
+	
+    private static final int MAX_GOODS_TYPE_TO_SELL = 3;
+    
+	private static final int GOODS_BASE_PRICE = 12;
+	
+	/** Do not sell less than this amount of goods. */
+	private static final int TRADE_MINIMUM_SIZE = 20;
 	
     private final ProductionSummary maxProduction = new ProductionSummary();
 	private final ProductionSummary consumptionGoods = new ProductionSummary();
 	private UnitRole militaryRole = null; 
+
+	
+    // When choosing what goods to sell, sort goods with new world
+    // goods first, then by price, then amount.
+    private final Comparator<GoodsAmountPrice> exportGoodsComparator = new Comparator<GoodsAmountPrice>() {
+        public int compare(GoodsAmountPrice goods1, GoodsAmountPrice goods2) {
+            int cmp;
+            GoodsType t1 = goods1.getType();
+            GoodsType t2 = goods2.getType();
+            cmp = (((t2.isNewWorldGoodsType()) ? 1 : 0) - ((t1.isNewWorldGoodsType()) ? 1 : 0));
+            if (cmp == 0) {
+                int a1 = goods1.getQuantity();
+                int a2 = goods2.getQuantity();
+                cmp = goods2.price - goods1.price;
+                if (cmp == 0) {
+                    cmp = a2 - a1;
+                }
+            }
+            return cmp;
+        }
+    };
 	
 	public IndianSettlementProduction() {
 		
@@ -56,13 +113,13 @@ public class IndianSettlementProduction {
         return 2 * is.getUnits().size();
 	}
 
-	public int goodsPriceToBuyInTrade(IndianSettlement is, GoodsType goodsType, int amount) {
+	public int goodsPriceToBuy(IndianSettlement is, GoodsType goodsType, int amount) {
 		int price = 0;
 		if (goodsType.isMilitary()) {
 			price = militaryGoodsPriceToBuy(is, goodsType, amount);
 		}
 		if (price == 0) {
-			price = goodsPriceToBuy(is, goodsType, amount);
+			price = normalGoodsPriceToBuy(is, goodsType, amount);
 		}
 		
 		// Premium paid for wanted goods types
@@ -97,12 +154,12 @@ public class IndianSettlementProduction {
     	if (valued > amount / 2) {
     		price = full * amount;
     	} else {
-    		price = valued * full + goodsPriceToBuy(is, goodsType, amount - valued);
+    		price = valued * full + normalGoodsPriceToBuy(is, goodsType, amount - valued);
     	}
 		return price;
 	}
 
-	public int goodsPriceToBuy(IndianSettlement is, GoodsType goodsType, int amount) {
+	public int normalGoodsPriceToBuy(IndianSettlement is, GoodsType goodsType, int amount) {
     	int capacity = is.getGoodsCapacity();
     	int current = is.getGoodsContainer().goodsAmount(goodsType);
     	
@@ -167,4 +224,50 @@ public class IndianSettlementProduction {
 			}
 		}
 	}
+	
+    public int goodsPriceToSell(IndianSettlement is, GoodsType goodsType, int amount) {
+    	final int full = GOODS_BASE_PRICE + is.settlementType.getTradeBonus();
+    	
+        // Base price is purchase price plus delta.
+        // - military goods at double value
+        // - trade goods at +50%
+        int price = amount + Math.max(0, 11 * goodsPriceToBuy(is, goodsType, amount) / 10);
+        if (goodsType.isMilitary()) {
+            price = Math.max(price, amount * full * 2);
+        } else if (goodsType.isTradeGoods()) {
+            price = Math.max(price, 150 * amount * full / 100);
+        }
+        return price;
+    }
+    
+	public List<? extends AbstractGoods> goodsToSell(IndianSettlement settlement, Unit carrier) {
+		List<GoodsAmountPrice> goodsTypeOrder = new ArrayList<GoodsAmountPrice>();
+		
+		for (Entry<String> goodsEntry : settlement.getGoodsContainer().entries()) {
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsEntry.key);
+			if (goodsType.isTradeGoods()) {
+				continue;
+			}
+			int amount = goodsEntry.value;
+			int retain = getWantedGoodsAmount(settlement, goodsType);
+			if (retain >= amount) {
+				continue;
+			}
+			amount -= retain;
+			if (amount > ProductionSummary.CARRIER_SLOT_MAX_QUANTITY) {
+				amount = ProductionSummary.CARRIER_SLOT_MAX_QUANTITY;
+			}
+			if (carrier != null) {
+				amount = (int)carrier.unitType.applyModifier(Modifier.TRADE_VOLUME_PENALTY, amount);
+			}
+			if (amount < TRADE_MINIMUM_SIZE) {
+				continue;			
+			}
+			int price = goodsPriceToSell(settlement, goodsType, amount);
+			goodsTypeOrder.add(new GoodsAmountPrice(goodsType, amount, price));
+		}
+		Collections.sort(goodsTypeOrder, exportGoodsComparator);
+		return goodsTypeOrder.subList(0, Math.min(MAX_GOODS_TYPE_TO_SELL, goodsTypeOrder.size()));
+	}
+	
 }

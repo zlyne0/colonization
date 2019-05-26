@@ -69,7 +69,7 @@ public class TradeSession {
 	}
 	
 	private int sellOffer(GoodsType goodsType, int amount, int initialAskGold) {
-		int price = isProd.goodsPriceToBuyInTrade(indianSettlement, goodsType, amount);
+		int price = isProd.goodsPriceToBuy(indianSettlement, goodsType, amount);
 		
 		Level level = indianSettlement.getTension(unit.getOwner()).getLevel();
 		switch (level) {
@@ -124,7 +124,7 @@ public class TradeSession {
 	}
 
 	public void deliverGoodsToIndianSettlement(GoodsType goodsType, int amount) {
-		int price = isProd.goodsPriceToBuyInTrade(indianSettlement, goodsType, amount);
+		int price = isProd.goodsPriceToBuy(indianSettlement, goodsType, amount);
 		unit.getGoodsContainer().moveGoods(goodsType, amount, indianSettlement.getGoodsContainer());
 		unit.reduceMovesLeftToZero();
 		canGift = false;

@@ -43,7 +43,7 @@ public class IndianSettlementWantedGoods {
 			if (!goodsType.isStorable() || goodsType.isMilitary()) {
 				continue;
 			}
-			int priceToBuy = production.goodsPriceToBuy(settlement, goodsType, ProductionSummary.CARRIER_SLOT_MAX_QUANTITY);
+			int priceToBuy = production.normalGoodsPriceToBuy(settlement, goodsType, ProductionSummary.CARRIER_SLOT_MAX_QUANTITY);
 			if (priceToBuy > ProductionSummary.CARRIER_SLOT_MAX_QUANTITY * TRADE_MINIMUM_PRICE) {
 				prices.put(goodsType, priceToBuy);
 				goodsTypeOrder.add(goodsType);
