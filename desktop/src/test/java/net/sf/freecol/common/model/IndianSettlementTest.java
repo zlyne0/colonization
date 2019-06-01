@@ -67,24 +67,6 @@ class IndianSettlementTest {
 				"model.goods.coats" 		
 			);
 	}
-
-	@Test
-	public void canCalculateGoodsPriceToBuyInTrade() throws Exception {
-		// given
-		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
-		
-		Unit wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile);
-		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
-			
-		// when
-		TradeSession tradeSession = new TradeSession(game.map, is, wagonTrain);
-		int price = tradeSession.sellOffer(tradeGoods, 100);
-
-		// then
-		System.out.println("" + tradeGoods + " tradeGoodsBuyPrice " + price);
-		assertThat(price).isEqualTo(660);
-	}
 	
 	@Test
 	public void canGenerateGoodsToSellForWagonTrain() throws Exception {
@@ -137,5 +119,60 @@ class IndianSettlementTest {
 			.extracting(AbstractGoods::getQuantity)
 			.contains(25, 25, 25);
 	}
+	
+	@Test
+	public void priceForSellGoodsToSettlementWithMissionary() throws Exception {
+		// given
+		Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile);
+		galleon.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+		Unit wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile);
+		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+
+		Tile tile = game.map.getSafeTile(19, 78);
+		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		is.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, is.tile));
+		
+		TradeSession galleonTradeSession = new TradeSession(game.map, is, galleon)
+			.updateSettlementProduction();
+		TradeSession wagonTrainTradeSession = new TradeSession(game.map, is, wagonTrain)
+			.updateSettlementProduction();
+		
+		// when
+		int galleonSellOfferPrice = galleonTradeSession.sellOffer(tradeGoods, 100);
+		int wagonTrainSellOfferPrice = wagonTrainTradeSession.sellOffer(tradeGoods, 100);
+
+		// then
+		assertThat(galleonSellOfferPrice).isEqualTo(1270);
+		assertThat(wagonTrainSellOfferPrice).isEqualTo(1815);
+	}
+
+	@Test
+	public void priceForSellGoodsToSettlementWithoutMissionary() throws Exception {
+		// given
+		Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile);
+		galleon.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+		Unit wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile);
+		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+
+		Tile tile = game.map.getSafeTile(19, 78);
+		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		if (is.hasMissionary()) {
+			is.removeMissionary();
+		}
+		
+		TradeSession galleonTradeSession = new TradeSession(game.map, is, galleon)
+			.updateSettlementProduction();
+		TradeSession wagonTrainTradeSession = new TradeSession(game.map, is, wagonTrain)
+			.updateSettlementProduction();
+		
+		// when
+		int galleonSellOfferPrice = galleonTradeSession.sellOffer(tradeGoods, 100);
+		int wagonTrainSellOfferPrice = wagonTrainTradeSession.sellOffer(tradeGoods, 100);
+
+		// then
+		assertThat(galleonSellOfferPrice).isEqualTo(1050);
+		assertThat(wagonTrainSellOfferPrice).isEqualTo(1500);
+	}
+	
 	
 }

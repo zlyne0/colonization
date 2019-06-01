@@ -4,9 +4,12 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.IndianSettlementProduction;
 import net.sf.freecol.common.model.IndianSettlementWantedGoods;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Tension.Level;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
 
 public class TradeSession {
@@ -35,8 +38,9 @@ public class TradeSession {
 		atWar = indianSettlement.getOwner().atWarWith(unit.getOwner());
 	}
 	
-	public void determineTradeChoices() {
+	public TradeSession updateSettlementProduction() {
 		isProd.init(map, indianSettlement);
+		return this;
 	}
 	
 	public int sellOffer(GoodsType goodsType, int amount) {
@@ -93,8 +97,15 @@ public class TradeSession {
 		}
 		haggleCount++;
 		
-		// TODO: modyfikatory np ze statek
-		
+		if (Specification.options.getBoolean(GameOptions.ENHANCED_MISSIONARIES) && indianSettlement.hasMissionary(unit.getOwner())) {
+			Unit missionary = indianSettlement.getMissionary().getUnit();
+			price = (int)missionary.unitType.applyModifier(Modifier.MISSIONARY_TRADE_BONUS, price);
+			price = (int)missionary.unitRole.applyModifier(Modifier.MISSIONARY_TRADE_BONUS, price);
+		}
+		if (unit.isNaval()) {
+			Modifier shipTradePenalty = Specification.instance.modifiers.getById(Modifier.SHIP_TRADE_PENALTY);
+			price = (int)shipTradePenalty.apply(price);
+		}		
 		if (initialAskGold < 0 || price == initialAskGold) {
 			return price;
 		}

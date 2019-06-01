@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -147,7 +148,7 @@ public class Specification {
         options.clear();
     }
     
-    public void updateReferences() {
+    private void updateReferences() {
         updateEuropeanNations();
         
         for (Nation nation : nations.entities()) {
@@ -191,9 +192,15 @@ public class Specification {
 			updateGoodsTypeAsBuildingMaterials(buildingType.requiredGoods);
 		}
         createSupportUnitLists();
+        updateModifiersFromDifficultyLevel();
     }
 
-    private void updateGoodsTypeAsBuildingMaterials(MapIdEntities<RequiredGoods> requiredGoodsList) {
+    private void updateModifiersFromDifficultyLevel() {
+    	Modifier shipTradePenalty = modifiers.getById(Modifier.SHIP_TRADE_PENALTY);
+    	shipTradePenalty.setValue(options.getIntValue(GameOptions.SHIP_TRADE_PENALTY, -30));
+	}
+
+	private void updateGoodsTypeAsBuildingMaterials(MapIdEntities<RequiredGoods> requiredGoodsList) {
 		for (RequiredGoods requiredGoods : requiredGoodsList.entities()) {
 			requiredGoods.goodsType.setBuildingMaterial(true);
 		}

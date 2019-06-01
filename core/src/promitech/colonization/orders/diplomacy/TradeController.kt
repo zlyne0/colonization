@@ -175,7 +175,7 @@ class TradeDialog(val tradeSession : TradeSession)
 	}
 	
 	fun showTradeChoices() {
-		tradeSession.determineTradeChoices()
+		tradeSession.updateSettlementProduction()
 		layout.clear()
 		welcomeLabel()
 		
