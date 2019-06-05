@@ -26,6 +26,7 @@ class IndianSettlementTest {
 
 	Game game;
 	GoodsType tradeGoods;
+	GoodsType furs;
 	Tile nieuwAmsterdamTile;
 	Player dutch;
 	
@@ -39,6 +40,7 @@ class IndianSettlementTest {
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         tradeGoods = Specification.instance.goodsTypes.getById("model.goods.tradeGoods");
+        furs = Specification.instance.goodsTypes.getById("model.goods.furs");
         
 		nieuwAmsterdamTile = game.map.getSafeTile(24, 78);
 		dutch = game.players.getById("player:1");
@@ -173,6 +175,33 @@ class IndianSettlementTest {
 		assertThat(galleonSellOfferPrice).isEqualTo(1050);
 		assertThat(wagonTrainSellOfferPrice).isEqualTo(1500);
 	}
-	
+
+	@Test
+	public void canCalculateBuyPriceFromSettlement() throws Exception {
+		// given
+		Tile tile = game.map.getSafeTile(19, 78);
+		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		is.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, is.tile));
+		
+		Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile);
+		galleon.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+		Unit wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile);
+		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
+		
+		TradeSession galleonTradeSession = new TradeSession(game.map, is, galleon)
+			.updateSettlementProduction();
+		TradeSession wagonTrainTradeSession = new TradeSession(game.map, is, wagonTrain)
+			.updateSettlementProduction();
+		// when
+		int galleonBuyPrice = galleonTradeSession.buyOfferPrice(furs, 100);
+		int wagonTrainBuyPrice = wagonTrainTradeSession.buyOfferPrice(furs, 100);
+
+		// then
+		System.out.println("galleonBuyPrice " + galleonBuyPrice);
+		System.out.println("wagonTrainBuyPrice " + wagonTrainBuyPrice);
+		
+		assertThat(galleonBuyPrice).isEqualTo(116);
+		assertThat(wagonTrainBuyPrice).isEqualTo(79);
+	}
 	
 }

@@ -228,6 +228,10 @@ public class IndianSettlementProduction {
     public int goodsPriceToSell(IndianSettlement is, GoodsType goodsType, int amount) {
     	final int full = GOODS_BASE_PRICE + is.settlementType.getTradeBonus();
     	
+		if (amount > 100) {
+			throw new IllegalArgumentException("amount can be more then 100 but is is " + amount);
+		}
+    	
         // Base price is purchase price plus delta.
         // - military goods at double value
         // - trade goods at +50%

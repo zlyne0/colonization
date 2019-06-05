@@ -1,5 +1,9 @@
 package promitech.colonization.orders.diplomacy;
 
+import java.util.List;
+
+import com.badlogic.gdx.utils.ObjectIntMap.Entries;
+
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.IndianSettlementProduction;
 import net.sf.freecol.common.model.IndianSettlementWantedGoods;
@@ -7,10 +11,12 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Tension.Level;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Randomizer;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class TradeSession {
 	
@@ -20,7 +26,7 @@ public class TradeSession {
                             NO_TRADE_HOSTILE = -3;
 	
 	public final IndianSettlement indianSettlement; 
-	public final Unit unit;
+	private final Unit unit;
 	
 	private boolean canBuy = true;
 	private boolean canSell = true;
@@ -29,7 +35,8 @@ public class TradeSession {
 	
 	private final IndianSettlementProduction isProd = new IndianSettlementProduction();
 	private final Map map;
-	private int haggleCount = 0;
+	private int sellHaggleCount = 0;
+	private int buyHaggleCount = 0;
 	
 	public TradeSession(Map map, IndianSettlement indianSettlement, Unit tradeUnit) {
 		this.map = map;
@@ -95,7 +102,7 @@ public class TradeSession {
 		if (price <= 0) {
 			return NO_TRADE;
 		}
-		haggleCount++;
+		sellHaggleCount++;
 		
 		if (Specification.options.getBoolean(GameOptions.ENHANCED_MISSIONARIES) && indianSettlement.hasMissionary(unit.getOwner())) {
 			Unit missionary = indianSettlement.getMissionary().getUnit();
@@ -110,7 +117,7 @@ public class TradeSession {
 			return price;
 		}
 		
-		if (haggleCount > 1 && Randomizer.instance().randomInt(3 + haggleCount) >= 3) {
+		if (sellHaggleCount > 1 && Randomizer.instance().randomInt(3 + sellHaggleCount) >= 3) {
 			return NO_TRADE_HAGGLE;
 		}
 		
@@ -151,10 +158,106 @@ public class TradeSession {
 			+ " " + goodsType.getId() + " " + amount
 		);
 	}
+
+	public int buyOfferPrice(GoodsType goodsType, int amount) {
+		return buyOfferPrice(goodsType, amount, -1);
+	}
+	
+	public int haggleBuyOfferPrice(GoodsType goodsType, int amount, int price) {
+		int newPrice = price * 9 / 10;
+		int haggledPrice = buyOfferPrice(goodsType, amount, newPrice);
+		if (haggledPrice <= 0) {
+			unit.reduceMovesLeftToZero();
+			canBuy = false;
+		}
+		System.out.println("tradeSession[" + unit.getOwner().getId() + "]"
+			+ ".haggleBuyOffer[" + indianSettlement.getId() + "]"
+			+ " goods[" + goodsType.getId() + " " + amount + "] from " + price + " to " + hagglePriceToStr(haggledPrice)
+		);
+		return haggledPrice;
+	}
+	
+	private int buyOfferPrice(GoodsType goodsType, int amount, int initialPrice) {
+		if (initialPrice == -1) {
+			int price = isProd.goodsPriceToSell(indianSettlement, goodsType, amount);
+			Level tensionLevel = indianSettlement.getTension(unit.getOwner()).getLevel();
+			switch (tensionLevel) {
+			case HAPPY:
+			case CONTENT:
+				break;
+			case DISPLEASED:
+				price = price * 2;
+				break;
+			default:
+				return NO_TRADE_HOSTILE;
+			}
+			
+			int notModifiedPrice = price;
+			if (Specification.options.getBoolean(GameOptions.ENHANCED_MISSIONARIES) && indianSettlement.hasMissionary(unit.getOwner())) {
+				// lower price for missionary
+				Unit missionary = indianSettlement.getMissionary().getUnit();
+				price = (int)missionary.unitType.applyModifier(Modifier.MISSIONARY_TRADE_BONUS, price);
+				price = (int)missionary.unitRole.applyModifier(Modifier.MISSIONARY_TRADE_BONUS, price);
+			}
+			if (unit.isNaval()) {
+				// higher price for naval
+				Modifier shipTradePenalty = Specification.instance.modifiers.getById(Modifier.SHIP_TRADE_PENALTY);
+				price = (int)shipTradePenalty.apply(price);
+			}		
+			price = notModifiedPrice - ( price - notModifiedPrice);
+			return price;
+		}
+		buyHaggleCount++;
+		
+		if (buyHaggleCount > 1 && Randomizer.instance().randomInt(3 + buyHaggleCount) >= 3) {
+			return NO_TRADE_HAGGLE;
+		}
+		return initialPrice;
+	}
+	
+	public void acceptBuyOffer(GoodsType goodsType, int amount, int price) {
+		if (unit.getOwner().hasNotGold(price)) {
+			throw new IllegalStateException("player " + unit.getOwner() + " has not " + price + " gold");
+		}
+		indianSettlement.getGoodsContainer().moveGoods(goodsType, amount, unit.getGoodsContainer());
+
+		unit.getOwner().transferGoldToPlayer(price, indianSettlement.getOwner());
+		
+		indianSettlement.modifyTensionWithOwnerTension(unit.getOwner(), -price / 50);
+		unit.reduceMovesLeftToZero();
+		canSell = false;
+		
+		IndianSettlementWantedGoods wg = new IndianSettlementWantedGoods();
+		wg.updateWantedGoods(map, indianSettlement);
+		
+		System.out.println(
+			"tradeSession[" + unit.getOwner().getId() + "]"
+			+ ".buyGoodsFrom[" + indianSettlement.getId() + "]"
+			+ " " + goodsType.getId() + " " + amount + " for " + price + " gold"
+		);
+	}
+	
+	public boolean tradeUnitHasNotGold(int price) { 
+		return unit.getOwner().hasNotGold(price);
+	}
+	
+	public Entries<String> goodsToSell() {
+		// sell by unit
+		return unit.getGoodsContainer().entries();
+	}
+	
+	public Entries<String> goodsToDeliver() {
+		// deliver by unit
+		return unit.getGoodsContainer().entries();
+	}
+	
+	public List<? extends AbstractGoods> goodsToBuy() {
+		// buy from settlement
+		return isProd.goodsToSell(indianSettlement, unit);
+	}
 	
 	public boolean isCanBuy() {
-		// TODO: can free space
-		return canBuy && !atWar;
+		return canBuy && !atWar && unit.hasSpaceForAdditionalCargo();
 	}
 
 	public boolean isCanSell() {
@@ -163,5 +266,9 @@ public class TradeSession {
 
 	public boolean isCanGift() {
 		return canGift && unit.hasGoodsCargo();
+	}
+	
+	public StringTemplate traderNationName() {
+		return unit.getOwner().getNationName();
 	}
 }

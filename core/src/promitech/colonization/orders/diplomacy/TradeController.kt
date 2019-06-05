@@ -81,7 +81,7 @@ class TradeDialog(val tradeSession : TradeSession)
 	private fun deliverGoodsToIndianSettlement(goodsType : GoodsType, amount : Int) {
 		tradeSession.deliverGoodsToIndianSettlement(goodsType, amount);
 		val msg = StringTemplate.template("model.unit.gift")
-			.addStringTemplate("%player%", tradeSession.unit.getOwner().getNationName())
+			.addStringTemplate("%player%", tradeSession.traderNationName())
 			.addAmount("%amount%", amount)
 			.addName("%type%", goodsType)
 			.add("%settlement%", tradeSession.indianSettlement.getName())
@@ -122,7 +122,7 @@ class TradeDialog(val tradeSession : TradeSession)
 		val sellLabel = Label(Messages.msg("sellProposition.text"), skin)
 		layout.add(sellLabel).fillX().padTop(10f).row()
 		
-		for (goods in tradeSession.unit.getGoodsContainer().entries()) {
+		for (goods in tradeSession.goodsToSell()) {
 			if (goods.value == 0) {
 				continue
 			}
@@ -143,6 +143,8 @@ class TradeDialog(val tradeSession : TradeSession)
 			showTradeChoices()
 		}
 		layout.add(nothingButton).fillX().padTop(10f).row()
+		
+		dialog.pack()
 	}
 	
 	fun showDeliverGift() {
@@ -152,7 +154,7 @@ class TradeDialog(val tradeSession : TradeSession)
 		val sellLabel = Label(Messages.msg("gift.text"), skin)
 		layout.add(sellLabel).fillX().padTop(10f).row()
 
-		for (goods in tradeSession.unit.getGoodsContainer().entries()) {
+		for (goods in tradeSession.goodsToSell()) {
 			if (goods.value == 0) {
 				continue
 			}
@@ -172,8 +174,89 @@ class TradeDialog(val tradeSession : TradeSession)
 		val cancel = TextButton(Messages.msg("tradeProposition.cancel"), skin)
 		cancel.addListener( ::showTradeChoices )
 		layout.add(cancel).fillX().padTop(10f).row()
+		
+		dialog.pack()
 	}
 	
+	private fun showBuyChoices() {
+		layout.clear()
+		welcomeLabel()
+
+		val sellLabel = Label(Messages.msg("buyProposition.text"), skin)
+		layout.add(sellLabel).fillX().padTop(10f).row()
+		
+		for (goods in tradeSession.goodsToBuy()) {
+			if (goods.getQuantity() == 0) {
+				continue
+			}
+			val goodsStrLabel = StringTemplate.template("model.goods.goodsAmount")
+	            .addAmount("%amount%", goods.getQuantity())
+	            .addName("%goods%", goods.getTypeId())
+	            .eval()
+			val goodsButton = TextButton(goodsStrLabel, skin)
+			goodsButton.addListener { ->
+				val goodsType = Specification.instance.goodsTypes.getById(goods.getTypeId())
+				buyGoodsFromSettlement(goodsType, goods.getQuantity())
+			}
+			layout.add(goodsButton).fillX().padTop(10f).row()
+		}
+		
+		val cancel = TextButton(Messages.msg("buyProposition.nothing"), skin)
+		cancel.addListener( ::showTradeChoices )
+		layout.add(cancel).fillX().padTop(10f).row()
+				
+		dialog.pack()
+	}
+	
+	private fun buyGoodsFromSettlement(goodsType : GoodsType, amount : Int) {
+		layout.clear()
+		welcomeLabel()
+
+		var buyOfferPrice = tradeSession.buyOfferPrice(goodsType, amount)
+		
+		val buyPriceLabel = Label(buyOfferPriceLabelStr(goodsType, amount, buyOfferPrice), skin)
+		layout.add(buyPriceLabel).fillX().padTop(10f).row()	
+		
+		val acceptSellOffer = TextButton(Messages.msg("buy.takeOffer"), skin)
+		acceptSellOffer.setDisabled(tradeSession.tradeUnitHasNotGold(buyOfferPrice))
+		acceptSellOffer.addListener { ->
+			tradeSession.acceptBuyOffer(goodsType, amount, buyOfferPrice)
+			showTradeChoices()
+		}
+		layout.add(acceptSellOffer).fillX().padTop(10f).row()
+		
+		val askForLowerPrice = TextButton(Messages.msg("buy.moreGold"), skin)
+		askForLowerPrice.addListener { ->
+			buyOfferPrice = tradeSession.haggleBuyOfferPrice(goodsType, amount, buyOfferPrice)
+			if (buyOfferPrice <= 0) {
+				addHaggleResultMessage(buyOfferPrice)
+				showTradeChoices()
+			} else {
+				acceptSellOffer.setDisabled(tradeSession.tradeUnitHasNotGold(buyOfferPrice))
+				buyPriceLabel.setText(buyOfferPriceLabelStr(goodsType, amount, buyOfferPrice))
+			}
+		}
+		layout.add(askForLowerPrice).fillX().padTop(10f).row()
+		
+		val cancel = TextButton(Messages.msg("tradeProposition.cancel"), skin)
+		cancel.addListener( ::showTradeChoices )
+		layout.add(cancel).fillX().padTop(10f).row()
+				
+		dialog.pack()
+	}
+
+	private fun buyOfferPriceLabelStr(goodsType : GoodsType, amount : Int, price : Int) : String {
+		val goodsAmountStrLabel = StringTemplate.template("model.goods.goodsAmount")
+			.addAmount("%amount%", amount)
+			.addName("%goods%", goodsType)
+		val buyPriceLabelStr = StringTemplate.template("buy.text")
+			.addStringTemplate("%nation%", tradeSession.indianSettlement.getOwner().getNationName())
+			.addStringTemplate("%goods%", goodsAmountStrLabel)
+			.addAmount("%gold%", price)
+			.eval()
+		return buyPriceLabelStr
+	}
+		
 	fun showTradeChoices() {
 		tradeSession.updateSettlementProduction()
 		layout.clear()
@@ -181,6 +264,9 @@ class TradeDialog(val tradeSession : TradeSession)
 		
 		if (tradeSession.isCanBuy()) {
 			val buyButton = TextButton(Messages.msg("tradeProposition.toBuy"), skin)
+			buyButton.addListener { ->
+				showBuyChoices()
+			}
 			layout.add(buyButton).fillX().padTop(10f).row()
 		}
 		if (tradeSession.isCanSell()) {
@@ -208,6 +294,8 @@ class TradeDialog(val tradeSession : TradeSession)
 			layout.add(Label(msg, skin)).fillX().padTop(10f).row()
 		}
 		messages.clear()
+		
+		dialog.pack()
 	}
 	
 	private fun welcomeLabel() {
