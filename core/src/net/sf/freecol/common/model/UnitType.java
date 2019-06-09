@@ -10,7 +10,6 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
-import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.WithProbability;
@@ -117,9 +116,7 @@ public class UnitType extends BuildableType {
 	}
     
 	public int lineOfSight() {
-		float base = lineOfSight;
-		base = applyModifier(Modifier.LINE_OF_SIGHT_BONUS, base);
-		return (int)base;
+		return lineOfSight;
 	}
 
 	private void updateReferences() {

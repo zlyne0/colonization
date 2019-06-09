@@ -2165,7 +2165,7 @@
                      weight1="5" weight2="10" weight3="5">
       <modifier id="model.modifier.lineOfSightBonus"
                 type="additive" value="1">
-        <scope ability-id="model.ability.navalUnit" ability-value="false"/>
+        <scope ability-id="model.ability.navalUnit" ability-value="true"/>
       </modifier>
       <ability id="model.ability.rumoursAlwaysPositive" value="true"/>
     </founding-father>
@@ -2213,7 +2213,7 @@
     </founding-father>
     <founding-father id="model.foundingFather.johnPaulJones" type="military"
                      weight1="0" weight2="6" weight3="7">
-      <event id="model.event.unit.model.unit.frigate" />
+      <unit id="model.unit.frigate" />
     </founding-father>
     <founding-father id="model.foundingFather.thomasJefferson" type="political"
                      weight1="4" weight2="5" weight3="6">
@@ -2230,12 +2230,11 @@
     </founding-father>
     <founding-father id="model.foundingFather.thomasPaine" type="political"
                      weight1="1" weight2="2" weight3="8">
-      <ability id="model.ability.addTaxToBells" value="true"/>
+      <ability id="model.ability.addTaxToBells" source="model.foundingFather.thomasPaine" value="true"/>
       <!-- The value of the modifier is intentionally zero.  This
            modifier is used as a template and the value in the copy is
            set to the current tax. -->
-      <modifier id="model.goods.bells" index="40"
-                type="percentage" value="0">
+      <modifier id="model.goods.bells" source="model.foundingFather.thomasPaine" index="40" type="percentage" value="0">
         <scope ability-id="model.ability.person" matchNegated="true"/>
       </modifier>
     </founding-father>

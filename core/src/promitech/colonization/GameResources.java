@@ -217,19 +217,17 @@ public class GameResources {
 		return getFrame(key);
 	}
 
-	public Frame hills() {
-		Randomizer randomizer = Randomizer.instance();		
+	public Frame hills(int x, int y) {
 		String keyPrefix = "model.tile.hills.overlay";
 		int countForPrefix = getCountForPrefix(keyPrefix);
-		String key = keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
+		String key = keyPrefix + Integer.toString((x + y) % countForPrefix) + ".image";
 		return getFrame(key);
 	}
 
-	public Frame mountainsKey() {
-		Randomizer randomizer = Randomizer.instance();		
+	public Frame mountainsKey(int x, int y) {
 		String keyPrefix = "model.tile.mountains.overlay";
 		int countForPrefix = getCountForPrefix(keyPrefix);
-		String key = keyPrefix + Integer.toString(randomizer.randomInt(countForPrefix)) + ".image";
+		String key = keyPrefix + Integer.toString((x + y) % countForPrefix) + ".image";
 		return getFrame(key);
 	}
 	

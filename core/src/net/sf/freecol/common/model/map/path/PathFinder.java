@@ -62,17 +62,21 @@ public class PathFinder {
 	
 	public PathFinder() {
 	}
-	
+
 	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
+		return findToEurope(map, startTile, moveUnit, true);
+	}
+	
+	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
 	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = true;
-        this.navyCostDecider.avoidUnexploredTiles = true;
-        this.baseCostDecider.avoidUnexploredTiles = true;
+        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
         
         determineCostDecider(false);
         Path path = find();
@@ -213,6 +217,10 @@ public class PathFinder {
 			count++;
 		}
 
+		if (endPathNode == null) {
+			return new Path(moveUnit, startTile, startTile, 0);  
+		}
+		
 		Path path = new Path(moveUnit, startTile, endPathNode.tile, count);
 		n = begining;
 		while (n != null) {

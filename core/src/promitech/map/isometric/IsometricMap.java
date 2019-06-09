@@ -67,6 +67,20 @@ public class IsometricMap<TILE_TYPE> extends Map2DArray<TILE_TYPE> {
         return false;
     }
     
+    @SuppressWarnings("unchecked")
+    public TILE_TYPE findFirst(int x, int y, int radius, Predicate<TILE_TYPE> predicate) {
+        AutoFreePoolableTileIterable iterable = AutoFreePoolableTileIterable.obtain();
+        iterable.reset(this, x, y, radius);
+        
+        for (TILE_TYPE tile : (Iterable<TILE_TYPE>)iterable) {
+            if (predicate.test(tile)) {
+                AutoFreePoolableTileIterable.release(iterable);
+                return tile;
+            }
+        }
+        return null;
+    }
+    
     public TILE_TYPE findFirst(int x, int y, Predicate<TILE_TYPE> predicate) {
         Direction direction;
         TILE_TYPE tile;

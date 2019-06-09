@@ -31,15 +31,15 @@ import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
+import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
-import net.sf.freecol.common.model.specification.FoundingFather;
-import net.sf.freecol.common.model.specification.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
@@ -223,8 +223,8 @@ public class Savegame1600Verifier {
         assertNotNull(food);
         
         assertEquals(2, player.foundingFathers.size());
-        assertNotNull(player.foundingFathers.getById("model.foundingFather.peterMinuit"));
-        assertNotNull(player.foundingFathers.getById("model.foundingFather.williamBrewster"));
+        assertNotNull(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
+        assertNotNull(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
         
         // should add fathers modifiers to player features
         assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);
@@ -367,6 +367,14 @@ public class Savegame1600Verifier {
         assertEquals(FoundingFatherType.POLITICAL, pocahontas.getType());
         assertNotNull(pocahontas.events.getById("model.event.resetNativeAlarm"));
         assertNotNull(pocahontas.events.getById("model.event.resetBannedMissions"));
+        
+        FoundingFather johnPaulJones = specification.foundingFathers.getById("model.foundingFather.johnPaulJones");
+        assertThat(johnPaulJones.getUnitTypes()).containsExactly("model.unit.frigate");
+        
+        FoundingFather bartolomeDeLasCasas = specification.foundingFathers.getById("model.foundingFather.bartolomeDeLasCasas");
+        assertThat(bartolomeDeLasCasas.getUpgrades())
+        	.hasSize(1)
+        	.containsEntry("model.unit.indianConvert", "model.unit.freeColonist");
     }
 
 	private void verifyNationTypes(Specification specification) {

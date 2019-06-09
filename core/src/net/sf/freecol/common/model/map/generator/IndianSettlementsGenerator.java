@@ -8,7 +8,6 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.SettlementFactory;
@@ -132,7 +131,7 @@ class IndianSettlementsGenerator {
 	        });
         	if (!settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		changeTileOwner(factory.create(territory.player, tile, capitalType));
+        		factory.create(territory.player, tile, capitalType);
         		territory.centerTile = tile;
         		territory.numberOfSettlements--;
         	}
@@ -150,24 +149,15 @@ class IndianSettlementsGenerator {
         	SettlementType settlementRegularType = territory.player.nationType().getSettlementRegularType();
         	while (territory.numberOfSettlements > 0 && !settlementTiles.isEmpty()) {
         		Tile tile = settlementTiles.remove(0);
-        		changeTileOwner(factory.create(territory.player, tile, settlementRegularType));
+        		factory.create(territory.player, tile, settlementRegularType);
         		territory.numberOfSettlements--;
         	}
         }
 	}
-
-	private void changeTileOwner(IndianSettlement settlement) {
-		settlement.tile.changeOwner(settlement.getOwner(), settlement);
-		
-		for (Tile tile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius()+1)) {
-		    if (!tile.hasOwnerOrOwningSettlement() && !tile.getType().isWater()) {
-		        tile.changeOwner(settlement.getOwner(), settlement);
-		    }
-        }
-	}
 	
 	public Tile centerOfRegion(Region region) {
-		int x, y;
+		int x; 
+		int y;
 		for (y=0; y<Map.STANDARD_REGION_NAMES.length; y++) {
 			for (x=0; x<Map.STANDARD_REGION_NAMES[0].length; x++) {
 				if (region.equalsId(Map.STANDARD_REGION_NAMES[y][x])) {

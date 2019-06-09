@@ -21,6 +21,11 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public void moveGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goodsType, quantity);
+    	toContainer.increaseGoodsQuantity(goodsType, quantity);
+    }
+    
     public Entries<String> entries() {
     	return goods.entries();
     }
@@ -93,6 +98,11 @@ public class GoodsContainer {
 	public void decreaseGoodsQuantity(ProductionSummary required) {
 		goods.decreaseGoods(required);
         updateTakenCargoSlots();
+	}
+	
+	public void decreaseToZero(String goodsTypeId) {
+		goods.setZero(goodsTypeId);
+		updateTakenCargoSlots();
 	}
 	
 	public void decreaseAllToZero() {

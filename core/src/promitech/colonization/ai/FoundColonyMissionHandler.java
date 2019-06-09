@@ -3,9 +3,8 @@ package promitech.colonization.ai;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyFactory;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -40,8 +39,9 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
         OrderStatus check = buildColonyOrder.check(mission.unit, mission.destTile);
         if (check == OrderStatus.OK) {
             String colonyName = SettlementFactory.generateSettlmentName(mission.unit.getOwner());
-            Colony colony = Settlement.buildColony(game.map, mission.unit, mission.destTile, colonyName);
-            Settlement.determineEuropeSeaConnection(game.map, pathFinder, colony);
+            
+            ColonyFactory colonyFactory = new ColonyFactory(game, pathFinder);
+            colonyFactory.buildColony(mission.unit, mission.destTile, colonyName);
             
             playerMissionsContainer.unblockUnitsFromMission(mission);
             mission.setDone();

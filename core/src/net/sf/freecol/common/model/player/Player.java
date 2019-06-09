@@ -3,11 +3,14 @@ package net.sf.freecol.common.model.player;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IdGenerator;
@@ -24,7 +27,6 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -52,7 +54,6 @@ public class Player extends ObjectWithId {
     private boolean ai;
     private int tax = 0;
     private int gold = 0;
-    private int liberty = 0;
     private int interventionBells = 0;
     private int entryLocationX = 0;
     private int entryLocationY = 0;
@@ -76,10 +77,10 @@ public class Player extends ObjectWithId {
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
-    public final MapIdEntities<FoundingFather> foundingFathers = new MapIdEntities<FoundingFather>();
     private HighSeas highSeas;
     protected Monarch monarch;
     private final ObjectWithFeatures updatableFeatures;
+    public FoundingFathers foundingFathers;
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
@@ -88,7 +89,7 @@ public class Player extends ObjectWithId {
     
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
-    protected List<String> banMission = null;
+    protected Set<String> banMission = null;
     
     public static Player newStartingPlayer(IdGenerator idGenerator, Nation nation, String name) {
     	Player player = new Player(idGenerator.nextId(Player.class));
@@ -112,6 +113,7 @@ public class Player extends ObjectWithId {
         } else {
         	player.changePlayerType(PlayerType.NATIVE);
         }
+        player.foundingFathers = new FoundingFathers(player);
         
         player.market = new Market(idGenerator.nextId(Market.class));
         player.market.initGoods();
@@ -267,6 +269,15 @@ public class Player extends ObjectWithId {
         stance.put(p.getId(), newStance);
     }
     
+    public void resetTension(Player p) {
+    	Tension tensionObj = tension.get(p.getId());
+    	if (tensionObj == null) {
+    		tensionObj = new Tension(Tension.TENSION_MIN);
+    	} else {
+    		tensionObj.setValue(Tension.TENSION_MIN);
+    	}
+    }
+    
     public void modifyTension(Player p, int val) {
 		if (val == 0) {
     		return;
@@ -297,13 +308,6 @@ public class Player extends ObjectWithId {
         return tensionObj;
     }
     
-    public void addMissionBan(Player player) {
-        if (banMission == null) {
-            banMission = new ArrayList<String>();
-        }
-        banMission.add(player.getId());
-    }
-    
     private void changePlayerType(PlayerType type) {
         if (playerType != PlayerType.REBEL && playerType != PlayerType.INDEPENDENT) {
             switch (type) {
@@ -318,11 +322,24 @@ public class Player extends ObjectWithId {
         }
         playerType = type;
     }
-    
-	public boolean missionsBanned(Player player) {
-    	return false;
+
+    public void addMissionBan(Player player) {
+        if (banMission == null) {
+            banMission = new LinkedHashSet<String>();
+        }
+        banMission.add(player.getId());
     }
     
+	public boolean missionsBanned(Player player) {
+		return banMission != null && banMission.contains(player.getId());
+    }
+    
+	public void removeMissionBan(Player player) {
+		if (banMission != null) {
+			banMission.remove(player.getId());
+		}
+	}
+	
     public boolean isIndian() {
         return playerType == PlayerType.NATIVE;
     }
@@ -398,6 +415,18 @@ public class Player extends ObjectWithId {
 		}
 	}
 
+	public void revealMapSeeColony(Map map, Colony colony) {
+		int radius = (int)getFeatures().applyModifier(
+			Modifier.LINE_OF_SIGHT_BONUS, 
+			colony.settlementType.getVisibleRadius()
+		);
+		
+		setTileAsExplored(colony.tile);
+		for (Tile t : map.neighbourTiles(colony.tile, radius)) {
+			setTileAsExplored(t);
+		}
+	}
+	
     public Europe getEurope() {
         return europe;
     }
@@ -499,7 +528,7 @@ public class Player extends ObjectWithId {
 		if (!canHaveFoundingFathers()) {
 			return;
 		}
-		this.liberty = Math.max(0, this.liberty + libertyAmount);
+		foundingFathers.modifyLiberty(libertyAmount);
 		if (isRebel()) {
 			interventionBells += libertyAmount;
 		}
@@ -553,7 +582,7 @@ public class Player extends ObjectWithId {
 		}
 	}
     
-    public boolean canHaveFoundingFathers() {
+    public final boolean canHaveFoundingFathers() {
         return nationType.hasAbility(Ability.ELECT_FOUNDING_FATHER);
     }
 	
@@ -570,17 +599,35 @@ public class Player extends ObjectWithId {
         return tax;
     }
 
-	protected void setTax(int tax) {
+	public void setTax(int tax) {
 		this.tax = tax;
+		recalculateBellBonus();
+	}
+	
+	protected void recalculateBellBonus() {
+		List<Ability> abilities = new ArrayList<Ability>();
+		getFeatures().getAbilities(Ability.ADD_TAX_TO_BELLS, abilities);
+		
+		if (!abilities.isEmpty()) {
+			List<Modifier> bellsModifiers = getFeatures().getModifiers(GoodsType.BELLS);
+			if (bellsModifiers != null) {
+				for (Ability addTaxToBellsAbility : abilities) {
+					for (Modifier m : bellsModifiers) {
+						if (m.equalsSourceId(addTaxToBellsAbility)) {
+							m.setValue(this.tax);
+						}
+					}
+				}
+			}
+		}
 	}
     
 	public ObjectWithFeatures getFeatures() {
 		return updatableFeatures;
 	}
-    
-	public void addFoundingFathers(FoundingFather father) {
-		foundingFathers.add(father);
-		updatableFeatures.addFeatures(father);
+
+	public void addFoundingFathers(Game game, FoundingFather father) {
+		foundingFathers.add(game, father);
 	}
 
 	public int getEntryLocationX() {
@@ -621,13 +668,20 @@ public class Player extends ObjectWithId {
 		settlement.setOwner(this);
 	}
 
-	public void afterReadPlayer() {
+	private void afterReadPlayer() {
 		if (europe != null) {
 			europe.setOwner(this);
 		}
 		if (monarch != null) {
 			monarch.setPlayer(this);
 		}
+		if (foundingFathers == null) {
+			foundingFathers = new FoundingFathers(this);
+		} else {
+			foundingFathers.setPlayer(this);
+		}
+		updatableFeatures.addFeatures(foundingFathers.entities());
+		recalculateBellBonus();
 	}
 
 	public boolean isAi() {
@@ -651,10 +705,8 @@ public class Player extends ObjectWithId {
 	}
 	
 	public static class Xml extends XmlNodeParser<Player> {
-        private static final String ATTR_AI = "ai";
-		private static final String ATTR_X_LENGTH = "xLength";
+		private static final String ATTR_AI = "ai";
 		private static final String ATTR_PLAYER = "player";
-		private static final String ELEMENT_FOUNDING_FATHERS = "foundingFathers";
 		private static final String ELEMENT_TENSION = "tension";
 		private static final String ELEMENT_STANCE = "stance";
 		private static final String ELEMENT_BAN_MISSION = "ban-mission";
@@ -665,7 +717,6 @@ public class Player extends ObjectWithId {
 		private static final String ATTR_IMMIGRATION_REQUIRED = "immigrationRequired";
 		private static final String ATTR_IMMIGRATION = "immigration";
 		private static final String ATTR_INTERVENTION_BELLS = "interventionBells";
-		private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_GOLD = "gold";
 		private static final String ATTR_TAX = "tax";
 		private static final String ATTR_NEW_LAND_NAME = "newLandName";
@@ -681,32 +732,29 @@ public class Player extends ObjectWithId {
             addNode(HighSeas.class, "highSeas");
             addNode(Europe.class, "europe");
             addNode(Monarch.class, "monarch");
+            addNode(FoundingFathers.class, "foundingFathers");
         }
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String idStr = attr.getStrAttribute(ATTR_ID);
-            
-            Player player = new Player(idStr);
+            Player player = new Player(attr.getId());
             player.dead = attr.getBooleanAttribute(ATTR_DEAD);
             player.ai = attr.getBooleanAttribute(ATTR_AI);
             player.attackedByPrivateers = attr.getBooleanAttribute(ATTR_ATTACKED_BY_PRIVATEERS, false);
             player.newLandName = attr.getStrAttribute(ATTR_NEW_LAND_NAME);
             player.tax = attr.getIntAttribute(ATTR_TAX, 0);
             player.gold = attr.getIntAttribute(ATTR_GOLD, 0);
-            player.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             player.interventionBells = attr.getIntAttribute(ATTR_INTERVENTION_BELLS, 0);
             player.immigration = attr.getIntAttribute(ATTR_IMMIGRATION, 0);
             player.immigrationRequired = attr.getIntAttribute(ATTR_IMMIGRATION_REQUIRED, 0);
             
-            String nationIdStr = attr.getStrAttribute(ATTR_NATION_ID);
-            player.nation = Specification.instance.nations.getById(nationIdStr);
             player.name = attr.getStrAttribute(ATTR_USERNAME);
 
-            String nationTypeStr = attr.getStrAttribute(ATTR_NATION_TYPE);
-            if (nationTypeStr != null) {
-                player.nationType = Specification.instance.nationTypes.getById(nationTypeStr);
-                player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
+			player.nation = attr.getEntity(ATTR_NATION_ID, Specification.instance.nations);
+            NationType nationType = attr.getEntity(ATTR_NATION_TYPE, Specification.instance.nationTypes);
+            if (nationType != null) {
+            	player.nationType = nationType;
+            	player.updatableFeatures.addFeaturesAndOverwriteExisted(player.nationType);
             }
             player.independentNationName = attr.getStrAttribute(ATTR_INDEPENDENT_NATION_NAME);
 
@@ -729,17 +777,9 @@ public class Player extends ObjectWithId {
         		Tension tension = new Tension(attr.getIntAttribute(ATTR_VALUE));
         		nodeObject.tension.put(playerId, tension);
         	}
-        	if (attr.isQNameEquals(ELEMENT_FOUNDING_FATHERS)) {
-        	    int count = attr.getIntAttribute(ATTR_X_LENGTH, 0);
-        	    for (int i=0; i<count; i++) {
-        	        String fatherId = attr.getStrAttributeNotNull(foundingFatherAttr(i));
-        	        FoundingFather father = Specification.instance.foundingFathers.getById(fatherId);
-        	        nodeObject.addFoundingFathers(father);
-        	    }
-        	}
         	if (attr.isQNameEquals(ELEMENT_BAN_MISSION)) {
         	    if (nodeObject.banMission == null) {
-        	        nodeObject.banMission = new ArrayList<String>();
+        	        nodeObject.banMission = new LinkedHashSet<String>();
         	    }
         	    nodeObject.banMission.add(attr.getStrAttributeNotNull(ATTR_PLAYER));
         	}
@@ -752,10 +792,6 @@ public class Player extends ObjectWithId {
 		    }
         }
         
-		private String foundingFatherAttr(int index) {
-			return "x" + index;
-		}
-        
         @Override
         public void startWriteAttr(Player player, XmlNodeAttributesWriter attr) throws IOException {
         	attr.setId(player);
@@ -766,7 +802,6 @@ public class Player extends ObjectWithId {
         	attr.set(ATTR_NEW_LAND_NAME, player.newLandName);
         	attr.set(ATTR_TAX, player.tax);
         	attr.set(ATTR_GOLD, player.gold);
-        	attr.set(ATTR_LIBERTY, player.liberty);
         	attr.set(ATTR_INTERVENTION_BELLS, player.interventionBells);
         	attr.set(ATTR_IMMIGRATION, player.immigration);
         	attr.set(ATTR_IMMIGRATION_REQUIRED, player.immigrationRequired);
@@ -791,17 +826,6 @@ public class Player extends ObjectWithId {
 				attr.set(ATTR_VALUE, tensionEntry.getValue().getValue());
 				attr.xml.pop();
 			}
-        	
-        	if (player.foundingFathers.isNotEmpty()) {
-        		attr.xml.element(ELEMENT_FOUNDING_FATHERS);
-        		attr.set(ATTR_X_LENGTH, player.foundingFathers.size());
-        		int ffIndex = 0;
-        		for (FoundingFather foundingFather : player.foundingFathers.entities()) {
-        			attr.set(foundingFatherAttr(ffIndex), foundingFather);
-        			ffIndex++;
-        		}
-        		attr.xml.pop();
-        	}
         	if (player.banMission != null) {
         	    for (String playerId : player.banMission) {
         	        attr.xml.element(ELEMENT_BAN_MISSION);
@@ -820,5 +844,4 @@ public class Player extends ObjectWithId {
             return "player";
         }
     }
-
 }

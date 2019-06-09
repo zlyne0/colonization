@@ -1,23 +1,25 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyFactory;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
@@ -104,12 +106,8 @@ public class PathFinderTest {
         Player fortressOwner = game.players.getById("player:112");
         Unit freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, fortressOwner, fortressTile);
         
-		Colony fortressColony = Settlement.buildColony(
-			game.map, 
-			freeColonist, 
-			fortressTile, 
-			"fortress colony"
-		);
+        ColonyFactory colonyFactory = new ColonyFactory(game, sut);
+        Colony fortressColony = colonyFactory.buildColony(freeColonist, fortressTile, "fortress colony");
         fortressColony.addBuilding(Specification.instance.buildingTypes.getById("model.building.fortress"));
         fortressColony.updateColonyFeatures();
 
@@ -228,5 +226,23 @@ public class PathFinderTest {
 			}
 		}
 		PathAssert.assertThat(path).lastStepEquals(destTile.x, destTile.y);
+	}
+	
+	@Test
+	public void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
+		// given
+		Tile startTile = game.map.getSafeTile(23, 70);
+    	Unit galleon = new Unit(
+			"tmp:buildColony:findToEurope:-1",
+			Specification.instance.unitTypes.getById(UnitType.GALLEON),
+			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
+			game.playingPlayer
+		);
+    	
+		// when
+		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon);
+
+		// then
+		PathAssert.assertThat(pathToEurope).isEmpty();
 	}
 }

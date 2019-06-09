@@ -421,7 +421,7 @@ class Combat {
             }
             
         } else if (pillage < burnable.size() + navy.size() + lootable.size()) {
-            GoodsType lootType = lootable.get(pillage - burnable.size() + navy.size());
+            GoodsType lootType = lootable.get(pillage - burnable.size() - navy.size());
             indianPillageColonyGoods(colony, lootType);
             
         } else {
@@ -670,18 +670,12 @@ class Combat {
 	}
 	
 	private void captureConvert() {
-		List<Unit> units = new ArrayList<Unit>();
-		units.addAll(combatSides.defenderTile.getUnits().entities());
-		units.addAll(combatSides.defenderTile.getSettlement().getUnits().entities());
+		IndianSettlement indianSettlement = combatSides.defenderTile.getSettlement().getIndianSettlement();
+		Unit convert = indianSettlement.convertToDest(
+			combatSides.winner.getTile(), 
+			combatSides.winner.getOwner()
+		);
 		
-		Unit convert = Randomizer.instance().randomMember(units);
-		convert.changeOwner(combatSides.winner.getOwner());
-		convert.changeUnitType(ChangeType.CONVERSION);
-		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
-        convert.reduceMovesLeftToZero();
-        convert.setState(Unit.UnitState.ACTIVE);
-        convert.changeUnitLocation(combatSides.winner.getTile());
-        
         captureConvertMove = new MoveContext(
     		combatSides.defenderTile, 
     		combatSides.winner.getTile(), 
@@ -707,7 +701,7 @@ class Combat {
 		}
 		
 		for (Unit settlementPlayerUnit : is.getOwner().units.entities()) {
-			if (is.equalsId(settlementPlayerUnit.getIndianSettlementId())) {
+			if (settlementPlayerUnit.isBelongToIndianSettlement(is)) {
 				settlementPlayerUnit.removeFromIndianSettlement();
 			}
 		}

@@ -1,21 +1,28 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
-import org.junit.jupiter.api.Test;
+import java.util.ArrayList;
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.FoundingFather;
+import promitech.colonization.Pair;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class UnitTest {
 
     Game game; 
+    FoundingFather ferdinandMagellan;
+    FoundingFather hernandoDeSoto;
     
     @BeforeAll
     public static void beforeClass() {
@@ -25,29 +32,32 @@ public class UnitTest {
     @BeforeEach
     public void before() throws Exception {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+        ferdinandMagellan = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
+        hernandoDeSoto = Specification.instance.foundingFathers.getById("model.foundingFather.hernandoDeSoto");
     }
 
     @Test
     public void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        assertNull(player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN), "should not have father");
+        assertThat(player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN))
+		    .as("should not have founding father")
+		    .isEqualTo(false);
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
         int initialMovesLeft = merchantman.getInitialMovesLeft();
         
         // then
-        assertEquals(15, initialMovesLeft);
+        assertThat(initialMovesLeft).isEqualTo(15);
     }
     
     @Test
     public void canCalculateInitialMovesForNavyWithFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
-        if (player.foundingFathers.getByIdOrNull(FoundingFather.FERDINAND_MAGELLAN) == null) {
-            FoundingFather foundingFather = Specification.instance.foundingFathers.getById(FoundingFather.FERDINAND_MAGELLAN);
-            player.addFoundingFathers(foundingFather);
+        if (!player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN)) {
+            player.addFoundingFathers(game, ferdinandMagellan);
         }
         Unit merchantman = player.units.getById("unit:6437");
         
@@ -55,7 +65,7 @@ public class UnitTest {
         int initialMovesLeft = merchantman.getInitialMovesLeft();
         
         // then
-        assertEquals(18, initialMovesLeft);
+        assertThat(initialMovesLeft).isEqualTo(18);
     }
 
     @Test
@@ -73,7 +83,7 @@ public class UnitTest {
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
     	
 		// then
-    	assertEquals(MoveType.MOVE_NO_ATTACK_CIVILIAN, moveType);
+    	assertThat(moveType).isEqualTo(MoveType.MOVE_NO_ATTACK_CIVILIAN);
 	}
     
     @Test
@@ -92,6 +102,66 @@ public class UnitTest {
     	MoveType moveType = unit.getMoveType(srcTile, destTile);
     	
 		// then
-		assertEquals(MoveType.MOVE, moveType);
+    	assertThat(moveType).isEqualTo(MoveType.MOVE);
+	}
+
+    @Test
+	public void canCalculateLineOfSightWithoutHernandoDeSoto() throws Exception {
+		// given
+    	Player dutch = game.players.getById("player:1");
+        if (dutch.foundingFathers.containsId(hernandoDeSoto)) {
+        	fail("player " + dutch + " should not have " + hernandoDeSoto);
+        }
+    	
+    	Tile seaTile = game.map.getTile(25,80);
+    	Tile landTile = game.map.getTile(24, 72);
+
+    	List<Pair> testArgs = new ArrayList<>();
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.GALLEON, dutch, seaTile), 2 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.SCOUT, dutch, landTile), 1 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.SCOUT, "model.role.scout", dutch, landTile), 2 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile), 1 ));
+    	
+		for (Pair pair : testArgs) {
+			Unit u = pair.getObj1();
+			Integer expectedLineOfSight = pair.getObj2();
+			// when
+			int actualLineOfSight = u.lineOfSight();
+			
+			// then
+			assertThat(actualLineOfSight)
+				.as("unit " + u.toString() + " line of sight")
+				.isEqualTo(expectedLineOfSight);
+		}
+	}
+    
+    @Test
+	public void canCalculateLineOfSightWithHernandoDeSoto() throws Exception {
+		// given
+    	Player dutch = game.players.getById("player:1");
+        if (!dutch.foundingFathers.containsId(hernandoDeSoto)) {
+        	dutch.addFoundingFathers(game, hernandoDeSoto);
+        }
+    	
+    	Tile seaTile = game.map.getTile(25,80);
+    	Tile landTile = game.map.getTile(24, 72);
+
+    	List<Pair> testArgs = new ArrayList<>();
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.GALLEON, dutch, seaTile), 3 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.SCOUT, dutch, landTile), 1 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.SCOUT, "model.role.scout", dutch, landTile), 2 ));
+    	testArgs.add(Pair.of(UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile), 1 ));
+    	
+		for (Pair pair : testArgs) {
+			Unit u = pair.getObj1();
+			Integer expectedLineOfSight = pair.getObj2();
+			// when
+			int actualLineOfSight = u.lineOfSight();
+			
+			// then
+			assertThat(actualLineOfSight)
+				.as("unit " + u.toString() + " line of sight")
+				.isEqualTo(expectedLineOfSight);
+		}
 	}
 }

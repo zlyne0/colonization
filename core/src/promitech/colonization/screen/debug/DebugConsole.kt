@@ -21,7 +21,7 @@ import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
 import promitech.colonization.DI
 
-class DebugConsole(val commandExecutor : CommandExecutor)
+class DebugConsole(val commands : Commands)
 	: ClosableDialog<DebugConsole>(), ConsoleOutput
 {
 	private val dialogLayout = Table()
@@ -30,32 +30,33 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 	private val scrollPane = ScrollPane(label)
 			
 	var selectedTile: Tile? = null
+	var keepOpenConsoleAfterExecute : Boolean = false
 	
 	init {
 		label.setAlignment(Align.top or Align.left);
-		label.setFillParent(true)
+		//label.setFillParent(true)
 		
-		scrollPane.setForceScroll(false, false);
-		scrollPane.setFadeScrollBars(false);
-		scrollPane.setOverscroll(true, true);
-		scrollPane.setScrollBarPositions(false, true);
+		scrollPane.setForceScroll(false, false)
+		scrollPane.setFadeScrollBars(false)
+		scrollPane.setOverscroll(true, true)
+		scrollPane.setScrollBarPositions(false, true)
 		
-		dialogLayout.add(scrollPane).expand().fill().row();
-		dialogLayout.add(textField).fillX().expandX();
-		getContentTable().add(dialogLayout);
+		dialogLayout.add(scrollPane).expand().fill().row()
+		dialogLayout.add(textField).fillX().expandX()
+		getContentTable().add(dialogLayout)
 
 		
 		dialog.addListener(object : InputListener() {
 			override fun keyDown(event: InputEvent, keycode: Int) : Boolean {
 				if (keycode == Keys.ENTER) {
-					executeCommand();
-					return true;
+					executeCommand()
+					return true
 				}
 				if (keycode == Keys.TAB) {
-					hintCommand();
-					return true;
+					hintCommand()
+					return true
 				}
-				return false;
+				return false
 			}
 		})
 				
@@ -63,35 +64,46 @@ class DebugConsole(val commandExecutor : CommandExecutor)
 	}
 	
 	fun executeCommand() {
-		var cmd = textField.getText();
-		textField.setText("");
-		addConsoleLine(cmd)
+		var cmd = textField.getText()
+		textField.setText("")
+		out(cmd)
 		
-		if (commandExecutor.execute(cmd, this)) {
-			hideWithFade();
+		val executedCmd = commands.execute(cmd)
+		if (executedCmd != null && !keepOpenConsoleAfterExecute) {
+			hideWithFade()
 		}
+		keepOpenConsoleAfterExecute = false
 	}
 	
 	fun hintCommand() {
 		var enteredCmd = textField.getText();
-		addConsoleLine("  hints: ")
-		commandExecutor.filterTasksForHint(enteredCmd).forEach { task ->
-			if (task is Alias) {
-				addConsoleLine(task.cmd + " -> " + task.task.cmd)
-			} else {
-			    addConsoleLine(task.cmd)
-			}
+		out("  hints: ")
+		val filteredCommands = commands.filterCommandsByPrefix(enteredCmd)
+
+		filteredCommands.forEach { cmdName ->
+			out(cmdName)
 		}
+
+		var enlargedCommand = commands.enlargeHintCommandToBetterMatch(enteredCmd)		
+		textField.setText(enlargedCommand)
+		if (filteredCommands.size == 1) {
+			textField.setText(textField.getText() + " ")
+		}
+		textField.setCursorPosition(textField.getText().length)
 	}
 	
-	override fun addConsoleLine(line: String) {
+	override fun out(line: String) {
 		if (label.getText().toString().equals("")) {
 			label.setText(line);			
 		} else {
-			label.setText(label.getText().toString() + "\r\n" + line)
+			label.setText(label.getText().toString() + "\n" + line)
 		}
 		scrollPane.setScrollPercentY(100f);
 		scrollPane.layout();
+	}
+	
+	override fun keepOpen() {
+		keepOpenConsoleAfterExecute = true
 	}
 	
 	override fun show(stage: Stage) {

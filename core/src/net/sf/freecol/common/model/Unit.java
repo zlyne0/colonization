@@ -213,7 +213,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 	
 	public int lineOfSight() {
-		return unitType.lineOfSight();
+		float lineOfSight = unitType.lineOfSight();
+		lineOfSight = unitType.applyModifier(Modifier.LINE_OF_SIGHT_BONUS, unitType.lineOfSight());
+		lineOfSight = owner.getFeatures().applyModifier(Modifier.LINE_OF_SIGHT_BONUS, lineOfSight, unitType);
+		lineOfSight = unitRole.applyModifier(Modifier.LINE_OF_SIGHT_BONUS, lineOfSight, unitRole);
+		return (int)lineOfSight;
 	}
 	
     public boolean isDamaged() {
@@ -982,7 +986,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		embarkUnitsFromLocation(owner.getEurope());
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
-		setDestination(enterHighSea.x, enterHighSea.y);
+		if (enterHighSea != null) {
+			setDestination(enterHighSea.x, enterHighSea.y);
+		} else {
+			setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+		}
 		enterHighSea = null;
 		workLeft = getSailTurns();
 	}
@@ -1018,6 +1026,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public String getIndianSettlementId() {
 	    return this.indianSettlement;
+	}
+	
+	public boolean isBelongToIndianSettlement(IndianSettlement is) {
+		return indianSettlement != null && is.equalsId(indianSettlement);
 	}
 	
 	public boolean hasRepairLocation() {

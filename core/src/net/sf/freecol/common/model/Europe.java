@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Market.MarketTransactionLogger;
+import net.sf.freecol.common.model.player.ChooseEmigrantToRecruitNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
@@ -121,12 +122,20 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     		owner.reduceImmigration();
     		owner.updateImmigrationRequired();
     		
-    		Unit emigrateUnit = emigrate();
-
-    		StringTemplate st = StringTemplate.template("model.europe.emigrate")
-				.addKey("%europe%", owner.getEuropeNameKey())
-				.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(emigrateUnit));
-    		owner.eventsNotifications.addMessageNotification(st);
+    		if (owner.isAi()) {
+    			emigrate();
+    			return;
+    		}
+    		
+    		if (owner.getFeatures().hasAbility(Ability.SELECT_RECRUIT)) {
+    			owner.eventsNotifications.addMessageNotification(new ChooseEmigrantToRecruitNotification());
+    		} else {
+    			Unit emigrateUnit = emigrate();
+    			StringTemplate st = StringTemplate.template("model.europe.emigrate")
+					.addKey("%europe%", owner.getEuropeNameKey())
+					.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(emigrateUnit));
+    			owner.eventsNotifications.addMessageNotification(st);
+    		}
     	}
 	}
     
@@ -191,20 +200,25 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     
 	private Unit emigrate() {
 		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
-		Unit unit = createUnit(emigrateUnitType);
-		recruitImmigrant(emigrateUnitType);
-		return unit;
+		return recruitImmigrant(emigrateUnitType);
 	}
 
 	public Unit buyImmigrant(UnitType unitType, int price) {
 		owner.subtractGold(price);
-		Unit unit = createUnit(unitType);
-		
 		recruitPrice += Specification.options.getIntValue(GameOptions.RECRUIT_PRICE_INCREASE);
 		recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
-		
-		recruitImmigrant(unitType);
-		return unit;
+		return recruitImmigrant(unitType);
+	}
+
+	public Unit recruitImmigrant(final UnitType unitType) {
+		for (UnitType ut : recruitables) {
+			if (ut.equalsId(unitType)) {
+				recruitables.remove(ut);
+				break;
+			}
+		}
+		generateRecruitablesUnitList();
+		return createUnit(unitType);
 	}
 	
 	private Unit createUnit(UnitType unitType) {
@@ -218,16 +232,6 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			unit.setState(UnitState.SENTRY);
 		}
 		return unit;
-	}
-	
-	private void recruitImmigrant(UnitType unitType) {
-		for (UnitType ut : recruitables) {
-			if (ut.equalsId(unitType)) {
-				recruitables.remove(ut);
-				break;
-			}
-		}
-		generateRecruitablesUnitList();
 	}
 	
 	private void generateRecruitablesUnitList() {
@@ -245,6 +249,15 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			WithProbability<UnitType> randomOne = Randomizer.instance().randomOne(recruitProbabilities);
 			recruitables.add(randomOne.probabilityObject());
 		}
+	}
+	
+	public void replaceNotRecruitableUnits() {
+		for (UnitType unitType : new ArrayList<UnitType>(recruitables)) {
+			if (!owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, unitType)) {
+				recruitables.remove(unitType);
+			}
+		}
+		generateRecruitablesUnitList();
 	}
 	
 	public void emigrantsFountainOfYoung(int colNumber) {

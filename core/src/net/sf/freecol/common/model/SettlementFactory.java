@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import promitech.colonization.Randomizer;
@@ -49,6 +50,8 @@ public class SettlementFactory {
 		player.addSettlement(indianSettlement);
 		
 		generateIndianUnits(player, indianSettlement);
+		changeTileOwner(indianSettlement);
+		createInitialGoods(indianSettlement);
 		return indianSettlement;
     }
 
@@ -97,5 +100,56 @@ public class SettlementFactory {
 			return Specification.instance.unitTypes.getById(UnitType.SCOUT);
 		}
 		return Randomizer.instance().randomOne(skills).probabilityObject(); 
+	}
+	
+	private void changeTileOwner(IndianSettlement settlement) {
+		settlement.tile.changeOwner(settlement.getOwner(), settlement);
+		
+		for (Tile tile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius()+1)) {
+		    if (!tile.hasOwnerOrOwningSettlement() && !tile.getType().isWater()) {
+		        tile.changeOwner(settlement.getOwner(), settlement);
+		    }
+        }
+	}
+	
+    /**
+     * Add some initial goods to a newly generated settlement.
+     * After all, they have been here for some time.
+	 */
+	public void createInitialGoods(IndianSettlement settlement) {
+		Randomizer randomizer = Randomizer.instance();
+		
+		ProductionSummary production = new ProductionSummary();
+		settlement.initMaxProduction(map, production);
+		
+		int capacity = settlement.getGoodsCapacity();
+		
+		StringBuilder logStr = new StringBuilder();
+		logStr.append("capacity " + capacity).append("\n");
+		
+		for (Entry<String> prodGoods : production.entries()) {
+			int stock = prodGoods.value * (10 + randomizer.randomInt(4) + settlement.settlementType.getTradeBonus());
+			settlement.getGoodsContainer().increaseGoodsQuantity(
+				prodGoods.key, 
+				Math.min(stock, capacity)
+			);
+			
+			logStr.append("" + prodGoods.key + " " + prodGoods.value + ", stock = " + stock ).append("\n");
+			
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(prodGoods.key);
+			GoodsType makes = goodsType.getMakes();
+			if (makes != null && makes.isStorable() && !makes.isMilitary() && makes.isNewWorldOrigin()) {
+				int makesVal = stock * (randomizer.randomInt(20, 30) + settlement.settlementType.getTradeBonus()) / 100;
+				
+				logStr.append("  add " + makes.getId() + " " + makesVal).append("\n");
+				
+				settlement.getGoodsContainer().increaseGoodsQuantity(
+					makes.getId(), 
+					Math.min(stock, makesVal)
+				);
+			}
+		}
+		
+		//System.out.println("" + logStr);
 	}
 }

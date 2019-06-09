@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.Player;
@@ -17,7 +18,6 @@ import net.sf.freecol.common.model.player.TransactionEffectOnMarket;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
-import net.sf.freecol.common.model.specification.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -54,6 +54,7 @@ public class Colony extends Settlement {
     public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
+	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
     
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
@@ -374,8 +375,8 @@ public class Colony extends Settlement {
                 int turns = goodsContainer.goodsAmount(GoodsType.FOOD) / quantityToConsume;
                 if (turns < 3) {
                 	StringTemplate st = StringTemplate.template("model.colony.famineFeared")
-                				.add("%colony%", getName())
-                				.addAmount("%number%", turns);
+        				.add("%colony%", getName())
+        				.addAmount("%number%", turns);
                 	owner.eventsNotifications.addMessageNotification(st);
                 }
             } else {
@@ -735,6 +736,32 @@ public class Colony extends Settlement {
         return buildingQueue.get(0).getType();
 	}
 	
+	public void ifPossibleAddFreeBuildings() {
+		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+			if (isAutoBuildableInColony(buildingType)) {
+				ifPossibleAddFreeBuilding(buildingType);
+			}
+		}
+	}
+	
+	public void ifPossibleAddFreeBuilding(BuildingType buildingType) {
+		if (isBuildingAlreadyBuilt(buildingType)) {
+			return;
+		}
+		NoBuildReason noBuildReason = getNoBuildReason(buildingType);
+		if (noBuildReason != NoBuildReason.NONE) {
+			System.out.println("addFreeBuilding[" + owner.getId() + "] reason " + noBuildReason);
+			return;
+		}
+    	for (ColonyBuildingQueueItem item : buildingQueue) {
+    		if (buildingType.equalsId(item.getId())) {
+    			buildingQueue.remove(item);
+    			break;
+    		}
+    	}		
+		finishBuilding(buildingType);
+	}
+	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
@@ -930,22 +957,11 @@ public class Colony extends Settlement {
 		}
 		if (buildableType.isBuildingType()) {
 			BuildingType buildingType = (BuildingType)buildableType;
-			BuildingType from = buildingType.getUpgradesFrom();
-			if (from != null) {
-				Building building = findBuildingByType(from.getId());
-				building.upgrade(buildingType);
-			} else {
-				Building building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
-				buildings.add(building);
-			}
+			finishBuilding(buildingType);
 			
 			if (buildableType.hasModifier(Modifier.DEFENCE)) {
 				newTurnContext.setRequireUpdateMapModel();
 			}
-			updateColonyFeatures();
-			updateColonyPopulation();
-			updateModelOnWorkerAllocationOrGoodsTransfer();
-			
 			StringTemplate st = StringTemplate.template("model.colony.buildingReady")
 		        .add("%colony%", getName())
 		        .addName("%building%", buildableType);
@@ -957,12 +973,28 @@ public class Colony extends Settlement {
 		buildingQueue.remove(0);
 	}
 	
+	private Building finishBuilding(BuildingType buildingType) {
+		BuildingType from = buildingType.getUpgradesFrom();
+		Building building;
+		if (from != null) {
+			building = findBuildingByType(from.getId());
+			building.upgrade(buildingType);
+		} else {
+			building = new Building(Game.idGenerator, buildingType);
+			buildings.add(building);
+		}
+		updateColonyFeatures();
+		updateColonyPopulation();
+		updateModelOnWorkerAllocationOrGoodsTransfer();
+		return building;
+	}
+	
 	public Building addBuilding(final BuildingType buildingType) {
 		Building building = findBuildingByBuildingTypeHierarchy(buildingType);
 		if (building != null) {
 			building.upgrade(buildingType);
 		} else {
-			building = new Building(Game.idGenerator.nextId(Building.class), buildingType);
+			building = new Building(Game.idGenerator, buildingType);
 			buildings.add(building);
 		}
 		return building;
@@ -1129,7 +1161,8 @@ public class Colony extends Settlement {
 	protected void initDefaultBuildings() {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
     		if (isAutoBuildable(buildingType)) {
-    			buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
+    			buildings.add(new Building(Game.idGenerator, buildingType));
+    			colonyProduction.setAsNeedUpdate();
     		}
     	}
 	}
@@ -1193,7 +1226,7 @@ public class Colony extends Settlement {
 				return !owner.foundingFathers.containsId(FoundingFather.PETER_MINUIT);
 			} else {
 				if (tile.getOwningSettlementId() != null) {
-					if (this.equalsId(tile.getOwningSettlementId())) {
+					if (tile.isOwnBySettlement(this)) {
 						return false;
 					}
 					if (tile.hasWorkerOnTile()) {
@@ -1252,26 +1285,49 @@ public class Colony extends Settlement {
 		
 		if (oldOwner != null) {
 			for (ColonyTile colonyTile : colonyTiles.entities()) {
-				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.getOwningSettlementId() != null && colonyTile.tile.getOwningSettlementId().equals(this.getId())) {
+				if (oldOwner.equalsId(colonyTile.tile.getOwner()) && colonyTile.tile.isOwnBySettlement(this)) {
 					colonyTile.tile.changeOwner(newOwner);
 				}
 			}
 		}
 		
 		buildingQueue.clear();
+		ifPossibleAddFreeBuildings();
+	}
+	
+	public ExportInfo exportInfo(GoodsType goodsType) {
+		ExportInfo info = exportInfos.getByIdOrNull(goodsType.getId());
+		if (info == null) {
+			info = new ExportInfo(goodsType.getId());
+			exportInfos.add(info);
+		}
+		return info;
+	}
+
+	public void exportGoods(Game game) {
+		if (!hasAbility(Ability.EXPORT)) {
+			return;
+		}
 		
-		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
-			boolean foundBuildingType = false;
-			for (Building building : buildings.entities()) {
-				if (building.buildingType.equalsId(buildingType)) {
-					foundBuildingType = true;
-					break;
-				}
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (!goodsType.isStorable()) {
+				continue;
 			}
-			if (!foundBuildingType && isAutoBuildable(buildingType)) {
-				buildings.add(new Building(Game.idGenerator.nextId(Building.class), buildingType));
-				colonyProduction.setAsNeedUpdate();
+			ExportInfo exportInfo = exportInfo(goodsType);
+			if (!exportInfo.isExport() || !owner.market().canTradeInCustomHouse(game, owner, goodsType.getId())) {
+				continue;
 			}
+			int exportAmount = goodsContainer.goodsAmount(goodsType) - exportInfo.getExportLevel();
+			if (exportAmount <= 0) {
+				continue;
+			}
+			TransactionEffectOnMarket transaction = owner.market().sellGoods(game, owner, goodsType, exportAmount);
+			goodsContainer.decreaseGoodsQuantity(goodsType, exportAmount);
+			
+			System.out.println("exportGoods[" + owner.getId() + "].export " 
+				+ goodsType.getId() + " " + transaction.quantity 
+				+ " for price: " + transaction.netPrice
+			);
 		}
 	}
 	
@@ -1296,6 +1352,22 @@ public class Colony extends Settlement {
 					xmlGenerator.generateXmlFromCollection(source.buildingQueue);
 				}
 			});
+        	
+        	addNode(ExportInfo.class, new ObjectFromNodeSetter<Colony, ExportInfo>() {
+				@Override
+				public void set(Colony target, ExportInfo entity) {
+					target.exportInfos.add(entity);
+				}
+
+				@Override
+				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<ExportInfo> xmlGenerator) throws IOException {
+					for (ExportInfo exportInfo : source.exportInfos.entities()) {
+						if (exportInfo.isNotDefaultSettings()) {
+							xmlGenerator.generateXml(exportInfo);
+						}
+					}
+				}
+        	});
         	
             addNode(GoodsContainer.class, "goodsContainer");
             addNodeForMapIdEntities("buildings", Building.class);

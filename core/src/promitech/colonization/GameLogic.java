@@ -6,6 +6,8 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
+import net.sf.freecol.common.model.IndianSettlementWantedGoods;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -37,6 +39,7 @@ public class GameLogic {
 	private final CombatService combatService;
 	private final NewTurnContext newTurnContext = new NewTurnContext();
 	private final MoveService moveService;
+	private final IndianSettlementWantedGoods indianWantedGoods = new IndianSettlementWantedGoods();
 	
 	private final List<Unit> playerUnits = new ArrayList<Unit>();
 	private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
@@ -51,6 +54,9 @@ public class GameLogic {
 		newTurnContext.restart();
 		System.out.println("newTurn for player " + player);
 
+		if (player.isEuropean()) {
+			player.foundingFathers.checkFoundingFathers(guiGameModel.game);
+		}
 		// copy units for safety remove
 		playerUnits.clear();
 		playerUnits.addAll(player.units.entities());
@@ -59,12 +65,19 @@ public class GameLogic {
 		}
 		
         for (Settlement settlement : player.settlements.sortedEntities()) {
+        	if (settlement.isIndianSettlement()) {
+        		IndianSettlement indianSettlement = settlement.getIndianSettlement();
+        		indianSettlement.generateTension(guiGameModel.game);
+        		indianSettlement.conversion(guiGameModel.game.map);
+        		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
+        	}
 			if (!settlement.isColony()) {
 				continue;
 			}
 			Colony colony = (Colony)settlement;
 			System.out.println("calculate new turn for colony " + colony);
 			
+			colony.ifPossibleAddFreeBuildings();
 			colony.updateColonyFeatures();
 			colony.increaseWarehouseByProduction();
 			colony.reduceTileResourceQuantity(newTurnContext);
@@ -72,6 +85,7 @@ public class GameLogic {
 			colony.increaseColonySize();
 			colony.buildBuildings(newTurnContext);
 			
+			colony.exportGoods(guiGameModel.game);
 			colony.removeExcessedStorableGoods();
 			colony.handleLackOfResources(newTurnContext, guiGameModel.game);
 			colony.calculateSonsOfLiberty();
@@ -111,7 +125,7 @@ public class GameLogic {
 		}
 	}
 
-	public void newTurnForUnit(Unit unit) {
+	private void newTurnForUnit(Unit unit) {
 		unit.resetMovesLeftOnNewTurn();
 		switch (unit.getState()) {
 			case IMPROVING:

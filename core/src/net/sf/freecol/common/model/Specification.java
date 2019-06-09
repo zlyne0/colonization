@@ -7,14 +7,16 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
-import net.sf.freecol.common.model.specification.FoundingFather;
+import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
+import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.BooleanOption;
 import net.sf.freecol.common.model.specification.options.IntegerOption;
@@ -146,7 +148,7 @@ public class Specification {
         options.clear();
     }
     
-    public void updateReferences() {
+    private void updateReferences() {
         updateEuropeanNations();
         
         for (Nation nation : nations.entities()) {
@@ -170,6 +172,7 @@ public class Specification {
             if (unitType.isRecruitable()) {
             	unitTypeRecruitProbabilities.add(unitType.createRecruitProbability());
             }
+			updateGoodsTypeAsBuildingMaterials(unitType.requiredGoods);
         }
         
         immigrationGoodsTypeList.clear();
@@ -183,11 +186,26 @@ public class Specification {
 			if (ur.isOffensive()) {
 				militaryRoles.add(ur);
 			}
+			updateGoodsTypeAsBuildingMaterials(ur.requiredGoods);
 		}
-        
+        for (BuildingType buildingType : buildingTypes.entities()) {
+			updateGoodsTypeAsBuildingMaterials(buildingType.requiredGoods);
+		}
         createSupportUnitLists();
+        updateModifiersFromDifficultyLevel();
     }
 
+    private void updateModifiersFromDifficultyLevel() {
+    	Modifier shipTradePenalty = modifiers.getById(Modifier.SHIP_TRADE_PENALTY);
+    	shipTradePenalty.setValue(options.getIntValue(GameOptions.SHIP_TRADE_PENALTY, -30));
+	}
+
+	private void updateGoodsTypeAsBuildingMaterials(MapIdEntities<RequiredGoods> requiredGoodsList) {
+		for (RequiredGoods requiredGoods : requiredGoodsList.entities()) {
+			requiredGoods.goodsType.setBuildingMaterial(true);
+		}
+    }
+    
 	private void updateEuropeanNations() {
         europeanNations.clear();
         for (Nation nation : nations.entities()) {

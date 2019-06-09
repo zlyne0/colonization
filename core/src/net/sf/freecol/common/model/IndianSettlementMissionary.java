@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -13,7 +14,7 @@ public class IndianSettlementMissionary implements UnitLocation {
     public Unit unit;
 
     public boolean isMissionaryExpert() {
-    	return unit.isExpert();
+    	return unit.hasAbility(Ability.EXPERT_MISSIONARY);
     }
     
     public int lineOfSight(SettlementType type) {
@@ -59,6 +60,10 @@ public class IndianSettlementMissionary implements UnitLocation {
 		this.unit = unit;
 	}
 
+	public Unit getUnit() {
+		return this.unit;
+	}
+	
 	@Override
 	public void removeUnit(Unit unit) {
 		this.unit = null;

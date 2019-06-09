@@ -6,20 +6,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
+import com.badlogic.gdx.utils.ObjectMap;
+
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
+import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class IndianSettlement extends Settlement {
+
+    /** How far to search for a colony to add an Indian convert to. */
+    private static final int MAX_CONVERT_DISTANCE = 10;
+
+    private static final int ALARM_RADIUS = 2;
+    private static final int ALARM_TILE_IN_USE = 2;
+    private static final int ALARM_MISSIONARY_PRESENT = -10;
     
-    public static enum ContactLevel {
+    public enum ContactLevel {
         UNCONTACTED,     // Nothing known other than location?
         CONTACTED,       // Name, wanted-goods now visible
         VISITED,         // Skill now known
@@ -42,7 +56,7 @@ public class IndianSettlement extends Settlement {
      */
     protected UnitType learnableSkill = null;
     private int convertProgress;
-	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(3); 
+	protected final List<GoodsType> wantedGoods = new ArrayList<GoodsType>(IndianSettlementWantedGoods.MAX_WANTED_GOODS); 
     
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
@@ -145,6 +159,89 @@ public class IndianSettlement extends Settlement {
     	return tension;
     }
     
+    public void generateTension(Game game) {
+		ObjectIntMap<Player> alarms = new ObjectIntMap<Player>();
+		ObjectMap<Player, Level> oldTension = new ObjectMap<Player, Tension.Level>();
+		
+		generateTensionFromNeighbourTiles(game.map, alarms);
+		generateTensionFromMissionary(alarms);
+		
+		for (ObjectIntMap.Entry<Player> alarmsEntry : alarms.entries()) {
+			int change = alarmsEntry.value;
+			if (change != 0) {
+				Player enemy = alarmsEntry.key;
+				change = (int)enemy.getFeatures().applyModifier(Modifier.NATIVE_ALARM_MODIFIER, change);
+				oldTension.put(enemy, owner.getTension(enemy).getLevel());
+				modifyTensionWithOwnerTension(enemy, change);
+			}
+		}
+		
+		// Calm down a bit at the whole-tribe level.
+		for (Player enemy : game.players.entities()) {
+			if (!enemy.isLiveEuropeanPlayer()) {
+				continue;
+			}
+			Tension enemyTension = owner.getTension(enemy);
+			if (enemyTension.getValue() > 0) {
+				int change = enemyTension.getValue() / 100 + 4;
+				owner.modifyTensionAndPropagateToAllSettlements(enemy, -change);
+			}
+			
+			Level newLevel = getTension(enemy).getLevel();
+			if (owner.hasContacted(enemy) && newLevel.worst(oldTension.get(enemy))) {
+				String key = "indianSettlement.alarmIncrease.tension." + newLevel.name().toLowerCase();
+				if (Messages.containsKey(key)) {
+					StringTemplate st = StringTemplate.template(key)
+                        .addStringTemplate("%nation%", owner.getNationName())
+                        .addStringTemplate("%enemy%", enemy.getNationName())
+                        .add("%settlement%", getName());
+					enemy.eventsNotifications.addMessageNotification(st);
+				}
+			}
+		}
+    }
+
+    private void generateTensionFromMissionary(ObjectIntMap<Player> alarms) {
+		if (hasMissionary()) {
+			Player enemy = missionaryOwner();
+			if (enemy.isLiveEuropeanPlayer()) {
+				int missionAlarm = ALARM_MISSIONARY_PRESENT;
+				if (getMissionary().isMissionaryExpert()) {
+					missionAlarm *= 2;
+				}
+				alarms.getAndIncrement(enemy, 0, missionAlarm);
+			}
+		}
+	}
+
+	private void generateTensionFromNeighbourTiles(Map map, ObjectIntMap<Player> alarms) {
+		int radius = settlementType.getClaimableRadius() + ALARM_RADIUS;
+		for (Tile neighbourTile : map.neighbourTiles(tile.x, tile.y, radius)) {
+			if (neighbourTile.getUnits().isNotEmpty()) {
+				Unit firstUnit = neighbourTile.getUnits().first();
+				Player enemy = firstUnit.getOwner();
+				
+				if (enemy.isLiveEuropeanPlayer()) {
+					int alarm = 0;
+					for (Unit unit : neighbourTile.getUnits().entities()) {
+						if (!unit.isNaval() && unit.isOffensiveUnit()) {
+							alarm += unit.unitType.getBaseOffence(); 
+						}
+					}
+					alarms.getAndIncrement(enemy, 0, alarm);
+				}
+			} else if (neighbourTile.hasSettlement() && neighbourTile.getSettlement().isColony()) {
+				Colony colony = neighbourTile.getSettlement().getColony();
+				alarms.getAndIncrement(colony.getOwner(), 0, ALARM_TILE_IN_USE + colony.getColonyUnitsCount());
+			} else if (neighbourTile.getOwner() != null) {
+				Player enemy = neighbourTile.getOwner();
+				if (neighbourTile.getOwner().isLiveEuropeanPlayer()) {
+					alarms.getAndIncrement(enemy, 0, ALARM_TILE_IN_USE);
+				}
+			}
+		}
+    }
+    
     @Override
     public boolean hasAbility(String abilityCode) {
         return false;
@@ -227,10 +324,7 @@ public class IndianSettlement extends Settlement {
 			Tension tension = entry.getValue();
 			Player player = players.getById(entry.getKey());
 			
-			if (player.isNotLiveEuropeanPlayer()) {
-				continue;
-			}
-			if (tension.getLevel() == Tension.Level.HAPPY) {
+			if (player.isNotLiveEuropeanPlayer() || tension.getLevel() == Tension.Level.HAPPY) {
 				continue;
 			}
 			if (playerTensionLevel < tension.getValue()) {
@@ -252,7 +346,70 @@ public class IndianSettlement extends Settlement {
 		return (IndianNationType)owner.nationType();
 	}
 	
-    public static class Xml extends XmlNodeParser<IndianSettlement> {
+	public void conversion(Map map) {
+		if (!hasMissionary()) {
+			return;
+		}
+		
+		Unit missionary = getMissionary().unit;
+		float conversionSkill = missionary.unitType.applyModifier(Modifier.CONVERSION_SKILL, missionary.unitType.getSkill());
+		int alarm = Math.min(getTension(missionary.getOwner()).getValue(), Tension.TENSION_MAX);
+		int conversionAlarm = (int)missionary.unitType.applyModifier(Modifier.CONVERSION_ALARM_RATE, alarm);
+		int convert = convertProgress + (int)conversionSkill + (conversionAlarm - alarm);
+		
+		if (convert >= settlementType.getConvertThreshold() && (getUnits().size() + tile.getUnits().size() > 2)) {
+			Colony colony = map.findColonyInRange(tile, MAX_CONVERT_DISTANCE, missionary.getOwner()); 
+			if (colony == null) {
+				convertProgress = convert;
+				System.out.println("IndianConversion[" + getId() + "].no " + convert);
+				return;
+			}
+			System.out.println("IndianConversion[" + getId() + "].conversion " + convert + " to " + colony);
+			
+			convertToDest(colony.tile, missionary.getOwner());
+			colony.owner.eventsNotifications.addMessageNotification(
+				StringTemplate.template("model.colony.newConvert")
+					.addStringTemplate("%nation%", owner.getNationName())
+					.add("%colony%", colony.getName())
+			);
+		} else {
+			convertProgress = convert;
+			System.out.println("IndianConversion[" + getId() + "].no " + convert);
+		}
+	}
+
+    public Unit convertToDest(Tile toTile, Player toPlayer) {
+		List<Unit> unitsToConvert = new ArrayList<Unit>();
+		unitsToConvert.addAll(tile.getUnits().entities());
+		unitsToConvert.addAll(getUnits().entities());
+		
+		Unit convert = Randomizer.instance().randomMember(unitsToConvert);
+		convert.changeOwner(toPlayer);
+		convert.changeUnitType(ChangeType.CONVERSION);
+		convert.changeRole(Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+        convert.reduceMovesLeftToZero();
+        convert.setState(Unit.UnitState.ACTIVE);
+        convert.changeUnitLocation(toTile);
+    	return convert;
+    }
+
+	public void resetConvertProgress() {
+		convertProgress = 0;
+	}
+
+	public void setConvertProgress(int convertProgress) {
+		this.convertProgress = convertProgress;
+	}
+    
+	public List<GoodsType> getWantedGoods() {
+		return wantedGoods;
+	}
+	
+	public int getGoodsCapacity() {
+		return ProductionSummary.CARRIER_SLOT_MAX_QUANTITY * settlementType.getClaimableRadius();
+	}
+
+	public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
 		private static final String ATTR_PLAYER = "player";
@@ -392,6 +549,15 @@ public class IndianSettlement extends Settlement {
 		throw new IllegalStateException("not implemented");
 	}
 
+	public void initMaxProduction(Map map, ProductionSummary productionSummary) {
+		for (Tile claimableTile : map.neighbourTiles(tile, settlementType.getClaimableRadius())) {
+			// own tile or tile without owner
+			if (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(this)) {
+				claimableTile.getType().productionInfo.addUnattendedProductionToSummary(productionSummary);
+			}
+		}
+	}
+	
 	public UnitType getLearnableSkill() {
 		return learnableSkill;
 	}
@@ -458,11 +624,4 @@ public class IndianSettlement extends Settlement {
 		missionary = null;
 	}
 
-	public void resetConvertProgress() {
-		convertProgress = 0;
-	}
-	
-	public List<GoodsType> getWantedGoods() {
-		return wantedGoods;
-	}
 }

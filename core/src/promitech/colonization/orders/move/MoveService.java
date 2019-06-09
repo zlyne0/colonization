@@ -19,6 +19,7 @@ import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
 import promitech.colonization.orders.diplomacy.FirstContactService;
+import promitech.colonization.orders.diplomacy.TradeController;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.Messages;
@@ -280,6 +281,9 @@ public class MoveService {
         			moveContext.unit, 
         			moveContext.destTile.getSettlement().getIndianSettlement()
     			);
+            } break;
+            case ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS: {
+            	new TradeController(guiGameModel.game.map, guiGameController, moveContext).trade();
             } break;
             case ATTACK_UNIT: {
                 combatController.confirmCombat(moveContext);

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map.Entry;
@@ -218,19 +219,20 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
 		return true;
 	}
 
+	/**
+	 * Method check whether ObjectWithFeature (this) is available to all places from arguments.
+	 */
     public boolean isAvailableTo(ObjectWithFeatures ... places) {
-        if (requiredAbilities != null) {
-            for (Ability aa : requiredAbilities.entities()) {
-                boolean found = false;
-            	for (int i=0; i<places.length; i++) {
-            		if (places[i].hasAbility(aa.getId())) {
-            			found = true;
-            			break;
-            		}
-            	}
-                if (aa.isValueNotEquals(found)) {
-                    return false;
-                }
+        for (Ability aa : requiredAbilities.entities()) {
+            boolean found = false;
+        	for (int i=0; i<places.length; i++) {
+        		if (places[i].hasAbility(aa.getId())) {
+        			found = true;
+        			break;
+        		}
+        	}
+            if (aa.isValueNotEquals(found)) {
+                return false;
             }
         }
         return true;
@@ -302,6 +304,12 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
     	}
     }
     
+    public void addFeatures(Collection<? extends ObjectWithFeatures> objects) {
+    	for (ObjectWithFeatures obj : objects) {
+    		addFeatures(obj);
+		}
+    }
+    
     public void addFeatures(ObjectWithFeatures parent) {
         for (Entry<String, List<Ability>> entrySet : parent.abilities.entrySet()) {
             for (Ability a : entrySet.getValue()) {
@@ -355,6 +363,10 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
     		}
     	}
     	return st;
+    }
+    
+    public List<Modifier> getModifiers(String code) {
+    	return modifiers.get(code);
     }
     
     public java.util.Map<String,List<Modifier>> getModifiers() {

@@ -7,13 +7,18 @@ import promitech.colonization.screen.ui.QuantityGoodActor;
 
 public class WarehouseGoodsActor extends QuantityGoodActor {
 
+	private boolean exported = false;
+	
     public WarehouseGoodsActor(GoodsType goodsType, int quantity) {
 		super(goodsType, quantity);
 	}
-
+    
 	@Override
     public Color getQuantityColor() {
-        if (quantity ==  0) {
+		if (exported) {
+			return Color.GREEN;
+		}
+        if (quantity == 0) {
             return Color.GRAY;
         }
         if (getParent() instanceof WarehousePanel) {
@@ -24,4 +29,8 @@ public class WarehouseGoodsActor extends QuantityGoodActor {
         }
     	return super.getQuantityColor();
     }
+
+	public void setExported(boolean exported) {
+		this.exported = exported;
+	}
 }

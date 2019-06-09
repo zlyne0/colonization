@@ -23,7 +23,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
     	this(idGenerator.nextId(Building.class), aBuildingType);
     }
     
-    public Building(String id, BuildingType aBuildingType) {
+    private Building(String id, BuildingType aBuildingType) {
         super(id);
         this.buildingType = aBuildingType;
     }

@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.specification;
+package net.sf.freecol.common.model.player;
 
 import java.io.IOException;
 
@@ -15,6 +15,10 @@ class FoundingFatherEvent extends ObjectWithId {
         super(id);
     }
 
+	public String getValue() {
+		return value;
+	}
+    
     public static class Xml extends XmlNodeParser<FoundingFatherEvent> {
 
         @Override

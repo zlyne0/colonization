@@ -491,6 +491,10 @@ public class Tile implements UnitLocation, Identifiable {
 		return owningSettlement;
 	}
 	
+	public boolean isOwnBySettlement(Settlement settlement) {
+		return settlement.equalsId(owningSettlement);
+	}
+	
 	public boolean hasWorkerOnTile() {
 		if (owner == null || owningSettlement == null) {
 			return false;

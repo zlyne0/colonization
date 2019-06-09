@@ -94,6 +94,7 @@ class LoadGameDialog(
 				GameCreator(pathFinder, guiGameModel).load(gameNameLabel.text.toString())
 			}, {
 				guiGameController.resetMapModel()
+				guiGameController.centerMapOnEntryPoint()
 				guiGameController.showMapScreenAndActiveNextUnit()
 			}).show(this@LoadGameDialog.dialog.getStage())
 			

@@ -173,7 +173,7 @@ public class LandCombatTest {
     	combat.init(game, attacker, colonyTile);
 
 		// then
-        assertThat(combat).hasPowers(4.5f, 5.5f, 0.45f);
+        assertThat(combat).hasPowers(4.5f, 4.5f, 0.5f);
 	}
 
     @Test 

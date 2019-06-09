@@ -177,7 +177,7 @@ public class MonarchLogic {
 		}
 	}
 
-	public static void lowerRax(Player player, MonarchActionNotification ntf) {
+	public static void lowerTax(Player player, MonarchActionNotification ntf) {
 		player.setTax(ntf.getTax());
 	}
 

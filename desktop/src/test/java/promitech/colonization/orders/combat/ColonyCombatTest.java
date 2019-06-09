@@ -29,6 +29,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.PlayerAssert;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -44,6 +45,7 @@ public class ColonyCombatTest {
     private Player dutch;
     private Player aztec;
     private Combat combat = new Combat();
+    private FoundingFather paulRevere;
 	
     @BeforeAll
     public static void beforeClass() throws Exception {
@@ -58,6 +60,7 @@ public class ColonyCombatTest {
     	spanish = game.players.getById("player:133"); 
     	dutch = game.players.getById("player:1");
     	aztec = game.players.getById("player:40");
+        paulRevere = Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere");
     }
     
     @Test
@@ -229,7 +232,7 @@ public class ColonyCombatTest {
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
-        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
@@ -263,7 +266,7 @@ public class ColonyCombatTest {
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
-        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
@@ -300,7 +303,7 @@ public class ColonyCombatTest {
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
-        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
@@ -336,7 +339,7 @@ public class ColonyCombatTest {
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
-        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 
@@ -375,7 +378,7 @@ public class ColonyCombatTest {
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().getColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
-        colony.getOwner().addFoundingFathers(Specification.instance.foundingFathers.getById("model.foundingFather.paulRevere"));
+		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
         ProductionSummary goodsBefore = colony.getGoodsContainer().cloneGoods();
 

@@ -63,7 +63,6 @@ public class DiplomacyAgreementTest {
 		// then
 		PlayerAssert.assertThat(spanish).hasGold(initialSpanishGold - 500);
 		PlayerAssert.assertThat(dutch).hasGold(initialDutchGold + 500);
-		assertThat(true).isFalse();
 	}
 
     @Test 

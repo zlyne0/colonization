@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
 import java.util.List;
@@ -15,9 +17,11 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -31,13 +35,17 @@ public class ColonyProductionTest {
 
     Game game;
     Colony colony;
-    Player player;
+    Player dutch;
+    FoundingFather henryHudson;
+    FoundingFather thomasPaine;
     
     @BeforeEach
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-        player = game.players.getById("player:1");
-        colony = (Colony)player.settlements.getById("colony:6528");
+        dutch = game.players.getById("player:1");
+        colony = (Colony)dutch.settlements.getById("colony:6528");
+        henryHudson = Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson");
+        thomasPaine = Specification.instance.foundingFathers.getById("model.foundingFather.thomasPaine");
     }
     
     @Test
@@ -53,7 +61,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColony() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        dutch.addFoundingFathers(game, henryHudson);
         
         // when
         colony.updateColonyFeatures();
@@ -90,7 +98,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurTraderHouse() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        dutch.addFoundingFathers(game, henryHudson);
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furTradingPost"));
@@ -131,7 +139,7 @@ public class ColonyProductionTest {
     @Test
     public void canCalculateProductionForColonyForUpgradedFurFactory() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        dutch.addFoundingFathers(game, henryHudson);
         
         Building ft = colony.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furFactory"));
@@ -173,8 +181,7 @@ public class ColonyProductionTest {
         // given
 
         // move statesment from townHall to tile 
-        Unit unit = player.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType("model.building.townHall");
+        Unit unit = dutch.units.getById("unit:7076");
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
@@ -225,11 +232,10 @@ public class ColonyProductionTest {
     @Test
     public void fursProductionWithHenryHudson() throws Exception {
         // given
-        player.foundingFathers.add(Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+        dutch.addFoundingFathers(game, henryHudson);
 
         // move statesment from townHall to tile 
-        Unit unit = player.units.getById("unit:7076");
-        Building townHall = colony.findBuildingByType(BuildingType.TOWN_HALL);
+        Unit unit = dutch.units.getById("unit:7076");
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
@@ -281,7 +287,7 @@ public class ColonyProductionTest {
     @Test
     public void canBuildDocks() throws Exception {
         // given
-        Colony fortOrange = (Colony)player.settlements.getById("colony:6554");
+        Colony fortOrange = (Colony)dutch.settlements.getById("colony:6554");
         fortOrange.updateColonyFeatures();
         
         fortOrange.goodsContainer.increaseGoodsQuantity("model.goods.hammers", 52);
@@ -297,37 +303,51 @@ public class ColonyProductionTest {
     }
     
     @Test
-    public void testName() throws Exception {
-        // given
-        Game game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-
-        Player player = game.players.getById("player:1");
+	public void canRiseCrossesProductionWithWilliamPenn() throws Exception {
+		// given
+    	FoundingFather williamPenn = Specification.instance.foundingFathers.getById("model.foundingFather.williamPenn");
+    	dutch.addFoundingFathers(game, williamPenn);
+    	
+    	BuildingType churchType = Specification.instance.buildingTypes.getById("model.building.church");
+        Building church = colony.addBuilding(churchType);
+        colony.addWorkerToBuilding(church, colony.getUnits().getById("unit:7076"));
+        colony.addWorkerToBuilding(church, colony.getUnits().getById("unit:6940"));
         
-        Colony colony = (Colony)player.settlements.getById("colony:6528");
-        System.out.println("warehouse: " + colony.goodsContainer.cloneGoods());
-        
-        int allFood = colony.goodsContainer.goodsAmount("model.goods.food");
-        colony.goodsContainer.increaseGoodsQuantity("model.goods.food", -allFood);
-        //colony.goodsContainer.increaseGoodsQuantity("model.goods.food", 20);
-        
-        int allFurs = colony.goodsContainer.goodsAmount("model.goods.furs");
-        colony.goodsContainer.increaseGoodsQuantity("model.goods.furs", -allFurs);
-        colony.goodsContainer.increaseGoodsQuantity("model.goods.furs", 5);
-        
-        int allCoast = colony.goodsContainer.goodsAmount("model.goods.coats");
-        colony.goodsContainer.increaseGoodsQuantity("model.goods.coats", -allCoast);
-        
-        System.out.println("### warehouse after modyfication ###");
-        System.out.println("" + colony.goodsContainer.cloneGoods());
-        System.out.println("### building:6545 ###");
-        Building furTrading = colony.buildings.getByIdOrNull("building:6545");
-        ProductionConsumption productionSummary = colony.productionSummary(furTrading);
-        System.out.println("productionSummary = " + productionSummary);
-        colony.handleLackOfResources(null, game);
-
         // when
-
+        ProductionSummary ps = colony.productionSummary();
+        
         // then
+        assertThat(ps.getQuantity("model.goods.crosses")).isEqualTo(9);
+	}
+    
+	@Test
+	public void thomasPaineCanRiseBellProduction() throws Exception {
+		// given
+        if (!dutch.foundingFathers.containsId(thomasPaine)) {
+        	dutch.addFoundingFathers(game, thomasPaine);
+        }
+        dutch.setTax(20);
+		
+		// when
+        ProductionSummary ps = colony.productionSummary();
 
-    }
+		// then
+		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(6);
+	}
+	
+	@Test
+	public void withoutThomasPaineNoTaxRiseBellProduction() throws Exception {
+		// given
+		if (dutch.foundingFathers.containsId(thomasPaine)) {
+			fail("should has not " + thomasPaine);
+		}
+		dutch.setTax(20);
+		
+		// when
+		ProductionSummary ps = colony.productionSummary();
+
+		// then
+		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(5);
+	}
+    
 }
