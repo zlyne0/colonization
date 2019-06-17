@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TradeRouteDefinition;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
@@ -77,6 +78,7 @@ public class Player extends ObjectWithId {
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
     public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    public final MapIdEntities<TradeRouteDefinition> tradeRoutes = MapIdEntities.linkedMapIdEntities();
     private HighSeas highSeas;
     protected Monarch monarch;
     private final ObjectWithFeatures updatableFeatures;
