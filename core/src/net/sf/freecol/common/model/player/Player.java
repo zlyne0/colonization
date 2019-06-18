@@ -735,6 +735,7 @@ public class Player extends ObjectWithId {
             addNode(Europe.class, "europe");
             addNode(Monarch.class, "monarch");
             addNode(FoundingFathers.class, "foundingFathers");
+            addNodeForMapIdEntities("tradeRoutes", TradeRouteDefinition.class);
         }
 
         @Override

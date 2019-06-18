@@ -19,6 +19,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
+import net.sf.freecol.common.model.TradeRouteDefinition;
+import net.sf.freecol.common.model.TradeRouteStop;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
@@ -199,7 +201,31 @@ public class Savegame1600Verifier {
         		assertThat(player.getEurope().hasOwner()).isTrue();
         	}
         }
+        
+        verifyDutchTradeRoutes(game);
 	}
+
+    private void verifyDutchTradeRoutes(Game game) {
+        Player dutch = game.players.getById("player:1");
+        TradeRouteDefinition tradeRoute = dutch.tradeRoutes.getById("tradeRouteDef:1");
+        assertThat(dutch.tradeRoutes.size()).isEqualTo(2);
+
+        assertThat(tradeRoute.getName()).isEqualTo("route1");
+        assertThat(tradeRoute.getTradeRouteStops())
+            .hasSize(3)
+            .extracting(TradeRouteStop::getTradeLocationId)
+            .containsExactly("colony:6993", "colony:6554", "colony:6528");
+        
+        assertThat(tradeRoute.getTradeRouteStops().get(0).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.sugar", "model.goods.tobacco");
+        assertThat(tradeRoute.getTradeRouteStops().get(1).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.sugar", "model.goods.ore");
+        assertThat(tradeRoute.getTradeRouteStops().get(2).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.food");
+    }
 
 	private void verifyPlayer(Game game) {
 		Player spanish = game.players.getById("player:133");

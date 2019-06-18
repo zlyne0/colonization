@@ -4529,6 +4529,22 @@
       </Nations>
     </nationOptions>
     <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" interventionBells="0" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
+      <tradeRouteDef id="tradeRouteDef:1" name="route1">
+      	<stop location="colony:6993">
+      		<goods id="model.goods.sugar"/>
+      		<goods id="model.goods.tobacco"/>
+      	</stop>
+      	<stop location="colony:6554">
+      		<goods id="model.goods.sugar"/>
+      		<goods id="model.goods.ore"/>
+      	</stop>
+      	<stop location="colony:6528">
+      		<goods id="model.goods.food"/>
+      	</stop>
+      </tradeRouteDef>
+      <tradeRouteDef id="tradeRouteDef:2" name="route2">
+      </tradeRouteDef>
+      
       <eventsNotificatioins>
       	<messageNotification id="messageNotification:1234" body="msg" />
       	<monarchActionNotification id="monarchActionNotification:1235" action="RAISE_TAX_ACT" goodsType="model.goods.furs" goodsAmount="100" tax="12" colonyId="colony:6528" />
