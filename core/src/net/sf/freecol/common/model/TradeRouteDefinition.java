@@ -30,6 +30,10 @@ public class TradeRouteDefinition extends ObjectWithId {
 		return stop;
 	}
 	
+	public void removeStop(TradeRouteStop stop) {
+		tradeRouteStops.remove(stop);
+	}
+	
 	public List<TradeRouteStop> getTradeRouteStops() {
 		return tradeRouteStops;
 	}

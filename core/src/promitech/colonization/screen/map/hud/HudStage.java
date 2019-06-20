@@ -16,6 +16,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.utils.IntMap;
 import com.badlogic.gdx.utils.viewport.Viewport;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.ChooseEmigrantToRecruitNotification;
@@ -30,6 +31,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
+import promitech.colonization.screen.TradeRouteListDialog;
 import promitech.colonization.screen.ff.ChooseFoundingFatherDialog;
 import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapActor;
@@ -80,6 +82,7 @@ public class HudStage extends Stage {
     private ButtonActor nextUnitButton;
     private RadioButtonActor viewButton;
     private ButtonActor europeButton;
+    private ButtonActor tradeRouteButton;
     private ButtonActor endTurnButton;
     private ButtonActor showNotificationButton;
 
@@ -173,6 +176,10 @@ public class HudStage extends Stage {
     		}
     		if (keycode == Input.Keys.Y && europeButton.getParent() != null) {
     			gameController.showEuropeScreen();
+    			return true;
+    		}
+    		if (keycode == Input.Keys.L && tradeRouteButton.getParent() != null) {
+    			showCreateTradeRouteDialog();
     			return true;
     		}
     		if (keycode == Input.Keys.N && nextUnitButton.getParent() != null) {
@@ -270,6 +277,10 @@ public class HudStage extends Stage {
     		}
     		if (event.getListenerActor() == europeButton) {
     			gameController.showEuropeScreen();
+    			return true;
+    		}
+    		if (event.getListenerActor() == tradeRouteButton) {
+    			showCreateTradeRouteDialog();
     			return true;
     		}
     		
@@ -389,6 +400,9 @@ public class HudStage extends Stage {
         europeButton = new ButtonActor(shapeRenderer, "Y");
         europeButton.addListener(buttonsInputListener);
         
+        tradeRouteButton = new ButtonActor(shapeRenderer, "L");
+        tradeRouteButton.addListener(buttonsInputListener);
+        
         endTurnButton = new ButtonActor(shapeRenderer, "end turn");
         endTurnButton.addListener(buttonsInputListener);
         
@@ -438,6 +452,9 @@ public class HudStage extends Stage {
 		viewButton.setPosition(getWidth() / 2, getHeight() - bw - 10);
 		europeButton.setSize(bw, bw);
 		europeButton.setPosition(getWidth() / 2 - bw, getHeight() - bw - 10);
+		tradeRouteButton.setSize(bw, bw);
+		tradeRouteButton.setPosition(viewButton.getX() + bw, viewButton.getY());
+		
 		endTurnButton.setSize(bw, bw);
 		endTurnButton.setPosition(getWidth() - bw, getHeight() - bw);
 		showNotificationButton.setSize(bw, bw);
@@ -565,6 +582,7 @@ public class HudStage extends Stage {
 			}
 			buttonsGroup.addActor(viewButton);
 			buttonsGroup.addActor(europeButton);
+			buttonsGroup.addActor(tradeRouteButton);
 			
 			buttonsGroup.addActor(exitActionButton);
         }
@@ -584,6 +602,11 @@ public class HudStage extends Stage {
 		HudStage.this.showDialog(gotoCityDialogList);
     }
 	
+    private void showCreateTradeRouteDialog() {
+    	TradeRouteListDialog dialog = new TradeRouteListDialog(shapeRenderer, guiGameModel.game.playingPlayer, Game.idGenerator);
+    	HudStage.this.showDialog(dialog);
+    }
+    
 	private void showNotification() {
 		Notification notification = gameController.getFirstNotification();
 		

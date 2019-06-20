@@ -1,5 +1,6 @@
 package promitech.colonization.ui;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
@@ -10,7 +11,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.utils.IntSet;
 
 public class STable extends Table {
-    private static HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
+    private static final HorizontalGroup SEPARATOR_ROW = new HorizontalGroup() {
         @Override
         public float getPrefHeight() {
             return 20f;
@@ -19,15 +20,18 @@ public class STable extends Table {
     
     private final ShapeRenderer shape;
     private int rowIndexCounter = 0;
-    private STableSelectListener onSelectListener;
-    private STableSelectListener onSingleClickSelectListener;
-    private float top, left, bottom, right;
+    private final List<STableSelectListener> onSelectListeners = new ArrayList<STableSelectListener>();
+    private final List<STableSelectListener> onSingleClickSelectListeners = new ArrayList<STableSelectListener>();
+    private float top;
+    private float left;
+    private float bottom;
+    private float right;
     
     public STable(ShapeRenderer shape) {
         this.shape = shape;
     }
     
-    public void addRow(Object payload, int columnAlignment[], Actor ... actors) {
+    public void addRow(Object payload, int[] columnAlignment, Actor ... actors) {
         if (columnAlignment.length != actors.length) {
             throw new IllegalStateException("columns alignment != actor columns");
         }
@@ -55,6 +59,7 @@ public class STable extends Table {
     }
     
     private DoubleClickedListener itemClickedListener = new DoubleClickedListener() {
+    	@Override
         public void clicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
             super.clicked(event, x, y);
             
@@ -69,32 +74,33 @@ public class STable extends Table {
                     STableItem item = (STableItem)a;
                     if (item.rowIndex == selectedRow) {
                         item.setSelected();
-                        if (onSingleClickSelectListener != null) {
-                        	onSingleClickSelectListener.onSelect(item.payload);
+                        for (STableSelectListener l : onSingleClickSelectListeners) {
+                        	l.onSelect(item.payload);
                         }
                     } else {
                         item.setUnselected();
                     }
                 }
             }
-        };
+        }
         
+    	@Override
         public void doubleClicked(com.badlogic.gdx.scenes.scene2d.InputEvent event, float x, float y) {
             if (event.getListenerActor() instanceof STableItem) {
                 STableItem item = (STableItem)event.getListenerActor();
-                if (onSelectListener != null) {
-                    onSelectListener.onSelect(item.payload);
+                for (STableSelectListener l : onSelectListeners) {
+                	l.onSelect(item.payload);
                 }
             }
-        };
+        }
     };
     
     public void addSingleClickSelectListener(STableSelectListener selectListener) {
-    	this.onSingleClickSelectListener = selectListener;
+    	onSingleClickSelectListeners.add(selectListener);
     }
     
     public void addSelectListener(STableSelectListener selectListener) {
-        this.onSelectListener = selectListener;
+    	onSelectListeners.add(selectListener);
     }
 
     public Object getSelectedPayload() {

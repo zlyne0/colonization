@@ -25,6 +25,14 @@ public class TradeRouteStop {
 		return goodsType;
 	}
 	
+	public void addGoodsType(GoodsType goodsType) {
+		this.goodsType.add(goodsType);
+	}
+	
+	public void removeGoodsType(GoodsType goodsType) {
+		this.goodsType.remove(goodsType);
+	}
+	
     public static class Xml extends XmlNodeParser<TradeRouteStop> {
 
         private static final String GOODS_ELEMENT = "goods";
