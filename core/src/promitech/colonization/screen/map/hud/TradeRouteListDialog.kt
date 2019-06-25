@@ -4,6 +4,7 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.ui.SelectBox
 import com.badlogic.gdx.scenes.scene2d.ui.Table
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.IdGenerator
 import net.sf.freecol.common.model.TradeRouteDefinition
@@ -13,6 +14,7 @@ import promitech.colonization.ui.ModalDialog
 import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
+import net.sf.freecol.common.model.TradeRoute
 
 
 data class TradeRouteItem(val tradeRoute : TradeRouteDefinition) {
@@ -30,7 +32,8 @@ class ColonySelectItem(var colony : Colony) {
 class TradeRouteListDialog(
 	val shapeRenderer : ShapeRenderer,		
 	val player : Player,
-	val idGenerator : IdGenerator
+	val idGenerator : IdGenerator,
+	val activeUnit : Unit?
 ) : ModalDialog<TradeRouteListDialog>(ModalDialogSize.width50(), ModalDialogSize.def())
 {
 	
@@ -86,13 +89,25 @@ class TradeRouteListDialog(
 			}
 		}
 		
+		val assignRouteButton = TextButton(Messages.msg("assignTradeRouteAction.name"), skin)
+		assignRouteButton.setDisabled(!canAssignRouteToUnit())
+		assignRouteButton.addListener { ->
+			val selectedRoute = tradeRoutes.getSelected()
+			if (selectedRoute != null && activeUnit != null) {
+				activeUnit.setTradeRoute(TradeRoute(selectedRoute.tradeRoute.getId()))
+				// TODO: next active Unit
+				hideWithFade()
+			}
+		}
+		
 		var buttons = Table()
 		buttons.defaults()
 			.pad(20f, 20f, 0f, 20f)
 			.fillX()
 		buttons.add(createRouteButton).row()
 		buttons.add(editRouteButton).row()
-		buttons.add(deleteRouteButton)
+		buttons.add(deleteRouteButton).row()
+		buttons.add(assignRouteButton)
 		
 		val tradeRoutesPanel = Table()
 		tradeRoutesPanel.defaults()
@@ -103,6 +118,10 @@ class TradeRouteListDialog(
 		return tradeRoutesPanel
 	}
 
+	private fun canAssignRouteToUnit() : Boolean {
+		return activeUnit != null && activeUnit.canCarryGoods()
+	}
+	
 	private fun showTradeRouteDefinitionDialog(routeDef : TradeRouteDefinition) {
 		val dialog = TradeRouteDialog(shapeRenderer, player, routeDef, idGenerator)
 		dialog.addOnCloseListener { ->

@@ -603,7 +603,12 @@ public class HudStage extends Stage {
     }
 	
     private void showCreateTradeRouteDialog() {
-    	TradeRouteListDialog dialog = new TradeRouteListDialog(shapeRenderer, guiGameModel.game.playingPlayer, Game.idGenerator);
+    	TradeRouteListDialog dialog = new TradeRouteListDialog(
+			shapeRenderer, 
+			guiGameModel.game.playingPlayer, 
+			Game.idGenerator, 
+			guiGameModel.getActiveUnit()
+		);
     	HudStage.this.showDialog(dialog);
     }
     

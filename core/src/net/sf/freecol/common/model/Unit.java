@@ -77,6 +77,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     
     private UnitContainer unitContainer = null;
     private GoodsContainer goodsContainer = null;
+    private TradeRoute tradeRoute; 
     
     protected Unit(String id) {
     	super(id);
@@ -292,10 +293,14 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType().isEuropean();
     }
     
-    public final Object getTradeRoute() {
-        return null;
+    public final TradeRoute getTradeRoute() {
+        return tradeRoute;
     }
-	
+
+    public final void setTradeRoute(TradeRoute tradeRoute) {
+    	this.tradeRoute = tradeRoute;
+    }
+    
     public boolean isDestinationSet() {
     	return destinationType != null;
     }
@@ -1188,6 +1193,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 				}
             });
             addNode(GoodsContainer.class, "goodsContainer");
+            addNode(TradeRoute.class, "tradeRoute");
         }
 
         @Override

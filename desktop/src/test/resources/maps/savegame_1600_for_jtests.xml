@@ -19140,6 +19140,7 @@
       </tile>
       <tile id="tile:3428" x="20" y="79" type="model.tile.coniferForest" owner="player:1" owningSettlement="colony:6788" style="0" region="region:5009" connected="11" contiguity="2">
         <unit id="unit:7162" unitType="model.unit.wagonTrain" movesLeft="6" state="active" role="model.role.default" roleCount="0" owner="player:1" location="tile:3428" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0">
+          <tradeRoute defId="notExistsButOk:1" index="1"/>
           <goodsContainer id="goodsContainer:7163">
             <oldStoredGoods>
               <goods type="model.goods.tobacco" amount="88"/>

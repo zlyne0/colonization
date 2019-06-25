@@ -82,6 +82,15 @@ public class Savegame1600Verifier {
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
         verifyIndianSettlement(game);
+        
+        verifyUnitTradeRoute(game);
+	}
+
+	private void verifyUnitTradeRoute(Game game) {
+		Tile tile = game.map.getSafeTile(20, 79);
+		Unit u = tile.getUnits().getById("unit:7162");
+		assertThat(u.getTradeRoute().getTradeRouteDefinitionId()).isEqualTo("notExistsButOk:1");
+		assertThat(u.getTradeRoute().getNextStopLocationIndex()).isEqualTo(1);
 	}
 
 	private void verifyIndianSettlement(Game game) {
