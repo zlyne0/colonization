@@ -15,6 +15,7 @@ import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import net.sf.freecol.common.model.TradeRoute
+import promitech.colonization.screen.map.hud.GUIGameController
 
 
 data class TradeRouteItem(val tradeRoute : TradeRouteDefinition) {
@@ -33,7 +34,7 @@ class TradeRouteListDialog(
 	val shapeRenderer : ShapeRenderer,		
 	val player : Player,
 	val idGenerator : IdGenerator,
-	val activeUnit : Unit?
+	val guiGameController : GUIGameController
 ) : ModalDialog<TradeRouteListDialog>(ModalDialogSize.width50(), ModalDialogSize.def())
 {
 	
@@ -93,10 +94,11 @@ class TradeRouteListDialog(
 		assignRouteButton.setDisabled(!canAssignRouteToUnit())
 		assignRouteButton.addListener { ->
 			val selectedRoute = tradeRoutes.getSelected()
+			val activeUnit = guiGameController.getActiveUnit()
 			if (selectedRoute != null && activeUnit != null) {
 				activeUnit.setTradeRoute(TradeRoute(selectedRoute.tradeRoute.getId()))
-				// TODO: next active Unit
-				hideWithFade()
+				guiGameController.nextActiveUnit()
+				hideWithoutFade()
 			}
 		}
 		
@@ -119,6 +121,7 @@ class TradeRouteListDialog(
 	}
 
 	private fun canAssignRouteToUnit() : Boolean {
+		val activeUnit = guiGameController.getActiveUnit()
 		return activeUnit != null && activeUnit.canCarryGoods()
 	}
 	

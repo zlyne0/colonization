@@ -607,7 +607,7 @@ public class HudStage extends Stage {
 			shapeRenderer, 
 			guiGameModel.game.playingPlayer, 
 			Game.idGenerator, 
-			guiGameModel.getActiveUnit()
+			gameController
 		);
     	HudStage.this.showDialog(dialog);
     }
