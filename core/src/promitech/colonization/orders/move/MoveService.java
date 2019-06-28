@@ -4,13 +4,17 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TradeRoute;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -406,5 +410,36 @@ public class MoveService {
     public void cashInTreasure(Unit unit) {
 		new LostCityRumourService(guiGameController, this, guiGameModel.game)
 			.cashInTreasure(unit);
+    }
+    
+    private PathFinder pathFinder;
+    
+    public void xxx(Map map, Unit wagon) {
+        // TODO: weryfikacja trade route jako takiej, czy jest dobrze zdefiniowany, freecol
+        TradeRoute tradeRoute = wagon.getTradeRoute();
+        Tile nextStopTile = tradeRoute.nextStopTile(wagon.getOwner());
+        if (nextStopTile == null) {
+            System.out.println("can not find stop location, remove trade route");
+            wagon.setTradeRoute(null);
+            // TODO:
+            return;
+        }
+        Path path = pathFinder.findToTile(map, wagon.getTile(), nextStopTile, wagon);
+        if (!path.reachTile(nextStopTile)) {
+            // just stop, and wait when path reach stop
+            wagon.setState(UnitState.SKIPPED);
+            return;
+        }
+        
+        MoveContext moveContext = new MoveContext(path);
+        handlePathMoveContext(moveContext, AfterMoveProcessor.DO_NOTHING);
+        if (nextStopTile.equalsCoordinates(wagon.getTile())) {
+            // rozladowanie
+            // zaladowanie
+            // next stop
+            //wagon.reduceMovesLeftToZero();
+            tradeRoute.increaseNextStop(wagon.getOwner());
+        }
+        // end of move
     }
 }

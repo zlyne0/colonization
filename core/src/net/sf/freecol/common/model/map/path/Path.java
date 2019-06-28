@@ -60,8 +60,16 @@ public class Path {
 		return tiles.get(1);
 	}
 
+	public boolean reachTile(Tile tile) {
+	    for (int i=0; i<tiles.size; i++) {
+	        if (tiles.get(i).equalsCoordinates(tile)) {
+	            return true;
+	        }
+	    }
+	    return false;
+	}
+	
 	public boolean isPathToEurope() {
 		return toEurope;
 	}
-	
 }

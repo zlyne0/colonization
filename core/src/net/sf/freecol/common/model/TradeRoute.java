@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -37,7 +38,52 @@ public class TradeRoute implements Identifiable {
 	public void setNextStopLocationIndex(int nextStopLocationIndex) {
 		this.nextStopLocationIndex = nextStopLocationIndex;
 	}
+
+    public Tile nextStopTile(Player player) {
+        Colony colony = nextStopLocation(player);
+        if (colony == null) {
+            return null;
+        }
+        return colony.tile;
+    }
 	
+    public Colony nextStopLocation(Player player) {
+        TradeRouteDefinition tradeRoute = player.tradeRoutes.getByIdOrNull(tradeRouteDefinitionId);
+        if (tradeRoute == null) {
+            System.out.println("player[" + player.getId() + "]"
+                + ".noTradeRouteDefinition " + tradeRouteDefinitionId);
+            return null;
+        }
+        if (nextStopLocationIndex >= tradeRoute.getTradeRouteStops().size()) {
+            System.out.println(
+                "player[" + player.getId() + "]"
+                + ".tradeRouteDefinition[" + tradeRouteDefinitionId + "]"
+                + ".noStopLocation"
+            );
+            return null;
+        }
+        TradeRouteStop tradeRouteStop = tradeRoute.getTradeRouteStops().get(nextStopLocationIndex);
+        Settlement settlement = player.settlements.getByIdOrNull(tradeRouteStop.getTradeLocationId());
+        if (settlement == null || !settlement.isColony() || settlement.getOwner().notEqualsId(player)) {
+            System.out.println(
+                "player[" + player.getId() + "]"
+                + ".tradeRouteDefinition[" + tradeRouteDefinitionId + "]"
+                + ".noStopLocation[" + tradeRouteStop.getTradeLocationId() + "]"
+            );
+            return null;
+        }
+        return settlement.asColony();
+    }
+    
+    public void increaseNextStop(Player player) {
+        TradeRouteDefinition tradeRoute = player.tradeRoutes.getById(tradeRouteDefinitionId);
+        
+        nextStopLocationIndex++;
+        if (nextStopLocationIndex >= tradeRoute.getTradeRouteStops().size()) {
+            nextStopLocationIndex = 0;
+        }
+    }
+    
     public static class Xml extends XmlNodeParser<TradeRoute> {
 
 		private static final String ATTR_NEXT_STOP_INDEX = "index";
