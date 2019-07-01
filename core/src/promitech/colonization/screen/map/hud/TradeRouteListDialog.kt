@@ -16,6 +16,8 @@ import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
 import net.sf.freecol.common.model.TradeRoute
 import promitech.colonization.screen.map.hud.GUIGameController
+import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
+import com.badlogic.gdx.scenes.scene2d.Actor
 
 
 data class TradeRouteItem(val tradeRoute : TradeRouteDefinition) {
@@ -54,6 +56,12 @@ class TradeRouteListDialog(
 			hideWithFade()
 		}
 		getButtonTable().add(okButton).pad(10f).fillX().expandX()
+		
+		tradeRoutes.addListener(object : ChangeListener() {
+			override fun changed(event: ChangeListener.ChangeEvent?, actor: Actor?) {
+				System.out.println("change to " + tradeRoutes.getSelected());
+			}
+		})
 	}
 	
 	private fun createTradeRoutesPanel() : Table {

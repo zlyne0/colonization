@@ -12,6 +12,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class TradeRouteDefinition extends ObjectWithId {
 
 	private String name;
+	// TODO: MapIdEntities
 	private final List<TradeRouteStop> tradeRouteStops = new ArrayList<TradeRouteStop>();
 	
 	private TradeRouteDefinition(String id, String name) {
@@ -38,6 +39,26 @@ public class TradeRouteDefinition extends ObjectWithId {
 		return tradeRouteStops;
 	}
 
+	public TradeRouteStop stopDefinitionByLocation(Identifiable stopLocation) {
+		TradeRouteStop stop = stopDefinitionByLocationOrNull(stopLocation);
+		if (stop == null) {
+			throw new IllegalArgumentException(
+				"can not find trade stop by id: " + stopLocation.getId() 
+				+ " in route def " + getId() + " " + name
+			);
+		}
+		return stop;
+	}
+
+	public TradeRouteStop stopDefinitionByLocationOrNull(Identifiable stopLocation) {
+		for (TradeRouteStop stop : tradeRouteStops) {
+			if (stopLocation.getId().equals(stop.getTradeLocationId())) {
+				return stop;
+			}
+		}
+		return null;
+	}
+	
 	public String getName() {
 		return name;
 	}

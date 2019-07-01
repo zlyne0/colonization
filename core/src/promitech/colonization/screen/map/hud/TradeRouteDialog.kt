@@ -182,7 +182,7 @@ class TradeRouteDialog(
 	}
 	
 	private fun addRouteStopListElement(routeStop : TradeRouteStop) {
-		val colony = player.settlements.getById(routeStop.getTradeLocationId()).getColony()
+		val colony = player.settlements.getById(routeStop.getTradeLocationId()).asColony()
 		val stopImg = Image(GameResources.instance.getFrame(colony.getImageKey()).texture)
 		stopImg.setAlign(Align.left)
 		val stopNameLabel = Label(colony.getName(), skin)

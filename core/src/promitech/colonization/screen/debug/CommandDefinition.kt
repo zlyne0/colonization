@@ -17,6 +17,7 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
+import net.sf.freecol.common.model.TradeRoute
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
@@ -124,6 +125,21 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 		command("show_continental_congress") {
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
+		
+		command("tradeRoute") {
+			val player = guiGameModel.game.players.getById("player:1")
+			val wagonTrain = player.units.getById("unit:6781")
+			wagonTrain.resetMovesLeftOnNewTurn()
+			if (wagonTrain.getTradeRoute() == null) {
+				val selectedRoute = player.tradeRoutes.getById("tradeRouteDef:7325")
+				wagonTrain.setTradeRoute(TradeRoute(selectedRoute.getId()))
+			}
+			
+			ThreadsResources.instance.executeMovement {
+				di.moveService.handleTradeRouteMission(guiGameModel.game.map, wagonTrain, di.pathFinder)
+			}
+		}
+		
     	command("nothing") {
 		}
 	}

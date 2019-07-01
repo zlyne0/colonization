@@ -26,6 +26,12 @@ public class GoodsContainer {
     	toContainer.increaseGoodsQuantity(goodsType, quantity);
     }
     
+    public void moveGoods(String goodsTypeId, GoodsContainer toContainer) {
+    	int amount = goodsAmount(goodsTypeId);
+    	decreaseGoodsQuantity(goodsTypeId, amount);
+    	toContainer.increaseGoodsQuantity(goodsTypeId, amount);
+    }
+    
     public Entries<String> entries() {
     	return goods.entries();
     }

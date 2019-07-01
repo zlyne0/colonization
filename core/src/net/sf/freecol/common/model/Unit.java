@@ -353,14 +353,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return tileImprovementType;
 	}
     
-    public int getMovesLeft() {
-        return movesLeft;
-    }
-    
-    public boolean hasMovesPoints() {
-    	return movesLeft > 0;
-    }
-    
     public boolean isNaval() {
     	return unitType.isNaval();
     }
@@ -807,6 +799,18 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 			movesLeft = getInitialMovesLeft();
 		}
 	}
+	
+	public boolean hasFullMovesPoints() {
+		return movesLeft == getInitialMovesLeft();
+	}
+	
+    public int getMovesLeft() {
+        return movesLeft;
+    }
+    
+    public boolean hasMovesPoints() {
+    	return movesLeft > 0;
+    }
 	
     public UnitContainer getUnitContainer() {
         return unitContainer;

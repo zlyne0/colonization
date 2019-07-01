@@ -412,32 +412,35 @@ public class MoveService {
 			.cashInTreasure(unit);
     }
     
-    private PathFinder pathFinder;
-    
-    public void xxx(Map map, Unit wagon) {
+    public void handleTradeRouteMission(Map map, Unit wagon, PathFinder pathFinder) {
         // TODO: weryfikacja trade route jako takiej, czy jest dobrze zdefiniowany, freecol
         TradeRoute tradeRoute = wagon.getTradeRoute();
-        Tile nextStopTile = tradeRoute.nextStopTile(wagon.getOwner());
-        if (nextStopTile == null) {
+        
+        if (wagon.getTile().hasSettlement()) {
+        	if (tradeRoute.containsStop(wagon.getOwner(), wagon.getTile().getSettlement())) {
+        		tradeRoute.loadCargo(wagon, wagon.getTile().getSettlement().asColony());
+        	}
+        }
+        
+        Colony nextStopLocation = tradeRoute.nextStopLocation(wagon.getOwner());
+        if (nextStopLocation == null) {
             System.out.println("can not find stop location, remove trade route");
             wagon.setTradeRoute(null);
-            // TODO:
+            wagon.setState(UnitState.ACTIVE);
             return;
         }
-        Path path = pathFinder.findToTile(map, wagon.getTile(), nextStopTile, wagon);
-        if (!path.reachTile(nextStopTile)) {
+        Path path = pathFinder.findToTile(map, wagon.getTile(), nextStopLocation.tile, wagon);
+        if (!path.reachTile(nextStopLocation.tile)) {
             // just stop, and wait when path reach stop
             wagon.setState(UnitState.SKIPPED);
             return;
         }
         
         MoveContext moveContext = new MoveContext(path);
+        moveContext.initNextPathStep();
         handlePathMoveContext(moveContext, AfterMoveProcessor.DO_NOTHING);
-        if (nextStopTile.equalsCoordinates(wagon.getTile())) {
-            // rozladowanie
-            // zaladowanie
-            // next stop
-            //wagon.reduceMovesLeftToZero();
+        if (nextStopLocation.tile.equalsCoordinates(wagon.getTile())) {
+        	tradeRoute.unloadCargo(wagon, nextStopLocation);
             tradeRoute.increaseNextStop(wagon.getOwner());
         }
         // end of move

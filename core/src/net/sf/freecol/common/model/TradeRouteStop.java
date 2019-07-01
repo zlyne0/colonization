@@ -32,6 +32,15 @@ public class TradeRouteStop {
 	public void removeGoodsType(GoodsType goodsType) {
 		this.goodsType.remove(goodsType);
 	}
+
+	public boolean hasNotGoods(String goodsTypeId) {
+		for (GoodsType gt : goodsType) {
+			if (gt.equalsId(goodsTypeId)) {
+				return false;
+			}
+		}
+		return true;
+	}
 	
     public static class Xml extends XmlNodeParser<TradeRouteStop> {
 
