@@ -18,6 +18,7 @@ import net.sf.freecol.common.model.TradeRoute
 import promitech.colonization.screen.map.hud.GUIGameController
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.Actor
+import com.badlogic.gdx.scenes.scene2d.ui.Label
 
 
 data class TradeRouteItem(val tradeRoute : TradeRouteDefinition) {
@@ -46,6 +47,8 @@ class TradeRouteListDialog(
 			return 200f
 		}
 	}
+	val assignRouteButton = TextButton(Messages.msg("assignTradeRouteAction.name"), skin)
+	val msgLabel = Label("", skin)
 		
 	init {
 		layout.add(createTradeRoutesPanel()).row()
@@ -62,6 +65,18 @@ class TradeRouteListDialog(
 				System.out.println("change to " + tradeRoutes.getSelected());
 			}
 		})
+	}
+	
+	private fun xxx() {
+		val tradeRouteItem = tradeRoutes.getSelected()
+		if (tradeRouteItem == null) {
+			msgLabel.setText(Messages.msg("tradeRoutePanel.new.tooltip"))
+			assignRouteButton.setDisabled(true)
+			return 
+		}
+		
+		
+		assignRouteButton.setDisabled(false)
 	}
 	
 	private fun createTradeRoutesPanel() : Table {
@@ -98,7 +113,6 @@ class TradeRouteListDialog(
 			}
 		}
 		
-		val assignRouteButton = TextButton(Messages.msg("assignTradeRouteAction.name"), skin)
 		assignRouteButton.setDisabled(!canAssignRouteToUnit())
 		assignRouteButton.addListener { ->
 			val selectedRoute = tradeRoutes.getSelected()
@@ -123,7 +137,8 @@ class TradeRouteListDialog(
 		tradeRoutesPanel.defaults()
 			.pad(20f, 20f, 20f, 20f)
 		tradeRoutesPanel.add(tradeRoutes)
-		tradeRoutesPanel.add(buttons)
+		tradeRoutesPanel.add(buttons).row()
+		tradeRoutesPanel.add(msgLabel).colspan(2)
 		
 		return tradeRoutesPanel
 	}
