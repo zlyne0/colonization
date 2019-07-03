@@ -125,7 +125,7 @@ public class TradeSession {
 	}
 	
 	public void acceptSellOfferToIndianSettlement(GoodsType goodsType, int amount, int price) {
-		unit.getGoodsContainer().moveGoods(goodsType, amount, indianSettlement.getGoodsContainer());
+		unit.getGoodsContainer().transferGoods(goodsType, amount, indianSettlement.getGoodsContainer());
 		indianSettlement.getOwner().transferGoldToPlayer(price, unit.getOwner());
 		indianSettlement.modifyTensionWithOwnerTension(unit.getOwner(), -amount / 500);
 		unit.reduceMovesLeftToZero();
@@ -143,7 +143,7 @@ public class TradeSession {
 
 	public void deliverGoodsToIndianSettlement(GoodsType goodsType, int amount) {
 		int price = isProd.goodsPriceToBuy(indianSettlement, goodsType, amount);
-		unit.getGoodsContainer().moveGoods(goodsType, amount, indianSettlement.getGoodsContainer());
+		unit.getGoodsContainer().transferGoods(goodsType, amount, indianSettlement.getGoodsContainer());
 		unit.reduceMovesLeftToZero();
 		canGift = false;
 		
@@ -219,7 +219,7 @@ public class TradeSession {
 		if (unit.getOwner().hasNotGold(price)) {
 			throw new IllegalStateException("player " + unit.getOwner() + " has not " + price + " gold");
 		}
-		indianSettlement.getGoodsContainer().moveGoods(goodsType, amount, unit.getGoodsContainer());
+		indianSettlement.getGoodsContainer().transferGoods(goodsType, amount, unit.getGoodsContainer());
 
 		unit.getOwner().transferGoldToPlayer(price, indianSettlement.getOwner());
 		

@@ -416,10 +416,10 @@ public class MoveService {
         // TODO: weryfikacja trade route jako takiej, czy jest dobrze zdefiniowany, freecol
         TradeRoute tradeRoute = wagon.getTradeRoute();
         
-        if (wagon.getTile().hasSettlement()) {
-        	if (tradeRoute.containsStop(wagon.getOwner(), wagon.getTile().getSettlement())) {
-        		tradeRoute.loadCargo(wagon, wagon.getTile().getSettlement().asColony());
-        	}
+        if (wagon.getTile().hasSettlement() && 
+    		tradeRoute.containsStop(wagon.getOwner(), wagon.getTile().getSettlement())
+		) {
+    		tradeRoute.loadCargo(wagon, wagon.getTile().getSettlement().asColony());
         }
         
         Colony nextStopLocation = tradeRoute.nextStopLocation(wagon.getOwner());

@@ -21,12 +21,12 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
-    public void moveGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
+    public void transferGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
     	decreaseGoodsQuantity(goodsType, quantity);
     	toContainer.increaseGoodsQuantity(goodsType, quantity);
     }
     
-    public void moveGoods(String goodsTypeId, GoodsContainer toContainer) {
+    public void transferGoods(String goodsTypeId, GoodsContainer toContainer) {
     	int amount = goodsAmount(goodsTypeId);
     	decreaseGoodsQuantity(goodsTypeId, amount);
     	toContainer.increaseGoodsQuantity(goodsTypeId, amount);

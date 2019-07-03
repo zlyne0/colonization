@@ -6,6 +6,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -88,7 +89,10 @@ public class TradeRoute implements Identifiable {
     }
 
 	public void unloadCargo(Unit wagon, Colony stopLocation) {
-		System.out.println("tradeRoute[" + tradeRouteDefinitionId + "].unloadGoods at " + stopLocation.getId());
+		System.out.println(
+			"tradeRoute[" + tradeRouteDefinitionId + "]"
+			+ ".location[" + stopLocation.getId() + "].unloadGoods"
+		);
 		TradeRouteDefinition tradeRouteDef = wagon.getOwner().tradeRoutes.getById(tradeRouteDefinitionId);
 		TradeRouteStop stopDef = tradeRouteDef.stopDefinitionByLocation(stopLocation);
 
@@ -96,11 +100,14 @@ public class TradeRoute implements Identifiable {
 		// clone because nested modified objectMap
 		for (Entry<String> wagonGoodsEntry : wagon.getGoodsContainer().cloneGoods().entries()) {
 			String goodsId = wagonGoodsEntry.key;
-			if (stopDef.hasNotGoods(goodsId)) {
-				System.out.println("tradeRoute[" + tradeRouteDefinitionId + "]"
-					+ ".unloadGoods[" + goodsId + "] to " + stopLocation.getId()
+			int wagonGoodsAmount = wagonGoodsEntry.value;
+			if (stopDef.hasNotGoods(goodsId) && wagonGoodsAmount > 0) {
+				System.out.println(
+					"tradeRoute[" + tradeRouteDefinitionId + "]"
+					+ ".location[" + stopLocation.getId() + "]"
+					+ ".unloadGoods " + goodsId + " " + wagonGoodsAmount
 				);
-				wagon.getGoodsContainer().moveGoods(goodsId, stopLocation.getGoodsContainer());
+				wagon.getGoodsContainer().transferGoods(goodsId, stopLocation.getGoodsContainer());
 				unloadDone = true;
 			}
 		}
@@ -112,11 +119,37 @@ public class TradeRoute implements Identifiable {
 	}
     
 	public void loadCargo(Unit wagon, Colony stopLocation) {
-		System.out.println("tradeRoute[" + tradeRouteDefinitionId + "].loadGoods at " + stopLocation.getId());
+		System.out.println(
+			"tradeRoute[" + tradeRouteDefinitionId + "]"
+			+ ".location[" + stopLocation.getId() + "].loadGoods"
+		);
 
 		TradeRouteDefinition tradeRouteDef = wagon.getOwner().tradeRoutes.getById(tradeRouteDefinitionId);
 		TradeRouteStop stopDef = tradeRouteDef.stopDefinitionByLocation(stopLocation);
 		
+		boolean loadDone = false;
+		for (GoodsType goodsType : stopDef.getGoodsType()) {
+			int stopGoodsAmount = stopLocation.getGoodsContainer().goodsAmount(goodsType);
+			if (stopGoodsAmount > 0) {
+				int transferAmount = Math.min(
+					stopGoodsAmount, 
+					wagon.maxGoodsAmountToFillFreeSlots(goodsType.getId())
+				);
+				if (transferAmount > 0) {
+					System.out.println(
+						"tradeRoute[" + tradeRouteDefinitionId + "]"
+						+ ".location[" + stopLocation.getId() + "]"
+						+ ".load " + goodsType.getId() + " " + transferAmount
+					);
+					stopLocation.getGoodsContainer().transferGoods(goodsType, transferAmount, wagon.getGoodsContainer());
+					loadDone = true;
+				}
+			}
+		}
+		if (loadDone && !wagon.hasFullMovesPoints()) {
+			wagon.reduceMovesLeftToZero();
+			wagon.setState(UnitState.ACTIVE);
+		}
 	}
 	
     public static class Xml extends XmlNodeParser<TradeRoute> {
