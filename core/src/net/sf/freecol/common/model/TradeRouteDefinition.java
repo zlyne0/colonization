@@ -4,10 +4,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public class TradeRouteDefinition extends ObjectWithId {
 
@@ -67,6 +69,26 @@ public class TradeRouteDefinition extends ObjectWithId {
 		this.name = name;
 	}
 
+    public StringTemplate canBeAssignedMsg(Player player) {
+        if (tradeRouteStops.size() < 2) {
+            return StringTemplate.template("tradeRoute.notEnoughStops");
+        }
+        boolean empty = true;
+        for (TradeRouteStop tradeRouteStop : tradeRouteStops) {
+            if (!player.settlements.containsId(tradeRouteStop.getTradeLocationId())) {
+                return StringTemplate.template("tradeRoute.invalidStop")
+                        .add("%name%", "");
+            }
+            if (!tradeRouteStop.getGoodsType().isEmpty()) {
+                empty = false;
+            }
+        }
+        if (empty) {
+            return StringTemplate.template("tradeRoute.allEmpty");
+        }
+        return null;
+    }
+    
 	public static class Xml extends XmlNodeParser<TradeRouteDefinition> {
 
 		private static final String ATTR_NAME = "name";

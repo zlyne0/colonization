@@ -62,23 +62,35 @@ class TradeRouteListDialog(
 		
 		tradeRoutes.addListener(object : ChangeListener() {
 			override fun changed(event: ChangeListener.ChangeEvent?, actor: Actor?) {
-				System.out.println("change to " + tradeRoutes.getSelected());
+			    System.out.println("tradeRouteList change selected " + tradeRoutes.getSelected());
+				determineTradeRouteAssignPossibility()
 			}
 		})
 	}
 	
-	private fun xxx() {
+	private fun determineTradeRouteAssignPossibility() {
 		val tradeRouteItem = tradeRoutes.getSelected()
 		if (tradeRouteItem == null) {
+		    assignRouteButton.setDisabled(true)
 			msgLabel.setText(Messages.msg("tradeRoutePanel.new.tooltip"))
-			assignRouteButton.setDisabled(true)
 			return 
 		}
 		
-		
-		assignRouteButton.setDisabled(false)
+		val canBeAssignedMsg = tradeRouteItem.tradeRoute.canBeAssignedMsg(player)
+		if (canBeAssignedMsg != null) {
+			assignRouteButton.setDisabled(true)
+			msgLabel.setText(Messages.message(canBeAssignedMsg))
+			return 
+		}
+		assignRouteButton.setDisabled(!canAssignRouteToUnit())
+		msgLabel.setText("")
 	}
-	
+
+	private fun canAssignRouteToUnit() : Boolean {
+		val activeUnit = guiGameController.getActiveUnit()
+		return activeUnit != null && activeUnit.canCarryGoods()
+	}
+		
 	private fun createTradeRoutesPanel() : Table {
 		updateTradeRouteList()
 		
@@ -113,7 +125,6 @@ class TradeRouteListDialog(
 			}
 		}
 		
-		assignRouteButton.setDisabled(!canAssignRouteToUnit())
 		assignRouteButton.addListener { ->
 			val selectedRoute = tradeRoutes.getSelected()
 			val activeUnit = guiGameController.getActiveUnit()
@@ -123,6 +134,7 @@ class TradeRouteListDialog(
 				hideWithoutFade()
 			}
 		}
+		determineTradeRouteAssignPossibility()
 		
 		var buttons = Table()
 		buttons.defaults()
@@ -143,15 +155,11 @@ class TradeRouteListDialog(
 		return tradeRoutesPanel
 	}
 
-	private fun canAssignRouteToUnit() : Boolean {
-		val activeUnit = guiGameController.getActiveUnit()
-		return activeUnit != null && activeUnit.canCarryGoods()
-	}
-	
 	private fun showTradeRouteDefinitionDialog(routeDef : TradeRouteDefinition) {
 		val dialog = TradeRouteDialog(shapeRenderer, player, routeDef, idGenerator)
 		dialog.addOnCloseListener { ->
 			updateTradeRouteList()
+			determineTradeRouteAssignPossibility()
 		}
 		showDialog(dialog)
 	}
