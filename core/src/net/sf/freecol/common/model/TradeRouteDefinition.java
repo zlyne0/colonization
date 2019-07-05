@@ -14,7 +14,6 @@ import promitech.colonization.ui.resources.StringTemplate;
 public class TradeRouteDefinition extends ObjectWithId {
 
 	private String name;
-	// TODO: MapIdEntities
 	private final List<TradeRouteStop> tradeRouteStops = new ArrayList<TradeRouteStop>();
 	
 	private TradeRouteDefinition(String id, String name) {
