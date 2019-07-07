@@ -19,6 +19,7 @@ import promitech.colonization.screen.map.hud.GUIGameController
 import com.badlogic.gdx.scenes.scene2d.utils.ChangeListener
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.ui.Label
+import promitech.colonization.orders.move.MoveController
 
 
 data class TradeRouteItem(val tradeRoute : TradeRouteDefinition) {
@@ -37,7 +38,8 @@ class TradeRouteListDialog(
 	val shapeRenderer : ShapeRenderer,		
 	val player : Player,
 	val idGenerator : IdGenerator,
-	val guiGameController : GUIGameController
+	val guiGameController : GUIGameController,
+	val moveController : MoveController
 ) : ModalDialog<TradeRouteListDialog>(ModalDialogSize.width50(), ModalDialogSize.def())
 {
 	
@@ -130,8 +132,8 @@ class TradeRouteListDialog(
 			val activeUnit = guiGameController.getActiveUnit()
 			if (selectedRoute != null && activeUnit != null) {
 				activeUnit.setTradeRoute(TradeRoute(selectedRoute.tradeRoute.getId()))
-				guiGameController.nextActiveUnit()
 				hideWithoutFade()
+				moveController.executeTradeRoute(activeUnit)
 			}
 		}
 		determineTradeRouteAssignPossibility()
