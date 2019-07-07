@@ -1,5 +1,7 @@
 package promitech.colonization.orders.move;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.ai.TradeRouteMissionHandler;
@@ -29,5 +31,32 @@ public class MoveInThreadService {
 			}
 		});
     }
+    
+	public void executeMove(final MoveContext moveContext, final AfterMoveProcessor afterMoveProcessor) {
+		ThreadsResources.instance.execute(new Runnable() {
+			@Override
+			public void run() {
+				moveService.preMoveProcessor(moveContext, afterMoveProcessor);
+			}
+		});
+	}
+
+	public void processMultipleMoves(final List<MoveContext> moveContextList, final AfterMoveProcessor afterMoveProcessor) {
+		ThreadsResources.instance.executeMovement(new Runnable() {
+			@Override
+			public void run() {
+				moveService.confirmedMultipleMoveProcessor(moveContextList, afterMoveProcessor);
+			}
+		});
+	}
+
+	public void confirmedMoveProcessor(final MoveContext moveContext, final AfterMoveProcessor afterMoveProcessor) {
+		ThreadsResources.instance.executeMovement(new Runnable() {
+			@Override
+			public void run() {
+				moveService.confirmedMoveProcessor(moveContext, afterMoveProcessor);
+			}
+		});
+	}
 	
 }

@@ -22,7 +22,7 @@ import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.GameResources;
 import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore;
 import promitech.colonization.orders.move.MoveContext;
-import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.orders.move.MoveInThreadService;
 import promitech.colonization.screen.map.Map;
 import promitech.colonization.screen.map.diplomacy.SettlementImageLabel;
 import promitech.colonization.screen.map.diplomacy.SpeakResultMsgDialog;
@@ -41,7 +41,7 @@ public class FirstContactController {
 	private FirstContactService firstContactService;
 	private GUIGameController guiGameController;
 	private Map screenMap;
-	private MoveService moveService;
+	private MoveInThreadService moveInThreadService;
 	private GUIGameModel guiGameModel;
 	
     private final HumanPlayerInteractionSemaphore humanPlayerInteractionSemaphore = new HumanPlayerInteractionSemaphore();
@@ -51,11 +51,11 @@ public class FirstContactController {
     
 	public void inject(
 			GUIGameController guiGameController, 
-			MoveService moveService,
+			MoveInThreadService moveInThreadService,
 			GUIGameModel guiGameModel
 	) {
 		this.guiGameController = guiGameController;
-		this.moveService = moveService;
+		this.moveInThreadService = moveInThreadService;
 		this.guiGameModel = guiGameModel;
 		this.firstContactService = new FirstContactService(this, guiGameModel);
 	}
@@ -119,7 +119,7 @@ public class FirstContactController {
             public void executeAction(Unit scout) {
             	MoveContext mc = new MoveContext(scout.getTile(), colony.tile, scout);
             	mc.moveType = MoveType.ATTACK_SETTLEMENT;
-            	moveService.preMoveProcessorInNewThread(mc, guiGameController.ifRequiredNextActiveUnit());
+            	moveInThreadService.executeMove(mc, guiGameController.ifRequiredNextActiveUnit());
             }
         };
         
@@ -159,7 +159,7 @@ public class FirstContactController {
             public void executeAction(Unit scout) {
             	MoveContext moveContext = new MoveContext(scout.getTile(), indianSettlement.tile, scout);
             	moveContext.moveType = MoveType.ATTACK_SETTLEMENT;
-            	moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
+            	moveInThreadService.executeMove(moveContext, guiGameController.ifRequiredNextActiveUnit());
             }
         };
         
@@ -205,9 +205,9 @@ public class FirstContactController {
 
 	public void demandTributeFromSettlement(Settlement settlement, Unit unit) {
 		if (settlement.isColony()) {
-			demandTributeFromColony(settlement.getColony(), unit);
+			demandTributeFromColony(settlement.asColony(), unit);
 		} else {
-			demandTributeFromIndian(settlement.getIndianSettlement(), unit);
+			demandTributeFromIndian(settlement.asIndianSettlement(), unit);
 		}
 	}
 	

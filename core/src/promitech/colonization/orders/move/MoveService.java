@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
@@ -39,12 +38,6 @@ public class MoveService {
         }
         public void afterMove(Unit unit) {
         }
-    }
-    
-    private abstract class RunnableMoveContext implements Runnable {
-        protected MoveContext moveContext;
-        protected AfterMoveProcessor afterMovePorcessor;
-        protected List<MoveContext> moveContextList;
     }
     
     private GUIGameModel guiGameModel;
@@ -75,46 +68,20 @@ public class MoveService {
         this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }
 
-    private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            preMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    public void preMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        if (!moveContext.canHandleMove()) {
-            return;
-        }
-        moveHandlerThread.moveContext = moveContext;
-        moveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(moveHandlerThread);
-    }
-
-    private final RunnableMoveContext confirmedMoveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            confirmedMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    public void confirmedMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        confirmedMoveHandlerThread.moveContext = moveContext;
-        confirmedMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(confirmedMoveHandlerThread);
-    }
-
-    private final RunnableMoveContext confirmedMultipleMoveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            confirmedMultipleMoveProcessor(moveContextList, afterMovePorcessor);
-        }
-    };
-    public void confirmedMultipleMoveProcessorInNewThread(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
-    	confirmedMultipleMoveHandlerThread.moveContextList = moveContextList;
-    	confirmedMultipleMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(confirmedMultipleMoveHandlerThread);
-    }
-
-    private void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
+    // TODO:
+//    private final RunnableMoveContext confirmedMultipleMoveHandlerThread = new RunnableMoveContext() {
+//        @Override
+//        public void run() {
+//            confirmedMultipleMoveProcessor(moveContextList, afterMovePorcessor);
+//        }
+//    };
+//    public void confirmedMultipleMoveProcessorInNewThread(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
+//    	confirmedMultipleMoveHandlerThread.moveContextList = moveContextList;
+//    	confirmedMultipleMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
+//        ThreadsResources.instance.executeMovement(confirmedMultipleMoveHandlerThread);
+//    }
+    
+    public void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
     	for (MoveContext mc : moveContextList) {
             showMoveIfRequired(mc);
             processMove(mc);
@@ -126,7 +93,7 @@ public class MoveService {
     	confirmedMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
     }
     
-    private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         showMoveIfRequired(moveContext);
         processMove(moveContext);
         afterMoveProcessor.afterMove(moveContext);
@@ -146,7 +113,7 @@ public class MoveService {
         processMove(moveContext);
     }
     
-    private void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         if (!moveContext.canHandleMove()) {
             return;
         }
