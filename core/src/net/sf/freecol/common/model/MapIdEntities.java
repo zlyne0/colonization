@@ -67,6 +67,14 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
         return en;
     }
     
+    public T getByIdOrNull(String id) {
+        return entities.get(id);
+    }
+    
+    public T getByIdOrNull(Identifiable obj) {
+    	return entities.get(obj.getId());
+    }
+    
     public List<T> sortedEntities() {
     	if (sortedEntities == null) {
 	    	sortedEntities = new ArrayList<T>(entities.values());
@@ -115,11 +123,6 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
 		}
 		return null;
 	}
-    
-    public T getByIdOrNull(String id) {
-        T en = entities.get(id);
-        return en;
-    }
     
     public boolean isEmpty() {
     	return entities.isEmpty();

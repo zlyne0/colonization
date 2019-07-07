@@ -4,17 +4,13 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.TradeRoute;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.path.Path;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.infrastructure.ThreadsResources;
@@ -40,6 +36,8 @@ public class MoveService {
         public void afterMove(MoveContext moveContext) {
         }
         void afterMove(List<MoveContext> moveContextList) {
+        }
+        public void afterMove(Unit unit) {
         }
     }
     
@@ -153,9 +151,11 @@ public class MoveService {
             return;
         }
         if (moveContext.isMoveViaPath()) {
-            handlePathMoveContext(moveContext, afterMoveProcessor);
+            boolean requireUserInteraction = handlePathMoveContext(moveContext);
+            if (!requireUserInteraction) {
+            	afterMoveProcessor.afterMove(moveContext);
+            }
         } else {
-            
             if (moveContext.isRequireUserInteraction()) {
                 userInterationRequestProcessor(moveContext);
                 return;
@@ -264,26 +264,26 @@ public class MoveService {
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	firstContactController.showScoutMoveToForeignColonyQuestion(
-        			moveContext.destTile.getSettlement().getColony(),
+        			moveContext.destTile.getSettlement().asColony(),
         			moveContext.unit
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
             	firstContactController.showScoutMoveToIndianSettlementQuestion(
-        			moveContext.destTile.getSettlement().getIndianSettlement(),
+        			moveContext.destTile.getSettlement().asIndianSettlement(),
         			moveContext.unit
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST: {
             	firstContactController.learnSkill(
         			moveContext.unit,
-        			moveContext.destTile.getSettlement().getIndianSettlement()
+        			moveContext.destTile.getSettlement().asIndianSettlement()
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY: {
             	firstContactController.indianSettlementMissionary(
         			moveContext.unit, 
-        			moveContext.destTile.getSettlement().getIndianSettlement()
+        			moveContext.destTile.getSettlement().asIndianSettlement()
     			);
             } break;
             case ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS: {
@@ -368,8 +368,10 @@ public class MoveService {
                 || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
     }
 
-    private void handlePathMoveContext(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        boolean runAfterMoveProcessor = true;
+    /**
+     * Return true when user interation request
+     */
+    public boolean handlePathMoveContext(MoveContext moveContext) {
         while (true) {
             if (!moveContext.canHandleMove()) {
                 // move via path but no move points so next unit
@@ -379,8 +381,7 @@ public class MoveService {
 
             if (moveContext.isRequireUserInteraction()) {
                 userInterationRequestProcessor(moveContext);
-                runAfterMoveProcessor = false;
-                break;
+                return true;
             }
 
             showMoveIfRequired(moveContext);
@@ -402,47 +403,12 @@ public class MoveService {
                 break;
             }
         }
-        if (runAfterMoveProcessor) {
-            afterMoveProcessor.afterMove(moveContext);
-        }
+        return false;
     }
     
     public void cashInTreasure(Unit unit) {
 		new LostCityRumourService(guiGameController, this, guiGameModel.game)
 			.cashInTreasure(unit);
     }
-    
-    public void handleTradeRouteMission(Map map, Unit wagon, PathFinder pathFinder) {
-        // TODO: weryfikacja trade route jako takiej, czy jest dobrze zdefiniowany, freecol
-        TradeRoute tradeRoute = wagon.getTradeRoute();
-        
-        if (wagon.getTile().hasSettlement() && 
-    		tradeRoute.containsStop(wagon.getOwner(), wagon.getTile().getSettlement())
-		) {
-    		tradeRoute.loadCargo(wagon, wagon.getTile().getSettlement().asColony());
-        }
-        
-        Colony nextStopLocation = tradeRoute.nextStopLocation(wagon.getOwner());
-        if (nextStopLocation == null) {
-            System.out.println("can not find stop location, remove trade route");
-            wagon.setTradeRoute(null);
-            wagon.setState(UnitState.ACTIVE);
-            return;
-        }
-        Path path = pathFinder.findToTile(map, wagon.getTile(), nextStopLocation.tile, wagon);
-        if (!path.reachTile(nextStopLocation.tile)) {
-            // just stop, and wait when path reach stop
-            wagon.setState(UnitState.SKIPPED);
-            return;
-        }
-        
-        MoveContext moveContext = new MoveContext(path);
-        moveContext.initNextPathStep();
-        handlePathMoveContext(moveContext, AfterMoveProcessor.DO_NOTHING);
-        if (nextStopLocation.tile.equalsCoordinates(wagon.getTile())) {
-        	tradeRoute.unloadCargo(wagon, nextStopLocation);
-            tradeRoute.increaseNextStop(wagon.getOwner());
-        }
-        // end of move
-    }
+
 }

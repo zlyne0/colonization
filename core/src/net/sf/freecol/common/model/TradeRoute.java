@@ -31,16 +31,8 @@ public class TradeRoute implements Identifiable {
 		return tradeRouteDefinitionId;
 	}
 
-	public String getTradeRouteDefinitionId() {
-		return tradeRouteDefinitionId;
-	}
-
 	public int getNextStopLocationIndex() {
 		return nextStopLocationIndex;
-	}
-
-	public void setNextStopLocationIndex(int nextStopLocationIndex) {
-		this.nextStopLocationIndex = nextStopLocationIndex;
 	}
 
 	public boolean containsStop(Player player, Identifiable stopLocation) {
@@ -114,7 +106,7 @@ public class TradeRoute implements Identifiable {
 		
 		if (unloadDone && !wagon.hasFullMovesPoints()) {
 			wagon.reduceMovesLeftToZero();
-			wagon.setState(UnitState.ACTIVE);
+			wagon.setState(UnitState.SKIPPED);
 		}
 	}
     
@@ -148,7 +140,7 @@ public class TradeRoute implements Identifiable {
 		}
 		if (loadDone && !wagon.hasFullMovesPoints()) {
 			wagon.reduceMovesLeftToZero();
-			wagon.setState(UnitState.ACTIVE);
+			wagon.setState(UnitState.SKIPPED);
 		}
 	}
 	

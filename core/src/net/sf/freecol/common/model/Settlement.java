@@ -71,10 +71,15 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
         return (Colony)this;
     }
 	
+    @Deprecated
 	public IndianSettlement getIndianSettlement() {
 	    return (IndianSettlement)this;
 	}
-	
+
+	public IndianSettlement asIndianSettlement() {
+	    return (IndianSettlement)this;
+	}
+    
     public boolean canBombardEnemyShip() {
         return isCoastland() && hasAbility(Ability.BOMBARD_SHIPS);
     }

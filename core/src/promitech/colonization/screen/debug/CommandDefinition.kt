@@ -18,6 +18,9 @@ import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
 import net.sf.freecol.common.model.TradeRoute
+import promitech.colonization.ai.TradeRouteMissionHandler
+import promitech.colonization.orders.move.MoveInThreadService
+import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
@@ -119,7 +122,7 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 		
     	command("add_conversion") {
 			var tile = guiGameModel.game.map.getTile(19, 78)
-			tile.getSettlement().getIndianSettlement().setConvertProgress(100)
+			tile.getSettlement().asIndianSettlement().setConvertProgress(100)
     	}
     	
 		command("show_continental_congress") {
@@ -135,9 +138,7 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 				wagonTrain.setTradeRoute(TradeRoute(selectedRoute.getId()))
 			}
 			
-			ThreadsResources.instance.executeMovement {
-				di.moveService.handleTradeRouteMission(guiGameModel.game.map, wagonTrain, di.pathFinder)
-			}
+			di.moveInThreadService.executeTradeRoute(wagonTrain, AfterMoveProcessor.DO_NOTHING)
 		}
 		
     	command("nothing") {

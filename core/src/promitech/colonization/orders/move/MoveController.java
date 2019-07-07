@@ -29,6 +29,7 @@ public class MoveController {
 	private MapActor mapActor;
 	private MoveView moveView;
 	private MoveService moveService;
+	private MoveInThreadService moveInThreadService;
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
 
@@ -40,12 +41,14 @@ public class MoveController {
 	public void inject(
 		GUIGameModel guiGameModel, 
 		GUIGameController guiGameController, MoveView moveView, MoveService moveService,
+		MoveInThreadService moveInThreadService,
 		PathFinder pathFinder
 	) {
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
 		this.moveService = moveService;
+		this.moveInThreadService = moveInThreadService;
 		this.finder = pathFinder;
 	}
 	
@@ -135,7 +138,6 @@ public class MoveController {
 			}
 			guiGameModel.throwExceptionWhenActiveUnitNotSet();
 			logicAcceptGotoPath();
-			return;
 		}
 	}
 	
@@ -167,6 +169,10 @@ public class MoveController {
         });
 	}
 
+	public void executeTradeRoute(Unit tradeRouteUnit) {
+		moveInThreadService.executeTradeRoute(tradeRouteUnit, guiGameController.ifRequiredNextActiveUnit());
+	}
+	
 	public void removeDrawableUnitPath() {
 		mapActor.mapDrawModel().unitPath = null;
 	}

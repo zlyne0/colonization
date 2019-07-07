@@ -297,8 +297,19 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return tradeRoute;
     }
 
+    public final boolean isTradeRouteSet() {
+    	return tradeRoute != null;
+    }
+    
     public final void setTradeRoute(TradeRoute tradeRoute) {
     	this.tradeRoute = tradeRoute;
+    	clearDestination();
+    }
+    
+    public final void removeTradeRoute() {
+    	this.tradeRoute = null;
+    	setState(UnitState.ACTIVE);
+    	clearDestination();
     }
     
     public boolean isDestinationSet() {

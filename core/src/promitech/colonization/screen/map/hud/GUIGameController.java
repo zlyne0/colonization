@@ -100,6 +100,10 @@ public class GUIGameController {
 			centerOnActiveUnit();
 			if (nextUnit.isDestinationSet()) {
 				moveController.logicAcceptGotoPath();
+			} else {
+				if (nextUnit.isTradeRouteSet()) {
+					moveController.executeTradeRoute(nextUnit);
+				}
 			}
 		} else {
 			mapActor.mapDrawModel().setSelectedUnit(null);
@@ -127,6 +131,10 @@ public class GUIGameController {
     private final AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
         public void afterMove(MoveContext moveContext) {
+        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
+        }
+        @Override
+        public void afterMove(Unit unit) {
         	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
         }
     };
