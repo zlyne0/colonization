@@ -206,7 +206,7 @@ public class GUIGameController {
 		    } else {
 		    	showDialog(new IndianSettlementInformationDialog(
 	    			guiGameModel.game,
-	    			tile.getSettlement().getIndianSettlement(), 
+	    			tile.getSettlement().asIndianSettlement(), 
 	    			guiGameModel.game.playingPlayer)
     			);
 		    }
@@ -218,7 +218,7 @@ public class GUIGameController {
 			@Override
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 			}
     	});
@@ -230,7 +230,7 @@ public class GUIGameController {
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
-				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.setColonySpyMode();
 			}

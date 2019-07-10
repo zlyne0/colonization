@@ -278,7 +278,7 @@ public class Market extends ObjectWithId {
         int value = 0;
         
         for (Settlement settlement : player.settlements.entities()) {
-        	Colony colony = settlement.getColony();
+        	Colony colony = settlement.asColony();
         	for (MarketData md : marketGoods.entities()) {
         		if (md.hasArrears()) {
         			continue;

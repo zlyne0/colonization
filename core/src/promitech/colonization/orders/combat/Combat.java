@@ -304,7 +304,7 @@ class Combat {
 				break;
 
 			case DESTROY_SETTLEMENT:
-				IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
+				IndianSettlement is = combatSides.defenderTile.getSettlement().asIndianSettlement();
 				if (is.settlementType.isCapital()) {
 					burnedNativeCapital = true;
 				} else {
@@ -326,7 +326,7 @@ class Combat {
             attackerPlayer.changeStance(defenderPlayer, Stance.PEACE);
             
             for (Settlement settlement : defenderPlayer.settlements.entities()) {
-                IndianSettlement is = settlement.getIndianSettlement();
+                IndianSettlement is = settlement.asIndianSettlement();
                 if (is.hasContact(attackerPlayer)) {
                     is.setTension(attackerPlayer, Tension.SURRENDERED);
                 }
@@ -361,7 +361,7 @@ class Combat {
 	}
 	
 	private void destroyColony() {
-	    Colony colony = combatSides.defenderTile.getSettlement().getColony();
+	    Colony colony = combatSides.defenderTile.getSettlement().asColony();
 	    
 	    int plunderGold = colonyPlunderGold(combatSides.winner.getOwner(), colony);
 	    if (plunderGold > 0) {
@@ -398,7 +398,7 @@ class Combat {
 	}
 	
     private void pillageColony() {
-        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+        Colony colony = combatSides.defenderTile.getSettlement().asColony();
         List<Building> burnable = colony.createBurnableBuildingsList();
         List<Unit> navy = colony.tile.createNavyUnitsList();
         List<GoodsType> lootable = colony.createLootableGoodsList();
@@ -488,14 +488,14 @@ class Combat {
 
     private void loseAutoEquip() {
         UnitRole autoArmRole = combatSides.getDefenderAutoArmRole();
-        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+        Colony colony = combatSides.defenderTile.getSettlement().asColony();
         for (RequiredGoods requiredGoods : autoArmRole.requiredGoods.entities()) {
             colony.getGoodsContainer().decreaseGoodsQuantity(requiredGoods.goodsType.getId(), requiredGoods.amount);
         }
     }
 
 	private void captureColony() {
-		Colony colony = combatSides.defenderTile.getSettlement().getColony();
+		Colony colony = combatSides.defenderTile.getSettlement().asColony();
 		Player winnerPlayer = combatSides.winner.getOwner();
 		Player losserPlayer = colony.getOwner();
 		
@@ -662,7 +662,7 @@ class Combat {
         blockingCombatNotifications.add(t);
 		
 		for (Settlement settlement : combatSides.loser.getOwner().settlements.entities()) {
-			IndianSettlement indianSettlement = settlement.getIndianSettlement();
+			IndianSettlement indianSettlement = settlement.asIndianSettlement();
 			if (indianSettlement.hasMissionary(combatSides.winner.getOwner())) {
 				indianSettlement.removeMissionary();
 			}
@@ -670,7 +670,7 @@ class Combat {
 	}
 	
 	private void captureConvert() {
-		IndianSettlement indianSettlement = combatSides.defenderTile.getSettlement().getIndianSettlement();
+		IndianSettlement indianSettlement = combatSides.defenderTile.getSettlement().asIndianSettlement();
 		Unit convert = indianSettlement.convertToDest(
 			combatSides.winner.getTile(), 
 			combatSides.winner.getOwner()
@@ -684,7 +684,7 @@ class Combat {
 	}
 
 	private void destroySettlement() {
-		IndianSettlement is = combatSides.defenderTile.getSettlement().getIndianSettlement();
+		IndianSettlement is = combatSides.defenderTile.getSettlement().asIndianSettlement();
 		
 		int plunderGold = is.plunderGold(combatSides.winner);
 		if (plunderGold > 0) {

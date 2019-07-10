@@ -197,13 +197,6 @@ public class LostCityRumourService {
 		return guiGameController.ifRequiredNextActiveUnitRunnable();
 	}	
 	
-	// TODO:
-//	public LostCityRumourService aiHandle(MoveContext moveContext) {
-//		moveService.confirmedMoveProcessor(moveContext);
-//		processExploration(moveContext);
-//		return this;
-//	}
-	
 	public LostCityRumourService showLostCityRumourConfirmation(MoveContext moveContext) {
 		if (moveContext.isAi()) {
 			throw new IllegalStateException("can run only by gui");
@@ -243,7 +236,7 @@ public class LostCityRumourService {
 	 * Cashin treasure and send notification to wagon owner and other players.
 	 * @param treasureWagon {@link Unit} - treasure wagon
 	 */
-    public void cashInTreasure(Unit treasureWagon) {
+    public static void cashInTreasure(Game game, Unit treasureWagon, GUIGameController guiGameController) {
     	String messageId = null;
     	int cashInAmount = 0;
     	int fullAmount = treasureWagon.getTreasureAmount();
@@ -270,7 +263,7 @@ public class LostCityRumourService {
     			guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(msgSt)
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener())
+					.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
 				);
     		}
     	}

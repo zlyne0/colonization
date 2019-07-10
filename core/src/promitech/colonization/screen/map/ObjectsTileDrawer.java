@@ -114,7 +114,7 @@ public class ObjectsTileDrawer extends TileDrawer {
 		font.draw(batch, tile.getSettlement().getName(), screenPoint.x + w/2f - strWidth/2, screenPoint.y);
 		
 		if (tile.hasSettlementOwnedBy(mapDrawModel.playingPlayer) && tile.getSettlement().isColony()) {
-			Colony colony = tile.getSettlement().getColony();
+			Colony colony = tile.getSettlement().asColony();
 			font.setColor(Color.WHITE);
 			font.draw(batch, Integer.toString(colony.getColonyUnitsCount()), 
 					screenPoint.x + w/2f, 

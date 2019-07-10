@@ -104,7 +104,7 @@ public class Savegame1600Verifier {
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
 		
-		IndianSettlementAssert.assertThat(settlement.getIndianSettlement())
+		IndianSettlementAssert.assertThat(settlement.asIndianSettlement())
 			.hasWantedGoods("model.goods.tradeGoods", "model.goods.rum", "model.goods.cigars");
 		
 		verifyMissionary(game);
@@ -113,7 +113,7 @@ public class Savegame1600Verifier {
 	private void verifyMissionary(Game game) {
 	    Player player = game.players.getById("player:22");
 	    IndianSettlement indianSettlement = player.settlements.getById("indianSettlement:5901")
-	            .getIndianSettlement();
+	            .asIndianSettlement();
 	    Player dutch = game.players.getById("player:1");
 	    assertThat(indianSettlement.hasMissionary(dutch)).isTrue();
     }
@@ -296,7 +296,7 @@ public class Savegame1600Verifier {
     
     private void verifySettlementBuildingWorker(Game game) {
     	Tile tile = game.map.getTile(28, 40);
-		Colony colony = tile.getSettlement().getColony();
+		Colony colony = tile.getSettlement().asColony();
     	assertNotNull(colony);
     	System.out.println("size = " + colony.buildings.size());
     	Building carpenterHouse = colony.buildings.getById("building:7122");

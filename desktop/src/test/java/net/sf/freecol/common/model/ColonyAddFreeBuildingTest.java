@@ -32,7 +32,7 @@ public class ColonyAddFreeBuildingTest {
 		stockadeType = Specification.instance.buildingTypes.getById("model.building.stockade");
 
 		Settlement fortMaurits = dutch.settlements.getById("colony:6993");
-		colony = fortMaurits.getColony();
+		colony = fortMaurits.asColony();
 		
 		ColonyAssert.assertThat(colony)
 			.hasNotBuilding(stockadeType.getId());

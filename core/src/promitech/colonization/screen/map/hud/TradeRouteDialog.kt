@@ -95,7 +95,7 @@ class TradeRouteDialog(
 		
 		val destinationLabel = Label(Messages.msg("tradeRouteInputPanel.destinationLabel"), skin) 
 		val colonies = player.settlements.entities()
-			.map { ColonySelectItem(it.getColony()) }
+			.map { ColonySelectItem(it.asColony()) }
 			.toGdxArray(player.settlements.size())
 		val allStopsSelectBox = SelectBox<ColonySelectItem>(skin)
 		allStopsSelectBox.setItems(colonies)

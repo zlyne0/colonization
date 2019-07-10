@@ -42,8 +42,8 @@ internal class ColonyBox(
 	
 	public fun refreshList() {
 		var items = fromPlayer.settlements.entities()
-			.filter { wasNotAdded(it.getColony()) }
-			.map { ColonySelectItem(it.getColony()) }
+			.filter { wasNotAdded(it.asColony()) }
+			.map { ColonySelectItem(it.asColony()) }
 			.toGdxArray(fromPlayer.settlements.size())
 		colonySelectBox.setItems(items)
 		if (colonySelectBox.getItems().isEmpty()) {

@@ -35,7 +35,7 @@ public class ColonyTest {
 	@Test
 	public void shouldDisallowBuildUnit() throws Exception {
 		// given
-        Colony colony = dutch.settlements.getById("colony:6528").getColony();
+        Colony colony = dutch.settlements.getById("colony:6528").asColony();
         
         UnitType freeColonist = Specification.instance.unitTypes.getById("model.unit.freeColonist");
         

@@ -51,7 +51,7 @@ class IndianSettlementTest {
 		// given
 		Tile tile = game.map.getSafeTile(19, 78);
 		
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 		is.getGoodsContainer().decreaseAllToZero();
 		
 		IndianSettlementWantedGoods sut = new IndianSettlementWantedGoods();
@@ -74,7 +74,7 @@ class IndianSettlementTest {
 	public void canGenerateGoodsToSellForWagonTrain() throws Exception {
 		// given
 		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 
 		Unit wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile);
 		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
@@ -100,7 +100,7 @@ class IndianSettlementTest {
 	public void canGenerateGoodsToSellForGalleon() throws Exception {
 		// given
 		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 
 		Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile);
 		galleon.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
@@ -131,7 +131,7 @@ class IndianSettlementTest {
 		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
 
 		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 		is.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, is.tile));
 		
 		TradeSession galleonTradeSession = new TradeSession(game.map, is, galleon)
@@ -157,7 +157,7 @@ class IndianSettlementTest {
 		wagonTrain.getGoodsContainer().increaseGoodsQuantity(tradeGoods, 100);
 
 		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 		if (is.hasMissionary()) {
 			is.removeMissionary();
 		}
@@ -180,7 +180,7 @@ class IndianSettlementTest {
 	public void canCalculateBuyPriceFromSettlement() throws Exception {
 		// given
 		Tile tile = game.map.getSafeTile(19, 78);
-		IndianSettlement is = tile.getSettlement().getIndianSettlement();
+		IndianSettlement is = tile.getSettlement().asIndianSettlement();
 		is.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, is.tile));
 		
 		Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile);

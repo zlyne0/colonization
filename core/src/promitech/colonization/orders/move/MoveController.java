@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
+import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
@@ -282,5 +283,10 @@ public class MoveController {
     	}, treasureWagon);
     	questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, treasureWagon);
     	guiGameController.showDialog(questionDialog);
+    }
+
+    public void showLostCityRumourConfirmation(MoveContext moveContext) {
+        new LostCityRumourService(guiGameController, moveInThreadService, guiGameModel.game)
+            .showLostCityRumourConfirmation(moveContext);
     }
 }

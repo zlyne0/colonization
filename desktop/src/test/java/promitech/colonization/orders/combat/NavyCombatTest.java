@@ -125,7 +125,7 @@ public class NavyCombatTest {
 	public void evadeBombardColonyVsPirate() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
     	
     	createColonyNavyDefence(newAmsterdam);
 		
@@ -151,7 +151,7 @@ public class NavyCombatTest {
 	public void shouldMoveFregateToRepairLocationWhenColonyWinVsFregate() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
     	
     	createColonyNavyDefence(newAmsterdam);
 		
@@ -180,7 +180,7 @@ public class NavyCombatTest {
 	public void colonyWinVsCaravel() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
     	
     	createColonyNavyDefence(newAmsterdam);
 		

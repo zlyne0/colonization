@@ -66,7 +66,7 @@ public class GameLogic {
 		
         for (Settlement settlement : player.settlements.sortedEntities()) {
         	if (settlement.isIndianSettlement()) {
-        		IndianSettlement indianSettlement = settlement.getIndianSettlement();
+        		IndianSettlement indianSettlement = settlement.asIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);
         		indianSettlement.conversion(guiGameModel.game.map);
         		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
@@ -106,7 +106,7 @@ public class GameLogic {
 
 	private void bombardEnemyShip(Player player) {
 		for (Settlement settlement : player.settlements.entities()) {
-			Colony colony = settlement.getColony();
+			Colony colony = settlement.asColony();
 			if (!colony.canBombardEnemyShip()) {
 				continue;
 			}

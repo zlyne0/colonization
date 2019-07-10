@@ -62,19 +62,9 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 		return false;
 	}
 
-	@Deprecated
-	public Colony getColony() {
-		return (Colony)this;
-	}
-
     public Colony asColony() {
         return (Colony)this;
     }
-	
-    @Deprecated
-	public IndianSettlement getIndianSettlement() {
-	    return (IndianSettlement)this;
-	}
 
 	public IndianSettlement asIndianSettlement() {
 	    return (IndianSettlement)this;

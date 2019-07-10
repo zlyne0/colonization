@@ -548,7 +548,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         if (unitLocation instanceof Tile) {
             Tile locTile = (Tile)unitLocation;
             if (locTile.hasSettlement() && locTile.getSettlement().isColony()) {
-                if (locTile.getSettlement().getColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
+                if (locTile.getSettlement().asColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
                     return true;
                 }
             }
@@ -1058,7 +1058,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public UnitLocation getRepairLocation() {
 	    for (Settlement settlement : getOwner().settlements.entities()) {
-	        if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+	        if (settlement.asColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
 	            return settlement;
 	        }
 	    }

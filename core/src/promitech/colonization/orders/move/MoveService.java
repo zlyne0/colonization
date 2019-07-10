@@ -68,29 +68,12 @@ public class MoveService {
         this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }
 
-    // TODO:
-//    private final RunnableMoveContext confirmedMultipleMoveHandlerThread = new RunnableMoveContext() {
-//        @Override
-//        public void run() {
-//            confirmedMultipleMoveProcessor(moveContextList, afterMovePorcessor);
-//        }
-//    };
-//    public void confirmedMultipleMoveProcessorInNewThread(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
-//    	confirmedMultipleMoveHandlerThread.moveContextList = moveContextList;
-//    	confirmedMultipleMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-//        ThreadsResources.instance.executeMovement(confirmedMultipleMoveHandlerThread);
-//    }
-    
     public void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
     	for (MoveContext mc : moveContextList) {
             showMoveIfRequired(mc);
             processMove(mc);
     	}
     	afterMoveProcessor.afterMove(moveContextList);
-    }
-    
-    public void confirmedMoveProcessor(MoveContext moveContext) {
-    	confirmedMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
     }
     
     public void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -206,8 +189,7 @@ public class MoveService {
     private void userInterationRequestProcessor(MoveContext moveContext) {
         switch (moveContext.moveType) {
             case EXPLORE_LOST_CITY_RUMOUR: {
-                new LostCityRumourService(guiGameController, this, guiGameModel.game)
-                    .showLostCityRumourConfirmation(moveContext);
+                moveController.showLostCityRumourConfirmation(moveContext);
             } break;
             case DISEMBARK: {
                 if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
@@ -374,8 +356,7 @@ public class MoveService {
     }
     
     public void cashInTreasure(Unit unit) {
-		new LostCityRumourService(guiGameController, this, guiGameModel.game)
-			.cashInTreasure(unit);
+        LostCityRumourService.cashInTreasure(guiGameModel.game, unit, guiGameController);
     }
 
 }

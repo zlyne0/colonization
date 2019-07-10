@@ -83,7 +83,7 @@ public class Map extends ObjectWithId {
      * The number of tiles from the upper edge that are considered
      * polar by default.
      */
-    public final static int POLAR_HEIGHT = 2;
+    public static final int POLAR_HEIGHT = 2;
 	
 	public final int width;
 	public final int height;
@@ -139,7 +139,7 @@ public class Map extends ObjectWithId {
                 tileLandConnection(t);
                 
                 if (t.hasSettlement() && t.getSettlement().isColony()) {
-                    Colony colony = t.getSettlement().getColony();
+                    Colony colony = t.getSettlement().asColony();
                     colony.initColonyTilesTile(t, Map.this);
                     colony.updateColonyPopulation();
                     colony.updateColonyFeatures();
@@ -198,7 +198,7 @@ public class Map extends ObjectWithId {
 		if (colonyTile == null) {
 			return null;
 		}
-		return colonyTile.getSettlement().getColony();
+		return colonyTile.getSettlement().asColony();
 	}
 	
 	public boolean hasColonyInRange(Tile tile, int radius) {

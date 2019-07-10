@@ -231,7 +231,7 @@ public class IndianSettlement extends Settlement {
 					alarms.getAndIncrement(enemy, 0, alarm);
 				}
 			} else if (neighbourTile.hasSettlement() && neighbourTile.getSettlement().isColony()) {
-				Colony colony = neighbourTile.getSettlement().getColony();
+				Colony colony = neighbourTile.getSettlement().asColony();
 				alarms.getAndIncrement(colony.getOwner(), 0, ALARM_TILE_IN_USE + colony.getColonyUnitsCount());
 			} else if (neighbourTile.getOwner() != null) {
 				Player enemy = neighbourTile.getOwner();

@@ -130,7 +130,7 @@ public class FoundingFathers {
 		
 		for (Settlement settlement : player.settlements.entities()) {
 			if (settlement.isColony()) {
-				Colony colony = settlement.getColony();
+				Colony colony = settlement.asColony();
 				colony.updateColonyFeatures();
 				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 			}
@@ -151,7 +151,7 @@ public class FoundingFathers {
 					}
 					
 					for (Settlement settlement : p.settlements.entities()) {
-						player.revealMapSeeColony(game.map, settlement.getColony());
+						player.revealMapSeeColony(game.map, settlement.asColony());
 					}
 				}
 			}
@@ -169,7 +169,7 @@ public class FoundingFathers {
 					if (p.isLiveIndianPlayer() && player.hasContacted(p)) {
 						p.resetTension(player);
 						for (Settlement indianSettlements : p.settlements.entities()) {
-							indianSettlements.getIndianSettlement().setTension(player, Tension.TENSION_MIN);
+							indianSettlements.asIndianSettlement().setTension(player, Tension.TENSION_MIN);
 						}
 						p.changeStance(player, Stance.PEACE);
 					}
@@ -262,7 +262,7 @@ public class FoundingFathers {
 	public String progressStr() {
 		int bellsPerTurn = 0;
 		for (Settlement settlement : player.settlements.entities()) {
-			bellsPerTurn += settlement.getColony().productionSummary().getQuantity(GoodsType.BELLS);
+			bellsPerTurn += settlement.asColony().productionSummary().getQuantity(GoodsType.BELLS);
 		}
 		int fatherCost = remainingFoundingFatherCost();
 

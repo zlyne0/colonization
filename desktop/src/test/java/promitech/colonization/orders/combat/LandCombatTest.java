@@ -223,9 +223,9 @@ public class LandCombatTest {
     	Tile colonyTile = game.map.getTile(29, 58);
     	
     	BuildingType fort = Specification.instance.buildingTypes.getById("model.building.fort");
-		colonyTile.getSettlement().getColony().buildings.add(new Building(Game.idGenerator, fort));
-		colonyTile.getSettlement().getColony().buildings.removeId("building:6914");
-		colonyTile.getSettlement().getColony().updateColonyFeatures();
+		colonyTile.getSettlement().asColony().buildings.add(new Building(Game.idGenerator, fort));
+		colonyTile.getSettlement().asColony().buildings.removeId("building:6914");
+		colonyTile.getSettlement().asColony().updateColonyFeatures();
 		
 		// when
     	Combat combat = new Combat();

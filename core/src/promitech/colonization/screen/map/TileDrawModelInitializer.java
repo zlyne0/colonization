@@ -213,7 +213,7 @@ class TileDrawModelInitializer {
 				tileDrawModel.settlementChip = new IndianSettlementChip(
 					game.players,
 					game.playingPlayer,
-					tile.getSettlement().getIndianSettlement()
+					tile.getSettlement().asIndianSettlement()
 				);
 			}
 		}

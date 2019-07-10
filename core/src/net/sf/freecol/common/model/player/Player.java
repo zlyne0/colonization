@@ -294,7 +294,7 @@ public class Player extends ObjectWithId {
 	public void modifyTensionAndPropagateToAllSettlements(Player player, int tensionValue) {
 		modifyTension(player, tensionValue);
 		for (Settlement settlement : settlements.entities()) {
-			IndianSettlement indianSettlement = settlement.getIndianSettlement();
+			IndianSettlement indianSettlement = settlement.asIndianSettlement();
 			if (indianSettlement.hasContact(player)) {
 				int tension = indianSettlement.settlementType.isCapital() ? tensionValue : tensionValue / 2; 
 				indianSettlement.modifyTension(player, tension);
