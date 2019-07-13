@@ -1,4 +1,4 @@
-package promitech.colonization;
+package net.sf.freecol.common.util;
 
 public class Validation {
 

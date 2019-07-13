@@ -15,4 +15,18 @@ public class MarketSnapshoot {
 		}
 	}
 
+	public void comparePrices(Player playingPlayer) {
+		for (MarketData md : playingPlayer.market().marketGoods.entities()) {
+			MarketChangePrice mcp = prices.getByIdOrNull(md.getId());
+			if (mcp != null) {
+				mcp.setPricesAfterTransaction(md);
+				if (mcp.isMarketPriceChanged()) {
+					MessageNotification goodsPriceChangeNotification = MessageNotification.createGoodsPriceChangeNotification(playingPlayer, mcp);
+					playingPlayer.eventsNotifications.addMessageNotification(goodsPriceChangeNotification);
+				}
+			}
+		}
+	}
+	
+	
 }

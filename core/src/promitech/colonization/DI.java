@@ -1,6 +1,7 @@
 package promitech.colonization;
 
 import net.sf.freecol.common.model.map.path.PathFinder;
+import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
 import promitech.colonization.orders.move.MoveController;
@@ -33,7 +34,7 @@ public class DI {
 		firstContactController = new FirstContactController();
 		pathFinder = new PathFinder();
 		
-		GameLogic gameLogic = new GameLogic(guiGameModel, combatService, moveService);
+		NewTurnService newTurnService = new NewTurnService(guiGameModel, combatService, moveService);
 		
 		moveService.inject(guiGameController, moveController, guiGameModel, combatService, firstContactController);
 		moveInThreadService.inject(pathFinder, guiGameModel, moveService);
@@ -41,7 +42,7 @@ public class DI {
 		
 		combatService.inject(moveService, guiGameModel);
 		
-		guiGameController.inject(guiGameModel, moveController, gameLogic, moveService, pathFinder);
+		guiGameController.inject(guiGameModel, moveController, newTurnService, moveService, pathFinder);
 		firstContactController.inject(guiGameController, moveInThreadService, guiGameModel);
 	}
 	

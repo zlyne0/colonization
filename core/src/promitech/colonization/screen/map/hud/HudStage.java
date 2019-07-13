@@ -132,7 +132,7 @@ public class HudStage extends Stage {
         
 		guiGameModel.addChangeListener(guiGameModelChangeListener);
         
-		endOfTurnActor = new EndOfTurnActor(shapeRenderer, gameController);
+		endOfTurnActor = new EndOfTurnActor(shapeRenderer);
 		endOfTurnActor.setWidth(getWidth());
 		endOfTurnActor.setHeight(getHeight());
     }

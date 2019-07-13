@@ -14,7 +14,6 @@ import com.badlogic.gdx.scenes.scene2d.Actor;
 
 import net.sf.freecol.common.model.Nation;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.EndOfTurnPhaseListener;
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
@@ -22,18 +21,16 @@ import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
-public class EndOfTurnActor extends Actor {
+class EndOfTurnActor extends Actor {
 
 	private static final Color BACKGROUND_COLOR = new Color(0f, 0f, 0f, 0.6f);
 	private final ShapeRenderer shapeRenderer;
 	private final AtomicReference<Player> playerTurn = new AtomicReference<Player>();
-	private final GUIGameController gameController;
 	
 	private Semaphore nextPlayerLock = new Semaphore(0);
 	
-	public EndOfTurnActor(ShapeRenderer shapeRenderer, final GUIGameController gameController) {
+	public EndOfTurnActor(ShapeRenderer shapeRenderer) {
 		this.shapeRenderer = shapeRenderer;
-		this.gameController = gameController;
 	}
 
 	@Override
@@ -101,14 +98,12 @@ public class EndOfTurnActor extends Actor {
 		}
 	};
 	
-	private final Runnable endTurnCalculations = new Runnable() {
-		@Override
-		public void run() {
-			gameController.endTurn(endOfTurnPhaseListener);
-		}
-	};
-	
 	public void start(final GUIGameController gameController) {
-		ThreadsResources.instance.executeMovement(endTurnCalculations);
+		ThreadsResources.instance.executeMovement(new Runnable() {
+			@Override
+			public void run() {
+				gameController.endTurn(endOfTurnPhaseListener);
+			}
+		});
 	}
 }

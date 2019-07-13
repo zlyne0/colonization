@@ -1,8 +1,8 @@
-package promitech.colonization;
+package promitech.colonization.screen.map.hud;
 
 import net.sf.freecol.common.model.player.Player;
 
-public interface EndOfTurnPhaseListener {
+interface EndOfTurnPhaseListener {
 
 	void nextAIturn(Player player);
 
