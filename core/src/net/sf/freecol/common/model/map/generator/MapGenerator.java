@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.map.generator;
 
 import java.util.ArrayList;
 import java.util.EnumMap;
+import java.util.HashMap;
 import java.util.List;
 
 import com.github.czyzby.noise4j.map.Grid;
@@ -15,6 +16,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
+import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.map.Region.RegionType;
@@ -33,7 +35,7 @@ public class MapGenerator {
 	public static final float WATER_CELL = 0f;
 	public static final float LAND_CELL = 1f;
 	public static final String TEMPORARY_LAND_TYPE = "model.tile.grassland";
-
+	private final int MAX_TILE_TYPE_SMOOTING = 2;
 	
 	private final TileImprovementType riverImprovementType;
 	
@@ -62,7 +64,6 @@ public class MapGenerator {
 		
 		mapSpiralIterator = new SpiralIterator(w, h);
 		Map map = createLandMass(w, h);
-		map.initPlayersMap(players);
 		
 		createStandardRegions(map);
 		generateRandomTileTypes(map);
@@ -75,6 +76,7 @@ public class MapGenerator {
 		new BonusResourcesGenerator(map).generate();
 		new IndianSettlementsGenerator(this, players, map).makeNativeSettlements();
 		
+		map.initPlayersMap(players);
 		generatePlayersStartPositions(map, players);
 		generateLostCityRumours(map);
 		
@@ -85,6 +87,8 @@ public class MapGenerator {
 	private void generateLostCityRumours(Map map) {
 		final int rumourNumber = Specification.options.getIntValue(MapGeneratorOptions.RUMOUR_NUMBER);
 		int number = landTilesCount / rumourNumber;
+		
+		System.out.println("RUMOUR_NUMBER " + rumourNumber + ", number " + number);
 		
 		for (int i = 0; i < number; i++) {
 			for (int tries = 0; tries < 100; tries++) {
@@ -215,7 +219,7 @@ public class MapGenerator {
 		int generatedRiverAmount = 0;
 		
     	for (int i=0; i<riverNumber; i++) {
-    		for (int tryCount=0; tryCount<10; tryCount++) {
+    		for (int tryCount=0; tryCount<20; tryCount++) {
     			Tile landTile = getRandomLandTile(map);
     			if (!canBeRiverSource(map, landTile, riverImprovementType)) {
     				continue;
@@ -441,8 +445,6 @@ public class MapGenerator {
 		initTemperaturePreference();
 		
 		final int mapHumidity = Specification.options.getIntValue(MapGeneratorOptions.HUMIDITY);
-		final int forestChance = Specification.options.getIntValue(MapGeneratorOptions.FOREST_NUMBER);
-		System.out.println("forest chance: " + forestChance);
 		
 		List<TileType> candidateTileTypes = new ArrayList<TileType>(Specification.instance.tileTypes.size());
 		
@@ -451,10 +453,8 @@ public class MapGenerator {
 		Tile tile;
 		for (y=0; y<map.height; y++) {
 			latitude = getLatitude(y);
-			
-			
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				if (tile.getType().isWater()) {
 					continue;
 				}
@@ -471,21 +471,63 @@ public class MapGenerator {
 				
 		        candidateTileTypes.clear();
 				for (TileType tileType : Specification.instance.tileTypes.entities()) {
-					if (tileType.isWater() || tileType.isElevation()) {
+					if (tileType.isWater() || tileType.isElevation() || tileType.isForested()) {
 						continue;
 					}
 					if (tileType.getGenerationValues().match(localeTemperature, localeHumidity)) {
-						if (tileType.isForested()) {
-							if (Randomizer.instance().isHappen(forestChance)) {
-								candidateTileTypes.add(tileType);
-							}
-						} else {
-							candidateTileTypes.add(tileType);
-						}
+						candidateTileTypes.add(tileType);
 					}
 				}
 				TileType randomTileType = Randomizer.instance().randomMember(candidateTileTypes);
 				tile.changeTileType(randomTileType);
+			}
+		}
+		
+		SmoothingTileTypes smoothingTileTypes = new SmoothingTileTypes(map, Specification.instance.tileTypes);
+		smoothingTileTypes.smoothing(MAX_TILE_TYPE_SMOOTING);
+		
+		addForest(map);
+	}
+
+	private void addForest(Map map) {
+		int x;
+		int y;
+		Tile tile;
+		List<Tile> allLandTiles = new ArrayList<Tile>(map.width * map.height);
+		for (y=0; y<map.height; y++) {
+			for (x=0; x<map.width; x++) {
+				tile = map.getSafeTile(x, y);
+				if (tile.getType().isLand() && !tile.getType().equalsId(TileType.ARCTIC)) {
+					allLandTiles.add(tile);
+				}
+			}
+		}
+
+		java.util.Map<String, TileType> forestTypeByNonForestType = new HashMap<String, TileType>();
+		TileImprovementType clearForestImpr = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID);
+		for (TileTypeTransformation transformation : clearForestImpr.getTileTypeTransformation().entities()) {
+			forestTypeByNonForestType.put(
+				transformation.getToType().getId(), 
+				Specification.instance.tileTypes.getById(transformation.getId())
+			);
+		}
+		
+		final int forestChance = Specification.options.getIntValue(MapGeneratorOptions.FOREST_NUMBER);
+		int forestTilesCount = (int)(allLandTiles.size() * ((float)forestChance / 100f));
+		if (forestTilesCount > allLandTiles.size()) {
+			forestTilesCount = allLandTiles.size();
+		}
+		System.out.println("forest chance: " + forestChance + 
+				", land tiles: " + allLandTiles.size() + 
+				", forest tiles: " + forestTilesCount
+		);
+		
+		Randomizer.instance().shuffle(allLandTiles);
+		for (int i=0; i<forestTilesCount; i++) {
+			tile = allLandTiles.get(i);
+			TileType forestTileType = forestTypeByNonForestType.get(tile.getType().getId());
+			if (forestTileType != null) {
+				tile.changeTileType(forestTileType);
 			}
 		}
 	}
@@ -522,13 +564,13 @@ public class MapGenerator {
         }
 	}
 	
-	public void postLandGeneration(Map map) {
+	private void postLandGeneration(Map map) {
 		// all oceans in middle on land change to lake
 		int x, y;
 		Tile tile;
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				// remove all single islands
 				if (tile.getType().isLand()) {
 					landTilesCount++;
@@ -548,7 +590,7 @@ public class MapGenerator {
 		// create beach
 		for (y=0; y<map.height; y++) {
 			for (x=0; x<map.width; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 				if (tile.getType().isWater()) {
 					encodeStyle(map, tile);
 				}
@@ -606,7 +648,7 @@ public class MapGenerator {
 		int x, y;
 		for (y=SLOSH; y<map.height-SLOSH; y++) {
 			for (x=SLOSH; x<map.width-SLOSH; x++) {
-				tile = map.getTile(x, y);
+				tile = map.getSafeTile(x, y);
 	        	if (tile != null && tile.getType().isLand()) {
 	        		randomableLandTiles.add(tile);
 	        	}
