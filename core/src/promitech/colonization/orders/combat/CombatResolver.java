@@ -172,7 +172,7 @@ class CombatResolver {
 	            combatResultDetails.add(CombatResultDetails.CAPTURE_COLONY);
 	        }
 	    } else {
-	        Colony colony = combatSides.defenderTile.getSettlement().getColony();
+	        Colony colony = combatSides.defenderTile.getSettlement().asColony();
 	        if (!greatResult && canColonyBePillaged(colony, combatSides)) {
 	            combatResultDetails.add(CombatResultDetails.PILLAGE_COLONY);
 	        } else {

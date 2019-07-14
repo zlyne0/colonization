@@ -77,6 +77,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     
     private UnitContainer unitContainer = null;
     private GoodsContainer goodsContainer = null;
+    private TradeRoute tradeRoute; 
     
     protected Unit(String id) {
     	super(id);
@@ -292,10 +293,25 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType().isEuropean();
     }
     
-    public final Object getTradeRoute() {
-        return null;
+    public final TradeRoute getTradeRoute() {
+        return tradeRoute;
     }
-	
+
+    public final boolean isTradeRouteSet() {
+    	return tradeRoute != null;
+    }
+    
+    public final void setTradeRoute(TradeRoute tradeRoute) {
+    	this.tradeRoute = tradeRoute;
+    	clearDestination();
+    }
+    
+    public final void removeTradeRoute() {
+    	this.tradeRoute = null;
+    	setState(UnitState.ACTIVE);
+    	clearDestination();
+    }
+    
     public boolean isDestinationSet() {
     	return destinationType != null;
     }
@@ -347,14 +363,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	public TileImprovementType getTileImprovementType() {
 		return tileImprovementType;
 	}
-    
-    public int getMovesLeft() {
-        return movesLeft;
-    }
-    
-    public boolean hasMovesPoints() {
-    	return movesLeft > 0;
-    }
     
     public boolean isNaval() {
     	return unitType.isNaval();
@@ -540,7 +548,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         if (unitLocation instanceof Tile) {
             Tile locTile = (Tile)unitLocation;
             if (locTile.hasSettlement() && locTile.getSettlement().isColony()) {
-                if (locTile.getSettlement().getColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
+                if (locTile.getSettlement().asColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
                     return true;
                 }
             }
@@ -803,6 +811,18 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 	}
 	
+	public boolean hasFullMovesPoints() {
+		return movesLeft == getInitialMovesLeft();
+	}
+	
+    public int getMovesLeft() {
+        return movesLeft;
+    }
+    
+    public boolean hasMovesPoints() {
+    	return movesLeft > 0;
+    }
+	
     public UnitContainer getUnitContainer() {
         return unitContainer;
     }
@@ -1038,7 +1058,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public UnitLocation getRepairLocation() {
 	    for (Settlement settlement : getOwner().settlements.entities()) {
-	        if (settlement.getColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+	        if (settlement.asColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
 	            return settlement;
 	        }
 	    }
@@ -1188,6 +1208,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 				}
             });
             addNode(GoodsContainer.class, "goodsContainer");
+            addNode(TradeRoute.class, "tradeRoute");
         }
 
         @Override

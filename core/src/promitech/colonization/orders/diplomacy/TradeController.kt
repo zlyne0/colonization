@@ -319,7 +319,7 @@ class TradeDialog(val tradeSession : TradeSession)
 
 class TradeController(val map : Map, val guiGameController : GUIGameController, val moveContext : MoveContext) {
 	fun trade() {
-		val tradeSession = TradeSession(map, moveContext.destTile.settlement.indianSettlement, moveContext.unit)
+		val tradeSession = TradeSession(map, moveContext.destTile.settlement.asIndianSettlement(), moveContext.unit)
 				
 		val tradeDialog = TradeDialog(tradeSession)
 		tradeDialog.showTradeChoices()

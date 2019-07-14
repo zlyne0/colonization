@@ -74,7 +74,7 @@ public class IndianSettlementCombatTest {
 
         
         indianSettlementTile = game.map.getSafeTile(19, 78);
-        indianSettlement = indianSettlementTile.getSettlement().getIndianSettlement();
+        indianSettlement = indianSettlementTile.getSettlement().asIndianSettlement();
         
         settlementUnits = unitsFromIndianSettlement();
     }

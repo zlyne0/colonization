@@ -10,7 +10,7 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop.Target;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.Validation;
+import net.sf.freecol.common.util.Validation;
 import promitech.colonization.screen.colony.DragAndDropPreHandlerTargetContainer;
 import promitech.colonization.screen.colony.DragAndDropSourceContainer;
 import promitech.colonization.screen.colony.DragAndDropTargetContainer;

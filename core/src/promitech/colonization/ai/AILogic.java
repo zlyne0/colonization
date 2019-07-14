@@ -14,7 +14,7 @@ import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.GameLogic;
+import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.move.MoveService;
 
 public class AILogic {
@@ -23,7 +23,7 @@ public class AILogic {
     		new HashMap<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>>();
     
 	private final Game game;
-	private final GameLogic gameLogic;
+	private final NewTurnService newTurnService;
 	private final PathFinder pathFinder = new PathFinder();
 	private final TransportPathFinder transportPathFinder;
 
@@ -35,9 +35,9 @@ public class AILogic {
 	private final NativeMissionPlaner nativeMissionPlaner = new NativeMissionPlaner();
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
-	public AILogic(Game game, GameLogic gameLogic, MoveService moveService) {
+	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService) {
 		this.game = game;
-		this.gameLogic = gameLogic;
+		this.newTurnService = newTurnService;
 		
         transportPathFinder = new TransportPathFinder(game.map);
 		
@@ -55,7 +55,7 @@ public class AILogic {
 	}
 	
 	public void aiNewTurn(Player player) {
-		gameLogic.newTurn(player);
+		newTurnService.newTurn(player);
 		
 		if (player.isIndian()) {
 			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);

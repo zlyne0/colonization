@@ -452,7 +452,7 @@ public class Tile implements UnitLocation, Identifiable {
 			if (owner.isIndian()) {
 				Settlement tileSettlement = owner.settlements.getByIdOrNull(getOwningSettlementId());
 				if (tileSettlement != null && tileSettlement.isIndianSettlement()) {
-					IndianSettlement is = tileSettlement.getIndianSettlement();
+					IndianSettlement is = tileSettlement.asIndianSettlement();
 					if (is.settlementType.isCapital()) {
 						owner.modifyTensionAndPropagateToAllSettlements(player, Tension.TENSION_ADD_LAND_TAKEN);
 					} else {

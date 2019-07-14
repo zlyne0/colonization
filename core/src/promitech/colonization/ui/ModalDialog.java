@@ -120,7 +120,7 @@ public class ModalDialog<T extends ModalDialog<?>> {
         );
     }
 
-	protected void showDialog(SimpleMessageDialog dialogToShow) {
+	protected void showDialog(ModalDialog<?> dialogToShow) {
     	this.childDialog = dialogToShow;
     	this.childDialog.addOnCloseListener(new EventListener() {
 			@Override

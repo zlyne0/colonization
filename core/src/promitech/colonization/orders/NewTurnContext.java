@@ -1,4 +1,4 @@
-package promitech.colonization;
+package promitech.colonization.orders;
 
 public class NewTurnContext {
 	private boolean requireUpdateMapModel = false;

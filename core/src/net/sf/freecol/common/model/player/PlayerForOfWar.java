@@ -56,7 +56,7 @@ public class PlayerForOfWar {
     		for (Player indianPlayer : game.players.entities()) {
     			if (indianPlayer.isIndian()) {
     				for (Settlement settlement : indianPlayer.settlements.entities()) {
-    					IndianSettlement is = settlement.getIndianSettlement();
+    					IndianSettlement is = settlement.asIndianSettlement();
     					if (is.hasMissionary(player)) {
     						fogOfWarForMissionary(is, player);
     					}

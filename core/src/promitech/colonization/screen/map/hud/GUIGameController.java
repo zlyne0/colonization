@@ -19,11 +19,10 @@ import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.EndOfTurnPhaseListener;
-import promitech.colonization.GameLogic;
 import promitech.colonization.ai.AILogic;
 import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
+import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
@@ -45,7 +44,7 @@ import promitech.colonization.ui.QuestionDialog.OptionAction;
 public class GUIGameController {
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
-	private GameLogic gameLogic;
+	private NewTurnService newTurnService;
 	private MoveService moveService;
 	private PathFinder pathFinder;
 	
@@ -59,12 +58,12 @@ public class GUIGameController {
 	}
 	
 	public void inject(
-		GUIGameModel guiGameModel, MoveController moveController, GameLogic gameLogic, 
+		GUIGameModel guiGameModel, MoveController moveController, NewTurnService newTurnService, 
 		MoveService moveService, PathFinder pathFinder
 	) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
-		this.gameLogic = gameLogic;
+		this.newTurnService = newTurnService;
 		this.moveService = moveService;
 		this.pathFinder = pathFinder;
 	}
@@ -100,6 +99,10 @@ public class GUIGameController {
 			centerOnActiveUnit();
 			if (nextUnit.isDestinationSet()) {
 				moveController.logicAcceptGotoPath();
+			} else {
+				if (nextUnit.isTradeRouteSet()) {
+					moveController.executeTradeRoute(nextUnit);
+				}
 			}
 		} else {
 			mapActor.mapDrawModel().setSelectedUnit(null);
@@ -127,6 +130,10 @@ public class GUIGameController {
     private final AfterMoveProcessor ifRequiredNextActiveUnit = new AfterMoveProcessor() {
         @Override
         public void afterMove(MoveContext moveContext) {
+        	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
+        }
+        @Override
+        public void afterMove(Unit unit) {
         	nextActiveUnitWhenNoMovePointsAsGdxPostRunnable();
         }
     };
@@ -198,7 +205,7 @@ public class GUIGameController {
 		    } else {
 		    	showDialog(new IndianSettlementInformationDialog(
 	    			guiGameModel.game,
-	    			tile.getSettlement().getIndianSettlement(), 
+	    			tile.getSettlement().asIndianSettlement(), 
 	    			guiGameModel.game.playingPlayer)
     			);
 		    }
@@ -210,7 +217,7 @@ public class GUIGameController {
 			@Override
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 			}
     	});
@@ -222,7 +229,7 @@ public class GUIGameController {
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
-				colonyApplicationScreen.initColony(tile.getSettlement().getColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.setColonySpyMode();
 			}
@@ -338,7 +345,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, gameLogic, moveService);
+		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
@@ -348,11 +355,11 @@ public class GUIGameController {
 			aiLogic.aiNewTurn(player);
 		}
 		
-		gameLogic.comparePrices(guiGameModel.game.playingPlayer, marketSnapshoot);
+		marketSnapshoot.comparePrices(guiGameModel.game.playingPlayer);
 		
-		gameLogic.newTurn(guiGameModel.game.playingPlayer);
+		newTurnService.newTurn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.getTurn().increaseTurnNumber();
-		if (gameLogic.getNewTurnContext().isRequireUpdateMapModel()) {
+		if (newTurnService.getNewTurnContext().isRequireUpdateMapModel()) {
 		}
 		mapActor.resetMapModel();
 		mapActor.resetUnexploredBorders();

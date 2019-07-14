@@ -103,7 +103,7 @@ public class ColonyCombatTest {
         spanish.units.add(dragoon);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         Unit frigate = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById("model.unit.frigate"), 
@@ -157,7 +157,7 @@ public class ColonyCombatTest {
         dragoon.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         Unit frigate = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById("model.unit.frigate"), 
@@ -230,7 +230,7 @@ public class ColonyCombatTest {
         dragoon.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
 		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
@@ -264,7 +264,7 @@ public class ColonyCombatTest {
         dragoon.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
 		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
@@ -301,7 +301,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
 		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
@@ -337,7 +337,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
 		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
@@ -376,7 +376,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         colony.addGoods(GoodsType.MUSKETS, 50);
 		colony.getOwner().addFoundingFathers(game, paulRevere);
         colony.updateColonyFeatures();
@@ -413,7 +413,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
 
         // when
         combat.init(game, brave, emptyColonyTile);
@@ -444,7 +444,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
 
         // when
         combat.init(game, brave, emptyColonyTile);
@@ -475,7 +475,7 @@ public class ColonyCombatTest {
         brave.changeUnitLocation(freeTileNextToColony);
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
-        Colony colony = emptyColonyTile.getSettlement().getColony();
+        Colony colony = emptyColonyTile.getSettlement().asColony();
         Unit frigate = new Unit(
             Game.idGenerator.nextId(Unit.class), 
             Specification.instance.unitTypes.getById("model.unit.frigate"), 
@@ -508,7 +508,7 @@ public class ColonyCombatTest {
 	public void damageColonyBuildingRemoveUnitsToLowerLevel() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
 
     	Building lumberMill = newAmsterdam.findBuildingByType("model.building.lumberMill");
     	Unit carpenter = lumberMill.getUnits().first();
@@ -533,7 +533,7 @@ public class ColonyCombatTest {
 	public void damageColonyBuildingRemoveUnitsFromIt() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
     	Unit carpenter = newAmsterdam.getOwner().units.getById("unit:6940");
 
     	Building schoolhouse = newAmsterdam.addBuilding(
@@ -560,7 +560,7 @@ public class ColonyCombatTest {
 	public void damageColonyBuildingCanRemoveUnitsFromWorkingLocation() throws Exception {
 		// given
     	Tile newAmsterdamTile = game.map.getSafeTile(24, 78);
-    	Colony newAmsterdam = newAmsterdamTile.getSettlement().getColony();
+    	Colony newAmsterdam = newAmsterdamTile.getSettlement().asColony();
     	Unit fisherman = newAmsterdam.getOwner().units.getById("unit:7096");
 
     	Building docks = newAmsterdam.findBuildingByType("model.building.docks");
@@ -581,7 +581,7 @@ public class ColonyCombatTest {
 	public void indianDestroyColony() throws Exception {
 		// given
     	Tile trinidadTile = game.map.getSafeTile(27, 57);
-    	Colony trinidadColony = trinidadTile.getSettlement().getColony();
+    	Colony trinidadColony = trinidadTile.getSettlement().asColony();
     	
     	Tile braveTile = game.map.getSafeTile(27, 55);
     	Unit brave = braveTile.getUnits().first();

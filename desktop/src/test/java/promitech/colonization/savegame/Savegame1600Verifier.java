@@ -19,6 +19,8 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
+import net.sf.freecol.common.model.TradeRouteDefinition;
+import net.sf.freecol.common.model.TradeRouteStop;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
@@ -80,6 +82,15 @@ public class Savegame1600Verifier {
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
         verifyIndianSettlement(game);
+        
+        verifyUnitTradeRoute(game);
+	}
+
+	private void verifyUnitTradeRoute(Game game) {
+		Tile tile = game.map.getSafeTile(20, 79);
+		Unit u = tile.getUnits().getById("unit:7162");
+		assertThat(u.getTradeRoute().getId()).isEqualTo("notExistsButOk:1");
+		assertThat(u.getTradeRoute().getNextStopLocationIndex()).isEqualTo(1);
 	}
 
 	private void verifyIndianSettlement(Game game) {
@@ -93,7 +104,7 @@ public class Savegame1600Verifier {
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.sugar", 200);
 		settlement.getGoodsContainer().hasGoodsQuantity("model.goods.tobacco", 191);
 		
-		IndianSettlementAssert.assertThat(settlement.getIndianSettlement())
+		IndianSettlementAssert.assertThat(settlement.asIndianSettlement())
 			.hasWantedGoods("model.goods.tradeGoods", "model.goods.rum", "model.goods.cigars");
 		
 		verifyMissionary(game);
@@ -102,7 +113,7 @@ public class Savegame1600Verifier {
 	private void verifyMissionary(Game game) {
 	    Player player = game.players.getById("player:22");
 	    IndianSettlement indianSettlement = player.settlements.getById("indianSettlement:5901")
-	            .getIndianSettlement();
+	            .asIndianSettlement();
 	    Player dutch = game.players.getById("player:1");
 	    assertThat(indianSettlement.hasMissionary(dutch)).isTrue();
     }
@@ -199,7 +210,31 @@ public class Savegame1600Verifier {
         		assertThat(player.getEurope().hasOwner()).isTrue();
         	}
         }
+        
+        verifyDutchTradeRoutes(game);
 	}
+
+    private void verifyDutchTradeRoutes(Game game) {
+        Player dutch = game.players.getById("player:1");
+        TradeRouteDefinition tradeRoute = dutch.tradeRoutes.getById("tradeRouteDef:1");
+        assertThat(dutch.tradeRoutes.size()).isEqualTo(2);
+
+        assertThat(tradeRoute.getName()).isEqualTo("route1");
+        assertThat(tradeRoute.getTradeRouteStops())
+            .hasSize(3)
+            .extracting(TradeRouteStop::getTradeLocationId)
+            .containsExactly("colony:6993", "colony:6554", "colony:6528");
+        
+        assertThat(tradeRoute.getTradeRouteStops().get(0).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.sugar", "model.goods.tobacco");
+        assertThat(tradeRoute.getTradeRouteStops().get(1).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.sugar", "model.goods.ore");
+        assertThat(tradeRoute.getTradeRouteStops().get(2).getGoodsType())
+            .extracting(GoodsType::getId)
+            .containsExactly("model.goods.food");
+    }
 
 	private void verifyPlayer(Game game) {
 		Player spanish = game.players.getById("player:133");
@@ -261,7 +296,7 @@ public class Savegame1600Verifier {
     
     private void verifySettlementBuildingWorker(Game game) {
     	Tile tile = game.map.getTile(28, 40);
-		Colony colony = tile.getSettlement().getColony();
+		Colony colony = tile.getSettlement().asColony();
     	assertNotNull(colony);
     	System.out.println("size = " + colony.buildings.size());
     	Building carpenterHouse = colony.buildings.getById("building:7122");

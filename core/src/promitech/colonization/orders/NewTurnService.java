@@ -1,4 +1,4 @@
-package promitech.colonization;
+package promitech.colonization.orders;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -18,22 +18,20 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.HighSeas;
-import net.sf.freecol.common.model.player.MarketChangePrice;
-import net.sf.freecol.common.model.player.MarketData;
-import net.sf.freecol.common.model.player.MarketSnapshoot;
-import net.sf.freecol.common.model.player.MessageNotification;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.Direction;
+import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 import promitech.map.isometric.IterableSpiral;
 
-public class GameLogic {
+public class NewTurnService {
 
 	private final GUIGameModel guiGameModel;
 	private final CombatService combatService;
@@ -44,7 +42,7 @@ public class GameLogic {
 	private final List<Unit> playerUnits = new ArrayList<Unit>();
 	private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
 	
-	public GameLogic(GUIGameModel guiGameModel, CombatService combatService, MoveService moveService) {
+	public NewTurnService(GUIGameModel guiGameModel, CombatService combatService, MoveService moveService) {
 		this.guiGameModel = guiGameModel;
 		this.combatService = combatService;
 		this.moveService = moveService;
@@ -66,7 +64,7 @@ public class GameLogic {
 		
         for (Settlement settlement : player.settlements.sortedEntities()) {
         	if (settlement.isIndianSettlement()) {
-        		IndianSettlement indianSettlement = settlement.getIndianSettlement();
+        		IndianSettlement indianSettlement = settlement.asIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);
         		indianSettlement.conversion(guiGameModel.game.map);
         		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
@@ -106,7 +104,7 @@ public class GameLogic {
 
 	private void bombardEnemyShip(Player player) {
 		for (Settlement settlement : player.settlements.entities()) {
-			Colony colony = settlement.getColony();
+			Colony colony = settlement.asColony();
 			if (!colony.canBombardEnemyShip()) {
 				continue;
 			}
@@ -258,19 +256,6 @@ public class GameLogic {
 
 	public NewTurnContext getNewTurnContext() {
 		return newTurnContext;
-	}
-
-	public void comparePrices(Player playingPlayer, MarketSnapshoot marketSnapshoot) {
-		for (MarketData md : playingPlayer.market().marketGoods.entities()) {
-			MarketChangePrice mcp = marketSnapshoot.prices.getByIdOrNull(md.getId());
-			if (mcp != null) {
-				mcp.setPricesAfterTransaction(md);
-				if (mcp.isMarketPriceChanged()) {
-					MessageNotification goodsPriceChangeNotification = MessageNotification.createGoodsPriceChangeNotification(playingPlayer, mcp);
-					playingPlayer.eventsNotifications.addMessageNotification(goodsPriceChangeNotification);
-				}
-			}
-		}
 	}
 }
 

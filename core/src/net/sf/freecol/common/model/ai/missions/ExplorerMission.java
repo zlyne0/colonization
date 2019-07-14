@@ -6,7 +6,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class ExplorerMission extends AbstractMission {
 

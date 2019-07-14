@@ -236,7 +236,7 @@ class CombatSides {
 			}
 			
 			if (settlement.isColony()) {
-				disableFortified |= hasBuildingWithStrongDefence(settlement.getColony());
+				disableFortified |= hasBuildingWithStrongDefence(settlement.asColony());
 			}
 		} else {
 			if (defender.hasAbility(Ability.BOMBARD) && defender.getState() != Unit.UnitState.FORTIFIED) {

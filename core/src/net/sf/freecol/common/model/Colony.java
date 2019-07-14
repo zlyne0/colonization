@@ -25,7 +25,7 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.Direction;
-import promitech.colonization.NewTurnContext;
+import promitech.colonization.orders.NewTurnContext;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;

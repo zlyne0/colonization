@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.infrastructure.ThreadsResources;
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
@@ -37,12 +36,8 @@ public class MoveService {
         }
         void afterMove(List<MoveContext> moveContextList) {
         }
-    }
-    
-    private abstract class RunnableMoveContext implements Runnable {
-        protected MoveContext moveContext;
-        protected AfterMoveProcessor afterMovePorcessor;
-        protected List<MoveContext> moveContextList;
+        public void afterMove(Unit unit) {
+        }
     }
     
     private GUIGameModel guiGameModel;
@@ -73,46 +68,7 @@ public class MoveService {
         this.firstContactService = new FirstContactService(firstContactController, guiGameModel);
     }
 
-    private final RunnableMoveContext moveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            preMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    public void preMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        if (!moveContext.canHandleMove()) {
-            return;
-        }
-        moveHandlerThread.moveContext = moveContext;
-        moveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(moveHandlerThread);
-    }
-
-    private final RunnableMoveContext confirmedMoveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            confirmedMoveProcessor(moveContext, afterMovePorcessor);
-        }
-    };
-    public void confirmedMoveProcessorInNewThread(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        confirmedMoveHandlerThread.moveContext = moveContext;
-        confirmedMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(confirmedMoveHandlerThread);
-    }
-
-    private final RunnableMoveContext confirmedMultipleMoveHandlerThread = new RunnableMoveContext() {
-        @Override
-        public void run() {
-            confirmedMultipleMoveProcessor(moveContextList, afterMovePorcessor);
-        }
-    };
-    public void confirmedMultipleMoveProcessorInNewThread(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
-    	confirmedMultipleMoveHandlerThread.moveContextList = moveContextList;
-    	confirmedMultipleMoveHandlerThread.afterMovePorcessor = afterMoveProcessor;
-        ThreadsResources.instance.executeMovement(confirmedMultipleMoveHandlerThread);
-    }
-
-    private void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
+    public void confirmedMultipleMoveProcessor(List<MoveContext> moveContextList, AfterMoveProcessor afterMoveProcessor) {
     	for (MoveContext mc : moveContextList) {
             showMoveIfRequired(mc);
             processMove(mc);
@@ -120,11 +76,7 @@ public class MoveService {
     	afterMoveProcessor.afterMove(moveContextList);
     }
     
-    public void confirmedMoveProcessor(MoveContext moveContext) {
-    	confirmedMoveProcessor(moveContext, AfterMoveProcessor.DO_NOTHING);
-    }
-    
-    private void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void confirmedMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         showMoveIfRequired(moveContext);
         processMove(moveContext);
         afterMoveProcessor.afterMove(moveContext);
@@ -144,14 +96,16 @@ public class MoveService {
         processMove(moveContext);
     }
     
-    private void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
+    public void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
         if (!moveContext.canHandleMove()) {
             return;
         }
         if (moveContext.isMoveViaPath()) {
-            handlePathMoveContext(moveContext, afterMoveProcessor);
+            boolean requireUserInteraction = handlePathMoveContext(moveContext);
+            if (!requireUserInteraction) {
+            	afterMoveProcessor.afterMove(moveContext);
+            }
         } else {
-            
             if (moveContext.isRequireUserInteraction()) {
                 userInterationRequestProcessor(moveContext);
                 return;
@@ -235,8 +189,7 @@ public class MoveService {
     private void userInterationRequestProcessor(MoveContext moveContext) {
         switch (moveContext.moveType) {
             case EXPLORE_LOST_CITY_RUMOUR: {
-                new LostCityRumourService(guiGameController, this, guiGameModel.game)
-                    .showLostCityRumourConfirmation(moveContext);
+                moveController.showLostCityRumourConfirmation(moveContext);
             } break;
             case DISEMBARK: {
                 if (moveContext.unit.getUnitContainer().getUnits().size() == 1) {
@@ -260,26 +213,26 @@ public class MoveService {
             } break;
             case ENTER_FOREIGN_COLONY_WITH_SCOUT: {
             	firstContactController.showScoutMoveToForeignColonyQuestion(
-        			moveContext.destTile.getSettlement().getColony(),
+        			moveContext.destTile.getSettlement().asColony(),
         			moveContext.unit
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT: {
             	firstContactController.showScoutMoveToIndianSettlementQuestion(
-        			moveContext.destTile.getSettlement().getIndianSettlement(),
+        			moveContext.destTile.getSettlement().asIndianSettlement(),
         			moveContext.unit
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST: {
             	firstContactController.learnSkill(
         			moveContext.unit,
-        			moveContext.destTile.getSettlement().getIndianSettlement()
+        			moveContext.destTile.getSettlement().asIndianSettlement()
     			);
             } break;
             case ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY: {
             	firstContactController.indianSettlementMissionary(
         			moveContext.unit, 
-        			moveContext.destTile.getSettlement().getIndianSettlement()
+        			moveContext.destTile.getSettlement().asIndianSettlement()
     			);
             } break;
             case ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS: {
@@ -364,8 +317,10 @@ public class MoveService {
                 || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
     }
 
-    private void handlePathMoveContext(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
-        boolean runAfterMoveProcessor = true;
+    /**
+     * Return true when user interation request
+     */
+    public boolean handlePathMoveContext(MoveContext moveContext) {
         while (true) {
             if (!moveContext.canHandleMove()) {
                 // move via path but no move points so next unit
@@ -375,8 +330,7 @@ public class MoveService {
 
             if (moveContext.isRequireUserInteraction()) {
                 userInterationRequestProcessor(moveContext);
-                runAfterMoveProcessor = false;
-                break;
+                return true;
             }
 
             showMoveIfRequired(moveContext);
@@ -398,13 +352,11 @@ public class MoveService {
                 break;
             }
         }
-        if (runAfterMoveProcessor) {
-            afterMoveProcessor.afterMove(moveContext);
-        }
+        return false;
     }
     
     public void cashInTreasure(Unit unit) {
-		new LostCityRumourService(guiGameController, this, guiGameModel.game)
-			.cashInTreasure(unit);
+        LostCityRumourService.cashInTreasure(guiGameModel.game, unit, guiGameController);
     }
+
 }

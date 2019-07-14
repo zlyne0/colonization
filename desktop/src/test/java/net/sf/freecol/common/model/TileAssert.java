@@ -44,11 +44,11 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
     	if (!actual.hasSettlement()) {
     		failWithMessage("expected tile id: %s has settlement", actual.getId());
     	}
-    	if (actual.getSettlement().getColony().getOwner().notEqualsId(player)) {
+    	if (actual.getSettlement().asColony().getOwner().notEqualsId(player)) {
     		failWithMessage("expected settlement at tile id: %s has owner %s but own by %s", 
 				actual.getId(),
 				player.getId(),
-				actual.getSettlement().getColony().getOwner().getId()
+				actual.getSettlement().asColony().getOwner().getId()
 			);
     	}
     	return this;

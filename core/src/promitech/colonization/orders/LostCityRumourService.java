@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitLabel;
-import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.map.LostCityRumour.RumourType;
@@ -21,7 +20,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.move.MoveContext;
-import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.orders.move.MoveInThreadService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.QuestionDialog;
@@ -33,12 +32,12 @@ public class LostCityRumourService {
 
 	private final Game game;
 	private final GUIGameController guiGameController;
-	private final MoveService moveService;
+	private final MoveInThreadService moveInThreadService;
 
-	public LostCityRumourService(GUIGameController guiGameController, MoveService moveService, Game game) {
+	public LostCityRumourService(GUIGameController guiGameController, MoveInThreadService moveInThreadService, Game game) {
 		this.game = game;
 		this.guiGameController = guiGameController;
-		this.moveService = moveService;
+		this.moveInThreadService = moveInThreadService;
 	}
 	
 	private void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
@@ -198,12 +197,6 @@ public class LostCityRumourService {
 		return guiGameController.ifRequiredNextActiveUnitRunnable();
 	}	
 	
-	public LostCityRumourService aiHandle(MoveContext moveContext) {
-		moveService.confirmedMoveProcessor(moveContext);
-		processExploration(moveContext);
-		return this;
-	}
-	
 	public LostCityRumourService showLostCityRumourConfirmation(MoveContext moveContext) {
 		if (moveContext.isAi()) {
 			throw new IllegalStateException("can run only by gui");
@@ -212,7 +205,7 @@ public class LostCityRumourService {
 		QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
 			public void executeAction(final MoveContext mc) {
-				moveService.confirmedMoveProcessorInNewThread(mc, new AfterMoveProcessor() {
+				moveInThreadService.confirmedMoveProcessor(mc, new AfterMoveProcessor() {
 					@Override
 					public void afterMove(final MoveContext mc) {
 						processExploration(mc);
@@ -243,7 +236,7 @@ public class LostCityRumourService {
 	 * Cashin treasure and send notification to wagon owner and other players.
 	 * @param treasureWagon {@link Unit} - treasure wagon
 	 */
-    public void cashInTreasure(Unit treasureWagon) {
+    public static void cashInTreasure(Game game, Unit treasureWagon, GUIGameController guiGameController) {
     	String messageId = null;
     	int cashInAmount = 0;
     	int fullAmount = treasureWagon.getTreasureAmount();
@@ -270,7 +263,7 @@ public class LostCityRumourService {
     			guiGameController.showDialog(new SimpleMessageDialog()
 					.withContent(msgSt)
 					.withButton("ok")
-					.addOnCloseListener(createOnCloseActionListener())
+					.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
 				);
     		}
     	}

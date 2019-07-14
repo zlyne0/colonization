@@ -17,6 +17,10 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
+import net.sf.freecol.common.model.TradeRoute
+import promitech.colonization.ai.TradeRouteMissionHandler
+import promitech.colonization.orders.move.MoveInThreadService
+import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
@@ -118,12 +122,25 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 		
     	command("add_conversion") {
 			var tile = guiGameModel.game.map.getTile(19, 78)
-			tile.getSettlement().getIndianSettlement().setConvertProgress(100)
+			tile.getSettlement().asIndianSettlement().setConvertProgress(100)
     	}
     	
 		command("show_continental_congress") {
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
+		
+		command("tradeRoute") {
+			val player = guiGameModel.game.players.getById("player:1")
+			val wagonTrain = player.units.getById("unit:6781")
+			wagonTrain.resetMovesLeftOnNewTurn()
+			if (wagonTrain.getTradeRoute() == null) {
+				val selectedRoute = player.tradeRoutes.getById("tradeRouteDef:7325")
+				wagonTrain.setTradeRoute(TradeRoute(selectedRoute.getId()))
+			}
+			
+			di.moveInThreadService.executeTradeRoute(wagonTrain, AfterMoveProcessor.DO_NOTHING)
+		}
+		
     	command("nothing") {
 		}
 	}

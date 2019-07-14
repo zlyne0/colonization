@@ -10,7 +10,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.Validation;
+import net.sf.freecol.common.util.Validation;
 
 class ColonyProduction {
 	private boolean needUpdate = true;

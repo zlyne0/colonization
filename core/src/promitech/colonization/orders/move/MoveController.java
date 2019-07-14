@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GameOptions;
 import promitech.colonization.Direction;
+import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.ChooseUnitsToDisembarkDialog;
@@ -29,6 +30,7 @@ public class MoveController {
 	private MapActor mapActor;
 	private MoveView moveView;
 	private MoveService moveService;
+	private MoveInThreadService moveInThreadService;
 	private GUIGameModel guiGameModel;
 	private GUIGameController guiGameController;
 
@@ -40,12 +42,14 @@ public class MoveController {
 	public void inject(
 		GUIGameModel guiGameModel, 
 		GUIGameController guiGameController, MoveView moveView, MoveService moveService,
+		MoveInThreadService moveInThreadService,
 		PathFinder pathFinder
 	) {
 		this.moveView = moveView;
 		this.guiGameModel = guiGameModel;
 		this.guiGameController = guiGameController;
 		this.moveService = moveService;
+		this.moveInThreadService = moveInThreadService;
 		this.finder = pathFinder;
 	}
 	
@@ -72,13 +76,12 @@ public class MoveController {
 		selectedUnit.clearDestination();
 		System.out.println("moveContext.pressDirectionKey = " + moveContext);
 		
-        moveService.preMoveProcessorInNewThread(moveContext, guiGameController.ifRequiredNextActiveUnit());
+		moveInThreadService.executeMove(moveContext, guiGameController.ifRequiredNextActiveUnit());
 	}
 	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {
 		MoveContext mc = new MoveContext(carrier.getTileLocationOrNull(), destTile, unitToDisembark);
-		
-		moveService.confirmedMoveProcessorInNewThread(mc, AfterMoveProcessor.DO_NOTHING);
+		moveInThreadService.confirmedMoveProcessor(mc, AfterMoveProcessor.DO_NOTHING);
 	}
 	
 	public void disembarkUnitsToLocation(Unit carrier, Collection<Unit> unitsToDisembark, Tile destTile) {
@@ -91,7 +94,7 @@ public class MoveController {
 				disembarkMoves.add(mc);
 			}
 		}
-		moveService.confirmedMultipleMoveProcessorInNewThread(disembarkMoves, AfterMoveProcessor.DO_NOTHING);
+		moveInThreadService.processMultipleMoves(disembarkMoves, AfterMoveProcessor.DO_NOTHING);
 	}
 
 	public void blockedShowMove(MoveContext moveContext) {
@@ -135,7 +138,6 @@ public class MoveController {
 			}
 			guiGameModel.throwExceptionWhenActiveUnitNotSet();
 			logicAcceptGotoPath();
-			return;
 		}
 	}
 	
@@ -156,7 +158,7 @@ public class MoveController {
 
 		System.out.println("path.moveContext = " + moveContext);
 
-		moveService.preMoveProcessorInNewThread(moveContext, new AfterMoveProcessor() {
+		moveInThreadService.executeMove(moveContext, new AfterMoveProcessor() {
 		    @Override
 		    public void afterMove(MoveContext moveContext) {
 		        if (moveContext.isEndOfPath() && moveContext.unit.isCarrier() && moveContext.destTile.hasSettlement()) {
@@ -167,6 +169,10 @@ public class MoveController {
         });
 	}
 
+	public void executeTradeRoute(Unit tradeRouteUnit) {
+		moveInThreadService.executeTradeRoute(tradeRouteUnit, guiGameController.ifRequiredNextActiveUnit());
+	}
+	
 	public void removeDrawableUnitPath() {
 		mapActor.mapDrawModel().unitPath = null;
 	}
@@ -215,7 +221,7 @@ public class MoveController {
 		final QuestionDialog.OptionAction<MoveContext> sailHighSeasYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
 			@Override
 			public void executeAction(MoveContext payload) {
-			    moveService.confirmedMoveProcessorInNewThread(payload, new MoveService.AfterMoveProcessor() {
+				moveInThreadService.confirmedMoveProcessor(payload, new MoveService.AfterMoveProcessor() {
 			        @Override
 			        public void afterMove(MoveContext moveContext) {
 			            moveContext.unit.sailUnitToEurope(moveContext.destTile);
@@ -229,7 +235,7 @@ public class MoveController {
             @Override
             public void executeAction(MoveContext payload) {
                 payload.setMoveViaHighSea();
-                moveService.preMoveProcessorInNewThread(payload, guiGameController.ifRequiredNextActiveUnit());
+                moveInThreadService.executeMove(payload, guiGameController.ifRequiredNextActiveUnit());
             }
         };
 		
@@ -277,5 +283,10 @@ public class MoveController {
     	}, treasureWagon);
     	questionDialog.addAnswer("cashInTreasureTrain.no", QuestionDialog.DO_NOTHING_ACTION, treasureWagon);
     	guiGameController.showDialog(questionDialog);
+    }
+
+    public void showLostCityRumourConfirmation(MoveContext moveContext) {
+        new LostCityRumourService(guiGameController, moveInThreadService, guiGameModel.game)
+            .showLostCityRumourConfirmation(moveContext);
     }
 }
