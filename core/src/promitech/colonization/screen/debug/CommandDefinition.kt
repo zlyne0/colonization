@@ -21,6 +21,9 @@ import net.sf.freecol.common.model.TradeRoute
 import promitech.colonization.ai.TradeRouteMissionHandler
 import promitech.colonization.orders.move.MoveInThreadService
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
+import net.sf.freecol.common.util.Consumer
+import net.sf.freecol.common.model.Tile
+import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
@@ -47,6 +50,11 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
             guiGameModel.game.map = MapGenerator().generate(guiGameModel.game.players)
             gameController.resetMapModel()
     	}
+		command("map_smooth_tile_types") {
+			val smoothing = SmoothingTileTypes(guiGameModel.game.map, Specification.instance.tileTypes)
+			smoothing.smoothing(1)
+			gameController.resetMapModel()
+		}
     	command("map_show_owners") {
 			gameController.showTilesOwners()
 		} 
@@ -127,18 +135,6 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
     	
 		command("show_continental_congress") {
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
-		}
-		
-		command("tradeRoute") {
-			val player = guiGameModel.game.players.getById("player:1")
-			val wagonTrain = player.units.getById("unit:6781")
-			wagonTrain.resetMovesLeftOnNewTurn()
-			if (wagonTrain.getTradeRoute() == null) {
-				val selectedRoute = player.tradeRoutes.getById("tradeRouteDef:7325")
-				wagonTrain.setTradeRoute(TradeRoute(selectedRoute.getId()))
-			}
-			
-			di.moveInThreadService.executeTradeRoute(wagonTrain, AfterMoveProcessor.DO_NOTHING)
 		}
 		
     	command("nothing") {
