@@ -13,6 +13,7 @@ import com.badlogic.gdx.scenes.scene2d.ui.Cell;
 import com.badlogic.gdx.scenes.scene2d.ui.Dialog;
 import com.badlogic.gdx.scenes.scene2d.ui.Skin;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
+import com.badlogic.gdx.utils.Array;
 
 import promitech.colonization.GameResources;
 
@@ -26,6 +27,7 @@ public class ModalDialog<T extends ModalDialog<?>> {
 
     private LinkedList<EventListener> onCloseListeners = new LinkedList<EventListener>();
     private LinkedList<Runnable> onCloseRunnableListeners = new LinkedList<Runnable>();
+    private final Array<EventListener> stageListeners = new Array<EventListener>(); 
 
     public ModalDialog() {
         this("", GameResources.instance.getUiSkin(),
@@ -94,16 +96,23 @@ public class ModalDialog<T extends ModalDialog<?>> {
     }
 
     public void hideWithFade() {
+		dialog.getStage().getRoot().getListeners().addAll(stageListeners);
+    	
         executeCloseListener();
         dialog.hide();
     }
 
     public void hideWithoutFade() {
+		dialog.getStage().getRoot().getListeners().addAll(stageListeners);
+		
         executeCloseListener();
         dialog.hide(null);
     }
 
     public void show(Stage stage) {
+    	stageListeners.addAll(stage.getRoot().getListeners());
+    	stage.getRoot().clearListeners();
+    	
         if (prefWidth != null) {
             prefWidth.init(stage);
         }

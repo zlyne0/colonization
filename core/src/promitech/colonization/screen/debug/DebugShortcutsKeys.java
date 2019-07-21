@@ -1,15 +1,15 @@
 package promitech.colonization.screen.debug;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.IntMap;
 
 import promitech.colonization.DI;
 import promitech.colonization.screen.map.MapActor;
-import promitech.colonization.screen.map.hud.HudStage;
 
 public class DebugShortcutsKeys {
-    private MapActor mapActor;
-    private HudStage hudStage;
+    private Stage stage;
     private final IntMap<String> commandByKeycode = new IntMap<String>();
     
     private final ConsoleOutput routeOutput = new ConsoleOutput() {
@@ -41,18 +41,19 @@ public class DebugShortcutsKeys {
     
     private ConsoleOutput actualOutput;
     private Commands commands;
+
+    public DebugShortcutsKeys(Stage stage, DI di) {
+    	this(stage, di, null);
+    }
     
-    public DebugShortcutsKeys(HudStage hudStage, DI di, MapActor mapActor) {
-        this.hudStage = hudStage;
-        this.mapActor = mapActor;
+    public DebugShortcutsKeys(Stage stage, DI di, MapActor mapActor) {
+        this.stage = stage;
         
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor);
         
         commandByKeycode.put(Input.Keys.NUM_1, "map_generate");
         commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
         commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
-//        commandByKeycode.put(Input.Keys.NUM_1, "ai move");
-//        commandByKeycode.put(Input.Keys.NUM_2, "ai settlements");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");
     }
 
@@ -76,10 +77,14 @@ public class DebugShortcutsKeys {
     }
 
     public void showCheatConsoleDialog() {
-        DebugConsole debugConsole = new DebugConsole(commands);
-        actualOutput = debugConsole;
-        debugConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
-        hudStage.showDialog(debugConsole);
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				DebugConsole debugConsole = new DebugConsole(commands);
+				actualOutput = debugConsole;
+				debugConsole.show(stage);
+			}
+    	});
     }
     
 }

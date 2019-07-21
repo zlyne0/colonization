@@ -36,6 +36,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
 import promitech.colonization.screen.ApplicationScreenType;
+import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
 import promitech.colonization.screen.map.diplomacy.SettlementImageLabel;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -348,7 +349,19 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.add(unitsPanel).fillX();
         tableLayout.row();
         tableLayout.add(warehousePanel);
-		
+
+        final DebugShortcutsKeys debugShortcutsKeys = new DebugShortcutsKeys(stage, di);
+        stage.addListener(new InputListener() {
+        	@Override
+        	public boolean keyDown(InputEvent event, int keycode) {
+                if (debugShortcutsKeys.canHandleKey(keycode)) {
+                    debugShortcutsKeys.handleKey(keycode);
+                    return true;
+                }
+        		return super.keyDown(event, keycode);
+        	}
+        });
+        
         stage.addActor(tableLayout);
         //stage.setDebugAll(true);
 	}

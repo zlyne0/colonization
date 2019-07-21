@@ -26,7 +26,7 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 
 
-fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
+fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
 	
@@ -99,7 +99,9 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 			val contactPlayer = guiGameModel.game.players.getById("player:133")
 			
 			//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
-			gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+			if (mapActor != null) {
+				gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+			}
 		}
     	
 		command("add_liberty_for_founding_father") {
@@ -142,7 +144,7 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 	}
 }
 
-fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor) {
+fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor?) {
     System.out.println("theBestPlaceToBuildColony")
     
     var buildColony = BuildColony(guiGameModel.game.map);
@@ -154,10 +156,10 @@ fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor) 
     
     val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
     buildColony.toStringValues(tileStrings)
-    mapActor.showTileDebugStrings(tileStrings)
+    mapActor?.showTileDebugStrings(tileStrings)
 }
 
-fun theBestMove(di : DI, mapActor : MapActor) {
+fun theBestMove(di : DI, mapActor : MapActor?) {
 	System.out.println("theBestMove")
 	
     var guiGameModel = di.guiGameModel
@@ -192,10 +194,10 @@ fun theBestMove(di : DI, mapActor : MapActor) {
     
 	val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
     navyExplorer.toStringsBorderValues(tileStrings);
-    mapActor.showTileDebugStrings(tileStrings);
+    mapActor?.showTileDebugStrings(tileStrings);
 }
 
-	fun aiMove(di : DI, mapActor : MapActor) {
+	fun aiMove(di : DI, mapActor : MapActor?) {
 		if (di.guiGameModel.isActiveUnitNotSet()) {
 			System.out.println("no active unit");
 			return

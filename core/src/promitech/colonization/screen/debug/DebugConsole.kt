@@ -29,7 +29,6 @@ class DebugConsole(val commands : Commands)
 	private val label = Label("", GameResources.instance.getUiSkin())
 	private val scrollPane = ScrollPane(label)
 			
-	var selectedTile: Tile? = null
 	var keepOpenConsoleAfterExecute : Boolean = false
 	
 	init {
@@ -94,12 +93,12 @@ class DebugConsole(val commands : Commands)
 	
 	override fun out(line: String) {
 		if (label.getText().toString().equals("")) {
-			label.setText(line);			
+			label.setText(line)			
 		} else {
 			label.setText(label.getText().toString() + "\n" + line)
 		}
-		scrollPane.setScrollPercentY(100f);
-		scrollPane.layout();
+		scrollPane.setScrollPercentY(100f)
+		scrollPane.layout()
 	}
 	
 	override fun keepOpen() {
@@ -109,9 +108,9 @@ class DebugConsole(val commands : Commands)
 	override fun show(stage: Stage) {
 		getContentTable().getCell(dialogLayout)
 			.width(stage.getWidth() * 0.75f)
-			.height(stage.getHeight() * 0.75f);
+			.height(stage.getHeight() * 0.75f)
 		
 		super.show(stage)
-		stage.setKeyboardFocus(textField);
+		stage.setKeyboardFocus(textField)
 	}
 }
