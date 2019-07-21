@@ -5,7 +5,7 @@ import java.util.Comparator;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class GoodMaxProductionLocation {
-    public final static Comparator<GoodMaxProductionLocation> GOODS_INSERT_ORDER_ASC_COMPARATOR = new Comparator<GoodMaxProductionLocation>() {
+    public static final Comparator<GoodMaxProductionLocation> GOODS_INSERT_ORDER_ASC_COMPARATOR = new Comparator<GoodMaxProductionLocation>() {
         @Override
         public int compare(GoodMaxProductionLocation o1, GoodMaxProductionLocation o2) {
             return ObjectWithId.INSERT_ORDER_ASC_COMPARATOR.compare(o1.getGoodsType(), o2.getGoodsType());

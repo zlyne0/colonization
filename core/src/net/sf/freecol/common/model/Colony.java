@@ -255,6 +255,8 @@ public class Colony extends Settlement {
     	changeUnitRole(unit, defaultUnitRole);
     	unit.changeUnitLocation(destColonyTile);
         destColonyTile.tile.changeOwner(owner, this);
+        
+		updateModelOnWorkerAllocationOrGoodsTransfer();
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {

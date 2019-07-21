@@ -24,6 +24,7 @@ import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
 import net.sf.freecol.common.util.Consumer
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
+import net.sf.freecol.common.model.ai.ColonyPlan
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Commands {
@@ -137,6 +138,11 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Comm
     	
 		command("show_continental_congress") {
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
+		}
+		
+		command("colony_plan") {
+			val nieuwAmsterdam = guiGameModel.game.map.getTile(24, 78).getSettlement().asColony()
+			ColonyPlan(nieuwAmsterdam).execute()
 		}
 		
     	command("nothing") {

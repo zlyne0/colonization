@@ -51,7 +51,7 @@ public class DebugShortcutsKeys {
         
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "map_generate");
+        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan");
         commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
         commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");

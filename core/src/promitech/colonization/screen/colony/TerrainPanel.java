@@ -71,14 +71,13 @@ public class TerrainPanel extends Group implements
 	    worker.disableUnitChip();	    
 		worker.dragAndDropSourceContainer = this;
 		
-		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		colony.addWorkerToTerrain(aColonyTile, worker.unit);
+		colony.initMaxPossibleProductionOnTile(aColonyTile);
+		
 		worker.updateTexture();
 
 		addActor(worker);
 		updateWorkerScreenPosition(worker, aColonyTile);
-
-		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
 		changeColonyStateListener.changeUnitAllocation();
 	}
