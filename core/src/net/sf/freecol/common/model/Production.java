@@ -150,6 +150,32 @@ public class Production {
 		return true;
 	}
 	
+	public boolean outputTypesEquals(String goodsTypeId) {
+		if (this.output.size() != 1) {
+			return false;
+		}
+		for (java.util.Map.Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (!entry.getKey().equalsId(goodsTypeId)) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+	public boolean outputTypesEquals(String goodsTypeId, int amount) {
+		if (this.output.size() == 0) {
+			return false;
+		}
+		boolean found = false;
+		for (java.util.Map.Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (entry.getKey().equalsId(goodsTypeId) && entry.getValue() == amount) {
+				found = true;
+			}
+		}
+		return found;
+	}
+	
+	
 	public static class Xml extends XmlNodeParser<Production> {
 
 		private static final String ATTR_VALUE = "value";

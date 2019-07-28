@@ -514,22 +514,23 @@ public class Colony extends Settlement {
 		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
 			return;
 		}
-		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile(aColonyTile.getWorker(), aColonyTile.tile);
-
-		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
+		System.out.println("possibleProductionOnTile.forTile: " + aColonyTile.tile.getType().productionInfo);
+		ProductionInfo maxPossibleProductionOnTile = aColonyTile.maxPossibleProductionOnTile();
+		System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
 		
 		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);
-		
-		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
+		System.out.println("possibleProductionOnTile.maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
-	private ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
-		ProductionInfo productionInfo = aTile.getType().productionInfo;
-		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
-		productionSummaryForWorker.applyModifiers(owner.foundingFathers.entities());
-		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
-		return productionSummaryForWorker;
+	public void initProductionOnTile(ColonyTile aColonyTile, GoodsType goodsType) {
+		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
+			return;
+		}
+		System.out.println("possibleProductionOnTile.forTile: " + aColonyTile.tile.getType().productionInfo);
+		
+		aColonyTile.productionInfo.writeProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
+		
+		System.out.println("possibleProductionOnTile.maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
     public int getWarehouseCapacity() {

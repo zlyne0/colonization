@@ -52,7 +52,7 @@ public class ColonyPlan {
 		execute(Plan.Food);
 	}
 	
-	private void execute(Plan plan) {
+	public void execute(Plan plan) {
 		MapIdEntities<Unit> allWorkers = new MapIdEntities<Unit>();
 		for (Unit unit : colony.settlementWorkers()) {
 			unit.changeUnitLocation(colony.tile);
@@ -62,14 +62,14 @@ public class ColonyPlan {
 		
 		System.out.println("workersByPriorityToPlan");
 		for (Unit unit : workersByPriorityToPlan.entities()) {
-			System.out.println("  " + unit);
+			System.out.println("  worker: " + unit.getId() + " " + unit.unitType.getId());
 			List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(unit);
 			
 			GoodMaxProductionLocation theBestLocation = theBestLocation(plan, productions);
 			if (theBestLocation != null) {
 				if (theBestLocation.getColonyTile() != null) {
 					colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit);
-					colony.initMaxPossibleProductionOnTile(theBestLocation.getColonyTile());
+					colony.initProductionOnTile(theBestLocation.getColonyTile(), theBestLocation.getGoodsType());
 				}
 				System.out.println("    the best location " + theBestLocation);
 			} else {
@@ -82,7 +82,7 @@ public class ColonyPlan {
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
 			if (plan.contains(p.getGoodsType().getId())) {
-				System.out.println(" - " + p.getColonyTile());
+				System.out.println(" - potential location - " + p.getColonyTile() + " " + p.getGoodsType() + " " + p.getProduction());
 				onlyGoodsFromPlan.add(p);
 			}
 		}
