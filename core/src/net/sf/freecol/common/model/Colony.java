@@ -243,20 +243,28 @@ public class Colony extends Settlement {
     }
 
     public void addWorkerToBuilding(Building building, Unit unit) {
-    	unit.setState(UnitState.IN_COLONY);
-    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-    	changeUnitRole(unit, defaultUnitRole);
-    	unit.changeUnitLocation(building);
+        addWorkerToColony(unit, building);
     }
     
-    public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
-    	unit.setState(UnitState.IN_COLONY);
-    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-    	changeUnitRole(unit, defaultUnitRole);
-    	unit.changeUnitLocation(destColonyTile);
-        destColonyTile.tile.changeOwner(owner, this);
+    public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit) {
+    	addWorkerToColony(unit, aColonyTile);
+        aColonyTile.tile.changeOwner(owner, this);
+        initMaxPossibleProductionOnTile(aColonyTile);
+    }
+
+    public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
+        addWorkerToColony(unit, aColonyTile);
+        aColonyTile.tile.changeOwner(owner, this);
+        aColonyTile.productionInfo.writeProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
+    }
+    
+    private void addWorkerToColony(Unit worker, UnitLocation unitLocation) {
+        worker.setState(UnitState.IN_COLONY);
+        UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        changeUnitRole(worker, defaultUnitRole);
+        worker.changeUnitLocation(unitLocation);
         
-		updateModelOnWorkerAllocationOrGoodsTransfer();
+        updateModelOnWorkerAllocationOrGoodsTransfer();
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
@@ -510,7 +518,8 @@ public class Colony extends Settlement {
     	}
     }
     
-	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
+	private void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
+	    // TODO: check what this condition do
 		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
 			return;
 		}
@@ -519,17 +528,6 @@ public class Colony extends Settlement {
 		System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
 		
 		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);
-		System.out.println("possibleProductionOnTile.maxProductionType: " + aColonyTile.productionInfo);
-	}
-	
-	public void initProductionOnTile(ColonyTile aColonyTile, GoodsType goodsType) {
-		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
-			return;
-		}
-		System.out.println("possibleProductionOnTile.forTile: " + aColonyTile.tile.getType().productionInfo);
-		
-		aColonyTile.productionInfo.writeProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
-		
 		System.out.println("possibleProductionOnTile.maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
@@ -1193,8 +1191,7 @@ public class Colony extends Settlement {
             }
         }
     	if (maxProd != null) {
-    		addWorkerToTerrain(maxProd.colonyTile, builder);
-    		initMaxPossibleProductionOnTile(maxProd.colonyTile);
+    		addWorkerToTerrain(maxProd.getColonyTile(), builder);
     	} else {
     		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
     		addWorkerToBuilding(townHall, builder);

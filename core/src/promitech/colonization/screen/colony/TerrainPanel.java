@@ -72,7 +72,6 @@ public class TerrainPanel extends Group implements
 		worker.dragAndDropSourceContainer = this;
 		
 		colony.addWorkerToTerrain(aColonyTile, worker.unit);
-		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
 		worker.updateTexture();
 

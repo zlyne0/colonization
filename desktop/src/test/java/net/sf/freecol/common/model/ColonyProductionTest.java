@@ -5,7 +5,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -185,16 +184,7 @@ public class ColonyProductionTest {
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit);
-        
-        fursColonyTile.productionInfo.clear();
-        List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-        for (GoodMaxProductionLocation goodProd : potentialTerrainProductions) {
-            System.out.println("potential goodProd " + goodProd);
-            if (goodProd.getGoodsType().equalsId("model.goods.furs")) {
-                fursColonyTile.productionInfo.addProduction(goodProd.tileTypeInitProduction);
-            }
-        }
+        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
         colony.updateModelOnWorkerAllocationOrGoodsTransfer();
@@ -239,16 +229,7 @@ public class ColonyProductionTest {
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit);
-        
-        fursColonyTile.productionInfo.clear();
-        List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-        for (GoodMaxProductionLocation goodProd : potentialTerrainProductions) {
-            System.out.println("potential goodProd " + goodProd);
-            if (goodProd.getGoodsType().equalsId("model.goods.furs")) {
-                fursColonyTile.productionInfo.addProduction(goodProd.tileTypeInitProduction);
-            }
-        }
+        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
         colony.updateModelOnWorkerAllocationOrGoodsTransfer();

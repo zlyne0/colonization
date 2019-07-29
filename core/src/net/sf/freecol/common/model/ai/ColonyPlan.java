@@ -68,8 +68,7 @@ public class ColonyPlan {
 			GoodMaxProductionLocation theBestLocation = theBestLocation(plan, productions);
 			if (theBestLocation != null) {
 				if (theBestLocation.getColonyTile() != null) {
-					colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit);
-					colony.initProductionOnTile(theBestLocation.getColonyTile(), theBestLocation.getGoodsType());
+				    colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
 				}
 				System.out.println("    the best location " + theBestLocation);
 			} else {
@@ -82,7 +81,7 @@ public class ColonyPlan {
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
 			if (plan.contains(p.getGoodsType().getId())) {
-				System.out.println(" - potential location - " + p.getColonyTile() + " " + p.getGoodsType() + " " + p.getProduction());
+				System.out.println(" - potential location - " + p.getProductionLocation() + " " + p.getGoodsType() + " " + p.getProduction());
 				onlyGoodsFromPlan.add(p);
 			}
 		}

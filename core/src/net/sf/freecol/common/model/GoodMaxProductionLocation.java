@@ -15,8 +15,8 @@ public class GoodMaxProductionLocation {
     private final GoodsType goodsType;
     private int production;
     public Production tileTypeInitProduction;
-    ColonyTile colonyTile;
-    Building building;
+    private ColonyTile colonyTile;
+    private Building building;
 
     GoodMaxProductionLocation(GoodsType goodsType, int goodQuantity, Building building) {
         this.goodsType = goodsType;
@@ -79,5 +79,12 @@ public class GoodMaxProductionLocation {
 
 	public ColonyTile getColonyTile() {
 		return colonyTile;
+	}
+	
+	public ProductionLocation getProductionLocation() {
+	    if (colonyTile != null) {
+	        return colonyTile;
+	    }
+	    return building;
 	}
 }
