@@ -5,24 +5,24 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import net.sf.freecol.common.model.Colony;
-import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
-import net.sf.freecol.common.model.Production;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitConsumption;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ColonyPlan {
 
 	enum Plan {
 		// only food
-		Food("model.goods.grain", "model.goods.fish"),
-		Bell(),
+		Food(GoodsType.GRAIN, GoodsType.FISH),
+		Bell(GoodsType.BELLS),
 		Building(),
 		Zasoby(),
 		ZasobyLuksusowe(),
@@ -49,34 +49,67 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		execute(Plan.Food);
+		execute(Plan.Bell);
 	}
 	
 	public void execute(Plan plan) {
 		MapIdEntities<Unit> allWorkers = new MapIdEntities<Unit>();
 		for (Unit unit : colony.settlementWorkers()) {
 			unit.changeUnitLocation(colony.tile);
+			unit.canChangeState(UnitState.SKIPPED);
 			allWorkers.add(unit);
 		}
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+		colony.updateColonyPopulation();
+		
 		MapIdEntities<Unit> workersByPriorityToPlan = workersByPriorityToPlan(plan, allWorkers);
 		
-		System.out.println("workersByPriorityToPlan");
 		for (Unit unit : workersByPriorityToPlan.entities()) {
-			System.out.println("  worker: " + unit.getId() + " " + unit.unitType.getId());
+			System.out.println("workersByPriorityToPlan.worker: " + unit.getId() + " " + unit.unitType.getId());
+			
+			System.out.println("colony.size " + colony.settlementWorkers().size());
+			System.out.println("colony food production " + colony.productionSummary().getQuantity(GoodsType.FOOD));
 			List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(unit);
 			
 			GoodMaxProductionLocation theBestLocation = theBestLocation(plan, productions);
 			if (theBestLocation != null) {
-				if (theBestLocation.getColonyTile() != null) {
-				    colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
+				System.out.println("  the best location " + theBestLocation);
+				if (canMaintainNewWorker(unit, theBestLocation)) {
+					if (theBestLocation.getColonyTile() != null) {
+						colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
+					}
+					if (theBestLocation.getBuilding() != null) {
+						colony.addWorkerToBuilding(theBestLocation.getBuilding(), unit);
+					}
+				} else {
+					System.out.println("  can not maintain worker");
 				}
-				System.out.println("    the best location " + theBestLocation);
 			} else {
 				System.out.println("not good location");
 			}
 		}
+		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+		colony.updateColonyPopulation();
 	}
 
+	private boolean canMaintainNewWorker(Unit unit, GoodMaxProductionLocation prodLocation) {
+		ProductionSummary productionSummary = colony.productionSummary();
+		for (UnitConsumption unitConsumption : unit.unitType.unitConsumption.entities()) {
+			if (unitConsumption.getTypeId().equals(GoodsType.BELLS)) {
+				// do not care
+				continue;
+			}
+			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
+			if (unitConsumption.getTypeId().equals(prodLocation.getGoodsType().getId())) {
+				prod += prodLocation.getProduction();
+			}
+			if (unitConsumption.getQuantity() > prod) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
 	private GoodMaxProductionLocation theBestLocation(Plan plan, List<GoodMaxProductionLocation> productions) {
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {

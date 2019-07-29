@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
+import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -61,9 +62,9 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         productionInfo.clear();
     }
     
-	public ProductionInfo maxPossibleProductionOnTile() {
+	public ProductionInfo maxPossibleProductionOnTile(Player colonyOwner) {
 		ProductionInfo productionSummaryForWorker = tile.getType().productionInfo.productionSummaryForWorker(worker);
-		productionSummaryForWorker.applyModifiers(worker.getOwner().foundingFathers.entities());
+		productionSummaryForWorker.applyModifiers(colonyOwner.foundingFathers.entities());
 		productionSummaryForWorker.applyTileImprovementsModifiers(tile);
 		return productionSummaryForWorker;
 	}

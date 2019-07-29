@@ -520,11 +520,11 @@ public class Colony extends Settlement {
     
 	private void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
 	    // TODO: check what this condition do
-		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
-			return;
-		}
+//		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
+//			return;
+//		}
 		System.out.println("possibleProductionOnTile.forTile: " + aColonyTile.tile.getType().productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = aColonyTile.maxPossibleProductionOnTile();
+		ProductionInfo maxPossibleProductionOnTile = aColonyTile.maxPossibleProductionOnTile(owner);
 		System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
 		
 		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);

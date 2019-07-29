@@ -105,6 +105,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return "id = " + id + ", unitType = " + unitType + ", workLeft = " + workLeft;
     }
     
+	public String toStringTypeLocation() {
+		return "" + id + " " + unitType + " " + location;
+	}
+	
     public String resourceImageKey() {
     	if (!owner.nationType().isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
