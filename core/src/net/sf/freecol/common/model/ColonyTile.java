@@ -62,9 +62,20 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         productionInfo.clear();
     }
     
-	public ProductionInfo maxPossibleProductionOnTile(Player colonyOwner) {
+    public void initMaxPossibleProductionOnTile() {
+        System.out.println("possibleProductionOnTile.forTile: " + tile.getType().productionInfo);
+        ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile();
+        System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
+        
+        productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, tile.getType().productionInfo);
+        System.out.println("possibleProductionOnTile.maxProductionType: " + productionInfo);
+    }
+    
+	private ProductionInfo maxPossibleProductionOnTile() {
 		ProductionInfo productionSummaryForWorker = tile.getType().productionInfo.productionSummaryForWorker(worker);
-		productionSummaryForWorker.applyModifiers(colonyOwner.foundingFathers.entities());
+		if (tile.getOwner() != null) {
+		    productionSummaryForWorker.applyModifiers(tile.getOwner().foundingFathers.entities());
+		}
 		productionSummaryForWorker.applyTileImprovementsModifiers(tile);
 		return productionSummaryForWorker;
 	}

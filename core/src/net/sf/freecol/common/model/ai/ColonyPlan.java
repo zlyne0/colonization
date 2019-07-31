@@ -74,13 +74,15 @@ public class ColonyPlan {
 			GoodMaxProductionLocation theBestLocation = theBestLocation(plan, productions);
 			if (theBestLocation != null) {
 				System.out.println("  the best location " + theBestLocation);
-				if (canMaintainNewWorker(unit, theBestLocation)) {
+				if (canSustainNewWorker(unit, theBestLocation)) {
 					if (theBestLocation.getColonyTile() != null) {
 						colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
 					}
 					if (theBestLocation.getBuilding() != null) {
 						colony.addWorkerToBuilding(theBestLocation.getBuilding(), unit);
 					}
+			        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+			        colony.updateColonyPopulation();
 				} else {
 					System.out.println("  can not maintain worker");
 				}
@@ -92,7 +94,7 @@ public class ColonyPlan {
 		colony.updateColonyPopulation();
 	}
 
-	private boolean canMaintainNewWorker(Unit unit, GoodMaxProductionLocation prodLocation) {
+	private boolean canSustainNewWorker(Unit unit, GoodMaxProductionLocation prodLocation) {
 		ProductionSummary productionSummary = colony.productionSummary();
 		for (UnitConsumption unitConsumption : unit.unitType.unitConsumption.entities()) {
 			if (unitConsumption.getTypeId().equals(GoodsType.BELLS)) {

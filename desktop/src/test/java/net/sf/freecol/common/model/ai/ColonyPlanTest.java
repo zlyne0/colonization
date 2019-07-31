@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.ProductionInfoAssert;
+import net.sf.freecol.common.model.ProductionSummaryAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
@@ -84,7 +85,8 @@ class ColonyPlanTest {
     	UnitAssert.assertThat(townHall.getUnits().getById("unit:7076"))
     		.isUnitType("model.unit.elderStatesman");
     	
-    	assertThat(nieuwAmsterdam.productionSummary().getQuantity(GoodsType.FOOD) >= 0).isTrue();
+    	ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+    	    .hasMoreThenZero(GoodsType.FOOD);
 	}
 
     @Test
@@ -108,12 +110,13 @@ class ColonyPlanTest {
     	System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
     	
     	MapIdEntitiesAssert.assertThat(townHall.getUnits())
-    		.hasSize(3)
+    		.hasSize(2)
     		.containsId("unit:7076");
     	
     	UnitAssert.assertThat(townHall.getUnits().getById("unit:7076"))
     		.isUnitType("model.unit.elderStatesman");
-    	
-    	assertThat(nieuwAmsterdam.productionSummary().getQuantity(GoodsType.FOOD) >= 0).isTrue();
+
+        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+            .hasMoreThenZero(GoodsType.FOOD);
 	}
 }

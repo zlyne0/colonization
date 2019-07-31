@@ -249,7 +249,7 @@ public class Colony extends Settlement {
     public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit) {
     	addWorkerToColony(unit, aColonyTile);
         aColonyTile.tile.changeOwner(owner, this);
-        initMaxPossibleProductionOnTile(aColonyTile);
+        aColonyTile.initMaxPossibleProductionOnTile();
     }
 
     public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
@@ -512,25 +512,12 @@ public class Colony extends Settlement {
     public void initMaxPossibleProductionOnTile(Tile tile) {
     	for (ColonyTile colonyTile : colonyTiles.entities()) {
     		if (colonyTile.equalsId(tile)) {
-    			initMaxPossibleProductionOnTile(colonyTile);
+    		    colonyTile.initMaxPossibleProductionOnTile();
     			updateModelOnWorkerAllocationOrGoodsTransfer();
     		}
     	}
     }
     
-	private void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
-	    // TODO: check what this condition do
-//		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
-//			return;
-//		}
-		System.out.println("possibleProductionOnTile.forTile: " + aColonyTile.tile.getType().productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = aColonyTile.maxPossibleProductionOnTile(owner);
-		System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
-		
-		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);
-		System.out.println("possibleProductionOnTile.maxProductionType: " + aColonyTile.productionInfo);
-	}
-	
     public int getWarehouseCapacity() {
     	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
@@ -687,7 +674,7 @@ public class Colony extends Settlement {
     	
 		ColonyTile centerTile = new ColonyTile(tile);
 		colonyTiles.add(centerTile);
-		initMaxPossibleProductionOnTile(centerTile);
+		centerTile.initMaxPossibleProductionOnTile();
 		
     	for (Direction d : Direction.allDirections) {
     		Tile neighbourTile = map.getTile(tile, d);
