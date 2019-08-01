@@ -12,10 +12,10 @@ public class ProductionSummaryAssert extends AbstractAssert<ProductionSummaryAss
 		return new ProductionSummaryAssert(productionSummary, ProductionSummaryAssert.class);
 	}
 
-	public ProductionSummaryAssert hasMoreThenZero(String goodsTypeId) {
+	public ProductionSummaryAssert hasNoLessThenZero(String goodsTypeId) {
 	    int amount = actual.getQuantity(goodsTypeId);
-	    if (amount <= 0) {
-	        failWithMessage("expect more then zero of <%s> goods type but has <%d>", goodsTypeId, amount);
+	    if (amount < 0) {
+	        failWithMessage("expect no less then zero of <%s> goods type but has <%d>", goodsTypeId, amount);
 	    }
 	    return this;
 	}

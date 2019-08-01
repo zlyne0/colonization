@@ -86,7 +86,7 @@ class ColonyPlanTest {
     		.isUnitType("model.unit.elderStatesman");
     	
     	ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-    	    .hasMoreThenZero(GoodsType.FOOD);
+    	    .hasNoLessThenZero(GoodsType.FOOD);
 	}
 
     @Test
@@ -117,6 +117,6 @@ class ColonyPlanTest {
     		.isUnitType("model.unit.elderStatesman");
 
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-            .hasMoreThenZero(GoodsType.FOOD);
+            .hasNoLessThenZero(GoodsType.FOOD);
 	}
 }

@@ -24,7 +24,7 @@ public class GoodsType extends ObjectWithFeatures {
     private static final float DEFAULT_ZERO_PRODUCTION_FACTOR = 1.0f;
     
     public static boolean isFoodGoodsType(String goodsTypeId) {
-        return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId);
+        return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId) || FOOD.equals(goodsTypeId);
     }
     
     boolean farmed;

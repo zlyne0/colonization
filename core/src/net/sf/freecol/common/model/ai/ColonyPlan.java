@@ -102,8 +102,13 @@ public class ColonyPlan {
 				continue;
 			}
 			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
+			// when unit produce what consume, unit can sustain yourself
 			if (unitConsumption.getTypeId().equals(prodLocation.getGoodsType().getId())) {
 				prod += prodLocation.getProduction();
+			}
+			// when consume food and is lack of food then it is possible to stop breeding horses and sustain colonist
+			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId())) {
+			    prod += productionSummary.getQuantity(GoodsType.HORSES);
 			}
 			if (unitConsumption.getQuantity() > prod) {
 				return false;
