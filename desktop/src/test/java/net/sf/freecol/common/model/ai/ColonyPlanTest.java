@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model.ai;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -9,16 +7,15 @@ import org.junit.jupiter.api.Test;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.ProductionInfoAssert;
 import net.sf.freecol.common.model.ProductionSummaryAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitAssert;
+import net.sf.freecol.common.model.UnitLocationAssert;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -76,14 +73,12 @@ class ColonyPlanTest {
     	colonyPlan.execute(ColonyPlan.Plan.Bell);
 
 		// then
-    	Building townHall = nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL);
+    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(3);
     	
-    	MapIdEntitiesAssert.assertThat(townHall.getUnits())
-    		.hasSize(3)
-    		.containsId("unit:7076");
-    	
-    	UnitAssert.assertThat(townHall.getUnits().getById("unit:7076"))
-    		.isUnitType("model.unit.elderStatesman");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
+            .hasSize(3)
+            .hasUnit("unit:7076")
+            .hasUnitType("model.unit.elderStatesman");
     	
     	ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
     	    .hasNoLessThenZero(GoodsType.FOOD);
@@ -102,20 +97,18 @@ class ColonyPlanTest {
     	colonyPlan.execute(ColonyPlan.Plan.Bell);
 
 		// then
-    	Building townHall = nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL);
+        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
+            System.out.println("colony worker " + unit.toStringTypeLocation());
+        }
+        System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
     	
-    	for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
-			System.out.println("colony worker " + unit.toStringTypeLocation());
-		}
-    	System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
+        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(4);
     	
-    	MapIdEntitiesAssert.assertThat(townHall.getUnits())
-    		.hasSize(2)
-    		.containsId("unit:7076");
+    	UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
+        	.hasSize(3)
+        	.hasUnit("unit:7076")
+        	.hasUnitType("model.unit.elderStatesman");
     	
-    	UnitAssert.assertThat(townHall.getUnits().getById("unit:7076"))
-    		.isUnitType("model.unit.elderStatesman");
-
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
             .hasNoLessThenZero(GoodsType.FOOD);
 	}

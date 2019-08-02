@@ -39,6 +39,12 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
 		return this;
 	}
-	
+
+	public ColonyAssert hasSize(int size) {
+	    if (actual.settlementWorkers().size() != size) {
+	        failWithMessage("expected colony <%s> has size <%d> but has <%d>", actual.getId(), size, actual.settlementWorkers().size());
+	    }
+	    return this;
+	}
     
 }

@@ -9,8 +9,6 @@ import java.util.Set;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
-import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
@@ -53,46 +51,59 @@ public class ColonyPlan {
 	}
 	
 	public void execute(Plan plan) {
-		MapIdEntities<Unit> allWorkers = new MapIdEntities<Unit>();
+		List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
+		
 		for (Unit unit : colony.settlementWorkers()) {
 			unit.changeUnitLocation(colony.tile);
 			unit.canChangeState(UnitState.SKIPPED);
-			allWorkers.add(unit);
+			availableWorkers.add(unit);
 		}
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		colony.updateColonyPopulation();
 		
-		MapIdEntities<Unit> workersByPriorityToPlan = workersByPriorityToPlan(plan, allWorkers);
-		
-		for (Unit unit : workersByPriorityToPlan.entities()) {
-			System.out.println("workersByPriorityToPlan.worker: " + unit.getId() + " " + unit.unitType.getId());
-			
-			System.out.println("colony.size " + colony.settlementWorkers().size());
-			System.out.println("colony food production " + colony.productionSummary().getQuantity(GoodsType.FOOD));
-			List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(unit);
-			
-			GoodMaxProductionLocation theBestLocation = theBestLocation(plan, productions);
-			if (theBestLocation != null) {
-				System.out.println("  the best location " + theBestLocation);
-				if (canSustainNewWorker(unit, theBestLocation)) {
-					if (theBestLocation.getColonyTile() != null) {
-						colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
-					}
-					if (theBestLocation.getBuilding() != null) {
-						colony.addWorkerToBuilding(theBestLocation.getBuilding(), unit);
-					}
-			        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-			        colony.updateColonyPopulation();
-				} else {
-					System.out.println("  can not maintain worker");
-				}
-			} else {
-				System.out.println("not good location");
-			}
+		while (!availableWorkers.isEmpty()) {
+    		Unit theBestWorkerForPlan = workersByPriorityToPlan(plan.prodGoodsId, availableWorkers);
+    		GoodMaxProductionLocation theBestLocation = theBestLocation(plan, theBestWorkerForPlan);
+    		if (theBestLocation == null) {
+    		    System.out.println("no more good location");
+    		    break;
+    		}
+    		if (canSustainNewWorker(theBestWorkerForPlan, theBestLocation)) {
+    		    addWorkerToProductionLocation(theBestWorkerForPlan, theBestLocation);
+    		    availableWorkers.remove(theBestWorkerForPlan);
+    		} else {
+    		    if (!findWorkerForFood(availableWorkers)) {
+    		        System.out.println("can not produce more food");
+    		        break;
+    		    }
+    		}
 		}
-		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-		colony.updateColonyPopulation();
 	}
+
+	private boolean findWorkerForFood(List<Unit> availableWorkers) {
+        Unit foodWorker = workersByPriorityToPlan(Plan.Food.prodGoodsId, availableWorkers);
+        GoodMaxProductionLocation foodLocation = theBestLocation(Plan.Food, foodWorker);
+        if (foodLocation == null) {
+            return false;
+        }
+        if (canSustainNewWorker(foodWorker, foodLocation)) {
+            addWorkerToProductionLocation(foodWorker, foodLocation);
+            availableWorkers.remove(foodWorker);
+            return true;
+        }
+        return false;
+	}
+	
+    private void addWorkerToProductionLocation(Unit unit, GoodMaxProductionLocation theBestLocation) {
+        if (theBestLocation.getColonyTile() != null) {
+        	colony.addWorkerToTerrain(theBestLocation.getColonyTile(), unit, theBestLocation.getGoodsType());
+        }
+        if (theBestLocation.getBuilding() != null) {
+        	colony.addWorkerToBuilding(theBestLocation.getBuilding(), unit);
+        }
+        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+        colony.updateColonyPopulation();
+    }
 
 	private boolean canSustainNewWorker(Unit unit, GoodMaxProductionLocation prodLocation) {
 		ProductionSummary productionSummary = colony.productionSummary();
@@ -103,9 +114,10 @@ public class ColonyPlan {
 			}
 			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
 			// when unit produce what consume, unit can sustain yourself
-			if (unitConsumption.getTypeId().equals(prodLocation.getGoodsType().getId())) {
-				prod += prodLocation.getProduction();
+			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId()) && prodLocation.getGoodsType().isFood()) {
+		        prod += prodLocation.getProduction();
 			}
+			
 			// when consume food and is lack of food then it is possible to stop breeding horses and sustain colonist
 			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId())) {
 			    prod += productionSummary.getQuantity(GoodsType.HORSES);
@@ -116,8 +128,10 @@ public class ColonyPlan {
 		}
 		return true;
 	}
-	
-	private GoodMaxProductionLocation theBestLocation(Plan plan, List<GoodMaxProductionLocation> productions) {
+
+	private GoodMaxProductionLocation theBestLocation(Plan plan, Unit worker) {
+	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker);
+	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
 			if (plan.contains(p.getGoodsType().getId())) {
@@ -139,20 +153,31 @@ public class ColonyPlan {
 		return onlyGoodsFromPlan.get(0);
 	}
 	
-	private MapIdEntities<Unit> workersByPriorityToPlan(Plan plan, MapIdEntitiesReadOnly<Unit> allWorkers) {
-		MapIdEntities<Unit> workers = MapIdEntities.linkedMapIdEntities();
-
-		// first on list experts
-		for (Unit w : allWorkers.entities()) {
-			if (plan.contains(w.unitType.expertProductionForGoodsId)) {
-				workers.add(w);
-			}
-		}
-		for (Unit w : allWorkers.entities()) {
-			if (!workers.containsId(w)) {
-				workers.add(w);
-			}
-		}
-		return workers;
+	private Unit workersByPriorityToPlan(final Set<String> goodsTypes, List<Unit> availableWorkers) {
+	    if (goodsTypes.isEmpty()) {
+	        throw new IllegalStateException("is empty");
+	    }
+	    if (availableWorkers.isEmpty()) {
+	        throw new IllegalArgumentException("no available workers");
+	    }
+	    
+	    Collections.sort(availableWorkers, new Comparator<Unit>() {
+            @Override
+            public int compare(Unit o1, Unit o2) {
+                return maxProd(o2, goodsTypes) - maxProd(o1, goodsTypes);
+            }
+            
+            int maxProd(Unit u, Set<String> gts) {
+                int m = 0;
+                for (String gtId : gts) {
+                    int prod = (int)u.unitType.applyModifier(gtId, 10);
+                    if (prod > m) {
+                        m = prod;
+                    }
+                }
+                return m;
+            }
+        });
+	    return availableWorkers.get(0);
 	}
 }
