@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
-import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -47,7 +46,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	
     @Override
     public MapIdEntitiesReadOnly<Unit> getUnits() {
-        throw new IllegalStateException("there are no units in colony tile " + getId());
+        return new OneMapIdEntitiesReadOnly<Unit>(worker);
     }
 
     @Override

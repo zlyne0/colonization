@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai;
 
+import static org.assertj.core.api.Assertions.*;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -112,4 +114,36 @@ class ColonyPlanTest {
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
             .hasNoLessThenZero(GoodsType.FOOD);
 	}
+    
+    @Test
+    void canExecuteBellFoodPlan() throws Exception {
+        // given
+        ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+
+        // when
+        colonyPlan.execute(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
+
+        // then
+        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
+            System.out.println("colony worker " + unit.toStringTypeLocation());
+        }
+        System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
+
+        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
+        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+            .has(GoodsType.FOOD, 11);
+        
+        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
+            .hasSize(3)
+            .hasUnit("unit:7076")
+            .hasUnitType("model.unit.elderStatesman");
+
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
+            .hasUnit("unit:7096")
+            .hasUnitType("model.unit.expertFisherman");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431"))
+            .hasUnit("unit:6940");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432"))
+            .hasUnit("unit:6939");
+    }
 }

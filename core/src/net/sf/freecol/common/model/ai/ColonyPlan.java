@@ -41,44 +41,83 @@ public class ColonyPlan {
 	}
 	
 	private final Colony colony;
+    private Plan[] plans;
+    private int nextPlanIndex = 0;
 	
 	public ColonyPlan(Colony colony) {
 		this.colony = colony;
 	}
 	
 	public void execute() {
-		execute(Plan.Bell);
+		execute(Plan.Bell, Plan.Food);
 	}
 	
-	public void execute(Plan plan) {
-		List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
-		
-		for (Unit unit : colony.settlementWorkers()) {
+	public void execute(Plan ... plans) {
+	    this.plans = plans;
+	    
+        List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
+        removeWorkersFromColony(availableWorkers);
+	    
+        List<Plan> noWork = new ArrayList<ColonyPlan.Plan>();
+        
+        while (!availableWorkers.isEmpty()) {
+            Plan plan = nextPlan();
+            
+            if (executePlan(plan, availableWorkers)) {
+                noWork.clear();
+            } else {
+                noWork.add(plan);
+            }
+            // when no location and worker for any plan
+            if (noWork.size() == this.plans.length) {
+                break;
+            }
+        }
+	}
+	
+	public Plan nextPlan() {
+	    if (plans == null || plans.length == 0) {
+	        throw new IllegalStateException("no plans");
+	    }
+	    Plan plan = plans[nextPlanIndex];
+	    nextPlanIndex++;
+	    if (nextPlanIndex >= plans.length) {
+	        nextPlanIndex = 0;
+	    }
+	    return plan;
+	}
+	
+	/**
+	 * Return true when allocate worker for location 
+	 */
+	private boolean executePlan(Plan plan, List<Unit> availableWorkers) {
+        Unit theBestWorkerForPlan = workersByPriorityToPlan(plan.prodGoodsId, availableWorkers);
+        GoodMaxProductionLocation theBestLocation = theBestLocation(plan, theBestWorkerForPlan);
+        if (theBestLocation == null) {
+            System.out.println("no more good location");
+            return false;
+        }
+        if (canSustainNewWorker(theBestWorkerForPlan, theBestLocation)) {
+            addWorkerToProductionLocation(theBestWorkerForPlan, theBestLocation);
+            availableWorkers.remove(theBestWorkerForPlan);
+        } else {
+            if (!findWorkerForFood(availableWorkers)) {
+                System.out.println("can not produce more food");
+                return false;
+            }
+        }
+        return true;
+	}
+	
+    private void removeWorkersFromColony(List<Unit> availableWorkers) {
+        for (Unit unit : colony.settlementWorkers()) {
 			unit.changeUnitLocation(colony.tile);
 			unit.canChangeState(UnitState.SKIPPED);
 			availableWorkers.add(unit);
 		}
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		colony.updateColonyPopulation();
-		
-		while (!availableWorkers.isEmpty()) {
-    		Unit theBestWorkerForPlan = workersByPriorityToPlan(plan.prodGoodsId, availableWorkers);
-    		GoodMaxProductionLocation theBestLocation = theBestLocation(plan, theBestWorkerForPlan);
-    		if (theBestLocation == null) {
-    		    System.out.println("no more good location");
-    		    break;
-    		}
-    		if (canSustainNewWorker(theBestWorkerForPlan, theBestLocation)) {
-    		    addWorkerToProductionLocation(theBestWorkerForPlan, theBestLocation);
-    		    availableWorkers.remove(theBestWorkerForPlan);
-    		} else {
-    		    if (!findWorkerForFood(availableWorkers)) {
-    		        System.out.println("can not produce more food");
-    		        break;
-    		    }
-    		}
-		}
-	}
+    }
 
 	private boolean findWorkerForFood(List<Unit> availableWorkers) {
         Unit foodWorker = workersByPriorityToPlan(Plan.Food.prodGoodsId, availableWorkers);

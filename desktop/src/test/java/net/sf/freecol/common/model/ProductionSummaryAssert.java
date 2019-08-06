@@ -19,5 +19,14 @@ public class ProductionSummaryAssert extends AbstractAssert<ProductionSummaryAss
 	    }
 	    return this;
 	}
+
+    public ProductionSummaryAssert has(String goodsTypeId, int expectedAmount) {
+        int amount = actual.getQuantity(goodsTypeId);
+        if (amount != expectedAmount) {
+            failWithMessage("expect <%d> of <%s> goods type but has <%d>", expectedAmount, goodsTypeId, amount);
+        }
+        return this;
+    }
+	
 	
 }
