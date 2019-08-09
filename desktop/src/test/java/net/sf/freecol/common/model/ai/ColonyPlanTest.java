@@ -98,11 +98,7 @@ class ColonyPlanTest {
 		// when
     	colonyPlan.execute(ColonyPlan.Plan.Bell);
 
-		// then
-        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
-            System.out.println("colony worker " + unit.toStringTypeLocation());
-        }
-        System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
+		printColonyWorkers();
     	
         ColonyAssert.assertThat(nieuwAmsterdam).hasSize(4);
     	
@@ -124,10 +120,7 @@ class ColonyPlanTest {
         colonyPlan.execute(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 
         // then
-        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
-            System.out.println("colony worker " + unit.toStringTypeLocation());
-        }
-        System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
+        printColonyWorkers();
 
         ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
@@ -145,5 +138,28 @@ class ColonyPlanTest {
             .hasUnit("unit:6940");
         UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432"))
             .hasUnit("unit:6939");
+    }
+
+    
+    @Test
+    void canExecuteBuildPlan() throws Exception {
+        // given
+        ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+        nieuwAmsterdam.getGoodsContainer().decreaseToZero("model.goods.lumber");
+
+        // when
+        colonyPlan.execute(ColonyPlan.Plan.Building);
+
+        // then
+        printColonyWorkers();
+    }
+    
+    
+    private void printColonyWorkers() {
+        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
+            System.out.println("colony worker " + unit.toStringTypeLocation());
+        }
+        System.out.println("productionConsumption " + nieuwAmsterdam.productionSummary());
+        System.out.println("warehause " + nieuwAmsterdam.getGoodsContainer().cloneGoods());
     }
 }
