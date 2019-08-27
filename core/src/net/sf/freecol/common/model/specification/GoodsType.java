@@ -175,6 +175,10 @@ public class GoodsType extends ObjectWithFeatures {
         return madeFrom != null;
     }
     
+	public GoodsType getMadeFrom() {
+		return madeFrom;
+	}
+    
     public boolean isFood() {
         return food;
     }

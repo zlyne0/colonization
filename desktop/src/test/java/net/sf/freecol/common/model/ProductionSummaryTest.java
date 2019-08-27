@@ -47,5 +47,21 @@ class ProductionSummaryTest {
 		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(190);
 	}
 	
-	
+	@Test
+	public void canVerifyHasPartOfGoods() throws Exception {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("one", 6);
+
+		ProductionSummary req = new ProductionSummary();
+		req.addGoods("one", 12);
+		
+		// when
+		boolean hasPart_5 = sut.hasPart(req, 0.5f);
+		boolean hasPart1 = sut.hasPart(req, 1f);
+
+		// then
+		assertThat(hasPart_5).isTrue();
+		assertThat(hasPart1).isFalse();
+	}
 }

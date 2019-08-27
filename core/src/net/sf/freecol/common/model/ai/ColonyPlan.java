@@ -10,6 +10,7 @@ import java.util.Set;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitConsumption;
@@ -17,19 +18,27 @@ import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ColonyPlan {
 
+	enum AssignStatus {
+		OK, 
+		NO_LOCATION, 
+		NO_FOOD; // can not produce more food
+	}
+	
 	enum Plan {
 		// only food
 		Food(GoodsType.GRAIN, GoodsType.FISH),
 		Bell(GoodsType.BELLS),
-		Building(),
+		Building("model.goods.hammers"),
 		Zasoby(),
 		ZasobyLuksusowe(),
 		Tools(),
 		Muskiet(); 
 		
 		private final Set<String> prodGoodsId = new HashSet<String>();
+		private final String[] prodGoodsIdsArray;
 		
-		private Plan(String ... prodGoodsId) {
+		private Plan(String ... prodGoodsIds) {
+			this.prodGoodsIdsArray = prodGoodsIds;
 			for (String id : prodGoodsId) {
 				this.prodGoodsId.add(id);
 			}
@@ -40,10 +49,12 @@ public class ColonyPlan {
 		}
 	}
 	
+	private boolean consumeWarehouseResources = false;
+	
 	private final Colony colony;
     private Plan[] plans;
     private int nextPlanIndex = 0;
-	
+    
 	public ColonyPlan(Colony colony) {
 		this.colony = colony;
 	}
@@ -62,8 +73,11 @@ public class ColonyPlan {
         
         while (!availableWorkers.isEmpty()) {
             Plan plan = nextPlan();
+
+            Unit theBestWorkerForPlan = workersByPriorityToPlan(availableWorkers, plan.prodGoodsIdsArray);
+            AssignStatus assignStatus = assignWorkerToProduction(theBestWorkerForPlan, availableWorkers, plan.prodGoodsIdsArray);
             
-            if (executePlan(plan, availableWorkers)) {
+            if (assignStatus == AssignStatus.OK) {
                 noWork.clear();
             } else {
                 noWork.add(plan);
@@ -74,54 +88,66 @@ public class ColonyPlan {
             }
         }
 	}
-	
-	public Plan nextPlan() {
-	    if (plans == null || plans.length == 0) {
-	        throw new IllegalStateException("no plans");
-	    }
-	    Plan plan = plans[nextPlanIndex];
-	    nextPlanIndex++;
-	    if (nextPlanIndex >= plans.length) {
-	        nextPlanIndex = 0;
-	    }
-	    return plan;
-	}
-	
-	/**
-	 * Return true when allocate worker for location 
-	 */
-	private boolean executePlan(Plan plan, List<Unit> availableWorkers) {
-        Unit theBestWorkerForPlan = workersByPriorityToPlan(plan.prodGoodsId, availableWorkers);
-        GoodMaxProductionLocation theBestLocation = theBestLocation(plan, theBestWorkerForPlan);
-        if (theBestLocation == null) {
-            System.out.println("no more good location");
-            return false;
-        }
-        if (canSustainNewWorker(theBestWorkerForPlan, theBestLocation)) {
-            addWorkerToProductionLocation(theBestWorkerForPlan, theBestLocation);
-            availableWorkers.remove(theBestWorkerForPlan);
+
+	public void executeBuildingPlan() {
+        List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
+        removeWorkersFromColony(availableWorkers);
+		
+        ProductionSummary prod = new ProductionSummary(); 
+        ProductionSummary cons = new ProductionSummary();
+        
+        String hammer = "model.goods.hammers";
+		Unit hammerWorker = workersByPriorityToPlan(availableWorkers, hammer);
+        colony.determineMaxPotentialProduction(hammer, hammerWorker, prod, cons);
+        
+        System.out.println("prod " + prod);
+        System.out.println("cons " + cons);
+        System.out.println("warehouse lumber " + colony.getGoodsContainer().goodsAmount("model.goods.lumber"));
+        System.out.println("hasGoodsToConsume = " + hasGoodsToConsume(cons));
+        
+        if (!hasGoodsToConsume(cons)) {
+        	String lumber = "model.goods.lumber";
+			Unit lumberWorker = workersByPriorityToPlan(availableWorkers, lumber);
+        	
+        	AssignStatus assignStatus = assignWorkerToProduction(lumberWorker, availableWorkers, lumber);
+        	if (assignStatus != AssignStatus.OK) {
+        		return;
+        	}
+        	// try assign to hammer
         } else {
-            if (!findWorkerForFood(availableWorkers)) {
-                System.out.println("can not produce more food");
-                return false;
-            }
+        	assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
         }
-        return true;
 	}
 	
-    private void removeWorkersFromColony(List<Unit> availableWorkers) {
-        for (Unit unit : colony.settlementWorkers()) {
+	private void removeWorkersFromColony(List<Unit> availableWorkers) {
+		for (Unit unit : colony.settlementWorkers()) {
 			unit.changeUnitLocation(colony.tile);
 			unit.canChangeState(UnitState.SKIPPED);
 			availableWorkers.add(unit);
 		}
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		colony.updateColonyPopulation();
-    }
+	}
+
+	private AssignStatus assignWorkerToProduction(Unit worker, List<Unit> availableWorkers, String ... goodsTypeIds) {
+    	GoodMaxProductionLocation location = theBestLocation(worker, goodsTypeIds);
+    	if (location == null) {
+    		return AssignStatus.NO_LOCATION;
+    	}
+    	if (canSustainNewWorker(worker, location)) {
+            addWorkerToProductionLocation(worker, location);
+            availableWorkers.remove(worker);
+    	} else {
+            if (!findWorkerForFood(availableWorkers)) {
+            	return AssignStatus.NO_FOOD;
+            }
+    	}
+    	return AssignStatus.OK;
+	}
 
 	private boolean findWorkerForFood(List<Unit> availableWorkers) {
-        Unit foodWorker = workersByPriorityToPlan(Plan.Food.prodGoodsId, availableWorkers);
-        GoodMaxProductionLocation foodLocation = theBestLocation(Plan.Food, foodWorker);
+        Unit foodWorker = workersByPriorityToPlan(availableWorkers, Plan.Food.prodGoodsIdsArray);
+        GoodMaxProductionLocation foodLocation = theBestLocation(foodWorker, Plan.Food.prodGoodsIdsArray);
         if (foodLocation == null) {
             return false;
         }
@@ -168,13 +194,13 @@ public class ColonyPlan {
 		return true;
 	}
 
-	private GoodMaxProductionLocation theBestLocation(Plan plan, Unit worker) {
+	private GoodMaxProductionLocation theBestLocation(Unit worker, String ... planGoodsType) {
 	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker);
 	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
-			if (plan.contains(p.getGoodsType().getId())) {
-				System.out.println(" - potential location - " + p.getProductionLocation() + " " + p.getGoodsType() + " " + p.getProduction());
+			if (isArrayContains(planGoodsType, p.getGoodsType().getId())) {
+				//System.out.println(" - potential location - " + p.getProductionLocation() + " " + p.getGoodsType() + " " + p.getProduction());
 				onlyGoodsFromPlan.add(p);
 			}
 		}
@@ -192,9 +218,9 @@ public class ColonyPlan {
 		return onlyGoodsFromPlan.get(0);
 	}
 	
-	private Unit workersByPriorityToPlan(final Set<String> goodsTypes, List<Unit> availableWorkers) {
-	    if (goodsTypes.isEmpty()) {
-	        throw new IllegalStateException("is empty");
+	private Unit workersByPriorityToPlan(List<Unit> availableWorkers, final String ... goodsTypeIds) {
+	    if (goodsTypeIds.length == 0) {
+	        throw new IllegalStateException("goodsTypeIds is empty");
 	    }
 	    if (availableWorkers.isEmpty()) {
 	        throw new IllegalArgumentException("no available workers");
@@ -203,12 +229,12 @@ public class ColonyPlan {
 	    Collections.sort(availableWorkers, new Comparator<Unit>() {
             @Override
             public int compare(Unit o1, Unit o2) {
-                return maxProd(o2, goodsTypes) - maxProd(o1, goodsTypes);
+                return maxProd(o2) - maxProd(o1);
             }
             
-            int maxProd(Unit u, Set<String> gts) {
+            int maxProd(Unit u) {
                 int m = 0;
-                for (String gtId : gts) {
+                for (String gtId : goodsTypeIds) {
                     int prod = (int)u.unitType.applyModifier(gtId, 10);
                     if (prod > m) {
                         m = prod;
@@ -218,5 +244,50 @@ public class ColonyPlan {
             }
         });
 	    return availableWorkers.get(0);
+	}
+
+	private boolean hasGoodsToConsume(ProductionSummary ps) {
+		if (consumeWarehouseResources) {
+			return colony.getGoodsContainer().hasPart(ps, 0.5f);
+		} else {
+			return colony.productionSummary().hasPart(ps, 0.5f);
+		}
+	}
+	
+	public Plan nextPlan() {
+	    if (plans == null || plans.length == 0) {
+	        throw new IllegalStateException("no plans");
+	    }
+	    Plan plan = plans[nextPlanIndex];
+	    nextPlanIndex++;
+	    if (nextPlanIndex >= plans.length) {
+	        nextPlanIndex = 0;
+	    }
+	    return plan;
+	}
+
+	private boolean isArrayContains(String[] array, String str) {
+		for (int i=0; i<array.length; i++) {
+			if (array[i].equals(str)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private GoodsType objById(String goodsTypeId) {
+		return Specification.instance.goodsTypes.getById(goodsTypeId);
+	}
+	
+	private Set<String> setOf(String ... strArray) {
+		HashSet<String> set = new HashSet<String>();
+		for (String st : strArray) {
+			set.add(st);
+		}
+		return set;
+	}
+
+	public void setConsumeWarehouseResources(boolean consumeWarehouseResources) {
+		this.consumeWarehouseResources = consumeWarehouseResources;
 	}
 }

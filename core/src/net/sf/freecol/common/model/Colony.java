@@ -266,6 +266,10 @@ public class Colony extends Settlement {
         
         updateModelOnWorkerAllocationOrGoodsTransfer();
     }
+
+    public void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
+    	colonyProduction.determineMaxPotentialProduction(goodsTypeId, worker, prod, cons);
+    }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
         if (!unit.isPerson()) {
@@ -282,8 +286,7 @@ public class Colony extends Settlement {
         if (!unit.isPerson()) {
             return Collections.emptyList();
         }
-        List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction = colonyProduction.determinePotentialMaxGoodsProduction(unit);
-        return determinePotentialMaxGoodsProduction;
+        return colonyProduction.determinePotentialMaxGoodsProduction(unit);
     }
 
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {

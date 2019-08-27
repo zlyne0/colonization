@@ -171,29 +171,16 @@ class ColonyProduction {
 	        
 	        List<Production> productions = building.buildingType.productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
-	            
-	            HashSet<String> consumptionGoods = new HashSet<String>();
-	            for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
-	                consumptionGoods.add(inputEntry.getKey().getId());
-	            }
-	            
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                String goodsId = outputEntry.getKey().getId();
-	                if (!goodsType.equalsId(goodsId)) {
+	                if (!goodsType.equalsId(goodsId) || 0 == outputEntry.getValue().intValue()) {
 	                    continue;
 	                }
 	                
-	                Integer goodInitValue = outputEntry.getValue();
-	                if (0 == goodInitValue) {
-	                    continue;
-	                }
-	                int goodQuantity = 0;
-	                
-                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-                    goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
-                    goodQuantity += colony.productionBonus();
+	                int goodQuantity = colonyWorkerProductionAmount(worker, outputEntry);
 	         
-                    for (String cg : consumptionGoods) {
+	                for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+						String cg = inputEntry.getKey().getId();
                         int available = prodCons.getQuantity(cg) + warehouseGoods.getQuantity(cg);
     	                if (available < goodQuantity) {
     	                    goodQuantity = available;
@@ -214,6 +201,52 @@ class ColonyProduction {
         return maxProd;
     }
 
+    /**
+     * Determine max potential production of goodsTypeId, the best option.
+     * Do not take into account input requirments 
+     */
+    void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
+    	if (!worker.isPerson()) {
+    		throw new IllegalArgumentException("worker[" + worker + "] is not a person ");
+    	}
+    	
+    	for (Building building : colony.buildings.entities()) {
+	        if (!building.canAddWorker(worker)) {
+	            continue;
+	        }
+    		
+    		List<Production> productions = building.buildingType.productionInfo.getAttendedProductions();
+    		for (Production production : productions) {
+    			for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+	                String outputGoodsId = outputEntry.getKey().getId();
+	                if (!outputGoodsId.equals(goodsTypeId) || 0 == outputEntry.getValue().intValue()) {
+	                    continue;
+	                }
+	                
+                	int goodQuantity = colonyWorkerProductionAmount(worker, outputEntry);
+                	if (goodQuantity > prod.getQuantity(goodsTypeId)) {
+                		prod.addGoods(goodsTypeId, goodQuantity);
+                	}
+                	for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+                		// assumption, production amount to consumption amount ratio is one to one 
+                		cons.addGoods(inputEntry.getKey().getId(), goodQuantity);
+                	}
+    			}
+    		}
+    	}
+    }
+	
+    private int colonyWorkerProductionAmount(Unit worker, java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) {
+    	String outputGoodsId = goodsTypeProdAmount.getKey().getId();
+    	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
+    	
+    	int goodQuantity = 0;
+        goodQuantity += (int)worker.unitType.applyModifier(outputGoodsId, outputGoodsInitValue);
+        goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(outputGoodsId, goodQuantity);
+        goodQuantity += colony.productionBonus();
+        return goodQuantity;
+    }
+    
     protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
 	    GoodMaxProductionLocation maxProd = null;
 	    

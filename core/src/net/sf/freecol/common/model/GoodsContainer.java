@@ -56,6 +56,10 @@ public class GoodsContainer {
     	return goods.hasMoreOrEquals(requiredGoods);
     }
     
+    public boolean hasPart(ProductionSummary ps, float ratio) {
+    	return goods.hasPart(ps, ratio);
+    }
+    
 	public void increaseGoodsQuantity(ProductionSummary ps) {
 		goods.addGoods(ps);
 	}

@@ -202,6 +202,22 @@ public class ProductionSummary {
         return true;
     }
     
+    /**
+     * Check that has goods in base amount or in base amount ratio/
+     * Ratio from 0 to 1
+     * Example: base 12, goods 6, ratio 1,  return false
+     *          base 12, goods 6, ratio 0.5 return true
+     */
+    public boolean hasPart(ProductionSummary base, float ratio) {
+    	for (Entry<String> baseEntry : base.entries()) {
+    		int baseAmount = (int)(baseEntry.value * ratio);
+    		if (goods.get(baseEntry.key, 0) < baseAmount) {
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+    
 	public boolean hasMoreOrEquals(MapIdEntities<RequiredGoods> requiredGoods) {
 		for (RequiredGoods rg : requiredGoods.entities()) {
 			if (goods.get(rg.getId(), 0) < rg.amount) {
