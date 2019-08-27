@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
@@ -282,9 +281,7 @@ class ColonyProduction {
     	GoodsType prodGoodsType = outputEntry.getKey();
     	
     	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
-    	for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
-    		goodsQuantity = (int)ff.applyModifier(prodGoodsType.id, goodsQuantity);
-    	}
+    	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity += colony.productionBonus();
     	

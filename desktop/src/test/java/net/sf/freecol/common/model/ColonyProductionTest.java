@@ -5,6 +5,7 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.io.IOException;
+import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -331,4 +332,24 @@ public class ColonyProductionTest {
 		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(5);
 	}
     
+	@Test
+	public void canDeterminePotentialProduction() throws Exception {
+		// given
+		Unit unit = dutch.units.getById("unit:7076");
+		dutch.addFoundingFathers(game, henryHudson);
+		colony.updateColonyFeatures();
+		
+		// when
+		List<GoodMaxProductionLocation> locations = colony.determinePotentialMaxGoodsProduction(unit);
+
+		// then
+		for (GoodMaxProductionLocation l : locations) {
+			System.out.println(l);
+			if (l.getGoodsType().equalsId("model.goods.furs")) {
+				assertThat(l.getProduction()).isEqualTo(8);
+				assertThat(l.getColonyTile().getId()).isEqualTo("tile:3352");
+			}
+		}
+		
+	}
 }
