@@ -7,6 +7,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -105,17 +107,18 @@ public class ColonyPlan {
         System.out.println("warehouse lumber " + colony.getGoodsContainer().goodsAmount("model.goods.lumber"));
         System.out.println("hasGoodsToConsume = " + hasGoodsToConsume(cons));
         
-        if (!hasGoodsToConsume(cons)) {
-        	String lumber = "model.goods.lumber";
-			Unit lumberWorker = workersByPriorityToPlan(availableWorkers, lumber);
-        	
-        	AssignStatus assignStatus = assignWorkerToProduction(lumberWorker, availableWorkers, lumber);
-        	if (assignStatus != AssignStatus.OK) {
-        		return;
-        	}
-        	// try assign to hammer
-        } else {
-        	assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
+        for (Entry<String> ingredient : cons.entries()) {
+            if (!hasGoodsToConsume(ingredient.key, ingredient.value)) {
+                Unit ingredientWorker = workersByPriorityToPlan(availableWorkers, ingredient.key);
+                
+                AssignStatus assignStatus = assignWorkerToProduction(ingredientWorker, availableWorkers, ingredient.key);
+                if (assignStatus != AssignStatus.OK) {
+                    return;
+                }
+                // try assign to produced goods
+            } else {
+                assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
+            }
         }
 	}
 	
@@ -246,6 +249,14 @@ public class ColonyPlan {
 	    return availableWorkers.get(0);
 	}
 
+    private boolean hasGoodsToConsume(String goodsTypeId, int amount) {
+        if (consumeWarehouseResources) {
+            return colony.getGoodsContainer().hasPart(goodsTypeId, amount, 0.5f);
+        } else {
+            return colony.productionSummary().hasPart(goodsTypeId, amount, 0.5f);
+        }
+    }
+	
 	private boolean hasGoodsToConsume(ProductionSummary ps) {
 		if (consumeWarehouseResources) {
 			return colony.getGoodsContainer().hasPart(ps, 0.5f);

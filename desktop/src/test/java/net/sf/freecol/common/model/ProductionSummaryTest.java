@@ -64,4 +64,24 @@ class ProductionSummaryTest {
 		assertThat(hasPart_5).isTrue();
 		assertThat(hasPart1).isFalse();
 	}
+	
+    @Test
+    public void canVerifyHasPartOfGoodsForSingleGoods() throws Exception {
+        // given
+        ProductionSummary sut = new ProductionSummary();
+        sut.addGoods("one", 6);
+
+        String reqType = "one";
+        int reqAmount = 12;
+        
+        // when
+        boolean hasPart_5 = sut.hasPart(reqType, reqAmount, 0.5f);
+        boolean hasPart1 = sut.hasPart(reqType, reqAmount, 1f);
+
+        // then
+        assertThat(hasPart_5).isTrue();
+        assertThat(hasPart1).isFalse();
+    }
+	
+	
 }

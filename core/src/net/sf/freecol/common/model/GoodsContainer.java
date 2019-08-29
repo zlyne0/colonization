@@ -55,6 +55,10 @@ public class GoodsContainer {
     public boolean hasGoodsQuantity(MapIdEntities<RequiredGoods> requiredGoods) {
     	return goods.hasMoreOrEquals(requiredGoods);
     }
+
+    public boolean hasPart(String goodsTypeId, int amount, float ratio) {
+        return goods.hasPart(goodsTypeId, amount, ratio);
+    }
     
     public boolean hasPart(ProductionSummary ps, float ratio) {
     	return goods.hasPart(ps, ratio);
