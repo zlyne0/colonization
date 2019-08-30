@@ -25,6 +25,18 @@ public class UnitLocationAssert extends AbstractAssert<UnitLocationAssert, UnitL
 	    }
 	    return this;
 	}
+
+    public UnitLocationAssert hasUnit(String unitId, String unitTypeId) {
+        Unit unit = actual.getUnits().getByIdOrNull(unitId);
+        if (unit == null) {
+            failWithMessage("expect unit location <%s> contains unitId <%s>, but it's not", actual, unitId);
+        } else {
+            if (!unit.unitType.equalsId(unitTypeId)) {
+                failWithMessage("expect unit location <%s> contains unitId <%s> in type <%s>, but it's not", actual, unitId, unitTypeId);
+            }
+        }
+        return this;
+    }
 	
 	public UnitLocationAssert hasUnitType(String unitTypeId) {
 	    boolean found = false;

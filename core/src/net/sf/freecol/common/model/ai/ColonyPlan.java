@@ -62,7 +62,8 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		execute(Plan.Bell, Plan.Food);
+		//execute(Plan.Bell, Plan.Food);
+	    executeBuildingPlan();
 	}
 	
 	public void execute(Plan ... plans) {
@@ -92,34 +93,51 @@ public class ColonyPlan {
 	}
 
 	public void executeBuildingPlan() {
+	    Plan buildingPlan = Plan.Building;
+	    
         List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
         removeWorkersFromColony(availableWorkers);
 		
-        ProductionSummary prod = new ProductionSummary(); 
-        ProductionSummary cons = new ProductionSummary();
-        
-        String hammer = "model.goods.hammers";
-		Unit hammerWorker = workersByPriorityToPlan(availableWorkers, hammer);
-        colony.determineMaxPotentialProduction(hammer, hammerWorker, prod, cons);
-        
-        System.out.println("prod " + prod);
-        System.out.println("cons " + cons);
-        System.out.println("warehouse lumber " + colony.getGoodsContainer().goodsAmount("model.goods.lumber"));
-        System.out.println("hasGoodsToConsume = " + hasGoodsToConsume(cons));
-        
-        for (Entry<String> ingredient : cons.entries()) {
-            if (!hasGoodsToConsume(ingredient.key, ingredient.value)) {
-                Unit ingredientWorker = workersByPriorityToPlan(availableWorkers, ingredient.key);
-                
-                AssignStatus assignStatus = assignWorkerToProduction(ingredientWorker, availableWorkers, ingredient.key);
-                if (assignStatus != AssignStatus.OK) {
+        while (!availableWorkers.isEmpty()) {
+            for (String goodsTypeId : buildingPlan.prodGoodsIdsArray) {
+                if (tryProduceGoodsType(goodsTypeId, availableWorkers) != AssignStatus.OK) {
                     return;
                 }
-                // try assign to produced goods
-            } else {
-                assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
             }
         }
+	}
+	
+	private AssignStatus tryProduceGoodsType(String hammer, List<Unit> availableWorkers) {
+        Unit hammerWorker = workersByPriorityToPlan(availableWorkers, hammer);
+        ProductionSummary prod = new ProductionSummary(); 
+        ProductionSummary ingredients = new ProductionSummary();
+        
+        colony.determineMaxPotentialProduction(hammer, hammerWorker, prod, ingredients);
+        
+        if (ingredients.isEmpty()) {
+            AssignStatus assignStatus = assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
+            if (assignStatus != AssignStatus.OK) {
+                return assignStatus;
+            }
+        } else {
+            for (Entry<String> ingredient : ingredients.entries()) {
+                if (!hasGoodsToConsume(ingredient.key, ingredient.value)) {
+                    Unit ingredientWorker = workersByPriorityToPlan(availableWorkers, ingredient.key);
+                    
+                    AssignStatus assignStatus = assignWorkerToProduction(ingredientWorker, availableWorkers, ingredient.key);
+                    if (assignStatus != AssignStatus.OK) {
+                        return assignStatus;
+                    }
+                    // try assign to produced goods
+                } else {
+                    AssignStatus assignStatus = assignWorkerToProduction(hammerWorker, availableWorkers, hammer);
+                    if (assignStatus != AssignStatus.OK) {
+                        return assignStatus;
+                    }
+                }
+            }
+        }
+        return AssignStatus.OK;
 	}
 	
 	private void removeWorkersFromColony(List<Unit> availableWorkers) {

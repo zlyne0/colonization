@@ -157,7 +157,13 @@ class ColonyPlanTest {
         printColonyWorkers();
 
         UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352"))
-        	.hasUnit("unit:6939");
+        	.hasUnit("unit:6939", "model.unit.expertLumberJack");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6540"))
+            .hasSize(2)
+            .hasUnit("unit:6940", "model.unit.masterCarpenter");
+        
+        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+            .has("model.goods.hammers", 18);
     }
     
     
