@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 
@@ -63,7 +64,8 @@ public class ColonyPlan {
 	
 	public void execute() {
 		//execute(Plan.Bell, Plan.Food);
-	    executeBuildingPlan();
+	    //executeBuildingPlan();
+		execute2(ColonyPlan.Plan.Food);
 	}
 	
 	public void execute(Plan ... plans) {
@@ -92,6 +94,41 @@ public class ColonyPlan {
         }
 	}
 
+	public void execute2(Plan ... plans) {
+		this.plans = plans;
+		
+		// -first- implemented scenario (BalancedProduction)
+		// plan list means that assign one colonist per plan
+		// -second- not implemented scenario (MaximizationProduction)
+		// take plan and assign to them colonist to end of place or resources
+		
+        List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
+        removeWorkersFromColony(availableWorkers);
+
+        LinkedList<String[]> stos = new LinkedList<String[]>();
+        
+        while (!availableWorkers.isEmpty()) {
+        	if (stos.isEmpty()) {
+                Plan plan = nextPlan();
+                stos.add(plan.prodGoodsIdsArray);
+        	}
+        	
+        	String[] firstGoodsType = stos.pop();
+        	Unit worker = workersByPriorityToPlan(availableWorkers, firstGoodsType);
+        	GoodMaxProductionLocation location = theBestLocation(worker, firstGoodsType);
+        	if (location == null) {
+        		// no location, try next plan
+        		return;
+        	}
+        	if (canSustainNewWorker(worker, location)) {
+        		addWorkerToProductionLocation(worker, location);
+        		availableWorkers.remove(worker);
+        	} else {
+        		stos.addFirst(Plan.Food.prodGoodsIdsArray);
+        	}
+        }
+	}
+	
 	public void executeBuildingPlan() {
 	    Plan buildingPlan = Plan.Building;
 	    
@@ -199,7 +236,7 @@ public class ColonyPlan {
 				continue;
 			}
 			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
-			// when unit produce what consume, unit can sustain yourself
+			// when unit produce what consume, unit can sustain himself
 			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId()) && prodLocation.getGoodsType().isFood()) {
 		        prod += prodLocation.getProduction();
 			}

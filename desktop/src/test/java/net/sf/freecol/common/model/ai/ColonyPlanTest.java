@@ -47,9 +47,11 @@ class ColonyPlanTest {
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	
 		// when
-    	colonyPlan.execute(ColonyPlan.Plan.Food);
+    	colonyPlan.execute2(ColonyPlan.Plan.Food);
 
 		// then
+    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
+    	
     	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472").productionInfo)
     		.hasOutput(GoodsType.FISH, 2);
     	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432").productionInfo)
@@ -72,7 +74,7 @@ class ColonyPlanTest {
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	
 		// when
-    	colonyPlan.execute(ColonyPlan.Plan.Bell);
+    	colonyPlan.execute2(ColonyPlan.Plan.Bell);
 
 		// then
     	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(3);
@@ -96,7 +98,7 @@ class ColonyPlanTest {
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	
 		// when
-    	colonyPlan.execute(ColonyPlan.Plan.Bell);
+    	colonyPlan.execute2(ColonyPlan.Plan.Bell);
 
 		printColonyWorkers();
     	
@@ -117,14 +119,15 @@ class ColonyPlanTest {
         ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
         // when
-        colonyPlan.execute(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
+        colonyPlan.execute2(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 
         // then
         printColonyWorkers();
 
         ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-            .has(GoodsType.FOOD, 11);
+        	.has(GoodsType.BELLS, 14)
+        	.has(GoodsType.FOOD, 11);
         
         UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
             .hasSize(3)
