@@ -52,6 +52,9 @@ public class ColonyPlan {
 		}
 	}
 	
+    private final ProductionSummary prod = new ProductionSummary(); 
+    private final ProductionSummary ingredients = new ProductionSummary();
+    
 	private boolean consumeWarehouseResources = false;
 	
 	private final Colony colony;
@@ -63,9 +66,7 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		//execute(Plan.Bell, Plan.Food);
-	    //executeBuildingPlan();
-		execute2(ColonyPlan.Plan.Food);
+		execute2(ColonyPlan.Plan.Building);
 	}
 	
 	public void execute(Plan ... plans) {
@@ -106,16 +107,22 @@ public class ColonyPlan {
         removeWorkersFromColony(availableWorkers);
 
         LinkedList<String[]> stos = new LinkedList<String[]>();
-        
+
         while (!availableWorkers.isEmpty()) {
         	if (stos.isEmpty()) {
                 Plan plan = nextPlan();
                 stos.add(plan.prodGoodsIdsArray);
         	}
         	
-        	String[] firstGoodsType = stos.pop();
-        	Unit worker = workersByPriorityToPlan(availableWorkers, firstGoodsType);
-        	GoodMaxProductionLocation location = theBestLocation(worker, firstGoodsType);
+        	String[] goodsTypeToProduce = stos.pop();
+        	Unit worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
+
+        	if (lackOfIngedients(goodsTypeToProduce, worker, stos)) {
+        	    goodsTypeToProduce = stos.pop();
+        	    worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
+        	}
+        	
+        	GoodMaxProductionLocation location = theBestLocation(worker, goodsTypeToProduce);
         	if (location == null) {
         		// no location, try next plan
         		return;
@@ -127,6 +134,22 @@ public class ColonyPlan {
         		stos.addFirst(Plan.Food.prodGoodsIdsArray);
         	}
         }
+	}
+	
+	private boolean lackOfIngedients(String[] goodsTypesToProduce, Unit worker, LinkedList<String[]> goodsBuildingQueue) {
+        prod.makeEmpty();
+        ingredients.makeEmpty();
+        for (String goodsTypeId : goodsTypesToProduce) {
+            colony.determineMaxPotentialProduction(goodsTypeId, worker, prod, ingredients);
+        }
+        boolean lackOfIngredients = false;
+        for (Entry<String> ingredient : ingredients.entries()) {
+            if (!hasGoodsToConsume(ingredient.key, ingredient.value)) {
+                lackOfIngredients = true;
+                goodsBuildingQueue.addFirst(new String[] { ingredient.key });
+            }
+        }
+	    return lackOfIngredients;
 	}
 	
 	public void executeBuildingPlan() {

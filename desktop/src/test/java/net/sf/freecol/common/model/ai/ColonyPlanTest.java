@@ -153,12 +153,13 @@ class ColonyPlanTest {
         //nieuwAmsterdam.getGoodsContainer().decreaseToZero("model.goods.lumber");
 
         // when
-        //colonyPlan.execute(ColonyPlan.Plan.Building);
-        colonyPlan.executeBuildingPlan();
+        colonyPlan.execute2(ColonyPlan.Plan.Building);
 
         // then
         printColonyWorkers();
 
+        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
+        
         UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352"))
         	.hasUnit("unit:6939", "model.unit.expertLumberJack");
         UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6540"))
@@ -166,6 +167,7 @@ class ColonyPlanTest {
             .hasUnit("unit:6940", "model.unit.masterCarpenter");
         
         ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+            .has("model.goods.lumber", 6)
             .has("model.goods.hammers", 18);
     }
     
