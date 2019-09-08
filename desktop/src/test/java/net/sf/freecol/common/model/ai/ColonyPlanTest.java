@@ -148,10 +148,8 @@ class ColonyPlanTest {
     void canExecuteBuildPlan() throws Exception {
         // given
         ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-        colonyPlan.setConsumeWarehouseResources(false);
+        colonyPlan.withConsumeWarehouseResources(false);
         
-        //nieuwAmsterdam.getGoodsContainer().decreaseToZero("model.goods.lumber");
-
         // when
         colonyPlan.execute2(ColonyPlan.Plan.Building);
 
@@ -171,6 +169,89 @@ class ColonyPlanTest {
             .has("model.goods.hammers", 18);
     }
     
+    @Test
+	void canExecuteToolsPlanWithoutWarehouseResources() throws Exception {
+		// given
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	colonyPlan.withConsumeWarehouseResources(false);
+    	
+		// when
+    	colonyPlan.execute2(ColonyPlan.Plan.Tools);
+
+		// then
+        printColonyWorkers();
+        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
+        
+        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+		    .has("model.goods.ore", -1)
+		    .has("model.goods.tools", 6);
+        
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
+    		.hasUnit("unit:7096", "model.unit.expertFisherman");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6541"))
+            .hasSize(2);
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3391"))
+    		.hasUnit("unit:6439");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3351"))
+    		.hasUnit("unit:6765");
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431"))
+    		.hasUnit("unit:6940");
+	}
+
+    @Test
+	void canExecuteToolsPlanWithWarehouseResources() throws Exception {
+		// given
+    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    	nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"));
+    	
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	colonyPlan.withConsumeWarehouseResources(true);
+    	
+		// when
+    	colonyPlan.execute2(ColonyPlan.Plan.Tools);
+
+		// then
+        printColonyWorkers();
+        
+        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(4);
+        
+        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
+		    .has("model.goods.ore", -9)
+		    .has("model.goods.tools", 9);
+        
+        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6541"))
+        	.hasSize(3);
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
+    		.hasUnit("unit:7096", "model.unit.expertFisherman");
+	}
+    
+    
+    @Test
+	public void canExecutePlanForToolsAndBell() throws Exception {
+		// given
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	colonyPlan.withConsumeWarehouseResources(true);
+    	
+		// when
+    	colonyPlan.execute2(ColonyPlan.Plan.Tools, ColonyPlan.Plan.Bell);
+
+		// then
+    	printColonyWorkers();
+    	
+    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
+
+        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6541"))
+    		.hasSize(3);
+        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
+    		.hasUnit("unit:7096", "model.unit.expertFisherman");
+
+        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
+	        .hasSize(2)
+	        //.hasUnit("unit:7076")
+	        .hasUnitType("model.unit.elderStatesman");
+        
+	}
     
     private void printColonyWorkers() {
     	System.out.println("XXXXX printColonyWorkers size " + nieuwAmsterdam.settlementWorkers().size());

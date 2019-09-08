@@ -34,8 +34,8 @@ public class ColonyPlan {
 		Building("model.goods.hammers"),
 		Zasoby(),
 		ZasobyLuksusowe(),
-		Tools(),
-		Muskiet(); 
+		Tools("model.goods.tools"),
+		Muskets(GoodsType.MUSKETS); 
 		
 		private final Set<String> prodGoodsId = new HashSet<String>();
 		private final String[] prodGoodsIdsArray;
@@ -66,7 +66,7 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		execute2(ColonyPlan.Plan.Building);
+		execute2(ColonyPlan.Plan.Tools);
 	}
 	
 	public void execute(Plan ... plans) {
@@ -376,7 +376,8 @@ public class ColonyPlan {
 		return set;
 	}
 
-	public void setConsumeWarehouseResources(boolean consumeWarehouseResources) {
+	public ColonyPlan withConsumeWarehouseResources(boolean consumeWarehouseResources) {
 		this.consumeWarehouseResources = consumeWarehouseResources;
+		return this;
 	}
 }
