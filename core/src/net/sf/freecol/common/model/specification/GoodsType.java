@@ -232,6 +232,16 @@ public class GoodsType extends ObjectWithFeatures {
 		return makes;
 	}
 	
+	public int calculateMadeFromLevel() {
+		int madeFromLevel = 0;
+		GoodsType gt = this;
+		while (gt.madeFrom != null) {
+			gt = gt.madeFrom;
+			madeFromLevel++;
+		}
+		return madeFromLevel;
+	}
+	
 	public static class Xml extends XmlNodeParser<GoodsType> {
 		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
 		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";

@@ -189,6 +189,7 @@ public class Specification {
 			updateGoodsTypeAsBuildingMaterials(ur.requiredGoods);
 		}
         for (BuildingType buildingType : buildingTypes.entities()) {
+        	buildingType.calculateGoodsOutputChainLevel();
 			updateGoodsTypeAsBuildingMaterials(buildingType.requiredGoods);
 		}
         createSupportUnitLists();

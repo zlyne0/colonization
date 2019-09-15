@@ -46,5 +46,68 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 	    }
 	    return this;
 	}
-    
+
+	public ColonyAssert hasWorkerInLocation(String unitLocationId) {
+		return hasWorkerInLocation(unitLocationId, 1);
+	}
+	
+	public ColonyAssert hasWorkerInLocation(String unitLocationId, int workersAmount) {
+		UnitLocation unitLocation = actual.findUnitLocationById(unitLocationId);
+		if (unitLocation == null) {
+			failWithMessage(
+				"exptected <%s> workers in unitLocationId <%s>, but no unit location",
+				workersAmount,
+				unitLocationId
+			);
+		} else {
+			if (unitLocation.getUnits().size() < workersAmount) {
+				failWithMessage("exptected <%s> workers in unitLocationId <%s>, but it has <%s> workers",
+					workersAmount,
+					unitLocationId,
+					unitLocation.getUnits().size()
+				);
+			}
+		}
+		return this;
+	}
+
+	public ColonyAssert hasWorkerInLocation(String unitLocationId, String unitTypeId) {
+		hasWorkerInLocation(unitLocationId, 1);
+		UnitLocation unitLocation = actual.findUnitLocationById(unitLocationId);
+		
+		boolean found = false;
+		for (Unit unit : unitLocation.getUnits().entities()) {
+			if (unit.unitType.equalsId(unitTypeId)) {
+				found = true;
+			}
+		}
+		if (!found) {
+			failWithMessage("expected unit type <%s> in location <%s>", unitTypeId, unitLocationId);
+		}
+		return this;
+	}
+	
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId) {
+		return hasWorkerInBuildingType(buildingTypeId, 1);
+	}
+	
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId, int workersAmount) {
+		Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
+		if (building == null) {
+			failWithMessage(
+				"exptected <%s> workers in building type <%s> location, but building type not found",
+				workersAmount,
+				buildingTypeId
+			);
+		} else {
+			if (building.getUnits().size() < workersAmount) {
+				failWithMessage("exptected <%s> workers in building type <%s> location, but it has <%s> workers",
+					workersAmount,
+					buildingTypeId,
+					building.getUnits().size()
+				);
+			}
+		}
+		return this;
+	}
 }

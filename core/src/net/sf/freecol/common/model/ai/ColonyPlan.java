@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.ai;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -66,7 +67,7 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		execute2(ColonyPlan.Plan.Tools);
+		execute2(ColonyPlan.Plan.Muskets);
 	}
 	
 	public void execute(Plan ... plans) {
@@ -118,8 +119,7 @@ public class ColonyPlan {
         	Unit worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
 
         	if (lackOfIngedients(goodsTypeToProduce, worker, stos)) {
-        	    goodsTypeToProduce = stos.pop();
-        	    worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
+        		continue;
         	}
         	
         	GoodMaxProductionLocation location = theBestLocation(worker, goodsTypeToProduce);

@@ -143,7 +143,7 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Comm
 		command("colony_plan") {
 			val nieuwAmsterdam = guiGameModel.game.map.getTile(24, 78).getSettlement().asColony()
 			ColonyPlan(nieuwAmsterdam)
-				.withConsumeWarehouseResources(true)
+				.withConsumeWarehouseResources(false)
 				.execute()
 		}
 		

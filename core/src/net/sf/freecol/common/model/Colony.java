@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -36,6 +37,13 @@ import promitech.colonization.ui.resources.StringTemplate;
 public class Colony extends Settlement {
 	public static final int NEVER_COMPLETE_BUILD = -1;
     public static final int LIBERTY_PER_REBEL = 200;
+    
+	private static final Comparator<Building> BUILDING_GOODS_OUTPUT_CHAIN_LEVEL = new Comparator<Building>() {
+		@Override
+		public int compare(Building o1, Building o2) {
+			return o1.buildingType.getGoodsOutputChainLevel() - o2.buildingType.getGoodsOutputChainLevel();
+		}
+	};
 
     /** Reasons for not building a buildable. */
     public static enum NoBuildReason {
@@ -51,7 +59,7 @@ public class Colony extends Settlement {
     }
     
     GoodsContainer goodsContainer;
-    public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
+    public final MapIdEntities<Building> buildings = MapIdEntities.sortedMapIdEntities(BUILDING_GOODS_OUTPUT_CHAIN_LEVEL);
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
 	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
@@ -756,10 +764,6 @@ public class Colony extends Settlement {
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
     	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
     	for (BuildingType bt : buildingsTypes) {
-    		if (bt.equalsId("model.building.docks")) {
-    			System.out.println("" + bt);
-    		}
-
     	    NoBuildReason noBuildReason = getNoBuildReason(bt);
     	    if (noBuildReason != NoBuildReason.NONE) {
     	        System.out.println("" + bt + ": " + noBuildReason);
@@ -1005,6 +1009,13 @@ public class Colony extends Settlement {
 		return foundBuilding;
 	}
 	
+	public UnitLocation findUnitLocationById(String unitLocationId) {
+		ColonyTile colonyTile = colonyTiles.getByIdOrNull(unitLocationId);
+		if (colonyTile != null) {
+			return colonyTile;
+		}
+		return buildings.getByIdOrNull(unitLocationId);
+	}
 	
 	public Building findBuildingByType(String buildingTypeId) {
 		Building building = findBuildingByTypeOrNull(buildingTypeId);
