@@ -73,17 +73,8 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 
 	public ColonyAssert hasWorkerInLocation(String unitLocationId, String unitTypeId) {
 		hasWorkerInLocation(unitLocationId, 1);
-		UnitLocation unitLocation = actual.findUnitLocationById(unitLocationId);
-		
-		boolean found = false;
-		for (Unit unit : unitLocation.getUnits().entities()) {
-			if (unit.unitType.equalsId(unitTypeId)) {
-				found = true;
-			}
-		}
-		if (!found) {
-			failWithMessage("expected unit type <%s> in location <%s>", unitTypeId, unitLocationId);
-		}
+		UnitLocationAssert.assertThat(actual.findUnitLocationById(unitLocationId))
+		    .hasUnitType(unitTypeId);
 		return this;
 	}
 	
@@ -110,4 +101,27 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
 		return this;
 	}
+
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId, String unitTypeId) {
+        Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
+        if (building == null) {
+            failWithMessage(
+                "exptected <%s> worker in building type <%s> location, but building type not found",
+                unitTypeId,
+                buildingTypeId
+            );
+        } else {
+            UnitLocationAssert.assertThat(building)
+                .hasUnitType(unitTypeId);
+        }
+	    return this;
+	}
+	
+    public ColonyAssert produce(String goodsTypeId, int expectedAmount) {
+        int amount = actual.productionSummary().getQuantity(goodsTypeId);
+        if (amount != expectedAmount) {
+            failWithMessage("expected production <%d> of <%s> goods type but has <%d>", expectedAmount, goodsTypeId, amount);
+        }
+        return this;
+    }
 }

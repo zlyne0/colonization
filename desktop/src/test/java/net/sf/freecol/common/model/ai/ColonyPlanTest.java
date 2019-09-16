@@ -13,11 +13,9 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ProductionInfoAssert;
-import net.sf.freecol.common.model.ProductionSummaryAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitLocationAssert;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -77,15 +75,12 @@ class ColonyPlanTest {
     	colonyPlan.execute2(ColonyPlan.Plan.Bell);
 
 		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(3);
-    	
-        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
-            .hasSize(3)
-            .hasUnit("unit:7076")
-            .hasUnitType("model.unit.elderStatesman");
-    	
-    	ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-    	    .hasNoLessThenZero(GoodsType.FOOD);
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+    	    .hasSize(3)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+            .produce(GoodsType.FOOD, 0)
+	    ;
 	}
 
     @Test
@@ -100,17 +95,13 @@ class ColonyPlanTest {
 		// when
     	colonyPlan.execute2(ColonyPlan.Plan.Bell);
 
-		printColonyWorkers();
-    	
-        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(4);
-    	
-    	UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
-        	.hasSize(3)
-        	.hasUnit("unit:7076")
-        	.hasUnitType("model.unit.elderStatesman");
-    	
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-            .hasNoLessThenZero(GoodsType.FOOD);
+    	// then
+        ColonyAssert.assertThat(nieuwAmsterdam)
+            .hasSize(4)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+            .produce(GoodsType.FOOD, 5)
+        ;
 	}
     
     @Test
@@ -122,25 +113,16 @@ class ColonyPlanTest {
         colonyPlan.execute2(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 
         // then
-        printColonyWorkers();
-
-        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-        	.has(GoodsType.BELLS, 14)
-        	.has(GoodsType.FOOD, 11);
-        
-        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
-            .hasSize(3)
-            .hasUnit("unit:7076")
-            .hasUnitType("model.unit.elderStatesman");
-
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
-            .hasUnit("unit:7096")
-            .hasUnitType("model.unit.expertFisherman");
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431"))
-            .hasUnit("unit:6940");
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432"))
-            .hasUnit("unit:6939");
+        ColonyAssert.assertThat(nieuwAmsterdam)
+            .hasSize(6)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+            .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
+            .hasWorkerInLocation("tile:3431")
+            .hasWorkerInLocation("tile:3432")
+            .produce(GoodsType.BELLS, 14)
+            .produce(GoodsType.FOOD, 11)
+        ;
     }
 
     
@@ -154,19 +136,14 @@ class ColonyPlanTest {
         colonyPlan.execute2(ColonyPlan.Plan.Building);
 
         // then
-        printColonyWorkers();
-
-        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
-        
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352"))
-        	.hasUnit("unit:6939", "model.unit.expertLumberJack");
-        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6540"))
-            .hasSize(2)
-            .hasUnit("unit:6940", "model.unit.masterCarpenter");
-        
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-            .has("model.goods.lumber", 6)
-            .has("model.goods.hammers", 18);
+        ColonyAssert.assertThat(nieuwAmsterdam)
+            .hasSize(6)
+            .hasWorkerInLocation("tile:3352", "model.unit.expertLumberJack")
+            .hasWorkerInBuildingType("model.building.lumberMill", 2)
+            .hasWorkerInBuildingType("model.building.lumberMill", "model.unit.masterCarpenter")
+            .produce("model.goods.lumber", 6)
+            .produce("model.goods.hammers", 18)
+        ;
     }
     
     @Test
@@ -179,12 +156,6 @@ class ColonyPlanTest {
     	colonyPlan.execute2(ColonyPlan.Plan.Tools);
 
 		// then
-        printColonyWorkers();
-        
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-		    .has("model.goods.ore", -1)
-		    .has("model.goods.tools", 6);
-        
         ColonyAssert.assertThat(nieuwAmsterdam)
         	.hasSize(6)
         	.hasWorkerInLocation("tile:3391")
@@ -192,6 +163,8 @@ class ColonyPlanTest {
         	.hasWorkerInLocation("tile:3431")
         	.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
         	.hasWorkerInBuildingType("model.building.blacksmithHouse", 2)
+        	.produce("model.goods.ore", -1)
+        	.produce("model.goods.tools", 6)
         ;
 	}
 
@@ -209,18 +182,13 @@ class ColonyPlanTest {
     	colonyPlan.execute2(ColonyPlan.Plan.Tools);
 
 		// then
-        printColonyWorkers();
-        
-        ColonyAssert.assertThat(nieuwAmsterdam).hasSize(4);
-        
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-		    .has("model.goods.ore", -9)
-		    .has("model.goods.tools", 9);
-        
-        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6541"))
-        	.hasSize(3);
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
-    		.hasUnit("unit:7096", "model.unit.expertFisherman");
+        ColonyAssert.assertThat(nieuwAmsterdam)
+            .hasWorkerInBuildingType("model.building.blacksmithHouse", 3)
+            .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
+            .produce("model.goods.ore", -9)
+            .produce("model.goods.tools", 9)
+            .hasSize(4)
+        ;
 	}
     
     
@@ -234,20 +202,13 @@ class ColonyPlanTest {
     	colonyPlan.execute2(ColonyPlan.Plan.Tools, ColonyPlan.Plan.Bell);
 
 		// then
-    	printColonyWorkers();
-    	
-    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
-
-        UnitLocationAssert.assertThat(nieuwAmsterdam.buildings.getById("building:6541"))
-    		.hasSize(3);
-        UnitLocationAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472"))
-    		.hasUnit("unit:7096", "model.unit.expertFisherman");
-
-        UnitLocationAssert.assertThat(nieuwAmsterdam.findBuildingByType(BuildingType.TOWN_HALL))
-	        .hasSize(2)
-	        //.hasUnit("unit:7076")
-	        .hasUnitType("model.unit.elderStatesman");
-        
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+    	    .hasSize(6)
+    	    .hasWorkerInBuildingType("model.building.blacksmithHouse", 3)
+    	    .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
+    	    .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 2)
+    	    .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+	    ;
 	}
     
     @Test
@@ -262,8 +223,6 @@ class ColonyPlanTest {
     	colonyPlan.execute2(ColonyPlan.Plan.Muskets);
 
 		// then
-    	printColonyWorkers();
-    	
     	ColonyAssert.assertThat(nieuwAmsterdam)
     		.hasSize(6)
     		.hasWorkerInLocation("tile:3391")
@@ -271,16 +230,10 @@ class ColonyPlanTest {
     		.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
 	    	.hasWorkerInBuildingType("model.building.armory")
 	    	.hasWorkerInBuildingType("model.building.blacksmithHouse", 2)
+            .produce("model.goods.ore", -2)
+            .produce("model.goods.tools", 3)
+            .produce("model.goods.muskets", 3)
     	;
-        
-        ProductionSummaryAssert.assertThat(nieuwAmsterdam.productionSummary())
-		    .has("model.goods.ore", -2)
-		    .has("model.goods.tools", 3)
-        	.has("model.goods.muskets", 3);
-        
-        // TODO:
-        // colony.hasWorkerInLocation id [type]
-        // colony.produceInLocation typeId [amount]
 	}
     
     private void printColonyWorkers() {
