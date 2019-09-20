@@ -42,9 +42,6 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     }
     
     public void add(T entity) {
-        if (entity instanceof ObjectWithId) {
-            ((ObjectWithId)entity).setInsertOrder(entities.size());
-        }
         entities.put(entity.getId(), entity);
     }
 

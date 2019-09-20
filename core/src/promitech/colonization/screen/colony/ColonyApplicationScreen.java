@@ -179,7 +179,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    
 	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
 	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-	    	Collections.sort(potentialTerrainProductions, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
 	    	
 	    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
 	        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
@@ -190,7 +189,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
 			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
-			Collections.sort(maxProductionForGoods, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
 			for (GoodMaxProductionLocation g : maxProductionForGoods) {

@@ -1,7 +1,6 @@
 package promitech.colonization.screen.colony;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map.Entry;
 
 import com.badlogic.gdx.scenes.scene2d.ui.Container;
@@ -74,7 +73,7 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
     		if (!goodsType.isStorable()) {
     			continue;
     		}
-    		System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable() + ", " + goodsType.getInsertOrder());
+    		System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable());
     		
     		int goodsAmount = aColony.getGoodsContainer().goodsAmount(goodsType);
     		setGoodQuantity(goodsType, goodsAmount, aColony.exportInfo(goodsType).isExport());

@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.ObjectWithInsertOrder;
 
 public class MapIdEntitySetter<T, R extends Identifiable> implements ObjectFromNodeSetter<T,R> {
     private final String targetFieldName;
@@ -17,6 +18,9 @@ public class MapIdEntitySetter<T, R extends Identifiable> implements ObjectFromN
     public void set(T targetObject, R entity) {
         MapIdEntities<R> target = getTargetMap(targetObject);
         target.add(entity);
+        if (entity instanceof ObjectWithInsertOrder) {
+            ((ObjectWithInsertOrder)entity).setInsertOrder(target.size());
+        }
     }
     
     private MapIdEntities<R> getTargetMap(T targetObject) {
