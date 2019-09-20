@@ -3,7 +3,6 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -18,31 +17,23 @@ import promitech.colonization.savegame.XmlTagMetaData;
 
 public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
 	
-	protected final Comparator<? extends Identifiable> entitiesComparator;
     protected final java.util.Map<String,T> entities;
-    protected List<T> sortedEntities; 
 
     public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities() {
-    	return new MapIdEntities<T>(new LinkedHashMap<String, T>(), ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+    	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
     }
 
-    public static <T extends ObjectWithId> MapIdEntities<T> sortedMapIdEntities(Comparator<T> entitiesComparator) {
-    	return new MapIdEntities<T>(new LinkedHashMap<String, T>(), entitiesComparator);
-    }
-    
 	public static <TT extends Identifiable> MapIdEntities<TT> unmodifiableEmpty() {
 		Map<String, TT> emptyMap = Collections.emptyMap();
-		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap), ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
+		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));
 	}
 	
     public MapIdEntities() {
     	entities = new HashMap<String,T>();
-    	entitiesComparator = ObjectWithId.INSERT_ORDER_ASC_COMPARATOR;
     }
     
-    private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation, Comparator<? extends Identifiable> entitiesComparator) {
+    private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
     	this.entities = entitiesMapImplementation;
-    	this.entitiesComparator = entitiesComparator;
     }
     
     public MapIdEntities(MapIdEntitiesReadOnly<T> aMapEntities) {
@@ -55,7 +46,6 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
             ((ObjectWithId)entity).setInsertOrder(entities.size());
         }
         entities.put(entity.getId(), entity);
-        sortedEntities = null;
     }
 
     public java.util.Map<String,T> innerMap() {
@@ -64,7 +54,6 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     public void addAll(MapIdEntitiesReadOnly<T> parentEntities) {
         entities.putAll(parentEntities.innerMap());
-        sortedEntities = null;
     }
     
     public T getById(String id) {
@@ -84,15 +73,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     }
     
     public List<T> sortedEntities() {
-    	if (sortedEntities == null) {
-	    	sortedEntities = new ArrayList<T>(entities.values());
-			Collections.sort(sortedEntities, (Comparator<T>)entitiesComparator);
-    	}
-    	return sortedEntities;
+        throw new IllegalStateException("invoke sortedEntities on not SortedMapIdEntities implementation");
     }
     
     public List<T> allToProcessedOrder(T startEntity) {
-    	List<T> sorted = sortedEntities();
+    	Collection<T> sorted = entities();
     	List<T> startPart = new ArrayList<T>(sorted.size());
     	List<T> endPart = new ArrayList<T>(sorted.size());
     	boolean found = false;
@@ -168,17 +153,14 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     public void removeId(String id) {
     	entities.remove(id);
-    	sortedEntities = null;
     }
     
     public void removeId(Identifiable element) {
     	entities.remove(element.getId());
-    	sortedEntities = null;
     }
     
     public void clear() {
         entities.clear();
-        sortedEntities = null;
     }
     
     public static class Xml extends XmlNodeParser {

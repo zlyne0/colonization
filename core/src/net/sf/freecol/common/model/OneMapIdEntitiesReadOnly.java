@@ -25,13 +25,6 @@ public class OneMapIdEntitiesReadOnly<T extends Identifiable> implements MapIdEn
     }
 
     @Override
-    public List<T> sortedEntities() {
-        List<T> arrayList = new ArrayList<T>();
-        arrayList.add(obj);
-        return arrayList;
-    }
-
-    @Override
     public T first() {
         return obj;
     }

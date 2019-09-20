@@ -62,7 +62,7 @@ public class NewTurnService {
 			newTurnForUnit(unit);
 		}
 		
-        for (Settlement settlement : player.settlements.sortedEntities()) {
+        for (Settlement settlement : player.settlements.entities()) {
         	if (settlement.isIndianSettlement()) {
         		IndianSettlement indianSettlement = settlement.asIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);

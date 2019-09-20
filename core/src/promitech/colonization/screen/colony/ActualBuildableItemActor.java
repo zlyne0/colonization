@@ -58,7 +58,7 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.add(buildItemNameLabel).left().row();
 		descriptionTableLayout.add(turnsToCompleteLabel).left().row();
 		
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(item.requiredGoods().size());
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
 		int turnsToComplete = colony.getTurnsToComplete(item, requiredTurnsForGoods);
 		
 		for (RequiredGoods requiredGood : item.requiredGoods()) {

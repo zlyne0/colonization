@@ -1,7 +1,5 @@
 package promitech.colonization.screen.colony;
 
-import java.util.List;
-
 import com.badlogic.gdx.graphics.glutils.ShapeRenderer;
 import com.badlogic.gdx.scenes.scene2d.Actor;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
@@ -27,10 +25,8 @@ class BuildingsPanelActor extends Table {
     void initBuildings(Colony colony, DragAndDrop dragAndDrop) {
         clear();
         
-        List<Building> buildings = colony.buildings.sortedEntities();
-        
         int i = 0;
-        for (Building building : buildings) {
+        for (Building building : colony.buildings.entities()) {
             BuildingActor buildingActor = new BuildingActor(shapeRenderer, colony, building, changeColonyStateListener, unitActorDoubleClickListener);
             buildingActor.initWorkers(dragAndDrop);
             dragAndDrop.addTarget(new UnitDragAndDropTarget(buildingActor, buildingActor));

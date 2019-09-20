@@ -59,7 +59,7 @@ public class Colony extends Settlement {
     }
     
     GoodsContainer goodsContainer;
-    public final MapIdEntities<Building> buildings = MapIdEntities.sortedMapIdEntities(BUILDING_GOODS_OUTPUT_CHAIN_LEVEL);
+    public final MapIdEntities<Building> buildings = new SortedMapIdEntities<Building>(BUILDING_GOODS_OUTPUT_CHAIN_LEVEL);
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
 	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
@@ -736,7 +736,7 @@ public class Colony extends Settlement {
 	}
 	
 	public void ifPossibleAddFreeBuildings() {
-		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+		for (BuildingType buildingType : Specification.instance.buildingTypes.entities()) {
 			if (isAutoBuildableInColony(buildingType)) {
 				ifPossibleAddFreeBuilding(buildingType);
 			}
@@ -762,8 +762,7 @@ public class Colony extends Settlement {
 	}
 	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
-    	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
-    	for (BuildingType bt : buildingsTypes) {
+    	for (BuildingType bt : Specification.instance.buildingTypes.entities()) {
     	    NoBuildReason noBuildReason = getNoBuildReason(bt);
     	    if (noBuildReason != NoBuildReason.NONE) {
     	        System.out.println("" + bt + ": " + noBuildReason);
@@ -784,8 +783,7 @@ public class Colony extends Settlement {
     }
     
     public void buildableUnits(List<ColonyBuildingQueueItem> items) {
-    	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
-    	for (UnitType unitType : unitTypes) {
+    	for (UnitType unitType : Specification.instance.unitTypes.entities()) {
     	    NoBuildReason noBuildReason = getNoBuildReason(unitType);
             if (noBuildReason != NoBuildReason.NONE) {
                 System.out.println("can not build " + unitType + " because of " + noBuildReason);
@@ -828,12 +826,10 @@ public class Colony extends Settlement {
     }
     
 	public int getPriceForBuilding(BuildableType buildableType) {
-		List<RequiredGoods> requiredGoods = buildableType.requiredGoods();
-		
 		Market market = owner.market();
 		
 		int sum = 0;
-		for (RequiredGoods rg : requiredGoods) {
+		for (RequiredGoods rg : buildableType.requiredGoods()) {
 			if (market.hasArrears(rg.goodsType)) {
 				return Integer.MAX_VALUE;
 			}
@@ -886,7 +882,7 @@ public class Colony extends Settlement {
 		if (buildableType == null) {
 			return;
 		}
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
 		int turnsToGatherResourcesForBuild = getTurnsToComplete(buildableType, requiredTurnsForGoods);
 		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
 			neverFinishBuildingNotification(buildableType, requiredTurnsForGoods);
@@ -1161,7 +1157,7 @@ public class Colony extends Settlement {
 	}
 	
 	protected void initDefaultBuildings() {
-    	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+    	for (BuildingType buildingType : Specification.instance.buildingTypes.entities()) {
     		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator, buildingType));
     			colonyProduction.setAsNeedUpdate();

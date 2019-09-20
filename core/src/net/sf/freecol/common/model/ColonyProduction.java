@@ -62,7 +62,7 @@ class ColonyProduction {
         	}
         }
 
-        for (Building building : colony.buildings.entities()) {
+        for (Building building : colony.buildings.sortedEntities()) {
         	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus());
             pc.baseProduction.applyModifiers(colony.colonyUpdatableFeatures);
             pc.realProduction.applyModifiers(colony.colonyUpdatableFeatures);
@@ -163,7 +163,7 @@ class ColonyProduction {
 	) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
-	    for (Building building : colony.buildings.entities()) {
+	    for (Building building : colony.buildings.sortedEntities()) {
 	        if (!building.canAddWorker(worker)) {
 	            continue;
 	        }
@@ -209,7 +209,7 @@ class ColonyProduction {
     		throw new IllegalArgumentException("worker[" + worker + "] is not a person ");
     	}
     	
-    	for (Building building : colony.buildings.entities()) {
+    	for (Building building : colony.buildings.sortedEntities()) {
 	        if (!building.canAddWorker(worker)) {
 	            continue;
 	        }

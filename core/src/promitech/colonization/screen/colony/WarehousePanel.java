@@ -70,8 +70,7 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
     }
     
     void updateGoodsQuantity(Colony aColony) {
-    	List<GoodsType> goodsTypes = Specification.instance.goodsTypes.sortedEntities();
-    	for (GoodsType goodsType : goodsTypes) {
+    	for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
     		if (!goodsType.isStorable()) {
     			continue;
     		}

@@ -30,7 +30,7 @@ class CustomHouseDialog(
 	
 	init {
 		
-		for (goodsType in Specification.instance.goodsTypes.sortedEntities()) {
+		for (goodsType in Specification.instance.goodsTypes.entities()) {
 			if (!goodsType.isStorable()) {
 				continue
 			}

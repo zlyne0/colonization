@@ -77,7 +77,7 @@ public class Player extends ObjectWithId {
     
     private String independentNationName;
     public final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    public final MapIdEntities<Settlement> settlements = new MapIdEntities<Settlement>();
+    public final MapIdEntities<Settlement> settlements = MapIdEntities.linkedMapIdEntities();
     public final MapIdEntities<TradeRouteDefinition> tradeRoutes = MapIdEntities.linkedMapIdEntities();
     private HighSeas highSeas;
     protected Monarch monarch;
