@@ -991,6 +991,13 @@ public class Colony extends Settlement {
 		return building;
 	}
 	
+	public void removeBuilding(final String buildingTypeId) {
+		Building building = findBuildingByTypeOrNull(buildingTypeId);
+		if (building != null) {
+			buildings.removeId(building);
+		}
+	}
+	
 	protected Building findBuildingByBuildingTypeHierarchy(final BuildingType buildingType) {
 		Building foundBuilding = null;
 		BuildingType bt = buildingType;

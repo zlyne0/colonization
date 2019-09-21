@@ -107,8 +107,13 @@ public class ColonyPlan {
         removeWorkersFromColony(availableWorkers);
 
         LinkedList<String[]> stos = new LinkedList<String[]>();
-
+        int noPlanWorkCounter = 0;
+        
         while (!availableWorkers.isEmpty()) {
+        	if (noPlanWorkCounter > 10) {
+        		// avoid infinite loop
+        		return;
+        	}
         	if (stos.isEmpty()) {
                 Plan plan = nextPlan();
                 stos.add(plan.prodGoodsIdsArray);
@@ -118,17 +123,19 @@ public class ColonyPlan {
         	Unit worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
 
         	if (lackOfIngedients(goodsTypeToProduce, worker, stos)) {
+        		noPlanWorkCounter++;
         		continue;
         	}
         	
         	GoodMaxProductionLocation location = theBestLocation(worker, goodsTypeToProduce);
         	if (location == null) {
-        		// no location, try next plan
-        		return;
+        		noPlanWorkCounter++;
+        		continue;
         	}
         	if (canSustainNewWorker(worker, location)) {
         		addWorkerToProductionLocation(worker, location);
         		availableWorkers.remove(worker);
+        		noPlanWorkCounter = 0;
         	} else {
         		stos.addFirst(Plan.Food.prodGoodsIdsArray);
         	}

@@ -2,6 +2,8 @@ package net.sf.freecol.common.model.ai;
 
 import static org.assertj.core.api.Assertions.*;
 
+import java.util.List;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -12,14 +14,19 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionInfoAssert;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.map.isometric.NeighbourIterableTile;
 
 class ColonyPlanTest {
 
@@ -235,6 +242,40 @@ class ColonyPlanTest {
             .produce("model.goods.muskets", 3)
     	;
 	}
+
+    @Test
+	public void noProductionLocationForLockedTiles() throws Exception {
+		// given
+    	lockAllTilesInColony();
+    	
+    	Unit fisherman = UnitFactory.create("model.unit.expertFisherman", dutch, nieuwAmsterdam.tile);
+    	
+		// when
+    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.determinePotentialMaxGoodsProduction(fisherman);
+		
+		// then
+    	for (GoodMaxProductionLocation gpl : productions) {
+    		//System.out.println("" + gpl.getProductionLocation() + " " + gpl.getGoodsType() + " " + gpl.getProduction());
+    		if (gpl.getColonyTile() != null) {
+    			fail("should no production on tile because all tile should be locked");
+    		}
+		}
+	}
+    
+    @Test
+	public void endExecutePlanWhenCanNotFindWorkLocation() throws Exception {
+		// given
+    	lockAllTilesInColony();
+    	
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	
+		// when
+    	colonyPlan.execute2(ColonyPlan.Plan.Food);		
+
+		// then
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(0);
+	}
     
     private void printColonyWorkers() {
     	System.out.println("XXXXX printColonyWorkers size " + nieuwAmsterdam.settlementWorkers().size());
@@ -244,4 +285,18 @@ class ColonyPlanTest {
         System.out.println("XX productionConsumption " + nieuwAmsterdam.productionSummary());
         System.out.println("XX warehause " + nieuwAmsterdam.getGoodsContainer().cloneGoods());
     }
+    
+    private void lockAllTilesInColony() {
+    	nieuwAmsterdam.getOwner().foundingFathers.removeId(FoundingFather.PETER_MINUIT);
+    	nieuwAmsterdam.removeBuilding("model.building.docks");
+    	nieuwAmsterdam.updateModelOnWorkerAllocationOrGoodsTransfer();
+    	nieuwAmsterdam.updateColonyFeatures();
+    	
+    	Player inca = game.players.getById("player:154");
+    	for (NeighbourIterableTile<Tile> neighbourTile : game.map.neighbourLandTiles(nieuwAmsterdam.tile)) {
+    		neighbourTile.tile.changeOwner(inca);
+    		neighbourTile.tile.changeOwner(inca, inca.settlements.getById("indianSettlement:6339"));
+		}
+    }
+    
 }
