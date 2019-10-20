@@ -277,6 +277,17 @@ class ColonyPlanTest {
 			.hasSize(0);
 	}
     
+    @Test
+	public void testName() throws Exception {
+		// given
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+
+		// when
+		colonyPlan.mostValueable();
+
+		// then
+	}
+    
     private void printColonyWorkers() {
     	System.out.println("XXXXX printColonyWorkers size " + nieuwAmsterdam.settlementWorkers().size());
         for (Unit unit : nieuwAmsterdam.settlementWorkers()) {

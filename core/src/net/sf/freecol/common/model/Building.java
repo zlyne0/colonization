@@ -53,6 +53,40 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         return NoAddReason.NONE == reason;
     }
 	
+    public void determineMaxPotentialProduction(Colony colony, Unit worker, ProductionSummary prod, ProductionSummary cons) {
+    	determineMaxPotentialProduction(colony, worker, prod, cons, null);
+    }
+    
+    public void determineMaxPotentialProduction(
+		Colony colony, 
+		Unit worker, 
+		ProductionSummary prod, 
+		ProductionSummary cons, 
+		String goodsTypeId) 
+    {
+		List<Production> productions = buildingType.productionInfo.getAttendedProductions();
+		for (Production production : productions) {
+			for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+				String outputGoodsId = outputEntry.getKey().getId();
+				if (goodsTypeId != null && !goodsTypeId.equals(outputGoodsId)) {
+					continue;
+				}
+                if (0 == outputEntry.getValue().intValue()) {
+                    continue;
+                }
+                
+            	int goodQuantity = colony.colonyWorkerProductionAmount(worker, outputEntry);
+            	if (goodQuantity > prod.getQuantity(outputGoodsId)) {
+            		prod.addGoods(outputGoodsId, goodQuantity);
+            	}
+            	for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+            		// assumption, production amount to consumption amount ratio is one to one 
+            		cons.addGoods(inputEntry.getKey().getId(), goodQuantity);
+            	}
+			}
+		}
+    }
+    
 	public ProductionConsumption determineProductionConsumption(
 			ProductionSummary warehouse, 
 			int warehouseCapacity, 

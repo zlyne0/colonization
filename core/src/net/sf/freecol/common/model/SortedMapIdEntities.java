@@ -19,6 +19,7 @@ public class SortedMapIdEntities<T extends Identifiable> extends MapIdEntities<T
     public List<T> sortedEntities() {
     	if (sortRequired) {
     	    sortRequired = false;
+    	    sortedEntities.clear();
     	    sortedEntities.addAll(entities.values());
 	    	Collections.sort((List<T>)sortedEntities, comparator);
     	}

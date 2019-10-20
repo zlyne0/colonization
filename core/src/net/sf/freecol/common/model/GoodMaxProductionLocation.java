@@ -3,6 +3,43 @@ package net.sf.freecol.common.model;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class GoodMaxProductionLocation {
+	
+    public static GoodMaxProductionLocation updateFromColonyTile(
+    		GoodsType goodsType, 
+    		int goodsQuantity,
+    		GoodMaxProductionLocation maxProd,
+    		ColonyTile colonyTile
+	) {
+    	if (goodsQuantity > 0) {
+    		if (maxProd == null) {
+    			maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, colonyTile);
+    		} else {
+    			if (maxProd.hasLessProduction(goodsQuantity)) {
+    				maxProd.setProduction(goodsQuantity, colonyTile);
+    			}
+    		}
+    	}
+    	return maxProd;
+    }
+	
+    public static GoodMaxProductionLocation updateFromBuilding(
+		GoodsType goodsType, 
+		int goodsQuantity,
+		GoodMaxProductionLocation maxProd,
+		Building building
+	) {
+        if (goodsQuantity > 0) {
+            if (maxProd == null) {
+                maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, building);
+            } else {
+                if (maxProd.hasLessProduction(goodsQuantity)) {
+                    maxProd.setProduction(goodsQuantity, building);
+                }
+            }
+        }
+    	return maxProd;
+    }
+    
     private final GoodsType goodsType;
     private int production;
     public Production tileTypeInitProduction;
