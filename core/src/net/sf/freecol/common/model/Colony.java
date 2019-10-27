@@ -1368,6 +1368,17 @@ public class Colony extends Settlement {
 		}
 	}
 	
+	public int maxGoodsAmountToFillWarehouseCapacity(String goodsTypeId, int goodsAmount) {
+		int freeSpace = getWarehouseCapacity() - goodsContainer.goodsAmount(goodsTypeId);
+		if (freeSpace < 0) {
+			freeSpace = 0;
+		}
+		if (freeSpace < goodsAmount) {
+			return freeSpace;
+		}
+		return goodsAmount;
+	}
+	
     public static class Xml extends XmlNodeParser<Colony> {
         private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_PRODUCTION_BONUS = "productionBonus";
