@@ -93,9 +93,7 @@ class ColonyPlanTest {
     @Test
 	public void canHandleBellPlanAndAddFoodWorker() throws Exception {
 		// given
-    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
-    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-    	nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"));
+    	forestOnColonyCenterTile();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	
@@ -178,9 +176,7 @@ class ColonyPlanTest {
     @Test
 	void canExecuteToolsPlanWithWarehouseResources() throws Exception {
 		// given
-    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
-    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
-    	nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"));
+    	forestOnColonyCenterTile();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	colonyPlan.withConsumeWarehouseResources(true);
@@ -197,7 +193,6 @@ class ColonyPlanTest {
             .hasSize(4)
         ;
 	}
-    
     
     @Test
 	public void canExecutePlanForToolsAndBell() throws Exception {
@@ -280,12 +275,19 @@ class ColonyPlanTest {
     @Test
 	public void testName() throws Exception {
 		// given
+    	forestOnColonyCenterTile();
+    	
+    	nieuwAmsterdam.getGoodsContainer().decreaseAllToZero();
+    	nieuwAmsterdam.resetLiberty();
+    	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-
+    	colonyPlan.withConsumeWarehouseResources(false);
+    	
 		// when
 		colonyPlan.mostValueable();
 
 		// then
+		printColonyWorkers();
 	}
     
     private void printColonyWorkers() {
@@ -308,6 +310,13 @@ class ColonyPlanTest {
     		neighbourTile.tile.changeOwner(inca);
     		neighbourTile.tile.changeOwner(inca, inca.settlements.getById("indianSettlement:6339"));
 		}
+    }
+    
+    void forestOnColonyCenterTile() {
+    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
+    	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    	nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"));
+    	nieuwAmsterdam.initMaxPossibleProductionOnTile(nieuwAmsterdam.tile);
     }
     
 }

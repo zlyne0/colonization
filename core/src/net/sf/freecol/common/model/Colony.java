@@ -488,6 +488,13 @@ public class Colony extends Settlement {
         }
     }
     
+    public void resetLiberty() {
+    	this.liberty = 0;
+    	this.sonsOfLiberty = 0;
+    	this.tories = 0;
+    	this.productionBonus = 0;
+    }
+    
 	public void calculateSonsOfLiberty() {
 		int oldSonsOfLiberty = sonsOfLiberty;
 		ProductionSummary gpc = colonyProduction.globalProductionConsumption();
