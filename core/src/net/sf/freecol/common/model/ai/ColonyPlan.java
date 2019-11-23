@@ -73,8 +73,7 @@ public class ColonyPlan {
 	}
 	
 	public void execute() {
-		//execute2(ColonyPlan.Plan.Muskets);
-		mostValueable();
+		execute2(ColonyPlan.Plan.MostValueble);
 	}
 	
 	class GoodsMaxProductionLocationWithUnit {
@@ -122,43 +121,29 @@ public class ColonyPlan {
 		}
 	}
 	
-	public void mostValueable() {
-        List<Unit> availableWorkers = new ArrayList<Unit>(colony.settlementWorkers().size());
-        removeWorkersFromColony(availableWorkers);
-/*
-        System.out.println("  " + colony.productionSummary());
-        
-        colony.resetLiberty();
-        {
-	        Unit sss = findById(availableWorkers, "unit:7076");
-	        Building townHall = colony.findBuildingByType("model.building.townHall");
-	        colony.addWorkerToBuilding(townHall, sss);
-	        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-	        colony.updateColonyPopulation();
-	     
-	        availableWorkers.remove(sss);
-        }
-        
-        System.out.println("  " + colony.productionSummary());
-*/        
-    	{
-    		
-    		GoodsMaxProductionLocationWithUnit max = new GoodsMaxProductionLocationWithUnit();
-    		theMostValuableForWorkers(availableWorkers, max);
-    		if (!max.isEmpty()) {
-    			addWorkerToProductionLocation(max.worker, max.location, max.goodsType);
-    			
-    			for (java.util.Map.Entry<Unit, GoodMaxProductionLocation> entry : max.ingredientsWorkersAllocation.entrySet()) {
-    				addWorkerToProductionLocation(
-						entry.getKey(), 
-						entry.getValue().getProductionLocation(),
-						entry.getValue().getGoodsType()
-					);
-				}
-    		}
-    		//System.out.println("the most valueable " + max);
-    	}
-    	
+	/**
+	 * 
+	 * @return boolean - return true when assign workers
+	 */
+	private boolean mostValueable(List<Unit> availableWorkers) {
+		GoodsMaxProductionLocationWithUnit max = new GoodsMaxProductionLocationWithUnit();
+		theMostValuableForWorkers(availableWorkers, max);
+		if (!max.isEmpty()) {
+			addWorkerToProductionLocation(max.worker, max.location, max.goodsType);
+			
+			availableWorkers.remove(max.worker);
+			
+			for (java.util.Map.Entry<Unit, GoodMaxProductionLocation> entry : max.ingredientsWorkersAllocation.entrySet()) {
+				Unit worker = entry.getKey();
+				addWorkerToProductionLocation(
+					worker, 
+					entry.getValue().getProductionLocation(),
+					entry.getValue().getGoodsType()
+				);
+				availableWorkers.remove(worker);
+			}
+		}
+		return !max.isEmpty();
 	}
 	
 	private void theMostValuableForWorkers(List<Unit> availableWorkers, GoodsMaxProductionLocationWithUnit max) {
@@ -191,9 +176,6 @@ public class ColonyPlan {
     				}
     			}
 			}
-    		
-    		//System.out.println("max " + max);
-    		//break;
 		}
 	}
 
@@ -206,6 +188,18 @@ public class ColonyPlan {
 		ingredientsWorkersAllocation.clear();
 		
 		if (hasGoodsToConsume(ingredientsToDelivere)) {
+			if (!canSustainWorkers(1, 0)) {
+				if (avalWorkers.isEmpty()) {
+					return false;
+				}
+				Unit foodWorker = workersByPriorityToPlan(avalWorkers, GoodsType.GRAIN, GoodsType.FISH);
+				GoodMaxProductionLocation foodBestLocation = theBestLocation(foodWorker, GoodsType.GRAIN, GoodsType.FISH);
+				if (foodBestLocation == null) {
+					return false;
+				}
+				ingredientsWorkersAllocation.put(foodWorker, foodBestLocation);
+				return canSustainWorkers(2, foodBestLocation.getProduction());
+			}
 			return true;
 		}
 		if (avalWorkers.isEmpty()) {
@@ -280,6 +274,15 @@ public class ColonyPlan {
         	}
         	if (stos.isEmpty()) {
                 Plan plan = nextPlan();
+                if (plan == Plan.MostValueble) {
+                	boolean assignWorkers = mostValueable(availableWorkers);
+                	if (assignWorkers) {
+                		noPlanWorkCounter = 0;
+                	} else {
+                		noPlanWorkCounter++;
+                	}
+                	continue;
+                }
                 stos.add(goodsFromPlan(plan));
         	}
         	

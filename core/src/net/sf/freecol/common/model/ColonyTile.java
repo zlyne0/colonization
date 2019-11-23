@@ -41,7 +41,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	
     @Override
 	public String toString() {
-	    return "ColonyTile workTileId[" + getId() + "]";
+	    return "ColonyTile workTileId[" + getId() + ", " + tile.getType().getId() + "]";
 	}
 	
     @Override

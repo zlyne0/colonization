@@ -25,6 +25,7 @@ import net.sf.freecol.common.util.Consumer
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.ai.ColonyPlan
+import net.sf.freecol.common.model.specification.GoodsType
 
 
 fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Commands {
@@ -142,8 +143,9 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Comm
 		
 		command("colony_plan") {
 			val nieuwAmsterdam = guiGameModel.game.map.getTile(24, 78).getSettlement().asColony()
+			//nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD)
 			ColonyPlan(nieuwAmsterdam)
-				.withConsumeWarehouseResources(false)
+				.withConsumeWarehouseResources(true)
 				.execute()
 		}
 		

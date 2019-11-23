@@ -21,6 +21,7 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.ai.ColonyPlan.Plan;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -273,21 +274,62 @@ class ColonyPlanTest {
 	}
     
     @Test
-	public void testName() throws Exception {
+	public void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources() throws Exception {
 		// given
     	forestOnColonyCenterTile();
-    	
-    	nieuwAmsterdam.getGoodsContainer().decreaseAllToZero();
     	nieuwAmsterdam.resetLiberty();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	colonyPlan.withConsumeWarehouseResources(false);
     	
 		// when
-		colonyPlan.mostValueable();
+		colonyPlan.execute2(Plan.MostValueble);
 
 		// then
 		printColonyWorkers();
+		
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(5)
+			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
+			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
+			.hasWorkerInLocation("tile:3352", "model.unit.expertFurTrapper")
+			.produce("model.goods.coats", 12)
+			.produce("model.goods.furs", -2)
+			.produce("model.goods.food", 1)
+			.produce("model.goods.horses", 1)
+		;
+	}
+    
+    @Test
+	public void canAssignWorkersToMostValueableProductionUsingWarehouseResources() throws Exception {
+		// given
+    	forestOnColonyCenterTile();
+    	nieuwAmsterdam.resetLiberty();
+    	
+    	nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD);
+    	nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.HORSES);
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	colonyPlan.withConsumeWarehouseResources(true);
+    	
+		// when
+    	colonyPlan.execute2(Plan.MostValueble);
+
+		// then
+		printColonyWorkers();
+
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(6)
+			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
+			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
+			.hasWorkerInBuildingType("model.building.tobacconistHouse", 2)
+			.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
+			.produce("model.goods.coats", 12)
+			.produce("model.goods.furs", -10)
+			.produce("model.goods.tobacco", -6)
+			.produce("model.goods.cigars", 6)
+			.produce("model.goods.food", 0)
+			.produce("model.goods.horses", 0)
+		;
 	}
     
     private void printColonyWorkers() {
