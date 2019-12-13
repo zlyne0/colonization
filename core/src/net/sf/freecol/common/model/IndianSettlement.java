@@ -549,10 +549,13 @@ public class IndianSettlement extends Settlement {
 		throw new IllegalStateException("not implemented");
 	}
 
-	public void initMaxProduction(Map map, ProductionSummary productionSummary) {
+	void initMaxProduction(Map map, ProductionSummary productionSummary) {
 		for (Tile claimableTile : map.neighbourTiles(tile, settlementType.getClaimableRadius())) {
 			// own tile or tile without owner
-			if (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(this)) {
+			if (!claimableTile.isOccupiedForPlayer(owner) && (
+		        claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(this)
+		        )
+	        ) {
 				claimableTile.getType().productionInfo.addUnattendedProductionToSummary(productionSummary);
 			}
 		}

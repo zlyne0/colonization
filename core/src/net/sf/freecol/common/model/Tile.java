@@ -393,6 +393,7 @@ public class Tile implements UnitLocation, Identifiable {
 
 	public void removeOwner() {
 		this.owner = null;
+		this.owningSettlement = null;
 	}
 	
 	public void changeOwner(Player player) {
@@ -494,6 +495,18 @@ public class Tile implements UnitLocation, Identifiable {
 	public boolean isOwnBySettlement(Settlement settlement) {
 		return settlement.equalsId(owningSettlement);
 	}
+	
+    boolean isOccupiedForPlayer(Player player) {
+        Unit tileUnit = units.first();
+        if (tileUnit != null && tileUnit.getOwner().notEqualsId(player) && tileUnit.getOwner().atWarWith(player)) {
+            for (Unit unit : tileUnit.getUnits().entities()) {
+                if (unit.isOffensiveUnit()) {
+                    return true;
+                }
+            }
+        }
+        return owningSettlement != null && owner != null && owner.notEqualsId(player);
+    }
 	
 	public boolean hasWorkerOnTile() {
 		if (owner == null || owningSettlement == null) {
