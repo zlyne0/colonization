@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
 import java.util.List;
@@ -203,5 +203,34 @@ class IndianSettlementTest {
 		assertThat(galleonBuyPrice).isEqualTo(116);
 		assertThat(wagonTrainBuyPrice).isEqualTo(79);
 	}
+	
+	@Test
+    void newTurnProduction() throws Exception {
+        // given
+        Tile tile = game.map.getSafeTile(19, 78);
+        
+        IndianSettlement is = tile.getSettlement().asIndianSettlement();
+
+        IndianSettlementProduction isp = new IndianSettlementProduction();
+
+        isp.init(game.map, is);
+        
+        // when
+        isp.updateSettlementGoodsContainer(is);
+
+        // then
+        System.out.println("is.getGoodsContainer() " + is.getGoodsContainer().cloneGoods());
+        ProductionSummaryAssert.assertThat(is.getGoodsContainer().cloneGoods())
+            .has("model.goods.ore", 1) 
+            .has("model.goods.cotton", 376) 
+            .has("model.goods.furs", 407) 
+            .has("model.goods.tradeGoods", 16) 
+            .has("model.goods.food", 266) 
+            .has("model.goods.tobacco", 339) 
+            .has("model.goods.lumber", 76)
+        ;
+        
+    }
+	
 	
 }

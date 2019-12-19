@@ -10,6 +10,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import promitech.colonization.Randomizer;
 
 public class IndianSettlementProduction {
 
@@ -37,6 +38,9 @@ public class IndianSettlementProduction {
 		}
     }
 	
+    /** The production fudge factor. */
+    public static final double NATIVE_PRODUCTION_EFFICIENCY = 0.67;
+    
     private static final int MAX_GOODS_TYPE_TO_SELL = 3;
     
 	private static final int GOODS_BASE_PRICE = 12;
@@ -46,7 +50,8 @@ public class IndianSettlementProduction {
 	
     private final ProductionSummary maxProduction = new ProductionSummary();
 	private final ProductionSummary consumptionGoods = new ProductionSummary();
-	private UnitRole militaryRole = null; 
+	private UnitRole militaryRole = null;
+	private int productionTiles = 0;
 
 	
     // When choosing what goods to sell, sort goods with new world
@@ -209,9 +214,20 @@ public class IndianSettlementProduction {
 	
 	private void calculateMaximumProduction(Map map, IndianSettlement settlement) {
 		maxProduction.decreaseAllToZero();
-		settlement.initMaxProduction(map, maxProduction);
+		productionTiles = 0;
+		
+        for (Tile claimableTile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius())) {
+            // own tile or tile without owner
+            if (!claimableTile.isOccupiedForPlayer(settlement.getOwner()) && (
+                claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(settlement)
+                )
+            ) {
+                claimableTile.getType().productionInfo.addUnattendedProductionToSummary(maxProduction);
+                productionTiles++;
+            }
+        }
 	}
-
+	
 	private void determineOwnerMilitaryRole(IndianSettlement settlement) {
 		militaryRole = null;
 		if (settlement.getUnits().isEmpty()) {
@@ -272,6 +288,65 @@ public class IndianSettlementProduction {
 		}
 		Collections.sort(goodsTypeOrder, exportGoodsComparator);
 		return goodsTypeOrder.subList(0, Math.min(MAX_GOODS_TYPE_TO_SELL, goodsTypeOrder.size()));
+	}
+
+	void createInitialGoods(Map map, IndianSettlement settlement) {
+	    Randomizer randomizer = Randomizer.instance();
+	    
+        calculateMaximumProduction(map, settlement);
+	    
+        int capacity = settlement.getGoodsCapacity();
+        
+        StringBuilder logStr = new StringBuilder();
+        logStr.append("capacity " + capacity).append("\n");
+        
+        for (Entry<String> prodGoods : maxProduction.entries()) {
+            int stock = prodGoods.value * (10 + randomizer.randomInt(4) + settlement.settlementType.getTradeBonus());
+            settlement.getGoodsContainer().increaseGoodsQuantity(
+                prodGoods.key, 
+                Math.min(stock, capacity)
+            );
+            
+            logStr.append("" + prodGoods.key + " " + prodGoods.value + ", stock = " + stock ).append("\n");
+            
+            GoodsType goodsType = Specification.instance.goodsTypes.getById(prodGoods.key);
+            GoodsType makes = goodsType.getMakes();
+            if (makes != null && makes.isStorable() && !makes.isMilitary() && makes.isNewWorldOrigin()) {
+                int makesVal = stock * (randomizer.randomInt(20, 30) + settlement.settlementType.getTradeBonus()) / 100;
+                
+                logStr.append("  add " + makes.getId() + " " + makesVal).append("\n");
+                
+                settlement.getGoodsContainer().increaseGoodsQuantity(
+                    makes.getId(), 
+                    Math.min(stock, makesVal)
+                );
+            }
+        }
+	    
+        //System.out.println("" + logStr);
+	}
+
+	public void updateSettlementGoodsContainer(IndianSettlement is) {
+	    ProductionSummary prod = maxProduction.cloneGoods();
+	    
+	    for (Entry<String> goodsEntry : prod.entries()) {
+            if (!GoodsType.isFoodGoodsType(goodsEntry.key) && goodsEntry.value > 0) {
+                // Raw production is too generous, apply a fudge factor to reduce it
+                // a bit for the non-food cases.
+                prod.decreaseToRatio(goodsEntry.key, NATIVE_PRODUCTION_EFFICIENCY);
+            }
+            
+            if (productionTiles > is.getUnits().size()) {
+                prod.decreaseToRatio(goodsEntry.key, (double)is.getUnits().size() / productionTiles);
+            }
+        }
+	    is.tile.getType().productionInfo.addUnattendedProductionToSummary(prod);
+	    
+        for (Entry<String> goodsEntry : prod.entries()) {
+            GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsEntry.key);
+            is.getGoodsContainer().increaseGoodsQuantity(goodsType.getStoredAs(), goodsEntry.value);
+        }
+	    is.getGoodsContainer().decreaseGoodsToMinZero(consumptionGoods);
 	}
 	
 }

@@ -102,6 +102,16 @@ public class ProductionSummary {
     	goods.put(goodsId, 0);
     }
     
+    public void decreaseToMinZero(ProductionSummary goodsCollection) {
+        for (Entry<String> gEntry : goodsCollection.goods.entries()) {
+            int q = goods.get(gEntry.key, 0);
+            if (q > 0) {
+                int quantity = Math.min(gEntry.value, q);
+                goods.getAndIncrement(gEntry.key, 0, -quantity);
+            }
+        }
+    }
+    
     public boolean decreaseIfHas(String goodsId, int quantity) {
     	int q = goods.get(goodsId, 0);
     	if (q < quantity) {
@@ -117,6 +127,13 @@ public class ProductionSummary {
 	    }
 	}
     
+    public void decreaseToRatio(String goodsTypeId, double ratio) {
+        int amount = goods.get(goodsTypeId, 0);
+        if (amount != 0) {
+            goods.put(goodsTypeId, (int)Math.round(amount * ratio));
+        }
+    }
+	
     public List<AbstractGoods> slotedGoods() {
         List<AbstractGoods> goodsList = new ArrayList<AbstractGoods>();
         for (Entry<String> gsEntry : goods.entries()) {

@@ -114,6 +114,11 @@ public class GoodsContainer {
         updateTakenCargoSlots();
 	}
 	
+    public void decreaseGoodsToMinZero(ProductionSummary goods) {
+        goods.decreaseToMinZero(goods);
+        updateTakenCargoSlots();
+    }
+	
 	public void decreaseToZero(String goodsTypeId) {
 		goods.setZero(goodsTypeId);
 		updateTakenCargoSlots();

@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.*;
 
 import org.junit.jupiter.api.Test;
 
@@ -83,5 +83,25 @@ class ProductionSummaryTest {
         assertThat(hasPart1).isFalse();
     }
 	
-	
+	@Test
+    void canDecreaseToMinZero() throws Exception {
+        // given
+        ProductionSummary sut = new ProductionSummary();
+        sut.addGoods("one", 6);
+        sut.addGoods("two", 3);
+
+        ProductionSummary remove = new ProductionSummary();
+        remove.addGoods("one", 5);
+        remove.addGoods("two", 5);
+        remove.addGoods("three", 5);
+        
+        // when
+        sut.decreaseToMinZero(remove);
+
+        // then
+        ProductionSummaryAssert.assertThat(sut)
+            .has("one", 1)
+            .has("two", 0)
+            .has("three", 0);
+    }
 }
