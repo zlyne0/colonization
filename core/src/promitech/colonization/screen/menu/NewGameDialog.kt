@@ -97,6 +97,8 @@ class NewGameDialog(
 				guiGameController.resetMapModel()
 				guiGameController.showMapScreenAndActiveNextUnit()
 			}).show(this@NewGameDialog.dialog.getStage())
+
+            hideWithoutFade()
 		}
 		
 		val cancelButton = TextButton(Messages.msg("cancel"), skin)

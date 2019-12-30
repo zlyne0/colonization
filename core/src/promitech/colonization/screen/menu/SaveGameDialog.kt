@@ -110,8 +110,6 @@ class SaveGameDialog(
 				showConfirmation(saves)
 			} else {
 				saveInWaitDialog(saves)
-				
-				hideWithFade()
 			}
 		}
 		cancelButton.addListener { _, _ ->
@@ -123,11 +121,9 @@ class SaveGameDialog(
 		val confirmationDialog = SimpleMessageDialog()
 		confirmationDialog.withContent("saveConfirmationDialog.areYouSure.text")
 			.withButton("no")
-			.withButton("yes", { d ->
+			.withButton("yes", { confirmDialog ->
 				saveInWaitDialog(saves)
-
-				d.hideWithoutFade()
-				hideWithoutFade()
+				confirmDialog.hideWithoutFade()
 			})
 		showDialog(confirmationDialog)
 	}
@@ -135,8 +131,10 @@ class SaveGameDialog(
 	private fun saveInWaitDialog(saves : SaveGameList) {
 		WaitDialog(Messages.msg("status.savingGame"), {
 			saves.saveAs(gameNameTextField.getText(), guiGameModel.game)
-		}, {})
+		}, { })
 			.show(this@SaveGameDialog.dialog.getStage())
+
+		this@SaveGameDialog.hideWithoutFade()
 	}
 		
 	override fun show(stage : Stage) {

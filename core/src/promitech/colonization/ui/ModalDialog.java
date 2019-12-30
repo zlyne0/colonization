@@ -96,8 +96,9 @@ public class ModalDialog<T extends ModalDialog<?>> {
     }
 
     public void hideWithFade() {
-		dialog.getStage().getRoot().getListeners().addAll(stageListeners);
-    	
+    	if (dialog.getStage() != null) {
+    		dialog.getStage().getRoot().getListeners().addAll(stageListeners);
+    	}
         executeCloseListener();
         dialog.hide();
     }
@@ -164,6 +165,8 @@ public class ModalDialog<T extends ModalDialog<?>> {
         for (Runnable r : onCloseRunnableListeners) {
         	r.run();
         }
+        onCloseListeners.clear();
+        onCloseRunnableListeners.clear();
     }
 
     protected Cell<Table> buttonTableLayoutExtendX() {
