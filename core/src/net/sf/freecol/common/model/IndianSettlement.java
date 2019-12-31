@@ -171,7 +171,7 @@ public class IndianSettlement extends Settlement {
 			if (change != 0) {
 				Player enemy = alarmsEntry.key;
 				change = (int)enemy.getFeatures().applyModifier(Modifier.NATIVE_ALARM_MODIFIER, change);
-				oldTension.put(enemy, owner.getTension(enemy).getLevel());
+				oldTension.put(enemy, getTension(enemy).getLevel());
 				modifyTensionWithOwnerTension(enemy, change);
 			}
 		}

@@ -172,7 +172,7 @@ public class Tension {
      */
     @Override
     public String toString() {
-        return getLevel().toString();
+        return "level: " + getLevel().toString() + ", value: " + value;
     }
 
     public void surrende() {
