@@ -560,15 +560,24 @@ public class Colony extends Settlement {
 		}
 	}
 	
-    public void initMaxPossibleProductionOnTile(Tile tile) {
-    	for (ColonyTile colonyTile : colonyTiles.entities()) {
-    		if (colonyTile.equalsId(tile)) {
-    		    colonyTile.initMaxPossibleProductionOnTile();
-    			updateModelOnWorkerAllocationOrGoodsTransfer();
-    		}
-    	}
-    }
-    
+	@Override
+	public void updateProductionToMaxPossible(Tile tile) {
+		for (ColonyTile colonyTile : colonyTiles.entities()) {
+			if (colonyTile.equalsId(tile)) {
+				if (Colony.this.tile.equalsCoordinates(tile)) {
+	    		    colonyTile.initMaxPossibleProductionOnTile();
+	    			updateModelOnWorkerAllocationOrGoodsTransfer();
+				} else {
+					if (colonyTile.hasWorker()) {
+		    		    colonyTile.initMaxPossibleProductionOnTile();
+		    			updateModelOnWorkerAllocationOrGoodsTransfer();
+					}
+				}
+				return;
+			}
+		}
+	}
+	
     public int getWarehouseCapacity() {
     	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
@@ -1243,11 +1252,6 @@ public class Colony extends Settlement {
     	updateColonyPopulation();
     }
     
-	@Override
-	public boolean isContainsTile(Tile tile) {
-	    return colonyTiles.containsId(tile);
-	}
-	
 	public boolean isTileLockedBecauseNoDock(Tile tile) {
 		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
 			return true;

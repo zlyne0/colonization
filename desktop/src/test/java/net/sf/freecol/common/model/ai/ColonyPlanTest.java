@@ -94,7 +94,7 @@ class ColonyPlanTest {
     @Test
 	public void canHandleBellPlanAndAddFoodWorker() throws Exception {
 		// given
-    	forestOnColonyCenterTile();
+    	addForestOnColonyCenterTile();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	
@@ -177,7 +177,7 @@ class ColonyPlanTest {
     @Test
 	void canExecuteToolsPlanWithWarehouseResources() throws Exception {
 		// given
-    	forestOnColonyCenterTile();
+    	addForestOnColonyCenterTile();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
     	colonyPlan.withConsumeWarehouseResources(true);
@@ -276,7 +276,7 @@ class ColonyPlanTest {
     @Test
 	public void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources() throws Exception {
 		// given
-    	forestOnColonyCenterTile();
+    	addForestOnColonyCenterTile();
     	nieuwAmsterdam.resetLiberty();
     	
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
@@ -303,7 +303,7 @@ class ColonyPlanTest {
     @Test
 	public void canAssignWorkersToMostValueableProductionUsingWarehouseResources() throws Exception {
 		// given
-    	forestOnColonyCenterTile();
+    	addForestOnColonyCenterTile();
     	nieuwAmsterdam.resetLiberty();
     	
     	nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD);
@@ -354,11 +354,11 @@ class ColonyPlanTest {
 		}
     }
     
-    void forestOnColonyCenterTile() {
+    void addForestOnColonyCenterTile() {
     	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID);
     	nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
     	nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"));
-    	nieuwAmsterdam.initMaxPossibleProductionOnTile(nieuwAmsterdam.tile);
+    	nieuwAmsterdam.updateProductionToMaxPossible(nieuwAmsterdam.tile);
     }
     
 }

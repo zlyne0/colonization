@@ -535,15 +535,9 @@ public class IndianSettlement extends Settlement {
 	}
 
 	@Override
-	public boolean isContainsTile(Tile improvingTile) {
-		throw new IllegalStateException("not implemented");
+	public void updateProductionToMaxPossible(Tile tile) {
 	}
-
-	@Override
-	public void initMaxPossibleProductionOnTile(Tile tile) {
-		throw new IllegalStateException("not implemented");
-	}
-
+	
 	@Override
 	public ProductionSummary productionSummary() {
 		throw new IllegalStateException("not implemented");

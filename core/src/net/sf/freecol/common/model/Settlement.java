@@ -86,10 +86,8 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
     public abstract void addGoods(String goodsTypeId, int quantity);
 
-	public abstract boolean isContainsTile(Tile improvingTile);
-	
-	public abstract void initMaxPossibleProductionOnTile(Tile tile);
-
+	public abstract void updateProductionToMaxPossible(Tile tile);
+    
 	public abstract ProductionSummary productionSummary();
 
 	public abstract void addModifiersTo(ObjectWithFeatures mods, String modifierCode);

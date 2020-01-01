@@ -172,14 +172,13 @@ public class Map extends ObjectWithId {
 		return "width = " + width + ", height = " + height;
 	}
 
-	public LinkedList<Settlement> findSettlements(Tile sourceTile, Player player, int radius) {
+	public LinkedList<Settlement> findSettlements(Tile sourceTile, int radius) {
 		LinkedList<Settlement> ll = new LinkedList<Settlement>();
 		if (sourceTile.hasSettlement()) {
 			ll.add(sourceTile.getSettlement());
 		}
-		
 		for (Tile tile : tiles.neighbourTiles(sourceTile.x, sourceTile.y, radius)) {
-            if (tile.hasSettlement() && tile.getSettlement().owner.equalsId(player)) {
+            if (tile.hasSettlement()) {
                 ll.add(tile.settlement);
             }
         }

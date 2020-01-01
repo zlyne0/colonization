@@ -2,7 +2,9 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -27,6 +29,15 @@ public class TileTypeTransformation implements Identifiable {
 		return production;
 	}
 
+	public void addTransformationProductionToSettlement(Unit unit, Settlement settlement) {
+		int prodAmount = production.getAmount();
+		if (unit.unitType.hasAbility(Ability.EXPERT_PIONEER)) {
+			prodAmount *= 2;
+		}
+		prodAmount = settlement.applyModifiers(Modifier.TILE_TYPE_CHANGE_PRODUCTION, prodAmount);
+		settlement.addGoods(production.getId(), prodAmount);
+	}
+	
 	public static class Xml extends XmlNodeParser<TileTypeTransformation> {
 
 		private static final String ATTR_VALUE = "value";
