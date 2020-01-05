@@ -6,6 +6,7 @@ import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.IntMap;
 
 import promitech.colonization.DI;
+import promitech.colonization.screen.colony.ColonyApplicationScreen;
 import promitech.colonization.screen.map.MapActor;
 
 public class DebugShortcutsKeys {
@@ -14,44 +15,51 @@ public class DebugShortcutsKeys {
     
     private final ConsoleOutput routeOutput = new ConsoleOutput() {
         @Override
-        public void out(String line) {
+        public ConsoleOutput out(String line) {
             if (actualOutput != null) {
                 actualOutput.out(line);
             }
+            return this;
         }
 
         @Override
-        public void keepOpen() {
+        public ConsoleOutput keepOpen() {
             if (actualOutput != null) {
                 actualOutput.keepOpen();
             }
+            return this;
         }
     };
 
     private final ConsoleOutput stdout = new ConsoleOutput() {
         @Override
-        public void out(String line) {
+        public ConsoleOutput out(String line) {
             System.out.println("debugconsole: " + line);
+            return this;
         }
 
         @Override
-        public void keepOpen() {
+        public ConsoleOutput keepOpen() {
+        	return this;
         }
     };
     
     private ConsoleOutput actualOutput;
     private Commands commands;
 
-    public DebugShortcutsKeys(Stage stage, DI di) {
-    	this(stage, di, null);
+    public DebugShortcutsKeys(Stage stage, DI di, ColonyApplicationScreen colonyAppScreen) {
+    	this.stage = stage;
+    	
+        commands = CommandDefinitionKt.createCommands(di, routeOutput, null, colonyAppScreen);
+        
+        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan bell");
     }
     
     public DebugShortcutsKeys(Stage stage, DI di, MapActor mapActor) {
         this.stage = stage;
         
-        commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor);
+        commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan");
         commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
         commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");

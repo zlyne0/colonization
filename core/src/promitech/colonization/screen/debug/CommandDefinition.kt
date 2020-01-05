@@ -26,9 +26,14 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.ai.ColonyPlan
 import net.sf.freecol.common.model.specification.GoodsType
+import promitech.colonization.screen.colony.ColonyApplicationScreen
 
 
-fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Commands {
+fun createCommands(
+	di : DI, console : ConsoleOutput,
+	mapActor: MapActor?,
+	colonyApplicationScreen: ColonyApplicationScreen?
+) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
 	
@@ -141,12 +146,21 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor?) : Comm
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
 		
-		command("colony_plan") {
-			val nieuwAmsterdam = guiGameModel.game.map.getTile(24, 78).getSettlement().asColony()
-			//nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD)
-			ColonyPlan(nieuwAmsterdam)
-				.withConsumeWarehouseResources(true)
-				.execute()
+		commandArg("colony_plan") { args ->
+			if (colonyApplicationScreen == null) {
+				console.keepOpen()
+					.out("no colony selected")
+			} else {
+				var colony = colonyApplicationScreen.getColony()
+				
+				ColonyPlan(colonyApplicationScreen.getColony())
+					.withConsumeWarehouseResources(true)
+					.execute2(ColonyPlan.Plan.of(args[1]))
+				
+				colonyApplicationScreen.initColony(colony)
+			}
+		}.addParams {
+			listOf<String>(ColonyPlan.Plan.Bell.name.toLowerCase(), ColonyPlan.Plan.Food.name.toLowerCase())
 		}
 		
     	command("nothing") {

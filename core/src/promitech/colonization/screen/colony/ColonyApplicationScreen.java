@@ -346,7 +346,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.row();
         tableLayout.add(warehousePanel);
 
-        final DebugShortcutsKeys debugShortcutsKeys = new DebugShortcutsKeys(stage, di);
+        final DebugShortcutsKeys debugShortcutsKeys = new DebugShortcutsKeys(stage, di, this);
         stage.addListener(new InputListener() {
         	@Override
         	public boolean keyDown(InputEvent event, int keycode) {
@@ -435,10 +435,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         questionDialog.show(stage);
 	}
 	
-    public void initColony(Colony colony, Tile colonyTile) {
+    public void initColony(Colony colony) {
     	this.colonySpyMode = false;
     	this.colony = colony;
-    	this.colonyTile = colonyTile;
+    	this.colonyTile = colony.tile;
     	unitsDragAndDrop.clear();
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
@@ -496,5 +496,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
+	}
+
+	public Colony getColony() {
+		return colony;
 	}
 }

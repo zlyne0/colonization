@@ -91,7 +91,7 @@ class DebugConsole(val commands : Commands)
 		textField.setCursorPosition(textField.getText().length)
 	}
 	
-	override fun out(line: String) {
+	override fun out(line: String) : ConsoleOutput {
 		if (label.getText().toString().equals("")) {
 			label.setText(line)			
 		} else {
@@ -99,10 +99,12 @@ class DebugConsole(val commands : Commands)
 		}
 		scrollPane.setScrollPercentY(100f)
 		scrollPane.layout()
+		return this
 	}
 	
-	override fun keepOpen() {
+	override fun keepOpen() : ConsoleOutput {
 		keepOpenConsoleAfterExecute = true
+		return this
 	}
 	
 	override fun show(stage: Stage) {

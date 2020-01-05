@@ -217,7 +217,7 @@ public class GUIGameController {
 			@Override
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony());
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 			}
     	});
@@ -229,7 +229,7 @@ public class GUIGameController {
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
-				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony());
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.setColonySpyMode();
 			}

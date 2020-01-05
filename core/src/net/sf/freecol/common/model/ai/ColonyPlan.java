@@ -16,7 +16,6 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -24,7 +23,6 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitConsumption;
-import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ColonyPlan {
@@ -35,7 +33,7 @@ public class ColonyPlan {
 		NO_FOOD; // can not produce more food
 	}
 	
-	enum Plan {
+	public enum Plan {
 		// only food
 		Food(GoodsType.GRAIN, GoodsType.FISH),
 		Bell(GoodsType.BELLS),
@@ -52,6 +50,15 @@ public class ColonyPlan {
 			for (String id : prodGoodsId) {
 				this.prodGoodsId.add(id);
 			}
+		}
+		
+		public static Plan of(String str) {
+			for (Plan p : Plan.values()) {
+				if (p.name().equalsIgnoreCase(str)) {
+					return p;
+				}
+			}
+			throw new IllegalArgumentException("can not find Plan enum value by string: " + str);
 		}
 		
 		public boolean contains(String goodId) {
@@ -453,7 +460,7 @@ public class ColonyPlan {
 		}
 	}
 	
-	public Plan nextPlan() {
+	private Plan nextPlan() {
 	    if (plans == null || plans.length == 0) {
 	        throw new IllegalStateException("no plans");
 	    }
