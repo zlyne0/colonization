@@ -1544,7 +1544,7 @@
 					<ability id="model.ability.avoidExcessProduction" value="true"/>
 					<ability id="model.ability.autoProduction" value="true"/>
 					<production unattended="true">
-						<input goods-type="model.goods.food" value="1"/>
+						<input goods-type="model.goods.grain" value="1"/>
 						<output goods-type="model.goods.horses" value="1"/>
 					</production>
 				</building-type>
@@ -1558,7 +1558,7 @@
 					<ability id="model.ability.autoProduction" value="true"/>
 					<required-goods id="model.goods.hammers" value="64"/>
 					<production unattended="true">
-						<input goods-type="model.goods.food" value="1"/>
+						<input goods-type="model.goods.grain" value="1"/>
 						<output goods-type="model.goods.horses" value="1"/>
 					</production>
 				</building-type>

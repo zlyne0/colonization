@@ -2025,7 +2025,7 @@
     <building-type id="model.building.country"
                    workplaces="0" priority="700">
       <production unattended="true">
-        <input goods-type="model.goods.food" value="1"/>
+        <input goods-type="model.goods.grain" value="1"/>
         <output goods-type="model.goods.horses" value="1"/>
       </production>
       <ability id="model.ability.autoProduction"/>
@@ -2044,7 +2044,7 @@
                    upgradesFrom="model.building.country"
                    upkeep="5">
       <production unattended="true">
-        <input goods-type="model.goods.food" value="1"/>
+        <input goods-type="model.goods.grain" value="1"/>
         <output goods-type="model.goods.horses" value="1"/>
       </production>
       <required-goods id="model.goods.hammers" value="64"/>
