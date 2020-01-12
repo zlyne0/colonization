@@ -97,7 +97,7 @@ public class UnitType extends BuildableType {
      */
     private int maximumAttrition = Xml.INFINITY;
     
-    public String expertProductionForGoodsId;
+    private String expertProductionForGoodsId;
 
 	protected String extendsId;
 	private boolean naval = false;

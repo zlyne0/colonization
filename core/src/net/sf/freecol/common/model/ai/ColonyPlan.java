@@ -47,7 +47,7 @@ public class ColonyPlan {
 		
 		private Plan(String ... prodGoodsIds) {
 			this.prodGoodsIdsArray = prodGoodsIds;
-			for (String id : prodGoodsId) {
+			for (String id : prodGoodsIdsArray) {
 				this.prodGoodsId.add(id);
 			}
 		}
@@ -64,10 +64,13 @@ public class ColonyPlan {
 		public boolean contains(String goodId) {
 			return goodId != null && prodGoodsId.contains(goodId);
 		}
+		
+		
 	}
 	
     private final ProductionSummary prod = new ProductionSummary(); 
     private final ProductionSummary ingredients = new ProductionSummary();
+    private final List<String> goodsTypeGoalIngredientsChain = new ArrayList<String>();
     
 	private boolean consumeWarehouseResources = false;
 	
@@ -169,6 +172,7 @@ public class ColonyPlan {
     				continue;
     			}
     			
+    			createPlanProductionChain(goodsType);
     			prod.makeEmpty();
     			ingredients.makeEmpty();
     			building.determineMaxPotentialProduction(colony, worker, prod, ingredients, goodsType.getId());
@@ -281,6 +285,8 @@ public class ColonyPlan {
         	}
         	if (stos.isEmpty()) {
                 Plan plan = nextPlan();
+                createPlanProductionChain(plan);
+                
                 if (plan == Plan.MostValueble) {
                 	boolean assignWorkers = mostValueable(availableWorkers);
                 	if (assignWorkers) {
@@ -415,8 +421,11 @@ public class ColonyPlan {
 		}
 		return onlyGoodsFromPlan.get(0);
 	}
-	
-	private Unit workersByPriorityToPlan(List<Unit> availableWorkers, final String ... goodsTypeIds) {
+
+	private Unit workersByPriorityToPlan(
+		final List<Unit> availableWorkers, 
+		final String ... goodsTypeIds
+	) {
 	    if (goodsTypeIds.length == 0) {
 	        throw new IllegalStateException("goodsTypeIds is empty");
 	    }
@@ -436,6 +445,12 @@ public class ColonyPlan {
                     int prod = (int)u.unitType.applyModifier(gtId, 10);
                     if (prod > m) {
                         m = prod;
+                    }
+                    // experts have higher priority for own goods production
+                    if (u.unitType.getExpertProductionForGoodsId() != null 
+                		&& !gtId.equals(u.unitType.getExpertProductionForGoodsId())
+                		&& goodsTypeGoalIngredientsChain.contains(u.unitType.getExpertProductionForGoodsId())) {
+                    	m = m / 2;
                     }
                 }
                 return m;
@@ -511,7 +526,28 @@ public class ColonyPlan {
 		}
 		throw new IllegalStateException("can not find entity by id: " + id);
 	}
+
+	private void createPlanProductionChain(GoodsType goodsType) {
+		createPlanProductionChain(goodsType.getId());
+	}
 	
+	private void createPlanProductionChain(Plan plan) {
+		createPlanProductionChain(plan.prodGoodsIdsArray);
+	}
+	
+	private void createPlanProductionChain(String ... goodsTypeIds) {
+		goodsTypeGoalIngredientsChain.clear();
+		for (String planProdGoodsTypeId : goodsTypeIds) {
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(planProdGoodsTypeId);
+			goodsTypeGoalIngredientsChain.add(goodsType.getId());
+			
+			while (goodsType.getMadeFrom() != null) {
+				goodsType = goodsType.getMadeFrom();
+				goodsTypeGoalIngredientsChain.add(0, goodsType.getId());
+			}
+		}
+	}
+
 	public ColonyPlan withConsumeWarehouseResources(boolean consumeWarehouseResources) {
 		this.consumeWarehouseResources = consumeWarehouseResources;
 		return this;

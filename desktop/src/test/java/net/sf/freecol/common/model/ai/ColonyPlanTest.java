@@ -106,7 +106,7 @@ class ColonyPlanTest {
             .hasSize(4)
             .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
             .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
-            .produce(GoodsType.FOOD, 5)
+            .produce(GoodsType.FOOD, 3)
         ;
 	}
     
