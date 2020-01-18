@@ -163,7 +163,9 @@ fun createCommands(
 			listOf<String>(
 				ColonyPlan.Plan.MostValueble.name.toLowerCase(),
 				ColonyPlan.Plan.Bell.name.toLowerCase(),
-				ColonyPlan.Plan.Food.name.toLowerCase()
+				ColonyPlan.Plan.Food.name.toLowerCase(),
+				ColonyPlan.Plan.Building.name.toLowerCase(),
+				ColonyPlan.Plan.Muskets.name.toLowerCase()
 			)
 		}
 		

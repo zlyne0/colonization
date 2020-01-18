@@ -232,9 +232,9 @@ class ColonyPlanTest {
     		.hasWorkerInLocation("tile:3351")
     		.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
 	    	.hasWorkerInBuildingType("model.building.armory")
-	    	.hasWorkerInBuildingType("model.building.blacksmithHouse", 2)
-            .produce("model.goods.ore", -2)
-            .produce("model.goods.tools", 3)
+	    	.hasWorkerInBuildingType("model.building.blacksmithHouse")
+            .produce("model.goods.ore", 2)
+            .produce("model.goods.tools", 0)
             .produce("model.goods.muskets", 3)
     	;
 	}
@@ -286,17 +286,15 @@ class ColonyPlanTest {
 		colonyPlan.execute2(Plan.MostValueble);
 
 		// then
-		printColonyWorkers();
-		
     	ColonyAssert.assertThat(nieuwAmsterdam)
-			.hasSize(5)
+			.hasSize(6)
 			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
 			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
 			.hasWorkerInLocation("tile:3352", "model.unit.expertFurTrapper")
 			.produce("model.goods.coats", 12)
-			.produce("model.goods.furs", -2)
-			.produce("model.goods.food", 1)
-			.produce("model.goods.horses", 1)
+			.produce("model.goods.furs", 2)
+			.produce("model.goods.food", 0)
+			.produce("model.goods.horses", 0)
 		;
 	}
     
@@ -315,8 +313,6 @@ class ColonyPlanTest {
     	colonyPlan.execute2(Plan.MostValueble);
 
 		// then
-		printColonyWorkers();
-
     	ColonyAssert.assertThat(nieuwAmsterdam)
 			.hasSize(6)
 			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")

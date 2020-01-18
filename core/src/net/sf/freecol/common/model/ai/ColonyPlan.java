@@ -82,10 +82,6 @@ public class ColonyPlan {
 		this.colony = colony;
 	}
 	
-	public void execute() {
-		execute2(ColonyPlan.Plan.MostValueble);
-	}
-	
 	class GoodsMaxProductionLocationWithUnit {
 		private int score = -1;
 		private Unit worker;
@@ -460,19 +456,24 @@ public class ColonyPlan {
 	}
 
     private boolean hasGoodsToConsume(String goodsTypeId, int amount) {
-        if (consumeWarehouseResources) {
-            return colony.getGoodsContainer().hasPart(goodsTypeId, amount, 0.5f);
-        } else {
-            return colony.productionSummary().hasPart(goodsTypeId, amount, 0.5f);
-        }
+    	int available = colony.productionSummary().getQuantity(goodsTypeId);
+    	if (consumeWarehouseResources) {
+    		available += colony.getGoodsContainer().goodsAmount(goodsTypeId);
+    	}
+    	return amount * 0.5 <= available;
     }
 	
 	private boolean hasGoodsToConsume(ProductionSummary ps) {
-		if (consumeWarehouseResources) {
-			return colony.getGoodsContainer().hasPart(ps, 0.5f);
-		} else {
-			return colony.productionSummary().hasPart(ps, 0.5f);
+		for (Entry<String> entry : ps.entries()) {
+			int available = colony.productionSummary().getQuantity(entry.key);
+			if (consumeWarehouseResources) {
+				available += colony.getGoodsContainer().goodsAmount(entry.key);
+			}
+			if (entry.value * 0.5f > available) {
+				return false;
+			}
 		}
+		return true;
 	}
 	
 	private Plan nextPlan() {
