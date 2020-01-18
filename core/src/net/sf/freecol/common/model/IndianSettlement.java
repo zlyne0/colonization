@@ -364,6 +364,8 @@ public class IndianSettlement extends Settlement {
 				System.out.println("IndianConversion[" + getId() + "].no " + convert);
 				return;
 			}
+			convertProgress = 0;
+			
 			System.out.println("IndianConversion[" + getId() + "].conversion " + convert + " to " + colony);
 			
 			convertToDest(colony.tile, missionary.getOwner());
