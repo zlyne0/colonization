@@ -49,16 +49,12 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
 		setActor(scrollPane);
     }
 
-    int capacity() {
-        return colony.getWarehouseCapacity();
-    }
-    
     public void initGoods(Colony aColony, DragAndDrop goodsDragAndDrop) {
         this.colony = aColony;
         
         goodsDragAndDrop.addTarget(new QuantityGoodActor.GoodsDragAndDropTarget(this, this));
         
-        updateGoodsQuantity(aColony);
+        updateGoodsQuantity();
         updateDragAndDropSource(goodsDragAndDrop);
     }
     
@@ -68,15 +64,15 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
     	}
     }
     
-    void updateGoodsQuantity(Colony aColony) {
+    void updateGoodsQuantity() {
     	for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
     		if (!goodsType.isStorable()) {
     			continue;
     		}
     		System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable());
     		
-    		int goodsAmount = aColony.getGoodsContainer().goodsAmount(goodsType);
-    		setGoodQuantity(goodsType, goodsAmount, aColony.exportInfo(goodsType).isExport());
+    		int goodsAmount = colony.getGoodsContainer().goodsAmount(goodsType);
+    		setGoodQuantity(goodsType, goodsAmount, colony.exportInfo(goodsType).isExport());
     	}
     }
     
@@ -95,6 +91,7 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
         }
         warehouseGoodActor.setQuantity(goodsAmount);
         warehouseGoodActor.setExported(exported);
+        warehouseGoodActor.setWarehouseCapacity(colony.getWarehouseCapacity());
     }
 
     @Override

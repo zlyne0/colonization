@@ -229,7 +229,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
             terrainPanel.updateProduction();
-            warehousePanel.updateGoodsQuantity(colony);
+            warehousePanel.updateGoodsQuantity();
             actualBuildableItemActor.updateBuildItem(colony);
         }
 
@@ -238,7 +238,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
-            warehousePanel.updateGoodsQuantity(colony);
+            warehousePanel.updateGoodsQuantity();
 			actualBuildableItemActor.updateBuildItem(colony);
         }
 
@@ -375,7 +375,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 				dialog.addOnCloseListener(new Runnable() {
 					@Override
 					public void run() {
-						warehousePanel.updateGoodsQuantity(colony);
+						warehousePanel.updateGoodsQuantity();
 					}
 				});
 				dialog.show(stage);
