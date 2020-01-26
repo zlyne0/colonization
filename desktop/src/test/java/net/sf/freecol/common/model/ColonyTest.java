@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -8,6 +8,7 @@ import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Colony.NoBuildReason;
 import net.sf.freecol.common.model.player.Player;
@@ -45,5 +46,21 @@ public class ColonyTest {
 		// then
         assertEquals(NoBuildReason.MISSING_BUILD_ABILITY, noBuildReason);
 	}
-	
+
+	@Test
+	public void canCalculateTurnsToCompleteBuilding() throws Exception {
+		// given
+		Colony colony = dutch.settlements.getById("colony:6528").asColony();
+		colony.getGoodsContainer().increaseGoodsQuantity("model.goods.hammers", 100);
+		colony.getGoodsContainer().decreaseToZero("model.goods.tools");
+
+		BuildingType runDistilleryType = Specification.instance.buildingTypes.getById("model.building.rumDistillery");
+		
+		// when
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
+		int turnsToComplete = colony.getTurnsToComplete(runDistilleryType, requiredTurnsForGoods);
+
+		// then
+		assertEquals(Colony.NEVER_COMPLETE_BUILD, turnsToComplete);
+	}
 }

@@ -466,17 +466,19 @@ public class Colony extends Settlement {
                 if (GoodsType.isFoodGoodsType(entry.key)) {
                     continue;
                 }
+                GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
+                if (!goodsType.isStorable()) {
+                	continue;
+                }
                 int quantityToConsume = -entry.value;
                 int afterConsume = goodsContainer.goodsAmount(entry.key) - quantityToConsume;
                 if (afterConsume == 0) {
-                	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
 					StringTemplate st = StringTemplate.template("model.building.notEnoughInput")
                 		.add("%colony%", getName())
                 		.addName("%inputGoods%", goodsType);
 					owner.eventsNotifications.addMessageNotification(st);
                 } else {
                     if (afterConsume < quantityToConsume) {
-                    	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
                     	StringTemplate st = StringTemplate.template("model.building.warehouseEmpty")
                     		.add("%colony%", getName())
                     		.addName("%goods%", goodsType)
@@ -537,6 +539,7 @@ public class Colony extends Settlement {
     
 	public void increaseWarehouseByProduction() {
 		goodsContainer.increaseGoodsQuantity(productionSummary());
+		colonyProduction.setAsNeedUpdate();
 	}
     
 	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
@@ -1205,7 +1208,7 @@ public class Colony extends Settlement {
 			}
 			requiredTurnsForGood.put(requiredGood.getId(), goodRequiredTurn);
 			
-			if (goodRequiredTurn > requiredTurn) {
+			if (goodRequiredTurn > requiredTurn || goodRequiredTurn == NEVER_COMPLETE_BUILD) {
 				requiredTurn = goodRequiredTurn;
 			}
 		}

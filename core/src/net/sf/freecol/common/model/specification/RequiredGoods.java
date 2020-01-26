@@ -19,6 +19,11 @@ public class RequiredGoods extends ObjectWithId {
         this.amount = amount;
     }
 
+    @Override
+    public String toString() {
+    	return goodsType.getId() + " " + amount;
+    }
+    
     public static class Xml extends XmlNodeParser<RequiredGoods> {
 
 		@Override
