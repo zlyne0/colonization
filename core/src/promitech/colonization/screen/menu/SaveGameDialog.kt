@@ -57,12 +57,11 @@ class SaveGameDialog(
 	}
 	
 	override fun init(shapeRenderer : ShapeRenderer) {
-		var defaultSaveName = Messages.message(guiGameModel.game.playingPlayer.getNationName()) +
-			" " + Messages.message(guiGameModel.game.turn.getTurnDateLabel());
+		val saveGameList = SaveGameList()
 		
-		gameNameTextField.setText(defaultSaveName)
+		gameNameTextField.setText(saveGameList.defaultSaveGameName(guiGameModel.game))
 		
-		SaveGameList().loadGameNames()
+		saveGameList.loadGameNames()
 			.forEach { name ->
 				gamesTable.addRow(name, intArrayOf(Align.left), *arrayOf(Label(name, skin)) )
 			}

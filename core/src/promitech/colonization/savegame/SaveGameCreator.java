@@ -13,7 +13,7 @@ import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.SavedGame;
 
-public class SaveGameCreator {
+class SaveGameCreator {
 
 	class ChildObjectXmlGenerator implements ObjectFromNodeSetter.ChildObject2XmlCustomeHandler<Object>, Poolable {
 		XmlNodeParser childXmlParser;

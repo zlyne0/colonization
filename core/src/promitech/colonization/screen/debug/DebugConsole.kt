@@ -16,7 +16,6 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import net.sf.freecol.common.model.map.generator.MapGenerator
-import promitech.colonization.GameCreator
 import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
 import promitech.colonization.DI

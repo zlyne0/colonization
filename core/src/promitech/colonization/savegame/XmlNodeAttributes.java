@@ -44,6 +44,14 @@ public class XmlNodeAttributes {
     public String getStrAttribute(String name) {
         return attributes.getValue(name);
     }
+    
+    public String getStrAttribute(String name, String defaultVal) {
+    	String st = attributes.getValue(name);
+    	if (st == null) {
+    		return defaultVal;
+    	}
+    	return attributes.getValue(name);
+    }
 
     public String getStrAttributeNotNull(String name) {
         String st = attributes.getValue(name);

@@ -28,6 +28,7 @@ import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
+import promitech.colonization.savegame.SaveGameList;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
@@ -337,6 +338,10 @@ public class GUIGameController {
 
 	public void endTurn(EndOfTurnPhaseListener endOfTurnPhaseListener) {
 		blockUserInteraction = true;
+		
+		SaveGameList saveGameList = new SaveGameList();
+		saveGameList.saveAsAutosave(guiGameModel.game);
+		
 		guiGameModel.setAiMove(true);
 		System.out.println("end turn");
 

@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.UUID;
 
 import org.xml.sax.SAXException;
 
@@ -26,6 +27,7 @@ public class Game {
 	public final MapIdEntities<Player> players = MapIdEntities.linkedMapIdEntities();
 
 	public static IdGenerator idGenerator;
+	private String uuid;
 	public String activeUnitId;
 	private Turn turn;
 	private final List<String> citiesOfCibola = new ArrayList<String>(7);
@@ -34,6 +36,7 @@ public class Game {
 	
 	public Game() {
 		turn = new Turn(0);
+		uuid = UUID.randomUUID().toString();
 	}
 	
 	public String toString() {
@@ -42,6 +45,10 @@ public class Game {
 
 	public Turn getTurn() {
 		return turn;
+	}
+
+	public String uuid() {
+		return uuid;
 	}
 	
 	public Set<String> getEuropeanNationIds() {
@@ -83,6 +90,7 @@ public class Game {
 	}
 	
 	public static class Xml extends XmlNodeParser<Game> {
+		private static final String UUID_ATTR = "uuid";
 		private static final String ELEMENT_CIBOLA = "cibola";
 		private static final String ATTR_CURRENT_PLAYER = "currentPlayer";
 		private static final String NEXT_ID_ATTR = "nextId";
@@ -101,6 +109,7 @@ public class Game {
 			Game.idGenerator = new IdGenerator(attr.getIntAttribute(NEXT_ID_ATTR, 1));
 			
 			Game game = new Game();
+			game.uuid = attr.getStrAttribute(UUID_ATTR, UUID.randomUUID().toString());
 			game.activeUnitId = attr.getStrAttribute(ACTIVE_UNIT_ATTR);
 			game.turn = new Turn(attr.getIntAttribute(TURN_ATTR));
 			game.currentPlayerStr = attr.getStrAttribute(ATTR_CURRENT_PLAYER);
@@ -112,6 +121,7 @@ public class Game {
 
 		@Override
 		public void startWriteAttr(Game game, XmlNodeAttributesWriter attr) throws IOException {
+			attr.set(UUID_ATTR, game.uuid);
 			attr.set(ACTIVE_UNIT_ATTR, game.activeUnitId);
 			attr.set(TURN_ATTR, game.turn.getNumber());
 			attr.set(NEXT_ID_ATTR, Game.idGenerator.idSequence);

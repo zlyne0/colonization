@@ -15,9 +15,10 @@ import promitech.colonization.ui.ModalDialogSize
 import promitech.colonization.ui.STable
 import promitech.colonization.ui.addListener
 import promitech.colonization.ui.resources.Messages
-import promitech.colonization.GameCreator
 import promitech.colonization.screen.map.hud.GUIGameModel
 import net.sf.freecol.common.model.map.path.PathFinder
+import com.badlogic.gdx.scenes.scene2d.ui.CheckBox
+import promitech.colonization.GameCreator
 
 class LoadGameDialog(
 	private val shapeRenderer : ShapeRenderer,
@@ -40,22 +41,37 @@ class LoadGameDialog(
 		okButton.setDisabled(true)
 		gameNameLabel = Label("", skin)
 		gamesTable = STable(shapeRenderer)
+		gamesTable.align(Align.left)
 		
 		createLayout()
 	}
 	
 	override fun init(shapeRenderer : ShapeRenderer) {
-		SaveGameList().loadGameNames()
+		reload()
+	}
+
+	private fun reload(showAutosaves : Boolean = false) {
+		gamesTable.clear()
+		SaveGameList().loadGameNames(showAutosaves)
 			.forEach { name ->
 				gamesTable.addRow(name, intArrayOf(Align.left), *arrayOf(Label(name, skin)) )
 			}
 	}
-
+	
 	private fun createLayout() {
 		getContentTable().add(Label(Messages.msg("save.game.dialog.game.name.label"), skin))
 			.align(Align.left)
 			.pad(10f, 10f, 0f, 10f)
 			.row()
+		val showAutosavesCheckBox = CheckBox(Messages.msg("show.auto.saves"), skin)
+		showAutosavesCheckBox.align(Align.left)
+		showAutosavesCheckBox.addListener { ->
+			reload(showAutosavesCheckBox.isChecked())
+		}
+		getContentTable().add(showAutosavesCheckBox)
+			.align(Align.left)
+			.pad(10f, 10f, 0f, 10f)
+			.fillX().expandX().row()
 		getContentTable().add(gameNameLabel)
 			.pad(10f, 10f, 0f, 10f)
 			.fillX().expandX().row()
