@@ -283,7 +283,7 @@ class ColonyPlanTest {
     	colonyPlan.withConsumeWarehouseResources(false);
     	
 		// when
-		colonyPlan.execute2(Plan.MostValueble);
+		colonyPlan.execute2(Plan.MostValuable);
 
 		// then
     	ColonyAssert.assertThat(nieuwAmsterdam)
@@ -310,7 +310,7 @@ class ColonyPlanTest {
     	colonyPlan.withConsumeWarehouseResources(true);
     	
 		// when
-    	colonyPlan.execute2(Plan.MostValueble);
+    	colonyPlan.execute2(Plan.MostValuable);
 
 		// then
     	ColonyAssert.assertThat(nieuwAmsterdam)

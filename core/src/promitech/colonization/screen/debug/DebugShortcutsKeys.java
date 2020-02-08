@@ -52,7 +52,7 @@ public class DebugShortcutsKeys {
     	
         commands = CommandDefinitionKt.createCommands(di, routeOutput, null, colonyAppScreen);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan MostValueble");
+        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan MostValuable");
         commandByKeycode.put(Input.Keys.NUM_2, "colony_plan Bell");
         commandByKeycode.put(Input.Keys.NUM_3, "colony_plan Food");
         commandByKeycode.put(Input.Keys.NUM_4, "colony_plan Building");

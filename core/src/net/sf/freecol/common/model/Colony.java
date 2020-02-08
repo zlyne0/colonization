@@ -301,6 +301,10 @@ public class Colony extends Settlement {
     	colonyProduction.determinePotentialColonyTilesProduction(worker, potentialProduction); 
     }
     
+    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker) {
+    	return colonyProduction.maxProductionFromTile(gt, worker);
+    }
+    
     public int colonyWorkerProductionAmount(
 		Unit worker, 
 		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
