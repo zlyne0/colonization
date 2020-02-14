@@ -161,6 +161,8 @@ public class ColonyPlan {
 	private void theMostValuableForWorkers(List<Unit> availableWorkers, GoodsMaxProductionLocationWithUnit max) {
 		Map<Unit, GoodMaxProductionLocation> ingredientsWorkersAllocation = new HashMap<Unit, GoodMaxProductionLocation>();
 		
+		Set<String> withoutLocationIds = new HashSet<String>(5);
+		
 		for (Unit worker : availableWorkers) {
     		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
     			if (!goodsType.isStorable()) {
@@ -170,6 +172,8 @@ public class ColonyPlan {
     				continue;
     			}
     			
+    			withoutLocationIds.clear();
+    			
     			if (goodsType.isFarmed()) {
 	    			createPlanProductionChain(goodsType);
 	    			prod.makeEmpty();
@@ -177,9 +181,17 @@ public class ColonyPlan {
     				
     				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker);
     				if (potentialProduction != null) {
+    					withoutLocationIds.add(potentialProduction.getProductionLocation().getId());
+    					
     					int score = colony.getOwner().market().getSalePrice(goodsType, potentialProduction.getProduction());
     					if (max.hasBetterNewScore(score)) {
-    						if (canProduce(worker, without(availableWorkers, worker), ingredients, ingredientsWorkersAllocation)) {
+    						if (canProduce(
+								worker, 
+								without(availableWorkers, worker), 
+								ingredients, 
+								ingredientsWorkersAllocation, 
+								withoutLocationIds
+							)) {
     							max.update(score, worker, goodsType, potentialProduction.getProductionLocation(), ingredientsWorkersAllocation);
     						}
     					}
@@ -200,7 +212,7 @@ public class ColonyPlan {
 	    			// first calculate score to avoid production check because it is heavy
 	    			int score = colony.getOwner().market().getSalePrice(goodsType, produceAmount);
 	    			if (max.hasBetterNewScore(score)) {
-	    				if (canProduce(worker, without(availableWorkers, worker), ingredients, ingredientsWorkersAllocation)) {
+	    				if (canProduce(worker, without(availableWorkers, worker), ingredients, ingredientsWorkersAllocation, withoutLocationIds)) {
 	    					max.update(score, worker, goodsType, building, ingredientsWorkersAllocation);
 	    				}
 	    			}
@@ -213,7 +225,8 @@ public class ColonyPlan {
 		Unit worker, 
 		List<Unit> avalWorkers, 
 		ProductionSummary ingredientsToDelivere, 
-		Map<Unit, GoodMaxProductionLocation> ingredientsWorkersAllocation 
+		Map<Unit, GoodMaxProductionLocation> ingredientsWorkersAllocation,
+		Set<String> withoutLocationIds
 	) {
 		ingredientsWorkersAllocation.clear();
 		
@@ -223,7 +236,7 @@ public class ColonyPlan {
 					return false;
 				}
 				Unit foodWorker = workersByPriorityToPlan(avalWorkers, GoodsType.GRAIN, GoodsType.FISH);
-				GoodMaxProductionLocation foodBestLocation = theBestLocation(foodWorker, GoodsType.GRAIN, GoodsType.FISH);
+				GoodMaxProductionLocation foodBestLocation = theBestLocation(foodWorker, withoutLocationIds, GoodsType.GRAIN, GoodsType.FISH);
 				if (foodBestLocation == null) {
 					return false;
 				}
@@ -236,11 +249,12 @@ public class ColonyPlan {
 			return false;
 		}
 		Unit worker2 = workersByPriorityToPlan(avalWorkers, ingredientsToDelivere.singleEntry().key);
-		GoodMaxProductionLocation theBestLocation = theBestLocation(worker2, ingredientsToDelivere.singleEntry().key);
+		GoodMaxProductionLocation theBestLocation = theBestLocation(worker2, withoutLocationIds, ingredientsToDelivere.singleEntry().key);
 		if (theBestLocation == null || theBestLocation.getProduction() < ingredientsToDelivere.singleEntry().value) {
 			return false;
 		}
 		ingredientsWorkersAllocation.put(worker2, theBestLocation);
+		withoutLocationIds.add(theBestLocation.getProductionLocation().getId());
 		
 		// can sustain worker and worker2 
 		if (canSustainWorkers(2, 0)) {
@@ -252,11 +266,12 @@ public class ColonyPlan {
 			return false;
 		}
 		Unit foodWorker = workersByPriorityToPlan(without(avalWorkers, worker2), GoodsType.GRAIN, GoodsType.FISH);
-		GoodMaxProductionLocation foodBestLocation = theBestLocation(foodWorker, GoodsType.GRAIN, GoodsType.FISH);
+		GoodMaxProductionLocation foodBestLocation = theBestLocation(foodWorker, withoutLocationIds, GoodsType.GRAIN, GoodsType.FISH);
 		if (foodBestLocation == null) {
 			return false;
 		}
 		ingredientsWorkersAllocation.put(foodWorker, foodBestLocation);
+		withoutLocationIds.add(foodBestLocation.getProductionLocation().getId());
 		return canSustainWorkers(3, foodBestLocation.getProduction());
 	}
 
@@ -319,7 +334,7 @@ public class ColonyPlan {
         		continue;
         	}
         	
-        	GoodMaxProductionLocation location = theBestLocation(worker, goodsTypeToProduce);
+        	GoodMaxProductionLocation location = theBestLocation(worker, Collections.<String>emptySet(), goodsTypeToProduce);
         	if (location == null) {
         		noPlanWorkCounter++;
         		continue;
@@ -410,7 +425,7 @@ public class ColonyPlan {
     	return workersCount*2 <= prod;
     }
     
-	private GoodMaxProductionLocation theBestLocation(Unit worker, String ... planGoodsType) {
+	private GoodMaxProductionLocation theBestLocation(Unit worker, Set<String> withoutLocationIds, String ... planGoodsType) {
 	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker);
 	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
@@ -431,7 +446,13 @@ public class ColonyPlan {
 		if (onlyGoodsFromPlan.isEmpty()) {
 			return null;
 		}
-		return onlyGoodsFromPlan.get(0);
+		for (int i=0; i<onlyGoodsFromPlan.size(); i++) {
+			GoodMaxProductionLocation location = onlyGoodsFromPlan.get(i);
+			if (!withoutLocationIds.contains(location.getProductionLocation().getId())) {
+				return location;
+			}
+		}
+		return null;
 	}
 
 	private Unit workersByPriorityToPlan(
