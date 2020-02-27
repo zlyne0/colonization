@@ -512,8 +512,13 @@ public class Tile implements UnitLocation, Identifiable {
 		if (owner == null || owningSettlement == null) {
 			return false;
 		}
-		Colony tileOwnerColony = (Colony)owner.settlements.getById(owningSettlement);
-		ColonyTile ct = tileOwnerColony.colonyTiles.getById(this.getId());
+		
+		Settlement oSettlement = owner.settlements.getById(owningSettlement);
+		if (!oSettlement.isColony()) {
+			return false;
+		}
+		
+		ColonyTile ct = oSettlement.asColony().colonyTiles.getById(this.getId());
 		return ct.hasWorker();
 	}
 	

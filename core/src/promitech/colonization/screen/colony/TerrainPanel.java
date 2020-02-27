@@ -149,6 +149,9 @@ public class TerrainPanel extends Group implements
 		if (ct.tile.getType().isWater()) {
 			return;
 		}
+		if (ct.tile.hasWorkerOnTile()) {
+			return;
+		}
 		
 		int landPrice = -1;
 		if (worker.unit.getOwner().hasContacted(ct.tile.getOwner())) {

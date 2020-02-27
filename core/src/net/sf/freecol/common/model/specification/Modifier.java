@@ -87,7 +87,7 @@ public class Modifier implements Identifiable {
     private int modifierIndex = DEFAULT_MODIFIER_INDEX;
 	private String sourceId;
 	
-    public Modifier(String id) {
+    private Modifier(String id) {
     	this.id = id;
     }
 	
