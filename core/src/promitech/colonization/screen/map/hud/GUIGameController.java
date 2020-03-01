@@ -153,7 +153,10 @@ public class GUIGameController {
     }
     
 	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable() {
-        if (!guiGameModel.getActiveUnit().couldMove() || guiGameModel.getActiveUnit().isDisposed()) {
+        if (!guiGameModel.getActiveUnit().couldMove() 
+        		|| guiGameModel.getActiveUnit().isDisposed() 
+        		|| guiGameModel.getActiveUnit().isTradeRouteSet()
+		) {
         	nextActiveUnitAsGdxPostRunnable();
         }
 	}

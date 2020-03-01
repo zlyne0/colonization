@@ -984,6 +984,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		if (hasNoSpace()) {
 			return;
 		}
+		if (!unitType.canCarryUnits()) {
+			return;
+		}
 		for (Unit unit : new ArrayList<Unit>(anUnitLocation.getUnits().entities())) {
 			if (UnitState.SENTRY.equals(unit.getState())) {
 				if (this.canAddUnit(unit)) {
