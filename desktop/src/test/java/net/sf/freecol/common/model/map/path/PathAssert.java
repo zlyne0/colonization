@@ -1,6 +1,8 @@
 package net.sf.freecol.common.model.map.path;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import net.sf.freecol.common.model.Tile;
 
@@ -41,6 +43,20 @@ public class PathAssert {
 	public PathAssert isEmpty() {
 		if (path.tiles.size != 0) {
 			fail("expected path is empty but has " + path.tiles.size + " nodes");
+		}
+		return this;
+	}
+
+	public PathAssert notReachedDestination() {
+		if (path.isReachedDestination()) {
+			fail("expecte path not reach destination");
+		}
+		return this;
+	}
+
+	public PathAssert reachedDestination() {
+		if (!path.isReachedDestination()) {
+			fail("expecte path reach destination");
 		}
 		return this;
 	}

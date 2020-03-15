@@ -49,6 +49,7 @@ public class TransportPathFinderTest {
     	
 		// then
     	PathAssert.assertThat(path)
+    		.reachedDestination()
     		.assertPathStep(0, 32, 23)
     		.assertPathStep(0, 33, 23)
     		.assertPathStep(0, 33, 25)
@@ -79,6 +80,7 @@ public class TransportPathFinderTest {
     	
 		// then
     	PathAssert.assertThat(path)
+    		.reachedDestination()
 			.assertPathStep(0, 32, 23)
 			.assertPathStep(0, 32, 24)
 			.assertPathStep(1, 31, 24)
@@ -109,6 +111,7 @@ public class TransportPathFinderTest {
     	
 		// then
     	PathAssert.assertThat(path)
+    		.reachedDestination()
 			.assertPathStep(0, 27, 25)
 			.assertPathStep(0, 27, 27)
 			.assertPathStep(0, 27, 29)

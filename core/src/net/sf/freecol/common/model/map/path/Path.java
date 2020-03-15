@@ -14,14 +14,16 @@ public class Path {
 	public final Tile endTile;
 	public final Unit unit;
 	boolean toEurope = false;
+	private final boolean reachDestination;
 	
-	public Path(Unit unit, Tile startTile, Tile endTile, int length) {
+	public Path(Unit unit, Tile startTile, Tile endTile, int length, boolean reachDestination) {
 	    this.unit = unit;
 		this.tiles = new Array<Tile>(length);
 		this.turns = new IntArray(length);
 		
 		this.startTile = startTile;
 		this.endTile = endTile;
+		this.reachDestination = reachDestination;
 	}
 	
 	public void add(Tile tile, int turn) {
@@ -67,6 +69,10 @@ public class Path {
 	        }
 	    }
 	    return false;
+	}
+	
+	public boolean isReachedDestination() {
+		return reachDestination;
 	}
 	
 	public boolean isPathToEurope() {

@@ -8,6 +8,19 @@
 		<cibola id="lostCityRumour.cityName.5"/>
 		<cibola id="lostCityRumour.cityName.6"/>
 		<freecol-specification difficultyLevel="model.difficulty.medium">
+			<modifiers>
+				<modifier id="model.modifier.smallMovementPenalty" value="-33.0" type="PERCENTAGE" source="model.source.movementPenalty" index="50"/>
+				<modifier id="model.modifier.bigMovementPenalty" value="-66.0" type="PERCENTAGE" source="model.source.movementPenalty" index="50"/>
+				<modifier id="model.modifier.artilleryInTheOpen" value="-75.0" type="PERCENTAGE" source="model.source.artilleryInTheOpen" index="50"/>
+				<modifier id="model.modifier.attackBonus" value="50.0" type="PERCENTAGE" source="model.source.attackBonus" index="50"/>
+				<modifier id="model.modifier.fortified" value="50.0" type="PERCENTAGE" source="model.source.fortified" index="50"/>
+				<modifier id="model.modifier.artilleryAgainstRaid" value="100.0" type="PERCENTAGE" source="model.source.artilleryAgainstRaid" index="50"/>
+				<modifier id="model.modifier.amphibiousAttack" value="-75.0" type="PERCENTAGE" source="model.source.amphibiousAttack" index="50"/>
+				<modifier id="model.modifier.colonyGoodsParty" value="50.0" type="PERCENTAGE" incrementType="ADDITIVE" increment="-2.0" source="model.source.colonyGoodsParty" index="90"/>
+				<modifier id="model.goods.food" value="0.0" type="ADDITIVE" index="0"/>
+				<modifier id="model.modifier.shipTradePenalty" value="-30.0" type="PERCENTAGE" source="model.source.shipTradePenalty" index="0"/>
+			</modifiers>
+		
 			<resource-types>
 				<resource-type id="model.resource.game">
 					<modifier id="model.goods.furs" value="2.0" type="ADDITIVE" index="10"/>
