@@ -293,4 +293,24 @@ public class PathFinderTest {
 		PathAssert.assertThat(path)
 			.notReachedDestination();
 	}
+	
+	@Test
+	public void indianShouldFindPathFromSettlementToColony() throws Exception {
+		// given
+		Tile fromTile = game.map.getSafeTile(19, 78);
+		Tile toTile = game.map.getSafeTile(20, 79);
+		
+		Player inca = game.players.getById("player:154");
+		Unit brave = UnitFactory.create(UnitType.BRAVE, inca, fromTile);
+		
+		// when
+		path = sut.findToTile(game.map, fromTile, toTile, brave, false);
+
+		// then
+        PathAssert.assertThat(path)
+	    	.reachedDestination()
+	        .assertPathStep(0, 0, 19, 78)
+	        .assertPathStep(1, 0, 20, 78)
+	        .assertPathStep(2, 1, 20, 79);
+	}
 }

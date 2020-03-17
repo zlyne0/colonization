@@ -7,6 +7,7 @@ import java.util.List;
 import org.xml.sax.SAXException;
 
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
@@ -50,7 +51,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return false;
 	}
 	
-	public MapIdEntities<AbstractMission> getMissions() {
+	public MapIdEntitiesReadOnly<AbstractMission> getMissions() {
 		return missions;
 	}
 
@@ -103,6 +104,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", RellocationMission.class);
             addNodeForMapIdEntities("missions", FoundColonyMission.class);
             addNodeForMapIdEntities("missions", ExplorerMission.class);
+            addNodeForMapIdEntities("missions", IndianBringGiftMission.class);
         }
         
         @Override

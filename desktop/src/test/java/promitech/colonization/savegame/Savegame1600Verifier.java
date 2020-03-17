@@ -27,6 +27,7 @@ import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -82,8 +83,16 @@ public class Savegame1600Verifier {
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
         verifyIndianSettlement(game);
+        verifyIndianMissions(game);
         
         verifyUnitTradeRoute(game);
+	}
+
+	private void verifyIndianMissions(Game game) {
+		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
+		
+		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
+		assertThat(mission.getIndianSettlementId()).isEqualTo("indianSettlement:6339");
 	}
 
 	private void verifyUnitTradeRoute(Game game) {

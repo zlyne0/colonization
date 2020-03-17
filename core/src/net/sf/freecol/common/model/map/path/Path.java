@@ -33,6 +33,9 @@ public class Path {
 	
 	public String toString() {
 		String st = "";
+		if (tiles.size == 0) {
+			st = "empty path";
+		}
 		for (int i=0; i<tiles.size; i++) {
 		    Tile tile = tiles.get(i);
 		    String tileStr = tile.getId() + ", x: " + tile.x + ", y: " + tile.y + ", " + tile.getType();
@@ -73,6 +76,10 @@ public class Path {
 	
 	public boolean isReachedDestination() {
 		return reachDestination;
+	}
+
+	public int totalTurns() {
+		return turns.get(turns.size-1);
 	}
 	
 	public boolean isPathToEurope() {

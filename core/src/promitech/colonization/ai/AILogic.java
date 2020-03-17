@@ -32,13 +32,14 @@ public class AILogic {
 	private final FoundColonyMissionHandler foundColonyMissionHandler;
 	private final RellocationMissionHandler rellocationMissionHandler;
 	
-	private final NativeMissionPlaner nativeMissionPlaner = new NativeMissionPlaner();
+	private final NativeMissionPlaner nativeMissionPlaner;
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
 	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService) {
 		this.game = game;
 		this.newTurnService = newTurnService;
 		
+		nativeMissionPlaner = new NativeMissionPlaner(pathFinder);
         transportPathFinder = new TransportPathFinder(game.map);
 		
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);

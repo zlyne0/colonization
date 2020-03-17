@@ -26,6 +26,9 @@ public class MockedRandomizer extends Random {
         if (floats == null) {
             return super.nextFloat();
         }
+        if (floatIndex >= floats.length) {
+        	floatIndex = 0;
+        }
         return floats[floatIndex++];
     }
 
@@ -33,6 +36,9 @@ public class MockedRandomizer extends Random {
     public int nextInt() {
         if (ints == null) {
             return super.nextInt();
+        }
+        if (intIndex >= ints.length) {
+        	intIndex = 0;
         }
         return ints[intIndex++];
     }

@@ -7,13 +7,12 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class FoundColonyMission extends AbstractMission {
 	public Tile destTile;
 	public final Unit unit;
 
-    public FoundColonyMission(String id, Tile destTile, Unit unit) {
+    private FoundColonyMission(String id, Tile destTile, Unit unit) {
         super(id);
         this.destTile = destTile;
         this.unit = unit;
