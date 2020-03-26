@@ -27,6 +27,8 @@ import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.ai.ColonyPlan
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.screen.colony.ColonyApplicationScreen
+import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
+import net.sf.freecol.common.model.specification.AbstractGoods
 
 
 fun createCommands(
@@ -169,6 +171,10 @@ fun createCommands(
 			)
 		}
 		
+		commandArg("indian_bring_gift") {
+			indianBringGiftExample(di, guiGameModel, mapActor)
+		}
+		
     	command("nothing") {
 		}
 	}
@@ -233,11 +239,11 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 			return
 		}
 		
-		ThreadsResources.instance.executeMovement(object : Runnable {
-			override fun run() {
-				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor).run()
-			}
-		})
+//		ThreadsResources.instance.executeMovement(object : Runnable {
+//			override fun run() {
+//				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService).run()
+//			}
+//		})
 	}
 	
 	fun aiAttack(di : DI) {
@@ -255,4 +261,32 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 				
 		val missionHandler = SeekAndDestroyMissionHandler(di.guiGameModel.game, di.moveService, di.combatService)
 		missionHandler.handle(null, mission) 
+	}
+
+	fun indianBringGiftExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val tile = guiGameModel.game.map.getSafeTile(19, 78)
+		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
+		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
+		
+		val mission : IndianBringGiftMission
+		
+		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		if (!indianAiContainer.hasMissionType(IndianBringGiftMission::class.java)) {
+			val transportUnit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			mission = IndianBringGiftMission(
+				tile.getSettlement().asIndianSettlement(), colonyTile.getSettlement().asColony(),
+				transportUnit, AbstractGoods("model.goods.tobacco", 77)
+			)
+			indianAiContainer.addMission(mission)
+		} else {
+			mission = indianAiContainer.firstMissionByType(IndianBringGiftMission::class.java)
+		}
+		mission.getTransportUnit().resetMovesLeftOnNewTurn()
+		
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+					.runMission(tile.getSettlement().getOwner(), mission)
+			}
+		})
 	}

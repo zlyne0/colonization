@@ -24,6 +24,7 @@ import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
+import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
@@ -43,6 +44,9 @@ import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
 public class GUIGameController {
+	
+	private final HumanPlayerInteractionSemaphore humanPlayerInteractionSemaphore = new HumanPlayerInteractionSemaphore();
+	
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
 	private NewTurnService newTurnService;
@@ -353,7 +357,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService);
+		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService, this);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
@@ -560,6 +564,13 @@ public class GUIGameController {
 		mapHudStage.showDialog(dialog);
 	}
 
+	public void showDialogBlocked(ModalDialog<?> dialog) {
+		dialog.addOnCloseListener(humanPlayerInteractionSemaphore);
+		
+		mapHudStage.showDialog(dialog);
+		humanPlayerInteractionSemaphore.waitForInteraction();
+	}
+	
 	public void showDialog(QuestionDialog dialog) {
 		mapHudStage.showDialog(dialog);
 	}

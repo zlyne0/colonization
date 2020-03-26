@@ -92,7 +92,7 @@ public class Savegame1600Verifier {
 		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
 		
 		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
-		assertThat(mission.getIndianSettlementId()).isEqualTo("indianSettlement:6339");
+		assertThat(mission.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
 	}
 
 	private void verifyUnitTradeRoute(Game game) {

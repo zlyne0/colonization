@@ -22,6 +22,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RandomChoice;
 import promitech.colonization.Randomizer;
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class NativeMissionPlaner {
 
@@ -85,8 +86,19 @@ public class NativeMissionPlaner {
 			if (colony == null) {
 				continue;
 			}
+			
+			if (logger.isDebug()) {
+				logger.debug(
+					"nativeMissionPlaner[%s] create IndianBringGiftMission from %s to %s, gift %s:%s", 
+					settlement.getOwner().getId(),
+					settlement.getId(),
+					colony.getId(),
+					chooseGoodsToGift.getTypeId(),
+					chooseGoodsToGift.getQuantity()
+				);
+			}
 			missionsContainer.addMission(
-				new IndianBringGiftMission(settlement, colony, unitToBringGift, chooseGoodsToGift)
+				new IndianBringGiftMission(settlement.asIndianSettlement(), colony, unitToBringGift, chooseGoodsToGift)
 			);
 		}
 	}
@@ -94,7 +106,7 @@ public class NativeMissionPlaner {
 	private boolean isMissionBringGiftExists(Settlement settlement, PlayerMissionsContainer missionsContainer) {
 		for (AbstractMission ab : missionsContainer.getMissions().entities()) {
 			if (ab.is(IndianBringGiftMission.class)) {
-				if (settlement.equalsId(((IndianBringGiftMission)ab).getIndianSettlementId())) {
+				if (settlement.equalsId(((IndianBringGiftMission)ab).getIndianSettlement())) {
 					return true;
 				}
 			}

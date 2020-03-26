@@ -6,9 +6,11 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -35,6 +37,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		for (AbstractMission am : l) {
 			if (am.isDone() && !am.hasDependMissions()) {
 				missions.removeId(am);
+				am.unblockUnits(unitMissionsMapping);
 			}
 		}
 	}
@@ -49,6 +52,16 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			}
 		}
 		return false;
+	}
+	
+	@SuppressWarnings("unchecked")
+	public <T extends AbstractMission> T firstMissionByType(Class<T> clazz) {
+		for (AbstractMission abstractMission : missions.entities()) {
+			if (abstractMission.is(clazz)) {
+				return (T)abstractMission;
+			}
+		}
+		throw new IllegalArgumentException("can not find mission by type " + clazz);
 	}
 	
 	public MapIdEntitiesReadOnly<AbstractMission> getMissions() {
@@ -89,6 +102,10 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			unitMissionsMapping.unblockUnitFromMission(unit, mission);
 		}
 	}
+
+	public Player getPlayer() {
+		return player;
+	}
 	
     public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
         private static final String ATTR_PLAYER = "player";
@@ -96,6 +113,14 @@ public class PlayerMissionsContainer extends ObjectWithId {
         private static Player player;
         public static Unit getPlayerUnit(String unitId) {
             return player.units.getById(unitId);
+        }
+        
+        public static IndianSettlement getPlayerIndianSettlement(String settlementId) {
+        	Settlement settlement = player.settlements.getByIdOrNull(settlementId);
+        	if (settlement == null) {
+        		return null;
+        	}
+        	return settlement.asIndianSettlement();
         }
         
         public Xml() {
@@ -138,5 +163,4 @@ public class PlayerMissionsContainer extends ObjectWithId {
         }
 
     }
-	
 }

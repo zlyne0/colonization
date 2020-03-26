@@ -61,7 +61,7 @@ class NativeMissionPlanerTest {
 	private IndianBringGiftMission findMission(String settlementId, PlayerMissionsContainer pmc) {
 		for (AbstractMission ab : pmc.getMissions().entities()) {
 			if (ab.is(IndianBringGiftMission.class)) {
-				if (((IndianBringGiftMission)ab).getIndianSettlementId().equals(settlementId)) {
+				if (((IndianBringGiftMission)ab).getIndianSettlement().equalsId(settlementId)) {
 					return (IndianBringGiftMission)ab;
 				}
 			}
