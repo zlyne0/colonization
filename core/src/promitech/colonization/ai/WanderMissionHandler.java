@@ -51,6 +51,10 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 	
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, WanderMission mission) {
+		if (mission.unit == null || mission.unit.isDisposed()) {
+			mission.setDone();
+			return;
+		}
 		prepareSettlementWanderRange(mission.unit.getOwner());
 		
 		Tile sourceTile = mission.unit.getTile();

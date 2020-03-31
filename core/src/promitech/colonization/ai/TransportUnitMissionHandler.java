@@ -22,6 +22,9 @@ class TransportUnitMissionHandler {
     }
 
     public void transportUnitMissionHandler(TransportUnitMission mission) {
+    	if (mission.carrier == null || mission.carrier.isDisposed() || mission.carrier.isDamaged() || mission.units.isEmpty()) {
+    		return;
+    	}
         Path path = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.dest, mission.carrier);
         
         MoveContext moveContext = new MoveContext(path);

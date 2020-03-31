@@ -12,7 +12,9 @@ class UnitMissionsMapping {
 	private final Map<String, Set<AbstractMission>> unitMissions = new HashMap<String, Set<AbstractMission>>();
 
 	public void blockUnit(Unit unit, AbstractMission mission) {
-		blockUnit(unit.getId(), mission);
+		if (unit != null) {
+			blockUnit(unit.getId(), mission);
+		}
 	}
 	
 	public void blockUnit(String unitId, AbstractMission mission) {
@@ -29,7 +31,9 @@ class UnitMissionsMapping {
 	}
 
 	public void unblockUnitFromMission(Unit unit, AbstractMission mission) {
-		unblockUnitFromMission(unit.getId(), mission);
+		if (unit != null) {
+			unblockUnitFromMission(unit.getId(), mission);
+		}
 	}
 	
 	public void unblockUnitFromMission(String unitId, AbstractMission mission) {

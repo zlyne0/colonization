@@ -112,7 +112,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 
         private static Player player;
         public static Unit getPlayerUnit(String unitId) {
-            return player.units.getById(unitId);
+            return player.units.getByIdOrNull(unitId);
         }
         
         public static IndianSettlement getPlayerIndianSettlement(String settlementId) {

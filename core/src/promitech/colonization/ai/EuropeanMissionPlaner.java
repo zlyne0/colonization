@@ -17,16 +17,6 @@ public class EuropeanMissionPlaner {
 		this.foundColonyMissionHandler = foundColonyMissionHandler;
 	}
 
-	public void xxx(Player player) {
-		// create missions
-		MapIdEntities<ExplorerMission> missions = new MapIdEntities<ExplorerMission>();
-		for (Unit unit : player.units.entities()) {
-			if (unit.isNaval() && unit.getTileLocationOrNull() != null) {
-				missions.add(new ExplorerMission(unit));
-			}
-		}
-	}
-
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
 		prepareFoundColonyMissions(player, playerMissionContainer);
 		prepareExploreMissions(player, playerMissionContainer);

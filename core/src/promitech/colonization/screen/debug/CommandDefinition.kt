@@ -247,6 +247,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 	}
 	
 	fun aiAttack(di : DI) {
+		var pathFinder = PathFinder()
 		// private attack
 //		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
 //		val mission = SeekAndDestroyMission(srcTile.units.first())
@@ -259,7 +260,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		var srcTile = di.guiGameModel.game.map.getSafeTile(27, 55)
 		val mission = SeekAndDestroyMission(srcTile.units.first())
 				
-		val missionHandler = SeekAndDestroyMissionHandler(di.guiGameModel.game, di.moveService, di.combatService)
+		val missionHandler = SeekAndDestroyMissionHandler(di.guiGameModel.game, di.moveService, di.combatService, pathFinder)
 		missionHandler.handle(null, mission) 
 	}
 

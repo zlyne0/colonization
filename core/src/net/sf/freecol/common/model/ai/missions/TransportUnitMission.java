@@ -60,7 +60,10 @@ public class TransportUnitMission extends AbstractMission {
         @Override
         public void startReadChildren(XmlNodeAttributes attr) {
             if (attr.isQNameEquals(ELEMENT_UNIT)) {
-                nodeObject.units.add(PlayerMissionsContainer.Xml.getPlayerUnit(attr.getId()));
+                Unit unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getId());
+                if (unit != null) {
+                	nodeObject.units.add(unit);
+                }
             }
         }
         

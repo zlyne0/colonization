@@ -30,6 +30,10 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
     
     @Override
     public void handle(PlayerMissionsContainer playerMissionsContainer, RellocationMission mission) {
+    	if (!mission.canExecuteMission()) {
+    		mission.setDone();
+    		return;
+    	}
     	this.playerMissionsContainer = playerMissionsContainer;
     	
         if (mission.isRequireGeneratePath()) {

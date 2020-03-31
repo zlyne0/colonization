@@ -31,6 +31,10 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     
     @Override
     public void handle(PlayerMissionsContainer playerMissionsContainer, FoundColonyMission mission) {
+    	if (mission.unit == null || mission.unit.isDisposed()) {
+    		mission.setDone();
+    		return;
+    	}
         if (!mission.isUnitInDestination()) {
             // do nothing, wait when unit will be on destination
             return;

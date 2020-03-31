@@ -32,6 +32,10 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
 
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, ExplorerMission mission) {
+		if (mission.unit == null || mission.unit.isDisposed() || mission.unit.isDamaged()) {
+			mission.setDone();
+			return;
+		}
 		exploreByAllMoves(mission.unit);
 	}
 
