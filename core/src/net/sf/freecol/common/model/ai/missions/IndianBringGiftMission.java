@@ -13,7 +13,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public class IndianBringGiftMission extends AbstractMission {
+public class IndianBringGiftMission extends AbstractMission implements MissionFromIndianSettlement {
 
 	public enum Phase {
 		TAKE_GOODS,
@@ -99,6 +99,7 @@ public class IndianBringGiftMission extends AbstractMission {
 		transportUnit.changeUnitLocation(indianSettlement);
 	}
 	
+	@Override
 	public IndianSettlement getIndianSettlement() {
 		return indianSettlement;
 	}
@@ -125,7 +126,7 @@ public class IndianBringGiftMission extends AbstractMission {
 	
 	public static class Xml extends AbstractMission.Xml<IndianBringGiftMission> {
 
-		private static final String ATTR_NAME = "phase";
+		private static final String ATTR_PHASE = "phase";
 		private static final String ATTR_GIFT_AMOUNT = "giftAmount";
 		private static final String ATTR_GIFT_GOODS_TYPE_ID = "giftGoodsTypeId";
 		private static final String ATTR_TRANSPORT_UNIT_ID = "transportUnitId";
@@ -155,7 +156,7 @@ public class IndianBringGiftMission extends AbstractMission {
 				attr.getIntAttribute(ATTR_GIFT_AMOUNT)
 			);
 			
-			m.phase = attr.getEnumAttribute(Phase.class, ATTR_NAME, Phase.BACK_TO_SETTLEMENT);
+			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE, Phase.BACK_TO_SETTLEMENT);
 			nodeObject = m;
 		}
 
@@ -168,7 +169,7 @@ public class IndianBringGiftMission extends AbstractMission {
 			attr.set(ATTR_TRANSPORT_UNIT_ID, m.transportUnit);
 			attr.set(ATTR_GIFT_GOODS_TYPE_ID, m.gift.getTypeId());
 			attr.set(ATTR_GIFT_AMOUNT, m.gift.getQuantity());
-			attr.set(ATTR_NAME, m.phase);
+			attr.set(ATTR_PHASE, m.phase);
 		}
 		
 		@Override

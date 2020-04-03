@@ -25,6 +25,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
@@ -93,6 +94,9 @@ public class Savegame1600Verifier {
 		
 		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
 		assertThat(mission.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
+		
+		DemandTributeMission mission2 = missionContainer.getMission("demandTributeMission:124");
+		assertThat(mission2.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
 	}
 
 	private void verifyUnitTradeRoute(Game game) {

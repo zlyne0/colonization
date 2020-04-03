@@ -21057,6 +21057,14 @@
 					transportUnitId="unit:6351"
 					giftGoodsTypeId="model.goods.cotton"
 					giftAmount="55"
+					phase="MOVE_TO_COLONY"
+	      		 />
+	      		<demandTributeMission id="demandTributeMission:124"
+					indianSettlementId="indianSettlement:6339"
+					colonyId="colony:6788"
+					colonyOwnerId="player:1"
+					unitId="unit:6353"
+					phase="MOVE_TO_COLONY"
 	      		 />
 	      </playerMissions>
 	      

@@ -112,6 +112,7 @@ public abstract class AbstractMission extends ObjectWithId {
 			addNode(FoundColonyMission.class, setter);
 			addNode(ExplorerMission.class, setter);
 			addNode(IndianBringGiftMission.class, setter);
+			addNode(DemandTributeMission.class, setter);
 		}
 
 		@Override

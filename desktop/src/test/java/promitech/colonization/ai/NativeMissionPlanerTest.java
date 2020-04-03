@@ -1,6 +1,6 @@
 package promitech.colonization.ai;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,7 +10,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -18,7 +18,6 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.MockedRandomizer;
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.SaveGameParser;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class NativeMissionPlanerTest {
 
@@ -54,18 +53,32 @@ class NativeMissionPlanerTest {
 		sut.prepareBringGiftsMission(game.map, inca, missionsContainer);
 
 		// then
-		IndianBringGiftMission mission = findMission("indianSettlement:6339", missionsContainer);
-		assertThat(mission).isNotNull();
+		boolean missionExists = sut.isMissionFromSettlementExists(
+			"indianSettlement:6339", 
+			missionsContainer, 
+			IndianBringGiftMission.class
+		);
+		assertThat(missionExists).isTrue();
 	}
-	
-	private IndianBringGiftMission findMission(String settlementId, PlayerMissionsContainer pmc) {
-		for (AbstractMission ab : pmc.getMissions().entities()) {
-			if (ab.is(IndianBringGiftMission.class)) {
-				if (((IndianBringGiftMission)ab).getIndianSettlement().equalsId(settlementId)) {
-					return (IndianBringGiftMission)ab;
-				}
-			}
-		}
-		return null;
+
+	@Test
+	void canCreateDemandTributeMission() throws Exception {
+		// given
+		PlayerMissionsContainer missionsContainer = new PlayerMissionsContainer(inca);
+
+        Randomizer.changeRandomObject(new MockedRandomizer()
+            .withIntsResults(0)
+        );
+		
+		// when
+		sut.prepareDemandTributeMission(game.map, inca, missionsContainer);
+
+		// then
+		boolean missionExists = sut.isMissionFromSettlementExists(
+			"indianSettlement:6339", 
+			missionsContainer, 
+			DemandTributeMission.class
+		);
+		assertThat(missionExists).isTrue();
 	}
 }

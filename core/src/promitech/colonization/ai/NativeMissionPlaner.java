@@ -11,7 +11,9 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
+import net.sf.freecol.common.model.ai.missions.MissionFromIndianSettlement;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.Path;
@@ -30,6 +32,7 @@ public class NativeMissionPlaner {
 	private final int bringGiftsMinimumAmount = 10;
 	private final int bringGiftsMaximumAmount = 80;
     private final int maxDistanceToBringGifts = 5;
+    private final int maxDistanceToMakeDemands = 5;
 	
 	private final List<Unit> units = new ArrayList<Unit>();
 	
@@ -61,6 +64,68 @@ public class NativeMissionPlaner {
 			}
 		}
 	}
+
+	public void prepareDemandTributeMission(Map map, Player player, PlayerMissionsContainer missionsContainer) {
+		final int tributeProbability = Specification.options.getIntValue(GameOptions.DEMAND_PROBABILITY);
+		
+		for (Settlement settlement : player.settlements.entities()) {
+			if (!Randomizer.instance().isHappen(tributeProbability)) {
+				continue;
+			}
+			IndianSettlement indianSettlement = (IndianSettlement)settlement;
+			if (isMissionFromSettlementExists(indianSettlement.getId(), missionsContainer, DemandTributeMission.class)) {
+				continue;
+			}
+			Unit unitToDemandTribute = chooseFreeUnitToExecuteMission(indianSettlement, missionsContainer);
+			if (unitToDemandTribute == null) {
+				continue;
+			}
+			Colony colony = chooseColonyToDemandTribute(map, indianSettlement, unitToDemandTribute);
+			if (colony == null) {
+				continue;
+			}
+			if (logger.isDebug()) {
+				logger.debug(
+					"nativeMissionPlaner[%s] create DemandTributeMission from %s to %s", 
+					settlement.getOwner().getId(),
+					settlement.getId(),
+					colony.getId()
+				);
+			}
+			missionsContainer.addMission(
+				new DemandTributeMission(indianSettlement, unitToDemandTribute, colony)
+			);
+		}
+	}
+	
+	public Colony chooseColonyToDemandTribute(Map map, IndianSettlement indianSettlement, Unit unitToDemandTribute) {
+		List<RandomChoice<Colony>> colonies = new ArrayList<RandomChoice<Colony>>();
+		
+		for (Tile tile : map.neighbourTiles(indianSettlement.tile, maxDistanceToMakeDemands)) {
+			if (tile.hasSettlement() && tile.getSettlement().isColony()) {
+				Colony colony = tile.getSettlement().asColony();
+				if (indianSettlement.getOwner().hasContacted(colony.getOwner())) {
+					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, unitToDemandTribute, false);
+					if (path.isReachedDestination()) {
+						int totalTurnDistance = path.totalTurns();
+						if (totalTurnDistance == 0) {
+							totalTurnDistance = 1;
+						}
+						int alarm = indianSettlement.getTension(colony.getOwner()).getValue();
+						
+						int defence = colony.getColonyUnitsCount() + colony.getStockadeLevel() * 10;
+						int weight = 1 + alarm * (1000000 / defence / totalTurnDistance);
+						colonies.add(new RandomChoice<Colony>(colony, weight));
+					}
+				}
+			}
+		}
+		RandomChoice<Colony> randomColony = Randomizer.instance().randomOne(colonies);
+		if (randomColony == null) {
+			return null;
+		}
+		return randomColony.probabilityObject();
+	}
 	
 	public void prepareBringGiftsMission(Map map, Player player, PlayerMissionsContainer missionsContainer) {
         final int giftProbability = Specification.options.getIntValue(GameOptions.GIFT_PROBABILITY);
@@ -69,7 +134,7 @@ public class NativeMissionPlaner {
 			if (!Randomizer.instance().isHappen(giftProbability)) {
 				continue;
 			}
-			if (isMissionBringGiftExists(settlement, missionsContainer)) {
+			if (isMissionFromSettlementExists(settlement.getId(), missionsContainer, IndianBringGiftMission.class)) {
 				continue;
 			}
 			
@@ -78,7 +143,7 @@ public class NativeMissionPlaner {
 				continue;
 			}
 			
-			Unit unitToBringGift = chooseUnitToBringGift(settlement, missionsContainer);
+			Unit unitToBringGift = chooseFreeUnitToExecuteMission(settlement.asIndianSettlement(), missionsContainer);
 			if (unitToBringGift == null) {
 				continue;
 			}
@@ -103,17 +168,6 @@ public class NativeMissionPlaner {
 		}
 	}
 
-	private boolean isMissionBringGiftExists(Settlement settlement, PlayerMissionsContainer missionsContainer) {
-		for (AbstractMission ab : missionsContainer.getMissions().entities()) {
-			if (ab.is(IndianBringGiftMission.class)) {
-				if (settlement.equalsId(((IndianBringGiftMission)ab).getIndianSettlement())) {
-					return true;
-				}
-			}
-		}
-		return false;
-	}
-	
 	private Colony chooseColonyToBringGift(Map map, IndianSettlement indianSettlement, Unit transportUnit) {
 		List<RandomChoice<Colony>> colonies = new ArrayList<RandomChoice<Colony>>();
 		
@@ -140,9 +194,9 @@ public class NativeMissionPlaner {
 		return randomColony.probabilityObject();
 	}
 	
-	private Unit chooseUnitToBringGift(Settlement settlement, PlayerMissionsContainer missionsContainer) {
+	private Unit chooseFreeUnitToExecuteMission(IndianSettlement settlement, PlayerMissionsContainer missionsContainer) {
 		List<Unit> unitsToExecute = new ArrayList<Unit>();
-		for (Unit unit : settlement.asIndianSettlement().getUnits().entities()) {
+		for (Unit unit : settlement.getUnits().entities()) {
 			if (!missionsContainer.isUnitBlockedForMission(unit)) {
 				unitsToExecute.add(unit);
 			}
@@ -169,4 +223,21 @@ public class NativeMissionPlaner {
 		}
 		return Randomizer.instance().randomMember(glist);
 	}
+	
+	<T extends AbstractMission & MissionFromIndianSettlement> boolean isMissionFromSettlementExists(
+		String settlementId, 
+		PlayerMissionsContainer pmc, 
+		Class<T> missionClass
+	) {
+		for (AbstractMission ab : pmc.getMissions().entities()) {
+			if (ab.is(missionClass) 
+					&& ab instanceof MissionFromIndianSettlement 
+					&& ((MissionFromIndianSettlement)ab).getIndianSettlement().equalsId(settlementId)
+			) {
+				return true;
+			}
+		}
+		return false;
+	}	
+	
 }
