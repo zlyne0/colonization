@@ -6,6 +6,7 @@ import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
@@ -54,12 +55,16 @@ public class AILogic {
         IndianBringGiftMissionHandler indianBringGiftMission = new IndianBringGiftMissionHandler(
     		game, pathFinder, moveService, guiGameController
 		);
+        DemandTributeMissionHandler demandTributeMissionHandler = new DemandTributeMissionHandler(
+    		game, pathFinder, moveService, guiGameController
+		);
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
 		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);
+		missionHandlerMapping.put(DemandTributeMission.class, demandTributeMissionHandler);
 	}
 	
 	public void aiNewTurn(Player player) {

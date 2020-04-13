@@ -2,18 +2,28 @@ package net.sf.freecol.common.model.ai.missions;
 
 import java.io.IOException;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.Tension;
+import net.sf.freecol.common.model.player.Tension.Level;
+import net.sf.freecol.common.model.specification.GameOptions;
+import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class DemandTributeMission extends AbstractMission implements MissionFromIndianSettlement {
 
+	private static final int CARGO_SIZE = 100;
+	
 	public enum Phase {
 		MOVE_TO_COLONY,
 		BACK_TO_SETTLEMENT
@@ -53,6 +63,169 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return indianSettlement;
 	}
 
+	public boolean canExecuteMission(Player indianPlayer) {
+		if (indianPlayer.isDead()) {
+			return false;
+		}
+		if (indianSettlement == null || !indianPlayer.settlements.containsId(indianSettlement)) {
+			return false;
+		}
+		if (unitToDemandTribute == null 
+				|| unitToDemandTribute.isDisposed() 
+				|| !indianPlayer.units.containsId(unitToDemandTribute)
+		) {
+			return false;
+		}
+		if (colonyOwnerId == null) {
+			return false;
+		}
+		return true;
+	}
+
+	public boolean isColonyOwnerChanged(Game game) {
+		Player owner = game.players.getById(colonyOwnerId);
+		if (owner.isDead()) {
+			return true;
+		}
+		if (colony == null || !colony.getOwner().equalsId(owner)
+				|| !owner.settlements.containsId(colony)) {
+			return true;
+		}
+		return false;
+	}
+	
+	public boolean correctTransportUnitLocation() {
+		if (unitToDemandTribute.getTileLocationOrNull() == null) {
+			if (unitToDemandTribute.isAtLocation(IndianSettlement.class)) {
+				unitToDemandTribute.changeUnitLocation(indianSettlement.tile);
+			} else {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public Goods selectGoods() {
+		int demandModifier = Specification.options.getIntValue(GameOptions.NATIVE_DEMANDS) + 1;
+		Level tensionLevel = unitToDemandTribute.getOwner().getTension(colony.getOwner()).getLevel();
+		
+		GoodsType food = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
+		Goods goods = null;
+		
+		if (Level.CONTENT.isWorstOrEquals(tensionLevel) 
+			&& colony.getGoodsContainer().hasGoodsQuantity(food, CARGO_SIZE)
+		) {
+			goods = new Goods(food, cappacityAmount(
+				colony.getGoodsContainer().goodsAmount(food), 
+				demandModifier
+			));
+		} else if (Level.DISPLEASED.isWorstOrEquals(tensionLevel)) {
+			goods = demandMostValuableGoods(demandModifier);
+		} else {
+			goods = selectGoodsForAngryTension(demandModifier);
+		}
+		if (goods == null) {
+			goods = demandMostValuableGoods(demandModifier);
+		}
+		return goods;
+	}
+
+	public int selectGold() {
+		int gold = colony.getOwner().getGold() / 20;
+		if (gold == 0) {
+			gold = colony.getOwner().getGold();
+		}
+		return gold;
+	}
+	
+	private Goods selectGoodsForAngryTension(int demandModifier) {
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (goodsType.isMilitary()) {
+				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
+				if (amount > 0) {
+					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+				}
+			}
+		}
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (goodsType.isRawBuildingMaterial() && goodsType.isStorable()) {
+				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
+				if (amount > 0) {
+					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+				}
+			}
+		}
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (goodsType.isTradeGoods()) {
+				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
+				if (amount > 0) {
+					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+				}
+			}
+		}
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (goodsType.isRefined() && goodsType.isStorable()) {
+				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
+				if (amount > 0) {
+					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+				}
+			}
+		}
+		return null;
+	}
+
+	private Goods demandMostValuableGoods(int demandModifier) {
+		int maxGoodsValue = -1;
+		GoodsType maxGoodsType = null;
+		int maxGoodsAmount = 0;
+		
+		for (Entry<String> goodsEntry : colony.getGoodsContainer().entries()) {
+			GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsEntry.key);
+			if (!goodsType.isStorable() || goodsType.isFood() || goodsType.isMilitary()) {
+				continue;
+			}
+			int goodsValue = colony.getOwner().market().getSalePrice(goodsType, goodsEntry.value);
+			if (goodsValue > maxGoodsValue) {
+				maxGoodsValue = goodsValue;
+				maxGoodsType = goodsType;
+				maxGoodsAmount = goodsEntry.value;
+			}
+		}
+		if (maxGoodsType != null) {
+			return new Goods(maxGoodsType, cappacityAmount(maxGoodsAmount, demandModifier));
+		}
+		return null;
+	}
+	
+    private int cappacityAmount(int amount, int difficulty) {
+        return Math.min(Math.max(amount * difficulty / 6, 30), CARGO_SIZE);
+    }
+	
+	public void acceptDemands(Goods goods, int goldAmount) {
+		if (goods != null) {
+			colony.getGoodsContainer().transferGoods(
+				goods, 
+				indianSettlement.getGoodsContainer()
+			);
+		} else {
+			colony.getOwner().transferGoldToPlayer(
+				goldAmount, indianSettlement.getOwner()
+			);
+		}
+		int difficulty = Specification.options.getIntValue(GameOptions.NATIVE_DEMANDS);
+		int tension = -(5 - difficulty) * 50;
+		indianSettlement.modifyTensionWithOwnerTension(colony.getOwner(), tension);
+	}
+    
+	public void rejectDemands() {
+		Tension tension = Tension.worst(
+			indianSettlement.getTension(colony.getOwner()), 
+			indianSettlement.getOwner().getTension(colony.getOwner())
+		);
+		if (tension.isWorst(Level.CONTENT)) {
+		}
+	}
+    
 	public Colony getColony() {
 		return colony;
 	}
@@ -61,6 +234,18 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return unitToDemandTribute;
 	}
 
+	public void changePhase(Phase newPhase) {
+		this.phase = newPhase;
+	}
+
+	public Phase getPhase() {
+		return phase;
+	}
+	
+	public void backUnitToSettlement() {
+		unitToDemandTribute.changeUnitLocation(indianSettlement);
+	}
+	
 	public static class Xml extends AbstractMission.Xml<DemandTributeMission> {
 
 		private static final String ATTR_PHASE = "phase";

@@ -56,7 +56,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		unitMissionsMapping.unblockUnitFromMission(transportUnit, this);
 	}
 
-	public boolean canExecuteMission(Game game, Player player) {
+	public boolean canExecuteMission(Player player) {
 		if (player.isDead()) {
 			return false;
 		}

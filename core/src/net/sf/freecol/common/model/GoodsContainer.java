@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -21,6 +22,11 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public void transferGoods(Goods goods, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goods.getType(), goods.getAmount());
+    	toContainer.increaseGoodsQuantity(goods.getType(), goods.getAmount());
+    }
+    
     public void transferGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
     	decreaseGoodsQuantity(goodsType, quantity);
     	toContainer.increaseGoodsQuantity(goodsType, quantity);
@@ -46,6 +52,10 @@ public class GoodsContainer {
 
     public boolean hasGoodsQuantity(String goodsId, int amount) {
     	return goods.getQuantity(goodsId) >= amount;
+    }
+
+    public boolean hasGoodsQuantity(GoodsType type, int amount) {
+    	return goods.getQuantity(type.getId()) >= amount;
     }
     
     public boolean hasGoodsQuantity(ProductionSummary g) {

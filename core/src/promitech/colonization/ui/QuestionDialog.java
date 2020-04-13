@@ -42,9 +42,16 @@ public class QuestionDialog extends Dialog {
         super("", GameResources.instance.getUiSkin());
     }
     
-    public void addQuestion(StringTemplate st) {
+    public QuestionDialog(StringTemplate question) {
+    	super("", GameResources.instance.getUiSkin());
+    	
+    	addQuestion(question);
+    }
+    
+    public final QuestionDialog addQuestion(StringTemplate st) {
         String question = Messages.message(st);
         addQuestion(question);
+        return this;
     }
 
     public Cell<Actor> addDialogActor(Actor actor) {
@@ -61,8 +68,9 @@ public class QuestionDialog extends Dialog {
     	addAnswerText(Messages.message(strTemplate), optionAction, payload);
     }
     
-    public <T> void addAnswer(String msgKey, OptionAction<T> optionAction, T payload) {
+    public <T> QuestionDialog addAnswer(String msgKey, OptionAction<T> optionAction, T payload) {
     	addAnswerText(Messages.msg(msgKey), optionAction, payload);
+    	return this;
     }
 
     public <T> void addAnswerText(String text, OptionAction<T> optionAction, T payload) {

@@ -42,6 +42,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.AbstractGoodsAssert;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -396,8 +397,8 @@ public class Savegame1600Verifier {
         TileTypeTransformation changedTileType = clearForest.changedTileType(borealForest);
         assertEquals("model.tile.tundra", changedTileType.getToType().getId());
         
-    	assertEquals("model.goods.lumber", changedTileType.getProduction().getId());
-    	assertEquals(20, changedTileType.getProduction().getAmount());
+        AbstractGoodsAssert.assertThat(changedTileType.getProduction())
+        	.isEquals("model.goods.lumber", 20);
 	}
 
 	private void verifySpecificationFoundingFathers(Specification specification) {

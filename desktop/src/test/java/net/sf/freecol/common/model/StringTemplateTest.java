@@ -4,7 +4,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.Locale;
 
-import net.sf.freecol.common.model.specification.Goods;
+import net.sf.freecol.common.model.specification.AbstractGoods;
 
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeAll;
@@ -48,14 +48,14 @@ public class StringTemplateTest {
 		// given
     	Unit unit = new Unit("unit:1");
     	unit.roleCount = 3;
-    	Goods goods = new Goods("model.goods.tools", 20);
+    	AbstractGoods goods = new AbstractGoods("model.goods.tools", 20);
     	
     	StringTemplate extra;
     	
     	extra = StringTemplate.label("");
     	extra.addStringTemplate(StringTemplate.template("model.goods.goodsAmount")
 				.addName("%goods%", goods)
-				.addAmount("%amount%", goods.getAmount() *  unit.roleCount)
+				.addAmount("%amount%", goods.getQuantity() *  unit.roleCount)
 		);
     	
     	// when

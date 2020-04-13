@@ -29,6 +29,7 @@ import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.screen.colony.ColonyApplicationScreen
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
 import net.sf.freecol.common.model.specification.AbstractGoods
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission
 
 
 fun createCommands(
@@ -175,6 +176,10 @@ fun createCommands(
 			indianBringGiftExample(di, guiGameModel, mapActor)
 		}
 		
+		commandArg("indian_demand_tribute") {
+			indianDemandTributeExample(di, guiGameModel, mapActor)
+		}
+		
     	command("nothing") {
 		}
 	}
@@ -283,6 +288,35 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 			mission = indianAiContainer.firstMissionByType(IndianBringGiftMission::class.java)
 		}
 		mission.getTransportUnit().resetMovesLeftOnNewTurn()
+		
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+					.runMission(tile.getSettlement().getOwner(), mission)
+			}
+		})
+	}
+
+	fun indianDemandTributeExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val tile = guiGameModel.game.map.getSafeTile(19, 78)
+		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
+		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
+		
+		val mission : DemandTributeMission
+		
+		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		if (!indianAiContainer.hasMissionType(DemandTributeMission::class.java)) {
+			val unit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			mission = DemandTributeMission(
+				tile.getSettlement().asIndianSettlement(),
+				unit,
+				colonyTile.getSettlement().asColony()
+			)
+			indianAiContainer.addMission(mission)
+		} else {
+			mission = indianAiContainer.firstMissionByType(DemandTributeMission::class.java)
+		}
+		mission.getUnitToDemandTribute().resetMovesLeftOnNewTurn()
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
