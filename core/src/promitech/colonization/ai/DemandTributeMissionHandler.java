@@ -3,6 +3,7 @@ package promitech.colonization.ai;
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.DemandTributeMission.Phase;
@@ -11,13 +12,12 @@ import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Goods;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
-import promitech.colonization.ui.SimpleMessageDialog;
-import promitech.colonization.ui.SimpleMessageDialog.ButtonActionListener;
 import promitech.colonization.ui.resources.StringTemplate;
 
 class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission>{
@@ -25,12 +25,18 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final MoveService moveService;
+	private final CombatService combatService;
 	private final GUIGameController guiGameController;
 	
-	public DemandTributeMissionHandler(Game game, PathFinder pathFinder, MoveService moveService, GUIGameController guiGameController) {
+	public DemandTributeMissionHandler(Game game, PathFinder pathFinder, 
+		MoveService moveService, 
+		CombatService combatService,
+		GUIGameController guiGameController
+	) {
 		this.game = game;
 		this.pathFinder = pathFinder;
 		this.moveService = moveService;
+		this.combatService = combatService;
 		this.guiGameController = guiGameController;
 	}
 	
@@ -38,10 +44,8 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 	public void handle(PlayerMissionsContainer playerMissionsContainer, DemandTributeMission mission) {
 		Player indianPlayer = playerMissionsContainer.getPlayer();
 		
-		logger.debug("DemandTributeMission[%s] start execute", indianPlayer.getId());
-		
 		if (!mission.canExecuteMission(indianPlayer)) {
-			logger.debug("DemandTributeMission[%s] done: can not execute mission", indianPlayer.getId());
+			logger.debug("player[%s] Can not execute DemandTributeMission[%s]. Set done.", indianPlayer.getId(), mission.getId());
 			mission.setDone();
 			return;
 		}
@@ -52,8 +56,9 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		
 		if (!mission.correctTransportUnitLocation()) {
 			logger.debug(
-				"DemandTributeMission[%s] done: incorrect transport unit[%s] location", 
+				"player[%s] DemandTributeMission[%s]. Incorrect transport unit[%s] location. Set done.", 
 				indianPlayer.getId(), 
+				mission.getId(),
 				mission.getUnitToDemandTribute().getId()
 			);
 			mission.setDone();
@@ -62,6 +67,24 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
 			executeMoveToColonyPhase(mission);
+		}
+		
+		if (mission.getPhase() == Phase.ATTACK) {
+			MoveContext moveContext = new MoveContext(
+				mission.getUnitToDemandTribute().getTile(), 
+				mission.getColony().tile, 
+				mission.getUnitToDemandTribute()
+			);
+			
+	        if (moveContext.canHandleMove() &&
+	            (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
+	            		|| moveContext.isMoveType(MoveType.ATTACK_SETTLEMENT)
+        		)
+    		) {
+	        	combatService.doCombat(moveContext);
+	        	mission.backToSettlementAfterSuccessfulAtack();
+	        	return;
+            }
 		}
 		
 		if (mission.getPhase() == Phase.BACK_TO_SETTLEMENT) {
@@ -76,8 +99,9 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		Tile unitActualLocation = mission.getUnitToDemandTribute().getTile();
 		
 		logger.debug(
-			"DemandTributeMission[%s] move to colony[%s]", 
-			mission.getUnitToDemandTribute().getOwner().getId(), 
+			"player[%s].DemandTributeMission[%s] move to colony[%s]",
+			mission.getIndianSettlement().getOwner().getId(),
+			mission.getId(),
 			mission.getColony().getId()
 		);
 		
@@ -108,24 +132,18 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 	
 	private void demandConfirmation(final Goods goods, final int goldAmount, final DemandTributeMission mission) {
 		if (mission.getColony().getOwner().isAi()) {
-			acceptDemandLogMsg(goods, goldAmount, mission);
-			
 			mission.acceptDemands(goods, goldAmount);
 		} else {
 			OptionAction<Goods> acceptDemandsAction = new OptionAction<Goods>() {
 				@Override
 				public void executeAction(Goods payload) {
-					acceptDemandLogMsg(goods, goldAmount, mission);
-					
 					mission.acceptDemands(goods, goldAmount);
 				}
 			};
 			OptionAction<Goods> rejectDemandsAction = new OptionAction<Goods>() {
 				@Override
 				public void executeAction(Goods payload) {
-					rejectDemandsLogMsg(goods, goldAmount, mission);
-					
-					mission.rejectDemands();
+					mission.rejectDemands(goods, goldAmount);
 				}
 			};
 			
@@ -136,7 +154,7 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 			    		.add("%colony%", mission.getColony().getName())
 			    		.addAmount("%amount%", goods.getAmount());
 
-			    	guiGameController.showDialog(new QuestionDialog(st)
+			    	guiGameController.showDialogBlocked(new QuestionDialog(st)
 			    		.addAnswer("indianDemand.food.yes", acceptDemandsAction, goods)
 			    		.addAnswer("indianDemand.food.no", rejectDemandsAction, goods)
 		    		);
@@ -147,7 +165,7 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 			    		.addName("%goods%", goods)
 			    		.addAmount("%amount%", goods.getAmount());
 			    	
-			    	guiGameController.showDialog(new QuestionDialog(st)
+			    	guiGameController.showDialogBlocked(new QuestionDialog(st)
 			    		.addAnswer("indianDemand.other.yes", acceptDemandsAction, goods)
 			    		.addAnswer("indianDemand.other.no", rejectDemandsAction, goods)
 		    		);
@@ -158,35 +176,11 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		    		.add("%colony%", mission.getColony().getName())
 		    		.addAmount("%amount%", goldAmount);
 
-		    	guiGameController.showDialog(new QuestionDialog(st)
+		    	guiGameController.showDialogBlocked(new QuestionDialog(st)
 		    		.addAnswer("indianDemand.gold.yes", acceptDemandsAction, goods)
 		    		.addAnswer("indianDemand.gold.no", rejectDemandsAction, goods)
 	    		);
 			}
-		}
-	}
-
-	private void acceptDemandLogMsg(final Goods goods, final int goldAmount, final DemandTributeMission mission) {
-		if (logger.isDebug()) {
-			logger.debug(
-				"DemandTributeMission[%s] player[%s] accept demand %s:%d", 
-				mission.getUnitToDemandTribute().getOwner().getId(),
-				mission.getColony().getOwner().getId(),
-				goods != null ? goods.getType() : "gold",
-				goods != null ? goods.getAmount() : goldAmount
-			);
-		}
-	}
-
-	private void rejectDemandsLogMsg(final Goods goods, final int goldAmount, final DemandTributeMission mission) {
-		if (logger.isDebug()) {
-			logger.debug(
-				"DemandTributeMission[%s] player[%s] reject demand %s:%d", 
-				mission.getUnitToDemandTribute().getOwner().getId(),
-				mission.getColony().getOwner().getId(),
-				goods != null ? goods.getType() : "gold",
-				goods != null ? goods.getAmount() : goldAmount
-			);
 		}
 	}
 	
@@ -202,8 +196,9 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 			return;
 		}
 		logger.debug(
-			"DemandTributeMission[%s] back to settlement[%s]", 
-			mission.getUnitToDemandTribute().getOwner().getId(), 
+			"player[%s].DemandTributeMission[%s] back to settlement[%s]", 
+			mission.getUnitToDemandTribute().getOwner().getId(),
+			mission.getId(),
 			mission.getIndianSettlement().getId()
 		);
 		

@@ -38,7 +38,7 @@ public class AILogicDebugRun {
         tileDebugView = new TileDebugView(mapActor, gameModel);
         
         NewTurnService newTurnService = new NewTurnService(gameModel, combatService, moveService);
-        aiLogic = new AILogic(gameModel.game, newTurnService, moveService, guiGameController);
+        aiLogic = new AILogic(gameModel.game, newTurnService, moveService, combatService, guiGameController);
     }
     
     public void runMission(Player player, AbstractMission mission) {

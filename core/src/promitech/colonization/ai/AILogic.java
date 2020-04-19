@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.NewTurnService;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 
@@ -38,7 +39,7 @@ public class AILogic {
 	private final NativeMissionPlaner nativeMissionPlaner;
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
-	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService, GUIGameController guiGameController) {
+	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService, CombatService combatService, GUIGameController guiGameController) {
 		this.game = game;
 		this.newTurnService = newTurnService;
 		
@@ -56,7 +57,7 @@ public class AILogic {
     		game, pathFinder, moveService, guiGameController
 		);
         DemandTributeMissionHandler demandTributeMissionHandler = new DemandTributeMissionHandler(
-    		game, pathFinder, moveService, guiGameController
+    		game, pathFinder, moveService, combatService, guiGameController
 		);
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);

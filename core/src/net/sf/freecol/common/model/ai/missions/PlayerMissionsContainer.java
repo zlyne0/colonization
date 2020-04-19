@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
+import static promitech.colonization.ai.MissionHandlerLogger.*;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -29,6 +30,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public void addMission(AbstractMission m) {
+		logger.debug("player[%s] add mission[%s]", player.getId(), m.getId());
 		missions.add(m);
 	}
 
@@ -36,6 +38,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		List<AbstractMission> l = new ArrayList<AbstractMission>(missions.entities());
 		for (AbstractMission am : l) {
 			if (am.isDone() && !am.hasDependMissions()) {
+				logger.debug("player[%s] clear done mission[%s]", player.getId(), am.getId());
 				missions.removeId(am);
 				am.unblockUnits(unitMissionsMapping);
 			}

@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.player.Tension.Level;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ai.MissionHandlerLogger;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -26,7 +27,8 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 	
 	public enum Phase {
 		MOVE_TO_COLONY,
-		BACK_TO_SETTLEMENT
+		BACK_TO_SETTLEMENT, 
+		ATTACK
 	}
 	
 	private IndianSettlement indianSettlement;
@@ -215,17 +217,50 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		int difficulty = Specification.options.getIntValue(GameOptions.NATIVE_DEMANDS);
 		int tension = -(5 - difficulty) * 50;
 		indianSettlement.modifyTensionWithOwnerTension(colony.getOwner(), tension);
+		
+		unitToDemandTribute.reduceMovesLeftToZero();
+		changePhase(Phase.BACK_TO_SETTLEMENT);
+		
+		acceptDemandLogMsg(goods, goldAmount);
 	}
     
-	public void rejectDemands() {
+	private void acceptDemandLogMsg(final Goods goods, final int goldAmount) {
+		if (MissionHandlerLogger.logger.isDebug()) {
+			MissionHandlerLogger.logger.debug(
+				"player[%s].DemandTributeMission[%s] accept demand from player[%s] %s:%d", 
+				unitToDemandTribute.getOwner().getId(),
+				getId(),
+				colony.getOwner().getId(),
+				goods != null ? goods.getType() : "gold",
+				goods != null ? goods.getAmount() : goldAmount
+			);
+		}
+	}
+	
+	public void rejectDemands(final Goods goods, final int goldAmount) {
 		Tension tension = Tension.worst(
 			indianSettlement.getTension(colony.getOwner()), 
 			indianSettlement.getOwner().getTension(colony.getOwner())
 		);
 		if (tension.isWorst(Level.CONTENT)) {
+			phase = Phase.ATTACK;
 		}
+		rejectDemandsLogMsg(goods, goldAmount);
 	}
     
+	private void rejectDemandsLogMsg(final Goods goods, final int goldAmount) {
+		if (MissionHandlerLogger.logger.isDebug()) {
+			MissionHandlerLogger.logger.debug(
+				"player[%s].DemandTributeMission[%s] player[%s] reject demand %s:%d", 
+				unitToDemandTribute.getOwner().getId(),
+				getId(),
+				colony.getOwner().getId(),
+				goods != null ? goods.getType() : "gold",
+				goods != null ? goods.getAmount() : goldAmount
+			);
+		}
+	}
+	
 	public Colony getColony() {
 		return colony;
 	}
@@ -240,6 +275,16 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 
 	public Phase getPhase() {
 		return phase;
+	}
+	
+	public void backToSettlementAfterSuccessfulAtack() {
+    	if (!unitToDemandTribute.isDisposed()) {
+    		unitToDemandTribute.reduceMovesLeftToZero();
+    		changePhase(Phase.BACK_TO_SETTLEMENT);
+    	} else {
+    		// end mission
+    		setDone();
+    	}
 	}
 	
 	public void backUnitToSettlement() {

@@ -30,6 +30,7 @@ import promitech.colonization.screen.colony.ColonyApplicationScreen
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.ai.missions.DemandTributeMission
+import net.sf.freecol.common.model.player.Tension
 
 
 fun createCommands(
@@ -307,6 +308,12 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
 		if (!indianAiContainer.hasMissionType(DemandTributeMission::class.java)) {
 			val unit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			
+			tile.getSettlement().asIndianSettlement().setTension(
+				colonyTile.getSettlement().getOwner(),
+				Tension.Level.DISPLEASED.getLimit()
+			)
+			
 			mission = DemandTributeMission(
 				tile.getSettlement().asIndianSettlement(),
 				unit,

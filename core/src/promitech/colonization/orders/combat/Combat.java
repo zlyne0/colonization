@@ -214,6 +214,10 @@ class Combat {
 			case SLAUGHTER_UNIT: {
                 Player loserPlayer = combatSides.loser.getOwner();
                 loserPlayer.removeUnit(combatSides.loser);
+				if (combatSides.defenderTile.hasSettlement() && combatSides.defenderTile.getSettlement().isColony()) {
+					combatSides.defenderTile.getSettlement().asColony().updateColonyPopulation();
+					combatSides.defenderTile.getSettlement().asColony().updateModelOnWorkerAllocationOrGoodsTransfer();
+				}
 			} break;
 			case PROMOTE_UNIT: combatSides.winner.changeUnitType(ChangeType.PROMOTION);
 			break;

@@ -1,6 +1,8 @@
 package promitech.colonization.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -26,6 +28,7 @@ public class QuestionDialog extends Dialog {
     private final Table dialogLayout = new Table();
     private final Map<TextButton, OptionAction<? extends Object>> actionByButton = new HashMap<TextButton, OptionAction<? extends Object>>();
     private final Map<TextButton, Object> payloadByButton = new HashMap<TextButton, Object>();
+    private final List<Runnable> onCloseListeners = new ArrayList<Runnable>();
     
     private final ChangeListener buttonChangeListener = new ChangeListener() {
         @Override
@@ -34,6 +37,9 @@ public class QuestionDialog extends Dialog {
             hide();
             if (optionAction != null) {
                 optionAction.executeAction(payloadByButton.get(event.getListenerActor()));
+            }
+            for (Runnable listener : onCloseListeners) {
+            	listener.run();
             }
         }
     };    
@@ -87,6 +93,10 @@ public class QuestionDialog extends Dialog {
     	button.addListener(buttonChangeListener);
     	
         dialogLayout.add(button).fillX().space(10).row();
+    }
+    
+    public void addOnCloseListener(Runnable listener) {
+    	onCloseListeners.add(listener);
     }
     
     @Override

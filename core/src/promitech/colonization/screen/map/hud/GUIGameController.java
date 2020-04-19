@@ -24,6 +24,7 @@ import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
@@ -51,6 +52,7 @@ public class GUIGameController {
 	private MoveController moveController;
 	private NewTurnService newTurnService;
 	private MoveService moveService;
+	private CombatService combatService;
 	private PathFinder pathFinder;
 	
 	private MapActor mapActor;
@@ -64,12 +66,13 @@ public class GUIGameController {
 	
 	public void inject(
 		GUIGameModel guiGameModel, MoveController moveController, NewTurnService newTurnService, 
-		MoveService moveService, PathFinder pathFinder
+		MoveService moveService, CombatService combatService, PathFinder pathFinder
 	) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.newTurnService = newTurnService;
 		this.moveService = moveService;
+		this.combatService = combatService;
 		this.pathFinder = pathFinder;
 	}
 	
@@ -357,7 +360,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService, this);
+		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService, combatService, this);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
@@ -573,6 +576,13 @@ public class GUIGameController {
 	
 	public void showDialog(QuestionDialog dialog) {
 		mapHudStage.showDialog(dialog);
+	}
+
+	public void showDialogBlocked(QuestionDialog dialog) {
+		dialog.addOnCloseListener(humanPlayerInteractionSemaphore);
+		
+		mapHudStage.showDialog(dialog);
+		humanPlayerInteractionSemaphore.waitForInteraction();
 	}
 	
     public void setMapActor(MapActor mapActor) {
