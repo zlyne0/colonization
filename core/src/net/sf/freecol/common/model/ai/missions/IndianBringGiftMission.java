@@ -99,6 +99,12 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		transportUnit.changeUnitLocation(indianSettlement);
 	}
 	
+	public void transferGoods() {
+		transportUnit.reduceMovesLeftToZero();
+		destinationColony.getGoodsContainer().increaseGoodsQuantity(gift);
+		changePhase(Phase.BACK_TO_SETTLEMENT);
+	}
+	
 	@Override
 	public IndianSettlement getIndianSettlement() {
 		return indianSettlement;

@@ -37,7 +37,7 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		
 		logger.debug("IndianBringGiftMission[%s] start execute", indianPlayer.getId());
 		
-		if (!mission.canExecuteMission(game, indianPlayer)) {
+		if (!mission.canExecuteMission(indianPlayer)) {
 			logger.debug("IndianBringGiftMission[%s] done: can not execute mission", indianPlayer.getId());
 			mission.setDone();
 			return;
@@ -74,6 +74,7 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		Tile unitActualLocation = mission.getTransportUnit().getTile();
 
 		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
+			mission.getIndianSettlement().getGoodsContainer().decreaseGoodsQuantity(mission.getGift());
 			mission.changePhase(Phase.MOVE_TO_COLONY);
 			return;
 		}
@@ -120,10 +121,8 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 			if (path.moveStepDest().equalsCoordinates(mission.getDestinationColony().tile)) {
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
-				
-				mission.getTransportUnit().reduceMovesLeftToZero();
-				mission.getDestinationColony().getGoodsContainer().increaseGoodsQuantity(mission.getGift());
-				mission.changePhase(Phase.BACK_TO_SETTLEMENT);
+
+				mission.transferGoods();
 				
 				logger.debug("IndianBringGiftMission[%s] deliver gift[%s:%s] to colony[%s]", 
 					mission.getIndianSettlement().getOwner().getId(),
@@ -152,7 +151,6 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		guiGameController.showDialogBlocked(new SimpleMessageDialog()
 			.withContent(st)
 			.withButton("ok")
-			.addOnCloseListener(guiGameController.ifRequiredNextActiveUnitRunnable())
 		);
 	}
 	

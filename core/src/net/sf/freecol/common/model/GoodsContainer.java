@@ -22,6 +22,11 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public void transferGoods(AbstractGoods goods, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goods);
+    	toContainer.increaseGoodsQuantity(goods);
+    }
+    
     public void transferGoods(Goods goods, GoodsContainer toContainer) {
     	decreaseGoodsQuantity(goods.getType(), goods.getAmount());
     	toContainer.increaseGoodsQuantity(goods.getType(), goods.getAmount());
