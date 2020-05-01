@@ -165,7 +165,7 @@ public class IndianSettlementProduction {
 	}
 
 	public int normalGoodsPriceToBuy(IndianSettlement is, GoodsType goodsType, int amount) {
-    	int capacity = is.getGoodsCapacity();
+    	int capacity = is.warehouseCapacity();
     	int current = is.getGoodsContainer().goodsAmount(goodsType);
     	
 		if (goodsType.isRefined()) {
@@ -295,7 +295,7 @@ public class IndianSettlementProduction {
 	    
         calculateMaximumProduction(map, settlement);
 	    
-        int capacity = settlement.getGoodsCapacity();
+        int capacity = settlement.warehouseCapacity();
         
         StringBuilder logStr = new StringBuilder();
         logStr.append("capacity " + capacity).append("\n");

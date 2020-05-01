@@ -7,6 +7,8 @@ import java.util.Random;
 
 import com.badlogic.gdx.math.RandomXS128;
 
+import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.specification.WithProbability;
 
 public final class Randomizer {
@@ -89,6 +91,24 @@ public final class Randomizer {
 		}
 		int index = randomInt(col.size());
 		return col.get(index);
+	}
+	
+	public <T extends Identifiable> T randomMember(MapIdEntities<T> elements) {
+		if (elements.isEmpty()) {
+			return null;
+		}
+		if (elements.size() == 1) {
+			return elements.first();
+		}
+		int index = randomInt(elements.size());
+		int i = 0;
+		for (T element : elements.entities()) {
+			if (i == index) {
+				return element;
+			}
+			i++;
+		}
+		return null;
 	}
 
 	public <LIST_ELEMENT_TYPE> void shuffle(List<LIST_ELEMENT_TYPE> list) {

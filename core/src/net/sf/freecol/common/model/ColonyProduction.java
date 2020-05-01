@@ -33,7 +33,7 @@ class ColonyProduction {
     	globalProductionConsumption.makeEmpty();
     	
     	ProductionSummary abstractWarehouse = colony.goodsContainer.cloneGoods();
-    	int warehouseCapacity = colony.getWarehouseCapacity();
+    	int warehouseCapacity = colony.warehouseCapacity();
 
     	
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);

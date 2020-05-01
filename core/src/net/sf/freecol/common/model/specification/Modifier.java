@@ -17,6 +17,17 @@ public class Modifier implements Identifiable {
 		boolean apply(Modifier modifier);
 	}
 	
+	public static final float sumValues(List<Modifier> modifiers) {
+		if (modifiers == null) {
+			return 0;
+		}
+		float sum = 0;
+		for (int i=0; i<modifiers.size(); i++) {
+			sum += modifiers.get(i).value;
+		}
+		return sum;
+	}
+	
 	public static final String AMPHIBIOUS_ATTACK = "model.modifier.amphibiousAttack";
 	public static final String ARTILLERY_AGAINST_RAID = "model.modifier.artilleryAgainstRaid";
 	public static final String ARTILLERY_IN_THE_OPEN = "model.modifier.artilleryInTheOpen";

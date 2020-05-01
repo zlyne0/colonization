@@ -68,6 +68,8 @@ public class NewTurnService {
         		indianSettlement.generateTension(guiGameModel.game);
         		indianSettlement.conversion(guiGameModel.game.map);
         		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
+        		indianSettlement.spreadMilitaryGoods();
+        		indianSettlement.equipMilitaryRoles();
         	}
 			if (!settlement.isColony()) {
 				continue;

@@ -58,7 +58,6 @@ public class Colony extends Settlement {
         LIMIT_EXCEEDED
     }
     
-    GoodsContainer goodsContainer;
     public final MapIdEntities<Building> buildings = new SortedMapIdEntities<Building>(BUILDING_GOODS_OUTPUT_CHAIN_LEVEL);
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
@@ -90,7 +89,6 @@ public class Colony extends Settlement {
 
     public Colony(IdGenerator idGenerator, SettlementType settlementType) {
 		this(idGenerator.nextId(Colony.class), settlementType);
-    	goodsContainer = new GoodsContainer();
 	}
 
 	public String toString() {
@@ -335,25 +333,8 @@ public class Colony extends Settlement {
     }
     
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
-    	if (!newUnitRole.isAvailableTo(unit.unitType, colonyUpdatableFeatures)) {
-    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
-    	}
-
-    	ProductionSummary required = new ProductionSummary();
-		int maxAvailableRoleCount = UnitRoleLogic.maximumAvailableRequiredGoods(unit, newUnitRole, goodsContainer, required);
-    	unit.changeRole(newUnitRole, maxAvailableRoleCount);
-    	goodsContainer.decreaseGoodsQuantity(required);
+    	super.changeUnitRole(unit, newUnitRole, colonyUpdatableFeatures);
     }
-    
-    @Override
-    public GoodsContainer getGoodsContainer() {
-        return goodsContainer;
-    }
-    
-	@Override
-	public void addGoods(String goodsTypeId, int quantity) {
-		goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
-	}
     
     public void increaseWorkersExperience() {
         for (ColonyTile colonyTile : colonyTiles.entities()) {
@@ -395,29 +376,6 @@ public class Colony extends Settlement {
                 	owner.eventsNotifications.addMessageNotification(st);
                 	
                 }
-            }
-        }
-    }
-
-    public void removeExcessedStorableGoods() {
-        int warehouseCapacity = getWarehouseCapacity();
-        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
-            if (!gt.isStorable()) {
-                continue;
-            }
-            if (gt.isFood()) {
-                continue;
-            }
-            int goodsAmount = goodsContainer.goodsAmount(gt);
-            if (goodsAmount > warehouseCapacity) {
-                int wasteAmount = goodsAmount - warehouseCapacity;
-                goodsContainer.decreaseGoodsQuantity(gt, wasteAmount);
-                
-                StringTemplate st = StringTemplate.template("model.building.warehouseWaste")
-                	.add("%colony%", getName())
-                	.addName("%goods%", gt)
-                	.addAmount("%waste%", wasteAmount);
-                owner.eventsNotifications.addMessageNotification(st);
             }
         }
     }
@@ -585,7 +543,8 @@ public class Colony extends Settlement {
 		}
 	}
 	
-    public int getWarehouseCapacity() {
+	@Override
+    public int warehouseCapacity() {
     	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
 
@@ -1189,7 +1148,7 @@ public class Colony extends Settlement {
 	
 	public int getTurnsToComplete(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGood) {
 		ProductionSummary production = productionSummary();
-		GoodsContainer warehouse = getGoodsContainer();
+		GoodsContainer warehouse = goodsContainer;
 		
 		int requiredTurn = -1;
 		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
@@ -1386,17 +1345,6 @@ public class Colony extends Settlement {
 		}
 	}
 	
-	public int maxGoodsAmountToFillWarehouseCapacity(String goodsTypeId, int goodsAmount) {
-		int freeSpace = getWarehouseCapacity() - goodsContainer.goodsAmount(goodsTypeId);
-		if (freeSpace < 0) {
-			freeSpace = 0;
-		}
-		if (freeSpace < goodsAmount) {
-			return freeSpace;
-		}
-		return goodsAmount;
-	}
-	
     public static class Xml extends XmlNodeParser<Colony> {
         private static final String ATTR_LIBERTY = "liberty";
 		private static final String ATTR_PRODUCTION_BONUS = "productionBonus";
@@ -1435,7 +1383,18 @@ public class Colony extends Settlement {
 				}
         	});
         	
-            addNode(GoodsContainer.class, "goodsContainer");
+            addNode(GoodsContainer.class, new ObjectFromNodeSetter<Colony, GoodsContainer>() {
+				@Override
+				public void set(Colony target, GoodsContainer entity) {
+					target.goodsContainer = entity;
+				}
+
+				@Override
+				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<GoodsContainer> xmlGenerator)
+						throws IOException {
+					xmlGenerator.generateXml(source.goodsContainer);
+				}
+            });
             addNodeForMapIdEntities("buildings", Building.class);
             addNodeForMapIdEntities("colonyTiles", ColonyTile.class);
         }

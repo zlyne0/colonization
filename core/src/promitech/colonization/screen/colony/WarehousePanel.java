@@ -91,7 +91,7 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
         }
         warehouseGoodActor.setQuantity(goodsAmount);
         warehouseGoodActor.setExported(exported);
-        warehouseGoodActor.setWarehouseCapacity(colony.getWarehouseCapacity());
+        warehouseGoodActor.setWarehouseCapacity(colony.warehouseCapacity());
     }
 
     @Override

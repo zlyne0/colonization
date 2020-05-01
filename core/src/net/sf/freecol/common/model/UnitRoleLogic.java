@@ -72,8 +72,4 @@ public class UnitRoleLogic {
         }
 		return requiredAmount;
 	}
-	
-	public static boolean hasContainerRequiredGoods(GoodsContainer container, UnitRole role) {
-		return container.hasGoodsQuantity(role.requiredGoods);
-	}
 }

@@ -2,6 +2,8 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ui.resources.StringTemplate;
 
 public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
@@ -12,6 +14,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     protected Player owner;
     public Tile tile;
     protected boolean coastland = false;
+    protected GoodsContainer goodsContainer;
 
     public Settlement(String id, SettlementType settlementType) {
 		super(id);
@@ -75,17 +78,68 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     }
 
     public boolean hasGoodsToEquipRole(UnitRole unitRole) {
-    	return UnitRoleLogic.hasContainerRequiredGoods(getGoodsContainer(), unitRole);
+    	return goodsContainer.hasGoodsQuantity(unitRole.requiredGoods);
     }
     
-    public abstract GoodsContainer getGoodsContainer();
+    public void changeUnitRole(Unit unit, UnitRole newUnitRole, ObjectWithFeatures unitLocationFeatures) {
+    	if (!newUnitRole.isAvailableTo(unit.unitType, unitLocationFeatures)) {
+    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
+    	}
+
+    	ProductionSummary required = new ProductionSummary();
+		int maxAvailableRoleCount = UnitRoleLogic.maximumAvailableRequiredGoods(unit, newUnitRole, goodsContainer, required);
+    	unit.changeRole(newUnitRole, maxAvailableRoleCount);
+    	goodsContainer.decreaseGoodsQuantity(required);
+    }
+    
+    
+    public GoodsContainer getGoodsContainer() {
+        return goodsContainer;
+    }
+    
+	public void addGoods(String goodsTypeId, int quantity) {
+		goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
+	}
+	
+    public void removeExcessedStorableGoods() {
+        int warehouseCapacity = warehouseCapacity();
+        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+            if (!gt.isStorable() || gt.isFood()) {
+                continue;
+            }
+            int goodsAmount = goodsContainer.goodsAmount(gt);
+            if (goodsAmount > warehouseCapacity) {
+                int wasteAmount = goodsAmount - warehouseCapacity;
+                goodsContainer.decreaseGoodsQuantity(gt, wasteAmount);
+                
+                if (owner.isHuman()) {
+                	StringTemplate st = StringTemplate.template("model.building.warehouseWaste")
+            			.add("%colony%", getName())
+            			.addName("%goods%", gt)
+            			.addAmount("%waste%", wasteAmount);
+                	owner.eventsNotifications.addMessageNotification(st);
+                }
+            }
+        }
+    }
+	
+	public int maxGoodsAmountToFillWarehouseCapacity(String goodsTypeId, int goodsAmount) {
+		int freeSpace = warehouseCapacity() - goodsContainer.goodsAmount(goodsTypeId);
+		if (freeSpace < 0) {
+			freeSpace = 0;
+		}
+		if (freeSpace < goodsAmount) {
+			return freeSpace;
+		}
+		return goodsAmount;
+	}
+    
+	public abstract int warehouseCapacity();
     
     public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);
     
-    public abstract void addGoods(String goodsTypeId, int quantity);
-
 	public abstract void updateProductionToMaxPossible(Tile tile);
     
 	public abstract ProductionSummary productionSummary();

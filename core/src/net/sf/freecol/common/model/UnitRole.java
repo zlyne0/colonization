@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.Comparator;
 
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
@@ -10,6 +11,16 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitRole extends ObjectWithFeatures {
+	
+	public static final Comparator<UnitRole> OFFENCE_POWER_COMPARATOR = new Comparator<UnitRole>() {
+		@Override
+		public int compare(UnitRole o1, UnitRole o2) {
+			float sum1 = Modifier.sumValues(o1.getModifiers(Modifier.OFFENCE));
+			float sum2 = Modifier.sumValues(o2.getModifiers(Modifier.OFFENCE));
+			return Float.compare(sum2, sum1);
+		}
+	};	
+	
 	public static final String DEFAULT_ROLE_ID = "model.role.default";
 	public static final String CAVALRY_ROLE_ID = "model.role.cavalry";
 	public static final String INFANTRY_ROLE_ID = "model.role.infantry";
@@ -61,6 +72,10 @@ public class UnitRole extends ObjectWithFeatures {
 	
     public boolean isOffensive() {
         return hasModifier(Modifier.OFFENCE);
+    }
+    
+    public boolean hasMoreOffensivePower(UnitRole ur) {
+    	return OFFENCE_POWER_COMPARATOR.compare(ur, this) > 0;
     }
 	
 	public boolean isDefensive() {
