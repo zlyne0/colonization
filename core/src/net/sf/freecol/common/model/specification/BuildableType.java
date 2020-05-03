@@ -1,7 +1,7 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
-import java.util.List;
+import java.util.Collection;
 
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -33,7 +33,7 @@ public abstract class BuildableType extends ObjectWithFeatures {
      */
     protected int requiredPopulation = DEFAULT_REQUIRED_POPULATION;
 	
-	public final MapIdEntities<RequiredGoods> requiredGoods = new MapIdEntities<RequiredGoods>();
+	public final MapIdEntities<RequiredGoods> requiredGoods = MapIdEntities.linkedMapIdEntities();
 
 	public BuildableType(String id) {
 		super(id);
@@ -43,8 +43,8 @@ public abstract class BuildableType extends ObjectWithFeatures {
 		return requiredPopulation;
 	}
 	
-	public List<RequiredGoods> requiredGoods() {
-		return requiredGoods.sortedEntities();
+	public Collection<RequiredGoods> requiredGoods() {
+		return requiredGoods.entities();
 	}
 	
 	public boolean doesNotNeedGoodsToBuild() {

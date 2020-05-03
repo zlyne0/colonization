@@ -17,6 +17,7 @@ import com.badlogic.gdx.utils.JsonWriter.OutputType;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.SavedGame;
+import promitech.colonization.ui.resources.Messages;
 
 class SaveGameListData {
 	protected List<SaveGameElement> saves = new ArrayList<SaveGameElement>();
@@ -52,6 +53,7 @@ class SaveGameListData {
 	}
 	
 	public List<SaveGameElement> getSaves() {
+		Collections.sort(saves, SaveGameElement.LAST_ON_FIRST);
 		return saves;
 	}
 	
@@ -70,13 +72,22 @@ class SaveGameElement {
 	public static Comparator<SaveGameElement> LAST_ON_FIRST = new Comparator<SaveGameElement>() {
 		@Override
 		public int compare(SaveGameElement o1, SaveGameElement o2) {
-			return (int)(o2.date - o1.date);
+			if (o2.date > o1.date) {
+				return 1;
+			} else {
+				if (o1.date == o2.date) {
+					return 0;
+				}
+				return -1;
+			}
 		}
 	};
 	
 	protected String fileName;
 	protected String name;
 	protected long date;
+	protected boolean autosave = false;
+	protected String uuid;
 	
 	public SaveGameElement() {
 	}
@@ -85,6 +96,11 @@ class SaveGameElement {
 		this.fileName = fileName;
 		this.name = name;
 		this.date = System.currentTimeMillis();
+	}
+
+	public void setAutosaveId(String uuid) {
+		autosave = true;
+		this.uuid = uuid;
 	}
 	
 	public SaveGameElement updateDateToNow() {
@@ -102,11 +118,23 @@ public class SaveGameList {
 	private static final String QUICK_SAVE_NAME = "Quick save";
 	private static final String SAVE_GAME_LIST_FILE_NAME = "saveGameList";
 
+	public String defaultSaveGameName(Game game) {
+		return Messages.message(game.playingPlayer.getNationName()) + " " + Messages.message(game.getTurn().getTurnDateLabel());
+	}
+	
 	public List<String> loadGameNames() {
+		return loadGameNames(false);
+	}
+	
+	public List<String> loadGameNames(boolean withAutosaves) {
 		SaveGameListData saveGameList = loadGameList();
-		List<String> l = new ArrayList<String>(saveGameList.getSaves().size());
-		for (SaveGameElement saveGameElement : saveGameList.getSaves()) {
-			l.add(saveGameElement.name);
+		List<SaveGameElement> saves = saveGameList.getSaves();
+		
+		List<String> l = new ArrayList<String>(saves.size());
+		for (SaveGameElement saveGameElement : saves) {
+			if (withAutosaves || !saveGameElement.autosave) {
+				l.add(saveGameElement.name);
+			}
 		}
 		return l;
 	}
@@ -135,6 +163,16 @@ public class SaveGameList {
 	public void saveAsQuick(Game game) {
 		SaveGameListData saveGameList = loadGameList();
 		SaveGameElement saveElement = saveGameList.findOrCreateSaveByName(QUICK_SAVE_NAME);
+		saveGameDataToFile(saveElement, game);
+		saveGameList(saveGameList);
+	}
+	
+	public void saveAsAutosave(Game game) {
+		SaveGameListData saveGameList = loadGameList();
+		String saveName = "Autosave " + defaultSaveGameName(game);
+		SaveGameElement saveElement = saveGameList.findOrCreateSaveByName(saveName);
+		saveElement.setAutosaveId(game.uuid());
+		
 		saveGameDataToFile(saveElement, game);
 		saveGameList(saveGameList);
 	}
@@ -226,5 +264,4 @@ public class SaveGameList {
 			}
 		}
 	}
-	
 }

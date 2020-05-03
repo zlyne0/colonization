@@ -23,6 +23,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.util.Utils;
 
@@ -290,7 +291,7 @@ public class StringTemplate extends ObjectWithId {
      * @param object The corresponding value.
      * @return This <code>StringTemplate</code>.
      */
-    public StringTemplate addName(String key, ObjectWithId object) {
+    public StringTemplate addName(String key, Identifiable object) {
         if (templateType == TemplateType.TEMPLATE) {
             addKey(key);
             addReplacement(new StringTemplate(Messages.nameKey(object.getId()), TemplateType.KEY));

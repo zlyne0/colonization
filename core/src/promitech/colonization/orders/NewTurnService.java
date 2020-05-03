@@ -62,12 +62,14 @@ public class NewTurnService {
 			newTurnForUnit(unit);
 		}
 		
-        for (Settlement settlement : player.settlements.sortedEntities()) {
+        for (Settlement settlement : player.settlements.entities()) {
         	if (settlement.isIndianSettlement()) {
         		IndianSettlement indianSettlement = settlement.asIndianSettlement();
         		indianSettlement.generateTension(guiGameModel.game);
         		indianSettlement.conversion(guiGameModel.game.map);
         		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
+        		indianSettlement.spreadMilitaryGoods();
+        		indianSettlement.equipMilitaryRoles();
         	}
 			if (!settlement.isColony()) {
 				continue;
@@ -198,21 +200,17 @@ public class NewTurnService {
 			Tile improvingTile = unit.getTile();
 			TileImprovementType improvementType = unit.getTileImprovementType();
 			
-			LinkedList<Settlement> neighbouringSettlements = guiGameModel.game.map.findSettlements(improvingTile, unit.getOwner(), 2);
+			LinkedList<Settlement> neighbouringSettlements = guiGameModel.game.map.findSettlements(improvingTile, 2);
 			
 			TileTypeTransformation changedTileType = improvementType.changedTileType(improvingTile.getType());
 			if (changedTileType != null) {
 				improvingTile.changeTileType(changedTileType.getToType());
 				
-				Goods production = changedTileType.getProduction();
-				int prodAmount = production.getAmount();
-				if (unit.unitType.hasAbility(Ability.EXPERT_PIONEER)) {
-					prodAmount *= 2;
-				}
-				if (!neighbouringSettlements.isEmpty()) {
-					Settlement settlement = neighbouringSettlements.getFirst();
-					prodAmount = settlement.applyModifiers(Modifier.TILE_TYPE_CHANGE_PRODUCTION, prodAmount);
-					settlement.addGoods(production.getId(), prodAmount);
+				for (Settlement settlement : neighbouringSettlements) {
+					if (settlement.getOwner().equalsId(unit.getOwner())) {
+						changedTileType.addTransformationProductionToSettlement(unit, settlement);
+						break;
+					}
 				}
 			} else {
 				TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, improvementType);
@@ -223,10 +221,7 @@ public class NewTurnService {
 			}
 			
 			for (Settlement settlement : neighbouringSettlements) {
-				if (settlement.isContainsTile(improvingTile)) {
-					settlement.initMaxPossibleProductionOnTile(improvingTile);
-					break;
-				}
+				settlement.updateProductionToMaxPossible(improvingTile);
 			}
 			
 			for (Unit u : improvingTile.getUnits().entities()) {

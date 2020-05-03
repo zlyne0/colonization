@@ -185,16 +185,7 @@ public class ColonyProductionTest {
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit);
-        
-        fursColonyTile.productionInfo.clear();
-        List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-        for (GoodMaxProductionLocation goodProd : potentialTerrainProductions) {
-            System.out.println("potential goodProd " + goodProd);
-            if (goodProd.getGoodsType().equalsId("model.goods.furs")) {
-                fursColonyTile.productionInfo.addProduction(goodProd.tileTypeInitProduction);
-            }
-        }
+        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
         colony.updateModelOnWorkerAllocationOrGoodsTransfer();
@@ -239,16 +230,7 @@ public class ColonyProductionTest {
         unit.removeFromLocation();
         ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit);
-        
-        fursColonyTile.productionInfo.clear();
-        List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-        for (GoodMaxProductionLocation goodProd : potentialTerrainProductions) {
-            System.out.println("potential goodProd " + goodProd);
-            if (goodProd.getGoodsType().equalsId("model.goods.furs")) {
-                fursColonyTile.productionInfo.addProduction(goodProd.tileTypeInitProduction);
-            }
-        }
+        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
         colony.updateModelOnWorkerAllocationOrGoodsTransfer();
@@ -350,4 +332,24 @@ public class ColonyProductionTest {
 		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(5);
 	}
     
+	@Test
+	public void canDeterminePotentialProduction() throws Exception {
+		// given
+		Unit unit = dutch.units.getById("unit:7076");
+		dutch.addFoundingFathers(game, henryHudson);
+		colony.updateColonyFeatures();
+		
+		// when
+		List<GoodMaxProductionLocation> locations = colony.determinePotentialMaxGoodsProduction(unit);
+
+		// then
+		for (GoodMaxProductionLocation l : locations) {
+			System.out.println(l);
+			if (l.getGoodsType().equalsId("model.goods.furs")) {
+				assertThat(l.getProduction()).isEqualTo(8);
+				assertThat(l.getColonyTile().getId()).isEqualTo("tile:3352");
+			}
+		}
+		
+	}
 }

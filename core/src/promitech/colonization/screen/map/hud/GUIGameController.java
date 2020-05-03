@@ -24,10 +24,13 @@ import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
+import promitech.colonization.orders.combat.CombatService;
+import promitech.colonization.orders.move.HumanPlayerInteractionSemaphore;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor;
+import promitech.colonization.savegame.SaveGameList;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
 import promitech.colonization.screen.colony.ColonyApplicationScreen;
@@ -42,10 +45,14 @@ import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 
 public class GUIGameController {
+	
+	private final HumanPlayerInteractionSemaphore humanPlayerInteractionSemaphore = new HumanPlayerInteractionSemaphore();
+	
 	private GUIGameModel guiGameModel;
 	private MoveController moveController;
 	private NewTurnService newTurnService;
 	private MoveService moveService;
+	private CombatService combatService;
 	private PathFinder pathFinder;
 	
 	private MapActor mapActor;
@@ -59,12 +66,13 @@ public class GUIGameController {
 	
 	public void inject(
 		GUIGameModel guiGameModel, MoveController moveController, NewTurnService newTurnService, 
-		MoveService moveService, PathFinder pathFinder
+		MoveService moveService, CombatService combatService, PathFinder pathFinder
 	) {
 		this.guiGameModel = guiGameModel;
 		this.moveController = moveController;
 		this.newTurnService = newTurnService;
 		this.moveService = moveService;
+		this.combatService = combatService;
 		this.pathFinder = pathFinder;
 	}
 	
@@ -152,7 +160,10 @@ public class GUIGameController {
     }
     
 	public void nextActiveUnitWhenNoMovePointsAsGdxPostRunnable() {
-        if (!guiGameModel.getActiveUnit().couldMove() || guiGameModel.getActiveUnit().isDisposed()) {
+        if (!guiGameModel.getActiveUnit().couldMove() 
+        		|| guiGameModel.getActiveUnit().isDisposed() 
+        		|| guiGameModel.getActiveUnit().isTradeRouteSet()
+		) {
         	nextActiveUnitAsGdxPostRunnable();
         }
 	}
@@ -217,7 +228,7 @@ public class GUIGameController {
 			@Override
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
-				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony());
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 			}
     	});
@@ -229,7 +240,7 @@ public class GUIGameController {
 			public void run() {
 				ColonyApplicationScreen colonyApplicationScreen = screenManager.getApplicationScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.addOneHitOnLeaveListener(onCloseColonyListener);
-				colonyApplicationScreen.initColony(tile.getSettlement().asColony(), tile);
+				colonyApplicationScreen.initColony(tile.getSettlement().asColony());
 				screenManager.setScreen(ApplicationScreenType.COLONY);
 				colonyApplicationScreen.setColonySpyMode();
 			}
@@ -337,6 +348,10 @@ public class GUIGameController {
 
 	public void endTurn(EndOfTurnPhaseListener endOfTurnPhaseListener) {
 		blockUserInteraction = true;
+		
+		SaveGameList saveGameList = new SaveGameList();
+		saveGameList.saveAsAutosave(guiGameModel.game);
+		
 		guiGameModel.setAiMove(true);
 		System.out.println("end turn");
 
@@ -345,7 +360,7 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService);
+		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService, combatService, this);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
@@ -552,8 +567,22 @@ public class GUIGameController {
 		mapHudStage.showDialog(dialog);
 	}
 
+	public void showDialogBlocked(ModalDialog<?> dialog) {
+		dialog.addOnCloseListener(humanPlayerInteractionSemaphore);
+		
+		mapHudStage.showDialog(dialog);
+		humanPlayerInteractionSemaphore.waitForInteraction();
+	}
+	
 	public void showDialog(QuestionDialog dialog) {
 		mapHudStage.showDialog(dialog);
+	}
+
+	public void showDialogBlocked(QuestionDialog dialog) {
+		dialog.addOnCloseListener(humanPlayerInteractionSemaphore);
+		
+		mapHudStage.showDialog(dialog);
+		humanPlayerInteractionSemaphore.waitForInteraction();
 	}
 	
     public void setMapActor(MapActor mapActor) {

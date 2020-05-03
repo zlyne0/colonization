@@ -57,12 +57,11 @@ class SaveGameDialog(
 	}
 	
 	override fun init(shapeRenderer : ShapeRenderer) {
-		var defaultSaveName = Messages.message(guiGameModel.game.playingPlayer.getNationName()) +
-			" " + Messages.message(guiGameModel.game.turn.getTurnDateLabel());
+		val saveGameList = SaveGameList()
 		
-		gameNameTextField.setText(defaultSaveName)
+		gameNameTextField.setText(saveGameList.defaultSaveGameName(guiGameModel.game))
 		
-		SaveGameList().loadGameNames()
+		saveGameList.loadGameNames()
 			.forEach { name ->
 				gamesTable.addRow(name, intArrayOf(Align.left), *arrayOf(Label(name, skin)) )
 			}
@@ -110,8 +109,6 @@ class SaveGameDialog(
 				showConfirmation(saves)
 			} else {
 				saveInWaitDialog(saves)
-				
-				hideWithFade()
 			}
 		}
 		cancelButton.addListener { _, _ ->
@@ -123,11 +120,9 @@ class SaveGameDialog(
 		val confirmationDialog = SimpleMessageDialog()
 		confirmationDialog.withContent("saveConfirmationDialog.areYouSure.text")
 			.withButton("no")
-			.withButton("yes", { d ->
+			.withButton("yes", { confirmDialog ->
 				saveInWaitDialog(saves)
-
-				d.hideWithoutFade()
-				hideWithoutFade()
+				confirmDialog.hideWithoutFade()
 			})
 		showDialog(confirmationDialog)
 	}
@@ -135,8 +130,10 @@ class SaveGameDialog(
 	private fun saveInWaitDialog(saves : SaveGameList) {
 		WaitDialog(Messages.msg("status.savingGame"), {
 			saves.saveAs(gameNameTextField.getText(), guiGameModel.game)
-		}, {})
+		}, { })
 			.show(this@SaveGameDialog.dialog.getStage())
+
+		this@SaveGameDialog.hideWithoutFade()
 	}
 		
 	override fun show(stage : Stage) {

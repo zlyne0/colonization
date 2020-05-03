@@ -16,7 +16,6 @@ import com.badlogic.gdx.Input.Keys
 import com.badlogic.gdx.scenes.scene2d.Actor
 import com.badlogic.gdx.scenes.scene2d.InputEvent
 import net.sf.freecol.common.model.map.generator.MapGenerator
-import promitech.colonization.GameCreator
 import net.sf.freecol.common.model.UnitIterator
 import net.sf.freecol.common.model.Unit
 import promitech.colonization.DI
@@ -29,7 +28,6 @@ class DebugConsole(val commands : Commands)
 	private val label = Label("", GameResources.instance.getUiSkin())
 	private val scrollPane = ScrollPane(label)
 			
-	var selectedTile: Tile? = null
 	var keepOpenConsoleAfterExecute : Boolean = false
 	
 	init {
@@ -92,26 +90,28 @@ class DebugConsole(val commands : Commands)
 		textField.setCursorPosition(textField.getText().length)
 	}
 	
-	override fun out(line: String) {
+	override fun out(line: String) : ConsoleOutput {
 		if (label.getText().toString().equals("")) {
-			label.setText(line);			
+			label.setText(line)			
 		} else {
 			label.setText(label.getText().toString() + "\n" + line)
 		}
-		scrollPane.setScrollPercentY(100f);
-		scrollPane.layout();
+		scrollPane.setScrollPercentY(100f)
+		scrollPane.layout()
+		return this
 	}
 	
-	override fun keepOpen() {
+	override fun keepOpen() : ConsoleOutput {
 		keepOpenConsoleAfterExecute = true
+		return this
 	}
 	
 	override fun show(stage: Stage) {
 		getContentTable().getCell(dialogLayout)
 			.width(stage.getWidth() * 0.75f)
-			.height(stage.getHeight() * 0.75f);
+			.height(stage.getHeight() * 0.75f)
 		
 		super.show(stage)
-		stage.setKeyboardFocus(textField);
+		stage.setKeyboardFocus(textField)
 	}
 }

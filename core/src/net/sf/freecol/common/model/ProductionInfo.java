@@ -68,7 +68,10 @@ public class ProductionInfo {
 	public String toString() {
 		StringBuilder st = new StringBuilder();
 		for (Production p : productions) {
-			st.append(p).append("\n");
+			if (productions.size() > 1) {
+				st.append("\n");
+			}
+			st.append(p);
 		}
 		return st.toString();
 	}
@@ -91,6 +94,15 @@ public class ProductionInfo {
 		for (Production p : sourceProduction.productions) {
 			if (p.outputTypesEquals(productionTypes)) {
 				addProduction(new Production(p)); 
+			}
+		}
+	}
+	
+	public void writeProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
+		clear();
+		for (Production p : sourceProduction.productions) {
+			if (p.outputTypesEquals(goodsType.getId())) {
+				addProduction(new Production(p));
 			}
 		}
 	}

@@ -57,6 +57,7 @@ public class PathFinderTest {
         assertEquals(7, path.turns.size);
 
         PathAssert.assertThat(path)
+        	.reachedDestination()
 	        .assertPathStep(0, 0, 24, 78)
 	        .assertPathStep(1, 0, 23, 78)
 	        .assertPathStep(2, 0, 23, 76)
@@ -86,6 +87,7 @@ public class PathFinderTest {
         assertEquals(3, path.turns.size);
 		
         PathAssert.assertThat(path)
+        	.reachedDestination()
 	        .assertPathStep(0, 0, 12, 79)
 	        .assertPathStep(1, 0, 12, 81)
 	        .assertPathStep(2, 0, 12, 83);
@@ -121,7 +123,8 @@ public class PathFinderTest {
         assertEquals(8, path.tiles.size);
         assertEquals(8, path.turns.size);
 
-        PathAssert.assertThat(path)        
+        PathAssert.assertThat(path)
+        	.reachedDestination()
 	        .assertPathStep(0, 0, 26, 77)
 	        .assertPathStep(1, 0, 27, 78)
 	        .assertPathStep(2, 0, 28, 78)
@@ -152,6 +155,7 @@ public class PathFinderTest {
         assertEquals(5, path.turns.size);
         
         PathAssert.assertThat(path)
+        	.reachedDestination()
 	        .assertPathStep(0, 0, 26, 77)
 	        .assertPathStep(1, 0, 27, 77)
 	        .assertPathStep(2, 0, 28, 76)
@@ -171,6 +175,7 @@ public class PathFinderTest {
 	    System.out.println("path = " + path);
 
         PathAssert.assertThat(path)
+        	.reachedDestination()
 	        .assertPathStep(0, 0, 12, 79)
 	        .assertPathStep(1, 0, 12, 81)
 	        .assertPathStep(2, 0, 12, 83)
@@ -199,7 +204,7 @@ public class PathFinderTest {
     }
 
 	@Test
-	public void shouldNotMoveViaAztec() throws Exception {
+	public void colonistsShouldNotMoveViaEnemy() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(24, 77));
@@ -225,7 +230,9 @@ public class PathFinderTest {
 				UnitAssert.assertThat(t.getUnits().first()).isOwnedBy(dutch);
 			}
 		}
-		PathAssert.assertThat(path).lastStepEquals(destTile.x, destTile.y);
+		PathAssert.assertThat(path)
+			.reachedDestination()
+			.lastStepEquals(destTile.x, destTile.y);
 	}
 	
 	@Test
@@ -243,6 +250,67 @@ public class PathFinderTest {
 		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon);
 
 		// then
-		PathAssert.assertThat(pathToEurope).isEmpty();
+		PathAssert.assertThat(pathToEurope)
+			.notReachedDestination()
+			.isEmpty();
+	}
+	
+	@Test
+	public void shouldNotFindPathBecauseBlockedByEnemy() throws Exception {
+		// given
+		Player dutch = game.players.getById("player:1");
+		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
+
+		Player aztec = game.players.getById("player:40");
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 79));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 78));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(23, 77));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(24, 76));
+		UnitFactory.create(UnitType.BRAVE, aztec, game.map.getSafeTile(24, 77));
+		
+		Tile nieuwAmsterdamTile = game.map.getSafeTile(24, 78);
+		
+		// when
+		path = sut.findToTile(game.map, colonist.getTile(), nieuwAmsterdamTile, colonist);
+		
+		// then
+		PathAssert.assertThat(path)
+			.notReachedDestination();
+	}
+	
+	@Test
+	public void shouldNotFindPathBetweenIslands() throws Exception {
+		// given
+		Player dutch = game.players.getById("player:1");
+		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
+
+		Tile tileOnIsland = game.map.getSafeTile(24, 89);
+		
+		// when
+		path = sut.findToTile(game.map, colonist.getTile(), tileOnIsland, colonist);
+
+		// then
+		PathAssert.assertThat(path)
+			.notReachedDestination();
+	}
+	
+	@Test
+	public void indianShouldFindPathFromSettlementToColony() throws Exception {
+		// given
+		Tile fromTile = game.map.getSafeTile(19, 78);
+		Tile toTile = game.map.getSafeTile(20, 79);
+		
+		Player inca = game.players.getById("player:154");
+		Unit brave = UnitFactory.create(UnitType.BRAVE, inca, fromTile);
+		
+		// when
+		path = sut.findToTile(game.map, fromTile, toTile, brave, false);
+
+		// then
+        PathAssert.assertThat(path)
+	    	.reachedDestination()
+	        .assertPathStep(0, 0, 19, 78)
+	        .assertPathStep(1, 0, 20, 78)
+	        .assertPathStep(2, 1, 20, 79);
 	}
 }

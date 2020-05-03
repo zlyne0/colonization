@@ -105,6 +105,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return "id = " + id + ", unitType = " + unitType + ", workLeft = " + workLeft;
     }
     
+	public String toStringTypeLocation() {
+		return "" + id + " " + unitType + " " + location;
+	}
+	
     public String resourceImageKey() {
     	if (!owner.nationType().isEuropean()) {
     		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
@@ -978,6 +982,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public void embarkUnitsFromLocation(UnitLocation anUnitLocation) {
 		if (hasNoSpace()) {
+			return;
+		}
+		if (!unitType.canCarryUnits()) {
 			return;
 		}
 		for (Unit unit : new ArrayList<Unit>(anUnitLocation.getUnits().entities())) {

@@ -1,6 +1,6 @@
 package promitech.colonization.screen.colony;
 
-import java.util.List;
+import java.util.Collection;
 
 import com.badlogic.gdx.graphics.g2d.TextureRegion;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
@@ -23,7 +23,7 @@ class ProductionQuantityDrawModel {
 			return;
 		}
 		
-		List<GoodsType> goodsTypes = Specification.instance.goodsTypes.sortedEntities();
+		Collection<GoodsType> goodsTypes = Specification.instance.goodsTypes.entities();
 		if (quantities == null || quantities.length != goodsTypes.size()) {
 			images = new TextureRegion[goodsTypes.size()];
 			quantities = new int[goodsTypes.size()];

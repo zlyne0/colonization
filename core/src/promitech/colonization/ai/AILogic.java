@@ -6,8 +6,10 @@ import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
@@ -15,7 +17,9 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.NewTurnService;
+import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.screen.map.hud.GUIGameController;
 
 public class AILogic {
 
@@ -32,13 +36,14 @@ public class AILogic {
 	private final FoundColonyMissionHandler foundColonyMissionHandler;
 	private final RellocationMissionHandler rellocationMissionHandler;
 	
-	private final NativeMissionPlaner nativeMissionPlaner = new NativeMissionPlaner();
+	private final NativeMissionPlaner nativeMissionPlaner;
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 	
-	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService) {
+	public AILogic(Game game, NewTurnService newTurnService, MoveService moveService, CombatService combatService, GUIGameController guiGameController) {
 		this.game = game;
 		this.newTurnService = newTurnService;
 		
+		nativeMissionPlaner = new NativeMissionPlaner(pathFinder);
         transportPathFinder = new TransportPathFinder(game.map);
 		
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
@@ -48,10 +53,19 @@ public class AILogic {
 		
         europeanMissionPlaner = new EuropeanMissionPlaner(foundColonyMissionHandler);
 
+        IndianBringGiftMissionHandler indianBringGiftMission = new IndianBringGiftMissionHandler(
+    		game, pathFinder, moveService, guiGameController
+		);
+        DemandTributeMissionHandler demandTributeMissionHandler = new DemandTributeMissionHandler(
+    		game, pathFinder, moveService, combatService, guiGameController
+		);
+        
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
+		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);
+		missionHandlerMapping.put(DemandTributeMission.class, demandTributeMissionHandler);
 	}
 	
 	public void aiNewTurn(Player player) {
@@ -115,7 +129,7 @@ public class AILogic {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
+    protected void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
         //System.out.println("execute mission: " + am);
         MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
 		missionHandler.handle(missionsContainer, am);

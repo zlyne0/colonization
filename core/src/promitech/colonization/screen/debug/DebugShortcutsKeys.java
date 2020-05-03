@@ -1,59 +1,73 @@
 package promitech.colonization.screen.debug;
 
+import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.Input;
+import com.badlogic.gdx.scenes.scene2d.Stage;
 import com.badlogic.gdx.utils.IntMap;
 
 import promitech.colonization.DI;
+import promitech.colonization.screen.colony.ColonyApplicationScreen;
 import promitech.colonization.screen.map.MapActor;
-import promitech.colonization.screen.map.hud.HudStage;
 
 public class DebugShortcutsKeys {
-    private MapActor mapActor;
-    private HudStage hudStage;
+    private Stage stage;
     private final IntMap<String> commandByKeycode = new IntMap<String>();
     
     private final ConsoleOutput routeOutput = new ConsoleOutput() {
         @Override
-        public void out(String line) {
+        public ConsoleOutput out(String line) {
             if (actualOutput != null) {
                 actualOutput.out(line);
             }
+            return this;
         }
 
         @Override
-        public void keepOpen() {
+        public ConsoleOutput keepOpen() {
             if (actualOutput != null) {
                 actualOutput.keepOpen();
             }
+            return this;
         }
     };
 
     private final ConsoleOutput stdout = new ConsoleOutput() {
         @Override
-        public void out(String line) {
+        public ConsoleOutput out(String line) {
             System.out.println("debugconsole: " + line);
+            return this;
         }
 
         @Override
-        public void keepOpen() {
+        public ConsoleOutput keepOpen() {
+        	return this;
         }
     };
     
     private ConsoleOutput actualOutput;
     private Commands commands;
+
+    public DebugShortcutsKeys(Stage stage, DI di, ColonyApplicationScreen colonyAppScreen) {
+    	this.stage = stage;
+    	
+        commands = CommandDefinitionKt.createCommands(di, routeOutput, null, colonyAppScreen);
+        
+        commandByKeycode.put(Input.Keys.NUM_1, "colony_plan MostValuable");
+        commandByKeycode.put(Input.Keys.NUM_2, "colony_plan Bell");
+        commandByKeycode.put(Input.Keys.NUM_3, "colony_plan Food");
+        commandByKeycode.put(Input.Keys.NUM_4, "colony_plan Building");
+    }
     
-    public DebugShortcutsKeys(HudStage hudStage, DI di, MapActor mapActor) {
-        this.hudStage = hudStage;
-        this.mapActor = mapActor;
+    public DebugShortcutsKeys(Stage stage, DI di, MapActor mapActor) {
+        this.stage = stage;
         
-        commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor);
+        commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
         
-        commandByKeycode.put(Input.Keys.NUM_1, "map_generate");
-        commandByKeycode.put(Input.Keys.NUM_2, "firstContactDialog");
+        commandByKeycode.put(Input.Keys.NUM_1, "indian_demand_tribute");
+        commandByKeycode.put(Input.Keys.NUM_2, "indian_bring_gift");
         commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
-//        commandByKeycode.put(Input.Keys.NUM_1, "ai move");
-//        commandByKeycode.put(Input.Keys.NUM_2, "ai settlements");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");
+        commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
     }
 
     public boolean canHandleKey(int keycode) {
@@ -76,10 +90,14 @@ public class DebugShortcutsKeys {
     }
 
     public void showCheatConsoleDialog() {
-        DebugConsole debugConsole = new DebugConsole(commands);
-        actualOutput = debugConsole;
-        debugConsole.setSelectedTile(mapActor.mapDrawModel().selectedTile);
-        hudStage.showDialog(debugConsole);
+    	Gdx.app.postRunnable(new Runnable() {
+			@Override
+			public void run() {
+				DebugConsole debugConsole = new DebugConsole(commands);
+				actualOutput = debugConsole;
+				debugConsole.show(stage);
+			}
+    	});
     }
     
 }

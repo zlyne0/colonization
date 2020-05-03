@@ -61,11 +61,9 @@ public class IndianSettlement extends Settlement {
     private java.util.Map<String,ContactLevel> contactLevelByPlayer = new HashMap<String, IndianSettlement.ContactLevel>();
     private java.util.Map<String, Tension> tensionByPlayer = new HashMap<String, Tension>();
     private final MapIdEntities<Unit> units = MapIdEntities.linkedMapIdEntities();
-    private final GoodsContainer goodsContainer;
     
     public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
     	super(idGenerator.nextId(IndianSettlement.class), settlementType);
-    	goodsContainer = new GoodsContainer();
     }
 
     /**
@@ -76,7 +74,6 @@ public class IndianSettlement extends Settlement {
      */
     private IndianSettlement(String id, SettlementType settlementType) {
 		super(id, settlementType);
-		goodsContainer = new GoodsContainer();
 	}
 
     public boolean isVisitedBy(Player player) {
@@ -171,7 +168,7 @@ public class IndianSettlement extends Settlement {
 			if (change != 0) {
 				Player enemy = alarmsEntry.key;
 				change = (int)enemy.getFeatures().applyModifier(Modifier.NATIVE_ALARM_MODIFIER, change);
-				oldTension.put(enemy, owner.getTension(enemy).getLevel());
+				oldTension.put(enemy, getTension(enemy).getLevel());
 				modifyTensionWithOwnerTension(enemy, change);
 			}
 		}
@@ -275,11 +272,6 @@ public class IndianSettlement extends Settlement {
 		return true;
 	}
 	
-	@Override
-	public GoodsContainer getGoodsContainer() {
-		return goodsContainer;
-	}
-    
 	public int plunderGold(Unit attacker) {
 		if (settlementType == null) {
 			return 0;
@@ -314,6 +306,45 @@ public class IndianSettlement extends Settlement {
 		modifyTensionWithOwnerTension(demander, Tension.TENSION_ADD_NORMAL);		
 		lastTribute = turn.getNumber();
 		return gold;
+	}
+	
+	public void spreadMilitaryGoods() {
+		Settlement randomSettlement = Randomizer.instance().randomMember(owner.settlements);
+		if (randomSettlement == null || randomSettlement.equalsId(this)) {
+			return;
+		}
+		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
+			if (goodsType.isMilitary()) {
+				int goodsInStock = goodsContainer.goodsAmount(goodsType);
+				if (goodsInStock > 50) {
+					goodsContainer.transferGoods(goodsType, goodsInStock / 2, randomSettlement.getGoodsContainer());
+				}
+			}
+		}
+	}
+	
+	public void equipMilitaryRoles() {
+		List<Unit> unitsToEquip = null;
+		
+		for (UnitRole milUnitRole : Specification.instance.nativeMilitaryRoles) {
+			if (hasGoodsToEquipRole(milUnitRole)) {
+				if (unitsToEquip == null) {
+					// little of optymalization
+					unitsToEquip = new ArrayList<Unit>(getUnits().size() + tile.getUnits().size());
+					unitsToEquip.addAll(getUnits().entities());
+					unitsToEquip.addAll(tile.getUnits().entities());
+				}
+				
+				for (Unit unit : unitsToEquip) {
+					if (unit.isRoleAvailable(milUnitRole) 
+							&& hasGoodsToEquipRole(milUnitRole) 
+							&& milUnitRole.hasMoreOffensivePower(unit.unitRole)
+					) {
+						changeUnitRole(unit, milUnitRole, owner.getFeatures());
+					}
+				}
+			}
+		}
 	}
 	
 	public Entry<String, Tension> mostHatedPlayer(MapIdEntities<Player> players) {
@@ -364,6 +395,8 @@ public class IndianSettlement extends Settlement {
 				System.out.println("IndianConversion[" + getId() + "].no " + convert);
 				return;
 			}
+			convertProgress = 0;
+			
 			System.out.println("IndianConversion[" + getId() + "].conversion " + convert + " to " + colony);
 			
 			convertToDest(colony.tile, missionary.getOwner());
@@ -405,10 +438,11 @@ public class IndianSettlement extends Settlement {
 		return wantedGoods;
 	}
 	
-	public int getGoodsCapacity() {
+	@Override
+    public int warehouseCapacity() {
 		return ProductionSummary.CARRIER_SLOT_MAX_QUANTITY * settlementType.getClaimableRadius();
 	}
-
+	
 	public static class Xml extends XmlNodeParser<IndianSettlement> {
 
         private static final String ATTR_LEVEL = "level";
@@ -435,8 +469,18 @@ public class IndianSettlement extends Settlement {
                     xmlGenerator.generateXmlFromCollection(source.units.entities());
                 }
             });
-			
-			addNode(GoodsContainer.class, "goodsContainer");
+            addNode(GoodsContainer.class, new ObjectFromNodeSetter<IndianSettlement, GoodsContainer>() {
+				@Override
+				public void set(IndianSettlement target, GoodsContainer entity) {
+					target.goodsContainer = entity;
+				}
+
+				@Override
+				public void generateXml(IndianSettlement source, ChildObject2XmlCustomeHandler<GoodsContainer> xmlGenerator)
+						throws IOException {
+					xmlGenerator.generateXml(source.goodsContainer);
+				}
+            });
 			addNode(IndianSettlementMissionary.class, "missionary");
 		}
 		
@@ -530,34 +574,14 @@ public class IndianSettlement extends Settlement {
 	}
 
 	@Override
-	public void addGoods(String goodsTypeId, int quantity) {
-	    goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
+	public void updateProductionToMaxPossible(Tile tile) {
 	}
-
-	@Override
-	public boolean isContainsTile(Tile improvingTile) {
-		throw new IllegalStateException("not implemented");
-	}
-
-	@Override
-	public void initMaxPossibleProductionOnTile(Tile tile) {
-		throw new IllegalStateException("not implemented");
-	}
-
+	
 	@Override
 	public ProductionSummary productionSummary() {
 		throw new IllegalStateException("not implemented");
 	}
 
-	public void initMaxProduction(Map map, ProductionSummary productionSummary) {
-		for (Tile claimableTile : map.neighbourTiles(tile, settlementType.getClaimableRadius())) {
-			// own tile or tile without owner
-			if (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(this)) {
-				claimableTile.getType().productionInfo.addUnattendedProductionToSummary(productionSummary);
-			}
-		}
-	}
-	
 	public UnitType getLearnableSkill() {
 		return learnableSkill;
 	}
@@ -623,5 +647,4 @@ public class IndianSettlement extends Settlement {
 		missionary.unit = null;
 		missionary = null;
 	}
-
 }

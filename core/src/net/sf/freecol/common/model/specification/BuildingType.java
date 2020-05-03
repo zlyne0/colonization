@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.specification;
 
 import java.io.IOException;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionInfo;
@@ -18,6 +19,7 @@ public class BuildingType extends BuildableType {
 	
     int level = 1;
     int workplaces = 3;
+    private int goodsOutputChainLevel = 0;
     private String upgradesFromId;
     private String upgradesToId;
     private BuildingType upgradesFrom;
@@ -89,6 +91,22 @@ public class BuildingType extends BuildableType {
     public boolean isAutomaticBuild() {
         return doesNotNeedGoodsToBuild() && isRoot();
     }
+
+    public void calculateGoodsOutputChainLevel() {
+    	goodsOutputChainLevel = 0;
+    	for (Production production : productionInfo.getAttendedProductions()) {
+    		for (Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+				int l = outputEntry.getKey().calculateMadeFromLevel();
+				if (l > goodsOutputChainLevel) {
+					goodsOutputChainLevel = l;
+				}
+			}
+		}
+    }
+    
+	public int getGoodsOutputChainLevel() {
+		return goodsOutputChainLevel;
+	}
     
     public static class Xml extends XmlNodeParser<BuildingType> {
         private static final String ATTR_PRIORITY = "priority";

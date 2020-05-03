@@ -49,8 +49,8 @@ public class ClosableDialog<T extends ClosableDialog<?>> extends ModalDialog<T> 
     }
     
     public void show(Stage stage) {
-		stage.addListener(onStageClickListener);
         super.show(stage);
+        stage.addListener(onStageClickListener);
     }
     
     private boolean canCloseBecauseClickOutsideDialog(float x, float y) {

@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.player.Player;
 
 public class TileAssert extends AbstractAssert<TileAssert, Tile> {
 
-	public TileAssert(Tile actual, Class<?> selfType) {
+	private TileAssert(Tile actual, Class<?> selfType) {
 		super(actual, selfType);
 	}
 

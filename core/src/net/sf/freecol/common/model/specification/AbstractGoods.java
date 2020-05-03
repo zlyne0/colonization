@@ -1,8 +1,9 @@
 package net.sf.freecol.common.model.specification;
 
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ProductionSummary;
 
-public class AbstractGoods {
+public class AbstractGoods implements Identifiable {
 	private int quantity;
 	private String typeId;
 
@@ -11,6 +12,11 @@ public class AbstractGoods {
 	    this.typeId = typeId;
 	}
 
+	@Override
+	public String getId() {
+		return typeId;
+	}
+	
 	public int takenCargoSlot() {
 		if (quantity <= 0) {
 			throw new IllegalStateException("should not move zero or less quantity");

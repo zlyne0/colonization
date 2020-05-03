@@ -11,7 +11,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
-public final class TileType extends ObjectWithFeatures {
+public final class TileType extends ObjectWithFeatures implements ObjectWithInsertOrder {
 
 	public static final String MODEL_TILE_LAKE = "model.tile.lake";
 	public static final String GREAT_RIVER = "model.tile.greatRiver";
@@ -32,6 +32,8 @@ public final class TileType extends ObjectWithFeatures {
 	private int basicWorkTurns;
 	public final ProductionInfo productionInfo = new ProductionInfo();
 	private GenerationValues generationValues;
+	
+    private int insertOrder = 0;
 	
 	public TileType(String id, boolean isForest) {
 		super(id);
@@ -104,6 +106,14 @@ public final class TileType extends ObjectWithFeatures {
 		TileTypeAllowedResource allowedResource = Randomizer.instance().randomOne(allowedResourceTypes.entities());
 		return allowedResource.resourceType;
 	}
+	
+    public int getInsertOrder() {
+        return insertOrder;
+    }
+
+    public void setInsertOrder(int insertOrder) {
+        this.insertOrder = insertOrder;
+    }
 	
 	public static class Xml extends XmlNodeParser<TileType> {
 		private static final String IS_FOREST = "is-forest";

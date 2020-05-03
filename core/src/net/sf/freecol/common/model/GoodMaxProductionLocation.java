@@ -1,22 +1,50 @@
 package net.sf.freecol.common.model;
 
-import java.util.Comparator;
-
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class GoodMaxProductionLocation {
-    public final static Comparator<GoodMaxProductionLocation> GOODS_INSERT_ORDER_ASC_COMPARATOR = new Comparator<GoodMaxProductionLocation>() {
-        @Override
-        public int compare(GoodMaxProductionLocation o1, GoodMaxProductionLocation o2) {
-            return ObjectWithId.INSERT_ORDER_ASC_COMPARATOR.compare(o1.getGoodsType(), o2.getGoodsType());
+	
+    public static GoodMaxProductionLocation updateFromColonyTile(
+    		GoodsType goodsType, 
+    		int goodsQuantity,
+    		GoodMaxProductionLocation maxProd,
+    		ColonyTile colonyTile
+	) {
+    	if (goodsQuantity > 0) {
+    		if (maxProd == null) {
+    			maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, colonyTile);
+    		} else {
+    			if (maxProd.hasLessProduction(goodsQuantity)) {
+    				maxProd.setProduction(goodsQuantity, colonyTile);
+    			}
+    		}
+    	}
+    	return maxProd;
+    }
+	
+    public static GoodMaxProductionLocation updateFromBuilding(
+		GoodsType goodsType, 
+		int goodsQuantity,
+		GoodMaxProductionLocation maxProd,
+		Building building
+	) {
+        if (goodsQuantity > 0) {
+            if (maxProd == null) {
+                maxProd = new GoodMaxProductionLocation(goodsType, goodsQuantity, building);
+            } else {
+                if (maxProd.hasLessProduction(goodsQuantity)) {
+                    maxProd.setProduction(goodsQuantity, building);
+                }
+            }
         }
-    };
+    	return maxProd;
+    }
     
     private final GoodsType goodsType;
     private int production;
     public Production tileTypeInitProduction;
-    ColonyTile colonyTile;
-    Building building;
+    private ColonyTile colonyTile;
+    private Building building;
 
     GoodMaxProductionLocation(GoodsType goodsType, int goodQuantity, Building building) {
         this.goodsType = goodsType;
@@ -79,5 +107,12 @@ public class GoodMaxProductionLocation {
 
 	public ColonyTile getColonyTile() {
 		return colonyTile;
+	}
+	
+	public ProductionLocation getProductionLocation() {
+	    if (colonyTile != null) {
+	        return colonyTile;
+	    }
+	    return building;
 	}
 }

@@ -18,7 +18,6 @@ import promitech.colonization.savegame.XmlTagMetaData;
 public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
 	
     protected final java.util.Map<String,T> entities;
-    protected List<T> sortedEntities; 
 
     public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities() {
     	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
@@ -28,7 +27,7 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
 		Map<String, TT> emptyMap = Collections.emptyMap();
 		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));
 	}
-    
+	
     public MapIdEntities() {
     	entities = new HashMap<String,T>();
     }
@@ -43,11 +42,7 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     }
     
     public void add(T entity) {
-        if (entity instanceof ObjectWithId) {
-            ((ObjectWithId)entity).setInsertOrder(entities.size());
-        }
         entities.put(entity.getId(), entity);
-        sortedEntities = null;
     }
 
     public java.util.Map<String,T> innerMap() {
@@ -56,7 +51,6 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     public void addAll(MapIdEntitiesReadOnly<T> parentEntities) {
         entities.putAll(parentEntities.innerMap());
-        sortedEntities = null;
     }
     
     public T getById(String id) {
@@ -76,15 +70,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     }
     
     public List<T> sortedEntities() {
-    	if (sortedEntities == null) {
-	    	sortedEntities = new ArrayList<T>(entities.values());
-	    	Collections.sort((List<ObjectWithId>)sortedEntities, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
-    	}
-    	return sortedEntities;
+        throw new IllegalStateException("invoke sortedEntities on not SortedMapIdEntities implementation");
     }
     
     public List<T> allToProcessedOrder(T startEntity) {
-    	List<T> sorted = sortedEntities();
+    	Collection<T> sorted = entities();
     	List<T> startPart = new ArrayList<T>(sorted.size());
     	List<T> endPart = new ArrayList<T>(sorted.size());
     	boolean found = false;
@@ -160,17 +150,14 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     public void removeId(String id) {
     	entities.remove(id);
-    	sortedEntities = null;
     }
     
     public void removeId(Identifiable element) {
     	entities.remove(element.getId());
-    	sortedEntities = null;
     }
     
     public void clear() {
         entities.clear();
-        sortedEntities = null;
     }
     
     public static class Xml extends XmlNodeParser {

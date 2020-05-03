@@ -24,7 +24,7 @@ public class GoodsType extends ObjectWithFeatures {
     private static final float DEFAULT_ZERO_PRODUCTION_FACTOR = 1.0f;
     
     public static boolean isFoodGoodsType(String goodsTypeId) {
-        return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId);
+        return GRAIN.equals(goodsTypeId) || FISH.equals(goodsTypeId) || FOOD.equals(goodsTypeId);
     }
     
     boolean farmed;
@@ -175,6 +175,10 @@ public class GoodsType extends ObjectWithFeatures {
         return madeFrom != null;
     }
     
+	public GoodsType getMadeFrom() {
+		return madeFrom;
+	}
+    
     public boolean isFood() {
         return food;
     }
@@ -226,6 +230,16 @@ public class GoodsType extends ObjectWithFeatures {
 
 	public GoodsType getMakes() {
 		return makes;
+	}
+	
+	public int calculateMadeFromLevel() {
+		int madeFromLevel = 0;
+		GoodsType gt = this;
+		while (gt.madeFrom != null) {
+			gt = gt.madeFrom;
+			madeFromLevel++;
+		}
+		return madeFromLevel;
 	}
 	
 	public static class Xml extends XmlNodeParser<GoodsType> {

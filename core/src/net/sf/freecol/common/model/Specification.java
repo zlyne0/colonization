@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -139,6 +140,7 @@ public class Specification {
     public final List<UnitType> landTypes = new ArrayList<UnitType>();
     public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();
     public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
+    public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
     
     private String difficultyLevel;
     
@@ -189,13 +191,28 @@ public class Specification {
 			updateGoodsTypeAsBuildingMaterials(ur.requiredGoods);
 		}
         for (BuildingType buildingType : buildingTypes.entities()) {
+        	buildingType.calculateGoodsOutputChainLevel();
 			updateGoodsTypeAsBuildingMaterials(buildingType.requiredGoods);
 		}
         createSupportUnitLists();
         updateModifiersFromDifficultyLevel();
+        determineNativeMilitaryRoles();
     }
 
-    private void updateModifiersFromDifficultyLevel() {
+    private void determineNativeMilitaryRoles() {
+		UnitType brave = Specification.instance.unitTypes.getById(UnitType.BRAVE);
+		NationType nativeType = nationTypes.getById("model.nationType.apache");
+
+		nativeMilitaryRoles.clear();
+		for (UnitRole unitRole : Specification.instance.militaryRoles) {
+			if (unitRole.isAvailableTo(nativeType, brave)) {
+				nativeMilitaryRoles.add(unitRole);
+			}
+		}
+		Collections.sort(nativeMilitaryRoles, UnitRole.OFFENCE_POWER_COMPARATOR);
+	}
+
+	private void updateModifiersFromDifficultyLevel() {
     	Modifier shipTradePenalty = modifiers.getById(Modifier.SHIP_TRADE_PENALTY);
     	shipTradePenalty.setValue(options.getIntValue(GameOptions.SHIP_TRADE_PENALTY, -30));
 	}

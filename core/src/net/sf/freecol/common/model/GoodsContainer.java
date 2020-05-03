@@ -7,6 +7,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -21,6 +22,16 @@ public class GoodsContainer {
     public GoodsContainer() {
     }
 
+    public void transferGoods(AbstractGoods goods, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goods);
+    	toContainer.increaseGoodsQuantity(goods);
+    }
+    
+    public void transferGoods(Goods goods, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goods.getType(), goods.getAmount());
+    	toContainer.increaseGoodsQuantity(goods.getType(), goods.getAmount());
+    }
+    
     public void transferGoods(GoodsType goodsType, int quantity, GoodsContainer toContainer) {
     	decreaseGoodsQuantity(goodsType, quantity);
     	toContainer.increaseGoodsQuantity(goodsType, quantity);
@@ -47,6 +58,10 @@ public class GoodsContainer {
     public boolean hasGoodsQuantity(String goodsId, int amount) {
     	return goods.getQuantity(goodsId) >= amount;
     }
+
+    public boolean hasGoodsQuantity(GoodsType type, int amount) {
+    	return goods.getQuantity(type.getId()) >= amount;
+    }
     
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
@@ -54,6 +69,14 @@ public class GoodsContainer {
 
     public boolean hasGoodsQuantity(MapIdEntities<RequiredGoods> requiredGoods) {
     	return goods.hasMoreOrEquals(requiredGoods);
+    }
+
+    public boolean hasPart(String goodsTypeId, int amount, float ratio) {
+        return goods.hasPart(goodsTypeId, amount, ratio);
+    }
+    
+    public boolean hasPart(ProductionSummary ps, float ratio) {
+    	return goods.hasPart(ps, ratio);
     }
     
 	public void increaseGoodsQuantity(ProductionSummary ps) {
@@ -105,6 +128,11 @@ public class GoodsContainer {
 		goods.decreaseGoods(required);
         updateTakenCargoSlots();
 	}
+	
+    public void decreaseGoodsToMinZero(ProductionSummary goods) {
+        goods.decreaseToMinZero(goods);
+        updateTakenCargoSlots();
+    }
 	
 	public void decreaseToZero(String goodsTypeId) {
 		goods.setZero(goodsTypeId);

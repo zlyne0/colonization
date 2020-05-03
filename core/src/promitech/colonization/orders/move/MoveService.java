@@ -249,7 +249,7 @@ public class MoveService {
         }
     }
     
-    private void showMoveIfRequired(MoveContext moveContext) {
+    public void showMoveIfRequired(MoveContext moveContext) {
         if (showMoveOnPlayerScreen(moveContext.sourceTile, moveContext.destTile)) {
             moveController.blockedShowMove(moveContext);
         }

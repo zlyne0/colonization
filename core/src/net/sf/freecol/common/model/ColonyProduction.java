@@ -2,7 +2,6 @@ package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
@@ -34,7 +33,7 @@ class ColonyProduction {
     	globalProductionConsumption.makeEmpty();
     	
     	ProductionSummary abstractWarehouse = colony.goodsContainer.cloneGoods();
-    	int warehouseCapacity = colony.getWarehouseCapacity();
+    	int warehouseCapacity = colony.warehouseCapacity();
 
     	
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
@@ -63,7 +62,7 @@ class ColonyProduction {
         	}
         }
 
-        for (Building building : colony.buildings.entities()) {
+        for (Building building : colony.buildings.sortedEntities()) {
         	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus());
             pc.baseProduction.applyModifiers(colony.colonyUpdatableFeatures);
             pc.realProduction.applyModifiers(colony.colonyUpdatableFeatures);
@@ -142,14 +141,13 @@ class ColonyProduction {
         List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
         
         ProductionSummary prodCons = globalProductionConsumption();
-        ProductionSummary warehouseGoods = colony.goodsContainer.cloneGoods();
         
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
                 maxProd = maxProductionFromTile(gt, worker);
             } else {
-                maxProd = maxProductionFromBuilding(gt, worker, prodCons, warehouseGoods);
+                maxProd = maxProductionFromBuilding(gt, worker, prodCons, colony.goodsContainer);
             }
             if (maxProd != null) {
                 goodsProduction.add(maxProd);
@@ -158,62 +156,69 @@ class ColonyProduction {
         return goodsProduction;
     }
 
+	void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialMaxProduction) {
+        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+            if (gt.isFarmed()) {
+            	GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, worker);
+                if (maxProd != null) {
+                    potentialMaxProduction.add(maxProd);
+                }
+            }
+        }
+	}
+	
 	private GoodMaxProductionLocation maxProductionFromBuilding(
 			final GoodsType goodsType, Unit worker, 
-			ProductionSummary prodCons, ProductionSummary warehouseGoods
+			ProductionSummary prodCons, GoodsContainer warehouseGoods
 	) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
-	    for (Building building : colony.buildings.entities()) {
+	    for (Building building : colony.buildings.sortedEntities()) {
 	        if (!building.canAddWorker(worker)) {
 	            continue;
 	        }
 	        
 	        List<Production> productions = building.buildingType.productionInfo.getAttendedProductions();
 	        for (Production production : productions) {
-	            
-	            HashSet<String> consumptionGoods = new HashSet<String>();
-	            for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
-	                consumptionGoods.add(inputEntry.getKey().getId());
-	            }
-	            
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                String goodsId = outputEntry.getKey().getId();
-	                if (!goodsType.equalsId(goodsId)) {
+	                if (!goodsType.equalsId(goodsId) || 0 == outputEntry.getValue().intValue()) {
 	                    continue;
 	                }
 	                
-	                Integer goodInitValue = outputEntry.getValue();
-	                if (0 == goodInitValue) {
-	                    continue;
-	                }
-	                int goodQuantity = 0;
-	                
-                    goodQuantity += (int)worker.unitType.applyModifier(goodsId, goodInitValue);
-                    goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
-                    goodQuantity += colony.productionBonus();
+	                int goodQuantity = colony.colonyWorkerProductionAmount(worker, outputEntry);
 	         
-                    for (String cg : consumptionGoods) {
-                        int available = prodCons.getQuantity(cg) + warehouseGoods.getQuantity(cg);
+	                for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+						String cg = inputEntry.getKey().getId();
+                        int available = prodCons.getQuantity(cg) + warehouseGoods.goodsAmount(cg);
     	                if (available < goodQuantity) {
     	                    goodQuantity = available;
     	                }
                     }
-                    if (goodQuantity > 0) {
-	                    if (maxProd == null) {
-	                        maxProd = new GoodMaxProductionLocation(goodsType, goodQuantity, building);
-	                    } else {
-	                        if (maxProd.hasLessProduction(goodQuantity)) {
-	                            maxProd.setProduction(goodQuantity, building);
-	                        }
-	                    }
-                    }
+	                maxProd = GoodMaxProductionLocation.updateFromBuilding(goodsType, goodQuantity, maxProd, building);
 	            }
 	        }
 	    }
         return maxProd;
     }
 
+    /**
+     * Determine max potential production of goodsTypeId, the best option.
+     * Do not take into account input requirments 
+     */
+    void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
+    	if (!worker.isPerson()) {
+    		throw new IllegalArgumentException("worker[" + worker + "] is not a person ");
+    	}
+    	
+    	for (Building building : colony.buildings.sortedEntities()) {
+	        if (!building.canAddWorker(worker)) {
+	            continue;
+	        }
+	        building.determineMaxPotentialProduction(colony, worker, prod, cons, goodsTypeId);
+    	}
+    }
+	
     protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
@@ -241,30 +246,18 @@ class ColonyProduction {
 	}
 
     private GoodMaxProductionLocation maxGoodProduction(
-    		final java.util.Map.Entry<GoodsType, Integer> outputEntry, 
-    		final Unit worker, final ColonyTile colonyTile, 
-    		GoodMaxProductionLocation maxProd
+		final java.util.Map.Entry<GoodsType, Integer> outputEntry, 
+		final Unit worker, final ColonyTile colonyTile, 
+		GoodMaxProductionLocation maxProd
     ) {
-    	Integer goodInitValue = outputEntry.getValue();
-    	GoodsType prodGoodsType = outputEntry.getKey();
+    	int goodsQuantity = colony.colonyWorkerProductionAmount(worker, colonyTile, outputEntry);
     	
-    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
-    	for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
-    		goodsQuantity = (int)ff.applyModifier(prodGoodsType.id, goodsQuantity);
-    	}
-    	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
-    	goodsQuantity += colony.productionBonus();
-    	
-    	if (goodsQuantity > 0) {
-    		if (maxProd == null) {
-    			maxProd = new GoodMaxProductionLocation(prodGoodsType, goodsQuantity, colonyTile);
-    		} else {
-    			if (maxProd.hasLessProduction(goodsQuantity)) {
-    				maxProd.setProduction(goodsQuantity, colonyTile);
-    			}
-    		}
-    	}
-    	return maxProd;
+    	return GoodMaxProductionLocation.updateFromColonyTile(
+			outputEntry.getKey(), 
+			goodsQuantity, 
+			maxProd, 
+			colonyTile
+		);
     }
     
 	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {

@@ -24,9 +24,20 @@ import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
 import net.sf.freecol.common.util.Consumer
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
+import net.sf.freecol.common.model.ai.ColonyPlan
+import net.sf.freecol.common.model.specification.GoodsType
+import promitech.colonization.screen.colony.ColonyApplicationScreen
+import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
+import net.sf.freecol.common.model.specification.AbstractGoods
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission
+import net.sf.freecol.common.model.player.Tension
 
 
-fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Commands {
+fun createCommands(
+	di : DI, console : ConsoleOutput,
+	mapActor: MapActor?,
+	colonyApplicationScreen: ColonyApplicationScreen?
+) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
 	
@@ -99,7 +110,9 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 			val contactPlayer = guiGameModel.game.players.getById("player:133")
 			
 			//gameController.showDialog(FirstContactDialog(guiGameModel.game.playingPlayer, contactPlayer))
-			gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+			if (mapActor != null) {
+				gameController.showDialog(DiplomacyContactDialog(mapActor, guiGameModel.game, player, contactPlayer))
+			}
 		}
     	
 		command("add_liberty_for_founding_father") {
@@ -137,12 +150,43 @@ fun createCommands(di : DI, console : ConsoleOutput, mapActor: MapActor) : Comma
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
 		
+		commandArg("colony_plan") { args ->
+			if (colonyApplicationScreen == null) {
+				console.keepOpen()
+					.out("no colony selected")
+			} else {
+				var colony = colonyApplicationScreen.getColony()
+				
+				ColonyPlan(colonyApplicationScreen.getColony())
+					.withConsumeWarehouseResources(true)
+					.execute2(ColonyPlan.Plan.of(args[1]))
+				
+				colonyApplicationScreen.initColony(colony)
+			}
+		}.addParams {
+			listOf<String>(
+				ColonyPlan.Plan.MostValuable.name.toLowerCase(),
+				ColonyPlan.Plan.Bell.name.toLowerCase(),
+				ColonyPlan.Plan.Food.name.toLowerCase(),
+				ColonyPlan.Plan.Building.name.toLowerCase(),
+				ColonyPlan.Plan.Muskets.name.toLowerCase()
+			)
+		}
+		
+		commandArg("indian_bring_gift") {
+			indianBringGiftExample(di, guiGameModel, mapActor)
+		}
+		
+		commandArg("indian_demand_tribute") {
+			indianDemandTributeExample(di, guiGameModel, mapActor)
+		}
+		
     	command("nothing") {
 		}
 	}
 }
 
-fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor) {
+fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor?) {
     System.out.println("theBestPlaceToBuildColony")
     
     var buildColony = BuildColony(guiGameModel.game.map);
@@ -154,10 +198,10 @@ fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor) 
     
     val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
     buildColony.toStringValues(tileStrings)
-    mapActor.showTileDebugStrings(tileStrings)
+    mapActor?.showTileDebugStrings(tileStrings)
 }
 
-fun theBestMove(di : DI, mapActor : MapActor) {
+fun theBestMove(di : DI, mapActor : MapActor?) {
 	System.out.println("theBestMove")
 	
     var guiGameModel = di.guiGameModel
@@ -192,23 +236,24 @@ fun theBestMove(di : DI, mapActor : MapActor) {
     
 	val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
     navyExplorer.toStringsBorderValues(tileStrings);
-    mapActor.showTileDebugStrings(tileStrings);
+    mapActor?.showTileDebugStrings(tileStrings);
 }
 
-	fun aiMove(di : DI, mapActor : MapActor) {
+	fun aiMove(di : DI, mapActor : MapActor?) {
 		if (di.guiGameModel.isActiveUnitNotSet()) {
 			System.out.println("no active unit");
 			return
 		}
 		
-		ThreadsResources.instance.executeMovement(object : Runnable {
-			override fun run() {
-				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor).run()
-			}
-		})
+//		ThreadsResources.instance.executeMovement(object : Runnable {
+//			override fun run() {
+//				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService).run()
+//			}
+//		})
 	}
 	
 	fun aiAttack(di : DI) {
+		var pathFinder = PathFinder()
 		// private attack
 //		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
 //		val mission = SeekAndDestroyMission(srcTile.units.first())
@@ -221,6 +266,69 @@ fun theBestMove(di : DI, mapActor : MapActor) {
 		var srcTile = di.guiGameModel.game.map.getSafeTile(27, 55)
 		val mission = SeekAndDestroyMission(srcTile.units.first())
 				
-		val missionHandler = SeekAndDestroyMissionHandler(di.guiGameModel.game, di.moveService, di.combatService)
+		val missionHandler = SeekAndDestroyMissionHandler(di.guiGameModel.game, di.moveService, di.combatService, pathFinder)
 		missionHandler.handle(null, mission) 
+	}
+
+	fun indianBringGiftExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val tile = guiGameModel.game.map.getSafeTile(19, 78)
+		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
+		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
+		
+		val mission : IndianBringGiftMission
+		
+		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		if (!indianAiContainer.hasMissionType(IndianBringGiftMission::class.java)) {
+			val transportUnit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			mission = IndianBringGiftMission(
+				tile.getSettlement().asIndianSettlement(), colonyTile.getSettlement().asColony(),
+				transportUnit, AbstractGoods("model.goods.tobacco", 77)
+			)
+			indianAiContainer.addMission(mission)
+		} else {
+			mission = indianAiContainer.firstMissionByType(IndianBringGiftMission::class.java)
+		}
+		mission.getTransportUnit().resetMovesLeftOnNewTurn()
+		
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+					.runMission(tile.getSettlement().getOwner(), mission)
+			}
+		})
+	}
+
+	fun indianDemandTributeExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val tile = guiGameModel.game.map.getSafeTile(19, 78)
+		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
+		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
+		
+		val mission : DemandTributeMission
+		
+		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		if (!indianAiContainer.hasMissionType(DemandTributeMission::class.java)) {
+			val unit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			
+			tile.getSettlement().asIndianSettlement().setTension(
+				colonyTile.getSettlement().getOwner(),
+				Tension.Level.DISPLEASED.getLimit()
+			)
+			
+			mission = DemandTributeMission(
+				tile.getSettlement().asIndianSettlement(),
+				unit,
+				colonyTile.getSettlement().asColony()
+			)
+			indianAiContainer.addMission(mission)
+		} else {
+			mission = indianAiContainer.firstMissionByType(DemandTributeMission::class.java)
+		}
+		mission.getUnitToDemandTribute().resetMovesLeftOnNewTurn()
+		
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+					.runMission(tile.getSettlement().getOwner(), mission)
+			}
+		})
 	}

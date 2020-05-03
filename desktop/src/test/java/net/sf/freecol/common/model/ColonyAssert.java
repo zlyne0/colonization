@@ -39,6 +39,89 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
 		return this;
 	}
+
+	public ColonyAssert hasSize(int size) {
+	    if (actual.getColonyUnitsCount() != size) {
+	        failWithMessage("expected colony <%s> has size <%d> but has <%d>", actual.getId(), size, actual.settlementWorkers().size());
+	    }
+	    return this;
+	}
+
+	public ColonyAssert hasWorkerInLocation(String unitLocationId) {
+		return hasWorkerInLocation(unitLocationId, 1);
+	}
 	
-    
+	public ColonyAssert hasWorkerInLocation(String unitLocationId, int workersAmount) {
+		UnitLocation unitLocation = actual.findUnitLocationById(unitLocationId);
+		if (unitLocation == null) {
+			failWithMessage(
+				"exptected <%s> workers in unitLocationId <%s>, but no unit location",
+				workersAmount,
+				unitLocationId
+			);
+		} else {
+			if (unitLocation.getUnits().size() < workersAmount) {
+				failWithMessage("exptected <%s> workers in unitLocationId <%s>, but it has <%s> workers",
+					workersAmount,
+					unitLocationId,
+					unitLocation.getUnits().size()
+				);
+			}
+		}
+		return this;
+	}
+
+	public ColonyAssert hasWorkerInLocation(String unitLocationId, String unitTypeId) {
+		hasWorkerInLocation(unitLocationId, 1);
+		UnitLocationAssert.assertThat(actual.findUnitLocationById(unitLocationId))
+		    .hasUnitType(unitTypeId);
+		return this;
+	}
+	
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId) {
+		return hasWorkerInBuildingType(buildingTypeId, 1);
+	}
+	
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId, int workersAmount) {
+		Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
+		if (building == null) {
+			failWithMessage(
+				"exptected <%s> workers in building type <%s> location, but building type not found",
+				workersAmount,
+				buildingTypeId
+			);
+		} else {
+			if (building.getUnits().size() < workersAmount) {
+				failWithMessage("exptected <%s> workers in building type <%s> location, but it has <%s> workers",
+					workersAmount,
+					buildingTypeId,
+					building.getUnits().size()
+				);
+			}
+		}
+		return this;
+	}
+
+	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId, String unitTypeId) {
+        Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
+        if (building == null) {
+            failWithMessage(
+                "exptected <%s> worker in building type <%s> location, but building type not found",
+                unitTypeId,
+                buildingTypeId
+            );
+        } else {
+            UnitLocationAssert.assertThat(building)
+                .hasUnitType(unitTypeId);
+        }
+	    return this;
+	}
+	
+    public ColonyAssert produce(String goodsTypeId, int expectedAmount) {
+        int amount = actual.productionSummary().getQuantity(goodsTypeId);
+        if (amount != expectedAmount) {
+            failWithMessage("expected production <%d> of <%s> goods type but has <%d>", expectedAmount, goodsTypeId, amount);
+        }
+        return this;
+    }
 }

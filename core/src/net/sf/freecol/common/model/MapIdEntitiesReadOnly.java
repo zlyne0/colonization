@@ -1,13 +1,10 @@
 package net.sf.freecol.common.model;
 
 import java.util.Collection;
-import java.util.List;
 
 public interface MapIdEntitiesReadOnly<T extends Identifiable> {
 
     T getById(String id);
-
-    List<T> sortedEntities();
     
     T first();
     

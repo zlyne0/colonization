@@ -42,7 +42,7 @@ public class DI {
 		
 		combatService.inject(moveService, guiGameModel);
 		
-		guiGameController.inject(guiGameModel, moveController, newTurnService, moveService, pathFinder);
+		guiGameController.inject(guiGameModel, moveController, newTurnService, moveService, combatService, pathFinder);
 		firstContactController.inject(guiGameController, moveInThreadService, guiGameModel);
 	}
 	

@@ -14,14 +14,16 @@ public class Path {
 	public final Tile endTile;
 	public final Unit unit;
 	boolean toEurope = false;
+	private final boolean reachDestination;
 	
-	public Path(Unit unit, Tile startTile, Tile endTile, int length) {
+	public Path(Unit unit, Tile startTile, Tile endTile, int length, boolean reachDestination) {
 	    this.unit = unit;
 		this.tiles = new Array<Tile>(length);
 		this.turns = new IntArray(length);
 		
 		this.startTile = startTile;
 		this.endTile = endTile;
+		this.reachDestination = reachDestination;
 	}
 	
 	public void add(Tile tile, int turn) {
@@ -31,6 +33,9 @@ public class Path {
 	
 	public String toString() {
 		String st = "";
+		if (tiles.size == 0) {
+			st = "empty path";
+		}
 		for (int i=0; i<tiles.size; i++) {
 		    Tile tile = tiles.get(i);
 		    String tileStr = tile.getId() + ", x: " + tile.x + ", y: " + tile.y + ", " + tile.getType();
@@ -67,6 +72,14 @@ public class Path {
 	        }
 	    }
 	    return false;
+	}
+	
+	public boolean isReachedDestination() {
+		return reachDestination;
+	}
+
+	public int totalTurns() {
+		return turns.get(turns.size-1);
 	}
 	
 	public boolean isPathToEurope() {

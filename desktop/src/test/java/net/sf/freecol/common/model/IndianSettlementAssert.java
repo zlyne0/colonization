@@ -37,4 +37,51 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
     		.containsExactly((Object[])goodsId);
     	return this;
     }
+
+	public IndianSettlementAssert hasUnitsWithRole(String unitRoleId, int amount) {
+		int count = 0;
+		for (Unit unit : actual.getUnits().entities()) {
+			if (unit.unitRole.equalsId(unitRoleId)) {
+				count++;
+			}
+		}
+		for (Unit unit : actual.tile.getUnits().entities()) {
+			if (unit.unitRole.equalsId(unitRoleId)) {
+				count++;
+			}
+		}
+		if (count != amount) {
+			failWithMessage(
+				"expected indian settlement <%s> has units with role <%s> in amount <%d> but in has in amount <%d>", 
+				actual.getId(),
+				unitRoleId,
+				amount,
+				count
+			);
+		}
+		return this;
+	}
+
+	public IndianSettlementAssert hasOffensiveRolesNumber(int amount) {
+		int count = 0;
+    	for (Unit unit : actual.getUnits().entities()) {
+			if (unit.getUnitRole().isOffensive()) {
+				count++;
+			}
+		}
+    	for (Unit unit : actual.tile.getUnits().entities()) {
+			if (unit.getUnitRole().isOffensive()) {
+				count++;
+			}
+		}
+		if (count != amount) {
+			failWithMessage(
+				"expected indian settlement <%s> has units with offensive role in amount <%d> but in has in amount <%d>", 
+				actual.getId(),
+				amount,
+				count
+			);
+		}
+		return this;
+	}
 }

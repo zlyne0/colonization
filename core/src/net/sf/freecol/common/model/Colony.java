@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap;
@@ -36,6 +37,13 @@ import promitech.colonization.ui.resources.StringTemplate;
 public class Colony extends Settlement {
 	public static final int NEVER_COMPLETE_BUILD = -1;
     public static final int LIBERTY_PER_REBEL = 200;
+    
+	private static final Comparator<Building> BUILDING_GOODS_OUTPUT_CHAIN_LEVEL = new Comparator<Building>() {
+		@Override
+		public int compare(Building o1, Building o2) {
+			return o1.buildingType.getGoodsOutputChainLevel() - o2.buildingType.getGoodsOutputChainLevel();
+		}
+	};
 
     /** Reasons for not building a buildable. */
     public static enum NoBuildReason {
@@ -50,8 +58,7 @@ public class Colony extends Settlement {
         LIMIT_EXCEEDED
     }
     
-    GoodsContainer goodsContainer;
-    public final MapIdEntities<Building> buildings = new MapIdEntities<Building>();
+    public final MapIdEntities<Building> buildings = new SortedMapIdEntities<Building>(BUILDING_GOODS_OUTPUT_CHAIN_LEVEL);
     public final MapIdEntities<ColonyTile> colonyTiles = new MapIdEntities<ColonyTile>();
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>(); 
 	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
@@ -82,7 +89,6 @@ public class Colony extends Settlement {
 
     public Colony(IdGenerator idGenerator, SettlementType settlementType) {
 		this(idGenerator.nextId(Colony.class), settlementType);
-    	goodsContainer = new GoodsContainer();
 	}
 
 	public String toString() {
@@ -243,18 +249,32 @@ public class Colony extends Settlement {
     }
 
     public void addWorkerToBuilding(Building building, Unit unit) {
-    	unit.setState(UnitState.IN_COLONY);
-    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-    	changeUnitRole(unit, defaultUnitRole);
-    	unit.changeUnitLocation(building);
+        addWorkerToColony(unit, building);
     }
     
-    public void addWorkerToTerrain(ColonyTile destColonyTile, Unit unit) {
-    	unit.setState(UnitState.IN_COLONY);
-    	UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
-    	changeUnitRole(unit, defaultUnitRole);
-    	unit.changeUnitLocation(destColonyTile);
-        destColonyTile.tile.changeOwner(owner, this);
+    public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit) {
+    	addWorkerToColony(unit, aColonyTile);
+        aColonyTile.tile.changeOwner(owner, this);
+        aColonyTile.initMaxPossibleProductionOnTile();
+    }
+
+    public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
+        addWorkerToColony(unit, aColonyTile);
+        aColonyTile.tile.changeOwner(owner, this);
+        aColonyTile.productionInfo.writeProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
+    }
+    
+    private void addWorkerToColony(Unit worker, UnitLocation unitLocation) {
+        worker.setState(UnitState.IN_COLONY);
+        UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        changeUnitRole(worker, defaultUnitRole);
+        worker.changeUnitLocation(unitLocation);
+        
+        updateModelOnWorkerAllocationOrGoodsTransfer();
+    }
+
+    public void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
+    	colonyProduction.determineMaxPotentialProduction(goodsTypeId, worker, prod, cons);
     }
     
     public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
@@ -272,30 +292,49 @@ public class Colony extends Settlement {
         if (!unit.isPerson()) {
             return Collections.emptyList();
         }
-        List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction = colonyProduction.determinePotentialMaxGoodsProduction(unit);
-        return determinePotentialMaxGoodsProduction;
+        return colonyProduction.determinePotentialMaxGoodsProduction(unit);
     }
 
+    public void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialProduction) {
+    	colonyProduction.determinePotentialColonyTilesProduction(worker, potentialProduction); 
+    }
+    
+    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker) {
+    	return colonyProduction.maxProductionFromTile(gt, worker);
+    }
+    
+    public int colonyWorkerProductionAmount(
+		Unit worker, 
+		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
+    {
+    	String outputGoodsId = goodsTypeProdAmount.getKey().getId();
+    	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
+    	
+    	int goodQuantity = 0;
+        goodQuantity += (int)worker.unitType.applyModifier(outputGoodsId, outputGoodsInitValue);
+        goodQuantity = (int)colonyUpdatableFeatures.applyModifier(outputGoodsId, goodQuantity);
+        goodQuantity += productionBonus();
+        return goodQuantity;
+    }
+    
+    public int colonyWorkerProductionAmount(
+		Unit worker, 
+		ColonyTile colonyTile, 
+		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
+    {
+    	Integer goodInitValue = goodsTypeProdAmount.getValue();
+    	GoodsType prodGoodsType = goodsTypeProdAmount.getKey();
+    	
+    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
+    	goodsQuantity = (int)colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
+    	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
+    	goodsQuantity += productionBonus();
+    	return goodsQuantity;
+    }
+    
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
-    	if (!newUnitRole.isAvailableTo(unit.unitType, colonyUpdatableFeatures)) {
-    		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
-    	}
-
-    	ProductionSummary required = new ProductionSummary();
-		int maxAvailableRoleCount = UnitRoleLogic.maximumAvailableRequiredGoods(unit, newUnitRole, goodsContainer, required);
-    	unit.changeRole(newUnitRole, maxAvailableRoleCount);
-    	goodsContainer.decreaseGoodsQuantity(required);
+    	super.changeUnitRole(unit, newUnitRole, colonyUpdatableFeatures);
     }
-    
-    @Override
-    public GoodsContainer getGoodsContainer() {
-        return goodsContainer;
-    }
-    
-	@Override
-	public void addGoods(String goodsTypeId, int quantity) {
-		goodsContainer.increaseGoodsQuantity(goodsTypeId, quantity);
-	}
     
     public void increaseWorkersExperience() {
         for (ColonyTile colonyTile : colonyTiles.entities()) {
@@ -337,29 +376,6 @@ public class Colony extends Settlement {
                 	owner.eventsNotifications.addMessageNotification(st);
                 	
                 }
-            }
-        }
-    }
-
-    public void removeExcessedStorableGoods() {
-        int warehouseCapacity = getWarehouseCapacity();
-        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
-            if (!gt.isStorable()) {
-                continue;
-            }
-            if (gt.isFood()) {
-                continue;
-            }
-            int goodsAmount = goodsContainer.goodsAmount(gt);
-            if (goodsAmount > warehouseCapacity) {
-                int wasteAmount = goodsAmount - warehouseCapacity;
-                goodsContainer.decreaseGoodsQuantity(gt, wasteAmount);
-                
-                StringTemplate st = StringTemplate.template("model.building.warehouseWaste")
-                	.add("%colony%", getName())
-                	.addName("%goods%", gt)
-                	.addAmount("%waste%", wasteAmount);
-                owner.eventsNotifications.addMessageNotification(st);
             }
         }
     }
@@ -412,17 +428,19 @@ public class Colony extends Settlement {
                 if (GoodsType.isFoodGoodsType(entry.key)) {
                     continue;
                 }
+                GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
+                if (!goodsType.isStorable()) {
+                	continue;
+                }
                 int quantityToConsume = -entry.value;
                 int afterConsume = goodsContainer.goodsAmount(entry.key) - quantityToConsume;
                 if (afterConsume == 0) {
-                	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
 					StringTemplate st = StringTemplate.template("model.building.notEnoughInput")
                 		.add("%colony%", getName())
                 		.addName("%inputGoods%", goodsType);
 					owner.eventsNotifications.addMessageNotification(st);
                 } else {
                     if (afterConsume < quantityToConsume) {
-                    	GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
                     	StringTemplate st = StringTemplate.template("model.building.warehouseEmpty")
                     		.add("%colony%", getName())
                     		.addName("%goods%", goodsType)
@@ -432,6 +450,13 @@ public class Colony extends Settlement {
                 }
             }
         }
+    }
+    
+    public void resetLiberty() {
+    	this.liberty = 0;
+    	this.sonsOfLiberty = 0;
+    	this.tories = 0;
+    	this.productionBonus = 0;
     }
     
 	public void calculateSonsOfLiberty() {
@@ -476,6 +501,7 @@ public class Colony extends Settlement {
     
 	public void increaseWarehouseByProduction() {
 		goodsContainer.increaseGoodsQuantity(productionSummary());
+		colonyProduction.setAsNeedUpdate();
 	}
     
 	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
@@ -499,38 +525,26 @@ public class Colony extends Settlement {
 		}
 	}
 	
-    public void initMaxPossibleProductionOnTile(Tile tile) {
-    	for (ColonyTile colonyTile : colonyTiles.entities()) {
-    		if (colonyTile.equalsId(tile)) {
-    			initMaxPossibleProductionOnTile(colonyTile);
-    			updateModelOnWorkerAllocationOrGoodsTransfer();
-    		}
-    	}
-    }
-    
-	public void initMaxPossibleProductionOnTile(ColonyTile aColonyTile) {
-		if (aColonyTile.notEqualsId(tile) && aColonyTile.hasNotWorker()) {
-			return;
+	@Override
+	public void updateProductionToMaxPossible(Tile tile) {
+		for (ColonyTile colonyTile : colonyTiles.entities()) {
+			if (colonyTile.equalsId(tile)) {
+				if (Colony.this.tile.equalsCoordinates(tile)) {
+	    		    colonyTile.initMaxPossibleProductionOnTile();
+	    			updateModelOnWorkerAllocationOrGoodsTransfer();
+				} else {
+					if (colonyTile.hasWorker()) {
+		    		    colonyTile.initMaxPossibleProductionOnTile();
+		    			updateModelOnWorkerAllocationOrGoodsTransfer();
+					}
+				}
+				return;
+			}
 		}
-		System.out.println("maxPossibleProductionOnTile: forTile: " + aColonyTile.tile.getType().productionInfo);
-		ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile(aColonyTile.getWorker(), aColonyTile.tile);
-
-		System.out.println("maxPossibleProductionOnTile: maxProductions: " + maxPossibleProductionOnTile);
-		
-		aColonyTile.productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, aColonyTile.tile.getType().productionInfo);
-		
-		System.out.println("maxPossibleProductionOnTile: maxProductionType: " + aColonyTile.productionInfo);
 	}
 	
-	private ProductionInfo maxPossibleProductionOnTile(Unit aUnit, Tile aTile) {
-		ProductionInfo productionInfo = aTile.getType().productionInfo;
-		ProductionInfo productionSummaryForWorker = productionInfo.productionSummaryForWorker(aUnit);
-		productionSummaryForWorker.applyModifiers(owner.foundingFathers.entities());
-		productionSummaryForWorker.applyTileImprovementsModifiers(aTile);
-		return productionSummaryForWorker;
-	}
-	
-    public int getWarehouseCapacity() {
+	@Override
+    public int warehouseCapacity() {
     	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
     }
 
@@ -686,7 +700,7 @@ public class Colony extends Settlement {
     	
 		ColonyTile centerTile = new ColonyTile(tile);
 		colonyTiles.add(centerTile);
-		initMaxPossibleProductionOnTile(centerTile);
+		centerTile.initMaxPossibleProductionOnTile();
 		
     	for (Direction d : Direction.allDirections) {
     		Tile neighbourTile = map.getTile(tile, d);
@@ -737,7 +751,7 @@ public class Colony extends Settlement {
 	}
 	
 	public void ifPossibleAddFreeBuildings() {
-		for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+		for (BuildingType buildingType : Specification.instance.buildingTypes.entities()) {
 			if (isAutoBuildableInColony(buildingType)) {
 				ifPossibleAddFreeBuilding(buildingType);
 			}
@@ -763,12 +777,7 @@ public class Colony extends Settlement {
 	}
 	
     public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
-    	Collection<BuildingType> buildingsTypes = Specification.instance.buildingTypes.sortedEntities();
-    	for (BuildingType bt : buildingsTypes) {
-    		if (bt.equalsId("model.building.docks")) {
-    			System.out.println("" + bt);
-    		}
-
+    	for (BuildingType bt : Specification.instance.buildingTypes.entities()) {
     	    NoBuildReason noBuildReason = getNoBuildReason(bt);
     	    if (noBuildReason != NoBuildReason.NONE) {
     	        System.out.println("" + bt + ": " + noBuildReason);
@@ -789,8 +798,7 @@ public class Colony extends Settlement {
     }
     
     public void buildableUnits(List<ColonyBuildingQueueItem> items) {
-    	Collection<UnitType> unitTypes = Specification.instance.unitTypes.sortedEntities();
-    	for (UnitType unitType : unitTypes) {
+    	for (UnitType unitType : Specification.instance.unitTypes.entities()) {
     	    NoBuildReason noBuildReason = getNoBuildReason(unitType);
             if (noBuildReason != NoBuildReason.NONE) {
                 System.out.println("can not build " + unitType + " because of " + noBuildReason);
@@ -833,12 +841,10 @@ public class Colony extends Settlement {
     }
     
 	public int getPriceForBuilding(BuildableType buildableType) {
-		List<RequiredGoods> requiredGoods = buildableType.requiredGoods();
-		
 		Market market = owner.market();
 		
 		int sum = 0;
-		for (RequiredGoods rg : requiredGoods) {
+		for (RequiredGoods rg : buildableType.requiredGoods()) {
 			if (market.hasArrears(rg.goodsType)) {
 				return Integer.MAX_VALUE;
 			}
@@ -891,7 +897,7 @@ public class Colony extends Settlement {
 		if (buildableType == null) {
 			return;
 		}
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(buildableType.requiredGoods().size());
+		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
 		int turnsToGatherResourcesForBuild = getTurnsToComplete(buildableType, requiredTurnsForGoods);
 		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
 			neverFinishBuildingNotification(buildableType, requiredTurnsForGoods);
@@ -1000,6 +1006,13 @@ public class Colony extends Settlement {
 		return building;
 	}
 	
+	public void removeBuilding(final String buildingTypeId) {
+		Building building = findBuildingByTypeOrNull(buildingTypeId);
+		if (building != null) {
+			buildings.removeId(building);
+		}
+	}
+	
 	protected Building findBuildingByBuildingTypeHierarchy(final BuildingType buildingType) {
 		Building foundBuilding = null;
 		BuildingType bt = buildingType;
@@ -1014,6 +1027,13 @@ public class Colony extends Settlement {
 		return foundBuilding;
 	}
 	
+	public UnitLocation findUnitLocationById(String unitLocationId) {
+		ColonyTile colonyTile = colonyTiles.getByIdOrNull(unitLocationId);
+		if (colonyTile != null) {
+			return colonyTile;
+		}
+		return buildings.getByIdOrNull(unitLocationId);
+	}
 	
 	public Building findBuildingByType(String buildingTypeId) {
 		Building building = findBuildingByTypeOrNull(buildingTypeId);
@@ -1128,7 +1148,7 @@ public class Colony extends Settlement {
 	
 	public int getTurnsToComplete(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGood) {
 		ProductionSummary production = productionSummary();
-		GoodsContainer warehouse = getGoodsContainer();
+		GoodsContainer warehouse = goodsContainer;
 		
 		int requiredTurn = -1;
 		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
@@ -1151,7 +1171,7 @@ public class Colony extends Settlement {
 			}
 			requiredTurnsForGood.put(requiredGood.getId(), goodRequiredTurn);
 			
-			if (goodRequiredTurn > requiredTurn) {
+			if (goodRequiredTurn > requiredTurn || goodRequiredTurn == NEVER_COMPLETE_BUILD) {
 				requiredTurn = goodRequiredTurn;
 			}
 		}
@@ -1159,7 +1179,7 @@ public class Colony extends Settlement {
 	}
 	
 	protected void initDefaultBuildings() {
-    	for (BuildingType buildingType : Specification.instance.buildingTypes.sortedEntities()) {
+    	for (BuildingType buildingType : Specification.instance.buildingTypes.entities()) {
     		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator, buildingType));
     			colonyProduction.setAsNeedUpdate();
@@ -1190,8 +1210,7 @@ public class Colony extends Settlement {
             }
         }
     	if (maxProd != null) {
-    		addWorkerToTerrain(maxProd.colonyTile, builder);
-    		initMaxPossibleProductionOnTile(maxProd.colonyTile);
+    		addWorkerToTerrain(maxProd.getColonyTile(), builder);
     	} else {
     		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
     		addWorkerToBuilding(townHall, builder);
@@ -1199,11 +1218,6 @@ public class Colony extends Settlement {
     	updateColonyPopulation();
     }
     
-	@Override
-	public boolean isContainsTile(Tile tile) {
-	    return colonyTiles.containsId(tile);
-	}
-	
 	public boolean isTileLockedBecauseNoDock(Tile tile) {
 		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
 			return true;
@@ -1369,7 +1383,18 @@ public class Colony extends Settlement {
 				}
         	});
         	
-            addNode(GoodsContainer.class, "goodsContainer");
+            addNode(GoodsContainer.class, new ObjectFromNodeSetter<Colony, GoodsContainer>() {
+				@Override
+				public void set(Colony target, GoodsContainer entity) {
+					target.goodsContainer = entity;
+				}
+
+				@Override
+				public void generateXml(Colony source, ChildObject2XmlCustomeHandler<GoodsContainer> xmlGenerator)
+						throws IOException {
+					xmlGenerator.generateXml(source.goodsContainer);
+				}
+            });
             addNodeForMapIdEntities("buildings", Building.class);
             addNodeForMapIdEntities("colonyTiles", ColonyTile.class);
         }

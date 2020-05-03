@@ -41,6 +41,7 @@ public class ColonyFactory {
     	colony.name = name;
     	
     	tile.setSettlement(colony);
+    	tile.changeOwner(buildByUnit.getOwner(), colony);
     	buildByUnit.getOwner().addSettlement(colony);
     	
     	colony.createColonyTiles(map, tile);
@@ -49,7 +50,6 @@ public class ColonyFactory {
     	colony.updateColonyFeatures();
     	
     	colony.initColonyBuilderUnit(buildByUnit);
-    	tile.changeOwner(buildByUnit.getOwner(), colony);
     	
     	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);

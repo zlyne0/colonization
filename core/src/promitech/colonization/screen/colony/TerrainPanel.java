@@ -71,14 +71,12 @@ public class TerrainPanel extends Group implements
 	    worker.disableUnitChip();	    
 		worker.dragAndDropSourceContainer = this;
 		
-		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		colony.addWorkerToTerrain(aColonyTile, worker.unit);
+		
 		worker.updateTexture();
 
 		addActor(worker);
 		updateWorkerScreenPosition(worker, aColonyTile);
-
-		colony.initMaxPossibleProductionOnTile(aColonyTile);
 		
 		changeColonyStateListener.changeUnitAllocation();
 	}
@@ -149,6 +147,9 @@ public class TerrainPanel extends Group implements
 		final ColonyTile ct = getColonyTileNotNull(x, y);
 		
 		if (ct.tile.getType().isWater()) {
+			return;
+		}
+		if (ct.tile.hasWorkerOnTile()) {
 			return;
 		}
 		

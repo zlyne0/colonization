@@ -114,7 +114,7 @@ public class MarketPanel extends Container<ScrollPane> implements DragAndDropTar
 	}
 	
 	private void updatePrices() {
-        for (GoodsType goodsType : Specification.instance.goodsTypes.sortedEntities()) {
+        for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
         	if (!goodsType.isStorable()) {
         		continue;
         	}

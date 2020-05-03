@@ -54,7 +54,11 @@ public class RellocationMission extends AbstractMission {
 			unitMissionsMapping.unblockUnitFromMission(carrier, this);
 		}
 	}
-    
+
+	public boolean canExecuteMission() {
+		return unit != null && !unit.isDisposed() && !unit.isDamaged();
+	}
+	
 	public boolean isUnitOnCarrier() {
 		return carrier.getUnits().containsId(unit);
 	}
@@ -217,5 +221,4 @@ public class RellocationMission extends AbstractMission {
 			return "rellocationMission";
 		}
 	}
-    
 }

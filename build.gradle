@@ -61,8 +61,8 @@ project(":desktop") {
         compile "com.badlogicgames.gdx:gdx-freetype-platform:$gdxVersion:natives-desktop"
         
         testCompile 'org.assertj:assertj-core:3.12.2'
-        testCompile('org.junit.jupiter:junit-jupiter-api:5.4.0')
-        testRuntime('org.junit.jupiter:junit-jupiter:5.4.0')
+        testCompile('org.junit.jupiter:junit-jupiter-api:5.5.2')
+        testRuntime('org.junit.jupiter:junit-jupiter:5.5.2')
     }
 }
 

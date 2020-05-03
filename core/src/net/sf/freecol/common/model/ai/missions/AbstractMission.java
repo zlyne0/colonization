@@ -18,6 +18,10 @@ public abstract class AbstractMission extends ObjectWithId {
 		super(id);
 	}
 
+	public boolean is(Class<? extends AbstractMission> missionClass) {
+		return this.getClass().isAssignableFrom(missionClass);
+	}
+	
 	public abstract void blockUnits(UnitMissionsMapping unitMissionsMapping);
 	public abstract void unblockUnits(UnitMissionsMapping unitMissionsMapping);
 	
@@ -107,6 +111,8 @@ public abstract class AbstractMission extends ObjectWithId {
 			addNode(RellocationMission.class, setter);
 			addNode(FoundColonyMission.class, setter);
 			addNode(ExplorerMission.class, setter);
+			addNode(IndianBringGiftMission.class, setter);
+			addNode(DemandTributeMission.class, setter);
 		}
 
 		@Override

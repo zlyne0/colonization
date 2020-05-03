@@ -25,8 +25,10 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
+import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -40,6 +42,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.AbstractGoodsAssert;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -82,8 +85,19 @@ public class Savegame1600Verifier {
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
         verifyIndianSettlement(game);
+        verifyIndianMissions(game);
         
         verifyUnitTradeRoute(game);
+	}
+
+	private void verifyIndianMissions(Game game) {
+		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
+		
+		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
+		assertThat(mission.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
+		
+		DemandTributeMission mission2 = missionContainer.getMission("demandTributeMission:124");
+		assertThat(mission2.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
 	}
 
 	private void verifyUnitTradeRoute(Game game) {
@@ -383,8 +397,8 @@ public class Savegame1600Verifier {
         TileTypeTransformation changedTileType = clearForest.changedTileType(borealForest);
         assertEquals("model.tile.tundra", changedTileType.getToType().getId());
         
-    	assertEquals("model.goods.lumber", changedTileType.getProduction().getId());
-    	assertEquals(20, changedTileType.getProduction().getAmount());
+        AbstractGoodsAssert.assertThat(changedTileType.getProduction())
+        	.isEquals("model.goods.lumber", 20);
 	}
 
 	private void verifySpecificationFoundingFathers(Specification specification) {

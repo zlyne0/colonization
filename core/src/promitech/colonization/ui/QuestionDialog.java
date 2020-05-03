@@ -1,6 +1,8 @@
 package promitech.colonization.ui;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -26,6 +28,7 @@ public class QuestionDialog extends Dialog {
     private final Table dialogLayout = new Table();
     private final Map<TextButton, OptionAction<? extends Object>> actionByButton = new HashMap<TextButton, OptionAction<? extends Object>>();
     private final Map<TextButton, Object> payloadByButton = new HashMap<TextButton, Object>();
+    private final List<Runnable> onCloseListeners = new ArrayList<Runnable>();
     
     private final ChangeListener buttonChangeListener = new ChangeListener() {
         @Override
@@ -35,6 +38,9 @@ public class QuestionDialog extends Dialog {
             if (optionAction != null) {
                 optionAction.executeAction(payloadByButton.get(event.getListenerActor()));
             }
+            for (Runnable listener : onCloseListeners) {
+            	listener.run();
+            }
         }
     };    
     
@@ -42,9 +48,16 @@ public class QuestionDialog extends Dialog {
         super("", GameResources.instance.getUiSkin());
     }
     
-    public void addQuestion(StringTemplate st) {
+    public QuestionDialog(StringTemplate question) {
+    	super("", GameResources.instance.getUiSkin());
+    	
+    	addQuestion(question);
+    }
+    
+    public final QuestionDialog addQuestion(StringTemplate st) {
         String question = Messages.message(st);
         addQuestion(question);
+        return this;
     }
 
     public Cell<Actor> addDialogActor(Actor actor) {
@@ -61,8 +74,9 @@ public class QuestionDialog extends Dialog {
     	addAnswerText(Messages.message(strTemplate), optionAction, payload);
     }
     
-    public <T> void addAnswer(String msgKey, OptionAction<T> optionAction, T payload) {
+    public <T> QuestionDialog addAnswer(String msgKey, OptionAction<T> optionAction, T payload) {
     	addAnswerText(Messages.msg(msgKey), optionAction, payload);
+    	return this;
     }
 
     public <T> void addAnswerText(String text, OptionAction<T> optionAction, T payload) {
@@ -79,6 +93,10 @@ public class QuestionDialog extends Dialog {
     	button.addListener(buttonChangeListener);
     	
         dialogLayout.add(button).fillX().space(10).row();
+    }
+    
+    public void addOnCloseListener(Runnable listener) {
+    	onCloseListeners.add(listener);
     }
     
     @Override

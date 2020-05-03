@@ -11,7 +11,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class SimpleMessageDialog extends ClosableDialog<SimpleMessageDialog> {
 
-	public static abstract class ButtonActionListener extends ChangeListener {
+	public abstract static class ButtonActionListener extends ChangeListener {
 		private SimpleMessageDialog dialog;
 		
 		@Override

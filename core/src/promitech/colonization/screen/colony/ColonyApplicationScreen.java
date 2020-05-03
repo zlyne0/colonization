@@ -22,7 +22,6 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
-import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -36,6 +35,7 @@ import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
 import promitech.colonization.screen.ApplicationScreenType;
+import promitech.colonization.screen.debug.DebugShortcutsKeys;
 import promitech.colonization.screen.map.MapViewApplicationScreen;
 import promitech.colonization.screen.map.diplomacy.SettlementImageLabel;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -162,7 +162,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {
 	        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
 	            List<UnitRole> avaliableRoles = unit.avaliableRoles(colony.colonyUpdatableFeatures);
-	            Collections.sort(avaliableRoles, ObjectWithId.INSERT_ORDER_ASC_COMPARATOR);
 	            
 	            System.out.println("avaliable roles size " + avaliableRoles.size());
 	            for (UnitRole aRole : avaliableRoles) {
@@ -180,7 +179,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    
 	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
 	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
-	    	Collections.sort(potentialTerrainProductions, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
 	    	
 	    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
 	        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
@@ -191,7 +189,6 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
 			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
-			Collections.sort(maxProductionForGoods, GoodMaxProductionLocation.GOODS_INSERT_ORDER_ASC_COMPARATOR);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
 			for (GoodMaxProductionLocation g : maxProductionForGoods) {
@@ -232,7 +229,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
             terrainPanel.updateProduction();
-            warehousePanel.updateGoodsQuantity(colony);
+            warehousePanel.updateGoodsQuantity();
             actualBuildableItemActor.updateBuildItem(colony);
         }
 
@@ -241,7 +238,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             colony.updateModelOnWorkerAllocationOrGoodsTransfer();
             productionPanel.init(colony, colonyTile);
             buildingsPanelActor.updateProductionDesc();
-            warehousePanel.updateGoodsQuantity(colony);
+            warehousePanel.updateGoodsQuantity();
 			actualBuildableItemActor.updateBuildItem(colony);
         }
 
@@ -348,7 +345,19 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         tableLayout.add(unitsPanel).fillX();
         tableLayout.row();
         tableLayout.add(warehousePanel);
-		
+
+        final DebugShortcutsKeys debugShortcutsKeys = new DebugShortcutsKeys(stage, di, this);
+        stage.addListener(new InputListener() {
+        	@Override
+        	public boolean keyDown(InputEvent event, int keycode) {
+                if (debugShortcutsKeys.canHandleKey(keycode)) {
+                    debugShortcutsKeys.handleKey(keycode);
+                    return true;
+                }
+        		return super.keyDown(event, keycode);
+        	}
+        });
+        
         stage.addActor(tableLayout);
         //stage.setDebugAll(true);
 	}
@@ -366,7 +375,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 				dialog.addOnCloseListener(new Runnable() {
 					@Override
 					public void run() {
-						warehousePanel.updateGoodsQuantity(colony);
+						warehousePanel.updateGoodsQuantity();
 					}
 				});
 				dialog.show(stage);
@@ -426,10 +435,10 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         questionDialog.show(stage);
 	}
 	
-    public void initColony(Colony colony, Tile colonyTile) {
+    public void initColony(Colony colony) {
     	this.colonySpyMode = false;
     	this.colony = colony;
-    	this.colonyTile = colonyTile;
+    	this.colonyTile = colony.tile;
     	unitsDragAndDrop.clear();
     	goodsDragAndDrop.clear();
         MapViewApplicationScreen mapScreen = screenManager.getApplicationScreen(ApplicationScreenType.MAP_VIEW);
@@ -487,5 +496,9 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	@Override
 	public void resize(int width, int height) {
 		stage.getViewport().update(width, height, true);
+	}
+
+	public Colony getColony() {
+		return colony;
 	}
 }

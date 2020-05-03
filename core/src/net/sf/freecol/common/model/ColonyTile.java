@@ -13,7 +13,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	public final ProductionInfo productionInfo = new ProductionInfo();
     public Tile tile;
 	
-	public ColonyTile(String id) {
+	private ColonyTile(String id) {
 		// colonyTile has the same id like tile which it concern 
 		super(id);
 	}
@@ -41,12 +41,12 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	
     @Override
 	public String toString() {
-	    return "ColonyTile workTileId[" + getId() + "]";
+	    return "ColonyTile workTileId[" + getId() + ", " + tile.getType().getId() + "]";
 	}
 	
     @Override
     public MapIdEntitiesReadOnly<Unit> getUnits() {
-        throw new IllegalStateException("there are no units in colony tile " + getId());
+        return new OneMapIdEntitiesReadOnly<Unit>(worker);
     }
 
     @Override
@@ -60,6 +60,24 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         worker = null;
         productionInfo.clear();
     }
+    
+    public void initMaxPossibleProductionOnTile() {
+        System.out.println("possibleProductionOnTile.forTile: " + tile.getType().productionInfo);
+        ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile();
+        System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
+        
+        productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, tile.getType().productionInfo);
+        System.out.println("possibleProductionOnTile.maxProductionType: " + productionInfo);
+    }
+    
+	private ProductionInfo maxPossibleProductionOnTile() {
+		ProductionInfo productionSummaryForWorker = tile.getType().productionInfo.productionSummaryForWorker(worker);
+		if (tile.getOwner() != null) {
+		    productionSummaryForWorker.applyModifiers(tile.getOwner().foundingFathers.entities());
+		}
+		productionSummaryForWorker.applyTileImprovementsModifiers(tile);
+		return productionSummaryForWorker;
+	}
     
     public static class Xml extends XmlNodeParser<ColonyTile> {
 

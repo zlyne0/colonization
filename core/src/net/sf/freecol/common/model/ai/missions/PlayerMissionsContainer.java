@@ -6,10 +6,14 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
+import static promitech.colonization.ai.MissionHandlerLogger.*;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -26,6 +30,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public void addMission(AbstractMission m) {
+		logger.debug("player[%s] add mission[%s]", player.getId(), m.getId());
 		missions.add(m);
 	}
 
@@ -33,7 +38,9 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		List<AbstractMission> l = new ArrayList<AbstractMission>(missions.entities());
 		for (AbstractMission am : l) {
 			if (am.isDone() && !am.hasDependMissions()) {
+				logger.debug("player[%s] clear done mission[%s]", player.getId(), am.getId());
 				missions.removeId(am);
+				am.unblockUnits(unitMissionsMapping);
 			}
 		}
 	}
@@ -50,7 +57,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return false;
 	}
 	
-	public MapIdEntities<AbstractMission> getMissions() {
+	@SuppressWarnings("unchecked")
+	public <T extends AbstractMission> T firstMissionByType(Class<T> clazz) {
+		for (AbstractMission abstractMission : missions.entities()) {
+			if (abstractMission.is(clazz)) {
+				return (T)abstractMission;
+			}
+		}
+		throw new IllegalArgumentException("can not find mission by type " + clazz);
+	}
+	
+	public MapIdEntitiesReadOnly<AbstractMission> getMissions() {
 		return missions;
 	}
 
@@ -88,13 +105,25 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			unitMissionsMapping.unblockUnitFromMission(unit, mission);
 		}
 	}
+
+	public Player getPlayer() {
+		return player;
+	}
 	
     public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
         private static final String ATTR_PLAYER = "player";
 
         private static Player player;
         public static Unit getPlayerUnit(String unitId) {
-            return player.units.getById(unitId);
+            return player.units.getByIdOrNull(unitId);
+        }
+        
+        public static IndianSettlement getPlayerIndianSettlement(String settlementId) {
+        	Settlement settlement = player.settlements.getByIdOrNull(settlementId);
+        	if (settlement == null) {
+        		return null;
+        	}
+        	return settlement.asIndianSettlement();
         }
         
         public Xml() {
@@ -103,6 +132,8 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", RellocationMission.class);
             addNodeForMapIdEntities("missions", FoundColonyMission.class);
             addNodeForMapIdEntities("missions", ExplorerMission.class);
+            addNodeForMapIdEntities("missions", IndianBringGiftMission.class);
+            addNodeForMapIdEntities("missions", DemandTributeMission.class);
         }
         
         @Override
@@ -136,5 +167,4 @@ public class PlayerMissionsContainer extends ObjectWithId {
         }
 
     }
-	
 }

@@ -20,15 +20,19 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
     private final Game game;
     private final PathFinder pathFinder;
     
-    public SeekAndDestroyMissionHandler(Game game, MoveService moveService, CombatService combatService) {
+    public SeekAndDestroyMissionHandler(Game game, MoveService moveService, CombatService combatService, PathFinder pathFinder) {
         this.moveService = moveService;
         this.combatService = combatService;
         this.game = game;
-        this.pathFinder = new PathFinder();
+        this.pathFinder = pathFinder;
     }
     
     @Override
     public void handle(PlayerMissionsContainer playerMissionsContainer, SeekAndDestroyMission mission) {
+    	if (mission.unit == null || mission.unit.isDisposed() || mission.unit.isDamaged()) {
+    		mission.setDone();
+    		return;
+    	}
         Tile enemyTile = enemyTile(mission);
         System.out.println("enemy tile : " + enemyTile);
         if (enemyTile == null) {

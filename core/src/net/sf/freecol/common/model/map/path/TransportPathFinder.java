@@ -50,11 +50,11 @@ public class TransportPathFinder {
 	}
 	
 	public Path findToTile(
-			Tile sourceTile, 
-			Tile findDestTile, 
-			Unit landUnit, 
-			Unit potentialTransporter, 
-			PathFinder transporterRangeMap) 
+			final Tile sourceTile, 
+			final Tile findDestTile, 
+			final Unit landUnit, 
+			final Unit potentialTransporter, 
+			final PathFinder transporterRangeMap) 
 	{
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
@@ -144,9 +144,9 @@ public class TransportPathFinder {
 			}
 		}
 		if (reachedGoalNode == null) {
-			return createPath(landUnit, sourceTile, grid.get(sourceTile.x, sourceTile.y));
+			return createPath(landUnit, grid.get(startTile.x, startTile.y));
 		} else {
-			return createPath(landUnit, sourceTile, reachedGoalNode);
+			return createPath(landUnit, reachedGoalNode);
 		}
 	}
 
@@ -159,7 +159,7 @@ public class TransportPathFinder {
 		}
 	}
 	
-	private Path createPath(final Unit moveUnit, final Tile startTile, final Node endPathNode) {
+	private Path createPath(final Unit moveUnit, final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -170,7 +170,9 @@ public class TransportPathFinder {
 			count++;
 		}
 
-		Path path = new Path(moveUnit, startTile, endPathNode.tile, count);
+		Path path = new Path(moveUnit, startTile, endPathNode.tile, count, 
+			endTile == null || endPathNode.tile.equalsCoordinates(endTile)
+		);
 		n = begining;
 		while (n != null) {
 			path.add(n.tile, n.turns);

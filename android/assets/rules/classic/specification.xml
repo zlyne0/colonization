@@ -1985,7 +1985,6 @@
                    upkeep="10">
       <required-goods id="model.goods.hammers" value="120"/>
       <required-goods id="model.goods.tools" value="100"/>
-      <modifier id="model.modifier.defence" delete="true" />
       <modifier id="model.modifier.defence"
                 type="percentage" value="150" index="50"/>
       <ability id="model.ability.bombardShips" value="true"/>
@@ -1996,7 +1995,6 @@
                    required-population="8" upkeep="15">
       <required-goods id="model.goods.hammers" value="320"/>
       <required-goods id="model.goods.tools" value="200"/>
-      <modifier id="model.modifier.defence" delete="true" />
       <modifier id="model.modifier.defence"
                 type="percentage" value="200" index="50"/>
     </building-type>
@@ -2025,7 +2023,7 @@
     <building-type id="model.building.country"
                    workplaces="0" priority="700">
       <production unattended="true">
-        <input goods-type="model.goods.food" value="1"/>
+        <input goods-type="model.goods.grain" value="1"/>
         <output goods-type="model.goods.horses" value="1"/>
       </production>
       <ability id="model.ability.autoProduction"/>
@@ -2044,7 +2042,7 @@
                    upgradesFrom="model.building.country"
                    upkeep="5">
       <production unattended="true">
-        <input goods-type="model.goods.food" value="1"/>
+        <input goods-type="model.goods.grain" value="1"/>
         <output goods-type="model.goods.horses" value="1"/>
       </production>
       <required-goods id="model.goods.hammers" value="64"/>
@@ -2094,7 +2092,6 @@
                    required-population="4" upkeep="10">
       <required-goods id="model.goods.hammers" value="120"/>
       <required-goods id="model.goods.tools" value="50"/>
-      <modifier id="model.goods.bells" delete="true" />
       <modifier id="model.goods.bells" index="70"
                 type="percentage" value="100">
         <scope ability-id="model.ability.person" matchNegated="true"/>

@@ -90,7 +90,22 @@ public class Tension {
         	}
         	return this.limit > level.limit;
         }
+        
+		public boolean isWorstOrEquals(Level level) {
+			if (level == null) {
+				return false;
+			}
+			return this.limit >= level.limit;
+		}
     }
+    
+	public static Tension worst(Tension t1, Tension t2) {
+		if (t1.value >= t2.value) {
+			return t1;
+		} else {
+			return t2;
+		}
+	}
     
     private int value;
 
@@ -149,6 +164,10 @@ public class Tension {
         return Level.HATEFUL;
     }
 
+    public boolean isWorst(Level level) {
+    	return value >= level.limit;
+    }
+    
     /**
      * Modify the tension by the given amount.
      *
@@ -172,11 +191,10 @@ public class Tension {
      */
     @Override
     public String toString() {
-        return getLevel().toString();
+        return "level: " + getLevel().toString() + ", value: " + value;
     }
 
     public void surrende() {
         setValue(SURRENDERED);
     }
-
 }

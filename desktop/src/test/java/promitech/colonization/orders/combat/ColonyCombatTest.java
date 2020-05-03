@@ -429,6 +429,7 @@ public class ColonyCombatTest {
         
         PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatSides.loser);
         ColonyAssert.assertThat(colony).notContainsUnit(combat.combatSides.loser);
+        UnitAssert.assertThat(combat.combatSides.loser).isDisposed();
     }
     
     @Test
@@ -445,6 +446,7 @@ public class ColonyCombatTest {
         
         Tile emptyColonyTile = game.map.getSafeTile(20, 79);
         Colony colony = emptyColonyTile.getSettlement().asColony();
+        int colonyUnitsCountBeforeCombat = colony.getColonyUnitsCount();
 
         // when
         combat.init(game, brave, emptyColonyTile);
@@ -459,7 +461,10 @@ public class ColonyCombatTest {
             .hasDetails(CombatResultDetails.SLAUGHTER_UNIT);
         
         PlayerAssert.assertThat(dutch).notContainsUnit(combat.combatSides.loser);
-        ColonyAssert.assertThat(colony).notContainsUnit(combat.combatSides.loser);
+        ColonyAssert.assertThat(colony)
+        	.notContainsUnit(combat.combatSides.loser)
+        	.hasSize(colonyUnitsCountBeforeCombat-1);
+        UnitAssert.assertThat(combat.combatSides.loser).isDisposed();
     }
     
     @Test
