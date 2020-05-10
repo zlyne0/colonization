@@ -8,7 +8,7 @@ import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.DI
-import promitech.colonization.ai.AILogicDebugRun
+import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.BuildColony
 import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
@@ -292,7 +292,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
-				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
 					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
@@ -327,7 +327,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
-				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController)
+				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
 					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})

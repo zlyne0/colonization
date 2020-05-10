@@ -26,7 +26,6 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.Direction;
-import promitech.colonization.orders.NewTurnContext;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -89,6 +88,7 @@ public class Colony extends Settlement {
 
     public Colony(IdGenerator idGenerator, SettlementType settlementType) {
 		this(idGenerator.nextId(Colony.class), settlementType);
+		goodsContainer = new GoodsContainer();
 	}
 
 	public String toString() {
@@ -380,7 +380,7 @@ public class Colony extends Settlement {
         }
     }
     
-    public void handleLackOfResources(NewTurnContext newTurnContext, Game game) {
+    public void handleLackOfResources(Game game) {
         int foodProdCons = colonyProduction.globalProductionConsumption().getQuantity(GoodsType.FOOD);
         if (foodProdCons < 0) {
             // food consumption is greater then production
@@ -416,7 +416,6 @@ public class Colony extends Settlement {
     				owner.eventsNotifications.addMessageNotification(st);
     				removeFromMap(game);
     				removeFromPlayer();
-    				newTurnContext.setRequireUpdateMapModel();
     			}
             }
         }
@@ -504,7 +503,7 @@ public class Colony extends Settlement {
 		colonyProduction.setAsNeedUpdate();
 	}
     
-	public void reduceTileResourceQuantity(NewTurnContext newTurnContext) {
+	public void reduceTileResourceQuantity() {
 		for (ColonyTile ct : colonyTiles.entities()) {
 			if (ct.hasNotWorker()) {
 				continue;
@@ -513,7 +512,6 @@ public class Colony extends Settlement {
 			for (Entry<String> entry : ps.realProduction.entries()) {
 				ResourceType reducedResourceType = ct.tile.reduceTileResourceQuantity(entry.key, entry.value);
 				if (reducedResourceType != null) {
-					newTurnContext.setRequireUpdateMapModel();
 					updateModelOnWorkerAllocationOrGoodsTransfer();
 
 					StringTemplate st = StringTemplate.template("model.tile.resourceExhausted")
@@ -892,7 +890,7 @@ public class Colony extends Settlement {
 	    }
 	}
 	
-	public void buildBuildings(NewTurnContext newTurnContext) {
+	public void buildBuildings() {
 	    BuildableType buildableType = getFirstItemInBuildingQueue();
 		if (buildableType == null) {
 			return;
@@ -908,7 +906,7 @@ public class Colony extends Settlement {
 			if (NoBuildReason.NONE != noBuildReason) {
 				finishBuildingProblemNotification(buildableType, noBuildReason);
 			} else {
-				finishBuilding(newTurnContext, buildableType);
+				finishBuilding(buildableType);
 			}
 		}
 	}
@@ -951,7 +949,7 @@ public class Colony extends Settlement {
         }
     }
 
-	private void finishBuilding(NewTurnContext newTurnContext, BuildableType buildableType) {
+	private void finishBuilding(BuildableType buildableType) {
 		if (buildableType.isUnitType()) {
 			Unit unit = UnitFactory.create((UnitType)buildableType, owner, tile);
 			
@@ -965,9 +963,6 @@ public class Colony extends Settlement {
 			BuildingType buildingType = (BuildingType)buildableType;
 			finishBuilding(buildingType);
 			
-			if (buildableType.hasModifier(Modifier.DEFENCE)) {
-				newTurnContext.setRequireUpdateMapModel();
-			}
 			StringTemplate st = StringTemplate.template("model.colony.buildingReady")
 		        .add("%colony%", getName())
 		        .addName("%building%", buildableType);

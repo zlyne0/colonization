@@ -143,6 +143,12 @@ public class MoveService {
         }
     }
     
+    /**
+     * Wake up neighbour sentry units. Not only in newturn but in MoveService too 
+     * because unit with lots of moves can move close and move further. NewTurn check
+     * only on sign radius. Unit can move in radius and go out. 
+     * One tile range not ideal but enough.   
+     */
     private void wakeUpSentryUnits(Player player, Tile tile) {
     	for (NeighbourIterableTile<Tile> neighbourTile : guiGameModel.game.map.neighbourTiles(tile)) {
     		for (Unit u : neighbourTile.tile.getUnits().entities()) {

@@ -19,7 +19,8 @@ import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
-import promitech.colonization.ai.AILogic;
+import promitech.colonization.ai.MissionExecutor;
+import promitech.colonization.ai.MissionPlaner;
 import promitech.colonization.math.Point;
 import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.NewTurnService;
@@ -360,22 +361,26 @@ public class GUIGameController {
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
-		AILogic aiLogic = new AILogic(guiGameModel.game, newTurnService, moveService, combatService, this);
+		MissionExecutor missionExecutor = new MissionExecutor(guiGameModel.game, moveService, combatService, this, pathFinder);
+		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
 			endOfTurnPhaseListener.nextAIturn(player);
 			System.out.println("new turn for player " + player);
 			
-			aiLogic.aiNewTurn(player);
+			newTurnService.newTurn(player);
+			missionPlaner.planMissions(player);
+			missionExecutor.executeMissions(player);
+			
+			System.out.println("end turn for player " + player);
 		}
 		
 		marketSnapshoot.comparePrices(guiGameModel.game.playingPlayer);
 		
 		newTurnService.newTurn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.getTurn().increaseTurnNumber();
-		if (newTurnService.getNewTurnContext().isRequireUpdateMapModel()) {
-		}
+		
 		mapActor.resetMapModel();
 		mapActor.resetUnexploredBorders();
 		

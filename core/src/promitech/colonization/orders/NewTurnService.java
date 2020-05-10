@@ -20,9 +20,6 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.Goods;
-import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.CombatService;
@@ -35,7 +32,6 @@ public class NewTurnService {
 
 	private final GUIGameModel guiGameModel;
 	private final CombatService combatService;
-	private final NewTurnContext newTurnContext = new NewTurnContext();
 	private final MoveService moveService;
 	private final IndianSettlementWantedGoods indianWantedGoods = new IndianSettlementWantedGoods();
 	
@@ -49,9 +45,6 @@ public class NewTurnService {
 	}
 
 	public void newTurn(Player player) {
-		newTurnContext.restart();
-		System.out.println("newTurn for player " + player);
-
 		if (player.isEuropean()) {
 			player.foundingFathers.checkFoundingFathers(guiGameModel.game);
 		}
@@ -80,14 +73,14 @@ public class NewTurnService {
 			colony.ifPossibleAddFreeBuildings();
 			colony.updateColonyFeatures();
 			colony.increaseWarehouseByProduction();
-			colony.reduceTileResourceQuantity(newTurnContext);
+			colony.reduceTileResourceQuantity();
 			
 			colony.increaseColonySize();
-			colony.buildBuildings(newTurnContext);
+			colony.buildBuildings();
 			
 			colony.exportGoods(guiGameModel.game);
 			colony.removeExcessedStorableGoods();
-			colony.handleLackOfResources(newTurnContext, guiGameModel.game);
+			colony.handleLackOfResources(guiGameModel.game);
 			colony.calculateSonsOfLiberty();
 			
 			colony.increaseWorkersExperience();
@@ -236,8 +229,6 @@ public class NewTurnService {
 				int initQuantity = resourceType.initQuantity();
 				improvingTile.addResource(new TileResource(Game.idGenerator, resourceType, initQuantity));
 			}
-			
-			newTurnContext.setRequireUpdateMapModel();
 			unit.setState(UnitState.ACTIVE);
 		}
 	}
@@ -247,10 +238,6 @@ public class NewTurnService {
 				&& Randomizer.instance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
-	}
-
-	public NewTurnContext getNewTurnContext() {
-		return newTurnContext;
 	}
 }
 

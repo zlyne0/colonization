@@ -64,6 +64,7 @@ public class IndianSettlement extends Settlement {
     
     public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
     	super(idGenerator.nextId(IndianSettlement.class), settlementType);
+    	goodsContainer = new GoodsContainer();
     }
 
     /**
