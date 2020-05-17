@@ -1,14 +1,13 @@
 package promitech.colonization.ai;
 
 import org.junit.jupiter.api.Test;
-import static org.assertj.core.api.Assertions.assertThat;
 
 class ObjectListScoreTest {
 
 	@Test
 	public void canSortDescending() throws Exception {
 		// given
-		ObjectsListScore<String> l = new ObjectsListScore<String>()
+		ObjectsListScore<String> l = new ObjectsListScore<String>(3)
 			.add("one", 10)
 			.add("two", 20)
 			.add("three", 30);
@@ -17,11 +16,13 @@ class ObjectListScoreTest {
 		l.sortDescending();
 
 		// then
-		assertThat(l.size()).isEqualTo(3);
-		assertThat(l.scoreSum()).isEqualTo(60);
-		assertThat(l.obj(0)).isEqualTo("three");
-		assertThat(l.obj(1)).isEqualTo("two");
-		assertThat(l.obj(2)).isEqualTo("one");
+		ObjectsListScoreAssert.assertThat(l)
+			.hasSize(3)
+			.hasSumScore(60)
+			.hasScore(0, 30, "three")
+			.hasScore(1, 20, "two")
+			.hasScore(2, 10, "one")
+		;
 	}
 
 }

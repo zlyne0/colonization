@@ -4,13 +4,14 @@ import java.util.List;
 
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 class SettlementWarehouseScoreGoods {
-	private final ObjectsListScore<GoodsType> settlementGoodsScore = new ObjectsListScore<GoodsType>();
-	private final ObjectsListScore<Settlement> settlementsScore = new ObjectsListScore<Settlement>();
+	private final ObjectsListScore<GoodsType> settlementGoodsScore;
+	private final ObjectsListScore<Settlement> settlementsScore;
 	
 	private final int carierGoodsTotalSlots;
 	private final Player player;
@@ -22,6 +23,9 @@ class SettlementWarehouseScoreGoods {
 		this.carrier = carrier;
 		
 		carierGoodsTotalSlots = carrier.unitType.getSpace() - carrier.unitContainerSpaceTaken();
+		
+		settlementGoodsScore = new ObjectsListScore<GoodsType>(Specification.instance.goodsTypes.size());
+		settlementsScore = new ObjectsListScore<Settlement>(player.settlements.size());
 	}
 	
 	ObjectsListScore<Settlement> score(List<GoodsType> goodsType) {
@@ -41,7 +45,7 @@ class SettlementWarehouseScoreGoods {
 		int score = 0;
 		
 		for (int i = 0; i < settlementGoodsScore.size(); i++) {
-			GoodsType gt = settlementGoodsScore.obj(i);
+			GoodsType gt = settlementGoodsScore.get(i).getObj();
 			int maxGoodsForContainer = tmpCarrierGoodsContainer.maxGoodsAmountToFillFreeSlots(gt.getId(), carierGoodsTotalSlots);
 			int goodsToScore = Math.min(maxGoodsForContainer, settlement.getGoodsContainer().goodsAmount(gt));
 			if (goodsToScore > 0) {

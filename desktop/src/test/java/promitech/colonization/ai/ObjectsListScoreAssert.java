@@ -2,7 +2,9 @@ package promitech.colonization.ai;
 
 import org.assertj.core.api.AbstractAssert;
 
-public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAssert, ObjectsListScore> {
+import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+
+public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAssert, ObjectsListScore<?>> {
 
 	public ObjectsListScoreAssert(ObjectsListScore<?> actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -19,11 +21,19 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		return this;
 	}
 	
-	public ObjectsListScoreAssert hasScore(int index, int score, Object obj) {
-		if (actual.objScore(index).score != score) {
-			failWithMessage("expected score at index %s <%s> but has score <%s>", index, score, actual.objScore(index).score);
+	public ObjectsListScoreAssert hasSumScore(int sum) {
+		if (actual.scoreSum() != sum) {
+			failWithMessage("expected score sum <%s> but has <%s>", sum, actual.scoreSum());
 		}
-		if (!actual.objScore(index).obj.equals(obj)) {
+		return this;
+	}
+	
+	public ObjectsListScoreAssert hasScore(int index, int score, Object obj) {
+		ObjectScore<?> os = actual.get(index);
+		if (os.getScore() != score) {
+			failWithMessage("expected score at index %s <%s> but has score <%s>", index, score, os.getScore());
+		}
+		if (!os.getObj().equals(obj)) {
 			failWithMessage("at index %s is unexpected object", index);
 		}
 		return this;

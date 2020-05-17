@@ -15,8 +15,8 @@ class ObjectsListScore<T> {
 	};
 	
 	public static class ObjectScore<O> {
-		O obj;
-		int score;
+		private O obj;
+		private int score;
 		
 		public ObjectScore(O obj, int score) {
 			this.obj = obj;
@@ -26,10 +26,22 @@ class ObjectsListScore<T> {
 		public String toString() {
 			return this.obj + " " + score;
 		}
+
+		public O getObj() {
+			return obj;
+		}
+
+		public int getScore() {
+			return score;
+		}
 	}
 	
-	private List<ObjectScore<T>> objs = new ArrayList<ObjectScore<T>>();
+	private final List<ObjectScore<T>> objs;
 	private int scoreSum = 0;
+	
+	public ObjectsListScore(int capacity) {
+		objs = new ArrayList<ObjectsListScore.ObjectScore<T>>(capacity);
+	}
 	
 	public ObjectsListScore<T> add(T obj, int score) {
 		this.objs.add(new ObjectScore<T>(obj, score));
@@ -41,15 +53,7 @@ class ObjectsListScore<T> {
 		return this.objs.size();
 	}
 	
-	public T obj(int index) {
-		return this.objs.get(index).obj;
-	}
-	
-	public int score(int index) {
-		return this.objs.get(index).score;
-	}
-	
-	public ObjectScore<T> objScore(int index) {
+	public ObjectScore<T> get(int index) {
 		return this.objs.get(index);
 	}
 	
