@@ -233,6 +233,13 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return location != null && location instanceof Unit;
     }
     
+    public int unitContainerSpaceTaken() {
+    	if (unitContainer == null) {
+    		return 0;
+    	}
+    	return unitContainer.getSpaceTakenByUnits();
+    }
+    
     private int getSpaceTaken() {
         int space = 0;
         if (unitContainer != null) {

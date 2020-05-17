@@ -171,6 +171,11 @@ public class GoodsContainer {
     public ProductionSummary cloneGoods() {
         return goods.cloneGoods();
     }
+
+	public void cloneTo(GoodsContainer gc) {
+		goods.cloneTo(gc.goods);
+		updateTakenCargoSlots();
+	}
     
     public static class Xml extends XmlNodeParser<GoodsContainer> {
         private static final String ATTR_AMOUNT = "amount";

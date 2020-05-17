@@ -52,6 +52,10 @@ public class ProductionSummary {
         return ps;
     }
 	
+	public void cloneTo(ProductionSummary ps) {
+		ps.goods.putAll(goods);
+	}
+    
 	public void addGoods(String goodsId, int goodQuantity) {
 	    if (goodQuantity != 0) {
 	        goods.getAndIncrement(goodsId, 0, goodQuantity);
