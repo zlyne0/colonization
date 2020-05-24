@@ -3,9 +3,12 @@ package promitech.colonization.ai;
 import java.util.List;
 
 import net.sf.freecol.common.model.GoodsContainer;
+import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
@@ -35,6 +38,32 @@ class SettlementWarehouseScoreGoods {
 		}
 		settlementsScore.sortDescending();
 		return settlementsScore;
+	}
+
+	ObjectsListScore<Settlement> score(List<GoodsType> goodsType, Map map, PathFinder rangeCalculator) {
+		Tile carrierLocation = carrier.getTileLocationOrNull();
+		if (carrierLocation == null) {
+			throw new IllegalArgumentException("carrier location should be tile");
+		}
+		rangeCalculator.generateRangeMap(map, carrierLocation, carrier, false);
+		
+		settlementsScore.clear();
+		for (Settlement settlement : player.settlements.entities()) {
+			int settlementScore = settlementTurnsScore(
+				scoreSettlementGoods(settlement, goodsType), 
+				rangeCalculator.turnsCost(settlement.tile)
+			);
+			settlementsScore.add(settlement, settlementScore);
+		}
+		settlementsScore.sortDescending();
+		return settlementsScore;
+	}
+	
+	int settlementTurnsScore(int settlementScore, int turns) {
+		if (turns > 100) {
+			turns = 100;
+		}
+		return settlementScore * (100 - (turns*15))/100;
 	}
 	
 	private int scoreSettlementGoods(Settlement settlement, List<GoodsType> goodsType) {

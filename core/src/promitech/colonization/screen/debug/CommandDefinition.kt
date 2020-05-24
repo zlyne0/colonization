@@ -31,6 +31,8 @@ import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.ai.missions.DemandTributeMission
 import net.sf.freecol.common.model.player.Tension
+import net.sf.freecol.common.model.UnitFactory
+import net.sf.freecol.common.model.UnitType
 
 
 fun createCommands(
@@ -82,6 +84,14 @@ fun createCommands(
 					}
 				}
 			}
+		}
+		command("map_turn_range") {
+			if (!di.guiGameModel.isViewMode() || mapActor == null) {
+			    console.keepOpen() 
+				console.out("no view mode")
+			} else {
+				mapTurnRange(di, mapActor)
+			}			 
 		}
     	
 		command("ai_settlements") {
@@ -238,6 +248,23 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
     navyExplorer.toStringsBorderValues(tileStrings);
     mapActor?.showTileDebugStrings(tileStrings);
 }
+
+	fun mapTurnRange(di : DI, mapActor : MapActor) {
+		var guiGameModel = di.guiGameModel
+		if (!guiGameModel.isViewMode()) {
+			return
+		}
+		
+		val dutch = guiGameModel.game.players.getById("player:1")
+		val galleon = UnitFactory.create(UnitType.GALLEON, dutch, mapActor.mapDrawModel().selectedTile)
+		
+	    var pathFinder = PathFinder()
+	    pathFinder.generateRangeMap(guiGameModel.game.map, galleon.getTile(), galleon, false)
+		
+		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+		pathFinder.turnCostToStringArrays(tileStrings)
+		mapActor.showTileDebugStrings(tileStrings);
+	}
 
 	fun aiMove(di : DI, mapActor : MapActor?) {
 		if (di.guiGameModel.isActiveUnitNotSet()) {

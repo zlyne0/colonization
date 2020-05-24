@@ -3,9 +3,10 @@ package promitech.colonization.ai;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.Iterator;
 import java.util.List;
 
-class ObjectsListScore<T> {
+class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 
 	private static Comparator<ObjectScore<?>> descendingComparator = new Comparator<ObjectScore<?>>() {
 		@Override
@@ -55,6 +56,11 @@ class ObjectsListScore<T> {
 	
 	public ObjectScore<T> get(int index) {
 		return this.objs.get(index);
+	}
+
+	@Override
+	public Iterator<ObjectScore<T>> iterator() {
+		return this.objs.iterator();
 	}
 	
 	public void sortDescending() {

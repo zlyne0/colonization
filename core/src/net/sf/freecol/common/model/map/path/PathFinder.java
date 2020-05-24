@@ -273,6 +273,10 @@ public class PathFinder {
 	    return grid.get(cellIndex).turns;
 	}
 
+	public int turnsCost(Tile tile) {
+		return grid.get(tile.x, tile.y).turns;
+	}
+	
 	public void totalCostToStringArrays(String[][] strTab) {
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
 	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
