@@ -33,6 +33,8 @@ import net.sf.freecol.common.model.ai.missions.DemandTributeMission
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
+import promitech.colonization.ai.MissionPlaner
+import promitech.colonization.ai.MissionExecutor
 
 
 fun createCommands(
@@ -106,6 +108,12 @@ fun createCommands(
 			aiMove(di, mapActor)
 		} 
     	
+		command("player_as_ai") {
+			if (mapActor != null) {
+				playerAsAi(di, guiGameModel, mapActor)
+			}
+		}
+		
 		command("pools") {
 		    console.keepOpen() 
 			console.out(PoolsStat.Stat.header())
@@ -358,4 +366,29 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
+	}
+
+	fun playerAsAi(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor) {
+		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder)
+		val missionExecutor = MissionExecutor(
+			guiGameModel.game,
+			di.moveService,
+			di.combatService,
+			di.guiGameController,
+			di.pathFinder
+		)
+		val player = guiGameModel.game.playingPlayer
+
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				di.newTurnService.newTurn(player)
+				
+				missionPlaner.planMissions(player)
+				missionExecutor.executeMissions(player)
+				
+				mapActor.resetMapModel()
+				mapActor.resetUnexploredBorders()
+			}
+		})
+				
 	}
