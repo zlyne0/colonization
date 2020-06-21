@@ -12,12 +12,15 @@ import net.sf.freecol.common.model.player.Player;
 public class EuropeanMissionPlaner {
 
 	private final FoundColonyMissionHandler foundColonyMissionHandler;
+	private final ColonyProductionPlaner colonyProductionPlaner;
 	
 	public EuropeanMissionPlaner(FoundColonyMissionHandler foundColonyMissionHandler) {
 		this.foundColonyMissionHandler = foundColonyMissionHandler;
+		this.colonyProductionPlaner = new ColonyProductionPlaner();
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
+		colonyProductionPlaner.createPlan(player, playerMissionContainer);
 		prepareFoundColonyMissions(player, playerMissionContainer);
 		prepareExploreMissions(player, playerMissionContainer);
 	}

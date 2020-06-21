@@ -126,7 +126,7 @@ public class TerrainPanel extends Group implements
 	@Override
 	public boolean isPrePutPayload(UnitActor worker, float x, float y) {
 		ColonyTile ct = getColonyTileNotNull(x, y);
-		return colony.isTileLocked(ct.tile);
+		return colony.isTileLocked(ct.tile, false);
 	}
 
 	@Override

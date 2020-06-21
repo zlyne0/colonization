@@ -188,7 +188,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    }
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit);
+			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit, false);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
 			for (GoodMaxProductionLocation g : maxProductionForGoods) {

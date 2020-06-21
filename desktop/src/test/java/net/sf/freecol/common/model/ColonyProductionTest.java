@@ -340,7 +340,7 @@ public class ColonyProductionTest {
 		colony.updateColonyFeatures();
 		
 		// when
-		List<GoodMaxProductionLocation> locations = colony.determinePotentialMaxGoodsProduction(unit);
+		List<GoodMaxProductionLocation> locations = colony.determinePotentialMaxGoodsProduction(unit, false);
 
 		// then
 		for (GoodMaxProductionLocation l : locations) {

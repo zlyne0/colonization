@@ -288,11 +288,11 @@ public class Colony extends Settlement {
     	return colonyProduction.determinePotentialTerrainProductions(terrain, unit);
     }
     
-    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit) {
+    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit, boolean ignoreIndianOwner) {
         if (!unit.isPerson()) {
             return Collections.emptyList();
         }
-        return colonyProduction.determinePotentialMaxGoodsProduction(unit);
+        return colonyProduction.determinePotentialMaxGoodsProduction(unit, ignoreIndianOwner);
     }
 
     public void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialProduction) {
@@ -300,7 +300,7 @@ public class Colony extends Settlement {
     }
     
     public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker) {
-    	return colonyProduction.maxProductionFromTile(gt, worker);
+    	return colonyProduction.maxProductionFromTile(gt, worker, false);
     }
     
     public int colonyWorkerProductionAmount(
@@ -1061,7 +1061,7 @@ public class Colony extends Settlement {
     		updateColonyFeatures();
     		
     		for (ColonyTile ct : colonyTiles.entities()) {
-    			if (ct.hasWorker() && isTileLocked(ct.tile)) {
+    			if (ct.hasWorker() && isTileLocked(ct.tile, false)) {
     				ejectWorkers.add(ct.getWorker());
     			}
     		}
@@ -1198,7 +1198,7 @@ public class Colony extends Settlement {
     	GoodMaxProductionLocation maxProd = null;
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             if (gt.isFarmed()) {
-            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder);
+            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder, false);
             	if (prod != null && (maxProd == null || maxProd.hasLessProduction(prod.getProduction()))) {
             		maxProd = prod;
             	}
@@ -1223,7 +1223,7 @@ public class Colony extends Settlement {
 	/**
 	 * Is tile locked for colony worker. 
 	 */
-	public boolean isTileLocked(Tile tile) {
+	public boolean isTileLocked(Tile tile, boolean ignoreIndianOwner) {
 		if (isTileLockedBecauseNoDock(tile)) {
 			return true;
 		}
@@ -1232,6 +1232,9 @@ public class Colony extends Settlement {
 		}
 		if (tile.getOwner() != null) {
 			if (tile.getOwner().isIndian()) {
+				if (ignoreIndianOwner) {
+					return false;
+				}
 				return !owner.foundingFathers.containsId(FoundingFather.PETER_MINUIT);
 			} else {
 				if (tile.getOwningSettlementId() != null) {

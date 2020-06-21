@@ -68,6 +68,13 @@ public class ColonyPlan {
 		
 	}
 	
+    private Comparator<GoodMaxProductionLocation> locationProductionAmountComparator = new Comparator<GoodMaxProductionLocation>() {
+    	@Override
+    	public int compare(GoodMaxProductionLocation o1, GoodMaxProductionLocation o2) {
+    		return o2.getProduction() - o1.getProduction();
+    	}
+    };
+	
     private final ProductionSummary prod = new ProductionSummary(); 
     private final ProductionSummary ingredients = new ProductionSummary();
     private final List<String> goodsTypeGoalIngredientsChain = new ArrayList<String>();
@@ -77,6 +84,7 @@ public class ColonyPlan {
 	private final Colony colony;
     private Plan[] plans;
     private int nextPlanIndex = 0;
+    private boolean ignoreIndianOwner = false;
     
 	public ColonyPlan(Colony colony) {
 		this.colony = colony;
@@ -426,7 +434,7 @@ public class ColonyPlan {
     }
     
 	private GoodMaxProductionLocation theBestLocation(Unit worker, Set<String> withoutLocationIds, String ... planGoodsType) {
-	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker);
+	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker, ignoreIndianOwner);
 	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
@@ -436,12 +444,7 @@ public class ColonyPlan {
 			}
 		}
 		
-		Collections.sort(onlyGoodsFromPlan, new Comparator<GoodMaxProductionLocation>() {
-			@Override
-			public int compare(GoodMaxProductionLocation o1, GoodMaxProductionLocation o2) {
-				return o2.getProduction() - o1.getProduction();
-			}
-		});
+		Collections.sort(onlyGoodsFromPlan, locationProductionAmountComparator);
 		
 		if (onlyGoodsFromPlan.isEmpty()) {
 			return null;
@@ -588,6 +591,11 @@ public class ColonyPlan {
 
 	public ColonyPlan withConsumeWarehouseResources(boolean consumeWarehouseResources) {
 		this.consumeWarehouseResources = consumeWarehouseResources;
+		return this;
+	}
+
+	public ColonyPlan withIgnoreIndianOwner() {
+		this.ignoreIndianOwner = true;
 		return this;
 	}
 }

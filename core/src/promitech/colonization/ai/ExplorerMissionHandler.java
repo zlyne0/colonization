@@ -37,6 +37,9 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
 			return;
 		}
 		exploreByAllMoves(mission.unit);
+		
+		// one turn mission
+		mission.setDone();
 	}
 
 	private ExploreStatus prepareExploration(Unit ship) {

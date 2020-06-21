@@ -247,7 +247,7 @@ class ColonyPlanTest {
     	Unit fisherman = UnitFactory.create("model.unit.expertFisherman", dutch, nieuwAmsterdam.tile);
     	
 		// when
-    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.determinePotentialMaxGoodsProduction(fisherman);
+    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.determinePotentialMaxGoodsProduction(fisherman, false);
 		
 		// then
     	for (GoodMaxProductionLocation gpl : productions) {
@@ -271,6 +271,22 @@ class ColonyPlanTest {
 		// then
     	ColonyAssert.assertThat(nieuwAmsterdam)
 			.hasSize(0);
+	}
+
+    @Test
+	public void canAssignWorkersWhenTilesLockedAndIgnoreIndianOwner() throws Exception {
+		// given
+    	lockAllTilesInColony();
+    	
+    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+    	colonyPlan.withIgnoreIndianOwner();
+    	
+		// when
+    	colonyPlan.execute2(ColonyPlan.Plan.Food);		
+
+		// then
+    	ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(5);
 	}
     
     @Test

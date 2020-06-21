@@ -137,7 +137,7 @@ class ColonyProduction {
 		prodConsByProducer.clear();
 	}
 
-	List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit worker) {
+	List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit worker, boolean ignoreIndianOwner) {
         List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
         
         ProductionSummary prodCons = globalProductionConsumption();
@@ -145,7 +145,7 @@ class ColonyProduction {
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
-                maxProd = maxProductionFromTile(gt, worker);
+                maxProd = maxProductionFromTile(gt, worker, ignoreIndianOwner);
             } else {
                 maxProd = maxProductionFromBuilding(gt, worker, prodCons, colony.goodsContainer);
             }
@@ -159,7 +159,7 @@ class ColonyProduction {
 	void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialMaxProduction) {
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             if (gt.isFarmed()) {
-            	GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, worker);
+            	GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, worker, false);
                 if (maxProd != null) {
                     potentialMaxProduction.add(maxProd);
                 }
@@ -219,7 +219,7 @@ class ColonyProduction {
     	}
     }
 	
-    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker) {
+    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker, boolean ignoreIndianOwner) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
@@ -229,7 +229,7 @@ class ColonyProduction {
 	        if (colonyTile.tile.getId().equals(colony.tile.getId())) {
 	            continue;
 	        }
-	        if (colony.isTileLocked(colonyTile.tile)) {
+	        if (colony.isTileLocked(colonyTile.tile, ignoreIndianOwner)) {
 	        	continue;
 	        }
 	        

@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import promitech.colonization.ai.ColonyProductionPlaner;
 
 public class ColonyFactory {
 
@@ -15,6 +16,14 @@ public class ColonyFactory {
 		this.pathFinder = pathFinder;
 	}
 
+	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
+        String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
+        Colony colony = buildColony(buildByUnit, tile, colonyName);
+        ColonyProductionPlaner productionPlaner = new ColonyProductionPlaner();
+        productionPlaner.createPlan(colony);
+        return colony;
+	}
+	
 	public Colony buildColony(Unit buildByUnit, Tile tile, String colonyName) {
 		Colony colony = createColonyObject(game.map, buildByUnit, tile, colonyName);
 		determineEuropeSeaConnection(colony);

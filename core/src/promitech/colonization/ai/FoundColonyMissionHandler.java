@@ -42,10 +42,8 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
         BuildColonyOrder buildColonyOrder = new BuildColonyOrder(game.map);
         OrderStatus check = buildColonyOrder.check(mission.unit, mission.destTile);
         if (check == OrderStatus.OK) {
-            String colonyName = SettlementFactory.generateSettlmentName(mission.unit.getOwner());
-            
             ColonyFactory colonyFactory = new ColonyFactory(game, pathFinder);
-            colonyFactory.buildColony(mission.unit, mission.destTile, colonyName);
+            colonyFactory.buildColonyByAI(mission.unit, mission.destTile);
             
             playerMissionsContainer.unblockUnitsFromMission(mission);
             mission.setDone();
