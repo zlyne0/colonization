@@ -239,6 +239,23 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	}
     	return unitContainer.getSpaceTakenByUnits();
     }
+
+    public boolean hasMoreFreeCargoSpace(Unit u) {
+    	if (goodsContainer == null) {
+    		return false;
+    	}
+    	if (freeSpace() == 0) {
+    		return false;
+    	}
+    	if (u == null) {
+    		return true;
+    	}
+    	return freeSpace() > u.freeSpace();
+    }
+    
+    private int freeSpace() {
+    	return unitType.getSpace() - getSpaceTaken();
+    }
     
     private int getSpaceTaken() {
         int space = 0;
@@ -271,16 +288,21 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
     
 	public int maxGoodsAmountToFillFreeSlots(String goodsTypeId) {
-		int unitSpace = unitType.getSpace();
+		int cargoSlots = allGoodsCargoSlots();
+		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, cargoSlots);
+	}
+    
+	public int allGoodsCargoSlots() {
+		int cargoSlots = unitType.getSpace();
 		if (unitContainer != null) {
-			unitSpace -= unitContainer.getSpaceTakenByUnits();
+			cargoSlots -= unitContainer.getSpaceTakenByUnits();
 		}
 		if (goodsContainer == null) {
 			return 0;
 		}
-		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, unitSpace);
+		return cargoSlots;
 	}
-    
+	
     public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
     	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
     }
@@ -419,19 +441,24 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return (visibleGoodsCount >= 0) ? visibleGoodsCount : getGoodsSpaceTaken();
     }
     
-    public int getGoodsSpaceTaken() {
-        if (!canCarryGoods()) {
+    private int getGoodsSpaceTaken() {
+        if (goodsContainer == null) {
         	return 0;
         }
-        GoodsContainer gc = getGoodsContainer();
-        return (gc == null) ? 0 : gc.getCargoSpaceTaken();
+        return goodsContainer.getCargoSpaceTaken();
     }
     
     public void transferAllGoods(Unit toUnit) {
-    	for (Entry<String> transferedGoods : getGoodsContainer().entries()) {
+    	if (goodsContainer == null) {
+    		return;
+    	}
+    	if (toUnit.goodsContainer == null) {
+    		return;
+    	}
+    	for (Entry<String> transferedGoods : goodsContainer.entries()) {
 			int max = toUnit.maxGoodsAmountToFillFreeSlots(transferedGoods.key);
 			if (max > 0) {
-				toUnit.getGoodsContainer().increaseGoodsQuantity(
+				toUnit.goodsContainer.increaseGoodsQuantity(
 					transferedGoods.key, max
 				);
 			}
@@ -1027,6 +1054,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 		enterHighSea = null;
 		workLeft = getSailTurns();
+	}
+	
+	public GridPoint2 getEnterHighSea() {
+		return enterHighSea;
 	}
 	
     public int getSailTurns() {

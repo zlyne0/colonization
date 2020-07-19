@@ -106,7 +106,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 	private void generatePathToRellocate(RellocationMission mission) {
 		Unit potentialCarrier = mission.carrier;
 		if (potentialCarrier == null) {
-		    potentialCarrier = GlobalStrategyPlaner.findCarrierToRellocateUnit(mission.unit);
+		    potentialCarrier = Units.findCarrierToRellocateUnit(mission.unit);
 		}
 		if (potentialCarrier == null) {
 		    System.out.println("can not find carrier to rellocate unit[" + mission.unit + "] for player " + mission.unit.getOwner());

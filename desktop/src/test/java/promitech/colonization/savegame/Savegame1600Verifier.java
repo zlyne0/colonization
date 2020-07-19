@@ -1,7 +1,15 @@
 package promitech.colonization.savegame;
 
+import static net.sf.freecol.common.model.EuropeAssert.assertThat;
+import static net.sf.freecol.common.model.TileAssert.assertThat;
+import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
+import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
+import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
@@ -9,6 +17,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.IndianSettlementAssert;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.SettlementPlunderRange;
@@ -36,11 +45,11 @@ import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.FoundingFather;
+import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.player.Monarch.MonarchAction;
 import net.sf.freecol.common.model.player.MonarchActionNotification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
-import net.sf.freecol.common.model.player.FoundingFather.FoundingFatherType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoodsAssert;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -48,19 +57,12 @@ import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.IndianNationType;
-import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
-import static net.sf.freecol.common.model.TileAssert.assertThat;
-import static net.sf.freecol.common.model.EuropeAssert.assertThat;
-import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
-import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
-import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
-import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
 
 public class Savegame1600Verifier {
 
@@ -487,9 +489,9 @@ public class Savegame1600Verifier {
     		.roleChanges;
         assertThat(roleChanges.entities()).hasSize(3);
         
-        assertThat(roleChanges).containsId("model.role.default:model.role.scout");
-        assertThat(roleChanges).containsId("model.role.default:model.role.dragoon");
-        assertThat(roleChanges).containsId("model.role.default:model.role.cavalry");
+        MapIdEntitiesAssert.assertThat(roleChanges).containsId("model.role.default:model.role.scout");
+        MapIdEntitiesAssert.assertThat(roleChanges).containsId("model.role.default:model.role.dragoon");
+        MapIdEntitiesAssert.assertThat(roleChanges).containsId("model.role.default:model.role.cavalry");
         
         verifyCaptureEquipment(specification, game);
     }

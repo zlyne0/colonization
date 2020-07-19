@@ -75,4 +75,15 @@ class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 	public int scoreSum() {
 		return scoreSum;
 	}
+
+	public ObjectScore<T> first() {
+		if (this.objs.isEmpty()) {
+			return null;
+		}
+		return this.objs.get(0);
+	}
+
+	public boolean isEmpty() {
+		return this.objs.isEmpty();
+	}
 }

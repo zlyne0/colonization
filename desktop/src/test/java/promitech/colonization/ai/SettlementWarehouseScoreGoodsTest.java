@@ -63,10 +63,10 @@ class SettlementWarehouseScoreGoodsTest {
 			dutch, 
 			dutch.getEurope()
 		);
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(dutch, wagonTrain);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(goodsTypeToScore);
+    	ObjectsListScore<Settlement> settlementsScore = sut.score(wagonTrain);
     	
 		// then
     	ObjectsListScoreAssert.assertThat(settlementsScore)
@@ -86,10 +86,10 @@ class SettlementWarehouseScoreGoodsTest {
 			dutch, 
 			dutch.getEurope()
 		);
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(dutch, galleon);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(goodsTypeToScore);
+    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon);
     	
 		// then
     	ObjectsListScoreAssert.assertThat(settlementsScore)
@@ -110,10 +110,10 @@ class SettlementWarehouseScoreGoodsTest {
 			game.map.getSafeTile(30,68)
 		);
     	PathFinder pathFinder = new PathFinder();
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(dutch, galleon);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(goodsTypeToScore, game.map, pathFinder);
+    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
 
 		// then
 
@@ -135,10 +135,10 @@ class SettlementWarehouseScoreGoodsTest {
 			game.map.getSafeTile(15, 89)
 		);
     	PathFinder pathFinder = new PathFinder();
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(dutch, galleon);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(goodsTypeToScore, game.map, pathFinder);
+    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
 
 //    	for (ObjectScore<Settlement> x : settlementsScore) {
 //    		System.out.println(x);
@@ -171,12 +171,7 @@ class SettlementWarehouseScoreGoodsTest {
 	})
 	public void canCalculateScoreDependsTruns(int score, int turns, int expectedScore) throws Exception {
 		// given
-    	Unit galleon = UnitFactory.create(
-			Specification.instance.unitTypes.getById(UnitType.GALLEON), 
-			dutch, 
-			dutch.getEurope()
-		);
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(dutch, galleon);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
 
 		// when
     	int settlementTurnsScore = sut.settlementTurnsScore(score, turns);

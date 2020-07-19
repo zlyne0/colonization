@@ -4,6 +4,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.fail;
 
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
@@ -15,7 +17,9 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.Pair;
+import promitech.colonization.ai.Units;
 import promitech.colonization.savegame.SaveGameParser;
 
 public class UnitTest {
@@ -163,5 +167,66 @@ public class UnitTest {
 				.as("unit " + u.toString() + " line of sight")
 				.isEqualTo(expectedLineOfSight);
 		}
+	}
+    
+    @Test
+	public void canDetermineHasMoreFreeCargoSpace() throws Exception {
+		// given
+    	Player dutch = game.players.getById("player:1");
+    	Tile seaTile = game.map.getTile(25,80);
+    	Tile landTile = game.map.getTile(24, 72);
+    	
+    	Unit freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile);
+    	Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, seaTile);
+    	Unit merchantman = UnitFactory.create("model.unit.merchantman", dutch, seaTile);
+    	Unit galleonWithGoods = UnitFactory.create(UnitType.GALLEON, dutch, seaTile);
+    	galleonWithGoods.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 500);
+    	
+		// when
+		assertThat(galleon.hasMoreFreeCargoSpace(freeColonist)).isTrue();
+		assertThat(galleon.hasMoreFreeCargoSpace(merchantman)).isTrue();
+		assertThat(galleon.hasMoreFreeCargoSpace(galleonWithGoods)).isTrue();
+		
+		assertThat(freeColonist.hasMoreFreeCargoSpace(galleon)).isFalse();
+		assertThat(freeColonist.hasMoreFreeCargoSpace(merchantman)).isFalse();
+		assertThat(freeColonist.hasMoreFreeCargoSpace(galleonWithGoods)).isFalse();
+
+		assertThat(merchantman.hasMoreFreeCargoSpace(freeColonist)).isTrue();
+		assertThat(merchantman.hasMoreFreeCargoSpace(galleon)).isFalse();
+		assertThat(merchantman.hasMoreFreeCargoSpace(galleonWithGoods)).isTrue();
+	}
+    
+    @Test
+	public void canSetUnitsListInFreeCargoSpaceOrder() throws Exception {
+		// given
+    	Player dutch = game.players.getById("player:1");
+    	Tile seaTile = game.map.getTile(25,80);
+    	Tile landTile = game.map.getTile(24, 72);
+    	
+    	Unit freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile);
+    	Unit galleon = UnitFactory.create(UnitType.GALLEON, dutch, seaTile);
+    	Unit merchantman = UnitFactory.create("model.unit.merchantman", dutch, seaTile);
+    	Unit merchantman2 = UnitFactory.create("model.unit.merchantman", dutch, seaTile);
+    	Unit galleonWithGoods = UnitFactory.create(UnitType.GALLEON, dutch, seaTile);
+    	galleonWithGoods.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 500);
+
+    	List<Unit> units = Arrays.asList(
+	    	freeColonist,
+	    	merchantman,
+	    	merchantman2,
+	    	galleonWithGoods,
+	    	galleon
+		);
+		// when
+		Collections.sort(units, Units.FREE_CARGO_SPACE_COMPARATOR);
+
+		// then
+		assertThat(units).containsExactly(
+			galleon,
+			merchantman2,
+			merchantman,
+			galleonWithGoods,
+			freeColonist
+		);
 	}
 }

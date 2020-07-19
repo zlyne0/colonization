@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
-public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
+public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T>, Iterable<T> {
 	
     protected final java.util.Map<String,T> entities;
 
@@ -138,6 +139,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     	return entities.values();
     }
 
+	@Override
+	public Iterator<T> iterator() {
+		return entities.values().iterator();
+	}
+    
     public MapIdEntities<T> reduceBy(MapIdEntities<T> reducer) {
         MapIdEntities<T> reduced = new MapIdEntities<T>();
         for (T u : this.entities()) {

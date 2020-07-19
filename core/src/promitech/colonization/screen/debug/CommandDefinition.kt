@@ -35,6 +35,7 @@ import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
 import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.MissionExecutor
+import promitech.colonization.ai.TransportGoodsToSellMissionPlaner
 
 
 fun createCommands(
@@ -100,6 +101,10 @@ fun createCommands(
 			theBestPlaceToBuildColony(guiGameModel, mapActor)
 		}
     	
+		command("ai_settlements_goods_score") {
+			settlementsGoodsScore(di, guiGameModel)
+		}
+		
 		command("ai_explore") {
 			theBestMove(di, mapActor)
 		} 
@@ -391,4 +396,9 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 			}
 		})
 				
+	}
+
+	fun settlementsGoodsScore(di : DI, guiGameModel : GUIGameModel) {
+		val planer = TransportGoodsToSellMissionPlaner(di.pathFinder)
+		planer.plan(guiGameModel.game, guiGameModel.game.playingPlayer)
 	}

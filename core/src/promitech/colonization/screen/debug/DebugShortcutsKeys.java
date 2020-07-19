@@ -64,10 +64,10 @@ public class DebugShortcutsKeys {
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
         
         commandByKeycode.put(Input.Keys.NUM_1, "player_as_ai");
-        commandByKeycode.put(Input.Keys.NUM_2, "indian_bring_gift");
-        commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
+        commandByKeycode.put(Input.Keys.NUM_2, "ai_settlements");
+        commandByKeycode.put(Input.Keys.NUM_3, "ai_settlements_goods_score");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");
-        commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
+        //commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
     }
 
     public boolean canHandleKey(int keycode) {
