@@ -292,6 +292,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, cargoSlots);
 	}
     
+	/**
+	 * @return Total goods cargo slots
+	 */
 	public int allGoodsCargoSlots() {
 		int cargoSlots = unitType.getSpace();
 		if (unitContainer != null) {
@@ -1044,7 +1047,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 	
 	public void sailUnitToNewWorld() {
-		embarkUnitsFromLocation(owner.getEurope());
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
 		if (enterHighSea != null) {

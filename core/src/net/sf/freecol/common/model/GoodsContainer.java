@@ -152,7 +152,7 @@ public class GoodsContainer {
 		return cargoSpaceTaken;
 	}
     
-    public List<AbstractGoods> carrierGoods() {
+    public List<AbstractGoods> slotedGoods() {
         return goods.slotedGoods();
     }
 

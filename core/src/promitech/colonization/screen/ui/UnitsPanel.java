@@ -66,7 +66,7 @@ class CargoPanel extends Table implements
 		clear();
 		
 		GoodsContainer goodsContainer = unitActor.unit.getGoodsContainer();
-		for (AbstractGoods carrierGood : goodsContainer.carrierGoods()) {
+		for (AbstractGoods carrierGood : goodsContainer.slotedGoods()) {
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(carrierGood.getTypeId());
 			
 			QuantityGoodActor goodActor = new QuantityGoodActor(goodsType, carrierGood.getQuantity());
