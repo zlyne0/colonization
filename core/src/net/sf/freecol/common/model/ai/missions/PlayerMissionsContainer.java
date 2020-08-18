@@ -134,6 +134,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", ExplorerMission.class);
             addNodeForMapIdEntities("missions", IndianBringGiftMission.class);
             addNodeForMapIdEntities("missions", DemandTributeMission.class);
+            addNodeForMapIdEntities("missions", TransportGoodsToSellMission.class);
         }
         
         @Override

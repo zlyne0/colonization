@@ -14,6 +14,13 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		return new UnitAssert(unit, UnitAssert.class);
 	}
 
+	public UnitAssert isIdEquals(String id) {
+		if (!actual.equalsId(id)) {
+			failWithMessage("expected unit <%s> id is equals <%s>", actual.getId(), id);
+		}
+		return this;
+	}
+	
 	public UnitAssert isDisposed() {
 		isNotNull();
 		if (actual.getOwner().units.containsId(actual)) {

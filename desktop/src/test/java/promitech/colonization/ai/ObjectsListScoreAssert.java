@@ -28,14 +28,27 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		return this;
 	}
 	
-	public ObjectsListScoreAssert hasScore(int index, int score, Object obj) {
+	public <T> ObjectsListScoreAssert hasScore(int index, int score, T obj) {
 		ObjectScore<?> os = actual.get(index);
 		if (os.getScore() != score) {
 			failWithMessage("expected score at index %s <%s> but has score <%s>", index, score, os.getScore());
 		}
-		if (!os.getObj().equals(obj)) {
+		if (os.getObj() != obj) {
 			failWithMessage("at index %s is unexpected object", index);
 		}
 		return this;
 	}
+	
+	public ObjectsListScoreAssert hasScore(Object obj, int score) {
+		ObjectScore<?> objectScore = actual.find(obj);
+		if (objectScore == null) {
+			failWithMessage("can not find score for object %s", obj);
+			return this;
+		}
+		if (objectScore.getScore() != score) {
+			failWithMessage("expected score %s at for object <%s> but has score <%s>", score, obj, objectScore.getScore());
+		}
+		return this;
+	}
+	
 }

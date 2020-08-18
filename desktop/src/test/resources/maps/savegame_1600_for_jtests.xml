@@ -21044,6 +21044,10 @@
                       <explorerMission id="explorerMission:5:2:1" unit="unit:6437"/>
                   </rellocationMission>
               </explorerMission>
+			  <transportGoodsToSellMission id="transportGoodsToSellMission:1" unit="unit:6437" firstToVisit="colony:6993">
+				  <settlement id="colony:6993" />
+				  <settlement id="colony:6554" />
+			  </transportGoodsToSellMission>
 	      </playerMissions>
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>

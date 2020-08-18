@@ -113,6 +113,7 @@ public abstract class AbstractMission extends ObjectWithId {
 			addNode(ExplorerMission.class, setter);
 			addNode(IndianBringGiftMission.class, setter);
 			addNode(DemandTributeMission.class, setter);
+			addNode(TransportGoodsToSellMission.class, setter);
 		}
 
 		@Override

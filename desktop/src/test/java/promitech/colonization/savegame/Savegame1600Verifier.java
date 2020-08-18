@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesAssert;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
+import net.sf.freecol.common.model.SettlementAssert;
 import net.sf.freecol.common.model.SettlementPlunderRange;
 import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
@@ -31,6 +32,7 @@ import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.TradeRouteDefinition;
 import net.sf.freecol.common.model.TradeRouteStop;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
@@ -40,6 +42,7 @@ import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
@@ -145,7 +148,21 @@ public class Savegame1600Verifier {
 		verifyRellocationMission(game);
 		verifyFoundColonyMission(game);
 		verifyExploreMission(game);
+		verifyDutchMissions(game);
 		verifyMissionRecursion(game);
+	}
+
+	private void verifyDutchMissions(Game game) {
+        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
+		Player dutch = game.players.getById("player:1");
+        
+        TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
+        UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
+        assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
+			"colony:6993",
+			"colony:6554"
+		);
+        SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals("colony:6993");
 	}
 
 	private void verifyMissionRecursion(Game game) {
