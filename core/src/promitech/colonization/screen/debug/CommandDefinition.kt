@@ -35,7 +35,8 @@ import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
 import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.MissionExecutor
-import promitech.colonization.ai.TransportGoodsToSellMissionPlaner
+import promitech.colonization.ai.goodsToSell.TransportGoodsToSellMissionPlaner
+import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission
 
 
 fun createCommands(
@@ -103,6 +104,10 @@ fun createCommands(
     	
 		command("ai_settlements_goods_score") {
 			settlementsGoodsScore(di, guiGameModel)
+		}
+		
+		command("ai_transport_goods_to_sell_mission_example") {
+			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
 		}
 		
 		command("ai_explore") {
@@ -402,3 +407,22 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		val planer = TransportGoodsToSellMissionPlaner(di.pathFinder)
 		planer.plan(guiGameModel.game, guiGameModel.game.playingPlayer)
 	}
+
+	fun ai_transport_goods_to_sell_mission_example(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val player = guiGameModel.game.players.getById("player:1")
+		val transporter = player.units.getById("unit:938")
+		
+		val mission = TransportGoodsToSellMission(
+			transporter,
+			player.settlements.getById("colony:1182"),
+			setOf("colony:1182", "colony:1063")
+		)
+		
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
+					.runMission(player, mission)
+			}
+		})
+	}
+

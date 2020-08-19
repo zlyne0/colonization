@@ -43,7 +43,8 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		if (player.isDead()) {
 			return false;
 		}
-		if (transporter == null || transporter.isDisposed() || transporter.isDamaged() || !player.units.containsId(transporter)) {
+		if (transporter == null || transporter.isDisposed() || transporter.isDamaged() || !player.units.containsId(transporter) 
+				|| !transporter.isOwner(player)) {
 			return false;
 		}
 		return true;
@@ -86,12 +87,12 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		return transporter.getTile().equalsCoordinates(settlement.tile);
 	}
 
-	public void loadGoodsFrom(Settlement firstSettlementToVisit) {
+	public void loadGoodsFrom(Settlement settlement) {
 		GoodsLoader goodsLoader = new GoodsLoader(
 			transporter.getOwner(),
 			Specification.instance.goodsTypeToScoreByPrice
 		);
-		goodsLoader.load(firstSettlementToVisit, transporter);
+		goodsLoader.load(settlement, transporter);
 	}
 	
 	public boolean hasTransporterCargo() {

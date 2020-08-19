@@ -1,9 +1,8 @@
-package promitech.colonization.ai;
-
-import java.util.ArrayList;
-import java.util.List;
+package promitech.colonization.ai.goodsToSell;
 
 import static org.assertj.core.api.Assertions.assertThat;
+
+import java.util.List;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +22,9 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ai.ObjectsListScore;
+import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.ObjectsListScoreAssert;
 import promitech.colonization.savegame.SaveGameParser;
 
 class SettlementWarehouseScoreGoodsTest {
@@ -41,18 +43,7 @@ class SettlementWarehouseScoreGoodsTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	dutch = game.players.getById("player:1");
     	
-    	Specification spec = Specification.instance;
-    	goodsTypeToScore = new ArrayList<>();
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.sugar"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.tobacco"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.cotton"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.furs"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.ore"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.silver"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.rum"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.cigars"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.cloth"));
-    	goodsTypeToScore.add(spec.goodsTypes.getById("model.goods.coats"));
+    	goodsTypeToScore = Specification.instance.goodsTypeToScoreByPrice;
     }
 
     @Test
@@ -79,7 +70,7 @@ class SettlementWarehouseScoreGoodsTest {
 	}
 
     @Test
-	public void canDetermineSettlementGoodsScoreForGalen() throws Exception {
+	public void canDetermineSettlementGoodsScoreForGallen() throws Exception {
 		// given
     	Unit galleon = UnitFactory.create(
 			Specification.instance.unitTypes.getById(UnitType.GALLEON), 
@@ -98,6 +89,34 @@ class SettlementWarehouseScoreGoodsTest {
     		.hasScore(1, 1130, dutch.settlements.getById("colony:6554"))
     		.hasScore(2, 378, dutch.settlements.getById("colony:6788"))
     		.hasScore(3, 344, dutch.settlements.getById("colony:6993"))
+		;
+	}
+
+    @Test
+	public void canDetermineSettlementGoodsScoreForFullCargoGallen() throws Exception {
+		// given
+    	Unit galleon = UnitFactory.create(
+			Specification.instance.unitTypes.getById(UnitType.GALLEON), 
+			dutch, 
+			dutch.getEurope()
+		);
+    	galleon.getGoodsContainer().increaseGoodsQuantity(GoodsType.MUSKETS, 600);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
+    	
+		// when
+    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon);
+    	
+//		for (ObjectScore<Settlement> x : settlementsScore) {
+//			System.out.println(x);
+//		}    	
+    	
+		// then
+    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    		.hasSize(4)
+    		.hasScore(dutch.settlements.getById("colony:6993"), 0)
+    		.hasScore(dutch.settlements.getById("colony:6554"), 0)
+    		.hasScore(dutch.settlements.getById("colony:6788"), 0)
+    		.hasScore(dutch.settlements.getById("colony:6993"), 0)
 		;
 	}
     

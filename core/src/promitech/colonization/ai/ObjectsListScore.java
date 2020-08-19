@@ -6,7 +6,7 @@ import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 
-class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
+public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 
 	private static Comparator<ObjectScore<?>> descendingComparator = new Comparator<ObjectScore<?>>() {
 		@Override
@@ -58,6 +58,15 @@ class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 		return this.objs.get(index);
 	}
 
+	public ObjectScore<T> find(Object obj) {
+		for (ObjectScore<T> objectScore : this.objs) {
+			if (objectScore.obj == obj) {
+				return objectScore;
+			}
+		}
+		return null;
+	}
+	
 	@Override
 	public Iterator<ObjectScore<T>> iterator() {
 		return this.objs.iterator();
@@ -65,6 +74,13 @@ class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 	
 	public void sortDescending() {
 		Collections.sort(objs, descendingComparator);
+	}
+
+	public ObjectScore<T> theBestScore() {
+		if (this.objs.isEmpty()) {
+			return null;
+		}
+		return this.objs.get(0);
 	}
 	
 	public void clear() {
@@ -74,13 +90,6 @@ class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScore<T>> {
 
 	public int scoreSum() {
 		return scoreSum;
-	}
-
-	public ObjectScore<T> first() {
-		if (this.objs.isEmpty()) {
-			return null;
-		}
-		return this.objs.get(0);
 	}
 
 	public boolean isEmpty() {

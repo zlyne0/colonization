@@ -28,6 +28,10 @@ public class AbstractGoods implements Identifiable {
 		}
 	}
 	
+	public int amountToFillSlot() {
+		return ProductionSummary.CARRIER_SLOT_MAX_QUANTITY - quantity;
+	}
+	
 	public void makeEmpty() {
 		quantity = 0;
 	}

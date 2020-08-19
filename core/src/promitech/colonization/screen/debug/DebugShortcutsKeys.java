@@ -66,6 +66,7 @@ public class DebugShortcutsKeys {
         commandByKeycode.put(Input.Keys.NUM_1, "player_as_ai");
         commandByKeycode.put(Input.Keys.NUM_2, "ai_settlements");
         commandByKeycode.put(Input.Keys.NUM_3, "ai_settlements_goods_score");
+        commandByKeycode.put(Input.Keys.NUM_4, "ai_transport_goods_to_sell_mission_example");
         commandByKeycode.put(Input.Keys.NUM_5, "map show");
         //commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
     }

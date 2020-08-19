@@ -17,7 +17,7 @@ import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMission>{
+class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMission> {
 
 	private final Game game;
 	private final PathFinder pathFinder;

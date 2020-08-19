@@ -12,10 +12,12 @@ import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.ai.goodsToSell.TransportGoodsToSellMissionHandler;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -56,6 +58,9 @@ public class MissionExecutor {
         DemandTributeMissionHandler demandTributeMissionHandler = new DemandTributeMissionHandler(
     		game, pathFinder, moveService, combatService, guiGameController
 		);
+        TransportGoodsToSellMissionHandler transportGoodsToSellMissionHandler = new TransportGoodsToSellMissionHandler(
+    		game, pathFinder, moveService
+		);
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
@@ -63,6 +68,7 @@ public class MissionExecutor {
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
 		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);
 		missionHandlerMapping.put(DemandTributeMission.class, demandTributeMissionHandler);
+		missionHandlerMapping.put(TransportGoodsToSellMission.class, transportGoodsToSellMissionHandler);
 	}
     
 	public void executeMissions(Player player) {

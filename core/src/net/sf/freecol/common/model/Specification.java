@@ -141,6 +141,7 @@ public class Specification {
     public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();
     public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
     public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
+    public final List<GoodsType> goodsTypeToScoreByPrice = new ArrayList<GoodsType>();
     
     private String difficultyLevel;
     
@@ -197,8 +198,23 @@ public class Specification {
         createSupportUnitLists();
         updateModifiersFromDifficultyLevel();
         determineNativeMilitaryRoles();
+        createGoodsTypeToScoreByPrice();
     }
 
+    private void createGoodsTypeToScoreByPrice() {
+    	goodsTypeToScoreByPrice.clear();
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.sugar"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.tobacco"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cotton"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.furs"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.ore"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.silver"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.rum"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cigars"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cloth"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.coats"));
+    }
+    
     private void determineNativeMilitaryRoles() {
 		UnitType brave = Specification.instance.unitTypes.getById(UnitType.BRAVE);
 		NationType nativeType = nationTypes.getById("model.nationType.apache");
@@ -303,6 +319,7 @@ public class Specification {
         landTypes.clear();
         mercenaryTypes.clear();
         militaryRoles.clear();
+        goodsTypeToScoreByPrice.clear();
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {
