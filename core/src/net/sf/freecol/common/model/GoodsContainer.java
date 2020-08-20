@@ -92,9 +92,10 @@ public class GoodsContainer {
     	increaseGoodsQuantity(goodsType.getId(), quantity);
     }
     
-    public void increaseGoodsQuantity(String goodsId, int quantity) {
+    public GoodsContainer increaseGoodsQuantity(String goodsId, int quantity) {
     	goods.addGoods(goodsId, quantity);
     	updateTakenCargoSlots();
+    	return this;
     }
     
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {

@@ -412,15 +412,25 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		val player = guiGameModel.game.players.getById("player:1")
 		val transporter = player.units.getById("unit:938")
 		
-		//transporter.getGoodsContainer().increaseGoodsQuantity("model.goods.cloth", 200)
-		//transporter.changeUnitLocation(guiGameModel.game.map.getSafeTile(27, 21))
-		
 		val mission = TransportGoodsToSellMission(
 			transporter,
 			player.settlements.getById("colony:1182"),
 			setOf("colony:1182", "colony:1063")
 		)
-		//mission.changePhase(TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE)
+		
+		// move cargo to europe to sell			
+//		transporter.getGoodsContainer().increaseGoodsQuantity("model.goods.cloth", 200)
+//		transporter.changeUnitLocation(guiGameModel.game.map.getSafeTile(27, 21))
+//		mission.changePhase(TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE)
+		
+		// move from europe to colony to load cargo
+		player.settlements.getById("colony:1182").getGoodsContainer().decreaseAllToZero()
+		player.settlements.getById("colony:1063").getGoodsContainer()
+			.increaseGoodsQuantity("model.goods.rum", 100)
+			.increaseGoodsQuantity("model.goods.cigars", 100)
+			.increaseGoodsQuantity("model.goods.silver", 100)
+			.increaseGoodsQuantity("model.goods.cloth", 100)
+		transporter.changeUnitLocation(player.getEurope())
 		
 		guiGameModel.game.aiContainer.missionContainer(player).addMission(mission)
 		

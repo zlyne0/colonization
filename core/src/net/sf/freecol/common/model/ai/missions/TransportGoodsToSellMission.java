@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
+
 import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
@@ -92,6 +94,11 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	}
 
 	public void loadGoodsFrom(Settlement settlement) {
+		logger.debug(
+			"TransportGoodsToSellMissionHandler[%s] load goods in %s", 
+			transporter.getOwner().getId(), settlement.getId()
+		);
+		
 		GoodsLoader goodsLoader = new GoodsLoader(
 			transporter.getOwner(),
 			Specification.instance.goodsTypeToScoreByPrice
