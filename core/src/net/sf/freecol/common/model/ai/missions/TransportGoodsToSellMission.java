@@ -4,11 +4,15 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.badlogic.gdx.utils.ObjectIntMap.Entry;
+
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ai.goodsToSell.GoodsLoader;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -113,6 +117,33 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	
 	public void changePhase(Phase phase) {
 		this.phase = phase;
+	}
+	
+	public void sellAllCargoInEurope(Game game, StringBuilder logStr) {
+		Market market = transporter.getOwner().market();
+		
+		// ai can sell without arrears
+		market.repayAllArrears();
+		
+		int sumPrice = 0;
+		
+		for (Entry<String> cargoEntry : transporter.getGoodsContainer().entries()) {
+			GoodsType cargoGoodsType = Specification.instance.goodsTypes.getById(cargoEntry.key);
+			
+			int price = market.sellGoods(
+				game, 
+				transporter.getOwner(), 
+				cargoGoodsType, cargoEntry.value
+			).netPrice;
+			sumPrice += price;
+			
+			if (logStr.length() != 0) {
+				logStr.append(", ");
+			}
+			logStr.append("[" + cargoGoodsType.getId() + ":" + cargoEntry.value + ", price: " + price + "]");
+		}
+		logStr.append(", sumPrice: " + sumPrice);
+		transporter.getGoodsContainer().decreaseAllToZero();
 	}
 	
 	public static class Xml extends AbstractMission.Xml<TransportGoodsToSellMission> {

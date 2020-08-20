@@ -35,7 +35,7 @@ public class MissionExecutorDebugRun {
     }
     
     public void runMission(Player player, AbstractMission mission) {
-    	PlayerMissionsContainer missionContainer = gameModel.game.aiContainer.getMissionContainer(player);
+    	PlayerMissionsContainer missionContainer = gameModel.game.aiContainer.missionContainer(player);
     	missionExecutor.executeSingleMission(missionContainer, mission);
     }
 }

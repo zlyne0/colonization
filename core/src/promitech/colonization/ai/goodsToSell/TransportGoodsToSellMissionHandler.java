@@ -4,6 +4,7 @@ import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -45,7 +46,7 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		}
 
 		if (mission.getPhase() == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
-			moveToEurope(mission);
+			moveToEurope(mission, player);
 		}
 	}
 
@@ -109,17 +110,28 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		}
 	}
 
-	private void moveToEurope(TransportGoodsToSellMission mission) {
+	private void moveToEurope(TransportGoodsToSellMission mission, Player player) {
 		if (mission.getTransporter().isAtLocation(Europe.class)) {
-			// TODO: sell goods, end mission
+			StringBuilder logStr = new StringBuilder();
+			mission.sellAllCargoInEurope(game, logStr);
+			
+			logger.debug("TransportGoodsToSellMissionHandler[%s].sellInEurope %s", player.getId(), logStr);
+			
+			mission.setDone();
+			return;
 		}
 		
 		// do nothing in HighSeas
 		
 		if (mission.getTransporter().isAtLocation(Tile.class)) {
-			Path findToEurope = pathFinder.findToEurope(game.map, mission.getTransporter().getTile(), mission.getTransporter(), false);
-			// TODO:
+			Path pathEurope = pathFinder.findToEurope(game.map, mission.getTransporter().getTile(), mission.getTransporter(), false);
+			
+			MoveContext moveContext = new MoveContext(pathEurope);
+	    	MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
+	    	
+	    	if (aiConfirmedMovePath == MoveType.MOVE_HIGH_SEAS) {
+	    		mission.getTransporter().sailUnitToEurope(moveContext.destTile);
+	    	}
 		}
 	}
-
 }

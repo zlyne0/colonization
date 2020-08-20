@@ -322,7 +322,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		
 		val mission : IndianBringGiftMission
 		
-		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		val indianAiContainer = guiGameModel.game.aiContainer.missionContainer(tile.getSettlement().getOwner())
 		if (!indianAiContainer.hasMissionType(IndianBringGiftMission::class.java)) {
 			val transportUnit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
 			mission = IndianBringGiftMission(
@@ -350,7 +350,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		
 		val mission : DemandTributeMission
 		
-		val indianAiContainer = guiGameModel.game.aiContainer.getMissionContainer(tile.getSettlement().getOwner())
+		val indianAiContainer = guiGameModel.game.aiContainer.missionContainer(tile.getSettlement().getOwner())
 		if (!indianAiContainer.hasMissionType(DemandTributeMission::class.java)) {
 			val unit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
 			
@@ -412,11 +412,17 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		val player = guiGameModel.game.players.getById("player:1")
 		val transporter = player.units.getById("unit:938")
 		
+		//transporter.getGoodsContainer().increaseGoodsQuantity("model.goods.cloth", 200)
+		//transporter.changeUnitLocation(guiGameModel.game.map.getSafeTile(27, 21))
+		
 		val mission = TransportGoodsToSellMission(
 			transporter,
 			player.settlements.getById("colony:1182"),
 			setOf("colony:1182", "colony:1063")
 		)
+		//mission.changePhase(TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE)
+		
+		guiGameModel.game.aiContainer.missionContainer(player).addMission(mission)
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {

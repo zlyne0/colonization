@@ -13,7 +13,7 @@ public class AIContainer {
 		return playerMissions.getByIdOrNull(playerId);
 	}
 	
-	public PlayerMissionsContainer getMissionContainer(Player player) {
+	public PlayerMissionsContainer missionContainer(Player player) {
 		PlayerMissionsContainer missionsContainer = playerMissions.getByIdOrNull(player.getId());
 		if (missionsContainer == null) {
 			missionsContainer = new PlayerMissionsContainer(player);

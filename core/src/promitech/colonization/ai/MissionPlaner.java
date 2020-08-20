@@ -23,12 +23,12 @@ public class MissionPlaner {
 	
 	public void planMissions(Player player) {
 		if (player.isIndian()) {
-			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
+			PlayerMissionsContainer playerMissionContainer = game.aiContainer.missionContainer(player);
 			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
 		}
 		
 		if (player.isLiveEuropeanPlayer()) {
-			PlayerMissionsContainer playerMissionContainer = game.aiContainer.getMissionContainer(player);
+			PlayerMissionsContainer playerMissionContainer = game.aiContainer.missionContainer(player);
 			europeanMissionPlaner.prepareMissions(player, playerMissionContainer);
 		}
 	}

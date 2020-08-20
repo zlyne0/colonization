@@ -34,7 +34,7 @@ public class Units {
     }
 
     public static List<Unit> findCarrierTransportResources(Game game, Player player) {
-    	PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer(player);
+    	PlayerMissionsContainer missionContainer = game.aiContainer.missionContainer(player);
     	List<Unit> units = null;
     	for (Unit unit : player.units) {
 			if (missionContainer.isUnitBlockedForMission(unit) || unit.isDamaged()) {

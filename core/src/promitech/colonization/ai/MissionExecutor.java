@@ -72,7 +72,7 @@ public class MissionExecutor {
 	}
     
 	public void executeMissions(Player player) {
-		PlayerMissionsContainer missionsContainer = game.aiContainer.getMissionContainer(player);
+		PlayerMissionsContainer missionsContainer = game.aiContainer.missionContainer(player);
         for (AbstractMission am : missionsContainer.getMissions().entities()) {
         	if (am.isDone()) {
         		continue;
