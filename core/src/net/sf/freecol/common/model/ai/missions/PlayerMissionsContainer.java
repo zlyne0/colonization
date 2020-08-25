@@ -18,6 +18,11 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
+/**
+ * Wdech, wydech
+ * Jesz, srasz, śpisz.
+ * Bierzesz, co Ci dają i niczego nie dajesz w zamian.  
+ */
 public class PlayerMissionsContainer extends ObjectWithId {
 
 	private final MapIdEntities<AbstractMission> missions = MapIdEntities.linkedMapIdEntities();
@@ -96,9 +101,13 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public boolean isUnitBlockedForMission(Unit unit) {
-		return unitMissionsMapping.isUnitInMission(unit);
+		return unitMissionsMapping.isUnitInMission(unit.getId());
 	}
 
+	public boolean isUnitBlockedForMission(String unitId) {
+		return unitMissionsMapping.isUnitInMission(unitId);
+	}
+	
 	public void interruptMission(Unit unit) {
 		for (AbstractMission mission : unitMissionsMapping.getUnitMission(unit)) {
 			mission.setDone();

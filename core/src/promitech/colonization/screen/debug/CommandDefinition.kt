@@ -432,7 +432,9 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 			.increaseGoodsQuantity("model.goods.cloth", 100)
 		transporter.changeUnitLocation(player.getEurope())
 		
-		guiGameModel.game.aiContainer.missionContainer(player).addMission(mission)
+		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+		missionContainer.blockUnitsForMission(mission)
+		missionContainer.addMission(mission)
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {

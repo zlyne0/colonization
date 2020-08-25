@@ -72,9 +72,8 @@ public class EuropeanMissionPlaner {
             
     		FoundColonyMission foundColonyMission = new FoundColonyMission(tileToBuildColony, colonist);
     		foundColonyMission.addDependMission(rellocationMission);
-    		playerMissionContainer.blockUnitsForMission(foundColonyMission);
     		
-    		System.out.println("create mission: " + foundColonyMission);
+    		playerMissionContainer.blockUnitsForMission(foundColonyMission);
     		playerMissionContainer.addMission(foundColonyMission);
     	}
 	}
