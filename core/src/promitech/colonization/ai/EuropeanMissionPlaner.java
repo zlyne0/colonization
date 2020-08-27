@@ -30,7 +30,6 @@ public class EuropeanMissionPlaner {
     		if (unit.isNaval() && unit.isCarrier() && unit.getTileLocationOrNull() != null) {
     			if (!playerMissionContainer.isUnitBlockedForMission(unit)) {
     				ExplorerMission explorerMission = new ExplorerMission(unit);
-    				playerMissionContainer.blockUnitForMission(unit, explorerMission);
     				playerMissionContainer.addMission(explorerMission);
     			}
     		}
@@ -68,12 +67,9 @@ public class EuropeanMissionPlaner {
     	
     	for (Unit colonist : colonists.entities()) {
     		RellocationMission rellocationMission = new RellocationMission(tileToBuildColony, colonist, ship);
-            playerMissionContainer.blockUnitsForMission(rellocationMission);
-            
     		FoundColonyMission foundColonyMission = new FoundColonyMission(tileToBuildColony, colonist);
     		foundColonyMission.addDependMission(rellocationMission);
     		
-    		playerMissionContainer.blockUnitsForMission(foundColonyMission);
     		playerMissionContainer.addMission(foundColonyMission);
     	}
 	}

@@ -37,6 +37,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	public void addMission(AbstractMission m) {
 		logger.debug("player[%s] add mission[%s]", player.getId(), m.getId());
 		missions.add(m);
+		blockUnitsForMission(m);
 	}
 
 	public void clearDoneMissions() {
@@ -87,6 +88,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	
 	public void blockUnitsForMission(AbstractMission mission) {
 		mission.blockUnits(unitMissionsMapping);
+		
+		if (mission.hasDependMissions()) {
+			List<AbstractMission> dm = new ArrayList<AbstractMission>();
+			dm.addAll(mission.dependMissions);
+			
+			while (!dm.isEmpty()) {
+				AbstractMission first = dm.remove(0);
+				first.blockUnits(unitMissionsMapping);
+				dm.addAll(first.dependMissions);
+			}
+		}
 	}
 
 	public void unblockUnitFromMission(Unit unit, AbstractMission mission) {

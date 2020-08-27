@@ -58,7 +58,6 @@ public class NativeMissionPlaner {
 					Unit unitToWander = units.get(i);
 					unitToWander.changeUnitLocation(settlement.tile);
 					WanderMission wanderMission = new WanderMission(unitToWander);
-					missionsContainer.blockUnitsForMission(wanderMission);
 					missionsContainer.addMission(wanderMission);
 				}
 			}

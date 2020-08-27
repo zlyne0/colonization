@@ -60,7 +60,7 @@ public abstract class AbstractMission extends ObjectWithId {
 		
 		boolean hasDepend = false;
 		for (AbstractMission am : dependMissions) {
-			if (am.done == false) {
+			if (!am.done) {
 				hasDepend = true;
 				break;
 			}

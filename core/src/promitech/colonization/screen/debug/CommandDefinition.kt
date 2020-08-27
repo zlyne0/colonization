@@ -433,7 +433,6 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		transporter.changeUnitLocation(player.getEurope())
 		
 		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
-		missionContainer.blockUnitsForMission(mission)
 		missionContainer.addMission(mission)
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
