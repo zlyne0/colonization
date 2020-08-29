@@ -86,7 +86,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		unitMissionsMapping.blockUnit(unit, mission);
 	}
 	
-	public void blockUnitsForMission(AbstractMission mission) {
+	private void blockUnitsForMission(AbstractMission mission) {
 		mission.blockUnits(unitMissionsMapping);
 		
 		if (mission.hasDependMissions()) {
@@ -176,7 +176,14 @@ public class PlayerMissionsContainer extends ObjectWithId {
         public void endElement(String uri, String localName, String qName) throws SAXException {
             if (getTagName().equals(qName)) {
                 PlayerMissionsContainer.Xml.player = null;
+                markMissionUnitsAsBlocked(nodeObject);
             }
+        }
+        
+        private void markMissionUnitsAsBlocked(PlayerMissionsContainer missionContainer) {
+        	for (AbstractMission mission : missionContainer.missions) {
+				missionContainer.blockUnitsForMission(mission);
+			}
         }
         
         @Override

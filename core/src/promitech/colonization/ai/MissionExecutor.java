@@ -116,8 +116,12 @@ public class MissionExecutor {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
-        //System.out.println("execute mission: " + am);
+    	MissionHandlerLogger.logger.debug("executeMission[%s]", am.getId());
+    	
         MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
 		missionHandler.handle(missionsContainer, am);
+		if (am.isDone()) {
+			missionsContainer.unblockUnitsFromMission(am);
+		}
     }
 }
