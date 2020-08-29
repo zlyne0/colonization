@@ -78,7 +78,7 @@ public class ColonyFactory {
     	tmpGalleon.changeUnitLocation(colony.tile);
 		colony.getOwner().units.add(tmpGalleon);
     	tmpGalleon.setOwner(colony.getOwner());
-    	Path path = pathFinder.findToEurope(game.map, colony.tile, tmpGalleon, false);
+    	Path path = pathFinder.findToEurope(game.map, colony.tile, tmpGalleon, PathFinder.useUnexploredBorders);
 
     	boolean foundPath = false;
     	if (!path.tiles.isEmpty()) {

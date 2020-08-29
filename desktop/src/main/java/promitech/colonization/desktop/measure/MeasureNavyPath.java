@@ -3,7 +3,6 @@ package promitech.colonization.desktop.measure;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
@@ -58,7 +57,7 @@ public class MeasureNavyPath implements MeasureTask {
 
     @Override
     public void run() {
-        path = sut.findToEurope(game.map, startTile, moveUnit);
+        path = sut.findToEurope(game.map, startTile, moveUnit, PathFinder.avoidUnexploredBorders);
         path = sut.findToTile(game.map, startTile2, endTile2, moveUnit);
     }
     

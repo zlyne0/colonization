@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.map.path;
 
 import java.util.Comparator;
+import java.util.EnumSet;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
@@ -11,7 +12,15 @@ import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
 public class PathFinder {
-	
+
+	public static final EnumSet<FlagTypes> avoidUnexploredBorders = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
+	public static final EnumSet<FlagTypes> useUnexploredBorders = EnumSet.noneOf(FlagTypes.class);
+
+	public enum FlagTypes {
+		AvoidUnexploredTiles,
+		WithoutNavyThreat
+	}
+
     static final int INFINITY = Integer.MAX_VALUE;
     static final int UNDEFINED = Integer.MIN_VALUE;
 	
@@ -63,20 +72,16 @@ public class PathFinder {
 	public PathFinder() {
 	}
 
-	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
-		return findToEurope(map, startTile, moveUnit, true);
-	}
-	
-	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
+	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
 	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+        this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+        this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
         
         determineCostDecider(false);
         Path path = find();

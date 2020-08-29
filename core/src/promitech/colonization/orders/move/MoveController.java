@@ -124,9 +124,10 @@ public class MoveController {
 	
 	public void acceptPathToEuropeDestination() {
 		mapActor.mapDrawModel().unitPath = finder.findToEurope(
-				guiGameModel.game.map, 
-				guiGameModel.getActiveUnit().getTile(), 
-				guiGameModel.getActiveUnit()
+			guiGameModel.game.map,
+			guiGameModel.getActiveUnit().getTile(),
+			guiGameModel.getActiveUnit(),
+			PathFinder.avoidUnexploredBorders
 		);
 		logicAcceptGotoPath();
 	}
@@ -213,7 +214,7 @@ public class MoveController {
 		}
 		if (unit.isDestinationEurope()) {
 			Tile startTile = unit.getTile();
-			mapActor.mapDrawModel().unitPath = finder.findToEurope(guiGameModel.game.map, startTile, unit);
+			mapActor.mapDrawModel().unitPath = finder.findToEurope(guiGameModel.game.map, startTile, unit, PathFinder.avoidUnexploredBorders);
 		}
 	}
 

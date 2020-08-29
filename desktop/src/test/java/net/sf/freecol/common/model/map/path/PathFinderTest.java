@@ -170,7 +170,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
 
         // when
-	    path = sut.findToEurope(game.map, startTile, moveUnit);
+	    path = sut.findToEurope(game.map, startTile, moveUnit, PathFinder.avoidUnexploredBorders);
         // then
 	    System.out.println("path = " + path);
 
@@ -247,7 +247,7 @@ public class PathFinderTest {
 		);
     	
 		// when
-		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon);
+		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon, PathFinder.avoidUnexploredBorders);
 
 		// then
 		PathAssert.assertThat(pathToEurope)
