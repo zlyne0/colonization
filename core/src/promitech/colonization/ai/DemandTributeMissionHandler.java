@@ -108,7 +108,7 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getColony().tile, 
 			mission.getUnitToDemandTribute(), 
-			false
+			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);
@@ -204,8 +204,8 @@ class DemandTributeMissionHandler implements MissionHandler<DemandTributeMission
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getIndianSettlement().tile, 
-			mission.getUnitToDemandTribute(), 
-			false
+			mission.getUnitToDemandTribute(),
+			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);

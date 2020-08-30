@@ -41,7 +41,7 @@ public class TransportPathFinderTest {
     	// carrier is next to unit
 		// given
     	PathFinder carrierRangeMap = new PathFinder();
-    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
+    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, PathFinder.includeUnexploredTiles);
     	
 		// when
     	TransportPathFinder sut = new TransportPathFinder(game.map);
@@ -72,7 +72,7 @@ public class TransportPathFinderTest {
     	carrier.changeUnitLocation(carrierSourceTile);
 
     	PathFinder carrierRangeMap = new PathFinder();
-    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
+    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, PathFinder.includeUnexploredTiles);
     	
 		// when
     	TransportPathFinder sut = new TransportPathFinder(game.map);
@@ -103,7 +103,7 @@ public class TransportPathFinderTest {
     	unit.changeUnitLocation(carrier);
 
     	PathFinder carrierRangeMap = new PathFinder();
-    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, false);
+    	carrierRangeMap.generateRangeMap(game.map, carrier.getTile(), carrier, PathFinder.includeUnexploredTiles);
     	
 		// when
     	TransportPathFinder sut = new TransportPathFinder(game.map);

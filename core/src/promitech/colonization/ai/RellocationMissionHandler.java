@@ -53,7 +53,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         } // else do nothing, wait until carrier will be on destination
         
         if (mission.needUnitMove()) {
-            Path path = pathFinder.findToTile(game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, false);
+            Path path = pathFinder.findToTile(game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, PathFinder.includeUnexploredTiles);
             MoveContext moveContext = new MoveContext(path);
             moveService.aiConfirmedMovePath(moveContext);
         }
@@ -84,7 +84,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 	private void moveCarrier(RellocationMission mission) {
 		// after embark unit carrier use the same path like before embark
 		if (carrierPath == null) {
-			carrierPath = pathFinder.findToTile(game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, false);
+			carrierPath = pathFinder.findToTile(game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, PathFinder.includeUnexploredTiles);
 		}
 		MoveContext moveContext = new MoveContext(carrierPath);
 		moveService.aiConfirmedMovePath(moveContext);
@@ -145,7 +145,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
             game.map, 
             carrier.getTile(), 
             carrier, 
-            false
+            PathFinder.includeUnexploredTiles
         );
         Path pathToDestination = transportPathFinder.findToTile(
             sourceTile, 

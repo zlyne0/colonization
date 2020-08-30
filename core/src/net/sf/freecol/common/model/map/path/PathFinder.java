@@ -13,12 +13,25 @@ import promitech.map.Object2dArray;
 
 public class PathFinder {
 
-	public static final EnumSet<FlagTypes> avoidUnexploredBorders = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
-	public static final EnumSet<FlagTypes> useUnexploredBorders = EnumSet.noneOf(FlagTypes.class);
+	public static final EnumSet<FlagTypes> excludeUnexploredTiles = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
+	public static final EnumSet<FlagTypes> includeUnexploredTiles = EnumSet.noneOf(FlagTypes.class);
 
-	public enum FlagTypes {
+	public static final EnumSet<FlagTypes> includeNavyThreat = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final EnumSet<FlagTypes> excludeNavyThreat = EnumSet.noneOf(FlagTypes.class);
+
+	public static final EnumSet<FlagTypes> includeUnexploredAndNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final EnumSet<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+
+	public static final EnumSet<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = EnumSet.of(
+		FlagTypes.AvoidUnexploredTiles,
+		FlagTypes.IncludeNavyThreatTiles
+	);
+
+	private enum FlagTypes {
+		// move only through explored tiles
 		AvoidUnexploredTiles,
-		WithoutNavyThreat
+
+		IncludeNavyThreatTiles
 	}
 
     static final int INFINITY = Integer.MAX_VALUE;
@@ -88,54 +101,42 @@ public class PathFinder {
         path.toEurope = true;
 		return path;
 	}
-	
-	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
-	    return findToTile(map, startTile, endTile, moveUnit, true, false);
-	}
 
-    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
-        return findToTile(map, startTile, endTile, moveUnit, avoidUnexploredTiles, false);
-    }
-	
-    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles, boolean withoutNavyThreat) {
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
         goalDecider = pathToTileGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = endTile;
         this.moveUnit = moveUnit;
         this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
         
-        determineCostDecider(withoutNavyThreat);
+        determineCostDecider(flags.contains(FlagTypes.IncludeNavyThreatTiles));
         Path path = find();
         path.toEurope = false;
         return path;
     }
 	
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
-		generateRangeMap(map, startTile, moveUnit, true);
-	}
-	
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
+	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
 	    goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
         this.findPossibilities = true;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
+		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		
         determineCostDecider(false);
         find();
 	}
 	
-	private void determineCostDecider(boolean withoutNavyThreat) {
+	private void determineCostDecider(boolean includeNavyThreat) {
 	    if (moveUnit.isNaval()) {
-	        if (withoutNavyThreat) {
+	        if (includeNavyThreat) {
 	            costDecider = navyWithoutThreatCostDecider;
 	        } else {
 	            costDecider = navyCostDecider;

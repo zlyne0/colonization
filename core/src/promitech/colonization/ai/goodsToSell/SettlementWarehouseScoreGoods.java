@@ -96,7 +96,7 @@ class SettlementWarehouseScoreGoods {
 	}
 
 	ObjectsListScore<Settlement> score(Unit carrier, Tile startLocation) {
-		rangeCalculator.generateRangeMap(map, startLocation, carrier, false);
+		rangeCalculator.generateRangeMap(map, startLocation, carrier, PathFinder.includeUnexploredTiles);
 		
 		settlementsScore.clear();
 		for (SettlementGoods settlementGoods : settlementsGoods) {

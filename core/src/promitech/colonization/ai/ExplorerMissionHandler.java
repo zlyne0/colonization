@@ -46,7 +46,7 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
         if (!ship.hasMovesPoints()) {
             return ExploreStatus.NO_MOVE_POINTS;
         }
-        pathFinder.generateRangeMap(game.map, ship.getTile(), ship);
+        pathFinder.generateRangeMap(game.map, ship.getTile(), ship, PathFinder.includeUnexploredTiles);
         navyExplorer.generateExploreDestination(pathFinder, ship.getOwner());
 
         if (!navyExplorer.isFoundExploreDestination()) {

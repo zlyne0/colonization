@@ -120,7 +120,13 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 			transporter.getOwner().getId(), settlement.getId()
 		);
 		
-		Path path = pathFinder.findToTile(game.map, transporter.getTile(), settlement.tile, transporter);
+		Path path = pathFinder.findToTile(
+			game.map,
+			transporter.getTile(),
+			settlement.tile,
+			transporter,
+			PathFinder.includeUnexploredAndExcludeNavyThreatTiles
+		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);
 			moveService.aiConfirmedMovePath(moveContext);
@@ -143,7 +149,12 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		if (mission.getTransporter().isAtLocation(Tile.class)) {
 			logger.debug("TransportGoodsToSellMissionHandler[%s] move to highseas", player.getId());
 			
-			Path pathEurope = pathFinder.findToEurope(game.map, mission.getTransporter().getTile(), mission.getTransporter(), PathFinder.useUnexploredBorders);
+			Path pathEurope = pathFinder.findToEurope(
+				game.map,
+				mission.getTransporter().getTile(),
+				mission.getTransporter(),
+				PathFinder.includeUnexploredAndExcludeNavyThreatTiles
+			);
 			
 			MoveContext moveContext = new MoveContext(pathEurope);
 	    	MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);

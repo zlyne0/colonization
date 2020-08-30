@@ -25,7 +25,13 @@ class TransportUnitMissionHandler {
     	if (mission.carrier == null || mission.carrier.isDisposed() || mission.carrier.isDamaged() || mission.units.isEmpty()) {
     		return;
     	}
-        Path path = pathFinder.findToTile(gameModel.game.map, mission.carrier.getTile(), mission.dest, mission.carrier);
+        Path path = pathFinder.findToTile(
+            gameModel.game.map,
+            mission.carrier.getTile(),
+            mission.dest,
+            mission.carrier,
+            PathFinder.includeUnexploredAndExcludeNavyThreatTiles
+        );
         
         MoveContext moveContext = new MoveContext(path);
         

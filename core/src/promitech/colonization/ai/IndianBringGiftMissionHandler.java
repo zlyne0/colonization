@@ -89,8 +89,8 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getIndianSettlement().tile, 
-			mission.getTransportUnit(), 
-			false
+			mission.getTransportUnit(),
+			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);
@@ -112,8 +112,8 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getDestinationColony().tile, 
-			mission.getTransportUnit(), 
-			false
+			mission.getTransportUnit(),
+			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);
@@ -173,8 +173,8 @@ class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMis
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getIndianSettlement().tile, 
-			mission.getTransportUnit(), 
-			false
+			mission.getTransportUnit(),
+			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);

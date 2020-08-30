@@ -244,7 +244,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 
     
     var pathFinder = PathFinder()
-    pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit);
+    pathFinder.generateRangeMap(guiGameModel.game.map, unit.getTile(), unit, PathFinder.includeUnexploredTiles);
     
     var navyExplorer = NavyExplorer(guiGameModel.game.map);
     navyExplorer.generateExploreDestination(pathFinder, unit.getOwner());
@@ -277,7 +277,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		val galleon = UnitFactory.create(UnitType.GALLEON, dutch, mapActor.mapDrawModel().selectedTile)
 		
 	    var pathFinder = PathFinder()
-	    pathFinder.generateRangeMap(guiGameModel.game.map, galleon.getTile(), galleon, false)
+	    pathFinder.generateRangeMap(guiGameModel.game.map, galleon.getTile(), galleon, PathFinder.excludeUnexploredTiles)
 		
 		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
 		pathFinder.turnCostToStringArrays(tileStrings)

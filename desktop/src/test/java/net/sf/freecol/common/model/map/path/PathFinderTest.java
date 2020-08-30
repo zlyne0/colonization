@@ -48,7 +48,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.getUnits().getById("unit:6762");
         
 		// when
-		path = sut.findToTile(game.map, startTile, endTile, moveUnit);
+		path = sut.findToTile(game.map, startTile, endTile, moveUnit, PathFinder.excludeUnexploredTiles);
         
 		// then
 		System.out.println("path = \r\n" + path );
@@ -78,7 +78,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
 		
 		// when
-        path = sut.findToTile(game.map, startTile, endTile, moveUnit);
+        path = sut.findToTile(game.map, startTile, endTile, moveUnit, PathFinder.excludeUnexploredTiles);
 		
 		// then
 		System.out.println("path = \r\n" + path );
@@ -115,7 +115,7 @@ public class PathFinderTest {
 
 
         // when
-        path = sut.findToTile(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer, PathFinder.excludeUnexploredTiles);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -146,7 +146,7 @@ public class PathFinderTest {
         privateer.changeUnitLocation(startTile);
 
         // when
-        path = sut.findToTile(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer, PathFinder.excludeUnexploredTiles);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -170,7 +170,7 @@ public class PathFinderTest {
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
 
         // when
-	    path = sut.findToEurope(game.map, startTile, moveUnit, PathFinder.avoidUnexploredBorders);
+	    path = sut.findToEurope(game.map, startTile, moveUnit, PathFinder.excludeUnexploredTiles);
         // then
 	    System.out.println("path = " + path);
 
@@ -219,7 +219,7 @@ public class PathFinderTest {
 		Tile destTile = game.map.getSafeTile(23, 80);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), destTile, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), destTile, colonist, PathFinder.excludeUnexploredTiles);
 
 		// then
 		for (Tile t : path.tiles) {
@@ -247,7 +247,7 @@ public class PathFinderTest {
 		);
     	
 		// when
-		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon, PathFinder.avoidUnexploredBorders);
+		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon, PathFinder.excludeUnexploredTiles);
 
 		// then
 		PathAssert.assertThat(pathToEurope)
@@ -271,7 +271,7 @@ public class PathFinderTest {
 		Tile nieuwAmsterdamTile = game.map.getSafeTile(24, 78);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), nieuwAmsterdamTile, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), nieuwAmsterdamTile, colonist, PathFinder.excludeUnexploredTiles);
 		
 		// then
 		PathAssert.assertThat(path)
@@ -287,7 +287,7 @@ public class PathFinderTest {
 		Tile tileOnIsland = game.map.getSafeTile(24, 89);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), tileOnIsland, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), tileOnIsland, colonist, PathFinder.excludeUnexploredTiles);
 
 		// then
 		PathAssert.assertThat(path)
@@ -304,7 +304,7 @@ public class PathFinderTest {
 		Unit brave = UnitFactory.create(UnitType.BRAVE, inca, fromTile);
 		
 		// when
-		path = sut.findToTile(game.map, fromTile, toTile, brave, false);
+		path = sut.findToTile(game.map, fromTile, toTile, brave, PathFinder.includeUnexploredTiles);
 
 		// then
         PathAssert.assertThat(path)

@@ -65,7 +65,7 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
     }
  
     public Tile findTileToBuildColony(Player player, Unit unit, Tile rangeFromTile) {
-        pathFinder.generateRangeMap(game.map, unit.getTile(), unit, false);
+        pathFinder.generateRangeMap(game.map, unit.getTile(), unit, PathFinder.includeUnexploredTiles);
         
         int maxTurnsRange = 5;
         int[] theBestWeights = new int[maxTurnsRange+1];

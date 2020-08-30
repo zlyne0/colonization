@@ -42,9 +42,10 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         Path pathToEnemy = pathFinder.findToTile(
             game.map, 
             mission.unit.getTileLocationOrNull(), enemyTile, 
-            mission.unit, 
-            false, true
+            mission.unit,
+            PathFinder.includeUnexploredAndNavyThreatTiles
         );
+
         System.out.println("path to enemy = " + pathToEnemy);
         
         MoveContext moveContext = new MoveContext(pathToEnemy);

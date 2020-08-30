@@ -54,7 +54,13 @@ public class TradeRouteMissionHandler {
         	wagon.removeTradeRoute();
             return;
         }
-        Path path = pathFinder.findToTile(guiGameModel.game.map, wagon.getTile(), nextStopLocation.tile, wagon);
+        Path path = pathFinder.findToTile(
+            guiGameModel.game.map,
+            wagon.getTile(),
+            nextStopLocation.tile,
+            wagon,
+            PathFinder.excludeUnexploredTiles
+        );
         if (!path.reachTile(nextStopLocation.tile)) {
             // just stop, and wait when path reach stop
             wagon.setState(UnitState.SKIPPED);
