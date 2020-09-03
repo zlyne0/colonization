@@ -51,7 +51,13 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 
 	private void moveToSettlement(TransportGoodsToSellMission mission, Player player) {
 		if (mission.getTransporter().isAtLocation(Europe.class)) {
-			logger.debug("TransportGoodsToSellMissionHandler[%s] transporter sail to new world", player.getId());
+			if (logger.isDebug()) {
+				Settlement firstSettlementToVisit = mission.firstSettlementToVisit(player);
+				logger.debug("TransportGoodsToSellMissionHandler[%s] transporter sail to new world to colony[%s]", 
+					player.getId(),
+					firstSettlementToVisit
+				);
+			}
 			mission.getTransporter().sailUnitToNewWorld();
 			return;
 		}
@@ -87,8 +93,8 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 	}
 	
 	private Settlement determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {
-		TransportGoodsToSellMissionPlaner planer = new TransportGoodsToSellMissionPlaner(pathFinder);
-		planer.determineNextSettlementToVisit(game, mission, player);
+		TransportGoodsToSellMissionPlaner planer = new TransportGoodsToSellMissionPlaner(game, pathFinder);
+		planer.determineNextSettlementToVisit(mission, player);
 		
 		Settlement firstSettlementToVisit = mission.firstSettlementToVisit(player);
 		if (firstSettlementToVisit == null) {

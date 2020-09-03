@@ -16,9 +16,7 @@ public class MissionPlaner {
 		this.game = game;
 		
 		nativeMissionPlaner = new NativeMissionPlaner(pathFinder);
-        europeanMissionPlaner = new EuropeanMissionPlaner(
-    		new FoundColonyMissionHandler(pathFinder, game)
-		);
+        europeanMissionPlaner = new EuropeanMissionPlaner(game, pathFinder);
 	}
 	
 	public void planMissions(Player player) {

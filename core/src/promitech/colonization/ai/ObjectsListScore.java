@@ -77,9 +77,6 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 	}
 
 	public ObjectScore<T> theBestScore() {
-		if (this.objs.isEmpty()) {
-			return null;
-		}
 		return this.objs.get(0);
 	}
 	

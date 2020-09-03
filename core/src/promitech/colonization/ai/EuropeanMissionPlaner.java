@@ -1,5 +1,6 @@
 package promitech.colonization.ai;
 
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -7,21 +8,26 @@ import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.ai.goodsToSell.TransportGoodsToSellMissionPlaner;
 
 public class EuropeanMissionPlaner {
 
 	private final FoundColonyMissionHandler foundColonyMissionHandler;
 	private final ColonyProductionPlaner colonyProductionPlaner;
+	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
 	
-	public EuropeanMissionPlaner(FoundColonyMissionHandler foundColonyMissionHandler) {
-		this.foundColonyMissionHandler = foundColonyMissionHandler;
+	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
+		this.foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, game);
 		this.colonyProductionPlaner = new ColonyProductionPlaner();
+		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
 		colonyProductionPlaner.createPlan(player, playerMissionContainer);
 		prepareFoundColonyMissions(player, playerMissionContainer);
+		transportGoodsToSellMissionPlaner.plan(player);
 		prepareExploreMissions(player, playerMissionContainer);
 	}
 

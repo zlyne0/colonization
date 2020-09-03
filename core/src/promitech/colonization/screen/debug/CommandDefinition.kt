@@ -404,8 +404,8 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 	}
 
 	fun settlementsGoodsScore(di : DI, guiGameModel : GUIGameModel) {
-		val planer = TransportGoodsToSellMissionPlaner(di.pathFinder)
-		planer.plan(guiGameModel.game, guiGameModel.game.playingPlayer)
+		val planer = TransportGoodsToSellMissionPlaner(guiGameModel.game, di.pathFinder)
+		planer.plan(guiGameModel.game.playingPlayer)
 	}
 
 	fun ai_transport_goods_to_sell_mission_example(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
