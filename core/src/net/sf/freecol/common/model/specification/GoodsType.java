@@ -183,6 +183,10 @@ public class GoodsType extends ObjectWithFeatures {
         return food;
     }
     
+	public boolean isType(String goodTypeId) {
+		return equalsId(goodTypeId);
+	}
+    
 	public float getProductionWeight() {
 		return productionWeight;
 	}

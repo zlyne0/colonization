@@ -142,6 +142,7 @@ public class Specification {
     public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
     public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
     public final List<GoodsType> goodsTypeToScoreByPrice = new ArrayList<GoodsType>();
+    public final List<GoodsType> foodsGoodsTypes = new ArrayList<GoodsType>();
     
     private String difficultyLevel;
     
@@ -199,6 +200,10 @@ public class Specification {
         updateModifiersFromDifficultyLevel();
         determineNativeMilitaryRoles();
         createGoodsTypeToScoreByPrice();
+        
+        foodsGoodsTypes.clear();
+        foodsGoodsTypes.add(goodsTypes.getById(GoodsType.FISH));
+        foodsGoodsTypes.add(goodsTypes.getById(GoodsType.GRAIN));
     }
 
     private void createGoodsTypeToScoreByPrice() {
@@ -320,6 +325,7 @@ public class Specification {
         mercenaryTypes.clear();
         militaryRoles.clear();
         goodsTypeToScoreByPrice.clear();
+        foodsGoodsTypes.clear();
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {

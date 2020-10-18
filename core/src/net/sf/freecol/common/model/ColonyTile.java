@@ -7,6 +7,8 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
+import static net.sf.freecol.common.model.ColonyProductionLogger.logger;
+
 public class ColonyTile extends ObjectWithId implements ProductionLocation, UnitLocation {
 
 	private Unit worker;
@@ -62,12 +64,17 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
     }
     
     public void initMaxPossibleProductionOnTile() {
-        System.out.println("possibleProductionOnTile.forTile: " + tile.getType().productionInfo);
+    	if (logger.isDebug()) {
+    		logger.debug("possibleProductionOnTile.forTile: " + tile.getType().productionInfo);
+    	}
         ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile();
-        System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
-        
+    	if (logger.isDebug()) {
+    		logger.debug("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
+    	}
         productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, tile.getType().productionInfo);
-        System.out.println("possibleProductionOnTile.maxProductionType: " + productionInfo);
+    	if (logger.isDebug()) {
+    		logger.debug("possibleProductionOnTile.maxProductionType: " + productionInfo);
+    	}
     }
     
 	private ProductionInfo maxPossibleProductionOnTile() {

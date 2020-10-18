@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 
@@ -75,7 +76,7 @@ class ColonyProduction {
         
         consolidateFoods();
         
-        System.out.println("global production consumption " + globalProductionConsumption);
+        //System.out.println("global production consumption " + globalProductionConsumption);
         needUpdate = false;
     }
 	
@@ -137,12 +138,16 @@ class ColonyProduction {
 		prodConsByProducer.clear();
 	}
 
-	List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit worker, boolean ignoreIndianOwner) {
+	List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
+		Collection<GoodsType> goodsTypes, 
+		Unit worker, 
+		boolean ignoreIndianOwner
+	) {
         List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
         
         ProductionSummary prodCons = globalProductionConsumption();
         
-        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+        for (GoodsType gt : goodsTypes) {
             GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
                 maxProd = maxProductionFromTile(gt, worker, ignoreIndianOwner);

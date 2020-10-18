@@ -288,4 +288,29 @@ public class ProductionSummary {
 		st += "]";
 		return st;
 	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((goods == null) ? 0 : goods.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProductionSummary other = (ProductionSummary) obj;
+		if (goods == null) {
+			if (other.goods != null)
+				return false;
+		} else if (!goods.equals(other.goods))
+			return false;
+		return true;
+	}
 }

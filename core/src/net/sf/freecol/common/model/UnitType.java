@@ -33,6 +33,10 @@ public class UnitType extends BuildableType {
 	public static final String SCOUT = "model.unit.seasonedScout";
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
+	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";
+	public static final String MASTER_FUR_TRADER = "model.unit.masterFurTrader";
+	public static final String MASTER_TOBACCONIST = "model.unit.masterTobacconist";
+	public static final String MASTER_TOBACCO_PLANTER = "model.unit.masterTobaccoPlanter";					
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -109,6 +113,10 @@ public class UnitType extends BuildableType {
     public String resourceImageKey() {
     	return getId() + ".image";
     }
+    
+	public boolean isType(String unitTypeId) {
+		return getId().equals(unitTypeId);
+	}
     
     @Override
 	public boolean isUnitType() {

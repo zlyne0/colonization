@@ -91,6 +91,7 @@ public class Colony extends Settlement {
 		goodsContainer = new GoodsContainer();
 	}
 
+    @Override
 	public String toString() {
     	return "id=" + getId() + ", name=" + getName();
     }
@@ -141,6 +142,7 @@ public class Colony extends Settlement {
     			colonyWorkers.add(colonyTile.getWorker());
     		}
     	}
+    	colonyProduction.setAsNeedUpdate();
     	updateSonOfLiberty();
     	updateProductionBonus();
     }
@@ -287,14 +289,25 @@ public class Colony extends Settlement {
         }
     	return colonyProduction.determinePotentialTerrainProductions(terrain, unit);
     }
-    
+
     public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit, boolean ignoreIndianOwner) {
         if (!unit.isPerson()) {
             return Collections.emptyList();
         }
-        return colonyProduction.determinePotentialMaxGoodsProduction(unit, ignoreIndianOwner);
+        return colonyProduction.determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), unit, ignoreIndianOwner);
     }
-
+    
+    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
+		Collection<GoodsType> goodsTypes, 
+		Unit unit, 
+		boolean ignoreIndianOwner
+	) {
+        if (!unit.isPerson()) {
+            return Collections.emptyList();
+        }
+        return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, unit, ignoreIndianOwner);
+    }
+    
     public void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialProduction) {
     	colonyProduction.determinePotentialColonyTilesProduction(worker, potentialProduction); 
     }
@@ -330,6 +343,42 @@ public class Colony extends Settlement {
     	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity += productionBonus();
     	return goodsQuantity;
+    }
+    
+	public boolean canSustainNewWorker(Unit worker, GoodsType goodsTypeToProduce, int produceAmount) {
+		ProductionSummary productionSummary = productionSummary();
+		for (UnitConsumption unitConsumption : worker.unitType.unitConsumption.entities()) {
+			if (unitConsumption.getTypeId().equals(GoodsType.BELLS)) {
+				// do not care
+				continue;
+			}
+			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
+			// when unit produce what consume, unit can sustain himself
+			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId()) && goodsTypeToProduce != null && goodsTypeToProduce.isFood()) {
+		        prod += produceAmount;
+			}
+			
+			// when consume food and is lack of food then it is possible to stop breeding horses and sustain colonist
+			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId())) {
+			    prod += productionSummary.getQuantity(GoodsType.HORSES);
+			}
+			if (unitConsumption.getQuantity() > prod) {
+				return false;
+			}
+		}
+		return true;
+	}
+
+    public boolean canSustainNewWorker(Unit worker) {
+    	return canSustainWorkers(1, 0);
+    }
+	
+    public boolean canSustainWorkers(int workersCount, int additionalFoodProduction) {
+    	ProductionSummary productionSummary = productionSummary();    	
+    	int prod = productionSummary.getQuantity(GoodsType.FOOD);
+    	prod += productionSummary.getQuantity(GoodsType.HORSES);
+    	prod += additionalFoodProduction;
+    	return workersCount*2 <= prod;
     }
     
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
@@ -463,7 +512,7 @@ public class Colony extends Settlement {
 		ProductionSummary gpc = colonyProduction.globalProductionConsumption();
 		int bells = gpc.getQuantity(GoodsType.BELLS);
 
-        System.out.println("calculateSonsOfLiberty: bells: " + bells + ", liberty: " + liberty + ", sonsOfLiberty: " + sonsOfLiberty + ", tories: " + tories);
+        //System.out.println("calculateSonsOfLiberty: bells: " + bells + ", liberty: " + liberty + ", sonsOfLiberty: " + sonsOfLiberty + ", tories: " + tories);
 		
 		owner.modifyLiberty(bells);
 		liberty = Math.max(0, liberty + bells);
@@ -487,7 +536,7 @@ public class Colony extends Settlement {
 					.addAmount("%newSoL%", sonsOfLiberty);
 			owner.eventsNotifications.addMessageNotification(t);
 		}
-        System.out.println("calculateSonsOfLiberty: bells: " + bells + ", liberty: " + liberty + ", sonsOfLiberty: " + sonsOfLiberty + ", tories: " + tories);
+        //System.out.println("calculateSonsOfLiberty: bells: " + bells + ", liberty: " + liberty + ", sonsOfLiberty: " + sonsOfLiberty + ", tories: " + tories);
 	}
     
     public ProductionConsumption productionSummary(ProductionLocation productionLocation) {

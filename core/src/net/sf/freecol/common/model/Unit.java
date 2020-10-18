@@ -111,7 +111,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
     public String resourceImageKey() {
     	if (!owner.nationType().isEuropean()) {
-    		if (UnitType.FREE_COLONIST.equals(unitType.getId())) {
+    		if (unitType.isType(UnitType.FREE_COLONIST)) {
     			return unitType.getId() + "." + unitRole.getRoleSuffix() + ".native.image";
     		}
     	}

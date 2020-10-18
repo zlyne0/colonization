@@ -239,7 +239,7 @@ public class ColonyPlan {
 		ingredientsWorkersAllocation.clear();
 		
 		if (hasGoodsToConsume(ingredientsToDelivere)) {
-			if (!canSustainWorkers(1, 0)) {
+			if (!colony.canSustainWorkers(1, 0)) {
 				if (avalWorkers.isEmpty()) {
 					return false;
 				}
@@ -249,7 +249,7 @@ public class ColonyPlan {
 					return false;
 				}
 				ingredientsWorkersAllocation.put(foodWorker, foodBestLocation);
-				return canSustainWorkers(2, foodBestLocation.getProduction());
+				return colony.canSustainWorkers(2, foodBestLocation.getProduction());
 			}
 			return true;
 		}
@@ -265,7 +265,7 @@ public class ColonyPlan {
 		withoutLocationIds.add(theBestLocation.getProductionLocation().getId());
 		
 		// can sustain worker and worker2 
-		if (canSustainWorkers(2, 0)) {
+		if (colony.canSustainWorkers(2, 0)) {
 			return true;
 		}
 		
@@ -280,7 +280,7 @@ public class ColonyPlan {
 		}
 		ingredientsWorkersAllocation.put(foodWorker, foodBestLocation);
 		withoutLocationIds.add(foodBestLocation.getProductionLocation().getId());
-		return canSustainWorkers(3, foodBestLocation.getProduction());
+		return colony.canSustainWorkers(3, foodBestLocation.getProduction());
 	}
 
 	private final Map<String,Building> buildingByGoodsType = new HashMap<String, Building>();
@@ -347,7 +347,7 @@ public class ColonyPlan {
         		noPlanWorkCounter++;
         		continue;
         	}
-        	if (canSustainNewWorker(worker, location.getGoodsType(), location.getProduction())) {
+        	if (colony.canSustainNewWorker(worker, location.getGoodsType(), location.getProduction())) {
         		addWorkerToProductionLocation(worker, location.getProductionLocation(), location.getGoodsType());
         		availableWorkers.remove(worker);
         		noPlanWorkCounter = 0;
@@ -401,38 +401,6 @@ public class ColonyPlan {
         colony.updateColonyPopulation();
     }
 
-	private boolean canSustainNewWorker(Unit worker, GoodsType goodsTypeToProduce, int produceAmount) {
-		ProductionSummary productionSummary = colony.productionSummary();
-		for (UnitConsumption unitConsumption : worker.unitType.unitConsumption.entities()) {
-			if (unitConsumption.getTypeId().equals(GoodsType.BELLS)) {
-				// do not care
-				continue;
-			}
-			int prod = productionSummary.getQuantity(unitConsumption.getTypeId());
-			// when unit produce what consume, unit can sustain himself
-			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId()) && goodsTypeToProduce != null && goodsTypeToProduce.isFood()) {
-		        prod += produceAmount;
-			}
-			
-			// when consume food and is lack of food then it is possible to stop breeding horses and sustain colonist
-			if (GoodsType.isFoodGoodsType(unitConsumption.getTypeId())) {
-			    prod += productionSummary.getQuantity(GoodsType.HORSES);
-			}
-			if (unitConsumption.getQuantity() > prod) {
-				return false;
-			}
-		}
-		return true;
-	}
-
-    private boolean canSustainWorkers(int workersCount, int additionalFoodProduction) {
-    	ProductionSummary productionSummary = colony.productionSummary();    	
-    	int prod = productionSummary.getQuantity(GoodsType.FOOD);
-    	prod += productionSummary.getQuantity(GoodsType.HORSES);
-    	prod += additionalFoodProduction;
-    	return workersCount*2 <= prod;
-    }
-    
 	private GoodMaxProductionLocation theBestLocation(Unit worker, Set<String> withoutLocationIds, String ... planGoodsType) {
 	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker, ignoreIndianOwner);
 	    

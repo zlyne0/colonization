@@ -18,6 +18,11 @@ import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 
+/**
+ * Sprzedaj mi swoja dusze.
+ * Inny kupiec sie juz nie trafi.
+ * Innego diabla juz nie ma. 
+ */
 public class TransportGoodsToSellMissionHandler implements MissionHandler<TransportGoodsToSellMission> {
 	
 	private final Game game;
