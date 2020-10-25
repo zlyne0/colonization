@@ -10,13 +10,15 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.util.MapList;
 
-class ColonyWorkersSnapshot {
+class ColonySnapshot {
 	private final MapList<String, String> unitsByLocation = new MapList<>();
 	private final Set<String> units = new HashSet<>();
 	private final ProductionSummary production;
+	private final ProductionSummary warehouse;
 	
-	public ColonyWorkersSnapshot(Colony colony) {
+	public ColonySnapshot(Colony colony) {
 		production = colony.productionSummary().cloneGoods();
+		warehouse = colony.getGoodsContainer().cloneGoods();
 		
 		for (Building building : colony.buildings) {
 			for (Unit unit : building.getUnits().entities()) {
@@ -35,12 +37,19 @@ class ColonyWorkersSnapshot {
 	}
 
 	@Override
+	public String toString() {
+		return "ColonyWorkersSnapshot [unitsByLocation=" + unitsByLocation + ", units=" + units + ", production="
+				+ production + "]";
+	}
+
+	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = 1;
 		result = prime * result + ((production == null) ? 0 : production.hashCode());
 		result = prime * result + ((units == null) ? 0 : units.hashCode());
 		result = prime * result + ((unitsByLocation == null) ? 0 : unitsByLocation.hashCode());
+		result = prime * result + ((warehouse == null) ? 0 : warehouse.hashCode());
 		return result;
 	}
 
@@ -52,7 +61,7 @@ class ColonyWorkersSnapshot {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		ColonyWorkersSnapshot other = (ColonyWorkersSnapshot) obj;
+		ColonySnapshot other = (ColonySnapshot) obj;
 		if (production == null) {
 			if (other.production != null)
 				return false;
@@ -68,13 +77,12 @@ class ColonyWorkersSnapshot {
 				return false;
 		} else if (!unitsByLocation.equals(other.unitsByLocation))
 			return false;
+		if (warehouse == null) {
+			if (other.warehouse != null)
+				return false;
+		} else if (!warehouse.equals(other.warehouse))
+			return false;
 		return true;
-	}
-
-	@Override
-	public String toString() {
-		return "ColonyWorkersSnapshot [unitsByLocation=" + unitsByLocation + ", units=" + units + ", production="
-				+ production + "]";
 	}
 
 

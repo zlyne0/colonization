@@ -79,6 +79,10 @@ class SettlementWarehouseScoreGoods {
 	private List<SettlementGoods> createSettlementsGoods(Player player) {
 		List<SettlementGoods> sGoods = new ArrayList<SettlementGoods>(player.settlements.size());
 		for (Settlement settlement : player.settlements) {
+			// score for transport, can transport only form coastland
+			if (!settlement.isCoastland()) {
+				continue;
+			}
 			sGoods.add(new SettlementGoods(
 				settlement, player.market(), goodsType
 			));

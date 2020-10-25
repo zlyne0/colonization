@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitFactory;
@@ -15,6 +16,8 @@ import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 
 class ColonyWorkerReq {
 
+	private static final boolean IGNORE_INDIAN_OWNER = true;
+	
 	// Every unit has owner, for simulation add unit to colony, so i have to know who unit is for simulation only.
 	private final List<Unit> createdUnits = new ArrayList<Unit>();
 	private final Colony colony;
@@ -22,6 +25,7 @@ class ColonyWorkerReq {
 	private final List<UnitType> reqUnits = new ArrayList<UnitType>();
 	private final List<GoodsType> goodsTypeToScore;
 	private int colonyScore = 0;
+	private boolean consumeWarehouseResources = false;
 	
 	public ColonyWorkerReq(Colony colony, List<GoodsType> goodsTypeToScore) {
 		this.colony = colony;
@@ -30,6 +34,12 @@ class ColonyWorkerReq {
 	}
 	
 	public ObjectScore<List<UnitType>> simulate() {
+		ProductionSummary warehouseCopy = null;
+		if (!consumeWarehouseResources) {
+			warehouseCopy = colony.getGoodsContainer().cloneGoods();
+			colony.getGoodsContainer().decreaseAllToZero();
+			colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+		}
 		
 		while (reqUnits.size() < 3) {
 			Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, colony.getOwner(), colony.tile);
@@ -52,6 +62,11 @@ class ColonyWorkerReq {
 		for (Unit unit : createdUnits) {
 			colony.getOwner().removeUnit(unit);
 		}
+		if (!consumeWarehouseResources) {
+			colony.getGoodsContainer().decreaseAllToZero();
+			colony.getGoodsContainer().increaseGoodsQuantity(warehouseCopy);
+		}
+		
 		colony.updateColonyPopulation();
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		return new ObjectScore<List<UnitType>>(reqUnits, colonyScore);
@@ -85,7 +100,7 @@ class ColonyWorkerReq {
 		List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(
 			Specification.instance.foodsGoodsTypes,
 			colonist, 
-			false
+			IGNORE_INDIAN_OWNER
 		);
 		GoodMaxProductionLocation foodTheBestLocation = null;
 		for (GoodMaxProductionLocation loc : maxProductionForGoods) {
@@ -113,7 +128,7 @@ class ColonyWorkerReq {
 		List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(
 			goodsTypeToScore,
 			colonist, 
-			false
+			IGNORE_INDIAN_OWNER
 		);
 		
 		GoodMaxProductionLocation theBestScoreLoc = null;
@@ -154,5 +169,14 @@ class ColonyWorkerReq {
 			colony.addWorkerToTerrain(location.getColonyTile(), colonist, location.getGoodsType());
 		}
 		colony.updateColonyPopulation();
+	}
+
+	public boolean isConsumeWarehouseResources() {
+		return consumeWarehouseResources;
+	}
+
+	public ColonyWorkerReq withConsumeWarehouseResources() {
+		this.consumeWarehouseResources = true;
+		return this;
 	}
 }
