@@ -16,24 +16,26 @@ import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 
 class ColonyWorkerReq {
 
+	private static final int MAX_UNITS_TYPES = 3;
+
 	private static final boolean IGNORE_INDIAN_OWNER = true;
 	
 	// Every unit has owner, for simulation add unit to colony, so i have to know who unit is for simulation only.
 	private final List<Unit> createdUnits = new ArrayList<Unit>();
 	private final Colony colony;
 	private final Market market;
-	private final List<UnitType> reqUnits = new ArrayList<UnitType>();
+	private final List<ObjectScore<UnitType>> reqUnits;
 	private final List<GoodsType> goodsTypeToScore;
-	private int colonyScore = 0;
 	private boolean consumeWarehouseResources = false;
 	
 	public ColonyWorkerReq(Colony colony, List<GoodsType> goodsTypeToScore) {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
+		this.reqUnits = new ArrayList<ObjectScore<UnitType>>(MAX_UNITS_TYPES);
 	}
 	
-	public ObjectScore<List<UnitType>> simulate() {
+	public List<ObjectScore<UnitType>> simulate() {
 		ProductionSummary warehouseCopy = null;
 		if (!consumeWarehouseResources) {
 			warehouseCopy = colony.getGoodsContainer().cloneGoods();
@@ -41,7 +43,7 @@ class ColonyWorkerReq {
 			colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		}
 		
-		while (reqUnits.size() < 3) {
+		while (reqUnits.size() < MAX_UNITS_TYPES) {
 			Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, colony.getOwner(), colony.tile);
 			createdUnits.add(colonist);
 
@@ -69,13 +71,13 @@ class ColonyWorkerReq {
 		
 		colony.updateColonyPopulation();
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-		return new ObjectScore<List<UnitType>>(reqUnits, colonyScore);
+		return reqUnits;
 	}
 
 	private void removeLastNotDesiredProduction() {
 		// usually food
 		while (!reqUnits.isEmpty()) {
-			UnitType unitType = reqUnits.get(reqUnits.size() - 1);
+			UnitType unitType = reqUnits.get(reqUnits.size() - 1).getObj();
 			if (unitType.isType(UnitType.FREE_COLONIST)) {
 				break;
 			}
@@ -116,7 +118,7 @@ class ColonyWorkerReq {
 			if (expertType == null) {
 				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 			}
-			reqUnits.add(expertType);
+			reqUnits.add(new ObjectScore<UnitType>(expertType, 0));
 			colonist.changeUnitType(expertType);
 			addWorkerToColony(colonist, foodTheBestLocation);
 			return true;
@@ -145,14 +147,15 @@ class ColonyWorkerReq {
 			}
 		}
 		if (theBestScoreLoc != null) {
-			colonyScore += theBestScore;
-			
 			UnitType expertType = Specification.instance.expertUnitTypeByGoodType.get(theBestScoreLoc.getGoodsType().getId());
 			if (expertType == null) {
 				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 			}
+//			if (theBestScoreLoc.getGoodsType().isFarmed()) {
+//				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
+//			}
 			
-			reqUnits.add(expertType);
+			reqUnits.add(new ObjectScore<UnitType>(expertType, theBestScore));
 			colonist.changeUnitType(expertType);
 			
 			addWorkerToColony(colonist, theBestScoreLoc);

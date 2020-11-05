@@ -4,6 +4,7 @@ import static org.assertj.core.api.Assertions.*;
 
 import java.util.List;
 
+import org.assertj.core.groups.Tuple;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -44,14 +45,15 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 		
 		// when
-		ObjectScore<List<UnitType>> colonyScore = sut.simulate();
+		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
 
 		// then
-		assertThat(colonyScore.getScore()).isEqualTo(36);
-		assertThat(colonyScore.getObj())
+		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(36);
+		assertThat(colonyScore)
+			.extracting(ObjectScore::getObj, ObjectScore::getScore)
 			.containsExactly(
-				Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN),
-				Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER)
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN), 0),
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER), 36)
 			);
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
@@ -64,16 +66,17 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectScore<List<UnitType>> colonyScore = sut.simulate();
+		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
 
 		// then
 		Assertions.assertAll(
-			() -> assertThat(colonyScore.getScore()).isEqualTo(42),
-			() -> assertThat(colonyScore.getObj())
+			() -> assertThat(ObjectScore.sum(colonyScore)).isEqualTo(42),
+			() -> assertThat(colonyScore)
+				.extracting(ObjectScore::getObj, ObjectScore::getScore)
 				.containsExactly(
-					Specification.instance.unitTypes.getById(UnitType.MASTER_WEAVER),
-					Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN),
-					Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER)
+					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_WEAVER), 30),
+					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN), 0),
+					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER), 12)
 				),
 			() -> assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore)
 		);
@@ -87,14 +90,15 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectScore<List<UnitType>> colonyScore = sut.simulate();
+		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
 
 		// then
-		assertThat(colonyScore.getScore()).isEqualTo(45);
-		assertThat(colonyScore.getObj())
+		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(45);
+		assertThat(colonyScore)
+			.extracting(ObjectScore::getObj, ObjectScore::getScore)
 			.containsExactly(
-				Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST),
-				Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER)
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST), 30),
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER), 15)
 			);
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
@@ -107,15 +111,16 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectScore<List<UnitType>> colonyScore = sut.simulate();
+		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
 
 		// then
-		assertThat(colonyScore.getScore()).isEqualTo(106);
-		assertThat(colonyScore.getObj())
+		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(106);
+		assertThat(colonyScore)
+			.extracting(ObjectScore::getObj, ObjectScore::getScore)
 			.containsExactly(
-				Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCO_PLANTER),
-				Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER),
-				Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST)
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCO_PLANTER), 40),
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER), 36),
+				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST), 30)
 			);
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}

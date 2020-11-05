@@ -19,6 +19,14 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		private O obj;
 		private int score;
 		
+		public static <Z> int sum(List<ObjectScore<Z>> l) {
+			int sum = 0;
+			for (int i = 0; i < l.size(); i++) {
+				sum += l.get(i).score;
+			}
+			return sum;
+		}
+		
 		public ObjectScore(O obj, int score) {
 			this.obj = obj;
 			this.score = score;
