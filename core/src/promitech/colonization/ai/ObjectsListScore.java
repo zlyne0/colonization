@@ -66,6 +66,14 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		return this.objs.get(index);
 	}
 
+	public T lastObj() {
+		return this.objs.get(this.objs.size() - 1).obj;
+	}
+	
+	public ObjectScore<T> removeLast() {
+		return this.objs.remove(this.objs.size() - 1);
+	}
+	
 	public ObjectScore<T> find(Object obj) {
 		for (ObjectScore<T> objectScore : this.objs) {
 			if (objectScore.obj == obj) {

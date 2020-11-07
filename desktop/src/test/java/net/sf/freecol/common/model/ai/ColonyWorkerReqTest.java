@@ -2,10 +2,6 @@ package net.sf.freecol.common.model.ai;
 
 import static org.assertj.core.api.Assertions.*;
 
-import java.util.List;
-
-import org.assertj.core.groups.Tuple;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,7 +14,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.ObjectsListScoreAssert;
+import promitech.colonization.ai.ObjectsListScore;
 import promitech.colonization.savegame.SaveGameParser;
 
 class ColonyWorkerReqTest {
@@ -45,16 +42,15 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 		
 		// when
-		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
 
 		// then
-		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(36);
-		assertThat(colonyScore)
-			.extracting(ObjectScore::getObj, ObjectScore::getScore)
-			.containsExactly(
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN), 0),
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER), 36)
-			);
+		
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(36)
+			.hasScore(0, 0, unitType(UnitType.EXPERT_FISHERMAN))
+			.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
+		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
 
@@ -66,20 +62,16 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
 
 		// then
-		Assertions.assertAll(
-			() -> assertThat(ObjectScore.sum(colonyScore)).isEqualTo(42),
-			() -> assertThat(colonyScore)
-				.extracting(ObjectScore::getObj, ObjectScore::getScore)
-				.containsExactly(
-					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_WEAVER), 30),
-					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN), 0),
-					Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER), 12)
-				),
-			() -> assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore)
-		);
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(42)
+			.hasScore(0, 30, unitType(UnitType.MASTER_WEAVER))
+			.hasScore(1, 0, unitType(UnitType.EXPERT_FISHERMAN))
+			.hasScore(2, 12, unitType(UnitType.EXPERT_FUR_TRAPPER))
+		;
+		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
 
 	@Test
@@ -90,16 +82,14 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
 
 		// then
-		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(45);
-		assertThat(colonyScore)
-			.extracting(ObjectScore::getObj, ObjectScore::getScore)
-			.containsExactly(
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST), 30),
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER), 15)
-			);
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(45)
+			.hasScore(0, 30, unitType(UnitType.MASTER_TOBACCONIST))
+			.hasScore(1, 15, unitType(UnitType.EXPERT_FUR_TRAPPER))
+		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
 	
@@ -111,17 +101,19 @@ class ColonyWorkerReqTest {
 		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		List<ObjectScore<UnitType>> colonyScore = sut.simulate();
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
 
 		// then
-		assertThat(ObjectScore.sum(colonyScore)).isEqualTo(106);
-		assertThat(colonyScore)
-			.extracting(ObjectScore::getObj, ObjectScore::getScore)
-			.containsExactly(
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCO_PLANTER), 40),
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER), 36),
-				Tuple.tuple(Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST), 30)
-			);
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(106)
+			.hasScore(0, 40, unitType(UnitType.MASTER_TOBACCO_PLANTER))
+			.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
+			.hasScore(2, 30, unitType(UnitType.MASTER_TOBACCONIST))
+		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+	}
+	
+	UnitType unitType(String unitTypeId) {
+		return Specification.instance.unitTypes.getById(unitTypeId);
 	}
 }

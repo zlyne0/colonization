@@ -12,7 +12,7 @@ import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.ObjectsListScore;
 
 class ColonyWorkerReq {
 
@@ -24,7 +24,7 @@ class ColonyWorkerReq {
 	private final List<Unit> createdUnits = new ArrayList<Unit>();
 	private final Colony colony;
 	private final Market market;
-	private final List<ObjectScore<UnitType>> reqUnits;
+	private final ObjectsListScore<UnitType> reqUnits;
 	private final List<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
@@ -32,10 +32,10 @@ class ColonyWorkerReq {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
-		this.reqUnits = new ArrayList<ObjectScore<UnitType>>(MAX_UNITS_TYPES);
+		this.reqUnits = new ObjectsListScore<UnitType>(MAX_UNITS_TYPES);
 	}
 	
-	public List<ObjectScore<UnitType>> simulate() {
+	public ObjectsListScore<UnitType> simulate() {
 		ProductionSummary warehouseCopy = null;
 		if (!consumeWarehouseResources) {
 			warehouseCopy = colony.getGoodsContainer().cloneGoods();
@@ -77,14 +77,14 @@ class ColonyWorkerReq {
 	private void removeLastNotDesiredProduction() {
 		// usually food
 		while (!reqUnits.isEmpty()) {
-			UnitType unitType = reqUnits.get(reqUnits.size() - 1).getObj();
+			UnitType unitType = reqUnits.lastObj();
 			if (unitType.isType(UnitType.FREE_COLONIST)) {
 				break;
 			}
 			if (isExistsOnDesiredProductionGoods(unitType.getExpertProductionForGoodsId())) {
 				break;
 			} else {
-				reqUnits.remove(reqUnits.size() - 1);
+				reqUnits.removeLast();
 			}
 		}
 	}
@@ -118,7 +118,7 @@ class ColonyWorkerReq {
 			if (expertType == null) {
 				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 			}
-			reqUnits.add(new ObjectScore<UnitType>(expertType, 0));
+			reqUnits.add(expertType, 0);
 			colonist.changeUnitType(expertType);
 			addWorkerToColony(colonist, foodTheBestLocation);
 			return true;
@@ -154,8 +154,7 @@ class ColonyWorkerReq {
 //			if (theBestScoreLoc.getGoodsType().isFarmed()) {
 //				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 //			}
-			
-			reqUnits.add(new ObjectScore<UnitType>(expertType, theBestScore));
+			reqUnits.add(expertType, theBestScore);
 			colonist.changeUnitType(expertType);
 			
 			addWorkerToColony(colonist, theBestScoreLoc);
