@@ -24,7 +24,7 @@ class ColonyWorkerReq {
 	private final List<Unit> createdUnits = new ArrayList<Unit>();
 	private final Colony colony;
 	private final Market market;
-	private final ObjectsListScore<UnitType> reqUnits;
+	private ObjectsListScore<UnitType> reqUnits;
 	private final List<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
@@ -32,10 +32,17 @@ class ColonyWorkerReq {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
-		this.reqUnits = new ObjectsListScore<UnitType>(MAX_UNITS_TYPES);
 	}
 	
 	public ObjectsListScore<UnitType> simulate() {
+		if (reqUnits == null) {
+			reqUnits = new ObjectsListScore<UnitType>(MAX_UNITS_TYPES);
+			generate();
+		}
+		return reqUnits;
+	}
+	
+	private ObjectsListScore<UnitType> generate() {
 		ProductionSummary warehouseCopy = null;
 		if (!consumeWarehouseResources) {
 			warehouseCopy = colony.getGoodsContainer().cloneGoods();
@@ -180,5 +187,9 @@ class ColonyWorkerReq {
 	public ColonyWorkerReq withConsumeWarehouseResources() {
 		this.consumeWarehouseResources = true;
 		return this;
+	}
+
+	public Colony getColony() {
+		return colony;
 	}
 }

@@ -92,6 +92,14 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		Collections.sort(objs, descendingComparator);
 	}
 
+	public T firstObj() {
+		return this.objs.get(0).obj;
+	}
+	
+	public ObjectScore<T> firstScore() {
+		return this.objs.get(0);
+	}
+	
 	public ObjectScore<T> theBestScore() {
 		return this.objs.get(0);
 	}
