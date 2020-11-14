@@ -8,7 +8,7 @@ import java.util.Set;
 
 import net.sf.freecol.common.model.Unit;
 
-class UnitMissionsMapping {
+public class UnitMissionsMapping {
 	private final Map<String, Set<AbstractMission>> unitMissions = new HashMap<String, Set<AbstractMission>>();
 
 	public void blockUnit(Unit unit, AbstractMission mission) {

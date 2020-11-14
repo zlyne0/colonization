@@ -6,6 +6,8 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
+
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.ObjectFromNodeSetter.ChildObject2XmlCustomeHandler;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -114,6 +116,7 @@ public abstract class AbstractMission extends ObjectWithId {
 			addNode(IndianBringGiftMission.class, setter);
 			addNode(DemandTributeMission.class, setter);
 			addNode(TransportGoodsToSellMission.class, setter);
+			addNode(ColonyWorkerMission.class, setter);
 		}
 
 		@Override

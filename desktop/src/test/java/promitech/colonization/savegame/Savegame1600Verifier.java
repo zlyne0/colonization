@@ -45,6 +45,7 @@ import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.FoundingFather;
@@ -146,6 +147,7 @@ public class Savegame1600Verifier {
 		
 		assertThat(wm.unit.getId()).isEqualTo("unit:6706");
 
+		verifyColonyWorkerMission(game);
 		verifyTransportUnitMission(game);
 		verifyRellocationMission(game);
 		verifyFoundColonyMission(game);
@@ -154,7 +156,16 @@ public class Savegame1600Verifier {
 		verifyMissionRecursion(game);
 	}
 
-	private void verifyDutchMissions(Game game) {
+    private void verifyColonyWorkerMission(Game game) {
+        PlayerMissionsContainer playerMissions1 = game.aiContainer.getMissionContainer("player:1");
+        assertThat(playerMissions1).isNotNull();
+        ColonyWorkerMission m = playerMissions1.getMission("colonyWorkerMission:1");
+
+        assertThat(m.getColony().getId()).isEqualTo("colony:6528");
+        assertThat(m.getUnit().getId()).isEqualTo("unit:7095");
+    }
+
+    private void verifyDutchMissions(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 		Player dutch = game.players.getById("player:1");
         
@@ -222,11 +233,11 @@ public class Savegame1600Verifier {
 		assertThat(playerMissions1).isNotNull();
 		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
 		
-		assertThat(tm.dest.equalsCoordinates(10, 12)).isTrue();
-		assertThat(tm.carrier.getId()).isEqualTo("unit:6437");
+		assertThat(tm.getDestination().equalsCoordinates(10, 12)).isTrue();
+		assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
 		
-		assertThat(tm.units.entities()).hasSize(1);
-		assertThat(tm.units.first().getId()).isEqualTo("unit:7095");
+		assertThat(tm.getUnits().entities()).hasSize(1);
+		assertThat(tm.getUnits().first().getId()).isEqualTo("unit:7095");
 	}
 
 	private void verifyGame(Game game) {

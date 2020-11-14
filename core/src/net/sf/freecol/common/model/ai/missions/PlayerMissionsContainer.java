@@ -6,12 +6,14 @@ import java.util.List;
 
 import org.xml.sax.SAXException;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.player.Player;
 import static promitech.colonization.ai.MissionHandlerLogger.*;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -139,6 +141,10 @@ public class PlayerMissionsContainer extends ObjectWithId {
             return player.units.getByIdOrNull(unitId);
         }
         
+        public static Player getPlayer() {
+        	return player;
+        }
+        
         public static IndianSettlement getPlayerIndianSettlement(String settlementId) {
         	Settlement settlement = player.settlements.getByIdOrNull(settlementId);
         	if (settlement == null) {
@@ -146,7 +152,15 @@ public class PlayerMissionsContainer extends ObjectWithId {
         	}
         	return settlement.asIndianSettlement();
         }
-        
+
+		public static Colony getPlayerColony(String settlementId) {
+			Settlement settlement = player.settlements.getByIdOrNull(settlementId);
+			if (settlement == null) {
+				return null;
+			}
+			return settlement.asColony();
+		}
+
         public Xml() {
             addNodeForMapIdEntities("missions", WanderMission.class);
             addNodeForMapIdEntities("missions", TransportUnitMission.class);
@@ -156,6 +170,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", IndianBringGiftMission.class);
             addNodeForMapIdEntities("missions", DemandTributeMission.class);
             addNodeForMapIdEntities("missions", TransportGoodsToSellMission.class);
+			addNodeForMapIdEntities("missions", ColonyWorkerMission.class);
         }
         
         @Override
