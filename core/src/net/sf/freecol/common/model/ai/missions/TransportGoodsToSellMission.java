@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.goodsToSell.GoodsLoader;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -46,14 +47,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	}
 
 	public boolean isTransportUnitExists(Player player) {
-		if (player.isDead()) {
-			return false;
-		}
-		if (transporter == null || transporter.isDisposed() || transporter.isDamaged() || !player.units.containsId(transporter) 
-				|| !transporter.isOwner(player)) {
-			return false;
-		}
-		return true;
+		return CommonMissionHandler.isUnitExists(player, transporter);
 	}
 	
 	public boolean isSettlementPossibleToVisit(Settlement settlement) {

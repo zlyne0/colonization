@@ -232,12 +232,13 @@ public class Savegame1600Verifier {
 		PlayerMissionsContainer playerMissions1 = game.aiContainer.getMissionContainer("player:1");
 		assertThat(playerMissions1).isNotNull();
 		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
-		
-		assertThat(tm.getDestination().equalsCoordinates(10, 12)).isTrue();
-		assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
-		
-		assertThat(tm.getUnits().entities()).hasSize(1);
-		assertThat(tm.getUnits().first().getId()).isEqualTo("unit:7095");
+        assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
+
+        assertThat(tm.getUnitsDest()).hasSize(1);
+        TransportUnitMission.UnitDest unitDest = tm.getUnitsDest().get(0);
+
+        assertThat(unitDest.unit.getId()).isEqualTo("unit:7095");
+        assertThat(unitDest.dest.equalsCoordinates(24,78)).isTrue();
 	}
 
 	private void verifyGame(Game game) {

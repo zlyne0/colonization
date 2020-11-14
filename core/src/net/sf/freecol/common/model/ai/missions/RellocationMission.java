@@ -19,7 +19,7 @@ public class RellocationMission extends AbstractMission {
 	public Unit carrier;
 	public Tile carrierDestination;
 
-	public RellocationMission(String id, Tile rellocationDestination, Unit unit, Unit carrier) {
+	private RellocationMission(String id, Tile rellocationDestination, Unit unit, Unit carrier) {
 		super(id);
 		
 	    this.rellocationDestination = rellocationDestination;
