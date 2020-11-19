@@ -156,7 +156,7 @@ public class MoveContext {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
 		unit.reduceMovesLeft(moveCost);
-		if (sourceTile.hasSettlement()) {
+		if (sourceTile.hasSettlement() && unit.getOwner().isHuman()) {
 			unit.embarkUnitsFromLocation(sourceTile);
 		}
 		unit.changeUnitLocation(destTile);

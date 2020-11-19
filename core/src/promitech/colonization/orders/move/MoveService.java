@@ -103,6 +103,9 @@ public class MoveService {
         if (moveContext.isMoveViaPath()) {
             boolean requireUserInteraction = handlePathMoveContext(moveContext);
             if (!requireUserInteraction) {
+                if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+            		moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+                }
             	afterMoveProcessor.afterMove(moveContext);
             }
         } else {
@@ -112,6 +115,9 @@ public class MoveService {
             }
             showMoveIfRequired(moveContext);
             processMove(moveContext);
+            if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+        		moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+            }
             afterMoveProcessor.afterMove(moveContext);
         }
     }
@@ -139,7 +145,6 @@ public class MoveService {
         
         if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
         	checkCashInTreasureInCarrier(moveContext.unit, moveContext.destTile);
-        	moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
         }
     }
     
