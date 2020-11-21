@@ -328,6 +328,28 @@ public class MoveService {
                 || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
     }
 
+    public boolean disembarkUnits(Unit carrier, List<Unit> units, Tile sourceTile, Tile destTile) {
+    	boolean canDisembark = true;
+    	
+    	if (sourceTile.equalsCoordinates(destTile)) {
+    		// for example in colony
+    		for (Unit u : units) {
+    			carrier.disembarkUnitToLocation(destTile, u);
+    		}
+    	} else {
+    		MoveContext mc = new MoveContext();
+    		for (Unit u : units) {
+    			mc.init(sourceTile, destTile, u);
+    			if (mc.isMoveType()) {
+    				aiConfirmedMoveProcessor(mc);
+    			} else {
+    				canDisembark = false;
+    			}
+    		}
+    	}
+    	return canDisembark;
+    }
+    
     /**
      * Return true when user interation request
      */

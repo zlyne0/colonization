@@ -1,11 +1,12 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
@@ -25,15 +26,15 @@ public class TransportUnitMission extends AbstractMission {
     }
 
 	private Unit carrier;
-
     private final List<UnitDest> unitsDest = new ArrayList<UnitDest>();
 
     private TransportUnitMission(String id) {
         super(id);
     }
 	
-	public TransportUnitMission(Player player, Unit carrier) {
+	public TransportUnitMission(Unit carrier) {
         super(Game.idGenerator.nextId(TransportUnitMission.class));
+        this.carrier = carrier;
 	}
 
 	public void addUnitDest(Unit unit, Tile tile) {
@@ -41,7 +42,7 @@ public class TransportUnitMission extends AbstractMission {
     }
 
     public UnitDest firstUnitDest() {
-        if (unitsDest.size() > 0) {
+        if (!unitsDest.isEmpty()) {
             return unitsDest.get(0);
         }
         return null;
@@ -49,6 +50,45 @@ public class TransportUnitMission extends AbstractMission {
 
 	public boolean isTransportUnitExists(Player player) {
 		return CommonMissionHandler.isUnitExists(player, carrier);
+	}
+	
+	public void embarkColonistsInEurope() {
+		for (UnitDest unitDest : unitsDest) {
+			unitDest.unit.embarkTo(carrier);
+		}
+		carrier.sailUnitToNewWorld();
+	}
+	
+	public List<Unit> unitsToDisembark(Tile location) {
+		List<Unit> units = new ArrayList<Unit>(unitsDest.size());
+		for (int i = 0; i < unitsDest.size(); i++) {
+			UnitDest unitDest = unitsDest.get(i);
+			if (location.equalsCoordinates(unitDest.dest)) {
+				units.add(unitDest.unit);
+			}
+		}
+		return units;
+	}
+	
+	public void removeDisembarkedUnits(Player player, Tile location) {
+		StringBuilder logStr = new StringBuilder();
+		
+		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
+			if (ud.dest.equalsCoordinates(location)) {
+				unitsDest.remove(ud);
+				
+				if (logStr.length() != 0) {
+					logStr.append(", ");
+				}
+				logStr.append(ud.unit.getId());
+			}
+		}
+		logger.debug("TransportUnitMissionHandler[%s].disembark units[%s] to tile[%s]", 
+			player.getId(), 
+			logStr.toString(), 
+			location.toStringCords()
+		);
+		
 	}
 	
 	@Override
@@ -76,7 +116,6 @@ public class TransportUnitMission extends AbstractMission {
 
     public static class Xml extends AbstractMission.Xml<TransportUnitMission> {
 
-        private static final String ATTR_DEST = "dest";
         private static final String ATTR_CARRIER = "carrier";
         private static final String ELEMENT_UNIT = "unitDest";
         private static final String DEST_UNIT = "unit";
@@ -121,6 +160,5 @@ public class TransportUnitMission extends AbstractMission {
         public static String tagName() {
             return "transportUnitMission";
         }
-        
     }
 }

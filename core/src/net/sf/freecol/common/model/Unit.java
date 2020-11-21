@@ -1046,6 +1046,12 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 	}
 	
+	public void disembarkUnitToLocation(Tile dest, Unit unit) {
+		unit.changeUnitLocation(dest);
+		unit.setState(UnitState.ACTIVE);
+		this.removeUnit(unit);
+	}
+	
 	public void sailUnitToNewWorld() {
 		changeUnitLocation(owner.getHighSeas());
 		reduceMovesLeftToZero();
@@ -1071,6 +1077,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	    return workLeft <= 0;
 	}
 
+	public int workTurnsToComplete() {
+		return workLeft;
+	}
+	
     public void gainExperience(int aditionalExperience) {
         this.experience = Math.min(this.experience + aditionalExperience, unitType.getMaximumExperience());
     }

@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission.Phase
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
@@ -28,11 +29,13 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final MoveService moveService;
+    private final CommonMissionHandler.MoveToEurope moveToEuropeStep;
 	
 	public TransportGoodsToSellMissionHandler(Game game, PathFinder pathFinder, MoveService moveService) {
 		this.game = game;
 		this.pathFinder = pathFinder;
 		this.moveService = moveService;
+        this.moveToEuropeStep = new CommonMissionHandler.MoveToEurope(pathFinder, moveService, game);
 	}
 	
 	@Override
@@ -155,24 +158,6 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 			return;
 		}
 		
-		// do nothing in HighSeas
-		
-		if (mission.getTransporter().isAtLocation(Tile.class)) {
-			logger.debug("TransportGoodsToSellMissionHandler[%s] move to highseas", player.getId());
-			
-			Path pathEurope = pathFinder.findToEurope(
-				game.map,
-				mission.getTransporter().getTile(),
-				mission.getTransporter(),
-				PathFinder.includeUnexploredAndExcludeNavyThreatTiles
-			);
-			
-			MoveContext moveContext = new MoveContext(pathEurope);
-	    	MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
-	    	
-	    	if (aiConfirmedMovePath == MoveType.MOVE_HIGH_SEAS) {
-	    		mission.getTransporter().sailUnitToEurope(moveContext.destTile);
-	    	}
-		}
+		moveToEuropeStep.sail(mission.getTransporter(), mission);
 	}
 }

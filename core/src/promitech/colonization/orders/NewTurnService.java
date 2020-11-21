@@ -27,6 +27,7 @@ import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 import promitech.map.isometric.IterableSpiral;
+import static promitech.colonization.orders.NewTurnLogger.logger;
 
 public class NewTurnService {
 
@@ -68,7 +69,9 @@ public class NewTurnService {
 				continue;
 			}
 			Colony colony = (Colony)settlement;
-			System.out.println("calculate new turn for colony " + colony);
+			if (logger.isDebug()) {
+				logger.debug("player[%s].colony[%s].newTurn.name[%s]", colony.getOwner().getId(), colony.getId(), colony.getName());
+			}
 			
 			colony.ifPossibleAddFreeBuildings();
 			colony.updateColonyFeatures();
@@ -151,6 +154,13 @@ public class NewTurnService {
 
 	private void sailOnHighSeas(Unit unit) {
         unit.sailOnHighSea();
+        if (logger.isDebug()) {
+        	String dest = "new world";
+        	if (unit.isDestinationEurope()) {
+        		dest = "europe";
+        	}
+        	logger.debug("player[%s].unit[%s].sailOnHighSeas.turns %s dest %s", unit.getOwner().getId(), unit.getId(), unit.workTurnsToComplete(), dest);
+        }
         if (unit.isWorkComplete()) {
             if (unit.isDestinationEurope()) {
                 unit.clearDestination();

@@ -58,6 +58,10 @@ public class MoveContext {
 	public boolean isHuman() {
 		return unit.getOwner().isHuman();
 	}
+
+	public void init(Tile sourceTile, Tile destTile, Unit unit) {
+		init(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));
+	}
 	
 	public void init(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
 		this.sourceTile = sourceTile;

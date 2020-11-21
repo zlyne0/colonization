@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
@@ -61,6 +62,9 @@ public class MissionExecutor {
         TransportGoodsToSellMissionHandler transportGoodsToSellMissionHandler = new TransportGoodsToSellMissionHandler(
     		game, pathFinder, moveService
 		);
+        TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
+    		game, pathFinder, moveService
+		);
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
@@ -69,6 +73,7 @@ public class MissionExecutor {
 		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);
 		missionHandlerMapping.put(DemandTributeMission.class, demandTributeMissionHandler);
 		missionHandlerMapping.put(TransportGoodsToSellMission.class, transportGoodsToSellMissionHandler);
+		missionHandlerMapping.put(TransportUnitMission.class, transportUnitMissionHandler);
 	}
     
 	public void executeMissions(Player player) {

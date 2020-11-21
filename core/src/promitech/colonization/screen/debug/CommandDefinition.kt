@@ -1,8 +1,6 @@
 package promitech.colonization.screen.debug
 
-import net.sf.freecol.common.model.IndianSettlement
-import net.sf.freecol.common.model.Settlement
-import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.*
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -17,12 +15,10 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
-import net.sf.freecol.common.model.TradeRoute
 import promitech.colonization.ai.TradeRouteMissionHandler
 import promitech.colonization.orders.move.MoveInThreadService
 import promitech.colonization.orders.move.MoveService.AfterMoveProcessor
 import net.sf.freecol.common.util.Consumer
-import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.ai.ColonyPlan
 import net.sf.freecol.common.model.specification.GoodsType
@@ -31,12 +27,13 @@ import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.ai.missions.DemandTributeMission
 import net.sf.freecol.common.model.player.Tension
-import net.sf.freecol.common.model.UnitFactory
-import net.sf.freecol.common.model.UnitType
 import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
+import promitech.colonization.screen.map.hud.GUIGameController
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 
 
 fun createCommands(
@@ -108,6 +105,10 @@ fun createCommands(
 		
 		command("ai_transport_goods_to_sell_mission_example") {
 			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
+		}
+		
+		command("aiTransportUnitsFromEuropeToNewWorld") {
+			aiTransportUnitsFromEuropeToNewWorld(di, guiGameModel, mapActor)
 		}
 		
 		command("ai_explore") {
@@ -393,7 +394,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 			override fun run() {
 				di.newTurnService.newTurn(player)
 				
-				missionPlaner.planMissions(player)
+				//missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 				
 				mapActor.resetMapModel()
@@ -441,5 +442,37 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 					.runMission(player, mission)
 			}
 		})
+	}
+
+	fun aiTransportUnitsFromEuropeToNewWorld(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+		val game = guiGameModel.game
+		// two units in europe
+		// two destination in new world
+		
+		val fortOrangeTile = game.map.getTile(32, 29)
+		val nieuwAmsterdam = game.map.getTile(32, 25)
+		val nextToNieuwAmsterdam = game.map.getTile(33, 24)
+		
+		val player = game.players.getById("player:1")
+		val u1 = player.europe.getUnits().getById("unit:879")
+		val u2 = player.europe.getUnits().getById("unit1:7095")
+
+		val m1 = ColonyWorkerMission(nieuwAmsterdam.settlement.asColony(), u1)
+        val m2 = ColonyWorkerMission(fortOrangeTile.settlement.asColony(), u2)
+
+		val carrier = player.units.getById("unit:938")
+		
+		u1.embarkTo(carrier);
+		u2.embarkTo(carrier);
+		u1.resetMovesLeftOnNewTurn()
+		u2.resetMovesLeftOnNewTurn()
+		
+		var transportMission = TransportUnitMission(carrier)
+		//transportMission.addUnitDest(m1.getUnit(), m1.getColony().tile)
+		transportMission.addUnitDest(m1.getUnit(), nextToNieuwAmsterdam)
+		transportMission.addUnitDest(m2.getUnit(), m2.getColony().tile)
+
+		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+		missionContainer.addMission(transportMission)
 	}
 
