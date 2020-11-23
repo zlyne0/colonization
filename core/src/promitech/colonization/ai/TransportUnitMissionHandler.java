@@ -42,27 +42,29 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			return;
     	}
 
-		TransportUnitMission.UnitDest firstUnitDest = mission.firstUnitDest();
-		if (firstUnitDest == null) {
+		Unit firstUnit = mission.firstUnit();
+		if (firstUnit == null) {
 			logger.debug("TransportUnitMissionHandler[%s] no units to transport", player.getId());
 			mission.setDone();
 			return;
     	}
 
-    	Unit first = firstUnitDest.unit;
-    	if (first.isAtLocation(Europe.class)) {
+    	if (firstUnit.isAtLocation(Europe.class)) {
     		if (mission.getCarrier().isAtLocation(Tile.class)) { moveToEurope(mission); }
     		if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
     		if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
-    	} else if (first.isAtLocation(Unit.class)) {
+    	} else if (firstUnit.isAtLocation(Unit.class)) {
     		if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
     		if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
-    		if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(player, mission, firstUnitDest); }
+    		if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(player, mission); }
     	} else {
-    		// TODO: zdjecie unit z listy i transport kolejnego unit
-        	logger.debug("TransportUnitMissionHandler[%s] transport unit destination does not exists", player.getId());
-    		mission.setDone();
-    		return;
+			mission.removeUnit(firstUnit);
+			if (mission.firstUnit() == null) {
+				logger.debug("TransportUnitMissionHandler[%s] transport unit destination does not exists", player.getId());
+				mission.setDone();
+			} else {
+				// TODO: try handle another unit
+			}
     	}
     }
 
@@ -70,33 +72,37 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		moveToEuropeStep.sail(mission.getCarrier(), mission);
 	}
 	
-	private void moveAndDisemberkUnits(Player player, TransportUnitMission mission, TransportUnitMission.UnitDest unitDest) {
+	private void moveAndDisemberkUnits(Player player, TransportUnitMission mission) {
 		Unit carrier = mission.getCarrier();
-		// TODO: choose te closest destination 
-		Path path = pathFinder.findToTile(
+		
+		Path path = pathFinder.findTheQuickestToTile(
 			game.map,
 			carrier.getTile(),
-			unitDest.dest,
+			mission.destTiles(),
 			carrier,
 			PathFinder.includeUnexploredAndExcludeNavyThreatTiles
 		);
+
 		if (path.isReachedDestination()) {
+			Tile destination = path.endTile;
+			
 			MoveContext moveContext = new MoveContext(path);
 			MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
-
-			if (MoveType.MOVE.equals(aiConfirmedMovePath)) {
-				if (moveContext.destTile.equalsCoordinates(unitDest.dest)) {
+			
+			if (MoveType.MOVE.equals(aiConfirmedMovePath) || MoveType.DISEMBARK.equals(aiConfirmedMovePath)) {
+				if (moveContext.destTile.equalsCoordinates(destination)) {
 					
-					List<Unit> unitsToDisembark = mission.unitsToDisembark(moveContext.destTile);
+					List<Unit> unitsToDisembark = mission.unitsToDisembark(destination);
 					boolean unitsDisembarked = moveService.disembarkUnits(
 						carrier, 
 						unitsToDisembark, 
 						carrier.getTile(), 
 						moveContext.destTile
 					);
-					// TODO: handle lack of posibility to disembark unit and try find another place
 					if (unitsDisembarked) {
-						mission.removeDisembarkedUnits(player, unitDest.dest);
+						mission.removeDisembarkedUnits(player, destination);
+					} else {
+						// TODO: handle lack of posibility to disembark unit and try find another place
 					}
 
 					if (mission.getUnitsDest().isEmpty()) {
@@ -105,6 +111,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					}
 				}
 			} else {
+				mission.removeDisembarkedUnits(player, destination);
 				// TODO: handle lack of posibility to disembark unit and try find another place
 			}
 		}

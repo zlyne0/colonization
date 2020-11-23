@@ -108,7 +108,9 @@ fun createCommands(
 		}
 		
 		command("aiTransportUnitsFromEuropeToNewWorld") {
-			aiTransportUnitsFromEuropeToNewWorld(di, guiGameModel, mapActor)
+			if (mapActor != null) {
+				aiTransportUnitsFromEuropeToNewWorld(di, guiGameModel, mapActor)
+			}
 		}
 		
 		command("ai_explore") {
@@ -444,35 +446,35 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		})
 	}
 
-	fun aiTransportUnitsFromEuropeToNewWorld(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+	fun aiTransportUnitsFromEuropeToNewWorld(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor) {
 		val game = guiGameModel.game
-		// two units in europe
-		// two destination in new world
-		
-		val fortOrangeTile = game.map.getTile(32, 29)
-		val nieuwAmsterdam = game.map.getTile(32, 25)
-		val nextToNieuwAmsterdam = game.map.getTile(33, 24)
-		
-		val player = game.players.getById("player:1")
-		val u1 = player.europe.getUnits().getById("unit:879")
-		val u2 = player.europe.getUnits().getById("unit1:7095")
 
-		val m1 = ColonyWorkerMission(nieuwAmsterdam.settlement.asColony(), u1)
-        val m2 = ColonyWorkerMission(fortOrangeTile.settlement.asColony(), u2)
-
-		val carrier = player.units.getById("unit:938")
 		
-		u1.embarkTo(carrier);
-		u2.embarkTo(carrier);
-		u1.resetMovesLeftOnNewTurn()
-		u2.resetMovesLeftOnNewTurn()
+		val dutch = game.players.getById("player:1")				
+        var sourceTile = game.map.getTile(26, 79)
+        //var sourceTile = game.map.getTile(30, 80)
+        //var sourceTile = game.map.getTile(28, 76)
 		
-		var transportMission = TransportUnitMission(carrier)
-		//transportMission.addUnitDest(m1.getUnit(), m1.getColony().tile)
-		transportMission.addUnitDest(m1.getUnit(), nextToNieuwAmsterdam)
-		transportMission.addUnitDest(m2.getUnit(), m2.getColony().tile)
+        var disembarkTile = game.map.getTile(27, 76)
+        var fortOrangeTile = game.map.getTile(25, 75)
 
-		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
-		missionContainer.addMission(transportMission)
+        var galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile);
+        var u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope());
+        var u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope());
+//        var u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon);
+//        var u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon);
+
+        var transportMission = TransportUnitMission(galleon)
+            .addUnitDest(u1, fortOrangeTile)
+            .addUnitDest(u2, disembarkTile);
+
+        game.aiContainer.missionContainer(dutch).addMission(transportMission);
+
+		//UnitFactory.create(UnitType.FREE_COLONIST, game.players.getById("player:133"), disembarkTile);
+		//fortOrangeTile.getSettlement().setOwner(game.players.getById("player:133"));
+
+		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch);				
+		mapActor.resetMapModel()
+		mapActor.resetUnexploredBorders()
 	}
 

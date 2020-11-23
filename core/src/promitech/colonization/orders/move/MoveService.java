@@ -84,7 +84,7 @@ public class MoveService {
     
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
     	moveContext.initNextPathStep();
-    	while (moveContext.canHandleMove()) {
+    	while (moveContext.canHandleMove() && !moveContext.isRequireUserInteraction()) {
     		aiConfirmedMoveProcessor(moveContext);
     		moveContext.initNextPathStep();
     	}
@@ -332,7 +332,7 @@ public class MoveService {
     	boolean canDisembark = true;
     	
     	if (sourceTile.equalsCoordinates(destTile)) {
-    		// for example in colony
+    		// colony no show move
     		for (Unit u : units) {
     			carrier.disembarkUnitToLocation(destTile, u);
     		}

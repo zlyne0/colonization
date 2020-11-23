@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import org.assertj.core.api.AbstractAssert;
 
 import net.sf.freecol.common.model.player.Player;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 
@@ -84,6 +85,30 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		return this;
 	}
 	
+	public UnitAssert isNextToLocation(Map map, Tile location) {
+		isNotNull();
+		Tile unitLocation = actual.getTileLocationOrNull();
+		if (unitLocation == null) {
+			failWithMessage(
+				"expected unit <%s> to be next to tile <%s> but it is not on tile", 
+				actual.getId(), 
+				location
+			);
+			return this;
+		}
+		
+		boolean found = false;
+		for (NeighbourIterableTile<Tile> neighbourIterableTile : map.neighbourTiles(location)) {
+			if (neighbourIterableTile.tile.equalsCoordinates(unitLocation)) {
+				found = true;
+			}
+		}
+		if (!found) {
+			failWithMessage("expected unit <%s> to be next to tile <%s>", actual.getId(), location);
+		}
+		return this;
+	}
+	
 	public UnitAssert isNotAtLocation(UnitLocation unitLocation) {
 		if (actual.location == unitLocation || unitLocation.getUnits().containsId(actual)) {
 			failWithMessage("expected unit <%s> not to be at location <%s> ",
@@ -120,6 +145,14 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
         return this;
     }
 
+	public UnitAssert hasUnit(Unit unit) {
+		isNotNull();
+		if (!actual.getUnitContainer().getUnits().containsId(unit)) {
+            failWithMessage("expected unit <%s> to carry unit <%s>", actual.getId(), unit.getId());
+		}
+		return this;
+	}
+    
     public UnitAssert isDamaged() {
         if (!actual.isDamaged()) {
             failWithMessage("expected unit <%s> to be damaged", actual.getId());
@@ -161,5 +194,4 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
         }
         return this;
     }
-    
 }

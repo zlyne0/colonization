@@ -42,6 +42,10 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		blockUnitsForMission(m);
 	}
 
+	public void clearAllMissions() {
+		missions.clear();
+	}
+
 	public void clearDoneMissions() {
 		List<AbstractMission> l = new ArrayList<AbstractMission>(missions.entities());
 		for (AbstractMission am : l) {

@@ -4,7 +4,9 @@ import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
@@ -37,17 +39,26 @@ public class TransportUnitMission extends AbstractMission {
         this.carrier = carrier;
 	}
 
-	public void addUnitDest(Unit unit, Tile tile) {
+	public TransportUnitMission addUnitDest(Unit unit, Tile tile) {
         this.unitsDest.add(new UnitDest(unit, tile));
+        return this;
     }
 
-    public UnitDest firstUnitDest() {
+    public Unit firstUnit() {
         if (!unitsDest.isEmpty()) {
-            return unitsDest.get(0);
+            return unitsDest.get(0).unit;
         }
         return null;
     }
 
+    public List<Tile> destTiles() {
+    	Set<Tile> tiles = new HashSet<Tile>(unitsDest.size());
+    	for (UnitDest ud : unitsDest) {
+    		tiles.add(ud.dest);
+    	}
+    	return new ArrayList<Tile>(tiles);
+    }
+    
 	public boolean isTransportUnitExists(Player player) {
 		return CommonMissionHandler.isUnitExists(player, carrier);
 	}
@@ -68,6 +79,14 @@ public class TransportUnitMission extends AbstractMission {
 			}
 		}
 		return units;
+	}
+	
+	public void removeUnit(Unit unit) {
+		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
+			if (ud.unit.equalsId(unit)) {
+				unitsDest.remove(ud);
+			}
+		}
 	}
 	
 	public void removeDisembarkedUnits(Player player, Tile location) {

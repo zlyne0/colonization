@@ -66,7 +66,7 @@ public class Path {
 	}
 
 	public boolean reachTile(Tile tile) {
-	    for (int i=0; i<tiles.size; i++) {
+		for (int i = 0; i < tiles.size; i++) {
 	        if (tiles.get(i).equalsCoordinates(tile)) {
 	            return true;
 	        }
@@ -80,6 +80,10 @@ public class Path {
 
 	public int totalTurns() {
 		return turns.get(turns.size-1);
+	}
+	
+	public boolean isQuickestThan(Path path) {
+		return this.tiles.size < path.tiles.size;
 	}
 	
 	public boolean isPathToEurope() {

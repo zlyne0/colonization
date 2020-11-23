@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.map.path;
 
 import java.util.Comparator;
 import java.util.EnumSet;
+import java.util.List;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
@@ -118,6 +119,20 @@ public class PathFinder {
         path.toEurope = false;
         return path;
     }
+	
+	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit moveUnit, EnumSet<FlagTypes> flags) {
+		if (endTiles.isEmpty()) {
+			throw new IllegalArgumentException("endTiles can not be empty");
+		}
+		Path theBestPath = null;
+		for (Tile oneTile : endTiles) {
+			Path onePath = findToTile(map, startTile, oneTile, moveUnit, flags);
+			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
+				theBestPath = onePath;
+			}
+		}
+		return theBestPath;
+	}
 	
 	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
 	    goalDecider = rangeMapGoalDecider;
