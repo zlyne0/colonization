@@ -1,4 +1,4 @@
-package promitech.colonization.ai.goodsToSell;
+package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
@@ -9,8 +9,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission;
-import net.sf.freecol.common.model.ai.missions.TransportGoodsToSellMission.Phase;
+import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission.Phase;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;

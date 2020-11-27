@@ -1,4 +1,4 @@
-package promitech.colonization.ai.goodsToSell;
+package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import java.util.ArrayList;
 import java.util.List;

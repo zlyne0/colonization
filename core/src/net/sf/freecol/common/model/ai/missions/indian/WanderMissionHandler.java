@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions.indian;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -7,11 +7,11 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.missions.WanderMission;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
+import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 import promitech.map.Boolean2dArray;

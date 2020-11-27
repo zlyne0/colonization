@@ -1,23 +1,23 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions.indian;
 
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
-import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission.Phase;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission.Phase;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.ui.SimpleMessageDialog;
 import promitech.colonization.ui.resources.StringTemplate;
 
-class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMission> {
+public class IndianBringGiftMissionHandler implements MissionHandler<IndianBringGiftMission> {
 
 	private final Game game;
 	private final PathFinder pathFinder;

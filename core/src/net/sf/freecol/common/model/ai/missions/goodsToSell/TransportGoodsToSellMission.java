@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions;
+package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
@@ -12,11 +12,14 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer.Xml;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ai.CommonMissionHandler;
-import promitech.colonization.ai.goodsToSell.GoodsLoader;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;

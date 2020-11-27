@@ -6,6 +6,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
+import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
+import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
+import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 
 import promitech.colonization.savegame.ObjectFromNodeSetter;

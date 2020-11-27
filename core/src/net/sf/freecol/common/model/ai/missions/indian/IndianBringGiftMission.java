@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions;
+package net.sf.freecol.common.model.ai.missions.indian;
 
 import java.io.IOException;
 
@@ -7,6 +7,10 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer.Xml;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;

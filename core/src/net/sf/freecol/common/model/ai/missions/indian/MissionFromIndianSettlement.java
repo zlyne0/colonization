@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions;
+package net.sf.freecol.common.model.ai.missions.indian;
 
 import net.sf.freecol.common.model.IndianSettlement;
 

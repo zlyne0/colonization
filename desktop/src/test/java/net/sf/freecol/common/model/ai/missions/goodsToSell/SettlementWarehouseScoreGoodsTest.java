@@ -1,4 +1,4 @@
-package promitech.colonization.ai.goodsToSell;
+package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -23,7 +23,6 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 import promitech.colonization.ai.ObjectsListScoreAssert;
 import promitech.colonization.savegame.SaveGameParser;
 
