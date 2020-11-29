@@ -4,7 +4,7 @@ import org.assertj.core.api.AbstractAssert;
 
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 
-class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
+public class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, AbstractMission> {
 
 	public AbstractMissionAssert(AbstractMission actual, Class<?> selfType) {
 		super(actual, selfType);
@@ -39,6 +39,14 @@ class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert, Abstra
 		isNotNull();
 		if (actual.getClass() != missionTypeClass) {
 			failWithMessage("Expected mission type %s on mission id: %s ", missionTypeClass.getName(), actual.getId());
+		}
+		return this;
+	}
+
+	public AbstractMissionAssert isDone() {
+		isNotNull();
+		if (!actual.isDone()) {
+			failWithMessage("Expected mission id: %s is done, but it's not", actual.getId());
 		}
 		return this;
 	}

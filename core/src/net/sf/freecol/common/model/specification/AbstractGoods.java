@@ -12,6 +12,10 @@ public class AbstractGoods implements Identifiable {
 	    this.typeId = typeId;
 	}
 
+	public boolean isEquals(String typeId, int quantity) {
+		return this.typeId.equals(typeId) && this.quantity == quantity;
+	}
+
 	@Override
 	public String getId() {
 		return typeId;

@@ -1,0 +1,36 @@
+package net.sf.freecol.common.model.ai.missions;
+
+import java.util.Locale;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.player.Player;
+import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.ui.resources.Messages;
+
+public class Savegame1600BaseClass {
+
+	protected Game game;
+	protected Player dutch;
+	protected Player spain;
+	
+    @BeforeAll
+    public static void beforeClass() throws Exception {
+        Gdx.files = new LwjglFiles();
+		Locale.setDefault(Locale.US);
+		Messages.instance().load();
+	}
+
+    @BeforeEach
+    public void setup() throws Exception {
+    	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+    	dutch = game.players.getById("player:1");
+        spain = game.players.getById("player:133");
+    }
+	
+}

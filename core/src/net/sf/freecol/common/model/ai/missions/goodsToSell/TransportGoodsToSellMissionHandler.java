@@ -4,7 +4,6 @@ import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -143,6 +142,7 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(path);
 			moveService.aiConfirmedMovePath(moveContext);
+			// colony accessibility handled by TransportGoodsToSellMission.firstSettlementToVisit(player)
 		}
 	}
 

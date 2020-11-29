@@ -25,9 +25,9 @@ import promitech.colonization.screen.map.hud.GUIGameModel
 
 
 fun createCommands(
-	di : DI, console : ConsoleOutput,
-	mapActor: MapActor?,
-	colonyApplicationScreen: ColonyApplicationScreen?
+		di: DI, console: ConsoleOutput,
+		mapActor: MapActor?,
+		colonyApplicationScreen: ColonyApplicationScreen?
 ) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
@@ -205,7 +205,7 @@ fun createCommands(
 	}
 }
 
-fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor?) {
+fun theBestPlaceToBuildColony(guiGameModel: GUIGameModel, mapActor: MapActor?) {
     System.out.println("theBestPlaceToBuildColony")
     
     var buildColony = BuildColony(guiGameModel.game.map);
@@ -215,12 +215,12 @@ fun theBestPlaceToBuildColony(guiGameModel : GUIGameModel, mapActor : MapActor?)
         //setOf(BuildColony.TileSelection.ONLY_SEASIDE, BuildColony.TileSelection.WITHOUT_UNEXPLORED)
     );
     
-    val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+    val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
     buildColony.toStringValues(tileStrings)
     mapActor?.showTileDebugStrings(tileStrings)
 }
 
-fun theBestMove(di : DI, mapActor : MapActor?) {
+fun theBestMove(di: DI, mapActor: MapActor?) {
 	System.out.println("theBestMove")
 	
     var guiGameModel = di.guiGameModel
@@ -253,12 +253,12 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
         System.out.println("can not find tile to explore");
     }
     
-	val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+	val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
     navyExplorer.toStringsBorderValues(tileStrings);
     mapActor?.showTileDebugStrings(tileStrings);
 }
 
-	fun mapTurnRange(di : DI, mapActor : MapActor) {
+	fun mapTurnRange(di: DI, mapActor: MapActor) {
 		var guiGameModel = di.guiGameModel
 		if (!guiGameModel.isViewMode()) {
 			return
@@ -270,12 +270,12 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 	    var pathFinder = PathFinder()
 	    pathFinder.generateRangeMap(guiGameModel.game.map, galleon.getTile(), galleon, PathFinder.excludeUnexploredTiles)
 		
-		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, {""}) })
+		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
 		pathFinder.turnCostToStringArrays(tileStrings)
 		mapActor.showTileDebugStrings(tileStrings);
 	}
 
-	fun aiMove(di : DI, mapActor : MapActor?) {
+	fun aiMove(di: DI, mapActor: MapActor?) {
 		if (di.guiGameModel.isActiveUnitNotSet()) {
 			System.out.println("no active unit");
 			return
@@ -288,7 +288,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 //		})
 	}
 	
-	fun aiAttack(di : DI) {
+	fun aiAttack(di: DI) {
 		var pathFinder = PathFinder()
 		// private attack
 //		var srcTile = guiGameModel.game.map.getSafeTile(12, 80)
@@ -306,7 +306,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		missionHandler.handle(null, mission) 
 	}
 
-	fun indianBringGiftExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+	fun indianBringGiftExample(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor?) {
 		val tile = guiGameModel.game.map.getSafeTile(19, 78)
 		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
 		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
@@ -329,12 +329,12 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
-					.runMission(tile.getSettlement().getOwner(), mission)
+						.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
 	}
 
-	fun indianDemandTributeExample(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
+	fun indianDemandTributeExample(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor?) {
 		val tile = guiGameModel.game.map.getSafeTile(19, 78)
 		//val colonyTile = guiGameModel.game.map.getSafeTile(20, 79)
 		val colonyTile = guiGameModel.game.map.getSafeTile(21, 72)
@@ -369,7 +369,7 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		})
 	}
 
-	fun playerAsAi(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor) {
+	fun playerAsAi(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
 		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder)
 		val missionExecutor = MissionExecutor(
 			guiGameModel.game,
@@ -383,10 +383,10 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				di.newTurnService.newTurn(player)
-				
+
 				//missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
-				
+
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 			}
@@ -394,49 +394,48 @@ fun theBestMove(di : DI, mapActor : MapActor?) {
 				
 	}
 
-	fun settlementsGoodsScore(di : DI, guiGameModel : GUIGameModel) {
+	fun settlementsGoodsScore(di: DI, guiGameModel: GUIGameModel) {
 		val planer = TransportGoodsToSellMissionPlaner(guiGameModel.game, di.pathFinder)
 		planer.plan(guiGameModel.game.playingPlayer)
 	}
 
-	fun ai_transport_goods_to_sell_mission_example(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor?) {
-		val player = guiGameModel.game.players.getById("player:1")
-		val transporter = player.units.getById("unit:938")
+	fun ai_transport_goods_to_sell_mission_example(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor?) {
+		val game = guiGameModel.game
 		
-		val mission = TransportGoodsToSellMission(
-			transporter,
-			player.settlements.getById("colony:1182"),
-			setOf("colony:1182", "colony:1063")
-		)
+		val dutch = game.players.getById("player:1")
+		val spain = game.players.getById("player:133")
+		val startLocation = game.map.getTile(26, 79)
+		val transporter = UnitFactory.create(UnitType.GALLEON, dutch, startLocation)
 		
-		// move cargo to europe to sell			
-//		transporter.getGoodsContainer().increaseGoodsQuantity("model.goods.cloth", 200)
-//		transporter.changeUnitLocation(guiGameModel.game.map.getSafeTile(27, 21))
-//		mission.changePhase(TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE)
+		val fortOranje = game.map.getTile(25, 75).getSettlement()
+		val nieuwAmsterdam = game.map.getTile(24, 78).getSettlement()
 		
-		// move from europe to colony to load cargo
-		player.settlements.getById("colony:1182").getGoodsContainer().decreaseAllToZero()
-		player.settlements.getById("colony:1063").getGoodsContainer()
+		fortOranje.getGoodsContainer().decreaseAllToZero()
+		fortOranje.getGoodsContainer()
 			.increaseGoodsQuantity("model.goods.rum", 100)
+		nieuwAmsterdam.getGoodsContainer()
 			.increaseGoodsQuantity("model.goods.cigars", 100)
 			.increaseGoodsQuantity("model.goods.silver", 100)
 			.increaseGoodsQuantity("model.goods.cloth", 100)
-		transporter.changeUnitLocation(player.getEurope())
+
+		val mission = TransportGoodsToSellMission(
+			transporter,
+			fortOranje.asColony(),
+			setOf(fortOranje.getId(), nieuwAmsterdam.getId())
+		)
 		
-		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+		val missionContainer = game.aiContainer.missionContainer(dutch)
 		missionContainer.addMission(mission)
-		
-		ThreadsResources.instance.executeMovement(object : Runnable {
-			override fun run() {
-				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
-					.runMission(player, mission)
-			}
-		})
+
+		fortOranje.owner = spain;
+
+		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch)
+		mapActor?.resetMapModel()
+		mapActor?.resetUnexploredBorders()
 	}
 
-	fun aiTransportUnitsFromEuropeToNewWorld(di : DI, guiGameModel : GUIGameModel, mapActor : MapActor) {
+	fun aiTransportUnitsFromEuropeToNewWorld(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
 		val game = guiGameModel.game
-
 		
 		val dutch = game.players.getById("player:1")				
         var sourceTile = game.map.getTile(26, 79)

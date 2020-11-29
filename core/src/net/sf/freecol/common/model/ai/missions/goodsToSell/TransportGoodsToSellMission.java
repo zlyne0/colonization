@@ -15,7 +15,6 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer.Xml;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -61,7 +60,11 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		if (firstSettlementIdToVisit == null) {
 			return null;
 		}
-		return player.settlements.getByIdOrNull(firstSettlementIdToVisit);
+		Settlement settlement = player.settlements.getByIdOrNull(firstSettlementIdToVisit);
+		if (settlement != null && settlement.getOwner().notEqualsId(player)) {
+			return null;
+		}
+		return settlement;
 	}
 	
 	public void visitSettlementAsFirst(Settlement settlement) {
