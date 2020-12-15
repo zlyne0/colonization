@@ -274,7 +274,7 @@ public class BuildColony {
 		highSeaDistance.generate();
 	}
 	
-	public void init(Player player) {
+	private void init(Player player) {
 		this.player = player;
 		
 		colonyLandDistance.generate(player);

@@ -22,6 +22,7 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
+import net.sf.freecol.common.model.ai.ColonyWorkerRequestPlaner
 
 
 fun createCommands(
@@ -83,14 +84,18 @@ fun createCommands(
 			}			 
 		}
     	
-		command("ai_settlements") {
+		command("ai_settlements_place_score") {
 			theBestPlaceToBuildColony(guiGameModel, mapActor)
 		}
     	
 		command("ai_settlements_goods_score") {
 			settlementsGoodsScore(di, guiGameModel)
 		}
-		
+
+		command("ai_settlements_worker_req_score") {
+			settlementsWorkerReqScore(di, guiGameModel)
+		}
+				
 		command("ai_transport_goods_to_sell_mission_example") {
 			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
 		}
@@ -105,13 +110,9 @@ fun createCommands(
 			theBestMove(di, mapActor)
 		} 
     	
-		command("ai_move") {
-			aiMove(di, mapActor)
-		} 
-    	
-		command("player_as_ai") {
+		command("player_turn_as_ai") {
 			if (mapActor != null) {
-				playerAsAi(di, guiGameModel, mapActor)
+				playerTurnAsAi(di, guiGameModel, mapActor)
 			}
 		}
 		
@@ -275,19 +276,6 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		mapActor.showTileDebugStrings(tileStrings);
 	}
 
-	fun aiMove(di: DI, mapActor: MapActor?) {
-		if (di.guiGameModel.isActiveUnitNotSet()) {
-			System.out.println("no active unit");
-			return
-		}
-		
-//		ThreadsResources.instance.executeMovement(object : Runnable {
-//			override fun run() {
-//				AILogicDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService).run()
-//			}
-//		})
-	}
-	
 	fun aiAttack(di: DI) {
 		var pathFinder = PathFinder()
 		// private attack
@@ -369,7 +357,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		})
 	}
 
-	fun playerAsAi(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
+	fun playerTurnAsAi(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
 		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder)
 		val missionExecutor = MissionExecutor(
 			guiGameModel.game,
@@ -384,14 +372,13 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 			override fun run() {
 				di.newTurnService.newTurn(player)
 
-				//missionPlaner.planMissions(player)
+				missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 			}
 		})
-				
 	}
 
 	fun settlementsGoodsScore(di: DI, guiGameModel: GUIGameModel) {
@@ -463,5 +450,11 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch);				
 		mapActor.resetMapModel()
 		mapActor.resetUnexploredBorders()
+	}
+
+	fun settlementsWorkerReqScore(di: DI, guiGameModel: GUIGameModel) {
+		val player = guiGameModel.game.playingPlayer
+		val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, player)
+		sut.plan()
 	}
 

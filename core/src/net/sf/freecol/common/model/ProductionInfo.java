@@ -120,6 +120,14 @@ public class ProductionInfo {
 		return maxProduction;
 	}
 
+	public Entry<GoodsType, Integer> singleFilteredUnattendedProduction(MapIdEntities<GoodsType> goodsType) {
+		if (unattendedProductions.isEmpty()) { 
+			return null;
+		}
+		Production production = unattendedProductions.get(0);
+		return production.singleFilteredOutputTypeEquals(goodsType);
+	}
+	
     public List<Production> getUnattendedProductions() {
         return unattendedProductions;
     }

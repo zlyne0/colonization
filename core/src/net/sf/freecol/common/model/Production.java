@@ -74,6 +74,14 @@ public class Production {
 		return prod;
 	}
 	
+	public java.util.Map.Entry<GoodsType, Integer> singleOutput() {
+		if (output.isEmpty()) {
+			return null;
+		}
+		// first
+		return output.entrySet().iterator().next();
+	}
+	
 	public void applyTileImprovementsModifiers(Tile aTile) {
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
 			int quantity = aTile.applyTileProductionModifier(outputEntry.getKey().getId(), outputEntry.getValue());
@@ -150,6 +158,15 @@ public class Production {
 		return true;
 	}
 	
+	public Entry<GoodsType, Integer> singleFilteredOutputTypeEquals(MapIdEntities<GoodsType> goodsType) {
+		for (java.util.Map.Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (goodsType.containsId(entry.getKey())) {
+				return entry;
+			}
+		}
+		return null;
+	}
+	
 	public boolean outputTypesEquals(String goodsTypeId) {
 		if (this.output.size() != 1) {
 			return false;
@@ -175,6 +192,17 @@ public class Production {
 		return found;
 	}
 	
+	public boolean inputTypesEquals(GoodsType goodsType) {
+		if (this.input.size() != 1) {
+			return false;
+		}
+		for (Entry<GoodsType, Integer> entry : input.entrySet()) {
+			if (entry.getKey().equalsId(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
 	
 	public static class Xml extends XmlNodeParser<Production> {
 
@@ -234,6 +262,5 @@ public class Production {
 		public static String tagName() {
 			return "production";
 		}
-		
 	}
 }

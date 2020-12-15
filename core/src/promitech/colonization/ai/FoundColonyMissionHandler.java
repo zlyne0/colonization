@@ -75,7 +75,6 @@ class FoundColonyMissionHandler implements MissionHandler<FoundColonyMission> {
             theBestTiles[i] = null;
         }
         
-        buildColony.init(unit.getOwner());
         Set<TileSelection> tileFilter = new HashSet<BuildColony.TileSelection>();
         tileFilter.add(TileSelection.ONLY_SEASIDE);
         buildColony.generateWeights(unit.getOwner(), tileFilter);

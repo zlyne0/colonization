@@ -104,6 +104,15 @@ public class BuildingType extends BuildableType {
 		}
     }
     
+	public Production productionForInput(GoodsType inputGoodsType) {
+		for (Production production : productionInfo.getAttendedProductions()) {
+			if (production.inputTypesEquals(inputGoodsType)) {
+				return production;
+			}
+		}
+		return null;
+	}
+    
 	public int getGoodsOutputChainLevel() {
 		return goodsOutputChainLevel;
 	}

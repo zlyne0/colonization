@@ -158,7 +158,6 @@ public class Colony extends Settlement {
     	for (FoundingFather ff : owner.foundingFathers.entities()) {
     	    colonyUpdatableFeatures.addFeatures(ff);
     	}
-    	//settlement type jest nulem
     	colonyUpdatableFeatures.addFeatures(settlementType);
     }
     

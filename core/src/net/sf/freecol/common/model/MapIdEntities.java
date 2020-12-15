@@ -33,6 +33,13 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     	entities = new HashMap<String,T>();
     }
     
+    public MapIdEntities(List<T> entitiesList) {
+    	entities = new HashMap<String, T>();
+    	for (T entity : entitiesList) {
+    		entities.put(entity.getId(), entity);
+    	}
+    }
+    
     private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
     	this.entities = entitiesMapImplementation;
     }
