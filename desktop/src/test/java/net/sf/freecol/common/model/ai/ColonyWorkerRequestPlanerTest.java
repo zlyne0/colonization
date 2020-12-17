@@ -66,17 +66,16 @@ class ColonyWorkerRequestPlanerTest {
 		Tile tile1 = game.map.getTile(27, 74);
 		Tile tile2 = game.map.getTile(26, 71);
 		
-		UnitType colonist = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 		MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>(Specification.instance.goodsTypeToScoreByPrice);
 		
 		// when
 		{
-			ObjectScore<Tile> scoreTile = sut.scoreTile(colonist, tile1, goodsTypes);
-			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj().toStringCords() + "]");
+			ObjectScore<UnitType> scoreTile = sut.scoreTile(tile1, goodsTypes);
+			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj() + "]");
 		}
 		{
-			ObjectScore<Tile> scoreTile = sut.scoreTile(colonist, tile2, goodsTypes);
-			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj().toStringCords() + "]");
+			ObjectScore<UnitType> scoreTile = sut.scoreTile(tile2, goodsTypes);
+			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj() + "]");
 		}
 		//System.out.println(scoreTile(worker, tile, goodsType));
 

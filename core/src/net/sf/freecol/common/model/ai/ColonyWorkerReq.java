@@ -24,6 +24,7 @@ class ColonyWorkerReq {
 	private final List<Unit> createdUnits = new ArrayList<Unit>();
 	private final Colony colony;
 	private final Market market;
+	private final UnitType freeColonistUnitType;
 	private ObjectsListScore<UnitType> reqUnits;
 	private final List<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
@@ -32,6 +33,8 @@ class ColonyWorkerReq {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
+		
+		freeColonistUnitType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 	}
 	
 	public ObjectsListScore<UnitType> simulate() {
@@ -121,10 +124,10 @@ class ColonyWorkerReq {
 			}
 		}
 		if (foodTheBestLocation != null) {
-			UnitType expertType = Specification.instance.expertUnitTypeByGoodType.get(foodTheBestLocation.getGoodsType().getId());
-			if (expertType == null) {
-				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
-			}
+			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(
+				foodTheBestLocation.getGoodsType(), 
+				freeColonistUnitType
+			);
 			reqUnits.add(expertType, 0);
 			colonist.changeUnitType(expertType);
 			addWorkerToColony(colonist, foodTheBestLocation);
@@ -154,13 +157,10 @@ class ColonyWorkerReq {
 			}
 		}
 		if (theBestScoreLoc != null) {
-			UnitType expertType = Specification.instance.expertUnitTypeByGoodType.get(theBestScoreLoc.getGoodsType().getId());
-			if (expertType == null) {
-				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
-			}
-//			if (theBestScoreLoc.getGoodsType().isFarmed()) {
-//				expertType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
-//			}
+			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(
+				theBestScoreLoc.getGoodsType(), 
+				freeColonistUnitType
+			);
 			reqUnits.add(expertType, theBestScore);
 			colonist.changeUnitType(expertType);
 			

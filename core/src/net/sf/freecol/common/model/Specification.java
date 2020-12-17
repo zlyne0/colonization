@@ -286,6 +286,14 @@ public class Specification {
     	return types;
     }
     
+    public UnitType expertUnitTypeForGoodsType(GoodsType goodsType, UnitType defaultUnitType) {
+    	UnitType unitType = expertUnitTypeByGoodType.get(goodsType.getId());
+    	if (unitType == null) {
+    		return defaultUnitType;
+    	}
+    	return unitType;
+    }
+    
     private void createSupportUnitLists() {
 		for (UnitType unitType : unitTypes.entities()) {
 			if (unitType.hasAbility(Ability.SUPPORT_UNIT)) {

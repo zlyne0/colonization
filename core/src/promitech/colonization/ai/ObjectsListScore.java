@@ -26,6 +26,14 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 			}
 			return sum;
 		}
+
+		public static <Z> ObjectScore<Z> max(ObjectScore<Z> s1, ObjectScore<Z> s2) {
+			if (s1.score > s2.score) {
+				return s1;
+			} else {
+				return s2;
+			}
+		}
 		
 		public ObjectScore(O obj, int score) {
 			this.obj = obj;
