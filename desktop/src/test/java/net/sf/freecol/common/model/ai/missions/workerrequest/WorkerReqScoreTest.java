@@ -1,6 +1,6 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
-import static org.assertj.core.api.Assertions.*;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,14 +11,19 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.ai.ObjectsListScoreAssert;
+import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ai.ObjectScoreAssert;
 import promitech.colonization.ai.ObjectsListScore;
+import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.ObjectsListScoreAssert;
 import promitech.colonization.savegame.SaveGameParser;
 
-class ColonyWorkerReqTest {
+class WorkerReqScoreTest {
 
 	Game game;
 	Player dutch;
@@ -39,7 +44,7 @@ class ColonyWorkerReqTest {
 		// given
     	Colony colony = game.map.getTile(20, 79).getSettlement().asColony();
 		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
-		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(colony, Specification.instance.goodsTypeToScoreByPrice);
 		
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -59,7 +64,7 @@ class ColonyWorkerReqTest {
 		// given
     	Colony colony = game.map.getTile(24, 78).getSettlement().asColony();
 		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
-		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -79,7 +84,7 @@ class ColonyWorkerReqTest {
 		// given
     	Colony colony = game.map.getTile(25, 75).getSettlement().asColony();
 		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
-		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -98,7 +103,7 @@ class ColonyWorkerReqTest {
 		// given
     	Colony colony = game.map.getTile(21, 72).getSettlement().asColony();
 		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
-		ColonyWorkerReq sut = new ColonyWorkerReq(colony, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(colony, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -111,6 +116,28 @@ class ColonyWorkerReqTest {
 			.hasScore(2, 30, unitType(UnitType.MASTER_TOBACCONIST))
 		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+	}
+
+	@Test
+	public void canScoreCreateNewColonyReq() throws Exception {
+		// given
+
+		Tile tile1 = game.map.getTile(27, 74);
+		Tile tile2 = game.map.getTile(26, 71);
+		
+		CreateColonyReqScore sut = new CreateColonyReqScore(
+			game.map, 
+			dutch,
+			new MapIdEntities<GoodsType>(Specification.instance.goodsTypeToScoreByPrice)
+		);
+		
+		// when
+		ObjectScore<UnitType> scoreTile1 = sut.score(tile1);
+		ObjectScore<UnitType> scoreTile2 = sut.score(tile2);
+
+		// then
+		ObjectScoreAssert.assertThat(scoreTile1).hasScore(unitType(UnitType.MASTER_FUR_TRADER), 24);
+		ObjectScoreAssert.assertThat(scoreTile2).hasScore(unitType(UnitType.MASTER_TOBACCONIST), 30);
 	}
 	
 	UnitType unitType(String unitTypeId) {

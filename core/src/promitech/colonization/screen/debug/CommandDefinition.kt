@@ -22,7 +22,7 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
-import net.sf.freecol.common.model.ai.ColonyWorkerRequestPlaner
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
 
 
 fun createCommands(
@@ -454,7 +454,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 
 	fun settlementsWorkerReqScore(di: DI, guiGameModel: GUIGameModel) {
 		val player = guiGameModel.game.playingPlayer
-		val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, player)
+		val sut = ColonyWorkerRequestPlaner(player)
 		sut.plan()
 	}
 

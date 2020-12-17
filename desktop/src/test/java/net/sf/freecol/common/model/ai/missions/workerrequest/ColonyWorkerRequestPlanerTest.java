@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import java.util.List;
 import java.util.Map.Entry;
@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -49,35 +50,11 @@ class ColonyWorkerRequestPlanerTest {
 	@Test
 	public void testName() throws Exception {
 		// given
-		ColonyWorkerRequestPlaner sut = new ColonyWorkerRequestPlaner(game.map, dutch);
+		ColonyWorkerRequestPlaner sut = new ColonyWorkerRequestPlaner(dutch);
 		
 		// when
 		sut.plan();
 		
-
-		// then
-	}
-
-	@Test
-	public void testName2() throws Exception {
-		// given
-		ColonyWorkerRequestPlaner sut = new ColonyWorkerRequestPlaner(game.map, dutch);
-
-		Tile tile1 = game.map.getTile(27, 74);
-		Tile tile2 = game.map.getTile(26, 71);
-		
-		MapIdEntities<GoodsType> goodsTypes = new MapIdEntities<GoodsType>(Specification.instance.goodsTypeToScoreByPrice);
-		
-		// when
-		{
-			ObjectScore<UnitType> scoreTile = sut.scoreTile(tile1, goodsTypes);
-			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj() + "]");
-		}
-		{
-			ObjectScore<UnitType> scoreTile = sut.scoreTile(tile2, goodsTypes);
-			System.out.println("score: " + scoreTile.getScore() + ", cords[" + scoreTile.getObj() + "]");
-		}
-		//System.out.println(scoreTile(worker, tile, goodsType));
 
 		// then
 	}

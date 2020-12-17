@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,7 +14,7 @@ import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ai.ObjectsListScore;
 
-class ColonyWorkerReq {
+class ColonyWorkerReqScore {
 
 	private static final int MAX_UNITS_TYPES = 3;
 
@@ -29,7 +29,7 @@ class ColonyWorkerReq {
 	private final List<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
-	public ColonyWorkerReq(Colony colony, List<GoodsType> goodsTypeToScore) {
+	public ColonyWorkerReqScore(Colony colony, List<GoodsType> goodsTypeToScore) {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
@@ -184,7 +184,7 @@ class ColonyWorkerReq {
 		return consumeWarehouseResources;
 	}
 
-	public ColonyWorkerReq withConsumeWarehouseResources() {
+	public ColonyWorkerReqScore withConsumeWarehouseResources() {
 		this.consumeWarehouseResources = true;
 		return this;
 	}
