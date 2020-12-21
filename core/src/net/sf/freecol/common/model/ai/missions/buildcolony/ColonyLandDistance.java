@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions.buildcolony;
 
 import com.badlogic.gdx.utils.IntArray;
 

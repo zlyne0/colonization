@@ -23,6 +23,7 @@ import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
+import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator
 
 
 fun createCommands(
@@ -32,6 +33,7 @@ fun createCommands(
 ) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
+	val tileDebugView = TileDebugView(mapActor, guiGameModel)
 	
 	return Commands().define {
     	commandArg("add_gold") { args ->
@@ -85,9 +87,13 @@ fun createCommands(
 		}
     	
 		command("ai_settlements_place_score") {
-			theBestPlaceToBuildColony(guiGameModel, mapActor)
+			settlementsPlaceScore(guiGameModel, tileDebugView)
 		}
-    	
+
+		command("ai_settlements_the_best_place") {
+			theBestPlaceToBuildColony(guiGameModel, tileDebugView)
+		}
+		    	
 		command("ai_settlements_goods_score") {
 			settlementsGoodsScore(di, guiGameModel)
 		}
@@ -206,19 +212,28 @@ fun createCommands(
 	}
 }
 
-fun theBestPlaceToBuildColony(guiGameModel: GUIGameModel, mapActor: MapActor?) {
-    System.out.println("theBestPlaceToBuildColony")
+fun theBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	val player = guiGameModel.game.playingPlayer
+	val pathFinder = PathFinder()
+	
+	val rangeSource = guiGameModel.game.map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
+	val galleon = UnitFactory.create(UnitType.GALLEON, player, rangeSource)
+		
+	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)
+	colonyPlaceGenerator.theBestTiles(galleon, rangeSource)
+	colonyPlaceGenerator.theBestTilesWeight(tileDebugView)
+	
+	player.removeUnit(galleon)
+}
+
+fun settlementsPlaceScore(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+    System.out.println("settlementsPlaceScore")
     
-    var buildColony = BuildColony(guiGameModel.game.map);
-    buildColony.generateWeights(
-        guiGameModel.game.playingPlayer,
-        setOf(BuildColony.TileSelection.WITHOUT_UNEXPLORED)
-        //setOf(BuildColony.TileSelection.ONLY_SEASIDE, BuildColony.TileSelection.WITHOUT_UNEXPLORED)
-    );
-    
-    val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
-    buildColony.toStringValues(tileStrings)
-    mapActor?.showTileDebugStrings(tileStrings)
+	var pathFinder = PathFinder()
+	
+	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)
+	colonyPlaceGenerator.generateWeights(guiGameModel.game.playingPlayer)
+	colonyPlaceGenerator.tilesWeights(tileDebugView)
 }
 
 fun theBestMove(di: DI, mapActor: MapActor?) {

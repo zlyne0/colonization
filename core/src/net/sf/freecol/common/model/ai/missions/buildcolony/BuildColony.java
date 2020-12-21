@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package net.sf.freecol.common.model.ai.missions.buildcolony;
 
 import java.util.Map.Entry;
 import java.util.Set;
@@ -9,6 +9,8 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.MapTileDebugInfo;
+import net.sf.freecol.common.model.ai.missions.buildcolony.TilePlayer.NoClaimReason;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.GameOptions;
@@ -16,7 +18,6 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.SpiralIterator;
-import promitech.colonization.ai.TilePlayer.NoClaimReason;
 import promitech.map.Int2dArray;
 
 class TilePlayer {
@@ -529,7 +530,7 @@ public class BuildColony {
 		}
 	}
 	
-	public void toStringValues(String[][] tileStrings) {
+	public void toStringValues(MapTileDebugInfo mapFileInfo) {
         int x, y, cost;
         for (int i=0; i<tileWeights.size(); i++) {
             x = tileWeights.toX(i);
@@ -537,7 +538,7 @@ public class BuildColony {
             cost = tileWeights.get(i);
             
             if (cost > 0 && cost != Integer.MAX_VALUE) {
-            	tileStrings[y][x] = Integer.toString(cost);
+            	mapFileInfo.str(x, y, Integer.toString(cost));
             }
         }
 		

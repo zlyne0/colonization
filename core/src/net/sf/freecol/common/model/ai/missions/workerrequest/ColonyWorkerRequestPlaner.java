@@ -24,14 +24,23 @@ import promitech.map.isometric.NeighbourIterableTile;
 public class ColonyWorkerRequestPlaner {
 
 	private final Player player;
+	private final List<GoodsType> goodsTypeToScoreByPrice;
 	
 	public ColonyWorkerRequestPlaner(Player player) {
 		this.player = player;
+		this.goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice;
 	}
 	
 	public void plan() {
-		List<GoodsType> goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice;
+		workerForColony();
+		workerForCreateColony();
+	}
+	
+	private void workerForCreateColony() {
 		
+	}
+	
+	private void workerForColony() {
 		ObjectsListScore<ColonyWorkerReqScore> colonyWorkerReqScores = new ObjectsListScore<ColonyWorkerReqScore>(player.settlements.size());
 		for (Settlement settlement : player.settlements) {
 			ColonyWorkerReqScore colonyWorkerReq = new ColonyWorkerReqScore(settlement.asColony(), goodsTypeToScoreByPrice);

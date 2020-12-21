@@ -8,20 +8,21 @@ import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
 public class EuropeanMissionPlaner {
 
-	private final FoundColonyMissionHandler foundColonyMissionHandler;
 	private final ColonyProductionPlaner colonyProductionPlaner;
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
+	private final ColonyPlaceGenerator colonyPlaceGenerator;
 	
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
-		this.foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, game);
 		this.colonyProductionPlaner = new ColonyProductionPlaner();
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
+		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
@@ -66,17 +67,17 @@ public class EuropeanMissionPlaner {
     	
     	playerMissionContainer.interruptMission(ship);
     	
-    	Tile tileToBuildColony = foundColonyMissionHandler.findTileToBuildColony(ship.getOwner(), ship, ship.getTile());
-    	if (tileToBuildColony == null) {
+    	Tile tileToBuildColony = colonyPlaceGenerator.findTileToBuildColony(ship, ship.getTile());
+    	if (tileToBuildColony != null) {
+        	for (Unit colonist : colonists.entities()) {
+        		RellocationMission rellocationMission = new RellocationMission(tileToBuildColony, colonist, ship);
+        		FoundColonyMission foundColonyMission = new FoundColonyMission(tileToBuildColony, colonist);
+        		foundColonyMission.addDependMission(rellocationMission);
+        		
+        		playerMissionContainer.addMission(foundColonyMission);
+        	}
+    	} else {
     		System.out.println("can not find tile to found colony");
-    	}
-    	
-    	for (Unit colonist : colonists.entities()) {
-    		RellocationMission rellocationMission = new RellocationMission(tileToBuildColony, colonist, ship);
-    		FoundColonyMission foundColonyMission = new FoundColonyMission(tileToBuildColony, colonist);
-    		foundColonyMission.addDependMission(rellocationMission);
-    		
-    		playerMissionContainer.addMission(foundColonyMission);
     	}
 	}
 	
