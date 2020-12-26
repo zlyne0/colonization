@@ -295,7 +295,7 @@ public class BuildColony {
         for (y=0; y<map.height; y++) {
             for (x=0; x<map.width; x++) {
                 Tile tile = map.getSafeTile(x, y);
-                if (tile.getType().isWater()) {
+                if (tile.getType().isWater() || tile.hasLostCityRumour()) {
                 	continue;
                 }
                 if (withoutUnexplored && player.isTileUnExplored(tile)) {
