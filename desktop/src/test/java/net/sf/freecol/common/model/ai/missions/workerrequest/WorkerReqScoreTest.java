@@ -132,12 +132,15 @@ class WorkerReqScoreTest {
 		);
 		
 		// when
-		ObjectScore<UnitType> scoreTile1 = sut.score(tile1);
-		ObjectScore<UnitType> scoreTile2 = sut.score(tile2);
+		ObjectScore<TileUnitType> scoreTile1 = sut.score(tile1);
+		ObjectScore<TileUnitType> scoreTile2 = sut.score(tile2);
 
 		// then
-		ObjectScoreAssert.assertThat(scoreTile1).hasScore(unitType(UnitType.MASTER_FUR_TRADER), 24);
-		ObjectScoreAssert.assertThat(scoreTile2).hasScore(unitType(UnitType.MASTER_TOBACCONIST), 30);
+		ObjectScoreAssert.assertThat(scoreTile1).hasScore(24);
+		ObjectScoreAssert.assertThat(scoreTile2).hasScore(30);
+
+		assertThat(scoreTile1.getObj().unitType).isEqualTo(unitType(UnitType.MASTER_FUR_TRADER));
+		assertThat(scoreTile2.getObj().unitType).isEqualTo(unitType(UnitType.MASTER_TOBACCONIST));
 	}
 	
 	UnitType unitType(String unitTypeId) {

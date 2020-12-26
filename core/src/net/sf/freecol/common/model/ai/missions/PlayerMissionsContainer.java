@@ -19,6 +19,8 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.Predicate;
+
 import static promitech.colonization.ai.MissionHandlerLogger.*;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -61,6 +63,15 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 	}
 
+	public <T extends AbstractMission> boolean hasMission(Class<? extends AbstractMission> clazz, Predicate<T> predicate) {
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz) && predicate.test((T)abstractMission)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public boolean hasMissionType(Class<? extends AbstractMission> clazz) {
 		for (AbstractMission am : missions.entities()) {
 			if (am.getClass() == clazz) {

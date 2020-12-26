@@ -42,4 +42,14 @@ public class TileDebugView implements MapTileDebugInfo {
         mapActor.mapDrawModel().unitPath = path;
     }
     
+	public void reset() {
+		if (debugTileStrTab == null) {
+			return;
+		}
+		for (int y = 0; y < debugTileStrTab.length; y++) {
+			for (int x = 0; x < debugTileStrTab[y].length; x++) {
+				debugTileStrTab[y][x] = null;
+			}
+		}
+	}
 }

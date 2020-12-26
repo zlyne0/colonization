@@ -23,5 +23,12 @@ public class ObjectScoreAssert extends AbstractAssert<ObjectScoreAssert, ObjectS
 		}
 		return this;
 	}
+
+	public ObjectScoreAssert hasScore(int score) {
+		if (actual.getScore() != score) {
+			failWithMessage("expected score equals <%s> but is's <%s>", score, actual.getScore());
+		}
+		return this;
+	}
 	
 }

@@ -23,16 +23,15 @@ public class Units {
 		}
 	};
 	
-    public static Unit findCarrierToRellocateUnit(Unit unit) {
-        Unit ship = null;
-        for (Unit u : unit.getOwner().units.entities()) {
-            if (u.isNaval() && u.isCarrier()) {
-                ship = u;
+    public static Unit findCarrier(Player player) {
+        for (Unit u : player.units) {
+            if (u.isNaval() && u.isCarrier() && !u.isDamaged()) {
+            	return u;
             }
         }
-        return ship;
+        return null;
     }
-
+    
     public static List<Unit> findCarrierTransportResources(Game game, Player player) {
     	PlayerMissionsContainer missionContainer = game.aiContainer.missionContainer(player);
     	List<Unit> units = null;

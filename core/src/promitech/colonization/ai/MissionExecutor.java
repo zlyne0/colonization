@@ -19,6 +19,8 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMissionHandler;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -68,6 +70,8 @@ public class MissionExecutor {
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
     		game, pathFinder, moveService
 		);
+        ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler();
+        
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
@@ -77,6 +81,7 @@ public class MissionExecutor {
 		missionHandlerMapping.put(DemandTributeMission.class, demandTributeMissionHandler);
 		missionHandlerMapping.put(TransportGoodsToSellMission.class, transportGoodsToSellMissionHandler);
 		missionHandlerMapping.put(TransportUnitMission.class, transportUnitMissionHandler);
+		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
 	}
     
 	public void executeMissions(Player player) {
@@ -127,6 +132,9 @@ public class MissionExecutor {
     	MissionHandlerLogger.logger.debug("executeMission[%s]", am.getId());
     	
         MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
+        if (missionHandler == null) {
+        	throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());
+        }
 		missionHandler.handle(missionsContainer, am);
 		if (am.isDone()) {
 			missionsContainer.unblockUnitsFromMission(am);

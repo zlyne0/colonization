@@ -85,23 +85,23 @@ fun createCommands(
 				mapTurnRange(di, mapActor)
 			}			 
 		}
-    	
-		command("ai_settlements_place_score") {
-			settlementsPlaceScore(guiGameModel, tileDebugView)
+
+		command("ai_generateTileScoresForNewColony") {
+			generateTileScoresForNewColony(guiGameModel, tileDebugView)
+		}
+		
+		command("ai_generateTheBestPlaceToBuildColony") {
+			generateTheBestPlaceToBuildColony(guiGameModel, tileDebugView)
 		}
 
-		command("ai_settlements_the_best_place") {
-			theBestPlaceToBuildColony(guiGameModel, tileDebugView)
+		command("ai_generateWorkerReqScore") {
+			generateWorkerReqScore(di, guiGameModel, tileDebugView)
 		}
-		    	
+
 		command("ai_settlements_goods_score") {
 			settlementsGoodsScore(di, guiGameModel)
 		}
-
-		command("ai_settlements_worker_req_score") {
-			settlementsWorkerReqScore(di, guiGameModel)
-		}
-				
+						
 		command("ai_transport_goods_to_sell_mission_example") {
 			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
 		}
@@ -207,12 +207,18 @@ fun createCommands(
 			indianDemandTributeExample(di, guiGameModel, mapActor)
 		}
 		
+		commandArg("reset_debug") {
+			resetDebug(tileDebugView)
+		}
+		
     	command("nothing") {
 		}
 	}
 }
 
-fun theBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+fun generateTheBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	tileDebugView.reset()
+	
 	val player = guiGameModel.game.playingPlayer
 	val pathFinder = PathFinder()
 	
@@ -226,15 +232,25 @@ fun theBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView: TileDeb
 	player.removeUnit(galleon)
 }
 
-fun settlementsPlaceScore(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
-    System.out.println("settlementsPlaceScore")
-    
+fun generateTileScoresForNewColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	tileDebugView.reset()
+	
 	var pathFinder = PathFinder()
 	
 	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)
 	colonyPlaceGenerator.generateWeights(guiGameModel.game.playingPlayer)
 	colonyPlaceGenerator.tilesWeights(tileDebugView)
 }
+
+fun generateWorkerReqScore(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	tileDebugView.reset()
+	
+	val player = guiGameModel.game.playingPlayer
+	val sut = ColonyWorkerRequestPlaner(guiGameModel.game, di.pathFinder)
+	sut.score(player, Units.findCarrier(player))
+	sut.debug(tileDebugView)
+}
+
 
 fun theBestMove(di: DI, mapActor: MapActor?) {
 	System.out.println("theBestMove")
@@ -467,9 +483,6 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		mapActor.resetUnexploredBorders()
 	}
 
-	fun settlementsWorkerReqScore(di: DI, guiGameModel: GUIGameModel) {
-		val player = guiGameModel.game.playingPlayer
-		val sut = ColonyWorkerRequestPlaner(player)
-		sut.plan()
+	fun resetDebug(tileDebugView: TileDebugView) {
+		tileDebugView.reset()
 	}
-

@@ -1,5 +1,6 @@
 package promitech.colonization.ai;
 
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Tile;
@@ -10,6 +11,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
@@ -18,20 +20,35 @@ public class EuropeanMissionPlaner {
 	private final ColonyProductionPlaner colonyProductionPlaner;
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
 	private final ColonyPlaceGenerator colonyPlaceGenerator;
+	private final ColonyWorkerRequestPlaner colonyWorkerRequestPlaner;
 	
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
 		this.colonyProductionPlaner = new ColonyProductionPlaner();
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
 		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
+		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game, pathFinder);
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
-		colonyProductionPlaner.createPlan(player, playerMissionContainer);
-		prepareFoundColonyMissions(player, playerMissionContainer);
-		transportGoodsToSellMissionPlaner.plan(player);
-		prepareExploreMissions(player, playerMissionContainer);
+		for (Unit unit : player.units.copy()) {
+			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
+				if (unit.isColonist()) {
+					colonyWorkerRequestPlaner.prepareMission(player, unit, playerMissionContainer);
+				}
+			}
+		}
+		
+		for (Unit unit : player.units.copy()) {
+			if (unit.isNaval() && !unit.isDamaged()) {
+			}
+		}
+		
+//		colonyProductionPlaner.createPlan(player, playerMissionContainer);
+//		prepareFoundColonyMissions(player, playerMissionContainer);
+//		transportGoodsToSellMissionPlaner.plan(player);
+//		prepareExploreMissions(player, playerMissionContainer);
 	}
-
+	
 	private void prepareExploreMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
     	for (Unit unit : player.units.entities()) {
     		if (unit.isNaval() && unit.isCarrier() && unit.getTileLocationOrNull() != null) {

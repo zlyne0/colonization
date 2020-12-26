@@ -66,6 +66,11 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		return this;
 	}
 
+	public void add(ObjectScore<T> objScore) {
+		this.objs.add(objScore);
+		this.scoreSum += objScore.score;
+	}
+	
 	public int size() {
 		return this.objs.size();
 	}

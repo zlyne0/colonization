@@ -173,6 +173,10 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
         entities.clear();
     }
     
+    public List<T> copy() {
+    	return new ArrayList<T>(entities.values());
+    }
+    
     public static class Xml extends XmlNodeParser {
         private final String tagName;
         private final boolean withWrapperTag;

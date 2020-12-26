@@ -26,6 +26,7 @@ import net.sf.freecol.common.model.SettlementType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Specification.Options;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.TileAssert;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
@@ -161,7 +162,7 @@ public class Savegame1600Verifier {
         assertThat(playerMissions1).isNotNull();
         ColonyWorkerMission m = playerMissions1.getMission("colonyWorkerMission:1");
 
-        assertThat(m.getColony().getId()).isEqualTo("colony:6528");
+		TileAssert.assertThat(m.getTile()).isEquals(24, 78);
         assertThat(m.getUnit().getId()).isEqualTo("unit:7095");
     }
 

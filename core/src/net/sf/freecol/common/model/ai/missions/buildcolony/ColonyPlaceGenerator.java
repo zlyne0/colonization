@@ -13,11 +13,13 @@ import net.sf.freecol.common.model.player.Player;
 
 public class ColonyPlaceGenerator {
 
+	public static final int TILES_NUMBER = 5;
+	
 	private final PathFinder pathFinder;
 	private final Game game;
 	private final BuildColony buildColony;
 
-    private int maxTurnsRange = 5;
+    private int maxTurnsRange = TILES_NUMBER;
     private int[] theBestWeights = new int[maxTurnsRange+1];
     private Tile[] theBestTiles = new Tile[maxTurnsRange+1];
 	
