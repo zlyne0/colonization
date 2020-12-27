@@ -12,7 +12,7 @@ public class ColonyProductionPlaner {
 	public ColonyProductionPlaner() {
 	}
 	
-	public void createPlan(Player player, PlayerMissionsContainer playerMissionContainer) {
+	public static void createPlan(Player player, PlayerMissionsContainer playerMissionContainer) {
 		for (Settlement settlement : player.settlements.entities()) {
 			new ColonyPlan(settlement.asColony())
 				.withIgnoreIndianOwner()
@@ -21,7 +21,7 @@ public class ColonyProductionPlaner {
 		}
 	}
 	
-	public void createPlan(Colony colony) {
+	public static void createPlan(Colony colony) {
 		new ColonyPlan(colony)
 			.withIgnoreIndianOwner()
 			.withConsumeWarehouseResources(true)

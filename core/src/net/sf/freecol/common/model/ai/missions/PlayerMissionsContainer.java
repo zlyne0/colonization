@@ -2,6 +2,8 @@ package net.sf.freecol.common.model.ai.missions;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.xml.sax.SAXException;
@@ -133,6 +135,22 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		mission.unblockUnits(unitMissionsMapping);
 	}
 
+	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Unit unit) {
+		List<T> filteredMissions = null;
+		for (AbstractMission abstractMission : unitMissionsMapping.getUnitMission(unit)) {
+			if (abstractMission.is(clazz)) {
+				if (filteredMissions == null) {
+					filteredMissions = new LinkedList<T>();
+				}
+				filteredMissions.add((T)abstractMission);
+			}
+		}
+		if (filteredMissions == null) {
+			filteredMissions = Collections.emptyList();
+		}
+		return filteredMissions;
+	}
+	
 	public boolean isUnitBlockedForMission(Unit unit) {
 		return unitMissionsMapping.isUnitInMission(unit.getId());
 	}

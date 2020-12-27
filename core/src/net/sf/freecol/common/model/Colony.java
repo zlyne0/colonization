@@ -1255,10 +1255,23 @@ public class Colony extends Settlement {
     	if (maxProd != null) {
     		addWorkerToTerrain(maxProd.getColonyTile(), builder);
     	} else {
-    		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
-    		addWorkerToBuilding(townHall, builder);
+    		addUnitToRandomBuilding(builder);
     	}
     	updateColonyPopulation();
+    }
+    
+    private void addUnitToRandomBuilding(Unit unit) {
+		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
+		if (townHall.canAddWorker(unit)) {
+			addWorkerToBuilding(townHall, unit);
+		} else {
+			for (Building building : buildings) {
+				if (building.canAddWorker(unit)) {
+					addWorkerToBuilding(building, unit);
+					break;
+				}
+			}
+		}
     }
     
 	public boolean isTileLockedBecauseNoDock(Tile tile) {

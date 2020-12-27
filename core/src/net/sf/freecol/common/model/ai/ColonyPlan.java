@@ -22,7 +22,6 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.UnitConsumption;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ColonyPlan {

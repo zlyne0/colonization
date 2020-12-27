@@ -70,7 +70,9 @@ public class MissionExecutor {
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
     		game, pathFinder, moveService
 		);
-        ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler();
+        ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
+    		game, pathFinder, moveService
+		);
         
         
         missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);

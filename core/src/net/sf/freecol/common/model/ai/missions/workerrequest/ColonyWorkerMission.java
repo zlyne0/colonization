@@ -36,6 +36,11 @@ public class ColonyWorkerMission extends AbstractMission {
 		unitMissionsMapping.unblockUnitFromMission(unit, this);
 	}
 
+	public boolean isUnitAtDestination() {
+		Tile ut = unit.getTileLocationOrNull();
+		return ut != null && tile != null && ut.equalsCoordinates(tile);
+	}
+	
 	public Tile getTile() {
 		return tile;
 	}

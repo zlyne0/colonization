@@ -1,5 +1,7 @@
 package promitech.colonization.ai;
 
+import java.util.List;
+
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -9,21 +11,21 @@ import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
 public class EuropeanMissionPlaner {
 
-	private final ColonyProductionPlaner colonyProductionPlaner;
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
 	private final ColonyPlaceGenerator colonyPlaceGenerator;
 	private final ColonyWorkerRequestPlaner colonyWorkerRequestPlaner;
 	
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
-		this.colonyProductionPlaner = new ColonyProductionPlaner();
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
 		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
 		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game, pathFinder);
@@ -40,6 +42,7 @@ public class EuropeanMissionPlaner {
 		
 		for (Unit unit : player.units.copy()) {
 			if (unit.isNaval() && !unit.isDamaged()) {
+				navyUnitPlaner(unit, playerMissionContainer);
 			}
 		}
 		
@@ -49,15 +52,38 @@ public class EuropeanMissionPlaner {
 //		prepareExploreMissions(player, playerMissionContainer);
 	}
 	
-	private void prepareExploreMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
-    	for (Unit unit : player.units.entities()) {
-    		if (unit.isNaval() && unit.isCarrier() && unit.getTileLocationOrNull() != null) {
-    			if (!playerMissionContainer.isUnitBlockedForMission(unit)) {
-    				ExplorerMission explorerMission = new ExplorerMission(unit);
-    				playerMissionContainer.addMission(explorerMission);
-    			}
-    		}
-    	}
+	private void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
+			return;
+		}
+		if (navyUnit.getUnitContainer() != null) {
+			TransportUnitMission tum = null;
+			
+			for (Unit u : navyUnit.getUnitContainer().getUnits()) {
+				List<ColonyWorkerMission> findMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, u);
+				for (ColonyWorkerMission cwm : findMissions) {
+					if (tum == null) {
+						tum = new TransportUnitMission(navyUnit);
+					}
+					tum.addUnitDest(u, cwm.getTile());
+				}
+			}
+			if (tum != null) {
+				playerMissionContainer.addMission(tum);
+			}
+		}
+		
+		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
+			return;
+		}
+		prepareExploreMissions(navyUnit, playerMissionContainer);
+	}
+	
+	private void prepareExploreMissions(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+		if (navyUnit.getTileLocationOrNull() != null) {
+			ExplorerMission explorerMission = new ExplorerMission(navyUnit);
+			playerMissionContainer.addMission(explorerMission);
+		}
 	}
 
 	private void prepareFoundColonyMissions(Player player, PlayerMissionsContainer playerMissionContainer) {

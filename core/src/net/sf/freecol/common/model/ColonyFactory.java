@@ -19,8 +19,7 @@ public class ColonyFactory {
 	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
         String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
         Colony colony = buildColony(buildByUnit, tile, colonyName);
-        ColonyProductionPlaner productionPlaner = new ColonyProductionPlaner();
-        productionPlaner.createPlan(colony);
+        ColonyProductionPlaner.createPlan(colony);
         return colony;
 	}
 	
