@@ -222,7 +222,7 @@ fun generateTheBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView:
 	val player = guiGameModel.game.playingPlayer
 	val pathFinder = PathFinder()
 	
-	val rangeSource = guiGameModel.game.map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
+	val rangeSource = guiGameModel.game.map.getSafeTile(player.getEntryLocation());
 	val galleon = UnitFactory.create(UnitType.GALLEON, player, rangeSource)
 		
 	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)

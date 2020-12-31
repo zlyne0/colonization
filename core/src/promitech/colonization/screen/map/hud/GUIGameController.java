@@ -121,10 +121,7 @@ public class GUIGameController {
 	}
 
 	public void centerMapOnEntryPoint() {
-		mapActor.centerCameraOnTile(
-			guiGameModel.game.playingPlayer.getEntryLocationX(), 
-			guiGameModel.game.playingPlayer.getEntryLocationY()
-		);
+		mapActor.centerCameraOnTile(guiGameModel.game.playingPlayer.getEntryLocation());
 	}
 	
 	public void nextActiveUnitAsGdxPostRunnable() {

@@ -10,6 +10,8 @@ import java.util.Set;
 
 import org.xml.sax.SAXException;
 
+import com.badlogic.gdx.math.GridPoint2;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
@@ -56,8 +58,7 @@ public class Player extends ObjectWithId {
     private int tax = 0;
     private int gold = 0;
     private int interventionBells = 0;
-    private int entryLocationX = 0;
-    private int entryLocationY = 0;
+    private final GridPoint2 entryLocation = new GridPoint2(0, 0);
     private String newLandName;
     private String name;
     
@@ -632,17 +633,12 @@ public class Player extends ObjectWithId {
 		foundingFathers.add(game, father);
 	}
 
-	public int getEntryLocationX() {
-		return entryLocationX;
-	}
-
-	public int getEntryLocationY() {
-		return entryLocationY;
+	public GridPoint2 getEntryLocation() {
+		return entryLocation;
 	}
 
 	public void setEntryLocation(int x, int y) {
-		this.entryLocationX = x;
-		this.entryLocationY = y;
+		this.entryLocation.set(x, y);
 	}
 	
 	public String getNewLandName() {
@@ -713,8 +709,7 @@ public class Player extends ObjectWithId {
 		private static final String ELEMENT_STANCE = "stance";
 		private static final String ELEMENT_BAN_MISSION = "ban-mission";
 		private static final String ATTR_PLAYER_TYPE = "playerType";
-		private static final String ATTR_ENTRY_LOCATION_Y = "entryLocationY";
-		private static final String ATTR_ENTRY_LOCATION_X = "entryLocationX";
+		private static final String ATTR_ENTRY_LOCATION = "entryLocation";
 		private static final String ATTR_INDEPENDENT_NATION_NAME = "independentNationName";
 		private static final String ATTR_IMMIGRATION_REQUIRED = "immigrationRequired";
 		private static final String ATTR_IMMIGRATION = "immigration";
@@ -761,8 +756,7 @@ public class Player extends ObjectWithId {
             }
             player.independentNationName = attr.getStrAttribute(ATTR_INDEPENDENT_NATION_NAME);
 
-            player.entryLocationX = attr.getIntAttribute(ATTR_ENTRY_LOCATION_X, 1);
-            player.entryLocationY = attr.getIntAttribute(ATTR_ENTRY_LOCATION_Y, 1);
+            player.entryLocation.set(attr.getPoint(ATTR_ENTRY_LOCATION, 1, 1));
             
             player.changePlayerType(attr.getEnumAttribute(PlayerType.class, ATTR_PLAYER_TYPE));
             nodeObject = player;
@@ -813,8 +807,7 @@ public class Player extends ObjectWithId {
         	attr.set(ATTR_NATION_TYPE, player.nationType);
         	attr.set(ATTR_USERNAME, player.name);
         	attr.set(ATTR_INDEPENDENT_NATION_NAME, player.independentNationName);
-        	attr.set(ATTR_ENTRY_LOCATION_X, player.entryLocationX);
-        	attr.set(ATTR_ENTRY_LOCATION_Y, player.entryLocationY);
+        	attr.setPoint(ATTR_ENTRY_LOCATION, player.entryLocation);
         	attr.set(ATTR_PLAYER_TYPE, player.playerType);
         	
         	for (Entry<String, Stance> stance : player.stance.entrySet()) {

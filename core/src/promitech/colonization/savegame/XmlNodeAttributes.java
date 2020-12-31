@@ -110,6 +110,17 @@ public class XmlNodeAttributes {
     	tmpPoint.y = Integer.parseInt(t[1]);
     	return tmpPoint;
     }
+    
+    public GridPoint2 getPoint(String name, int defaultX, int defaultY) {
+    	String pointStr = getStrAttribute(name);
+    	if (pointStr == null) {
+    		return tmpPoint.set(defaultX, defaultY);
+    	}
+    	String[] t = pointStr.split(",");
+    	tmpPoint.x = Integer.parseInt(t[0]);
+    	tmpPoint.y = Integer.parseInt(t[1]);
+    	return tmpPoint;
+    }
 
 	public boolean hasAttr(String name) {
 		return attributes.getValue(name) != null;

@@ -170,6 +170,10 @@ public class MapActor extends Widget implements Map {
 		mapCenteredToCords.set(x, y);
 	}
 	
+	public void centerCameraOnTile(GridPoint2 cords) {
+		centerCameraOnTile(cords.x, cords.y);
+	}
+	
 	public void centerCameraOnTile(Tile tile) {
 		centerCameraOnTile(tile.x, tile.y);
 	}

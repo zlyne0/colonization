@@ -123,7 +123,7 @@ public class ColonyWorkerRequestPlaner {
 	private void workerForCreateColony(Player player, Unit transporter, ObjectsListScore<TileUnitType> tileScore) {
 		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
 		
-		Tile playerEntryTile = game.map.getSafeTile(player.getEntryLocationX(), player.getEntryLocationY());
+		Tile playerEntryTile = game.map.getSafeTile(player.getEntryLocation());
 		Tile[] theBestTiles = colonyPlaceGenerator.theBestTiles(transporter, playerEntryTile);
 		
 		CreateColonyReqScore newColonyReqScore = new CreateColonyReqScore(game.map, player, goodsTypeToScoreByPrice2);

@@ -84,10 +84,7 @@ public class TransportGoodsToSellMissionPlaner {
 		if (enterHighSea != null) {
 			return game.map.getSafeTile(enterHighSea);
 		}
-		return game.map.getTile(
-			carrier.getOwner().getEntryLocationX(), 
-			carrier.getOwner().getEntryLocationY()
-		);		
+		return game.map.getSafeTile(carrier.getOwner().getEntryLocation());
 	}
 
 	public void determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {

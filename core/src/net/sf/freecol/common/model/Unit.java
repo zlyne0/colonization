@@ -1058,7 +1058,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		if (enterHighSea != null) {
 			setDestination(enterHighSea.x, enterHighSea.y);
 		} else {
-			setDestination(owner.getEntryLocationX(), owner.getEntryLocationY());
+			setDestination(owner.getEntryLocation().x, owner.getEntryLocation().y);
 		}
 		enterHighSea = null;
 		workLeft = getSailTurns();

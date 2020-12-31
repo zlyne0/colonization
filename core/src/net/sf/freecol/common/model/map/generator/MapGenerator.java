@@ -175,7 +175,7 @@ public class MapGenerator {
 			}
 			if (carriers.size() > 0) {
 				Unit carrier = carriers.get(0);
-				Tile tile = map.getTile(player.getEntryLocationX(), player.getEntryLocationY());
+				Tile tile = map.getSafeTile(player.getEntryLocation());
 				carrier.changeUnitLocation(tile);
 				player.revealMapAfterUnitMove(map, carrier, new MoveExploredTiles());
 				
