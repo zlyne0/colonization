@@ -7,7 +7,6 @@ import java.util.Map;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
-import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -39,7 +38,6 @@ public class MissionExecutor {
 	
 	private final ExplorerMissionHandler explorerMissionHandler;
 	private final WanderMissionHandler wanderMissionHandler;
-	private final FoundColonyMissionHandler foundColonyMissionHandler;
 	private final RellocationMissionHandler rellocationMissionHandler;
     
 	public MissionExecutor(
@@ -55,7 +53,6 @@ public class MissionExecutor {
         
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
 		wanderMissionHandler = new WanderMissionHandler(game, moveService);
-        foundColonyMissionHandler = new FoundColonyMissionHandler(pathFinder, game);
         rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveService);
         
         IndianBringGiftMissionHandler indianBringGiftMission = new IndianBringGiftMissionHandler(
@@ -75,7 +72,6 @@ public class MissionExecutor {
 		);
         
         
-        missionHandlerMapping.put(FoundColonyMission.class, foundColonyMissionHandler);
         missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);

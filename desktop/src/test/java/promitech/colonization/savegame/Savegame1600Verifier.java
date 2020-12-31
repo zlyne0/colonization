@@ -38,7 +38,6 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
-import net.sf.freecol.common.model.ai.missions.FoundColonyMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -151,7 +150,6 @@ public class Savegame1600Verifier {
 		verifyColonyWorkerMission(game);
 		verifyTransportUnitMission(game);
 		verifyRellocationMission(game);
-		verifyFoundColonyMission(game);
 		verifyExploreMission(game);
 		verifyDutchMissions(game);
 		verifyMissionRecursion(game);
@@ -182,10 +180,6 @@ public class Savegame1600Verifier {
 	private void verifyMissionRecursion(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 		
-        AbstractMissionAssert.assertThat(missions.getMission("foundColonyMission:4"))
-        	.isType(FoundColonyMission.class)
-        	.hasDependMission("rellocationMission:3:1", RellocationMission.class);
-        
         AbstractMissionAssert.assertThat(missions.getMission("explorerMission:5"))
         	.isType(ExplorerMission.class)
         	.hasDependMission("explorerMission:5:1", ExplorerMission.class)
@@ -202,16 +196,6 @@ public class Savegame1600Verifier {
         
         assertThat(em.getId()).isEqualTo("explorerMission:5");
         assertThat(em.unit.getId()).isEqualTo("unit:6437");
-    }
-
-    private void verifyFoundColonyMission(Game game) {
-        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
-        assertThat(missions).isNotNull();
-        FoundColonyMission fm = missions.getMission("foundColonyMission:4");
-        
-        assertThat(fm.getId()).isEqualTo("foundColonyMission:4");
-        assertThat(fm.destTile).isEquals(21, 23);
-        assertThat(fm.unit.getId()).isEqualTo("unit:7095");
     }
 
     private void verifyRellocationMission(Game game) {
