@@ -186,7 +186,7 @@ public class ColonyPlan {
 	    			prod.makeEmpty();
 	    			ingredients.makeEmpty();
     				
-    				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker);
+    				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker, ignoreIndianOwner);
     				if (potentialProduction != null) {
     					withoutLocationIds.add(potentialProduction.getProductionLocation().getId());
     					

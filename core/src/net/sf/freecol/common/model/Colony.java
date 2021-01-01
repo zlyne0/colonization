@@ -311,8 +311,8 @@ public class Colony extends Settlement {
     	colonyProduction.determinePotentialColonyTilesProduction(worker, potentialProduction); 
     }
     
-    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker) {
-    	return colonyProduction.maxProductionFromTile(gt, worker, false);
+    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker, boolean ignoreIndianOwner) {
+    	return colonyProduction.maxProductionFromTile(gt, worker, ignoreIndianOwner);
     }
     
     public int colonyWorkerProductionAmount(

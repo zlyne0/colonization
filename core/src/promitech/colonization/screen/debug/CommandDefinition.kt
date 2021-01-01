@@ -185,6 +185,7 @@ fun createCommands(
 				
 				ColonyPlan(colonyApplicationScreen.getColony())
 					.withConsumeWarehouseResources(true)
+					.withIgnoreIndianOwner()
 					.execute2(ColonyPlan.Plan.of(args[1]))
 				
 				colonyApplicationScreen.initColony(colony)
