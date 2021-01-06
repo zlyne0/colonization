@@ -24,6 +24,10 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
     }
 
+	public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities(int initialCapacity) {
+    	return new MapIdEntities<T>(new LinkedHashMap<String, T>(initialCapacity));
+	}
+    
 	public static <TT extends Identifiable> MapIdEntities<TT> unmodifiableEmpty() {
 		Map<String, TT> emptyMap = Collections.emptyMap();
 		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));

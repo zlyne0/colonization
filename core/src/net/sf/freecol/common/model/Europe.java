@@ -41,7 +41,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitPrice = RECRUIT_PRICE_INITIAL;
     private int recruitLowerCap = LOWER_CAP_INITIAL;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    private final List<UnitType> recruitables = new ArrayList<UnitType>(MAX_RECRUITABLE_UNITS);
+    private final MapIdEntities<UnitType> recruitables = MapIdEntities.linkedMapIdEntities(MAX_RECRUITABLE_UNITS);
 	private final ObjectIntMap<UnitType> unitPrices = new ObjectIntMap<UnitType>();
 
     public static Europe newStartingEurope(IdGenerator idGenerator, Player player) {
@@ -81,7 +81,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         units.removeId(unit);
     }
 	
-	public List<UnitType> getRecruitables() {
+	public MapIdEntities<UnitType> getRecruitables() {
 		return recruitables;
 	}
 	
@@ -179,12 +179,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         return Math.max((recruitPrice * difference) / required, recruitLowerCap);
     }
 
-    public void buyUnit(UnitType unitType, int price) {
+    public Unit buyUnit(UnitType unitType, int price) {
     	owner.subtractGold(price);
-    	createUnit(unitType);
+    	Unit u = createUnit(unitType);
     	increasePrice(unitType, price);
+    	return u;
     }
-
+    
 	private void increasePrice(UnitType unitType, int actualPrice) {
 		String option;
     	if (Specification.options.getBoolean(GameOptions.PRICE_INCREASE_PER_TYPE)) {
@@ -211,9 +212,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	}
 
 	public Unit recruitImmigrant(final UnitType unitType) {
-		for (UnitType ut : recruitables) {
+		for (UnitType ut : recruitables.copy()) {
 			if (ut.equalsId(unitType)) {
-				recruitables.remove(ut);
+				recruitables.removeId(ut);
 				break;
 			}
 		}
@@ -252,9 +253,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	}
 	
 	public void replaceNotRecruitableUnits() {
-		for (UnitType unitType : new ArrayList<UnitType>(recruitables)) {
+		for (UnitType unitType : recruitables.copy()) {
 			if (!owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, unitType)) {
-				recruitables.remove(unitType);
+				recruitables.removeId(unitType);
 			}
 		}
 		generateRecruitablesUnitList();
@@ -310,6 +311,50 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
     }
 
+    public boolean canAiBuyUnit(UnitType unitType, int budget) {
+    	int recruitImmigrantPrice = getRecruitImmigrantPrice();
+    	
+    	if (recruitables.containsId(unitType) && recruitImmigrantPrice <= budget) {
+    		return true;
+    	}
+    	// ai has advantage to buy colonist when they want
+    	if (unitType.equalsId(UnitType.FREE_COLONIST) && recruitImmigrantPrice <= budget) {
+    		return true;
+    	}
+    	
+    	// buy the cheapest trained unit and degrade to colonist
+    	UnitType theCheapestTrainableUnit = theCheapestTrainableUnit();
+    	if (unitType.equalsId(UnitType.FREE_COLONIST) && theCheapestTrainableUnit.getPrice() <= budget) {
+    		return true;
+    	}
+    	
+    	UnitType ut = Specification.instance.unitTypesTrainedInEurope.getByIdOrNull(unitType);
+    	return ut != null && ut.getPrice() <= budget;
+    }
+    
+    public Unit buyUnitByAI(UnitType unitType) {
+    	int recruitImmigrantPrice = getRecruitImmigrantPrice();
+    	
+    	if (recruitables.containsId(unitType)) {
+    		return buyImmigrant(unitType, recruitImmigrantPrice);
+    	}
+    	// ai has advantage to buy colonist when they want
+    	if (unitType.equalsId(UnitType.FREE_COLONIST) && owner.hasGold(recruitPrice)) {
+    		return buyImmigrant(unitType, recruitImmigrantPrice);
+    	}
+    	
+    	// buy the cheapest trained unit and degrade to colonist 
+    	if (unitType.equalsId(UnitType.FREE_COLONIST)) {
+    		UnitType theCheapestTrainableUnit = theCheapestTrainableUnit();
+    		return buyUnit(unitType, theCheapestTrainableUnit.getPrice());
+    	}
+    	return buyUnit(unitType, unitType.getPrice());
+    }
+    
+    private UnitType theCheapestTrainableUnit() {
+    	return Specification.instance.unitTypesTrainedInEurope.sortedEntities().iterator().next();
+    }
+    
     public int getUnitPrice(UnitType unitType) {
     	if (unitPrices.containsKey(unitType)) {
     		return unitPrices.get(unitType, UnitType.DEFAULT_PRICE);

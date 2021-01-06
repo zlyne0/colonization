@@ -3,7 +3,6 @@ package net.sf.freecol.common.model.player;
 import static org.assertj.core.api.Assertions.*;
 
 import java.io.IOException;
-import java.util.List;
 
 import javax.xml.parsers.ParserConfigurationException;
 
@@ -16,6 +15,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import promitech.colonization.savegame.SaveGameParser;
@@ -41,7 +41,7 @@ class FoundingFathersTest {
     @Test
 	public void onlyColonistsAfterAddedWilliamBrewster() throws Exception {
 		// given
-    	List<UnitType> recruitables = dutch.getEurope().getRecruitables();
+    	MapIdEntities<UnitType> recruitables = dutch.getEurope().getRecruitables();
     	recruitables.clear();
     	recruitables.add(Specification.instance.unitTypes.getById("model.unit.indenturedServant"));
     	recruitables.add(Specification.instance.unitTypes.getById("model.unit.pettyCriminal"));
