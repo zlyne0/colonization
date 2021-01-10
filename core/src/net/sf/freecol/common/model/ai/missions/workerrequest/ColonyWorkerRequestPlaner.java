@@ -53,6 +53,10 @@ public class ColonyWorkerRequestPlaner {
 		this.tileScore = new ObjectsListScore<TileUnitType>(20);
 	}
 	
+	/**
+	 * Prepare mission for create new colony or put worker in colony.
+	 * Unit can be on europe dock, on carrier on tile. 
+	 */
 	public void prepareMission(Player player, Unit landUnit, PlayerMissionsContainer playerMissionContainer) {
 		if (playerMissionContainer.isUnitBlockedForMission(landUnit)) {
 			return;
@@ -132,9 +136,9 @@ public class ColonyWorkerRequestPlaner {
 			if (tile == null) {
 				continue;
 			}
-			ObjectScore<TileUnitType> score = newColonyReqScore.score(tile);
-			tileScore.add(score);
+			newColonyReqScore.score(tileScore, tile);
 		}
+		tileScore.sortDescending();
 	}
 	
 	private void workerForColony(Player player, ObjectsListScore<TileUnitType> tileScore) {

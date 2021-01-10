@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
+import promitech.colonization.ai.ObjectsListScore;
 import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 import promitech.map.isometric.NeighbourIterableTile;
 
@@ -31,9 +32,8 @@ class CreateColonyReqScore {
 		this.goodsType = goodsType;
 	}
 	
-    public ObjectScore<TileUnitType> score(Tile tile) {
+    public void score(ObjectsListScore<TileUnitType> tileScore, Tile tile) {
     	int unattendedScore = 0;
-    	ObjectScore<TileUnitType> centerColonyTileProd = null;
     	
     	Entry<GoodsType, Integer> unattendedProduction = tile.getType().productionInfo.singleFilteredUnattendedProduction(goodsType);
     	if (unattendedProduction != null) {
@@ -41,59 +41,63 @@ class CreateColonyReqScore {
 				unattendedProduction.getKey(), 
 				unattendedProduction.getValue()
 			);
-			
-			centerColonyTileProd = centerColonyTileScore(unattendedProduction, tile);
+			centerColonyTileScore(tileScore, unattendedProduction, tile);
     	}
-    	
-    	ObjectScore<TileUnitType> neighbourTile = theBestScoreFromNeighbourTiles(unattendedScore, tile, goodsType);
-    	
-    	if (centerColonyTileProd == null) {
-    		return neighbourTile;
-    	}
-    	return ObjectScore.max(centerColonyTileProd, neighbourTile);
+    	theBestScoreFromNeighbourTiles(tileScore, unattendedScore, tile, goodsType);
     }
     
-    private ObjectScore<TileUnitType> centerColonyTileScore(Entry<GoodsType, Integer> tileProduction, Tile tile) {
+    private void centerColonyTileScore(ObjectsListScore<TileUnitType> tileScore, Entry<GoodsType, Integer> tileProduction, Tile tile) {
     	// tile unattended production
     	
-    	UnitType ut = colonistUnitType;
-    	ObjectIntMap<GoodsType> ps = new ObjectIntMap<GoodsType>(2);
+    	Entry<GoodsType, Integer> buildingOutput = null;
     	
 		for (BuildingType buildingType : Specification.instance.buildingTypes) {
 			Production buildingInput = buildingType.productionForInput(tileProduction.getKey());
 			if (buildingInput != null) {
-				Entry<GoodsType, Integer> buildingOutput = buildingInput.singleOutput();
-				// output for building
-				if (buildingOutput != null) {
-					int productionAmount = (int)colonistUnitType.applyModifier(
-						buildingOutput.getKey().getId(),
-						buildingOutput.getValue()
-					);
-					if (productionAmount >= tileProduction.getValue()) {
-						ps.put(buildingOutput.getKey(), tileProduction.getValue());
-					} else {
-						int tileAddProd = tileProduction.getValue() - productionAmount;
-						ps.put(buildingOutput.getKey(), productionAmount);
-						ps.put(tileProduction.getKey(), tileAddProd);
-					}
-					ut = Specification.instance.expertUnitTypeForGoodsType(
-						buildingOutput.getKey(), 
-						colonistUnitType
-					); 
-				}
+				buildingOutput = buildingInput.singleOutput();
+				break;
 			}
+		}
+		if (buildingOutput != null) {
+			{
+				int score = scoreProductionForBuilding(colonistUnitType, buildingOutput, tileProduction);
+				tileScore.add(new ObjectScore<TileUnitType>(new TileUnitType(tile, colonistUnitType), score));
+			}
+			
+			UnitType specialist = Specification.instance.expertUnitTypeByGoodType.get(buildingOutput.getKey().getId());
+			if (specialist != null) {
+				int score = scoreProductionForBuilding(specialist, buildingOutput, tileProduction);
+				tileScore.add(new ObjectScore<TileUnitType>(new TileUnitType(tile, specialist), score));
+			}
+		}
+    }
+
+    private int scoreProductionForBuilding(UnitType unitType, Entry<GoodsType, Integer> buildingOutput, Entry<GoodsType, Integer> tileProduction) {
+		ObjectIntMap<GoodsType> ps = new ObjectIntMap<GoodsType>(2);
+		
+		int productionAmount = (int)unitType.applyModifier(
+			buildingOutput.getKey().getId(),
+			buildingOutput.getValue()
+		);
+		if (productionAmount >= tileProduction.getValue()) {
+			ps.put(buildingOutput.getKey(), tileProduction.getValue());
+		} else {
+			int tileAddProd = tileProduction.getValue() - productionAmount;
+			ps.put(buildingOutput.getKey(), productionAmount);
+			ps.put(tileProduction.getKey(), tileAddProd);
 		}
 		
 		int sum = 0;
 		for (ObjectIntMap.Entry<GoodsType> entry : ps) {
 			sum += player.market().getSalePrice(entry.key, entry.value);
 		}
-		return new ObjectScore<TileUnitType>(new TileUnitType(tile, ut), sum);
+		return sum;
     }
     
-    private ObjectScore<TileUnitType> theBestScoreFromNeighbourTiles(int colonyCenterTileScore, Tile tile, MapIdEntities<GoodsType> goodsType) {
-    	UnitType scoreUnitType = colonistUnitType;
-    	int theBestScore = 0;
+    private void theBestScoreFromNeighbourTiles(ObjectsListScore<TileUnitType> tileScore, int colonyCenterTileScore, Tile tile, MapIdEntities<GoodsType> goodsType) {
+    	int colonistTheBestScore = 0;
+    	int expertTheBestScore = 0;
+    	UnitType theBestExpertType = null;
     	
     	for (NeighbourIterableTile<Tile> neighbourTile : map.neighbourLandTiles(tile)) {
 			if (neighbourTile.tile.hasSettlement()) {
@@ -108,18 +112,36 @@ class CreateColonyReqScore {
 							outputEntry.getKey(), 
 							amount
 						);
-						if (score > theBestScore) {
-							theBestScore = score;
-							scoreUnitType = Specification.instance.expertUnitTypeForGoodsType(
-								outputEntry.getKey(), 
-								colonistUnitType
-							); 
+						if (score > colonistTheBestScore) {
+							colonistTheBestScore = score;
+							
+							UnitType expert = Specification.instance.expertUnitTypeByGoodType.get(outputEntry.getKey().getId());
+							if (expert != null) {
+								amount = tileProductionAmount(neighbourTile.tile, expert, outputEntry);
+								score = player.market().getSalePrice(
+									outputEntry.getKey(), 
+									amount
+								);
+								if (score > expertTheBestScore && score > colonistTheBestScore) {
+									expertTheBestScore = score;
+									theBestExpertType = expert;
+								}
+							}
 						}
 					}
 				}
 			}
 		}
-    	return new ObjectScore<TileUnitType>(new TileUnitType(tile, scoreUnitType), theBestScore + colonyCenterTileScore);
+    	if (colonistTheBestScore > 0) {
+    		tileScore.add(
+				new ObjectScore<TileUnitType>(new TileUnitType(tile, colonistUnitType), colonistTheBestScore + colonyCenterTileScore)
+			);
+    	}
+    	if (theBestExpertType != null) {
+    		tileScore.add(
+				new ObjectScore<TileUnitType>(new TileUnitType(tile, theBestExpertType), expertTheBestScore + colonyCenterTileScore)
+			);
+    	}
     }
     
     private int tileProductionAmount(Tile tile, UnitType workerType, java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) {

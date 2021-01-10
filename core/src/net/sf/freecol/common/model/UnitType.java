@@ -34,10 +34,11 @@ public class UnitType extends BuildableType {
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
 	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";
+	public static final String EXPERT_ORE_MINER = "model.unit.expertOreMiner";
+	public static final String EXPERT_FUR_TRAPPER = "model.unit.expertFurTrapper";
 	public static final String MASTER_FUR_TRADER = "model.unit.masterFurTrader";
 	public static final String MASTER_TOBACCONIST = "model.unit.masterTobacconist";
 	public static final String MASTER_TOBACCO_PLANTER = "model.unit.masterTobaccoPlanter";
-	public static final String EXPERT_FUR_TRAPPER = "model.unit.expertFurTrapper";
 	public static final String MASTER_WEAVER = "model.unit.masterWeaver";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;

@@ -95,6 +95,15 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		}
 		return null;
 	}
+
+	public ObjectScore<T> findByEquals(Object obj) {
+		for (ObjectScore<T> objectScore : this.objs) {
+			if (objectScore.obj.equals(obj)) {
+				return objectScore;
+			}
+		}
+		return null;
+	}
 	
 	@Override
 	public Iterator<ObjectScore<T>> iterator() {

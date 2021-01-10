@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.util.Collection;
+import java.util.List;
 
 public interface MapIdEntitiesReadOnly<T extends Identifiable> {
 
@@ -23,6 +24,8 @@ public interface MapIdEntitiesReadOnly<T extends Identifiable> {
     int size();
     
     Collection<T> entities();
+    
+    List<T> copy();
 
     java.util.Map<String,T> innerMap();
     

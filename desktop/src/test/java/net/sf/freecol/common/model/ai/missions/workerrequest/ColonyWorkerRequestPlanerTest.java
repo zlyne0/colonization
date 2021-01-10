@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.ai.ObjectsListScore;
+import promitech.colonization.ai.ObjectsListScoreAssert;
 import promitech.colonization.ai.Units;
 import promitech.colonization.savegame.SaveGameParser;
 
@@ -61,14 +62,18 @@ class ColonyWorkerRequestPlanerTest {
 		ObjectsListScore<TileUnitType> scores = sut.score(dutch, transporter);
 		sut.debug(mapDebugInfo);
 		
-
 		// then
-		assertThat(scores.size()).isEqualTo(10);
-		assertThat(scores.get(0).getScore()).isEqualTo(106);
-		assertThat(scores.get(0).getObj().unitType.getId()).isEqualTo(UnitType.MASTER_TOBACCO_PLANTER);
-		assertThat(scores.get(0).getObj().tile.getId()).isEqualTo("tile:3149");
-		assertThat(scores.get(1).getScore()).isEqualTo(45);
-		assertThat(scores.get(1).getObj().unitType.getId()).isEqualTo(UnitType.MASTER_TOBACCONIST);
-		assertThat(scores.get(1).getObj().tile.getId()).isEqualTo("tile:3273");
+		ObjectsListScoreAssert.assertThat(scores)
+			.hasScore2(0, 106, new TileUnitType(game.map.getSafeTile(21, 72), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
+			.hasScore2(1, 60, new TileUnitType(game.map.getSafeTile(13, 76), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
+			.hasScore2(2, 45, new TileUnitType(game.map.getSafeTile(25, 75), unitType(UnitType.MASTER_TOBACCONIST)))
+			.hasScore2(3, 42, new TileUnitType(game.map.getSafeTile(24, 78), unitType(UnitType.MASTER_WEAVER)))
+			.hasScore2(4, 40, new TileUnitType(game.map.getSafeTile(15, 80), unitType(UnitType.EXPERT_ORE_MINER)))
+		;
 	}
+	
+	UnitType unitType(String unitTypeId) {
+		return Specification.instance.unitTypes.getById(unitTypeId);
+	}
+	
 }

@@ -1,7 +1,6 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.specification.Ability;
 
 public class UnitContainer {
 	public static enum NoAddReason {
@@ -101,7 +100,7 @@ public class UnitContainer {
             ? NoAddReason.OCCUPIED_BY_ENEMY
             : (units.containsId(unit))
             ? NoAddReason.ALREADY_PRESENT
-            : (containerUnit.hasNoSpaceForAdditionalCargoSlots(unit.unitType.getSpaceTaken()))
+            : (!containerUnit.hasSpaceForAdditionalUnit(unit))
             ? NoAddReason.CAPACITY_EXCEEDED
             : NoAddReason.NONE;
     }

@@ -132,15 +132,24 @@ class WorkerReqScoreTest {
 		);
 		
 		// when
-		ObjectScore<TileUnitType> scoreTile1 = sut.score(tile1);
-		ObjectScore<TileUnitType> scoreTile2 = sut.score(tile2);
+		ObjectsListScore<TileUnitType> tileScore1 = new ObjectsListScore<>(2);
+		sut.score(tileScore1, tile1);
+		ObjectsListScore<TileUnitType> tileScore2 = new ObjectsListScore<>(2);
+		sut.score(tileScore2, tile2);
 
 		// then
-		ObjectScoreAssert.assertThat(scoreTile1).hasScore(24);
-		ObjectScoreAssert.assertThat(scoreTile2).hasScore(30);
-
-		assertThat(scoreTile1.getObj().unitType).isEqualTo(unitType(UnitType.MASTER_FUR_TRADER));
-		assertThat(scoreTile2.getObj().unitType).isEqualTo(unitType(UnitType.MASTER_TOBACCONIST));
+		ObjectsListScoreAssert.assertThat(tileScore1)
+			.hasScore2(24, new TileUnitType(tile1, unitType(UnitType.MASTER_FUR_TRADER)))
+			.hasScore2(24, new TileUnitType(tile1, unitType(UnitType.FREE_COLONIST)))
+			.hasScore2(15, new TileUnitType(tile1, unitType(UnitType.FREE_COLONIST)))
+			.hasScore2(24, new TileUnitType(tile1, unitType(UnitType.EXPERT_FUR_TRAPPER)))
+		;
+		ObjectsListScoreAssert.assertThat(tileScore2)
+			.hasScore2(30, new TileUnitType(tile2, unitType(UnitType.MASTER_TOBACCONIST)))
+			.hasScore2(30, new TileUnitType(tile2, unitType(UnitType.FREE_COLONIST)))
+			.hasScore2(21, new TileUnitType(tile2, unitType(UnitType.FREE_COLONIST)))
+			.hasScore2(30, new TileUnitType(tile2, unitType(UnitType.EXPERT_FUR_TRAPPER)))
+		;
 	}
 	
 	UnitType unitType(String unitTypeId) {

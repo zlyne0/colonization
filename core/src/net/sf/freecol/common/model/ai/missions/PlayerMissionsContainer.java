@@ -135,6 +135,9 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		mission.unblockUnits(unitMissionsMapping);
 	}
 
+	/**
+	 * Find missions for unit
+	 */
 	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Unit unit) {
 		List<T> filteredMissions = null;
 		for (AbstractMission abstractMission : unitMissionsMapping.getUnitMission(unit)) {
@@ -149,6 +152,23 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			filteredMissions = Collections.emptyList();
 		}
 		return filteredMissions;
+	}
+	
+	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz) {
+		List<T> result = null;
+		
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz)) {
+				if (result == null) {
+					result = new ArrayList<T>();
+				}
+				result.add((T)abstractMission);
+			}
+		}
+		if (result == null) {
+			return Collections.emptyList();
+		}
+		return result;
 	}
 	
 	public boolean isUnitBlockedForMission(Unit unit) {

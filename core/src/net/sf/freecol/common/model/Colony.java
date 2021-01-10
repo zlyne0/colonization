@@ -315,35 +315,6 @@ public class Colony extends Settlement {
     	return colonyProduction.maxProductionFromTile(gt, worker, ignoreIndianOwner);
     }
     
-    public int colonyWorkerProductionAmount(
-		Unit worker, 
-		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
-    {
-    	String outputGoodsId = goodsTypeProdAmount.getKey().getId();
-    	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
-    	
-    	int goodQuantity = 0;
-        goodQuantity += (int)worker.unitType.applyModifier(outputGoodsId, outputGoodsInitValue);
-        goodQuantity = (int)colonyUpdatableFeatures.applyModifier(outputGoodsId, goodQuantity);
-        goodQuantity += productionBonus();
-        return goodQuantity;
-    }
-    
-    public int colonyWorkerProductionAmount(
-		Unit worker, 
-		ColonyTile colonyTile, 
-		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
-    {
-    	Integer goodInitValue = goodsTypeProdAmount.getValue();
-    	GoodsType prodGoodsType = goodsTypeProdAmount.getKey();
-    	
-    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
-    	goodsQuantity = (int)colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
-    	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
-    	goodsQuantity += productionBonus();
-    	return goodsQuantity;
-    }
-    
 	public boolean canSustainNewWorker(Unit worker, GoodsType goodsTypeToProduce, int produceAmount) {
 		ProductionSummary productionSummary = productionSummary();
 		for (UnitConsumption unitConsumption : worker.unitType.unitConsumption.entities()) {

@@ -81,6 +81,13 @@ public class OneMapIdEntitiesReadOnly<T extends Identifiable> implements MapIdEn
     }
 
     @Override
+    public List<T> copy() {
+        List<T> arrayList = new ArrayList<T>(1);
+        arrayList.add(obj);
+        return arrayList;
+    }
+    
+    @Override
     public Map<String, T> innerMap() {
         throw new IllegalStateException("not implemented");
     }

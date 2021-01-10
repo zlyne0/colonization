@@ -75,7 +75,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
                     continue;
                 }
                 
-            	int goodQuantity = colony.colonyWorkerProductionAmount(worker, outputEntry);
+            	int goodQuantity = workerProductionAmount(colony, worker.unitType, outputEntry);
             	if (goodQuantity > prod.getQuantity(outputGoodsId)) {
             		prod.addGoods(outputGoodsId, goodQuantity);
             	}
@@ -193,6 +193,21 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
             prodCons.realProduction.addGoods(goodsId, goodQuantity);
         }
 	}
+	
+    public int workerProductionAmount(
+		Colony colony,
+		UnitType workerUnitType, 
+		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
+    {
+    	String outputGoodsId = goodsTypeProdAmount.getKey().getId();
+    	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
+    	
+    	int goodQuantity = 0;
+        goodQuantity += (int)workerUnitType.applyModifier(outputGoodsId, outputGoodsInitValue);
+        goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(outputGoodsId, goodQuantity);
+        goodQuantity += colony.productionBonus();
+        return goodQuantity;
+    }
 	
 	private boolean canAutoProduce() {
 		return buildingType.hasAbility(Ability.AUTO_PRODUCTION);

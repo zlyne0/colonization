@@ -31,6 +31,9 @@ public class EuropeanMissionPlaner {
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
 		for (Unit unit : player.units.copy()) {
 			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
+				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
+					continue;
+				}
 				if (unit.isColonist()) {
 					colonyWorkerRequestPlaner.prepareMission(player, unit, playerMissionContainer);
 				}
@@ -53,6 +56,68 @@ public class EuropeanMissionPlaner {
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}
+		transportUnitForColonyWorkerMission(navyUnit, playerMissionContainer);
+		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
+			return;
+		}
+		
+		if (navyUnit.isAtLocation(Europe.class)) {
+			transportUnitFromEurope(navyUnit, playerMissionContainer);
+		}
+		
+		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
+			return;
+		}
+		prepareExploreMissions(navyUnit, playerMissionContainer);
+	}
+
+	private void transportUnitFromEurope(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
+			return;
+		}
+		Europe europe = navyUnit.getOwner().getEurope();
+		
+		List<TransportUnitMission> transportMissions = playerMissionContainer.findMissions(TransportUnitMission.class);
+		
+		TransportUnitMission tum = null;
+		
+		for (Unit dockUnit : europe.getUnits().entities()) {
+			if (!dockUnit.isColonist() || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
+				continue;
+			}
+			List<ColonyWorkerMission> colonyWorkerMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, dockUnit);
+			
+			// should be one mission
+			if (colonyWorkerMissions.size() == 1 && canEmbarkUnit(navyUnit, tum, dockUnit)) {
+				if (tum == null) {
+					tum = new TransportUnitMission(navyUnit);
+				}
+				ColonyWorkerMission colonyWorkerMission = colonyWorkerMissions.get(0);
+				tum.addUnitDest(dockUnit, colonyWorkerMission.getTile());
+			}
+		}
+		if (tum != null) {
+			playerMissionContainer.addMission(tum);
+		}
+	}
+
+	private boolean isUnitExistsOnTransportMission(List<TransportUnitMission> transportMissions, Unit unit) {
+		for (TransportUnitMission transportUnitMission : transportMissions) {
+			if (transportUnitMission.isTransportedUnit(unit)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean canEmbarkUnit(Unit navyUnit, TransportUnitMission mission, Unit unit) {
+		if (mission == null) {
+			return navyUnit.hasSpaceForAdditionalUnit(unit);
+		}
+		return mission.canEmbarkUnit(unit);
+	}
+	
+	private void transportUnitForColonyWorkerMission(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		if (navyUnit.getUnitContainer() != null) {
 			TransportUnitMission tum = null;
 			
@@ -69,11 +134,6 @@ public class EuropeanMissionPlaner {
 				playerMissionContainer.addMission(tum);
 			}
 		}
-		
-		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
-			return;
-		}
-		prepareExploreMissions(navyUnit, playerMissionContainer);
 	}
 	
 	private void prepareExploreMissions(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {

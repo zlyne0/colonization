@@ -10,8 +10,8 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		super(actual, selfType);
 	}
 
-	public static ObjectsListScoreAssert assertThat(ObjectsListScore<?> colony) {
-		return new ObjectsListScoreAssert(colony, ObjectsListScoreAssert.class);
+	public static ObjectsListScoreAssert assertThat(ObjectsListScore<?> list) {
+		return new ObjectsListScoreAssert(list, ObjectsListScoreAssert.class);
 	}
 
 	public ObjectsListScoreAssert hasSize(int size) {
@@ -27,7 +27,10 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		}
 		return this;
 	}
-	
+
+	/**
+	 * Equals by reference
+	 */
 	public <T> ObjectsListScoreAssert hasScore(int index, int score, T obj) {
 		ObjectScore<?> os = actual.get(index);
 		if (os.getScore() != score) {
@@ -38,7 +41,10 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		}
 		return this;
 	}
-	
+
+	/**
+	 * To Find object use reference equals
+	 */
 	public ObjectsListScoreAssert hasScore(Object obj, int score) {
 		ObjectScore<?> objectScore = actual.find(obj);
 		if (objectScore == null) {
@@ -50,5 +56,37 @@ public class ObjectsListScoreAssert extends AbstractAssert<ObjectsListScoreAsser
 		}
 		return this;
 	}
+
+	/**
+	 * To find object use equals by value
+	 */
+	public ObjectsListScoreAssert hasScore2(int score, Object obj) {
+		boolean found = false;
+		for (int i = 0; i < actual.size(); i++) {
+			ObjectScore<?> objectScore = actual.get(i);
+			if (objectScore.getObj().equals(obj) && objectScore.getScore() == score) {
+				found = true;
+			}
+		}
+		if (!found) {
+			failWithMessage("can not find score %s at for object <%s>", score, obj);
+		}
+		return this;
+	}	
+
+	/**
+	 * Equals by value 
+	 */
+	public <T> ObjectsListScoreAssert hasScore2(int index, int score, T obj) {
+		ObjectScore<?> os = actual.get(index);
+		if (os.getScore() != score) {
+			failWithMessage("expected score at index %s <%s> but has score <%s>", index, score, os.getScore());
+		}
+		if (!os.getObj().equals(obj)) {
+			failWithMessage("at index %s is unexpected object", index);
+		}
+		return this;
+	}
+	
 	
 }

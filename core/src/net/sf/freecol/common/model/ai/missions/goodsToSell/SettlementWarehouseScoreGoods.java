@@ -124,7 +124,7 @@ class SettlementWarehouseScoreGoods {
 	private int scoreSettlementGoods(SettlementGoods settlementGoods, Unit carrier) {
 		settlementGoods.score(settlementGoodsScore);
 		
-		int carierGoodsTotalSlots = carrier.unitType.getSpace() - carrier.unitContainerSpaceTaken();
+		int carierGoodsTotalSlots = carrier.freeCargoSlots();
 
 		carrier.getGoodsContainer().cloneTo(tmpCarrierGoodsContainer);
 		int score = 0;

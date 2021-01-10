@@ -191,7 +191,7 @@ class ColonyProduction {
 	                    continue;
 	                }
 	                
-	                int goodQuantity = colony.colonyWorkerProductionAmount(worker, outputEntry);
+	                int goodQuantity = building.workerProductionAmount(colony, worker.unitType, outputEntry);
 	         
 	                for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
 						String cg = inputEntry.getKey().getId();
@@ -255,7 +255,7 @@ class ColonyProduction {
 		final Unit worker, final ColonyTile colonyTile, 
 		GoodMaxProductionLocation maxProd
     ) {
-    	int goodsQuantity = colony.colonyWorkerProductionAmount(worker, colonyTile, outputEntry);
+    	int goodsQuantity = colonyWorkerProductionAmount(colony, worker, colonyTile, outputEntry);
     	
     	return GoodMaxProductionLocation.updateFromColonyTile(
 			outputEntry.getKey(), 
@@ -263,6 +263,22 @@ class ColonyProduction {
 			maxProd, 
 			colonyTile
 		);
+    }
+    
+    private int colonyWorkerProductionAmount(
+		Colony colony,
+		Unit worker, 
+		ColonyTile colonyTile, 
+		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
+    {
+    	Integer goodInitValue = goodsTypeProdAmount.getValue();
+    	GoodsType prodGoodsType = goodsTypeProdAmount.getKey();
+    	
+    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
+    	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
+    	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
+    	goodsQuantity += colony.productionBonus();
+    	return goodsQuantity;
     }
     
 	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {

@@ -233,27 +233,20 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return location != null && location instanceof Unit;
     }
     
-    public int unitContainerSpaceTaken() {
-    	if (unitContainer == null) {
-    		return 0;
-    	}
-    	return unitContainer.getSpaceTakenByUnits();
-    }
-
     public boolean hasMoreFreeCargoSpace(Unit u) {
     	if (goodsContainer == null) {
     		return false;
     	}
-    	if (freeSpace() == 0) {
+    	if (freeCargoSlots() == 0) {
     		return false;
     	}
     	if (u == null) {
     		return true;
     	}
-    	return freeSpace() > u.freeSpace();
+    	return freeCargoSlots() > u.freeCargoSlots();
     }
     
-    private int freeSpace() {
+    public int freeCargoSlots() {
     	return unitType.getSpace() - getSpaceTaken();
     }
     
@@ -268,12 +261,16 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return space;
     }
 
-    public boolean hasSpaceForAdditionalCargo() {
-        return getSpaceTaken() < unitType.getSpace();
+    public int freeUnitsSlots() {
+    	return unitType.getSpace() - getSpaceTaken(); 
     }
     
-    public boolean hasSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
-    	return getSpaceTaken() + additionalCargoSlots <= unitType.getSpace();
+    public boolean hasSpaceForAdditionalUnit(Unit unit) {
+    	return getSpaceTaken() + unit.unitType.getSpaceTaken() <= unitType.getSpace();
+    }
+    
+    public boolean hasSpaceForAdditionalCargo() {
+        return getSpaceTaken() < unitType.getSpace();
     }
     
     public boolean hasSpaceForAdditionalCargo(AbstractGoods additionalCargo) {
@@ -306,10 +303,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return cargoSlots;
 	}
 	
-    public boolean hasNoSpaceForAdditionalCargoSlots(int additionalCargoSlots) {
-    	return !hasSpaceForAdditionalCargoSlots(additionalCargoSlots);
-    }
-    
     public boolean hasNoSpace() {
     	return unitType.getSpace() == 0 || getSpaceTaken() >= unitType.getSpace();
     }

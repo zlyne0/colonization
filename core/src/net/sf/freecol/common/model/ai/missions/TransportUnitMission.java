@@ -8,6 +8,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -59,13 +60,28 @@ public class TransportUnitMission extends AbstractMission {
     	return new ArrayList<Tile>(tiles);
     }
     
+	public boolean canEmbarkUnit(Unit unit) {
+		return carrier.freeUnitsSlots() - unitsDest.size() - unit.unitType.getSpaceTaken() > 0; 
+	}
+    
 	public boolean isTransportUnitExists(Player player) {
 		return CommonMissionHandler.isUnitExists(player, carrier);
 	}
 	
+	public boolean isTransportedUnit(Unit unit) {
+		for (UnitDest unitDest : unitsDest) {
+			if (unitDest.unit.equalsId(unit)) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
 	public void embarkColonistsInEurope() {
 		for (UnitDest unitDest : unitsDest) {
-			unitDest.unit.embarkTo(carrier);
+			if (unitDest.unit.isAtLocation(Europe.class)) {
+				unitDest.unit.embarkTo(carrier);
+			}
 		}
 		carrier.sailUnitToNewWorld();
 	}
