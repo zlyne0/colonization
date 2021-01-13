@@ -7,6 +7,7 @@ import java.util.Set;
 import com.badlogic.gdx.math.GridPoint2;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -22,7 +23,7 @@ public class TransportGoodsToSellMissionPlaner {
 
 	private static final int MIN_SETTLEMENT_SCORE = 200;
 
-	private final List<GoodsType> goodsTypeToScore;
+	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private final PathFinder pathFinder;
 	private final Game game;
 	

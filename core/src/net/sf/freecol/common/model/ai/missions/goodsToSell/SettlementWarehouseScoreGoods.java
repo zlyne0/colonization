@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.Map;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -20,9 +21,9 @@ class SettlementGoods {
 	final Settlement settlement;
 	final GoodsContainer goodsContainer = new GoodsContainer();
 	final Market market;
-	final List<GoodsType> goodsType;
+	final MapIdEntities<GoodsType> goodsType;
 	
-	public SettlementGoods(Settlement settlement, Market market, List<GoodsType> goodsType) {
+	public SettlementGoods(Settlement settlement, Market market, MapIdEntities<GoodsType> goodsType) {
 		this.settlement = settlement;
 		this.market = market;
 		this.goodsType = goodsType;
@@ -50,7 +51,7 @@ class SettlementGoods {
 class SettlementWarehouseScoreGoods {
 	private final GoodsContainer tmpCarrierGoodsContainer = new GoodsContainer();
 	
-	private final List<GoodsType> goodsType;
+	private final MapIdEntities<GoodsType> goodsType;
 	private final Map map;
 	private final PathFinder rangeCalculator;
 	
@@ -60,11 +61,11 @@ class SettlementWarehouseScoreGoods {
 	private final ObjectsListScore<Settlement> settlementsScore;
 	private final List<SettlementGoods> settlementsGoods;
 	
-	SettlementWarehouseScoreGoods(List<GoodsType> goodsType, Player player) {
+	SettlementWarehouseScoreGoods(MapIdEntities<GoodsType> goodsType, Player player) {
 		this(goodsType, player, null, null);
 	}
 	
-	SettlementWarehouseScoreGoods(List<GoodsType> goodsType, Player player, Map map, PathFinder rangeCalculator) {
+	SettlementWarehouseScoreGoods(MapIdEntities<GoodsType> goodsType, Player player, Map map, PathFinder rangeCalculator) {
 		this.goodsType = goodsType;
 		this.map = map;
 		this.rangeCalculator = rangeCalculator;

@@ -1,6 +1,7 @@
 package promitech.colonization.screen.debug
 
 import net.sf.freecol.common.model.*
+import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
 import net.sf.freecol.common.model.ai.ColonyPlan
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
@@ -24,7 +25,6 @@ import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
 import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator
-
 
 fun createCommands(
 		di: DI, console: ConsoleOutput,
@@ -199,7 +199,13 @@ fun createCommands(
 				ColonyPlan.Plan.Muskets.name.toLowerCase()
 			)
 		}
-		
+
+		commandArg("colonies_gold_value_production") {
+			val coloniesGoldValueProduction = ColoniesProductionGoldValue(guiGameModel.game.playingPlayer, Specification.instance.goodsTypeToScoreByPrice)
+			val gold = coloniesGoldValueProduction.goldValue()
+			print(String.format("player[%s] colonies production gold value %s", guiGameModel.game.playingPlayer.id, gold))
+		}
+
 		commandArg("indian_bring_gift") {
 			indianBringGiftExample(di, guiGameModel, mapActor)
 		}

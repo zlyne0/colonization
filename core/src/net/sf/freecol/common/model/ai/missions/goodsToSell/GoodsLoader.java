@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
@@ -13,11 +14,11 @@ import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 
 public class GoodsLoader {
 	private final Player player;
-	private final List<GoodsType> goodsToScore;
+	private final MapIdEntities<GoodsType> goodsToScore;
 	
 	private boolean loaded;
 	
-	public GoodsLoader(Player player, List<GoodsType> goodsToScore) {
+	public GoodsLoader(Player player, MapIdEntities<GoodsType> goodsToScore) {
 		this.player = player;
 		this.goodsToScore = goodsToScore;
 	}

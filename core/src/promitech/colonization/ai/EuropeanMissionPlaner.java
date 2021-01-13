@@ -4,8 +4,10 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
@@ -15,6 +17,10 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+
+import promitech.colonization.orders.NewTurnLogger;
+
+import static promitech.colonization.orders.NewTurnLogger.logger;
 
 public class EuropeanMissionPlaner {
 
@@ -29,6 +35,11 @@ public class EuropeanMissionPlaner {
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
+		ColoniesProductionGoldValue colniesProdValue = new ColoniesProductionGoldValue(player, Specification.instance.goodsTypeToScoreByPrice);
+		if (logger.isDebug()) {
+			logger.debug("player[%s] colonies production gold value %s", player.getId(), colniesProdValue.goldValue());
+		}
+
 		for (Unit unit : player.units.copy()) {
 			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {

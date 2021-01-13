@@ -5,6 +5,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
@@ -26,10 +27,10 @@ class ColonyWorkerReqScore {
 	private final Market market;
 	private final UnitType freeColonistUnitType;
 	private ObjectsListScore<UnitType> reqUnits;
-	private final List<GoodsType> goodsTypeToScore;
+	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
-	public ColonyWorkerReqScore(Colony colony, List<GoodsType> goodsTypeToScore) {
+	public ColonyWorkerReqScore(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
 		this.colony = colony;
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
@@ -100,12 +101,7 @@ class ColonyWorkerReqScore {
 	}
 
 	private boolean isExistsOnDesiredProductionGoods(String goodsTypeId) {
-		for (GoodsType goodsType : goodsTypeToScore) {
-			if (goodsType.isType(goodsTypeId)) {
-				return true;
-			}
-		}
-		return false;
+		return goodsTypeToScore.containsId(goodsTypeId);
 	}
 	
 	private boolean tryFindFoodProducer(Unit colonist) {
@@ -138,7 +134,7 @@ class ColonyWorkerReqScore {
 
 	private boolean tryFindMaxValuableProducer(Unit colonist) {
 		List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(
-			goodsTypeToScore,
+			goodsTypeToScore.entities(),
 			colonist, 
 			IGNORE_INDIAN_OWNER
 		);

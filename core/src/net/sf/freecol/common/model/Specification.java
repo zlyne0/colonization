@@ -141,7 +141,7 @@ public class Specification {
     public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();
     public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
     public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
-    public final List<GoodsType> goodsTypeToScoreByPrice = new ArrayList<GoodsType>();
+    public final MapIdEntities<GoodsType> goodsTypeToScoreByPrice = new MapIdEntities<GoodsType>();
     public final List<GoodsType> foodsGoodsTypes = new ArrayList<GoodsType>();
     
     private String difficultyLevel;

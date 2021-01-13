@@ -14,6 +14,7 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
@@ -30,7 +31,7 @@ class SettlementWarehouseScoreGoodsTest {
 
 	Game game;
 	Player dutch;
-	List<GoodsType> goodsTypeToScore;
+	MapIdEntities<GoodsType> goodsTypeToScore;
 	
     @BeforeAll
     public static void beforeClass() throws Exception {
