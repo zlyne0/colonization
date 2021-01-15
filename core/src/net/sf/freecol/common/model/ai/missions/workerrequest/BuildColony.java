@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.buildcolony;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import java.util.Map.Entry;
 import java.util.Set;
@@ -10,7 +10,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
-import net.sf.freecol.common.model.ai.missions.buildcolony.TilePlayer.NoClaimReason;
+import net.sf.freecol.common.model.ai.missions.workerrequest.TilePlayer.NoClaimReason;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.GameOptions;

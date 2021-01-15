@@ -24,7 +24,7 @@ import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
-import net.sf.freecol.common.model.ai.missions.buildcolony.ColonyPlaceGenerator
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator
 
 fun createCommands(
 		di: DI, console: ConsoleOutput,

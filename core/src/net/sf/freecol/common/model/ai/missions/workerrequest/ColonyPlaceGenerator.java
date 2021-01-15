@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.buildcolony;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -7,7 +7,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
-import net.sf.freecol.common.model.ai.missions.buildcolony.BuildColony.TileSelection;
+import net.sf.freecol.common.model.ai.missions.workerrequest.BuildColony.TileSelection;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 

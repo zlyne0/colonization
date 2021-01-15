@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.buildcolony;
+package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import com.badlogic.gdx.utils.IntArray;
 
