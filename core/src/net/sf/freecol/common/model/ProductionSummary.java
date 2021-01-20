@@ -253,17 +253,12 @@ public class ProductionSummary {
 		return true;
 	}
     
-	public Entries<String> entries() {
-		return goods.entries();
+	public void put(String goodsId, int quantity) {
+		goods.put(goodsId, quantity);
 	}
 	
-	public void applyTileImprovementsModifiers(Tile tile) {
-		for (Entry<String> entry : goods.entries()) {
-		    String goodsId = entry.key;
-			int quantity = entry.value;
-			quantity = tile.applyTileProductionModifier(goodsId, quantity);
-			goods.put(goodsId, quantity);
-		}
+	public Entries<String> entries() {
+		return goods.entries();
 	}
 	
 	public void applyModifiers(ObjectWithFeatures modifiers) {
@@ -272,12 +267,6 @@ public class ProductionSummary {
 			quantity = (int)modifiers.applyModifier(entry.key, quantity);
 			goods.put(entry.key, quantity);
 		}
-	}
-	
-	public void applyModifier(int productionBonus) {
-	    for (Entry<String> entry : goods.entries()) {
-            goods.getAndIncrement(entry.key, 0, productionBonus);
-	    }
 	}
 	
 	public String toString() {

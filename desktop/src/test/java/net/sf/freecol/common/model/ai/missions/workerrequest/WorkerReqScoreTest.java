@@ -42,21 +42,25 @@ class WorkerReqScoreTest {
 	@Test
 	void canGenerateRequiredColonistsFortNassau() throws Exception {
 		// given
-    	Colony colony = game.map.getTile(20, 79).getSettlement().asColony();
-		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(colony, Specification.instance.goodsTypeToScoreByPrice);
+    	Colony fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
+		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
+		
+		System.out.println("production");
+		System.out.println(fortNassau.productionSummary().toString());
+		
 		
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
-
-		// then
 		
+		// then
 		ObjectsListScoreAssert.assertThat(colonyScore)
-			.hasSumScore(36)
+			.hasSumScore(52)
 			.hasScore(0, 0, unitType(UnitType.EXPERT_FISHERMAN))
 			.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
+			.hasScore(2, 16, unitType(UnitType.EXPERT_ORE_MINER))
 		;
-		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+		assertThat(new ColonySnapshot(fortNassau)).isEqualTo(snapshotBefore);
 	}
 
 	@Test

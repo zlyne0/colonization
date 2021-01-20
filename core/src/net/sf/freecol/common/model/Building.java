@@ -205,7 +205,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
     	int goodQuantity = 0;
         goodQuantity += (int)workerUnitType.applyModifier(outputGoodsId, outputGoodsInitValue);
         goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(outputGoodsId, goodQuantity);
-        goodQuantity += colony.productionBonus();
+        goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
 	

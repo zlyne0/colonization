@@ -63,7 +63,7 @@ public class PopulationPanel extends Table {
         int rebelsPercentage = colony.sonsOfLiberty();
         
         int population = colony.getColonyUnitsCount();
-        int productionBonus = colony.productionBonus();
+        int productionBonus = colony.productionBonus().asInt();
         int optimalPopulationGrow = colony.getPreferredSizeChange();
         
         int royalists = colony.getColonyUnitsCount() - colony.rebels();

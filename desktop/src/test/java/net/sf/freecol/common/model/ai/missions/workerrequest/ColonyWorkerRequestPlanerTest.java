@@ -67,9 +67,9 @@ class ColonyWorkerRequestPlanerTest {
 		ObjectsListScoreAssert.assertThat(scores)
 			.hasScore2(0, 106, new TileUnitType(game.map.getSafeTile(21, 72), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
 			.hasScore2(1, 60, new TileUnitType(game.map.getSafeTile(13, 76), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
-			.hasScore2(2, 45, new TileUnitType(game.map.getSafeTile(25, 75), unitType(UnitType.MASTER_TOBACCONIST)))
-			.hasScore2(3, 42, new TileUnitType(game.map.getSafeTile(24, 78), unitType(UnitType.MASTER_WEAVER)))
-			.hasScore2(4, 40, new TileUnitType(game.map.getSafeTile(15, 80), unitType(UnitType.EXPERT_ORE_MINER)))
+			.hasScore2(2, 52, new TileUnitType(game.map.getSafeTile(20, 79), unitType(UnitType.EXPERT_FISHERMAN)))
+			.hasScore2(3, 45, new TileUnitType(game.map.getSafeTile(25, 75), unitType(UnitType.MASTER_TOBACCONIST)))
+			.hasScore2(4, 42, new TileUnitType(game.map.getSafeTile(24, 78), unitType(UnitType.MASTER_WEAVER)))
 		;
 	}
 	

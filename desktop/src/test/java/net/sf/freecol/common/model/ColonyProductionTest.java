@@ -43,7 +43,8 @@ public class ColonyProductionTest {
     public void setup() throws IOException, ParserConfigurationException, SAXException {
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
         dutch = game.players.getById("player:1");
-        colony = (Colony)dutch.settlements.getById("colony:6528");
+        // Nieuw Amsterdam
+        colony = (Colony)dutch.settlements.getById("colony:6528"); 
         henryHudson = Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson");
         thomasPaine = Specification.instance.foundingFathers.getById("model.foundingFather.thomasPaine");
     }
@@ -95,6 +96,48 @@ public class ColonyProductionTest {
         assertEquals(9, furTradingProdCons.realProduction.getQuantity("model.goods.coats"));
     }
 
+    @Test
+    public void canCalculateProductionForColonyWithOneProductionBonus() throws Exception {
+        // given
+        dutch.addFoundingFathers(game, henryHudson);
+        colony.liberty += Colony.LIBERTY_PER_REBEL * ((colony.getColonyUnitsCount() / 2) + 1);
+        
+        // when
+        colony.updateColonyFeatures();
+        colony.calculateSonsOfLiberty();
+        colony.updateProductionBonus();
+        ProductionSummary ps = colony.productionSummary();
+
+        // then
+        assertThat(colony.productionBonus().asInt()).isEqualTo(1);
+        
+        System.out.println("productionSummary = " + ps);
+        
+        assertEquals(4, ps.getQuantity("model.goods.cotton"));
+        assertEquals(-2, ps.getQuantity("model.goods.lumber")); 
+        assertEquals(2, ps.getQuantity("model.goods.horses")); 
+        assertEquals(-11, ps.getQuantity("model.goods.furs")); 
+        assertEquals(13, ps.getQuantity("model.goods.hammers")); 
+        assertEquals(2, ps.getQuantity("model.goods.crosses")); 
+        assertEquals(6, ps.getQuantity("model.goods.bells")); 
+        assertEquals(0, ps.getQuantity("model.goods.fish")); 
+        assertEquals(11, ps.getQuantity("model.goods.coats")); 
+        assertEquals(4, ps.getQuantity("model.goods.food")); 
+        assertEquals(0, ps.getQuantity("model.goods.grain"));
+        
+        Building furTrading = colony.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        System.out.println("furTradingProdCons = " + furTradingProdCons);
+        
+        assertEquals(-11, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(11, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
+
+        assertEquals(-11, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
+        assertEquals(11, furTradingProdCons.realProduction.getQuantity("model.goods.coats"));
+    }
+    
+    
     @Test
     public void canCalculateProductionForColonyForUpgradedFurTraderHouse() throws Exception {
         // given

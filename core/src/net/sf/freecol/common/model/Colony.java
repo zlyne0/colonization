@@ -22,6 +22,7 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.Modifier.ModifierType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.util.StringUtils;
@@ -68,7 +69,7 @@ public class Colony extends Settlement {
     private final MapIdEntities<Unit> colonyWorkers = new MapIdEntities<Unit>();
     private int sonsOfLiberty = 0;
     private int tories = 0;
-    private int productionBonus = 0;
+    private Modifier productionBonus = new Modifier(Modifier.COLONY_PRODUCTION_BONUS, ModifierType.ADDITIVE, 0);
     
     /**
      * The number of liberty points.  Liberty points are an
@@ -159,6 +160,7 @@ public class Colony extends Settlement {
     	    colonyUpdatableFeatures.addFeatures(ff);
     	}
     	colonyUpdatableFeatures.addFeatures(settlementType);
+    	colonyUpdatableFeatures.addModifier(productionBonus);
     }
     
     public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
@@ -262,7 +264,7 @@ public class Colony extends Settlement {
     public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
         addWorkerToColony(unit, aColonyTile);
         aColonyTile.tile.changeOwner(owner, this);
-        aColonyTile.productionInfo.writeProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
+        aColonyTile.productionInfo.initProductionType(aColonyTile.tile.getType().productionInfo, goodsType);
     }
     
     private void addWorkerToColony(Unit worker, UnitLocation unitLocation) {
@@ -474,7 +476,7 @@ public class Colony extends Settlement {
     	this.liberty = 0;
     	this.sonsOfLiberty = 0;
     	this.tories = 0;
-    	this.productionBonus = 0;
+    	this.productionBonus.setValue(0);
     }
     
 	public void calculateSonsOfLiberty() {
@@ -577,7 +579,7 @@ public class Colony extends Settlement {
         return tories;
     }
 
-    public int productionBonus() {
+    public Modifier productionBonus() {
         return productionBonus;
     }
     
@@ -596,8 +598,9 @@ public class Colony extends Settlement {
             : (tories > veryBadGovernment) ? -2
             : (tories > badGovernment) ? -1
             : 0;
-        if (productionBonus != newBonus) {
-            productionBonus = newBonus;
+        if (productionBonus.asInt() != newBonus) {
+            productionBonus.setValue(newBonus);
+            colonyProduction.setAsNeedUpdate();
             return true;
         }
         return false;
@@ -620,7 +623,7 @@ public class Colony extends Settlement {
      */
     public int getPreferredSizeChange() {
         int i, limit, pop = getColonyUnitsCount();
-        if (productionBonus < 0) {
+        if (productionBonus.getValue() < 0) {
             limit = pop;
             for (i = 1; i < limit; i++) {
                 if (governmentChange(pop - i) == 1) break;
@@ -1441,7 +1444,7 @@ public class Colony extends Settlement {
             colony.name = attr.getStrAttribute(ATTR_NAME);
             colony.sonsOfLiberty = attr.getIntAttribute(ATTR_SONS_OF_LIBERTY, 0);
             colony.tories = attr.getIntAttribute(ATTR_TORIES, 0);
-            colony.productionBonus = attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0);
+            colony.productionBonus.setValue(attr.getIntAttribute(ATTR_PRODUCTION_BONUS, 0));
             colony.liberty = attr.getIntAttribute(ATTR_LIBERTY, 0);
             colony.owner = owner;
             colony.seaConnectionToEurope = attr.getBooleanAttribute(ATTR_SEA_CONNECTION_TO_EUROPE, false);
@@ -1460,7 +1463,7 @@ public class Colony extends Settlement {
         	attr.set(ATTR_NAME, colony.name);
         	attr.set(ATTR_SONS_OF_LIBERTY, colony.sonsOfLiberty, 0);
         	attr.set(ATTR_TORIES, colony.tories, 0);
-        	attr.set(ATTR_PRODUCTION_BONUS, colony.productionBonus);
+        	attr.set(ATTR_PRODUCTION_BONUS, colony.productionBonus.asInt());
         	attr.set(ATTR_LIBERTY, colony.liberty, 0);
         	attr.set(ATTR_SEA_CONNECTION_TO_EUROPE, colony.seaConnectionToEurope, false);
         }

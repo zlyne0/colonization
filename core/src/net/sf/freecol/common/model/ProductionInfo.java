@@ -98,13 +98,18 @@ public class ProductionInfo {
 		}
 	}
 	
-	public void writeProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
+	public void initProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
 		clear();
 		for (Production p : sourceProduction.productions) {
 			if (p.outputTypesEquals(goodsType.getId())) {
 				addProduction(new Production(p));
 			}
 		}
+	}
+	
+	public void initProduction(Production sourceProduction) {
+		clear();
+		addProduction(sourceProduction);
 	}
 	
 	private Production maxProduction() {

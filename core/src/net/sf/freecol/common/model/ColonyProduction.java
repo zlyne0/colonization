@@ -6,10 +6,9 @@ import java.util.HashMap;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
-
-import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.util.Validation;
 
 class ColonyProduction {
@@ -64,7 +63,7 @@ class ColonyProduction {
         }
 
         for (Building building : colony.buildings.sortedEntities()) {
-        	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus());
+        	ProductionConsumption pc = building.determineProductionConsumption(abstractWarehouse, warehouseCapacity, globalProductionConsumption, colony.productionBonus().asInt());
             pc.baseProduction.applyModifiers(colony.colonyUpdatableFeatures);
             pc.realProduction.applyModifiers(colony.colonyUpdatableFeatures);
         	
@@ -93,12 +92,7 @@ class ColonyProduction {
 	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
-		List<Production> productions; 
-		if (colonyTile.hasWorker()) {
-		    productions = colonyTile.productionInfo.getAttendedProductions();
-		} else {
-            productions = colonyTile.productionInfo.getUnattendedProductions();
-		}
+		List<Production> productions = colonyTile.tileProduction(); 
 		
 		for (Production production : productions) {
 		    for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
@@ -109,27 +103,16 @@ class ColonyProduction {
 	            }
 	            int goodQuantity = 0;
 		        if (colonyTile.hasWorker()) {
-		            goodQuantity += (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
-		            for (FoundingFather ff : colony.owner.foundingFathers.entities()) {
-		            	goodQuantity = (int)ff.applyModifier(goodsId, goodQuantity);
-		            }
+		            goodQuantity = (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
+		            goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
 		        } else {
 		            goodQuantity += goodInitValue;
 		        }
-                goodQuantity += colony.productionBonus();
-		        
+	            goodQuantity = tile.applyTileProductionModifier(goodsId, goodQuantity);
+	            goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
 		        prodCons.realProduction.addGoods(goodsId, goodQuantity);
                 prodCons.baseProduction.addGoods(goodsId, goodQuantity);
 		    }
-		}
-		
-		if (prodCons.baseProduction.isNotEmpty()) {
-			prodCons.baseProduction.applyTileImprovementsModifiers(tile);
-			prodCons.baseProduction.applyModifier(colony.productionBonus());
-		}
-		if (prodCons.realProduction.isNotEmpty()) {
-			prodCons.realProduction.applyTileImprovementsModifiers(tile);
-			prodCons.realProduction.applyModifier(colony.productionBonus());
 		}
 		return prodCons; 
 	}
@@ -277,7 +260,7 @@ class ColonyProduction {
     	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
     	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
-    	goodsQuantity += colony.productionBonus();
+    	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodsQuantity);
     	return goodsQuantity;
     }
     

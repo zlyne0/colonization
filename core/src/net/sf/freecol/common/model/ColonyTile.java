@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import java.io.IOException;
+import java.util.List;
 
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -86,6 +87,16 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		return productionSummaryForWorker;
 	}
     
+	public List<Production> tileProduction() {
+		// productionInfo init on create colony or move worker, it can be simplier without attended attribute
+		// return empty when no worker
+		if (hasWorker()) {
+		    return productionInfo.getAttendedProductions();
+		} else {
+            return productionInfo.getUnattendedProductions();
+		}
+	}
+	
     public static class Xml extends XmlNodeParser<ColonyTile> {
 
     	private static final String ATTR_WORK_TILE = "workTile";
