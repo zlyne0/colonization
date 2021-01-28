@@ -1377,6 +1377,10 @@ public class Colony extends Settlement {
 			);
 		}
 	}
+
+	public void setLiberty(int liberty) {
+		this.liberty = liberty;
+	}
 	
     public static class Xml extends XmlNodeParser<Colony> {
         private static final String ATTR_LIBERTY = "liberty";
@@ -1477,4 +1481,5 @@ public class Colony extends Settlement {
             return "colony";
         }
     }
+
 }

@@ -38,7 +38,7 @@ class ColonyProduction {
     	
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
         int amount = Math.min(unitsThatUseNoBells, colony.getColonyUnitsCount());
-        globalProductionConsumption.addGoods("model.goods.bells", amount);
+        globalProductionConsumption.addGoods(GoodsType.BELLS, amount);
     	
         for (ColonyTile ct : colony.colonyTiles.entities()) {
         	ProductionConsumption ps = productionSummaryForTerrain(ct.tile, ct);

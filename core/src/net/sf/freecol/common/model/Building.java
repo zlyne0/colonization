@@ -119,7 +119,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 	) {
 		final boolean avoidExcessProduction = buildingType.hasAbility(Ability.AVOID_EXCESS_PRODUCTION);
 		final boolean consumeOnlySurplusProduction = buildingType.hasModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION);
-		final boolean canAutoProduce = canAutoProduce();
+		final boolean canAutoProduce = buildingType.hasAbility(Ability.AUTO_PRODUCTION);
 		
         HashSet<String> consumptionGoods = new HashSet<String>();
         
@@ -208,10 +208,6 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
-	
-	private boolean canAutoProduce() {
-		return buildingType.hasAbility(Ability.AUTO_PRODUCTION);
-	}
 	
 	public String toString() {
 	    return "id = " + getId() + ", type = " + buildingType;
