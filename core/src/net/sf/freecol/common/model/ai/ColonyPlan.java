@@ -205,7 +205,7 @@ public class ColonyPlan {
     				}
     			} else {
 	    			Building building = findBuildingByGoodsType(goodsType);
-	    			if (building == null || !building.canAddWorker(worker)) {
+	    			if (building == null || !building.canAddWorker(worker.unitType)) {
 	    				continue;
 	    			}
 	    			
@@ -367,7 +367,7 @@ public class ColonyPlan {
         prod.makeEmpty();
         ingredients.makeEmpty();
         for (String goodsTypeId : goodsTypesToProduce) {
-            colony.determineMaxPotentialProduction(goodsTypeId, worker, prod, ingredients);
+            colony.determineMaxPotentialProduction(goodsTypeId, worker.unitType, prod, ingredients);
         }
         boolean lackOfIngredients = false;
         for (Entry<String> ingredient : ingredients.entries()) {
@@ -401,7 +401,7 @@ public class ColonyPlan {
     }
 
 	private GoodMaxProductionLocation theBestLocation(Unit worker, Set<String> withoutLocationIds, String ... planGoodsType) {
-	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker, ignoreIndianOwner);
+	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker.unitType, ignoreIndianOwner);
 	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {

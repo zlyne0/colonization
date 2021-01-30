@@ -21,6 +21,7 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
@@ -178,7 +179,11 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    }
 	    
 	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(unit);
+	    	ColonyTile unitColonyTile = unit.getLocationOrNull(ColonyTile.class);	    	
+	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(
+    			unitColonyTile, 
+    			unit.unitType
+			);
 	    	
 	    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
 	        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
@@ -188,7 +193,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    }
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit, false);
+			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit.unitType, false);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
 			for (GoodMaxProductionLocation g : maxProductionForGoods) {

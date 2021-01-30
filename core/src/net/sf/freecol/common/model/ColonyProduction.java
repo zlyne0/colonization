@@ -123,7 +123,7 @@ class ColonyProduction {
 
 	List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
 		Collection<GoodsType> goodsTypes, 
-		Unit worker, 
+		UnitType workerType, 
 		boolean ignoreIndianOwner
 	) {
         List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
@@ -133,9 +133,9 @@ class ColonyProduction {
         for (GoodsType gt : goodsTypes) {
             GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
-                maxProd = maxProductionFromTile(gt, worker.unitType, ignoreIndianOwner);
+                maxProd = maxProductionFromTile(gt, workerType, ignoreIndianOwner);
             } else {
-                maxProd = maxProductionFromBuilding(gt, worker, prodCons, colony.goodsContainer);
+                maxProd = maxProductionFromBuilding(gt, workerType, prodCons, colony.goodsContainer);
             }
             if (maxProd != null) {
                 goodsProduction.add(maxProd);
@@ -156,13 +156,13 @@ class ColonyProduction {
 	}
 	
 	private GoodMaxProductionLocation maxProductionFromBuilding(
-			final GoodsType goodsType, Unit worker, 
+			final GoodsType goodsType, UnitType workerType, 
 			ProductionSummary prodCons, GoodsContainer warehouseGoods
 	) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (Building building : colony.buildings.sortedEntities()) {
-	        if (!building.canAddWorker(worker)) {
+	        if (!building.canAddWorker(workerType)) {
 	            continue;
 	        }
 	        
@@ -174,7 +174,7 @@ class ColonyProduction {
 	                    continue;
 	                }
 	                
-	                int goodQuantity = building.workerProductionAmount(colony, worker.unitType, outputEntry);
+	                int goodQuantity = building.workerProductionAmount(colony, workerType, outputEntry);
 	         
 	                for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
 						String cg = inputEntry.getKey().getId();
@@ -194,16 +194,16 @@ class ColonyProduction {
      * Determine max potential production of goodsTypeId, the best option.
      * Do not take into account input requirments 
      */
-    void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
-    	if (!worker.isPerson()) {
-    		throw new IllegalArgumentException("worker[" + worker + "] is not a person ");
+    void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+    	if (!workerType.isPerson()) {
+    		throw new IllegalArgumentException("worker[" + workerType + "] is not a person ");
     	}
     	
     	for (Building building : colony.buildings.sortedEntities()) {
-	        if (!building.canAddWorker(worker)) {
+	        if (!building.canAddWorker(workerType)) {
 	            continue;
 	        }
-	        building.determineMaxPotentialProduction(colony, worker.unitType, prod, cons, goodsTypeId);
+	        building.determineMaxPotentialProduction(colony, workerType, prod, cons, goodsTypeId);
     	}
     }
 	

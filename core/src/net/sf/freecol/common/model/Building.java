@@ -45,8 +45,8 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 		return reason;
 	}    
     
-    public boolean canAddWorker(Unit unit) {
-        NoAddReason reason = getNoAddReason(unit.unitType);
+    public boolean canAddWorker(UnitType unitType) {
+        NoAddReason reason = getNoAddReason(unitType);
 //        if (NoAddReason.NONE != reason) {
 //            System.out.println("can not add unit to " + buildingType + " because " + reason);
 //        }

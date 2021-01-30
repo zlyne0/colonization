@@ -20,7 +20,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitFactory;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.ColonyPlan.Plan;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
@@ -244,7 +244,7 @@ class ColonyPlanTest {
 		// given
     	lockAllTilesInColony();
     	
-    	Unit fisherman = UnitFactory.create("model.unit.expertFisherman", dutch, nieuwAmsterdam.tile);
+    	UnitType fisherman = Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN);
     	
 		// when
     	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.determinePotentialMaxGoodsProduction(fisherman, false);

@@ -129,10 +129,6 @@ public class Colony extends Settlement {
 	    return unit.isAtLocation(ColonyTile.class);
 	}
 
-	public ColonyTile unitWorkingTerrain(Unit unit) {
-	    return unit.getLocationOrNull(ColonyTile.class);
-	}
-	
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
@@ -276,37 +272,36 @@ public class Colony extends Settlement {
         updateModelOnWorkerAllocationOrGoodsTransfer();
     }
 
-    public void determineMaxPotentialProduction(String goodsTypeId, Unit worker, ProductionSummary prod, ProductionSummary cons) {
-    	colonyProduction.determineMaxPotentialProduction(goodsTypeId, worker, prod, cons);
+    public void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+    	colonyProduction.determineMaxPotentialProduction(goodsTypeId, workerType, prod, cons);
     }
     
-    public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(Unit unit) {
-        if (!unit.isPerson()) {
+    public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile terrain, UnitType workerType) {
+        if (!workerType.isPerson()) {
             return Collections.emptyList();
         }
-        ColonyTile terrain = unitWorkingTerrain(unit);
         if (terrain == null) {
         	return Collections.emptyList();
         }
-    	return colonyProduction.determinePotentialTerrainProductions(terrain, unit.unitType);
+    	return colonyProduction.determinePotentialTerrainProductions(terrain, workerType);
     }
 
-    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit, boolean ignoreIndianOwner) {
-        if (!unit.isPerson()) {
+    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(UnitType workerType, boolean ignoreIndianOwner) {
+        if (!workerType.isPerson()) {
             return Collections.emptyList();
         }
-        return colonyProduction.determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), unit, ignoreIndianOwner);
+        return colonyProduction.determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), workerType, ignoreIndianOwner);
     }
     
     public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
 		Collection<GoodsType> goodsTypes, 
-		Unit unit, 
+		UnitType workerType, 
 		boolean ignoreIndianOwner
 	) {
-        if (!unit.isPerson()) {
+        if (!workerType.isPerson()) {
             return Collections.emptyList();
         }
-        return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, unit, ignoreIndianOwner);
+        return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, workerType, ignoreIndianOwner);
     }
     
     public void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialProduction) {
@@ -1111,7 +1106,7 @@ public class Colony extends Settlement {
     		for (Unit ejectedWorker : ejectWorkers.entities()) {
     			boolean foundBuilding = false;
     			for (Building b : buildings.entities()) {
-    				if (b.canAddWorker(ejectedWorker)) {
+    				if (b.canAddWorker(ejectedWorker.unitType)) {
     					foundBuilding = true;
     					ejectedWorker.changeUnitLocation(b);
     				}
@@ -1236,11 +1231,11 @@ public class Colony extends Settlement {
     
     private void addUnitToRandomBuilding(Unit unit) {
 		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
-		if (townHall.canAddWorker(unit)) {
+		if (townHall.canAddWorker(unit.unitType)) {
 			addWorkerToBuilding(townHall, unit);
 		} else {
 			for (Building building : buildings) {
-				if (building.canAddWorker(unit)) {
+				if (building.canAddWorker(unit.unitType)) {
 					addWorkerToBuilding(building, unit);
 					break;
 				}
