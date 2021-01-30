@@ -28,17 +28,17 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         this.buildingType = aBuildingType;
     }
 
-	public UnitContainer.NoAddReason getNoAddReason(Unit unit) {
-		if (!unit.isPerson()) {
+	public UnitContainer.NoAddReason getNoAddReason(UnitType unitType) {
+		if (!unitType.isPerson()) {
 			return UnitContainer.NoAddReason.WRONG_TYPE;
 		}
-		UnitContainer.NoAddReason reason = buildingType.getNoAddReason(unit.unitType);
+		UnitContainer.NoAddReason reason = buildingType.getNoAddReason(unitType);
 		if (reason == NoAddReason.NONE) {
 			int workersSpaceTaken = 0;
 			for (Unit u : workers.entities()) {
 				workersSpaceTaken += u.unitType.getSpaceTaken();
 			}
-			if (unit.unitType.getSpaceTaken() + workersSpaceTaken > buildingType.getWorkplaces()) {
+			if (unitType.getSpaceTaken() + workersSpaceTaken > buildingType.getWorkplaces()) {
 				return UnitContainer.NoAddReason.CAPACITY_EXCEEDED;
 			}
 		}
@@ -46,20 +46,20 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
 	}    
     
     public boolean canAddWorker(Unit unit) {
-        NoAddReason reason = getNoAddReason(unit);
+        NoAddReason reason = getNoAddReason(unit.unitType);
 //        if (NoAddReason.NONE != reason) {
 //            System.out.println("can not add unit to " + buildingType + " because " + reason);
 //        }
         return NoAddReason.NONE == reason;
     }
 	
-    public void determineMaxPotentialProduction(Colony colony, Unit worker, ProductionSummary prod, ProductionSummary cons) {
-    	determineMaxPotentialProduction(colony, worker, prod, cons, null);
+    public void determineMaxPotentialProduction(Colony colony, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+    	determineMaxPotentialProduction(colony, workerType, prod, cons, null);
     }
     
     public void determineMaxPotentialProduction(
 		Colony colony, 
-		Unit worker, 
+		UnitType workerType, 
 		ProductionSummary prod, 
 		ProductionSummary cons, 
 		String goodsTypeId) 
@@ -75,7 +75,7 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
                     continue;
                 }
                 
-            	int goodQuantity = workerProductionAmount(colony, worker.unitType, outputEntry);
+            	int goodQuantity = workerProductionAmount(colony, workerType, outputEntry);
             	if (goodQuantity > prod.getQuantity(outputGoodsId)) {
             		prod.addGoods(outputGoodsId, goodQuantity);
             	}

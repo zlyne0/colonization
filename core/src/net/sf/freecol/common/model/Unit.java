@@ -410,10 +410,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
     
     public boolean isPerson() {
-        return unitType.hasAbility(Ability.PERSON)
-            || unitType.hasAbility(Ability.BORN_IN_COLONY)
-            || unitType.hasAbility(Ability.BORN_IN_INDIAN_SETTLEMENT)
-            || unitType.hasAbility(Ability.FOUND_COLONY);
+    	return unitType.isPerson();
     }
     
     public boolean isOffensiveUnit() {

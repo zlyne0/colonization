@@ -288,7 +288,7 @@ public class Colony extends Settlement {
         if (terrain == null) {
         	return Collections.emptyList();
         }
-    	return colonyProduction.determinePotentialTerrainProductions(terrain, unit);
+    	return colonyProduction.determinePotentialTerrainProductions(terrain, unit.unitType);
     }
 
     public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(Unit unit, boolean ignoreIndianOwner) {
@@ -309,12 +309,12 @@ public class Colony extends Settlement {
         return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, unit, ignoreIndianOwner);
     }
     
-    public void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialProduction) {
-    	colonyProduction.determinePotentialColonyTilesProduction(worker, potentialProduction); 
+    public void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialProduction) {
+    	colonyProduction.determinePotentialColonyTilesProduction(workerType, potentialProduction); 
     }
     
-    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, Unit worker, boolean ignoreIndianOwner) {
-    	return colonyProduction.maxProductionFromTile(gt, worker, ignoreIndianOwner);
+    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, UnitType workerType, boolean ignoreIndianOwner) {
+    	return colonyProduction.maxProductionFromTile(gt, workerType, ignoreIndianOwner);
     }
     
 	public boolean canSustainNewWorker(Unit worker, GoodsType goodsTypeToProduce, int produceAmount) {
@@ -1220,7 +1220,7 @@ public class Colony extends Settlement {
     	GoodMaxProductionLocation maxProd = null;
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             if (gt.isFarmed()) {
-            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder, false);
+            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder.unitType, false);
             	if (prod != null && (maxProd == null || maxProd.hasLessProduction(prod.getProduction()))) {
             		maxProd = prod;
             	}

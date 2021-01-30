@@ -133,7 +133,7 @@ class ColonyProduction {
         for (GoodsType gt : goodsTypes) {
             GoodMaxProductionLocation maxProd = null;
             if (gt.isFarmed()) {
-                maxProd = maxProductionFromTile(gt, worker, ignoreIndianOwner);
+                maxProd = maxProductionFromTile(gt, worker.unitType, ignoreIndianOwner);
             } else {
                 maxProd = maxProductionFromBuilding(gt, worker, prodCons, colony.goodsContainer);
             }
@@ -144,10 +144,10 @@ class ColonyProduction {
         return goodsProduction;
     }
 
-	void determinePotentialColonyTilesProduction(Unit worker, List<GoodMaxProductionLocation> potentialMaxProduction) {
+	void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialMaxProduction) {
         for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
             if (gt.isFarmed()) {
-            	GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, worker, false);
+            	GoodMaxProductionLocation maxProd = maxProductionFromTile(gt, workerType, false);
                 if (maxProd != null) {
                     potentialMaxProduction.add(maxProd);
                 }
@@ -203,11 +203,11 @@ class ColonyProduction {
 	        if (!building.canAddWorker(worker)) {
 	            continue;
 	        }
-	        building.determineMaxPotentialProduction(colony, worker, prod, cons, goodsTypeId);
+	        building.determineMaxPotentialProduction(colony, worker.unitType, prod, cons, goodsTypeId);
     	}
     }
 	
-    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final Unit worker, boolean ignoreIndianOwner) {
+    protected GoodMaxProductionLocation maxProductionFromTile(final GoodsType goodsType, final UnitType workerType, boolean ignoreIndianOwner) {
 	    GoodMaxProductionLocation maxProd = null;
 	    
 	    for (ColonyTile colonyTile : colony.colonyTiles.entities()) {
@@ -225,7 +225,7 @@ class ColonyProduction {
 	        for (Production production : productions) {
 	            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
 	                if (goodsType.equalsId(outputEntry.getKey())) {
-	                	maxProd = maxGoodProduction(outputEntry, worker, colonyTile, maxProd);
+	                	maxProd = maxGoodProduction(outputEntry, workerType, colonyTile, maxProd);
 	                }
 	            }
 	        }
@@ -235,10 +235,10 @@ class ColonyProduction {
 
     private GoodMaxProductionLocation maxGoodProduction(
 		final java.util.Map.Entry<GoodsType, Integer> outputEntry, 
-		final Unit worker, final ColonyTile colonyTile, 
+		final UnitType workerType, final ColonyTile colonyTile, 
 		GoodMaxProductionLocation maxProd
     ) {
-    	int goodsQuantity = colonyWorkerProductionAmount(colony, worker, colonyTile, outputEntry);
+    	int goodsQuantity = colonyWorkerProductionAmount(colony, workerType, colonyTile, outputEntry);
     	
     	return GoodMaxProductionLocation.updateFromColonyTile(
 			outputEntry.getKey(), 
@@ -250,27 +250,27 @@ class ColonyProduction {
     
     private int colonyWorkerProductionAmount(
 		Colony colony,
-		Unit worker, 
+		UnitType workerType, 
 		ColonyTile colonyTile, 
 		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount) 
     {
     	Integer goodInitValue = goodsTypeProdAmount.getValue();
     	GoodsType prodGoodsType = goodsTypeProdAmount.getKey();
     	
-    	int goodsQuantity = (int)worker.unitType.applyModifier(prodGoodsType.getId(), goodInitValue);
+    	int goodsQuantity = (int)workerType.applyModifier(prodGoodsType.getId(), goodInitValue);
     	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity = colonyTile.tile.applyTileProductionModifier(prodGoodsType.getId(), goodsQuantity);
     	goodsQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodsQuantity);
     	return goodsQuantity;
     }
     
-	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, Unit worker) {
+	List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, UnitType workerType) {
 		List<GoodMaxProductionLocation> goodsProduction = new ArrayList<GoodMaxProductionLocation>();
 		
         List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
         for (Production production : productions) {
             for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
-            	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, worker, colonyTile, null);
+            	GoodMaxProductionLocation prod = maxGoodProduction(outputEntry, workerType, colonyTile, null);
             	if (prod != null) {
 	            	prod.tileTypeInitProduction = production;
 	            	goodsProduction.add(prod);

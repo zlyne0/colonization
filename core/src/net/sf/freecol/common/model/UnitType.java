@@ -150,6 +150,13 @@ public class UnitType extends BuildableType {
         return WAGON_TRAIN.equalsIgnoreCase(id);
     }
     
+    public boolean isPerson() {
+        return hasAbility(Ability.PERSON)
+            || hasAbility(Ability.BORN_IN_COLONY)
+            || hasAbility(Ability.BORN_IN_INDIAN_SETTLEMENT)
+            || hasAbility(Ability.FOUND_COLONY);
+    }
+    
 	public int getHitPoints() {
 		return hitPoints;
 	}

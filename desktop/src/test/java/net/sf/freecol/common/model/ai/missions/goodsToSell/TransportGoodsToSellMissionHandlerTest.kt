@@ -12,9 +12,7 @@ class TransportGoodsToSellMissionHandlerTest : MissionHandlerBaseTestClass() {
 
 	private val transactionLogger = TestMarketTransactionLogger()
 
-	private lateinit var transporter: Unit
-	private lateinit var fortOranje: Colony
-	private lateinit var nieuwAmsterdam: Colony
+	lateinit var transporter: Unit
 	lateinit var mission : TransportGoodsToSellMission
 
 	@Test
@@ -82,8 +80,6 @@ class TransportGoodsToSellMissionHandlerTest : MissionHandlerBaseTestClass() {
 		dutch.market().setMarketTransactionLogger(transactionLogger)
 
 		transporter = UnitFactory.create(UnitType.GALLEON, dutch, dutch.europe)
-		fortOranje = game.map.getTile(25, 75).settlement.asColony()
-		nieuwAmsterdam = game.map.getTile(24, 78).settlement.asColony()
 
 		fortOranje.getGoodsContainer().decreaseAllToZero()
 		fortOranje.getGoodsContainer()

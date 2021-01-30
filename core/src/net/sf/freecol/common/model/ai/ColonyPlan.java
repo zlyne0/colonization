@@ -186,7 +186,7 @@ public class ColonyPlan {
 	    			prod.makeEmpty();
 	    			ingredients.makeEmpty();
     				
-    				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker, ignoreIndianOwner);
+    				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker.unitType, ignoreIndianOwner);
     				if (potentialProduction != null) {
     					withoutLocationIds.add(potentialProduction.getProductionLocation().getId());
     					
@@ -212,7 +212,7 @@ public class ColonyPlan {
 	    			createPlanProductionChain(goodsType);
 	    			prod.makeEmpty();
 	    			ingredients.makeEmpty();
-	    			building.determineMaxPotentialProduction(colony, worker, prod, ingredients, goodsType.getId());
+	    			building.determineMaxPotentialProduction(colony, worker.unitType, prod, ingredients, goodsType.getId());
 	    			int produceAmount = prod.getQuantity(goodsType.getId());
 	    			
 	    			produceAmount = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType.getId(), produceAmount);
