@@ -11,4 +11,9 @@ class Worker {
 		this.unitId = unitId;
 		this.unitType = unitType;
 	}
+
+	public Worker(UnitType unitType) {
+		this.unitId = null;
+		this.unitType = unitType;
+	}
 }

@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.ProductionInfo;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitContainer;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.UnitContainer.NoAddReason;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -58,6 +59,18 @@ public class BuildingType extends BuildableType {
             : UnitContainer.NoAddReason.NONE;
     }
 
+    public NoAddReason addWorkerToBuildingReason(UnitType unitType, int workersSpaceTaken) {
+		if (!unitType.isPerson()) {
+			return UnitContainer.NoAddReason.WRONG_TYPE;
+		}
+		UnitContainer.NoAddReason reason = getNoAddReason(unitType);
+		if (reason == NoAddReason.NONE 
+			&& unitType.getSpaceTaken() + workersSpaceTaken > getWorkplaces()) {
+			return UnitContainer.NoAddReason.CAPACITY_EXCEEDED;
+		}
+		return reason;
+    }
+    
     public boolean isTheSameRoot(BuildingType bt) {
     	BuildingType thisRoot = this.rootType();
     	BuildingType btRoot = bt.rootType();

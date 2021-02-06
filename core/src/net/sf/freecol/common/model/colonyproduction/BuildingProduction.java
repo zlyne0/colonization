@@ -6,10 +6,13 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
+import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitContainer.NoAddReason;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -113,7 +116,7 @@ class BuildingProduction {
                 prodCons.baseConsumption.addGoods(cg.getId(), -goodQuantity);
                 
                 if (consumeOnlySurplusProduction) {
-                	int realCgProd = globalProdCons.getQuantity(cg.getId());
+                	int realCgProd = globalProdCons.getQuantity(cg);
                 	int maxCGConsumption = (int)buildingType.applyModifier(Modifier.CONSUME_ONLY_SURPLUS_PRODUCTION, realCgProd);
                 	if (goodQuantity > maxCGConsumption) {
                 		goodQuantity = maxCGConsumption;
@@ -122,7 +125,7 @@ class BuildingProduction {
                 		}
                 	}
                 } else {
-                    int available = globalProdCons.getQuantity(cg.getId()) + warehouse.amount(cg);
+                    int available = globalProdCons.getQuantity(cg) + warehouse.amount(cg);
 	                if (available < goodQuantity) {
 	                    goodQuantity = available;
 	                }
@@ -134,4 +137,59 @@ class BuildingProduction {
         }
 	}
 
+	boolean canAddWorker(UnitType unitType) {
+		int workersSpaceTaken = workersSpaceTaken();
+		NoAddReason reason = buildingType.addWorkerToBuildingReason(unitType, workersSpaceTaken);
+		return NoAddReason.NONE == reason;
+	}
+
+	private int workersSpaceTaken() {
+		int sum = 0;
+		for (Worker worker : workers) {
+			sum += worker.unitType.getSpaceTaken();
+		}
+		return sum;
+	}
+
+	int singleWorkerProduction(
+		UnitType workerType, GoodsType goodsType, 
+		ProductionSummary prodCons, Warehouse warehouse,
+		ObjectWithFeatures colonyFeatures
+	) {
+        List<Production> productions = buildingType.productionInfo.getAttendedProductions();
+        for (Production production : productions) {
+            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+                if (!goodsType.equalsId(outputEntry.getKey()) || 0 == outputEntry.getValue().intValue()) {
+                    continue;
+                }
+                
+                int goodQuantity = workerProductionAmount(workerType, outputEntry, colonyFeatures);
+         
+                for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+                    GoodsType inputGoodsType = inputEntry.getKey();
+					int available = prodCons.getQuantity(inputGoodsType) + warehouse.amount(inputGoodsType);
+	                if (available < goodQuantity) {
+	                    goodQuantity = available;
+	                }
+                }
+                return goodQuantity;
+            }
+        }
+		return 0;
+	}
+	
+    private int workerProductionAmount(
+		UnitType workerUnitType, 
+		java.util.Map.Entry<GoodsType, Integer> goodsTypeProdAmount,
+		ObjectWithFeatures colonyFeatures
+	) {
+    	String outputGoodsId = goodsTypeProdAmount.getKey().getId();
+    	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
+    	
+    	int goodQuantity = 0;
+        goodQuantity += (int)workerUnitType.applyModifier(outputGoodsId, outputGoodsInitValue);
+        goodQuantity = (int)colonyFeatures.applyModifier(outputGoodsId, goodQuantity);
+        goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
+        return goodQuantity;
+    }
 }

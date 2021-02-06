@@ -9,19 +9,19 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 class Warehouse {
-	private ProductionSummary goods;
-	private int capacity;
+	private final ProductionSummary goods = new ProductionSummary();
+	private int capacity = 1;
 	
-	public Warehouse(Colony colony) {
-		goods = new ProductionSummary();
+	public void reset(Colony colony) {
 		capacity = colony.warehouseCapacity();
+		goods.clear();
 		
 		for (Entry<String> entry : colony.getGoodsContainer().entries()) {
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(entry.key);
 			goods.put(goodsType.getId(), entry.value);
 		}
 	}
-
+	
 	public int amount(GoodsType goodsType) {
 		return goods.getQuantity(goodsType.getId());
 	}

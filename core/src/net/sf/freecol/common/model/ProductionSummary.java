@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class ProductionSummary {
@@ -18,8 +19,16 @@ public class ProductionSummary {
 
 	public static final ProductionSummary EMPTY = new ProductionSummary();
 	
+	public int getQuantity(GoodsType goodsType) {
+		return goods.get(goodsType.getId(), 0);
+	}
+	
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
+    }
+    
+    public void clear() {
+    	goods.clear();
     }
     
 	public void makeEmpty() {

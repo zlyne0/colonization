@@ -29,20 +29,11 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
     }
 
 	public UnitContainer.NoAddReason getNoAddReason(UnitType unitType) {
-		if (!unitType.isPerson()) {
-			return UnitContainer.NoAddReason.WRONG_TYPE;
+		int workersSpaceTaken = 0;
+		for (Unit u : workers.entities()) {
+			workersSpaceTaken += u.unitType.getSpaceTaken();
 		}
-		UnitContainer.NoAddReason reason = buildingType.getNoAddReason(unitType);
-		if (reason == NoAddReason.NONE) {
-			int workersSpaceTaken = 0;
-			for (Unit u : workers.entities()) {
-				workersSpaceTaken += u.unitType.getSpaceTaken();
-			}
-			if (unitType.getSpaceTaken() + workersSpaceTaken > buildingType.getWorkplaces()) {
-				return UnitContainer.NoAddReason.CAPACITY_EXCEEDED;
-			}
-		}
-		return reason;
+		return buildingType.addWorkerToBuildingReason(unitType, workersSpaceTaken);
 	}    
     
     public boolean canAddWorker(UnitType unitType) {
