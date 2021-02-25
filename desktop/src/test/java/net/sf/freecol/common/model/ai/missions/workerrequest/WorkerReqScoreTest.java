@@ -64,6 +64,31 @@ class WorkerReqScoreTest {
 	}
 
 	@Test
+	void canGenerateRequiredColonistsFortNassau2() throws Exception {
+		// given
+		Colony fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
+		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
+
+		System.out.println("production");
+		System.out.println(fortNassau.productionSummary().toString());
+
+		// when
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
+//		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
+//			System.out.println(unitTypeObjectScore);
+//		}
+
+		// then
+		ObjectsListScoreAssert.assertThat(colonyScore)
+				.hasSumScore(36)
+				.hasScore(0, 0, unitType(UnitType.EXPERT_FISHERMAN))
+				.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
+		;
+		assertThat(new ColonySnapshot(fortNassau)).isEqualTo(snapshotBefore);
+	}
+
+	@Test
 	void canGenerateRequiredColonistsNieuwAmsterdam() throws Exception {
 		// given
     	Colony colony = game.map.getTile(24, 78).getSettlement().asColony();
@@ -79,6 +104,30 @@ class WorkerReqScoreTest {
 			.hasScore(0, 30, unitType(UnitType.MASTER_WEAVER))
 			.hasScore(1, 0, unitType(UnitType.EXPERT_FISHERMAN))
 			.hasScore(2, 12, unitType(UnitType.EXPERT_FUR_TRAPPER))
+		;
+		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+	}
+
+	@Test
+	void canGenerateRequiredColonistsNieuwAmsterdam2() throws Exception {
+		// given
+    	Colony colony = game.map.getTile(24, 78).getSettlement().asColony();
+		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(colony, Specification.instance.goodsTypeToScoreByPrice);
+
+		// when
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
+
+		// then
+//		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
+//			System.out.println(unitTypeObjectScore);
+//		}
+
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(61)
+			.hasScore(0, 30, unitType(UnitType.MASTER_WEAVER))
+			.hasScore(1, 16, unitType(UnitType.EXPERT_SILVER_MINER))
+			.hasScore(2, 15, unitType(UnitType.EXPERT_FUR_TRAPPER))
 		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
@@ -101,7 +150,31 @@ class WorkerReqScoreTest {
 		;
 		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
 	}
-	
+
+	@Test
+	void canGenerateRequiredColonistsFortOrange2() throws Exception {
+		// given
+		Colony colony = game.map.getTile(25, 75).getSettlement().asColony();
+		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(colony, Specification.instance.goodsTypeToScoreByPrice);
+
+		// when
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
+//		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
+//			System.out.println(unitTypeObjectScore);
+//		}
+
+		// then
+		ObjectsListScoreAssert.assertThat(colonyScore)
+			.hasSumScore(81)
+			.hasScore(0, 30, unitType(UnitType.MASTER_TOBACCONIST))
+			.hasScore(1, 15, unitType(UnitType.EXPERT_FUR_TRAPPER))
+			.hasScore(2, 36, unitType(UnitType.MASTER_FUR_TRADER))
+		;
+		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+	}
+
+
 	@Test
 	void canGenerateRequiredColonistsFortMaurits() throws Exception {
 		// given
@@ -123,9 +196,32 @@ class WorkerReqScoreTest {
 	}
 
 	@Test
+	void canGenerateRequiredColonistsFortMaurits2() throws Exception {
+		// given
+		Colony colony = game.map.getTile(21, 72).getSettlement().asColony();
+		ColonySnapshot snapshotBefore = new ColonySnapshot(colony);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(colony, Specification.instance.goodsTypeToScoreByPrice);
+
+		// when
+		ObjectsListScore<UnitType> colonyScore = sut.simulate();
+		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
+			System.out.println(unitTypeObjectScore);
+		}
+
+		// then
+		ObjectsListScoreAssert.assertThat(colonyScore)
+				.hasSumScore(116)
+				.hasScore(0, 40, unitType(UnitType.MASTER_TOBACCO_PLANTER))
+				.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
+				.hasScore(2, 40, unitType(UnitType.MASTER_TOBACCO_PLANTER))
+		;
+		assertThat(new ColonySnapshot(colony)).isEqualTo(snapshotBefore);
+	}
+
+
+	@Test
 	public void canScoreCreateNewColonyReq() throws Exception {
 		// given
-
 		Tile tile1 = game.map.getTile(27, 74);
 		Tile tile2 = game.map.getTile(26, 71);
 		

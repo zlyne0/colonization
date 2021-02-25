@@ -27,7 +27,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			
 			// when
 			ProductionSummary oldColonyProduction = colony.productionSummary();
-			ColonyProduction newColonyProduction = new ColonyProduction(new ColonySettingProvider(colony));
+			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			
 			// then
 			assertThat(oldColonyProduction)
@@ -47,7 +47,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	        
 			// when
 			ProductionSummary oldColonyProduction = colony.productionSummary();
-			ColonyProduction newColonyProduction = new ColonyProduction(new ColonySettingProvider(colony));
+			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			
 			// then
 			assertThat(oldColonyProduction)
@@ -59,7 +59,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	@Test
 	public void colonyProductionConsumption() throws Exception {
 		// given
-		ColonyProduction colonyProduction = new ColonyProduction(new ColonySettingProvider(nieuwAmsterdam));
+		ColonyProduction colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(nieuwAmsterdam));
 
 		// when
 		ProductionSummary production = colonyProduction.globalProductionConsumption();
@@ -92,7 +92,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			// given
 			Colony colony = settlement.asColony();
 	        
-			ColonyProduction newColonyProduction = new ColonyProduction(new ColonySettingProvider(colony));
+			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			// when
 			List<GoodMaxProductionLocation> potentialProductions = colony.determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
@@ -118,7 +118,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	        colony.updateColonyFeatures();
 	        colony.calculateSonsOfLiberty();
 	        
-			ColonyProduction newColonyProduction = new ColonyProduction(new ColonySettingProvider(colony));
+			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			// when
 			List<GoodMaxProductionLocation> potentialProductions = colony.determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
@@ -145,7 +145,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			assertThat(oldOne.getProduction()).isEqualTo(newOne.production);
 			
 			if (oldOne.getBuilding() != null) {
-				assertThat(oldOne.getBuilding().getId()).isEqualTo(newOne.building.getId());
+				assertThat(oldOne.getBuilding().buildingType.getId()).isEqualTo(newOne.buildingType.getId());
 			}
 			if (oldOne.getColonyTile() != null) {
 				assertThat(oldOne.getColonyTile().tile.getId()).isEqualTo(newOne.colonyTile.getId());
@@ -160,7 +160,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		Collection<GoodsType> goodsTypes = Specification.instance.goodsTypeToScoreByPrice.entities();
 		
 		// given
-		ColonyProduction newColonyProduction = new ColonyProduction(new ColonySettingProvider(nieuwAmsterdam));
+		ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(nieuwAmsterdam));
 		// when
 		List<MaxGoodsProductionLocation> potentialProductions = newColonyProduction.determinePotentialMaxGoodsProduction(
 			goodsTypes, unitType, ignoreIndianOwner 
@@ -175,10 +175,10 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		verifyProdLoc(potentialProductions.get(1), "model.goods.ore", 3, "tile:3391");
 		verifyProdLoc(potentialProductions.get(2), "model.goods.cotton", 3, "tile:3431");
 		verifyProdLoc(potentialProductions.get(3), "model.goods.sugar", 2, "tile:3391");
-		verifyProdLoc(potentialProductions.get(4), "model.goods.cloth", 3, "building:6543");
+		verifyProdLoc(potentialProductions.get(4), "model.goods.cloth", 3, "model.building.weaverHouse");
 		verifyProdLoc(potentialProductions.get(5), "model.goods.silver", 1, "tile:3391");
-		verifyProdLoc(potentialProductions.get(6), "model.goods.coats", 3, "building:6545");
-		verifyProdLoc(potentialProductions.get(7), "model.goods.cigars", 3, "building:6542");
+		verifyProdLoc(potentialProductions.get(6), "model.goods.coats", 3, "model.building.furTraderHouse");
+		verifyProdLoc(potentialProductions.get(7), "model.goods.cigars", 3, "model.building.tobacconistHouse");
 	}
 	
 	void verifyProdLoc(MaxGoodsProductionLocation prodLoc, String goodsTypeId, int quantity, String locationId) {
@@ -187,8 +187,8 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		if (prodLoc.colonyTile != null) {
 			assertThat(prodLoc.colonyTile.getId()).isEqualTo(locationId);
 		}
-		if (prodLoc.building != null) {
-			assertThat(prodLoc.building.getId()).isEqualTo(locationId);
+		if (prodLoc.buildingType != null) {
+			assertThat(prodLoc.buildingType.getId()).isEqualTo(locationId);
 		}
 	}
 }

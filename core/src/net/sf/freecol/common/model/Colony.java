@@ -312,9 +312,9 @@ public class Colony extends Settlement {
     	return colonyProduction.maxProductionFromTile(gt, workerType, ignoreIndianOwner);
     }
     
-	public boolean canSustainNewWorker(Unit worker, GoodsType goodsTypeToProduce, int produceAmount) {
+	public boolean canSustainNewWorker(UnitType unitType, GoodsType goodsTypeToProduce, int produceAmount) {
 		ProductionSummary productionSummary = productionSummary();
-		for (UnitConsumption unitConsumption : worker.unitType.unitConsumption.entities()) {
+		for (UnitConsumption unitConsumption : unitType.unitConsumption.entities()) {
 			if (unitConsumption.getTypeId().equals(GoodsType.BELLS)) {
 				// do not care
 				continue;
@@ -336,7 +336,7 @@ public class Colony extends Settlement {
 		return true;
 	}
 
-    public boolean canSustainNewWorker(Unit worker) {
+    public boolean canSustainNewWorker(UnitType workerType) {
     	return canSustainWorkers(1, 0);
     }
 	

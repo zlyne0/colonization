@@ -1,27 +1,35 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
-class MaxGoodsProductionLocation {
+public class MaxGoodsProductionLocation {
 
     GoodsType goodsType;
     int production;
     Production tileTypeInitProduction;
     Tile colonyTile;
-    Building building;
+    BuildingType buildingType;
 	
     public String toString() {
         String st = "goods: " + goodsType + " quantity: " + production;
         if (colonyTile != null) {
             st += " colonyTile " + this.colonyTile.getId();
         }
-        if (building != null) {
-            st += " building " + this.building.getId();
+        if (buildingType != null) {
+            st += " buildingType " + this.buildingType.getId();
         }
         return st;
     }
+
+	public GoodsType getGoodsType() {
+		return goodsType;
+	}
+
+	public int getProduction() {
+		return production;
+	}
 	
 }

@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 
-import net.sf.freecol.common.model.Building;
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
@@ -18,21 +18,33 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
-class BuildingProduction {
-	Building building;
-	private BuildingType buildingType;
+class BuildingProduction implements Identifiable {
+	final BuildingType buildingType;
 	private List<Worker> workers = new ArrayList<Worker>(3);
-	
-	void init(Building building, BuildingType buildingType, MapIdEntitiesReadOnly<Unit> units, List<Worker> workers) {
-		this.building = building;
+
+	BuildingProduction(BuildingType buildingType) {
 		this.buildingType = buildingType;
-		
+	}
+	
+	@Override
+	public String getId() {
+		return buildingType.getId();
+	}
+	
+	void init(MapIdEntitiesReadOnly<Unit> units, List<Worker> workers) {
 		for (Unit unit : units.entities()) {
 			this.workers.add(new Worker(unit, unit.unitType));
 		}
 		workers.addAll(this.workers);
 	}
 
+	public void addWorkers(List<UnitType> workersType, List<Worker> workers) {
+		for (UnitType workerType : workersType) {
+			Worker e = new Worker(workerType);
+			this.workers.add(e);
+		}
+	}
+	
 	public ProductionConsumption determineProductionConsumption(
 		Warehouse warehouse,
 		ProductionSummary globalProdCons, 

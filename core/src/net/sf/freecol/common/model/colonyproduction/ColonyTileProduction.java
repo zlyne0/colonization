@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionConsumption;
@@ -11,15 +13,32 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
-class ColonyTileProduction {
+class ColonyTileProduction implements Identifiable {
 	
 	Tile tile;
 	private Worker worker;
-	private List<Production> tileProduction;
-	
-	public void init(Tile tile, List<Production> tileProduction, Unit unit, List<Worker> workers) {
+	private final List<Production> tileProduction = new ArrayList<Production>(1);
+
+	ColonyTileProduction() {
+	}
+
+	ColonyTileProduction(Tile tile) {
 		this.tile = tile;
-		this.tileProduction = tileProduction;
+	}
+
+	@Override
+	public String getId() {
+		return tile.getId();
+	}
+
+	void init(Tile tile, List<Production> production, UnitType workerType) {
+		this.tile = tile;
+		this.init(production, workerType);
+	}
+
+	void init(List<Production> tileProduction, Unit unit, List<Worker> workers) {
+		this.tileProduction.clear();
+		this.tileProduction.addAll(tileProduction);
 		
 		if (unit != null) {
 			worker = new Worker(unit, unit.unitType);
@@ -29,9 +48,9 @@ class ColonyTileProduction {
 		}
 	}
 
-	void init(Tile tile, List<Production> tileProduction, UnitType unitType) {
-		this.tile = tile;
-		this.tileProduction = tileProduction;
+	void init(List<Production> tileProduction, UnitType unitType) {
+		this.tileProduction.clear();
+		this.tileProduction.addAll(tileProduction);
 		
 		if (unitType == null) {
 			worker = null;
@@ -43,6 +62,18 @@ class ColonyTileProduction {
 				worker = new Worker(unitType);
 			}
 		}
+	}
+
+	void addWorker(List<Worker> workers) {
+		if (worker != null) {
+			workers.add(worker);
+		}
+	}
+	
+	void init(Production tileProduction, UnitType unitType) {
+		this.tileProduction.clear();
+		this.tileProduction.add(tileProduction);
+		this.worker = new Worker(unitType);
 	}
 	
 	public boolean hasWorker() {
@@ -82,4 +113,5 @@ class ColonyTileProduction {
         goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
 	}
+
 }

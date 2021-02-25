@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -19,8 +20,8 @@ import net.sf.freecol.common.model.specification.Modifier;
 
 class ColonyProduction {
 
-	private final List<ColonyTileProduction> tiles;
-	private final List<BuildingProduction> buildings;
+	private final MapIdEntities<ColonyTileProduction> tiles;
+	private final MapIdEntities<BuildingProduction> buildings;
 	private final Warehouse warehouse = new Warehouse();
 	private final List<Worker> workers = new ArrayList<Worker>();
 	
@@ -36,8 +37,8 @@ class ColonyProduction {
 	public ColonyProduction(ColonySettingProvider colonyProvider) {
 		this.colonyProvider = colonyProvider;
 		
-		buildings = new ArrayList<BuildingProduction>(Specification.instance.buildingTypes.size());
-		tiles = new ArrayList<ColonyTileProduction>(9);
+		buildings = MapIdEntities.linkedMapIdEntities(Specification.instance.buildingTypes.size());
+		tiles = new MapIdEntities<ColonyTileProduction>();
 	}
 
 	public void updateRequest() {
@@ -106,7 +107,7 @@ class ColonyProduction {
             pc.baseProduction.applyModifiers(colonyFeatures);
             pc.realProduction.applyModifiers(colonyFeatures);
 			
-			prodConsByProducer.put(bp.building.getId(), pc);
+			prodConsByProducer.put(bp.buildingType.getId(), pc);
         	
         	globalProductionConsumption.addGoods(pc.realConsumption);
         	globalProductionConsumption.addGoods(pc.realProduction);
@@ -123,7 +124,7 @@ class ColonyProduction {
         }
     }
     
-	List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
+	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
 		Collection<GoodsType> goodsTypes, 
 		UnitType workerType, 
 		boolean ignoreIndianOwner
@@ -150,5 +151,17 @@ class ColonyProduction {
             }
         }
         return goodsProduction;
+    }
+
+    public boolean canSustainNewWorker(UnitType workerType) {
+    	return canSustainWorkers(1, 0);
+    }
+	
+    public boolean canSustainWorkers(int workersCount, int additionalFoodProduction) {
+    	ProductionSummary productionSummary = globalProductionConsumption();    	
+    	int prod = productionSummary.getQuantity(GoodsType.FOOD);
+    	prod += productionSummary.getQuantity(GoodsType.HORSES);
+    	prod += additionalFoodProduction;
+    	return workersCount*2 <= prod;
     }
 }

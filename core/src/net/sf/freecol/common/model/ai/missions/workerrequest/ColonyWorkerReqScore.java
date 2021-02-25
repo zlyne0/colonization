@@ -58,7 +58,7 @@ class ColonyWorkerReqScore {
 			Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, colony.getOwner(), colony.tile);
 			createdUnits.add(colonist);
 
-			if (!colony.canSustainNewWorker(colonist)) {
+			if (!colony.canSustainNewWorker(colonist.unitType)) {
 				boolean found = tryFindFoodProducer(colonist);
 				if (!found) {
 					break;

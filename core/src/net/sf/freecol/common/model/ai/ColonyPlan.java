@@ -346,7 +346,7 @@ public class ColonyPlan {
         		noPlanWorkCounter++;
         		continue;
         	}
-        	if (colony.canSustainNewWorker(worker, location.getGoodsType(), location.getProduction())) {
+        	if (colony.canSustainNewWorker(worker.unitType, location.getGoodsType(), location.getProduction())) {
         		addWorkerToProductionLocation(worker, location.getProductionLocation(), location.getGoodsType());
         		availableWorkers.remove(worker);
         		noPlanWorkCounter = 0;

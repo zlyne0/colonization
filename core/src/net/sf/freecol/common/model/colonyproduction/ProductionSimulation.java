@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.colonyproduction;
 
 import java.util.List;
 
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.UnitType;
@@ -22,7 +23,7 @@ class ProductionSimulation {
 		final GoodsType goodsType, 
 		final UnitType workerType, 
 		boolean ignoreIndianOwner,
-		List<ColonyTileProduction> tiles
+		MapIdEntities<ColonyTileProduction> tiles
 	) {
     	MaxGoodsProductionLocation maxProd = null;
 	    
@@ -71,7 +72,7 @@ class ProductionSimulation {
 	MaxGoodsProductionLocation maxProductionFromBuilding(
 		GoodsType goodsType, UnitType workerType, 
 		ProductionSummary prodCons, 
-		List<BuildingProduction> buildings,
+		MapIdEntities<BuildingProduction> buildings,
 		Warehouse warehouse
 	) {
 		MaxGoodsProductionLocation maxProd = null;
@@ -88,7 +89,7 @@ class ProductionSimulation {
 				}
 				maxProd.goodsType = goodsType;
 				maxProd.production = quantity;
-				maxProd.building = productionBuilding.building;
+				maxProd.buildingType = productionBuilding.buildingType;
 			}
 		}
 		return maxProd;

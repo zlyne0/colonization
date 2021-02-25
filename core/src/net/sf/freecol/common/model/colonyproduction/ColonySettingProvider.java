@@ -1,62 +1,34 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
+import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Modifier;
 
-class ColonySettingProvider {
+// Travel to any part of universe without moving
+public interface ColonySettingProvider {
 
-	private final Colony colony;
+	void init(MapIdEntities<ColonyTileProduction> tiles, MapIdEntities<BuildingProduction> buildings, List<Worker> workers);
 
-	public ColonySettingProvider(Colony colony) {
-		this.colony = colony;
-	}
-	
-	void init(List<ColonyTileProduction> tiles, List<BuildingProduction> buildings, List<Worker> workers) {
-		tiles.clear();
-		buildings.clear();
-		workers.clear();
-		
-		for (ColonyTile colonyTile : colony.colonyTiles) {
-			ColonyTileProduction tileProd = new ColonyTileProduction();
-			if (colonyTile.getWorker() != null) {
-				tileProd.init(colonyTile.tile, colonyTile.tileProduction(), colonyTile.getWorker(), workers);
-			} else {
-				tileProd.init(colonyTile.tile, colonyTile.tileProduction(), null, workers);
-			}
-			tiles.add(tileProd);
-		}
-		
-		for (Building building : colony.buildings.sortedEntities()) {
-			BuildingProduction buildingProduction = new BuildingProduction();
-			buildingProduction.init(building, building.buildingType, building.getUnits(), workers);
-			buildings.add(buildingProduction);
-		}
-	}
+	void initWarehouse(Warehouse warehouse);
 
-	public Modifier productionBonus() {
-		return colony.productionBonus();
-	}
+	Modifier productionBonus();
 
-	public ObjectWithFeatures colonyUpdatableFeatures() {
-		return colony.colonyUpdatableFeatures;
-	}
+	ObjectWithFeatures colonyUpdatableFeatures();
 
-	public void initWarehouse(Warehouse warehouse) {
-		warehouse.reset(colony);
-	}
+	boolean isCenterTile(Tile tile);
 
-	public boolean isCenterTile(Tile tile) {
-        return tile.getId().equals(colony.tile.getId());
-	}
+	boolean isTileLocked(Tile tile, boolean ignoreIndianOwner);
 
-	public boolean isTileLocked(Tile tile, boolean ignoreIndianOwner) {
-		return colony.isTileLocked(tile, ignoreIndianOwner);
-	}
-	
 }

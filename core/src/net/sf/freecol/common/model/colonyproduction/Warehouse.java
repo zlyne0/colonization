@@ -21,7 +21,12 @@ class Warehouse {
 			goods.put(goodsType.getId(), entry.value);
 		}
 	}
-	
+
+	public void reset(int colonyWarehouseCapacity) {
+		capacity = colonyWarehouseCapacity;
+		goods.clear();
+	}
+
 	public int amount(GoodsType goodsType) {
 		return goods.getQuantity(goodsType.getId());
 	}
@@ -29,4 +34,5 @@ class Warehouse {
 	public int capacity() {
 		return capacity;
 	}
+
 }
