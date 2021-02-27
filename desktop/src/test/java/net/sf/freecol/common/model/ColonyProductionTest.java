@@ -55,7 +55,7 @@ public class ColonyProductionTest {
         // when
         colony.calculateSonsOfLiberty();
         // then
-        assertEquals(147, colony.liberty);
+        assertEquals(147, colony.colonyLiberty.liberty);
         assertEquals(12, colony.sonsOfLiberty());
 	}
     
@@ -100,7 +100,7 @@ public class ColonyProductionTest {
     public void canCalculateProductionForColonyWithOneProductionBonus() throws Exception {
         // given
         dutch.addFoundingFathers(game, henryHudson);
-        colony.liberty += Colony.LIBERTY_PER_REBEL * ((colony.getColonyUnitsCount() / 2) + 1);
+        colony.colonyLiberty.setLibertyForOneProductionBonus(colony.getColonyUnitsCount());
         
         // when
         colony.updateColonyFeatures();

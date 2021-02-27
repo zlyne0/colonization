@@ -60,6 +60,7 @@ class ColonyWorkerReqScore2 {
 				}
 			}
 		}
+
 		removeLastNotDesiredProduction();
 		return reqUnits;
 	}
@@ -132,7 +133,6 @@ class ColonyWorkerReqScore2 {
 			}
 		}
 		if (theBestScoreLoc != null) {
-			System.out.println(theBestScoreLoc);
 			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(
 				theBestScoreLoc.getGoodsType(), 
 				freeColonistUnitType

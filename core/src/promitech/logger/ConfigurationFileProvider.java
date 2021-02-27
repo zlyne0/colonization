@@ -100,7 +100,7 @@ class ConfigurationFileProvider {
     
     private Properties loadConf() {
         try {
-            InputStream resourceAsStream = getClass().getResourceAsStream(confFileName);
+            InputStream resourceAsStream = ConfigurationFileProvider.class.getResourceAsStream(confFileName);
             if (resourceAsStream == null) {
                 throw new IllegalArgumentException("can not open file " + confFileName);
             }

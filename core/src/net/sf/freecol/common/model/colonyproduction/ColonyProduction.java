@@ -18,7 +18,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
-class ColonyProduction {
+public class ColonyProduction {
 
 	private final MapIdEntities<ColonyTileProduction> tiles;
 	private final MapIdEntities<BuildingProduction> buildings;

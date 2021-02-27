@@ -41,7 +41,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		for (Settlement settlement : dutch.settlements) {
 			// given
 			Colony colony = settlement.asColony();
-	        colony.setLiberty(Colony.LIBERTY_PER_REBEL * ((colony.getColonyUnitsCount()) + 1));
+	        colony.colonyLiberty.setLibertyForProductionBonus(colony.getColonyUnitsCount());
 	        colony.updateColonyFeatures();
 	        colony.calculateSonsOfLiberty();
 	        
@@ -66,7 +66,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		
 		// then
 		System.out.println(production);
-		
+
 		ProductionSummaryAssert.assertThat(production)
 			.has("model.goods.cotton", 3) 
 			.has("model.goods.furs", -9) 
@@ -81,7 +81,42 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			.has("model.goods.lumber", -2) 
 		;
 	}
-	
+
+	@Test
+	public void colonyProductionConsumptionWithMinusProductionBonus() throws Exception {
+		// given
+		ColonySimulationSettingProvider colonyProvider = new ColonySimulationSettingProvider(nieuwAmsterdam);
+		colonyProvider.withConsumeWarehouseResources();
+		colonyProvider.addWorkerToColony(
+			Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST),
+			Specification.instance.buildingTypes.getById("model.building.tobacconistHouse")
+		);
+
+		ColonyProduction colonyProduction = new ColonyProduction(colonyProvider);
+
+		// when
+		ProductionSummary production = colonyProduction.globalProductionConsumption();
+
+		// then
+		System.out.println(production);
+
+		ProductionSummaryAssert.assertThat(production)
+				.has("model.goods.cotton", 3)
+				.has("model.goods.furs", -7)
+				.has("model.goods.hammers", 11)
+				.has("model.goods.crosses", 0)
+				.has("model.goods.fish", 0)
+				.has("model.goods.coats", 7)
+				.has("model.goods.food", 2)
+				.has("model.goods.grain", 0)
+				.has("model.goods.bells", 3)
+				.has("model.goods.horses", 2)
+				.has("model.goods.lumber", -1)
+				.has("model.goods.cigars", 5)
+		;
+	}
+
+
 	@Test
 	public void backwardCompatibilityForMaxPotentialProduction() throws Exception {
 		UnitType unitType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
@@ -114,7 +149,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		for (Settlement settlement : dutch.settlements) {
 			// given
 			Colony colony = settlement.asColony();
-	        colony.setLiberty(Colony.LIBERTY_PER_REBEL * ((colony.getColonyUnitsCount()) + 1));
+	        colony.colonyLiberty.setLibertyForProductionBonus(colony.getColonyUnitsCount());
 	        colony.updateColonyFeatures();
 	        colony.calculateSonsOfLiberty();
 	        

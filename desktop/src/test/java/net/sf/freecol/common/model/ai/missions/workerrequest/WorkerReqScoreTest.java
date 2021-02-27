@@ -70,9 +70,6 @@ class WorkerReqScoreTest {
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
 		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
-		System.out.println("production");
-		System.out.println(fortNassau.productionSummary().toString());
-
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
 //		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
