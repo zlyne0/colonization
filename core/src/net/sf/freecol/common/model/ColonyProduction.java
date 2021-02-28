@@ -91,30 +91,28 @@ class ColonyProduction {
     
 	public ProductionConsumption productionSummaryForTerrain(Tile tile, ColonyTile colonyTile) {
 		ProductionConsumption prodCons = new ProductionConsumption();
+
+		Production production = colonyTile.tileProduction();
 		
-		List<Production> productions = colonyTile.tileProduction(); 
-		
-		for (Production production : productions) {
-		    for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
-	            String goodsId = outputEntry.getKey().getId();
-	            Integer goodInitValue = outputEntry.getValue();
-	            if (0 == goodInitValue) {
-	                continue;
-	            }
-	            int goodQuantity = 0;
-		        if (colonyTile.hasWorker()) {
-		            goodQuantity = (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
-		            goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
-		        } else {
-		            goodQuantity += goodInitValue;
-		        }
-	            goodQuantity = tile.applyTileProductionModifier(goodsId, goodQuantity);
-	            goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
-		        prodCons.realProduction.addGoods(goodsId, goodQuantity);
-                prodCons.baseProduction.addGoods(goodsId, goodQuantity);
-		    }
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+			String goodsId = outputEntry.getKey().getId();
+			Integer goodInitValue = outputEntry.getValue();
+			if (0 == goodInitValue) {
+				continue;
+			}
+			int goodQuantity = 0;
+			if (colonyTile.hasWorker()) {
+				goodQuantity = (int)colonyTile.getWorker().unitType.applyModifier(goodsId, goodInitValue);
+				goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(goodsId, goodQuantity);
+			} else {
+				goodQuantity += goodInitValue;
+			}
+			goodQuantity = tile.applyTileProductionModifier(goodsId, goodQuantity);
+			goodQuantity = (int)colony.colonyUpdatableFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
+			prodCons.realProduction.addGoods(goodsId, goodQuantity);
+			prodCons.baseProduction.addGoods(goodsId, goodQuantity);
 		}
-		return prodCons; 
+		return prodCons;
 	}
 	
 	public void dispose() {

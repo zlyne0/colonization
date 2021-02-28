@@ -132,7 +132,16 @@ public class ProductionInfo {
 		Production production = unattendedProductions.get(0);
 		return production.singleFilteredOutputTypeEquals(goodsType);
 	}
-	
+
+	public Production firstAttendentProduction(GoodsType goodsType) {
+		for (Production prod : attendedProductions) {
+			if (prod.outputTypesEquals(goodsType.getId())) {
+				return prod;
+			}
+		}
+		return Production.EMPTY_READONLY;
+	}
+
     public List<Production> getUnattendedProductions() {
         return unattendedProductions;
     }
@@ -140,4 +149,5 @@ public class ProductionInfo {
     public List<Production> getAttendedProductions() {
         return attendedProductions;
     }
+
 }

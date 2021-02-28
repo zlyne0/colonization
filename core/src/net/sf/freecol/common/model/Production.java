@@ -38,7 +38,19 @@ public class Production {
 		this.input.putAll(p.input);
 		this.output.putAll(p.output);
 	}
-    
+
+	public void init(Production p) {
+    	this.unattended = p.unattended;
+		this.input.clear();
+		this.output.clear();
+		this.input.putAll(p.input);
+		this.output.putAll(p.output);
+	}
+
+	public boolean isNotEmpty() {
+    	return output.size() != 0 || input.size() != 0;
+	}
+
 	public Set<Entry<GoodsType, Integer>> inputEntries() {
 		return input.entrySet();
 	}
@@ -100,7 +112,17 @@ public class Production {
 			outputEntry.setValue(quantity);
 		}
 	}
-	
+
+	public void applyModifiers(ObjectWithFeatures features) {
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
+			int quantity = outputEntry.getValue();
+			String goodId = outputEntry.getKey().getId();
+
+			quantity = (int)features.applyModifier(goodId, quantity);
+			outputEntry.setValue(quantity);
+		}
+	}
+
 	public boolean isProductMoreThen(Production maxProduction) {
 		int sumThis = sumProduction(output);
 		int sumArg = sumProduction(maxProduction.output);
@@ -203,7 +225,7 @@ public class Production {
 		}
 		return false;
 	}
-	
+
 	public static class Xml extends XmlNodeParser<Production> {
 
 		private static final String ATTR_VALUE = "value";

@@ -63,4 +63,5 @@ public class ColonyTest {
 		// then
 		assertEquals(Colony.NEVER_COMPLETE_BUILD, turnsToComplete);
 	}
+
 }

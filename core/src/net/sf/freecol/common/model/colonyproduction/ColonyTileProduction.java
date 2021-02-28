@@ -17,7 +17,7 @@ class ColonyTileProduction implements Identifiable {
 	
 	Tile tile;
 	private Worker worker;
-	private final List<Production> tileProduction = new ArrayList<Production>(1);
+	private Production tileProduction = Production.EMPTY_READONLY;
 
 	ColonyTileProduction() {
 	}
@@ -31,15 +31,14 @@ class ColonyTileProduction implements Identifiable {
 		return tile.getId();
 	}
 
-	void init(Tile tile, List<Production> production, UnitType workerType) {
+	void init(Tile tile, Production production, UnitType workerType) {
 		this.tile = tile;
 		this.init(production, workerType);
 	}
 
-	void init(List<Production> tileProduction, Unit unit, List<Worker> workers) {
-		this.tileProduction.clear();
-		this.tileProduction.addAll(tileProduction);
-		
+	void init(Production tileProduction, Unit unit, List<Worker> workers) {
+		this.tileProduction = tileProduction;
+
 		if (unit != null) {
 			worker = new Worker(unit, unit.unitType);
 			workers.add(worker);
@@ -48,10 +47,9 @@ class ColonyTileProduction implements Identifiable {
 		}
 	}
 
-	void init(List<Production> tileProduction, UnitType unitType) {
-		this.tileProduction.clear();
-		this.tileProduction.addAll(tileProduction);
-		
+	void init(Production tileProduction, UnitType unitType) {
+		this.tileProduction = tileProduction;
+
 		if (unitType == null) {
 			worker = null;
 		} else {
@@ -69,13 +67,7 @@ class ColonyTileProduction implements Identifiable {
 			workers.add(worker);
 		}
 	}
-	
-	void init(Production tileProduction, UnitType unitType) {
-		this.tileProduction.clear();
-		this.tileProduction.add(tileProduction);
-		this.worker = new Worker(unitType);
-	}
-	
+
 	public boolean hasWorker() {
 		return worker != null;
 	}
@@ -83,19 +75,17 @@ class ColonyTileProduction implements Identifiable {
 	public ProductionConsumption productionSummaryForTile(ObjectWithFeatures colonyFeatures) {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
-		for (Production production : tileProduction) {
-		    for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
-		    	if (outputEntry.getValue() == 0) {
-		    		continue;
-		    	}
-		    	String goodsId = outputEntry.getKey().getId();
-		    	int goodQuantity = workerTileProduction(outputEntry, colonyFeatures);
-		    	
-		        prodCons.realProduction.addGoods(goodsId, goodQuantity);
-                prodCons.baseProduction.addGoods(goodsId, goodQuantity);
-		    }
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : tileProduction.outputEntries()) {
+			if (outputEntry.getValue() == 0) {
+				continue;
+			}
+			String goodsId = outputEntry.getKey().getId();
+			int goodQuantity = workerTileProduction(outputEntry, colonyFeatures);
+
+			prodCons.realProduction.addGoods(goodsId, goodQuantity);
+			prodCons.baseProduction.addGoods(goodsId, goodQuantity);
 		}
-		return prodCons; 
+		return prodCons;
 	}
 
 	int workerTileProduction(java.util.Map.Entry<GoodsType, Integer> outputEntry, ObjectWithFeatures colonyFeatures) {

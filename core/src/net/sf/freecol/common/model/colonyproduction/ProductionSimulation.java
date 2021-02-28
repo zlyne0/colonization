@@ -34,7 +34,11 @@ class ProductionSimulation {
     		) {
 	            continue;
 	        }
-	        simTileProduction.init(colonyTile.tile, colonyTile.tile.getType().productionInfo.getAttendedProductions(), workerType);
+	        simTileProduction.init(
+				colonyTile.tile,
+				colonyTile.tile.getType().productionInfo.firstAttendentProduction(goodsType),
+				workerType
+			);
 	        
 	        maxProd = maxGoodsProduction(goodsType, maxProd);
 	    }

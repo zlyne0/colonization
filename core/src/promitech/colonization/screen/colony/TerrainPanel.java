@@ -61,7 +61,7 @@ public class TerrainPanel extends Group implements
 	void changeWorkerProduction(UnitActor unitActor, GoodMaxProductionLocation prodLocation) {
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
 		ColonyTile aColonyTile = prodLocation.getColonyTile();
-		aColonyTile.productionInfo.initProduction(prodLocation.tileTypeInitProduction);
+		aColonyTile.initProduction(prodLocation.tileTypeInitProduction);
 		changeColonyStateListener.changeUnitAllocation();
 	}
 	

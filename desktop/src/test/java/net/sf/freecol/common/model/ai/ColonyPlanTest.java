@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.ProductionAssert;
 import net.sf.freecol.common.model.ProductionInfoAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -58,19 +59,19 @@ class ColonyPlanTest {
 		// then
     	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
     	
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472").production)
     		.hasOutput(GoodsType.FISH, 2);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432").production)
     		.hasOutput(GoodsType.FISH, 2);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3393").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3393").production)
     		.hasOutput(GoodsType.FISH, 2);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431").production)
 			.hasOutput(GoodsType.GRAIN, 5);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352").production)
 			.hasOutput(GoodsType.GRAIN, 3);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3391").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3391").production)
 			.hasOutput(GoodsType.GRAIN, 3);
-    	ProductionInfoAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3392").productionInfo)
+    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3392").production)
     		.hasOutput(GoodsType.GRAIN, 5, true);
 	}
 
