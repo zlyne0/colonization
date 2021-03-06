@@ -76,9 +76,9 @@ class ColonyTileProduction implements Identifiable {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : tileProduction.outputEntries()) {
-			if (outputEntry.getValue() == 0) {
-				continue;
-			}
+//			if (outputEntry.getValue() == 0) {
+//				continue;
+//			}
 			String goodsId = outputEntry.getKey().getId();
 			int goodQuantity = workerTileProduction(outputEntry, colonyFeatures);
 
