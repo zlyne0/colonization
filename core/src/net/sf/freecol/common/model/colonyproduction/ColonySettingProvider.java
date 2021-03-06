@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -19,7 +20,13 @@ import net.sf.freecol.common.model.specification.Modifier;
 // Travel to any part of universe without moving
 public interface ColonySettingProvider {
 
-	void init(MapIdEntities<ColonyTileProduction> tiles, MapIdEntities<BuildingProduction> buildings, List<Worker> workers);
+	void initProductionLocations();
+
+	MapIdEntities<ColonyTileProduction> tiles();
+
+	MapIdEntities<BuildingProduction> buildings();
+
+	List<Worker> workers();
 
 	void initWarehouse(Warehouse warehouse);
 

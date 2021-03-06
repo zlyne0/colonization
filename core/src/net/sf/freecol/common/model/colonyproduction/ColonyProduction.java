@@ -1,13 +1,7 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.List;
-
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
-import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -18,13 +12,15 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+
 public class ColonyProduction {
 
-	private final MapIdEntities<ColonyTileProduction> tiles;
-	private final MapIdEntities<BuildingProduction> buildings;
 	private final Warehouse warehouse = new Warehouse();
-	private final List<Worker> workers = new ArrayList<Worker>();
-	
+
 	private final java.util.Map<String, ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();	
 	private final ProductionSummary globalProductionConsumption = new ProductionSummary();
 	
@@ -36,9 +32,6 @@ public class ColonyProduction {
 	
 	public ColonyProduction(ColonySettingProvider colonyProvider) {
 		this.colonyProvider = colonyProvider;
-		
-		buildings = MapIdEntities.linkedMapIdEntities(Specification.instance.buildingTypes.size());
-		tiles = new MapIdEntities<ColonyTileProduction>();
 	}
 
 	public void updateRequest() {
@@ -55,7 +48,7 @@ public class ColonyProduction {
 			return;
 		}
 		colonyProvider.initWarehouse(warehouse);
-		colonyProvider.init(tiles, buildings, workers);
+		colonyProvider.initProductionLocations();
 		colonyProductionBonus = colonyProvider.productionBonus();
 		colonyFeatures = colonyProvider.colonyUpdatableFeatures();
 		
@@ -72,12 +65,12 @@ public class ColonyProduction {
 
 	private void initBellsProduction() {
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
-        int amount = Math.min(unitsThatUseNoBells, workers.size());
+        int amount = Math.min(unitsThatUseNoBells, colonyProvider.workers().size());
         globalProductionConsumption.addGoods(GoodsType.BELLS, amount);
 	}
 
 	private void tilesProduction() {
-		for (ColonyTileProduction colonyTileProduction : tiles) {
+		for (ColonyTileProduction colonyTileProduction : colonyProvider.tiles()) {
 			ProductionConsumption ps = colonyTileProduction.productionSummaryForTile(colonyFeatures);
 			prodConsByProducer.put(colonyTileProduction.tile.getId(), ps);
 			globalProductionConsumption.addGoods(ps.realProduction);
@@ -85,7 +78,7 @@ public class ColonyProduction {
 	}
 
 	private void workersFoodConsumption() {
-		for (Worker worker : workers) {
+		for (Worker worker : colonyProvider.workers()) {
 			for (UnitConsumption uc : worker.unitType.unitConsumption) {
         		if (uc.getId().equals(GoodsType.FOOD)) {
         			if (globalProductionConsumption.decreaseIfHas(GoodsType.FISH, uc.getQuantity())) {
@@ -102,7 +95,7 @@ public class ColonyProduction {
 	}
 
 	private void buildingsProduction() {
-		for (BuildingProduction bp : buildings) {
+		for (BuildingProduction bp : colonyProvider.buildings()) {
 			ProductionConsumption pc = bp.determineProductionConsumption(warehouse, globalProductionConsumption, colonyProductionBonus.asInt());
             pc.baseProduction.applyModifiers(colonyFeatures);
             pc.realProduction.applyModifiers(colonyFeatures);
@@ -130,20 +123,21 @@ public class ColonyProduction {
 		boolean ignoreIndianOwner
 	) {
     	ProductionSimulation productionSimulation = new ProductionSimulation(colonyProvider);
-        List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
+
         ProductionSummary prodCons = globalProductionConsumption();
-        
+		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
+
         for (GoodsType gt : goodsTypes) {
         	MaxGoodsProductionLocation maxProd = null;
             if (gt.isFarmed()) {
                 maxProd = productionSimulation.maxProductionFromTile(
             		gt, workerType, 
-            		ignoreIndianOwner, tiles 
+            		ignoreIndianOwner
         		);
             } else {
                 maxProd = productionSimulation.maxProductionFromBuilding(
             		gt, workerType, 
-            		prodCons, buildings, warehouse 
+            		prodCons, warehouse
         		);
             }
             if (maxProd != null) {

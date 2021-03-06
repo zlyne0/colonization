@@ -21,8 +21,10 @@ public class Savegame1600BaseClass {
 	protected Player spain;
 	protected Colony nieuwAmsterdam;
 	protected Colony fortOranje;
-	
-    @BeforeAll
+	protected Colony fortNassau;
+	protected Colony fortMaurits;
+
+	@BeforeAll
     public static void beforeClass() throws Exception {
         Gdx.files = new LwjglFiles();
 		Locale.setDefault(Locale.US);
@@ -37,6 +39,9 @@ public class Savegame1600BaseClass {
         
         nieuwAmsterdam = game.map.getTile(24, 78).getSettlement().asColony();
 		fortOranje = game.map.getTile(25, 75).getSettlement().asColony();
-    }
+		fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
+		fortMaurits = game.map.getTile(21, 72).getSettlement().asColony();
+
+	}
 	
 }

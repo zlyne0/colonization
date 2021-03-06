@@ -107,10 +107,10 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 				.has("model.goods.crosses", 0)
 				.has("model.goods.fish", 0)
 				.has("model.goods.coats", 7)
-				.has("model.goods.food", 2)
+				.has("model.goods.food", 1)
 				.has("model.goods.grain", 0)
-				.has("model.goods.bells", 3)
-				.has("model.goods.horses", 2)
+				.has("model.goods.bells", 2)
+				.has("model.goods.horses", 1)
 				.has("model.goods.lumber", -1)
 				.has("model.goods.cigars", 5)
 		;

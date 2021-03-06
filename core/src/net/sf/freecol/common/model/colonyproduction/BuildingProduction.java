@@ -31,20 +31,27 @@ class BuildingProduction implements Identifiable {
 		return buildingType.getId();
 	}
 	
-	void init(MapIdEntitiesReadOnly<Unit> units, List<Worker> workers) {
+	void initWorkers(MapIdEntitiesReadOnly<Unit> units) {
+		this.workers.clear();
 		for (Unit unit : units.entities()) {
 			this.workers.add(new Worker(unit, unit.unitType));
 		}
-		workers.addAll(this.workers);
 	}
 
-	public void addWorkers(List<UnitType> workersType, List<Worker> workers) {
-		for (UnitType workerType : workersType) {
-			Worker e = new Worker(workerType);
-			this.workers.add(e);
+	public void addWorker(UnitType workerType) {
+		this.workers.add(new Worker(workerType));
+	}
+
+	public void addWorker(List<UnitType> workerType) {
+		for (UnitType unitType : workerType) {
+			this.workers.add(new Worker(unitType));
 		}
 	}
-	
+
+	public void sumWorkers(List<Worker> globalWorkers) {
+		globalWorkers.addAll(this.workers);
+	}
+
 	public ProductionConsumption determineProductionConsumption(
 		Warehouse warehouse,
 		ProductionSummary globalProdCons, 
@@ -204,4 +211,5 @@ class BuildingProduction implements Identifiable {
         goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
+
 }

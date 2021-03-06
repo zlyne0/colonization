@@ -1,12 +1,11 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import java.util.List;
-
-import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GoodsType;
+
+import java.util.List;
 
 class ProductionSimulation {
 
@@ -22,12 +21,11 @@ class ProductionSimulation {
     protected MaxGoodsProductionLocation maxProductionFromTile(
 		final GoodsType goodsType, 
 		final UnitType workerType, 
-		boolean ignoreIndianOwner,
-		MapIdEntities<ColonyTileProduction> tiles
+		boolean ignoreIndianOwner
 	) {
     	MaxGoodsProductionLocation maxProd = null;
 	    
-    	for (ColonyTileProduction colonyTile : tiles) {
+    	for (ColonyTileProduction colonyTile : colonyProvider.tiles()) {
 	        if (colonyTile.hasWorker() 
         		|| colonyProvider.isCenterTile(colonyTile.tile) 
         		|| colonyProvider.isTileLocked(colonyTile.tile, ignoreIndianOwner)
@@ -76,12 +74,11 @@ class ProductionSimulation {
 	MaxGoodsProductionLocation maxProductionFromBuilding(
 		GoodsType goodsType, UnitType workerType, 
 		ProductionSummary prodCons, 
-		MapIdEntities<BuildingProduction> buildings,
 		Warehouse warehouse
 	) {
 		MaxGoodsProductionLocation maxProd = null;
 		
-		for (BuildingProduction productionBuilding : buildings) {
+		for (BuildingProduction productionBuilding : colonyProvider.buildings()) {
 			if (!productionBuilding.canAddWorker(workerType)) {
 				continue;
 			}

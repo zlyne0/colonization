@@ -1,8 +1,5 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
@@ -12,6 +9,8 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+
+import java.util.List;
 
 class ColonyTileProduction implements Identifiable {
 	
@@ -36,15 +35,14 @@ class ColonyTileProduction implements Identifiable {
 		this.init(production, workerType);
 	}
 
-	void init(Production tileProduction, Unit unit, List<Worker> workers) {
+	void init(Production tileProduction, Unit unit) {
 		this.tileProduction = tileProduction;
+		this.worker = new Worker(unit, unit.unitType);
+	}
 
-		if (unit != null) {
-			worker = new Worker(unit, unit.unitType);
-			workers.add(worker);
-		} else {
-			worker = null;
-		}
+	void init(Production tileProduction) {
+		this.tileProduction = tileProduction;
+		this.worker = null;
 	}
 
 	void init(Production tileProduction, UnitType unitType) {
@@ -62,7 +60,17 @@ class ColonyTileProduction implements Identifiable {
 		}
 	}
 
-	void addWorker(List<Worker> workers) {
+	public void init(ColonyTileProduction atw) {
+		this.tileProduction = atw.tileProduction;
+		if (this.worker == null) {
+			this.worker = atw.worker;
+		} else {
+			this.worker.unitId = atw.worker.unitId;
+			this.worker.unitType = atw.worker.unitType;
+		}
+	}
+
+	void sumWorkers(List<Worker> workers) {
 		if (worker != null) {
 			workers.add(worker);
 		}
@@ -76,9 +84,6 @@ class ColonyTileProduction implements Identifiable {
 		ProductionConsumption prodCons = new ProductionConsumption();
 		
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : tileProduction.outputEntries()) {
-//			if (outputEntry.getValue() == 0) {
-//				continue;
-//			}
 			String goodsId = outputEntry.getKey().getId();
 			int goodQuantity = workerTileProduction(outputEntry, colonyFeatures);
 

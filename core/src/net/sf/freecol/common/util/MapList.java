@@ -21,7 +21,11 @@ public class MapList<K, V> {
 	public Set<K> keySet() {
 		return map.keySet();
 	}
-	
+
+	public Set<Map.Entry<K, List<V>>> entrySet() {
+		return map.entrySet();
+	}
+
 	public boolean containsKey(K key) {
 		return map.containsKey(key);
 	}

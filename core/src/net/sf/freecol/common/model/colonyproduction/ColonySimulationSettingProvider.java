@@ -1,9 +1,7 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyLiberty;
-import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
@@ -11,21 +9,20 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.util.MapList;
 
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 public class ColonySimulationSettingProvider implements ColonySettingProvider {
     private final DefaultColonySettingProvider defaultColonySettingProvider;
-    private final List<ColonyTileProduction> additionalTileProduction = new ArrayList<ColonyTileProduction>(9);
-    private final Map<String, List<UnitType>> additionalBuildingProduction = new HashMap<String, List<UnitType>>();
-    private int additionalWorkers = 0;
 
     private final ColonyLiberty colonyLiberty = new ColonyLiberty();
     private Modifier productionBonus = new Modifier(Modifier.COLONY_PRODUCTION_BONUS, Modifier.ModifierType.ADDITIVE, 0);
     private boolean consumeWarehouseResources = false;
+
+    private final MapIdEntities<ColonyTileProduction> additionalTileWorkers = new MapIdEntities<ColonyTileProduction>();;
+    private final MapList<String, UnitType> additionalBuildingWorkers = new MapList<String, UnitType>();
 
     public ColonySimulationSettingProvider(Colony colony) {
         defaultColonySettingProvider = new DefaultColonySettingProvider(colony);
@@ -33,28 +30,37 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     }
 
     @Override
-    public void init(MapIdEntities<ColonyTileProduction> tiles, MapIdEntities<BuildingProduction> buildings, List<Worker> workers) {
+    public void initProductionLocations() {
+        defaultColonySettingProvider.initProductionLocations();
+
+        for (ColonyTileProduction atw : additionalTileWorkers) {
+            defaultColonySettingProvider.addWorker(atw);
+        }
+        for (Map.Entry<String, List<UnitType>> addBuildingWorkers : additionalBuildingWorkers.entrySet()) {
+            BuildingType buildingType = Specification.instance.buildingTypes.getById(addBuildingWorkers.getKey());
+            defaultColonySettingProvider.addWorker(addBuildingWorkers.getValue(), buildingType);
+        }
+
         colonyLiberty.updateSonOfLiberty(
             defaultColonySettingProvider.colony.getOwner(),
-            defaultColonySettingProvider.colony.getColonyUnitsCount() + additionalWorkers
+            defaultColonySettingProvider.workers().size()
         );
         productionBonus.setValue(colonyLiberty.productionBonus());
+    }
 
-        defaultColonySettingProvider.init(tiles, buildings, workers);
+    @Override
+    public MapIdEntities<ColonyTileProduction> tiles() {
+        return defaultColonySettingProvider.tiles();
+    }
 
-        for (ColonyTileProduction colonyTileProduction : additionalTileProduction) {
-            tiles.add(colonyTileProduction);
-            colonyTileProduction.addWorker(workers);
-        }
+    @Override
+    public MapIdEntities<BuildingProduction> buildings() {
+        return defaultColonySettingProvider.buildings();
+    }
 
-        for (Map.Entry<String, List<UnitType>> entry : additionalBuildingProduction.entrySet()) {
-            BuildingProduction bprod = buildings.getByIdOrNull(entry.getKey());
-            if (bprod == null) {
-                bprod = new BuildingProduction(Specification.instance.buildingTypes.getById(entry.getKey()));
-                buildings.add(bprod);
-            }
-            bprod.addWorkers(entry.getValue(), workers);
-        }
+    @Override
+    public List<Worker> workers() {
+        return defaultColonySettingProvider.workers();
     }
 
     @Override
@@ -87,30 +93,18 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     }
 
     public void addWorkerToColony(UnitType workerType, MaxGoodsProductionLocation maxProd) {
-        additionalWorkers++;
         if (maxProd.colonyTile != null) {
-            ColonyTileProduction colonyTileProduction = new ColonyTileProduction(maxProd.colonyTile);
-            colonyTileProduction.init(maxProd.tileTypeInitProduction, workerType);
-            additionalTileProduction.add(colonyTileProduction);
+            ColonyTileProduction tileProduction = new ColonyTileProduction(maxProd.colonyTile);
+            tileProduction.init(maxProd.tileTypeInitProduction, workerType);
+            additionalTileWorkers.add(tileProduction);
         }
         if (maxProd.buildingType != null) {
-            List<UnitType> list = additionalBuildingProduction.get(maxProd.buildingType.getId());
-            if (list == null) {
-                list = new ArrayList<UnitType>();
-                additionalBuildingProduction.put(maxProd.buildingType.getId(), list);
-            }
-            list.add(workerType);
+            additionalBuildingWorkers.add(maxProd.buildingType.getId(), workerType);
         }
     }
 
     public void addWorkerToColony(UnitType workerType, BuildingType buildingType) {
-        additionalWorkers++;
-        List<UnitType> list = additionalBuildingProduction.get(buildingType.getId());
-        if (list == null) {
-            list = new ArrayList<UnitType>();
-            additionalBuildingProduction.put(buildingType.getId(), list);
-        }
-        list.add(workerType);
+        additionalBuildingWorkers.add(buildingType.getId(), workerType);
     }
 
     public void withConsumeWarehouseResources() {
