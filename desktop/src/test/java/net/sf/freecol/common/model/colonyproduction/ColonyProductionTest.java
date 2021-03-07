@@ -132,7 +132,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			List<GoodMaxProductionLocation> potentialProductions = colony.determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
 			);
-			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.determinePotentialMaxGoodsProduction(
+			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.simulation().determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner 
 			);
 			// then
@@ -158,7 +158,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			List<GoodMaxProductionLocation> potentialProductions = colony.determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
 			);
-			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.determinePotentialMaxGoodsProduction(
+			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.simulation().determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner 
 			);
 			// then
@@ -197,7 +197,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		// given
 		ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(nieuwAmsterdam));
 		// when
-		List<MaxGoodsProductionLocation> potentialProductions = newColonyProduction.determinePotentialMaxGoodsProduction(
+		List<MaxGoodsProductionLocation> potentialProductions = newColonyProduction.simulation().determinePotentialMaxGoodsProduction(
 			goodsTypes, unitType, ignoreIndianOwner 
 		);
 		// then

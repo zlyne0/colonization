@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.model.colonyproduction.ColonySettingProvider;
 import net.sf.freecol.common.model.colonyproduction.ColonySimulationSettingProvider;
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
+import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.specification.GoodsType;
 
@@ -28,6 +29,7 @@ class ColonyWorkerReqScore2 {
 	private boolean consumeWarehouseResources = false;
 	
 	private final ColonyProduction colonyProduction;
+	private final ProductionSimulation productionSimulation;
 	private final ColonySimulationSettingProvider colonyProvider;
 	
 	public ColonyWorkerReqScore2(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
@@ -38,6 +40,7 @@ class ColonyWorkerReqScore2 {
 		
 		colonyProvider = new ColonySimulationSettingProvider(colony);
 		colonyProduction = new ColonyProduction(colonyProvider);
+		productionSimulation = colonyProduction.simulation();
 	}
 	
 	public ObjectsListScore<UnitType> simulate() {
@@ -85,7 +88,7 @@ class ColonyWorkerReqScore2 {
 	}
 	
 	private boolean tryFindFoodProducer(final UnitType workerType) {
-		List<MaxGoodsProductionLocation> maxProductionForGoods = colonyProduction.determinePotentialMaxGoodsProduction(
+		List<MaxGoodsProductionLocation> maxProductionForGoods = productionSimulation.determinePotentialMaxGoodsProduction(
 			Specification.instance.foodsGoodsTypes,
 			workerType, 
 			IGNORE_INDIAN_OWNER
@@ -113,7 +116,7 @@ class ColonyWorkerReqScore2 {
 	}
 
 	private boolean tryFindMaxValuableProducer(UnitType workerType) {
-		List<MaxGoodsProductionLocation> maxProductionForGoods = colonyProduction.determinePotentialMaxGoodsProduction(
+		List<MaxGoodsProductionLocation> maxProductionForGoods = productionSimulation.determinePotentialMaxGoodsProduction(
 			goodsTypeToScore.entities(),
 			workerType, 
 			IGNORE_INDIAN_OWNER

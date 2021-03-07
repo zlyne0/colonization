@@ -5,20 +5,50 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
-class ProductionSimulation {
+public class ProductionSimulation {
 
 	private final ColonyTileProduction simTileProduction = new ColonyTileProduction();
 	private final ColonySettingProvider colonyProvider;
+	private final ColonyProduction colonyProduction;
 	private final ProductionValueComparator productionValueComparator;
 
-	public ProductionSimulation(ColonySettingProvider colonySettingProvider) {
+	ProductionSimulation(ColonySettingProvider colonySettingProvider, ColonyProduction colonyProduction) {
 		this.colonyProvider = colonySettingProvider;
+		this.colonyProduction = colonyProduction;
 		this.productionValueComparator = ProductionValueComparator.byQuantity;
 	}
 
-    protected MaxGoodsProductionLocation maxProductionFromTile(
+	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
+		Collection<GoodsType> goodsTypes,
+		UnitType workerType,
+		boolean ignoreIndianOwner
+	) {
+		ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
+		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
+
+		for (GoodsType gt : goodsTypes) {
+			MaxGoodsProductionLocation maxProd = null;
+			if (gt.isFarmed()) {
+				maxProd = maxProductionFromTile(
+					gt, workerType, ignoreIndianOwner
+				);
+			} else {
+				maxProd = maxProductionFromBuilding(
+					gt, workerType, prodCons
+				);
+			}
+			if (maxProd != null) {
+				goodsProduction.add(maxProd);
+			}
+		}
+		return goodsProduction;
+	}
+
+    private MaxGoodsProductionLocation maxProductionFromTile(
 		final GoodsType goodsType, 
 		final UnitType workerType, 
 		boolean ignoreIndianOwner
@@ -71,10 +101,9 @@ class ProductionSimulation {
 	/**
 	 * Return increase in production. Not total production.
 	 */
-	MaxGoodsProductionLocation maxProductionFromBuilding(
+	private MaxGoodsProductionLocation maxProductionFromBuilding(
 		GoodsType goodsType, UnitType workerType, 
-		ProductionSummary prodCons, 
-		Warehouse warehouse
+		ProductionSummary prodCons
 	) {
 		MaxGoodsProductionLocation maxProd = null;
 		
@@ -82,7 +111,11 @@ class ProductionSimulation {
 			if (!productionBuilding.canAddWorker(workerType)) {
 				continue;
 			}
-			int quantity = productionBuilding.singleWorkerProduction(workerType, goodsType, prodCons, warehouse, colonyProvider.colonyUpdatableFeatures());
+			int quantity = productionBuilding.singleWorkerProduction(
+				workerType, goodsType, prodCons,
+				colonyProvider.warehouse(),
+				colonyProvider.colonyUpdatableFeatures()
+			);
 			
 			if (quantity > 0 && productionValueComparator.more(maxProd, goodsType, quantity)) {
 				if (maxProd == null) {

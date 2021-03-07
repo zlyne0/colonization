@@ -12,10 +12,7 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 
 public class ColonyProduction {
 
@@ -117,36 +114,10 @@ public class ColonyProduction {
             }
         }
     }
-    
-	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
-		Collection<GoodsType> goodsTypes, 
-		UnitType workerType, 
-		boolean ignoreIndianOwner
-	) {
-    	ProductionSimulation productionSimulation = new ProductionSimulation(colonyProvider);
 
-        ProductionSummary prodCons = globalProductionConsumption();
-		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
-
-        for (GoodsType gt : goodsTypes) {
-        	MaxGoodsProductionLocation maxProd = null;
-            if (gt.isFarmed()) {
-                maxProd = productionSimulation.maxProductionFromTile(
-            		gt, workerType, 
-            		ignoreIndianOwner
-        		);
-            } else {
-                maxProd = productionSimulation.maxProductionFromBuilding(
-            		gt, workerType, 
-            		prodCons, colonyProvider.warehouse()
-        		);
-            }
-            if (maxProd != null) {
-                goodsProduction.add(maxProd);
-            }
-        }
-        return goodsProduction;
-    }
+    public ProductionSimulation simulation() {
+		return new ProductionSimulation(colonyProvider, this);
+	}
 
     public boolean canSustainNewWorker(UnitType workerType) {
     	return canSustainWorkers(1, 0);
