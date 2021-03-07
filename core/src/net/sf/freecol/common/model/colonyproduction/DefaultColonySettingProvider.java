@@ -17,6 +17,7 @@ import java.util.List;
 class DefaultColonySettingProvider implements ColonySettingProvider {
 
     protected final Colony colony;
+    private final Warehouse warehouse = new Warehouse();
 
 	private final MapIdEntities<ColonyTileProduction> tiles;
 	private final MapIdEntities<BuildingProduction> buildings;
@@ -45,7 +46,14 @@ class DefaultColonySettingProvider implements ColonySettingProvider {
     }
 
     @Override
+    public Warehouse warehouse() {
+        return warehouse;
+    }
+
+    @Override
     public void initProductionLocations() {
+        warehouse.reset(colony);
+
         workers.clear();
 
         for (ColonyTile colonyTile : colony.colonyTiles) {
@@ -83,11 +91,6 @@ class DefaultColonySettingProvider implements ColonySettingProvider {
             tiles.add(tileProd);
         }
         return tileProd;
-    }
-
-    @Override
-    public void initWarehouse(Warehouse warehouse) {
-        warehouse.reset(colony);
     }
 
     @Override

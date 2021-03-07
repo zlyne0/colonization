@@ -19,9 +19,7 @@ import java.util.List;
 
 public class ColonyProduction {
 
-	private final Warehouse warehouse = new Warehouse();
-
-	private final java.util.Map<String, ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();	
+	private final java.util.Map<String, ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();
 	private final ProductionSummary globalProductionConsumption = new ProductionSummary();
 	
 	private Modifier colonyProductionBonus;
@@ -47,7 +45,6 @@ public class ColonyProduction {
 		if (!updateRequired) {
 			return;
 		}
-		colonyProvider.initWarehouse(warehouse);
 		colonyProvider.initProductionLocations();
 		colonyProductionBonus = colonyProvider.productionBonus();
 		colonyFeatures = colonyProvider.colonyUpdatableFeatures();
@@ -96,7 +93,11 @@ public class ColonyProduction {
 
 	private void buildingsProduction() {
 		for (BuildingProduction bp : colonyProvider.buildings()) {
-			ProductionConsumption pc = bp.determineProductionConsumption(warehouse, globalProductionConsumption, colonyProductionBonus.asInt());
+			ProductionConsumption pc = bp.determineProductionConsumption(
+				colonyProvider.warehouse(),
+				globalProductionConsumption,
+				colonyProductionBonus.asInt()
+			);
             pc.baseProduction.applyModifiers(colonyFeatures);
             pc.realProduction.applyModifiers(colonyFeatures);
 			
@@ -137,7 +138,7 @@ public class ColonyProduction {
             } else {
                 maxProd = productionSimulation.maxProductionFromBuilding(
             		gt, workerType, 
-            		prodCons, warehouse
+            		prodCons, colonyProvider.warehouse()
         		);
             }
             if (maxProd != null) {

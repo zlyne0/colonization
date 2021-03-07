@@ -28,8 +28,6 @@ public interface ColonySettingProvider {
 
 	List<Worker> workers();
 
-	void initWarehouse(Warehouse warehouse);
-
 	Modifier productionBonus();
 
 	ObjectWithFeatures colonyUpdatableFeatures();
@@ -38,4 +36,5 @@ public interface ColonySettingProvider {
 
 	boolean isTileLocked(Tile tile, boolean ignoreIndianOwner);
 
+	Warehouse warehouse();
 }

@@ -43,7 +43,7 @@ class ProductionSimulation {
 	    return maxProd;
 	}
 	
-	public MaxGoodsProductionLocation maxGoodsProduction(
+	private MaxGoodsProductionLocation maxGoodsProduction(
 		GoodsType goodsType, 
 		MaxGoodsProductionLocation maxProd
 	) {

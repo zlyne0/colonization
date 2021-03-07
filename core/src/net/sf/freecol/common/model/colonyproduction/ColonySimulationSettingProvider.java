@@ -33,6 +33,10 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     public void initProductionLocations() {
         defaultColonySettingProvider.initProductionLocations();
 
+        if (!this.consumeWarehouseResources) {
+            defaultColonySettingProvider.warehouse().reset(defaultColonySettingProvider.colony.warehouseCapacity());
+        }
+
         for (ColonyTileProduction atw : additionalTileWorkers) {
             defaultColonySettingProvider.addWorker(atw);
         }
@@ -64,15 +68,6 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     }
 
     @Override
-    public void initWarehouse(Warehouse warehouse) {
-        if (this.consumeWarehouseResources) {
-            defaultColonySettingProvider.initWarehouse(warehouse);
-        } else {
-            warehouse.reset(defaultColonySettingProvider.colony.warehouseCapacity());
-        }
-    }
-
-    @Override
     public Modifier productionBonus() {
         return productionBonus;
     }
@@ -80,6 +75,11 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     @Override
     public ObjectWithFeatures colonyUpdatableFeatures() {
         return defaultColonySettingProvider.colonyUpdatableFeatures();
+    }
+
+    @Override
+    public Warehouse warehouse() {
+        return defaultColonySettingProvider.warehouse();
     }
 
     @Override
