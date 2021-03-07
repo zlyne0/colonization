@@ -105,7 +105,7 @@ class ColonyWorkerReqScore {
 	}
 	
 	private boolean tryFindFoodProducer(Unit colonist) {
-		List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(
+		List<GoodMaxProductionLocation> maxProductionForGoods = colony.productionSimulation().determinePotentialMaxGoodsProduction(
 			Specification.instance.foodsGoodsTypes,
 			colonist.unitType, 
 			IGNORE_INDIAN_OWNER
@@ -133,7 +133,7 @@ class ColonyWorkerReqScore {
 	}
 
 	private boolean tryFindMaxValuableProducer(Unit colonist) {
-		List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(
+		List<GoodMaxProductionLocation> maxProductionForGoods = colony.productionSimulation().determinePotentialMaxGoodsProduction(
 			goodsTypeToScore.entities(),
 			colonist.unitType, 
 			IGNORE_INDIAN_OWNER

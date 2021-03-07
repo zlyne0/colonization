@@ -248,7 +248,7 @@ class ColonyPlanTest {
     	UnitType fisherman = Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN);
     	
 		// when
-    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.determinePotentialMaxGoodsProduction(fisherman, false);
+    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.productionSimulation().determinePotentialMaxGoodsProduction(fisherman, false);
 		
 		// then
     	for (GoodMaxProductionLocation gpl : productions) {

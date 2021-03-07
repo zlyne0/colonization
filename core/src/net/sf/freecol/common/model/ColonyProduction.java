@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 
@@ -12,6 +13,55 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.util.Validation;
 
 class ColonyProduction {
+
+	public static class ProductionSimulation {
+		private final ColonyProduction colonyProduction;
+
+		public ProductionSimulation(ColonyProduction colonyProduction) {
+			this.colonyProduction = colonyProduction;
+		}
+
+		public void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+			colonyProduction.determineMaxPotentialProduction(goodsTypeId, workerType, prod, cons);
+		}
+
+		public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile terrain, UnitType workerType) {
+			if (!workerType.isPerson()) {
+				return Collections.emptyList();
+			}
+			if (terrain == null) {
+				return Collections.emptyList();
+			}
+			return colonyProduction.determinePotentialTerrainProductions(terrain, workerType);
+		}
+
+		public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(UnitType workerType, boolean ignoreIndianOwner) {
+			if (!workerType.isPerson()) {
+				return Collections.emptyList();
+			}
+			return colonyProduction.determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), workerType, ignoreIndianOwner);
+		}
+
+		public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
+				Collection<GoodsType> goodsTypes,
+				UnitType workerType,
+				boolean ignoreIndianOwner
+		) {
+			if (!workerType.isPerson()) {
+				return Collections.emptyList();
+			}
+			return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, workerType, ignoreIndianOwner);
+		}
+
+		public void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialProduction) {
+			colonyProduction.determinePotentialColonyTilesProduction(workerType, potentialProduction);
+		}
+
+		public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, UnitType workerType, boolean ignoreIndianOwner) {
+			return colonyProduction.maxProductionFromTile(gt, workerType, ignoreIndianOwner);
+		}
+	}
+
 	private boolean needUpdate = true;
 	private final Colony colony;
 	private final java.util.Map<String,ProductionConsumption> prodConsByProducer = new HashMap<String, ProductionConsumption>();

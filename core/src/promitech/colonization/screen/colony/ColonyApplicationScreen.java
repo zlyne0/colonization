@@ -1,6 +1,5 @@
 package promitech.colonization.screen.colony;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
@@ -180,7 +179,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    
 	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
 	    	ColonyTile unitColonyTile = unit.getLocationOrNull(ColonyTile.class);	    	
-	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.determinePotentialTerrainProductions(
+	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.productionSimulation().determinePotentialTerrainProductions(
     			unitColonyTile, 
     			unit.unitType
 			);
@@ -193,7 +192,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    }
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.determinePotentialMaxGoodsProduction(unit.unitType, false);
+			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.productionSimulation().determinePotentialMaxGoodsProduction(unit.unitType, false);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
 			for (GoodMaxProductionLocation g : maxProductionForGoods) {

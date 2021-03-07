@@ -66,6 +66,8 @@ public class Colony extends Settlement {
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
+    private final ColonyProduction.ProductionSimulation productionSimulation;
+
     private final MapIdEntities<Unit> colonyWorkers = new MapIdEntities<Unit>();
     private Modifier productionBonus = new Modifier(Modifier.COLONY_PRODUCTION_BONUS, ModifierType.ADDITIVE, 0);
     public final ColonyLiberty colonyLiberty = new ColonyLiberty();
@@ -76,7 +78,7 @@ public class Colony extends Settlement {
     	super(id, settlementType);
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
     	colonyProduction = new ColonyProduction(this);
-    	
+    	this.productionSimulation = new ColonyProduction.ProductionSimulation(colonyProduction);
     	// constructor used only by xml parser which create goodsContainer 
     }
 
@@ -265,46 +267,6 @@ public class Colony extends Settlement {
         updateModelOnWorkerAllocationOrGoodsTransfer();
     }
 
-    public void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
-    	colonyProduction.determineMaxPotentialProduction(goodsTypeId, workerType, prod, cons);
-    }
-    
-    public List<GoodMaxProductionLocation> determinePotentialTerrainProductions(ColonyTile terrain, UnitType workerType) {
-        if (!workerType.isPerson()) {
-            return Collections.emptyList();
-        }
-        if (terrain == null) {
-        	return Collections.emptyList();
-        }
-    	return colonyProduction.determinePotentialTerrainProductions(terrain, workerType);
-    }
-
-    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(UnitType workerType, boolean ignoreIndianOwner) {
-        if (!workerType.isPerson()) {
-            return Collections.emptyList();
-        }
-        return colonyProduction.determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), workerType, ignoreIndianOwner);
-    }
-    
-    public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
-		Collection<GoodsType> goodsTypes, 
-		UnitType workerType, 
-		boolean ignoreIndianOwner
-	) {
-        if (!workerType.isPerson()) {
-            return Collections.emptyList();
-        }
-        return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, workerType, ignoreIndianOwner);
-    }
-    
-    public void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialProduction) {
-    	colonyProduction.determinePotentialColonyTilesProduction(workerType, potentialProduction); 
-    }
-    
-    public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, UnitType workerType, boolean ignoreIndianOwner) {
-    	return colonyProduction.maxProductionFromTile(gt, workerType, ignoreIndianOwner);
-    }
-    
 	public boolean canSustainNewWorker(UnitType unitType, GoodsType goodsTypeToProduce, int produceAmount) {
 		ProductionSummary productionSummary = productionSummary();
 		for (UnitConsumption unitConsumption : unitType.unitConsumption.entities()) {
@@ -1235,6 +1197,10 @@ public class Colony extends Settlement {
 				+ " for price: " + transaction.netPrice
 			);
 		}
+	}
+
+	public ColonyProduction.ProductionSimulation productionSimulation() {
+		return productionSimulation;
 	}
 
     public static class Xml extends XmlNodeParser<Colony> {

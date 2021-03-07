@@ -186,7 +186,7 @@ public class ColonyPlan {
 	    			prod.makeEmpty();
 	    			ingredients.makeEmpty();
     				
-    				GoodMaxProductionLocation potentialProduction = colony.determinePotentialColonyTilesProduction(goodsType, worker.unitType, ignoreIndianOwner);
+    				GoodMaxProductionLocation potentialProduction = colony.productionSimulation().determinePotentialColonyTilesProduction(goodsType, worker.unitType, ignoreIndianOwner);
     				if (potentialProduction != null) {
     					withoutLocationIds.add(potentialProduction.getProductionLocation().getId());
     					
@@ -367,7 +367,7 @@ public class ColonyPlan {
         prod.makeEmpty();
         ingredients.makeEmpty();
         for (String goodsTypeId : goodsTypesToProduce) {
-            colony.determineMaxPotentialProduction(goodsTypeId, worker.unitType, prod, ingredients);
+            colony.productionSimulation().determineMaxPotentialProduction(goodsTypeId, worker.unitType, prod, ingredients);
         }
         boolean lackOfIngredients = false;
         for (Entry<String> ingredient : ingredients.entries()) {
@@ -401,7 +401,7 @@ public class ColonyPlan {
     }
 
 	private GoodMaxProductionLocation theBestLocation(Unit worker, Set<String> withoutLocationIds, String ... planGoodsType) {
-	    List<GoodMaxProductionLocation> productions = colony.determinePotentialMaxGoodsProduction(worker.unitType, ignoreIndianOwner);
+	    List<GoodMaxProductionLocation> productions = colony.productionSimulation().determinePotentialMaxGoodsProduction(worker.unitType, ignoreIndianOwner);
 	    
 		List<GoodMaxProductionLocation> onlyGoodsFromPlan = new ArrayList<GoodMaxProductionLocation>();
 		for (GoodMaxProductionLocation p : productions) {
