@@ -22,6 +22,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -29,6 +30,9 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleLogic;
+import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
+import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.GameResources;
@@ -111,8 +115,8 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    		source.takePayload(unitActor, -1, -1);
 	    		
 	    		// from any location to building
-	    		if (item.prodLocation.getBuilding() != null) {
-	    			buildingsPanelActor.putWorkerOnBuilding(unitActor, item.prodLocation.getBuilding());
+	    		if (item.prodLocation.getBuildingType() != null) {
+	    			buildingsPanelActor.putWorkerOnBuilding(unitActor, item.prodLocation.getBuildingType());
 	    		}
 	    		if (item.prodLocation.getColonyTile() != null) {
 	    			terrainPanel.putWorkerOnTerrain(unitActor, item.prodLocation.getColonyTile());
@@ -120,7 +124,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    	}
 	    	if (ActionTypes.CHANGE_TERRAIN_PRODUCTION.equals(item.actionType)) {
 	    		// from terrain location to terrain location but diffrent goods type
-	    		terrainPanel.changeWorkerProduction(unitActor, item.prodLocation);
+	    		terrainPanel.changeWorkerProduction(item.prodLocation.getColonyTile(), item.prodLocation.getTileTypeInitProduction());
 	    	}
 	    	return true;
 		}
@@ -178,24 +182,28 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    }
 	    
 	    private void terrainProductionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-	    	ColonyTile unitColonyTile = unit.getLocationOrNull(ColonyTile.class);	    	
-	    	List<GoodMaxProductionLocation> potentialTerrainProductions = colony.productionSimulation().determinePotentialTerrainProductions(
-    			unitColonyTile, 
-    			unit.unitType
+	    	ColonyTile unitColonyTile = unit.getLocationOrNull(ColonyTile.class);
+			ColonyProduction colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
+			List<MaxGoodsProductionLocation> potentialTerrainProductions = colonyProduction.simulation().determinePotentialTerrainProductions(
+				unitColonyTile,
+				unit.unitType
 			);
-	    	
-	    	System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
-	        for (GoodMaxProductionLocation g : potentialTerrainProductions) {
+
+			System.out.println("PotentialTerrainProduction.size = " + potentialTerrainProductions.size());
+	        for (MaxGoodsProductionLocation g : potentialTerrainProductions) {
 	            System.out.println("prod: " + g);
 	        	dialog.addCommandItem(new UnitActionOrderItem(g, ActionTypes.CHANGE_TERRAIN_PRODUCTION));
 	        }
 	    }
 		
 		private void productionOrders(Unit unit, UnitActionOrdersDialog dialog) {
-			java.util.List<GoodMaxProductionLocation> maxProductionForGoods = colony.productionSimulation().determinePotentialMaxGoodsProduction(unit.unitType, false);
+			ColonyProduction colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
+			java.util.List<MaxGoodsProductionLocation> maxProductionForGoods = colonyProduction.simulation().determinePotentialMaxGoodsProduction(
+				unit.unitType, false
+			);
 			
 			System.out.println("PotentialMaxGoodsProduction.size = " + maxProductionForGoods.size());
-			for (GoodMaxProductionLocation g : maxProductionForGoods) {
+			for (MaxGoodsProductionLocation g : maxProductionForGoods) {
 				System.out.println("max: " + g);
 				dialog.addCommandItem(new UnitActionOrderItem(g, ActionTypes.ASSIGN_TO_PRODUCTION));
 			}

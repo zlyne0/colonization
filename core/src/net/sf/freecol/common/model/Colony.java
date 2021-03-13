@@ -3,7 +3,6 @@ package net.sf.freecol.common.model;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -245,8 +244,13 @@ public class Colony extends Settlement {
     public void addWorkerToBuilding(Building building, Unit unit) {
         addWorkerToColony(unit, building);
     }
-    
-    public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit) {
+
+	public void addWorkerToTerrain(Tile aTile, Unit unit) {
+		ColonyTile aColonyTile = colonyTiles.getById(aTile.getId());
+		addWorkerToTerrain(aColonyTile, unit);
+	}
+
+    private void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit) {
     	addWorkerToColony(unit, aColonyTile);
         aColonyTile.tile.changeOwner(owner, this);
         aColonyTile.initMaxPossibleProductionOnTile();

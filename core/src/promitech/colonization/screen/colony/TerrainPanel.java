@@ -8,10 +8,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
+import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionConsumption;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+
 import promitech.colonization.GameResources;
 import promitech.colonization.screen.map.MapDrawModel;
 import promitech.colonization.screen.map.MapRenderer;
@@ -31,15 +32,15 @@ public class TerrainPanel extends Group implements
 	private static final int PREF_WIDTH = MapRenderer.TILE_WIDTH * 3 + MapRenderer.TILE_WIDTH/2;
 	private static final int PREF_HEIGHT = MapRenderer.TILE_HEIGHT * 3 + MapRenderer.TILE_HEIGHT/2;
 	
-	private ShapeRenderer shapeRenderer = new ShapeRenderer();
+	private final ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	private Colony colony;
 	private Tile colonyTile;
 	private MapRenderer mapRenderer;
 	private MapDrawModel mapDrawModel;
 	
-	private ColonyTile[] colonyTiles = new ColonyTile[9];
-	private ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
+	private final ColonyTile[] colonyTiles = new ColonyTile[9];
+	private final ProductionQuantityDrawModel[] productionQuantityDrawModels = new ProductionQuantityDrawModel[9];
 	
 	private final ProductionQuantityDrawer productionQuantityDrawer;
 	private final ChangeColonyStateListener changeColonyStateListener;
@@ -58,31 +59,31 @@ public class TerrainPanel extends Group implements
 		productionQuantityDrawer.centerToPoint(MapRenderer.TILE_WIDTH/2, MapRenderer.TILE_HEIGHT/2);
 	}
 
-	void changeWorkerProduction(UnitActor unitActor, GoodMaxProductionLocation prodLocation) {
+	void changeWorkerProduction(Tile aTile, Production tileTypeInitProduction) {
+		ColonyTile aColonyTile = colony.colonyTiles.getById(aTile.getId());
+		aColonyTile.initProduction(tileTypeInitProduction);
 		colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-		ColonyTile aColonyTile = prodLocation.getColonyTile();
-		aColonyTile.initProduction(prodLocation.tileTypeInitProduction);
 		changeColonyStateListener.changeUnitAllocation();
 	}
-	
-	void putWorkerOnTerrain(UnitActor worker, ColonyTile aColonyTile) {
+
+	void putWorkerOnTerrain(UnitActor worker, Tile aTile) {
 	    worker.disableFocus();
 	    worker.disableUnitChip();	    
 		worker.dragAndDropSourceContainer = this;
 		
-		colony.addWorkerToTerrain(aColonyTile, worker.unit);
+		colony.addWorkerToTerrain(aTile, worker.unit);
 		
 		worker.updateTexture();
 
 		addActor(worker);
-		updateWorkerScreenPosition(worker, aColonyTile);
+		updateWorkerScreenPosition(worker, aTile);
 		
 		changeColonyStateListener.changeUnitAllocation();
 	}
 	
 	@Override
 	public void putPayload(UnitActor worker, float x, float y) {
-		ColonyTile destColonyTile = getColonyTile(x, y);
+		Tile destColonyTile = getTile(x, y);
 		if (destColonyTile == null) {
 			throw new IllegalStateException("can not find dest colony tile by screen cords. Should invoke canPutpayload before");
 		}
@@ -91,20 +92,20 @@ public class TerrainPanel extends Group implements
 
 	@Override
 	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
-		ColonyTile ct = getColonyTile(x, y);
-		if (ct == null) {
+		Tile tile = getTile(x, y);
+		if (tile == null) {
 			return false;
 		}
-		if (ct.tile.hasSettlement()) {
+		if (tile.hasSettlement()) {
 			return false;
 		}
-		if (ct.tile.hasLostCityRumour()) {
+		if (tile.hasLostCityRumour()) {
 			return false;
 		}
-		if (colony.isTileLockedBecauseNoDock(ct.tile)) {
+		if (colony.isTileLockedBecauseNoDock(tile)) {
 			return false;
 		}
-		return ct.hasNotWorker();
+		return true;
 	}
 
 	@Override
@@ -124,8 +125,8 @@ public class TerrainPanel extends Group implements
 
 	@Override
 	public boolean isPrePutPayload(UnitActor worker, float x, float y) {
-		ColonyTile ct = getColonyTileNotNull(x, y);
-		return colony.isTileLocked(ct.tile, false);
+		Tile tile = getTile(x, y);
+		return colony.isTileLocked(tile, false);
 	}
 
 	@Override
@@ -143,55 +144,37 @@ public class TerrainPanel extends Group implements
 	
 	@Override
 	public void prePutPayload(final UnitActor worker, final float x, final float y, final DragAndDropSourceContainer<UnitActor> sourceContainer) {
-		final ColonyTile ct = getColonyTileNotNull(x, y);
-		
-		if (ct.tile.getType().isWater()) {
+		final Tile tile = getTile(x, y);
+		if (tile == null || tile.getType().isWater() || tile.hasWorkerOnTile()) {
 			return;
 		}
-		if (ct.tile.hasWorkerOnTile()) {
-			return;
-		}
-		
+
 		int landPrice = -1;
-		if (worker.unit.getOwner().hasContacted(ct.tile.getOwner())) {
-			landPrice = ct.tile.getLandPriceForPlayer(worker.unit.getOwner());
+		if (worker.unit.getOwner().hasContacted(tile.getOwner())) {
+			landPrice = tile.getLandPriceForPlayer(worker.unit.getOwner());
 		}
 		
 		if (landPrice != 0) {			
 			final QuestionDialog.OptionAction<Unit> moveWorkerAction = new QuestionDialog.OptionAction<Unit>() {
 				@Override
 				public void executeAction(Unit claimedUnit) {
-					sourceContainer.takePayload(worker, x, y);
-					putWorkerOnTerrain(worker, ct);
+				sourceContainer.takePayload(worker, x, y);
+				putWorkerOnTerrain(worker, tile);
 				}
 			};
-			
-			QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, worker.unit, ct.tile, moveWorkerAction);
+			QuestionDialog questionDialog = new IndianLandDemandQuestionsDialog(landPrice, worker.unit, tile, moveWorkerAction);
 			questionDialog.show(getStage());
 		}
 	}
 
-	private ColonyTile getColonyTileNotNull(float x, float y) {
-		ColonyTile ct = getColonyTile(x, y);
-		if (ct == null) {
-			throw new IllegalStateException("can not find tile by cords [" + x + ", " + y + "]");
-		}
-		return ct;
-	}
-	
-	private ColonyTile getColonyTile(float screenX, float screenY) {
+	private Tile getTile(float screenX, float screenY) {
 		Tile tile = mapRenderer.getColonyTileByScreenCords(colonyTile, (int)screenX, (int)screenY);
 		if (tile == null) {
 			return null;
 		}
-		for (int i=0; i<colonyTiles.length; i++) {
-			if (colonyTiles[i].equalsId(tile)) {
-				return colonyTiles[i];
-			}
-		}
-		return null;
+		return tile;
 	}
-	
+
 	public void initTerrains(MapDrawModel mapDrawModel, Tile colonyTile, DragAndDrop dragAndDrop) {
 		this.mapDrawModel = mapDrawModel;
 		dragAndDrop.addTarget(new UnitDragAndDropTarget(this, this));
@@ -201,9 +184,9 @@ public class TerrainPanel extends Group implements
 		this.colony = (Colony)colonyTile.getSettlement();
 		
 		mapRenderer = new MapRenderer(
-				mapDrawModel, 
-				GameResources.instance, 
-				shapeRenderer
+			mapDrawModel,
+			GameResources.instance,
+			shapeRenderer
 		);
 		mapRenderer.setMapRendererSize(PREF_WIDTH, PREF_HEIGHT);
 		mapRenderer.centerCameraOnTileCords(colonyTile.x, colonyTile.y);
@@ -221,15 +204,15 @@ public class TerrainPanel extends Group implements
 				UnitActor ua = new UnitActor(ct.getWorker(), unitActorDoubleClickListener);
 				ua.dragAndDropSourceContainer = this;
 				addActor(ua);
-				updateWorkerScreenPosition(ua, ct);
+				updateWorkerScreenPosition(ua, ct.tile);
 				
 				dragAndDrop.addSource(new UnitDragAndDropSource(ua));
 			}
 		}
 	}
 
-	private void updateWorkerScreenPosition(UnitActor ua, ColonyTile ct) {
-		Vector2 tileScreenCords = mapRenderer.mapToScreenCords(ct.tile.x, ct.tile.y);
+	private void updateWorkerScreenPosition(UnitActor ua, Tile tile) {
+		Vector2 tileScreenCords = mapRenderer.mapToScreenCords(tile.x, tile.y);
 		ua.setPosition(0, 0);
 		ua.moveBy(
 			tileScreenCords.x + MapRenderer.TILE_WIDTH/2f - ua.getWidth()/2, 

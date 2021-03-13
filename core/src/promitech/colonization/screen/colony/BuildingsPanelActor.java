@@ -7,6 +7,8 @@ import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.specification.BuildingType;
+
 import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.screen.ui.UnitActor;
 import promitech.colonization.screen.ui.UnitDragAndDropTarget;
@@ -48,11 +50,11 @@ class BuildingsPanelActor extends Table {
         }
     }
 
-	void putWorkerOnBuilding(UnitActor unitActor, Building building) {
+	void putWorkerOnBuilding(UnitActor unitActor, BuildingType buildingType) {
         for (Actor child : getChildren()) {
             if (child instanceof BuildingActor) {
             	BuildingActor ba = (BuildingActor)child;
-            	if (ba.building.equalsId(building)) {
+            	if (ba.building.buildingType.equalsId(buildingType)) {
             		ba.putPayload(unitActor, -1, -1);
             		break;
             	}

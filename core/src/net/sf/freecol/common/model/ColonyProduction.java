@@ -67,7 +67,7 @@ class ColonyProduction {
 		this.colony = colony;
 	}
 	
-	public void setAsNeedUpdate() {
+	void setAsNeedUpdate() {
 		needUpdate = true;
 	}
 	
