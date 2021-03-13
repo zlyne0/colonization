@@ -12,6 +12,7 @@ import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.orders.move.MoveService;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 

@@ -2,11 +2,9 @@ package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
-import net.sf.freecol.common.model.colonyproduction.ColonySettingProvider;
 import net.sf.freecol.common.model.colonyproduction.ColonySimulationSettingProvider;
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;

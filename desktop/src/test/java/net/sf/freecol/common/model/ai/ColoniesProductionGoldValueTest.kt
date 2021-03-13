@@ -2,7 +2,7 @@ package net.sf.freecol.common.model.ai.missions.goodsToSell
 
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
-import net.sf.freecol.common.model.ai.missions.Savegame1600BaseClass
+import promitech.colonization.savegame.Savegame1600BaseClass
 import org.junit.jupiter.api.Test
 import org.assertj.core.api.Assertions.assertThat
 

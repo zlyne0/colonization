@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions;
+package promitech.colonization.savegame;
 
 import java.util.Locale;
 
@@ -10,6 +10,8 @@ import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
@@ -43,5 +45,9 @@ public class Savegame1600BaseClass {
 		fortMaurits = game.map.getTile(21, 72).getSettlement().asColony();
 
 	}
-	
+
+	protected UnitType unitType(String unitTypeId) {
+		return Specification.instance.unitTypes.getById(unitTypeId);
+	}
+
 }

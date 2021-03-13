@@ -24,8 +24,9 @@ import promitech.colonization.ai.ObjectsListScore;
 import promitech.colonization.ai.ObjectsListScoreAssert;
 import promitech.colonization.ai.Units;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 
-class ColonyWorkerRequestPlanerTest {
+class ColonyWorkerRequestPlanerTest extends Savegame1600BaseClass {
 
 	MapTileDebugInfo mapDebugInfo = new MapTileDebugInfo() {
 		@Override
@@ -33,24 +34,13 @@ class ColonyWorkerRequestPlanerTest {
 		}
 	};
 	
-	Game game;
-	Player dutch;
 	MapIdEntities<GoodsType> goodsTypeToScore;
-	
-    @BeforeAll
-    public static void beforeClass() throws Exception {
-        Gdx.files = new LwjglFiles();
-    }
 
     @BeforeEach
-    public void setup() throws Exception {
-    	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-    	dutch = game.players.getById("player:1");
-    	
+    public void setup2() throws Exception {
     	goodsTypeToScore = Specification.instance.goodsTypeToScoreByPrice;
     }
-	
-	
+
 	@Test
 	public void canScoreTiles() throws Exception {
 		// given
@@ -65,16 +55,11 @@ class ColonyWorkerRequestPlanerTest {
 		
 		// then
 		ObjectsListScoreAssert.assertThat(scores)
-			.hasScore2(0, 106, new TileUnitType(game.map.getSafeTile(21, 72), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
+			.hasScore2(0, 106, new TileUnitType(fortMaurits.tile, unitType(UnitType.MASTER_TOBACCO_PLANTER)))
 			.hasScore2(1, 60, new TileUnitType(game.map.getSafeTile(13, 76), unitType(UnitType.MASTER_TOBACCO_PLANTER)))
-			.hasScore2(2, 52, new TileUnitType(game.map.getSafeTile(20, 79), unitType(UnitType.EXPERT_FISHERMAN)))
-			.hasScore2(3, 45, new TileUnitType(game.map.getSafeTile(25, 75), unitType(UnitType.MASTER_TOBACCONIST)))
-			.hasScore2(4, 42, new TileUnitType(game.map.getSafeTile(24, 78), unitType(UnitType.MASTER_WEAVER)))
+			.hasScore2(2, 56, new TileUnitType(fortNassau.tile, unitType(UnitType.EXPERT_FISHERMAN)))
+			.hasScore2(3, 46, new TileUnitType(nieuwAmsterdam.tile, unitType(UnitType.MASTER_WEAVER)))
+			.hasScore2(4, 45, new TileUnitType(fortOranje.tile, unitType(UnitType.MASTER_TOBACCONIST)))
 		;
 	}
-	
-	UnitType unitType(String unitTypeId) {
-		return Specification.instance.unitTypes.getById(unitTypeId);
-	}
-	
 }

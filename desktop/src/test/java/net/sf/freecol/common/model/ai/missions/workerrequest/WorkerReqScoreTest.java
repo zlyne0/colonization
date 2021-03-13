@@ -4,13 +4,12 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.missions.Savegame1600BaseClass;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import org.junit.jupiter.api.Test;
 
 import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 import promitech.colonization.ai.ObjectsListScoreAssert;
 
 import static org.assertj.core.api.Assertions.assertThat;
@@ -19,28 +18,6 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 
 	@Test
 	void canGenerateRequiredColonistsFortNassau() throws Exception {
-		// given
-		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
-		
-		System.out.println("production");
-		System.out.println(fortNassau.productionSummary().toString());
-
-		// when
-		ObjectsListScore<UnitType> colonyScore = sut.simulate();
-		
-		// then
-		ObjectsListScoreAssert.assertThat(colonyScore)
-			.hasSumScore(52)
-			.hasScore(0, 0, unitType(UnitType.EXPERT_FISHERMAN))
-			.hasScore(1, 36, unitType(UnitType.MASTER_FUR_TRADER))
-			.hasScore(2, 16, unitType(UnitType.EXPERT_ORE_MINER))
-		;
-		assertThat(new ColonySnapshot(fortNassau)).isEqualTo(snapshotBefore);
-	}
-
-	@Test
-	void canGenerateRequiredColonistsFortNassau2() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
 		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
@@ -65,25 +42,6 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsNieuwAmsterdam() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(nieuwAmsterdam);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
-
-		// when
-		ObjectsListScore<UnitType> colonyScore = sut.simulate();
-
-		// then
-		ObjectsListScoreAssert.assertThat(colonyScore)
-			.hasSumScore(42)
-			.hasScore(0, 30, unitType(UnitType.MASTER_WEAVER))
-			.hasScore(1, 0, unitType(UnitType.EXPERT_FISHERMAN))
-			.hasScore(2, 12, unitType(UnitType.EXPERT_FUR_TRAPPER))
-		;
-		assertThat(new ColonySnapshot(nieuwAmsterdam)).isEqualTo(snapshotBefore);
-	}
-
-	@Test
-	void canGenerateRequiredColonistsNieuwAmsterdam2() throws Exception {
-		// given
-		ColonySnapshot snapshotBefore = new ColonySnapshot(nieuwAmsterdam);
 		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
@@ -106,7 +64,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortOrange() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortOranje);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -146,7 +104,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortMaurits() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortMaurits);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -218,9 +176,5 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 			.hasScore2(21, new TileUnitType(tile2, unitType(UnitType.FREE_COLONIST)))
 			.hasScore2(30, new TileUnitType(tile2, unitType(UnitType.EXPERT_FUR_TRAPPER)))
 		;
-	}
-	
-	UnitType unitType(String unitTypeId) {
-		return Specification.instance.unitTypes.getById(unitTypeId);
 	}
 }

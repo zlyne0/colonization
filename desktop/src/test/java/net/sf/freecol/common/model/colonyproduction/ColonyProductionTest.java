@@ -15,7 +15,7 @@ import net.sf.freecol.common.model.ProductionSummaryAssert;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.missions.Savegame1600BaseClass;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 class ColonyProductionTest extends Savegame1600BaseClass {

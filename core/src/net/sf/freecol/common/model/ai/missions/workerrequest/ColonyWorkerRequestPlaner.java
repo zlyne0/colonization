@@ -114,7 +114,7 @@ public class ColonyWorkerRequestPlaner {
 				+ objectScore.getScore() + ", " 
 				+ objectScore.getObj().unitType + ", " 
 				+ objectScore.getObj().tile.getId() + ", "
-				+ (objectScore.getObj().tile.hasSettlement() ? "settlement" : "")  
+				+ (objectScore.getObj().tile.hasSettlement() ? "settlement(" + objectScore.getObj().tile.getSettlement().getName() + ")" : "")
 			);
 		}
 	}
@@ -138,7 +138,7 @@ public class ColonyWorkerRequestPlaner {
 	
 	private void workerForColony(Player player, ObjectsListScore<TileUnitType> tileScore) {
 		for (Settlement settlement : player.settlements) {
-			ColonyWorkerReqScore colonyWorkerReq = new ColonyWorkerReqScore(settlement.asColony(), goodsTypeToScoreByPrice);
+			ColonyWorkerReqScore2 colonyWorkerReq = new ColonyWorkerReqScore2(settlement.asColony(), goodsTypeToScoreByPrice);
 			ObjectsListScore<UnitType> score = colonyWorkerReq.simulate();
 			if (!score.isEmpty()) {
 				tileScore.add(
