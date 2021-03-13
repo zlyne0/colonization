@@ -15,7 +15,7 @@ import java.util.List;
 
 import promitech.colonization.ai.ObjectsListScore;
 
-class ColonyWorkerReqScore2 {
+class ColonyWorkerReqScore {
 
 	private static final int MAX_UNITS_TYPES = 3;
 	private static final boolean IGNORE_INDIAN_OWNER = true;
@@ -30,7 +30,7 @@ class ColonyWorkerReqScore2 {
 	private final ProductionSimulation productionSimulation;
 	private final ColonySimulationSettingProvider colonyProvider;
 	
-	public ColonyWorkerReqScore2(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
+	public ColonyWorkerReqScore(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
 		
@@ -150,7 +150,7 @@ class ColonyWorkerReqScore2 {
 		return consumeWarehouseResources;
 	}
 
-	public ColonyWorkerReqScore2 withConsumeWarehouseResources() {
+	public ColonyWorkerReqScore withConsumeWarehouseResources() {
 		this.consumeWarehouseResources = true;
 		return this;
 	}

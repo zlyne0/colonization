@@ -138,7 +138,7 @@ public class ColonyWorkerRequestPlaner {
 	
 	private void workerForColony(Player player, ObjectsListScore<TileUnitType> tileScore) {
 		for (Settlement settlement : player.settlements) {
-			ColonyWorkerReqScore2 colonyWorkerReq = new ColonyWorkerReqScore2(settlement.asColony(), goodsTypeToScoreByPrice);
+			ColonyWorkerReqScore colonyWorkerReq = new ColonyWorkerReqScore(settlement.asColony(), goodsTypeToScoreByPrice);
 			ObjectsListScore<UnitType> score = colonyWorkerReq.simulate();
 			if (!score.isEmpty()) {
 				tileScore.add(

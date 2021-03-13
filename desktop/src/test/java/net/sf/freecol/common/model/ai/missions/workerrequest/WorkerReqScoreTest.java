@@ -20,7 +20,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortNassau() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -42,7 +42,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsNieuwAmsterdam() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(nieuwAmsterdam);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -64,7 +64,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortOrange() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortOranje);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -82,7 +82,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortOrange2() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortOranje);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -104,7 +104,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortMaurits() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortMaurits);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
@@ -126,7 +126,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortMaurits2() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortMaurits);
-		ColonyWorkerReqScore2 sut = new ColonyWorkerReqScore2(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
+		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ObjectsListScore<UnitType> colonyScore = sut.simulate();
