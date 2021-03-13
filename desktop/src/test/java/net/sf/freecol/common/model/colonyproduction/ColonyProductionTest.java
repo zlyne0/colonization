@@ -8,6 +8,7 @@ import java.util.Collection;
 import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.ProductionSummaryAssert;
@@ -226,4 +227,33 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 			assertThat(prodLoc.buildingType.getId()).isEqualTo(locationId);
 		}
 	}
+
+	@Test
+	void canDeterminePotentialTerrainProductions() {
+		// given
+//		dutch.addFoundingFathers(game, Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson"));
+//		nieuwAmsterdam.updateColonyFeatures();
+
+		UnitType furTrapper = Specification.instance.unitTypes.getById(UnitType.EXPERT_FUR_TRAPPER);
+		ColonyTile tile = nieuwAmsterdam.colonyTiles.getById("tile:3352");
+		ColonyProduction colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(nieuwAmsterdam));
+
+		// when
+		List<GoodMaxProductionLocation> terrainProductions = nieuwAmsterdam.productionSimulation().determinePotentialTerrainProductions(tile, furTrapper);
+		List<MaxGoodsProductionLocation> newTerrainProductions = colonyProduction.simulation().determinePotentialTerrainProductions(tile, furTrapper);
+
+		// then
+		System.out.println("oldProductions");
+		for (GoodMaxProductionLocation loc : terrainProductions) {
+			System.out.println(loc.getGoodsType() + " " + loc.getProduction());
+		}
+		System.out.println("newProductions");
+		for (MaxGoodsProductionLocation loc : newTerrainProductions) {
+			System.out.println(loc.getGoodsType() + " " + loc.getProduction());
+		}
+
+		theSameProductionList(terrainProductions, newTerrainProductions);
+
+	}
+
 }

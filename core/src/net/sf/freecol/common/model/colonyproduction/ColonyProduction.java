@@ -48,7 +48,7 @@ public class ColonyProduction {
 		
 		globalProductionConsumption.makeEmpty();
 		
-		initBellsProduction();
+		initBellsConsumption();
 		tilesProduction();
 		workersFoodConsumption();
 		buildingsProduction();
@@ -57,7 +57,7 @@ public class ColonyProduction {
 		updateRequired = false;
 	}
 
-	private void initBellsProduction() {
+	private void initBellsConsumption() {
         int unitsThatUseNoBells = Specification.options.getIntValue(GameOptions.UNITS_THAT_USE_NO_BELLS);
         int amount = Math.min(unitsThatUseNoBells, colonyProvider.workers().size());
         globalProductionConsumption.addGoods(GoodsType.BELLS, amount);

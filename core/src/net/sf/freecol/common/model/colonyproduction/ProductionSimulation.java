@@ -1,7 +1,9 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
@@ -20,6 +22,42 @@ public class ProductionSimulation {
 		this.colonyProvider = colonySettingProvider;
 		this.colonyProduction = colonyProduction;
 		this.productionValueComparator = ProductionValueComparator.byQuantity;
+	}
+
+	public void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+		if (!workerType.isPerson()) {
+			throw new IllegalArgumentException("worker[" + workerType + "] is not a person ");
+		}
+		// init buildings etc
+		colonyProduction.globalProductionConsumption();
+
+		for (BuildingProduction buildingProduction : colonyProvider.buildings()) {
+			if (!buildingProduction.canAddWorker(workerType)) {
+				continue;
+			}
+			buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsTypeId);
+		}
+	}
+
+	public List<MaxGoodsProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, UnitType workerType) {
+		// need for update production bonus etc
+		colonyProduction.globalProductionConsumption();
+		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
+
+		List<Production> productions = colonyTile.tile.getType().productionInfo.getAttendedProductions();
+		for (Production production : productions) {
+			simTileProduction.init(
+				colonyTile.tile,
+				production,
+				workerType
+			);
+			simTileProduction.potentialProductions(goodsProduction, colonyProvider.colonyUpdatableFeatures());
+		}
+		return goodsProduction;
+	}
+
+	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(UnitType workerType, boolean ignoreIndianOwner) {
+		return determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), workerType, ignoreIndianOwner);
 	}
 
 	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
@@ -67,37 +105,15 @@ public class ProductionSimulation {
 				colonyTile.tile.getType().productionInfo.firstAttendentProduction(goodsType),
 				workerType
 			);
-	        
-	        maxProd = maxGoodsProduction(goodsType, maxProd);
+			maxProd = simTileProduction.maxGoodsProduction(
+				goodsType, maxProd,
+				colonyProvider.colonyUpdatableFeatures(),
+				productionValueComparator
+			);
 	    }
 	    return maxProd;
 	}
-	
-	private MaxGoodsProductionLocation maxGoodsProduction(
-		GoodsType goodsType, 
-		MaxGoodsProductionLocation maxProd
-	) {
-        List<Production> productions = simTileProduction.tile.getType().productionInfo.getAttendedProductions();
-        for (Production production : productions) {
-            for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
-                if (goodsType.equalsId(outputEntry.getKey())) {
-                	int goodsQuantity = simTileProduction.workerTileProduction(outputEntry, colonyProvider.colonyUpdatableFeatures());
-                	
-                	if (goodsQuantity > 0 && productionValueComparator.more(maxProd, outputEntry.getKey(), goodsQuantity)) {
-                		if (maxProd == null) {
-                			maxProd = new MaxGoodsProductionLocation();
-                		}
-                		maxProd.goodsType = outputEntry.getKey();
-                		maxProd.production = goodsQuantity;
-                		maxProd.tileTypeInitProduction = production;
-                		maxProd.colonyTile = simTileProduction.tile;
-                	}
-                }
-            }
-        }
-		return maxProd;
-	}
-	
+
 	/**
 	 * Return increase in production. Not total production.
 	 */

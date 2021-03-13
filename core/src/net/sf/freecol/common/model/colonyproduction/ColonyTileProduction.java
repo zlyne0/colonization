@@ -71,13 +71,13 @@ class ColonyTileProduction implements Identifiable {
 	}
 
 	void sumWorkers(List<Worker> workers) {
-		if (worker != null) {
+		if (worker != null && worker.unitType != null) {
 			workers.add(worker);
 		}
 	}
 
 	public boolean hasWorker() {
-		return worker != null;
+		return worker != null && worker.unitType != null;
 	}
 	
 	public ProductionConsumption productionSummaryForTile(ObjectWithFeatures colonyFeatures) {
@@ -93,7 +93,34 @@ class ColonyTileProduction implements Identifiable {
 		return prodCons;
 	}
 
-	int workerTileProduction(java.util.Map.Entry<GoodsType, Integer> outputEntry, ObjectWithFeatures colonyFeatures) {
+	MaxGoodsProductionLocation maxGoodsProduction(
+		GoodsType goodsType,
+		MaxGoodsProductionLocation maxProd,
+		ObjectWithFeatures colonyUpdatableFeatures,
+		ProductionValueComparator productionValueComparator
+	) {
+		List<Production> productions = tile.getType().productionInfo.getAttendedProductions();
+		for (Production production : productions) {
+			for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+				if (goodsType.equalsId(outputEntry.getKey())) {
+					int goodsQuantity = workerTileProduction(outputEntry, colonyUpdatableFeatures);
+
+					if (goodsQuantity > 0 && productionValueComparator.more(maxProd, outputEntry.getKey(), goodsQuantity)) {
+						if (maxProd == null) {
+							maxProd = new MaxGoodsProductionLocation();
+						}
+						maxProd.goodsType = outputEntry.getKey();
+						maxProd.production = goodsQuantity;
+						maxProd.tileTypeInitProduction = production;
+						maxProd.colonyTile = tile;
+					}
+				}
+			}
+		}
+		return maxProd;
+	}
+
+	private int workerTileProduction(java.util.Map.Entry<GoodsType, Integer> outputEntry, ObjectWithFeatures colonyFeatures) {
         String goodsId = outputEntry.getKey().getId();
         Integer goodInitValue = outputEntry.getValue();
         
@@ -109,4 +136,16 @@ class ColonyTileProduction implements Identifiable {
         return goodQuantity;
 	}
 
+	void potentialProductions(List<MaxGoodsProductionLocation> goodsProduction, ObjectWithFeatures colonyFeatures) {
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : tileProduction.outputEntries()) {
+			int goodQuantity = workerTileProduction(outputEntry, colonyFeatures);
+
+			MaxGoodsProductionLocation maxProd = new MaxGoodsProductionLocation();
+			maxProd.goodsType = outputEntry.getKey();
+			maxProd.production = goodQuantity;
+			maxProd.tileTypeInitProduction = tileProduction;
+			maxProd.colonyTile = tile;
+			goodsProduction.add(maxProd);
+		}
+	}
 }

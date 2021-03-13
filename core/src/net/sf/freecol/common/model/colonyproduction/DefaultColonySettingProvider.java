@@ -14,7 +14,7 @@ import net.sf.freecol.common.model.specification.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
-class DefaultColonySettingProvider implements ColonySettingProvider {
+public class DefaultColonySettingProvider implements ColonySettingProvider {
 
     protected final Colony colony;
     private final Warehouse warehouse = new Warehouse();

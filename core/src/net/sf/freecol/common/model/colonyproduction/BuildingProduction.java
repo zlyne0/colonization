@@ -1,9 +1,5 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -17,6 +13,10 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 
 class BuildingProduction implements Identifiable {
 	final BuildingType buildingType;
@@ -73,7 +73,37 @@ class BuildingProduction implements Identifiable {
 	        return buildingType.productionInfo.getAttendedProductions();
 	    }
 	}
-	
+
+	public void determineMaxPotentialProduction(
+		ObjectWithFeatures colonyFeatures,
+		UnitType workerType,
+		ProductionSummary prod,
+		ProductionSummary cons,
+		String goodsTypeId
+	) {
+		List<Production> productions = buildingType.productionInfo.getAttendedProductions();
+		for (Production production : productions) {
+			for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
+				String outputGoodsId = outputEntry.getKey().getId();
+				if (goodsTypeId != null && !goodsTypeId.equals(outputGoodsId)) {
+					continue;
+				}
+				if (0 == outputEntry.getValue().intValue()) {
+					continue;
+				}
+
+				int goodQuantity = workerProductionAmount(workerType, outputEntry, colonyFeatures);
+				if (goodQuantity > prod.getQuantity(outputGoodsId)) {
+					prod.addGoods(outputGoodsId, goodQuantity);
+				}
+				for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
+					// assumption, production amount to consumption amount ratio is one to one
+					cons.addGoods(inputEntry.getKey().getId(), goodQuantity);
+				}
+			}
+		}
+	}
+
 	private void productionConsumption(
 	    ProductionConsumption prodCons, Production production, 
 	    Warehouse warehouse, 
@@ -211,5 +241,4 @@ class BuildingProduction implements Identifiable {
         goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
-
 }

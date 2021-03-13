@@ -43,18 +43,14 @@ class ColonyProduction {
 		}
 
 		public List<GoodMaxProductionLocation> determinePotentialMaxGoodsProduction(
-				Collection<GoodsType> goodsTypes,
-				UnitType workerType,
-				boolean ignoreIndianOwner
+			Collection<GoodsType> goodsTypes,
+			UnitType workerType,
+			boolean ignoreIndianOwner
 		) {
 			if (!workerType.isPerson()) {
 				return Collections.emptyList();
 			}
 			return colonyProduction.determinePotentialMaxGoodsProduction(goodsTypes, workerType, ignoreIndianOwner);
-		}
-
-		public void determinePotentialColonyTilesProduction(UnitType workerType, List<GoodMaxProductionLocation> potentialProduction) {
-			colonyProduction.determinePotentialColonyTilesProduction(workerType, potentialProduction);
 		}
 
 		public GoodMaxProductionLocation determinePotentialColonyTilesProduction(GoodsType gt, UnitType workerType, boolean ignoreIndianOwner) {

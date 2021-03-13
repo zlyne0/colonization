@@ -17,6 +17,9 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
+import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
@@ -378,12 +381,13 @@ public class ColonyProductionTest {
 	@Test
 	public void canDeterminePotentialProduction() throws Exception {
 		// given
-		Unit unit = dutch.units.getById("unit:7076");
-		dutch.addFoundingFathers(game, henryHudson);
+        UnitType statesman = Specification.instance.unitTypes.getById("model.unit.elderStatesman");
+
+        dutch.addFoundingFathers(game, henryHudson);
 		colony.updateColonyFeatures();
 		
 		// when
-		List<GoodMaxProductionLocation> locations = colony.productionSimulation().determinePotentialMaxGoodsProduction(unit.unitType, false);
+		List<GoodMaxProductionLocation> locations = colony.productionSimulation().determinePotentialMaxGoodsProduction(statesman, false);
 
 		// then
 		for (GoodMaxProductionLocation l : locations) {
@@ -393,6 +397,5 @@ public class ColonyProductionTest {
 				assertThat(l.getColonyTile().getId()).isEqualTo("tile:3352");
 			}
 		}
-		
 	}
 }

@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -31,5 +32,8 @@ public class MaxGoodsProductionLocation {
 	public int getProduction() {
 		return production;
 	}
-	
+
+    public Tile getColonyTile() {
+        return colonyTile;
+    }
 }
