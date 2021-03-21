@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Production;
@@ -53,7 +54,7 @@ class ColonyTileProduction implements Identifiable {
 		} else {
 			if (worker != null) {
 				worker.unitType = unitType;
-				worker.unitId = null;
+				worker.unit = null;
 			} else {
 				worker = new Worker(unitType);
 			}
@@ -65,7 +66,7 @@ class ColonyTileProduction implements Identifiable {
 		if (this.worker == null) {
 			this.worker = atw.worker;
 		} else {
-			this.worker.unitId = atw.worker.unitId;
+			this.worker.unit = atw.worker.unit;
 			this.worker.unitType = atw.worker.unitType;
 		}
 	}
@@ -74,6 +75,11 @@ class ColonyTileProduction implements Identifiable {
 		if (worker != null && worker.unitType != null) {
 			workers.add(worker);
 		}
+	}
+
+	public void removeWorker() {
+		this.worker = null;
+		this.tileProduction = Production.EMPTY_READONLY;
 	}
 
 	public boolean hasWorker() {
@@ -146,6 +152,12 @@ class ColonyTileProduction implements Identifiable {
 			maxProd.tileTypeInitProduction = tileProduction;
 			maxProd.colonyTile = tile;
 			goodsProduction.add(maxProd);
+		}
+	}
+
+	public void assignWorkerToColony(Colony colony) {
+		if (worker != null) {
+			colony.addWorkerToTerrain(tile, worker.unit, tileProduction);
 		}
 	}
 }

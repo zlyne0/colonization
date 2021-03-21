@@ -1,13 +1,20 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import net.sf.freecol.common.model.Building;
-import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import java.util.Comparator;
+
 public class MaxGoodsProductionLocation {
+
+    public static final Comparator<MaxGoodsProductionLocation> quantityComparator = new Comparator<MaxGoodsProductionLocation>() {
+        @Override
+        public int compare(MaxGoodsProductionLocation o1, MaxGoodsProductionLocation o2) {
+            return o2.getProduction() - o1.getProduction();
+        }
+    };
 
     GoodsType goodsType;
     int production;
@@ -18,7 +25,7 @@ public class MaxGoodsProductionLocation {
     public String toString() {
         String st = "goods: " + goodsType + " quantity: " + production;
         if (colonyTile != null) {
-            st += " colonyTile " + this.colonyTile.getId();
+            st += " colonyTile(" + this.colonyTile.getId() + ") " + this.colonyTile.getType().getId();
         }
         if (buildingType != null) {
             st += " buildingType " + this.buildingType.getId();

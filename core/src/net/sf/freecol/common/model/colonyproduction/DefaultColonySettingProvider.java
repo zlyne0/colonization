@@ -5,8 +5,10 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -69,8 +71,7 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         buildings.clear();
         for (Building building : colony.buildings.sortedEntities()) {
             BuildingProduction buildingProduction = new BuildingProduction(building.buildingType);
-            buildingProduction.initWorkers(building.getUnits());
-            buildingProduction.sumWorkers(workers);
+            buildingProduction.initWorkers(building.getUnits(), workers);
             buildings.add(buildingProduction);
         }
     }
@@ -113,15 +114,50 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         return colony.isTileLocked(tile, ignoreIndianOwner);
     }
 
-    public void addWorker(List<UnitType> workerType, BuildingType buildingType) {
+    void addWorker(BuildingType buildingType, UnitType workerType) {
         BuildingProduction buildingProduction = buildingProduction(buildingType);
-        buildingProduction.addWorker(workerType);
-        buildingProduction.sumWorkers(workers);
+        buildingProduction.addWorker(workerType, workers);
     }
 
-    public void addWorker(ColonyTileProduction atw) {
-        ColonyTileProduction ctp = tiles.getById(atw.tile.getId());
-        ctp.init(atw);
-        ctp.sumWorkers(workers);
+    void addWorker(BuildingType buildingType, Unit worker) {
+        BuildingProduction buildingProduction = buildingProduction(buildingType);
+        buildingProduction.addWorker(worker, workers);
+    }
+
+    void addWorker(Tile tile, UnitType workerType, Production production) {
+        ColonyTileProduction tileProd = colonyTileProduction(tile);
+        tileProd.init(production, workerType);
+        tileProd.sumWorkers(workers);
+    }
+
+    void addWorker(Tile tile, Unit worker, Production production) {
+        ColonyTileProduction tileProd = colonyTileProduction(tile);
+        tileProd.init(production, worker);
+        tileProd.sumWorkers(workers);
+    }
+
+    void clearAllProductionLocations() {
+        for (ColonyTileProduction colonyTileProduction : tiles) {
+            colonyTileProduction.removeWorker();
+        }
+        for (BuildingProduction buildingProduction : buildings) {
+            buildingProduction.removeWorkers();
+        }
+        workers.clear();
+    }
+
+    void putWorkersToColonyViaAllocation() {
+        for (Unit unit : colony.settlementWorkers()) {
+            unit.changeUnitLocation(colony.tile);
+            unit.canChangeState(Unit.UnitState.SKIPPED);
+        }
+        for (ColonyTileProduction tileProduction : tiles) {
+            tileProduction.assignWorkerToColony(colony);
+        }
+        for (BuildingProduction buildingProduction : buildings) {
+            buildingProduction.assignWorkersToColony(colony);
+        }
+        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+        colony.updateColonyPopulation();
     }
 }

@@ -126,7 +126,7 @@ public class ColonyLiberty {
      */
     private int calculateSoLPercentage(Player player, int uc, int liberty) {
         if (uc <= 0) {
-            return -1;
+            uc = 1;
         }
         float membership = (liberty * 100.0f) / (Colony.LIBERTY_PER_REBEL * uc);
         membership = player.getFeatures().applyModifier(Modifier.SOL, membership);
@@ -196,6 +196,15 @@ public class ColonyLiberty {
 
     public void setLibertyForOneProductionBonus(int colonyUnitsCount) {
         liberty += Colony.LIBERTY_PER_REBEL * ((colonyUnitsCount / 2) + 1);
+    }
+
+    @Override
+    public String toString() {
+        return "ColonyLiberty{" +
+            "sonsOfLiberty=" + sonsOfLiberty +
+            ", tories=" + tories +
+            ", liberty=" + liberty +
+            '}';
     }
 
     public static class Xml {

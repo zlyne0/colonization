@@ -9,6 +9,9 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan2
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -23,8 +26,6 @@ import promitech.colonization.screen.ff.ContinentalCongress
 import promitech.colonization.screen.map.MapActor
 import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator
 
 fun createCommands(
 		di: DI, console: ConsoleOutput,
@@ -182,12 +183,19 @@ fun createCommands(
 					.out("no colony selected")
 			} else {
 				var colony = colonyApplicationScreen.getColony()
-				
-				ColonyPlan(colonyApplicationScreen.getColony())
-					.withConsumeWarehouseResources(true)
-					.withIgnoreIndianOwner()
-					.execute2(ColonyPlan.Plan.of(args[1]))
-				
+
+				if (args[1].equals("food", true)) {
+					ColonyPlan2(colonyApplicationScreen.colony)
+						.withConsumeWarehouseResources(true)
+						.withIgnoreIndianOwner()
+						.execute(ColonyPlan2.Plan.Food())
+				} else {
+					ColonyPlan(colonyApplicationScreen.getColony())
+						.withConsumeWarehouseResources(true)
+						.withIgnoreIndianOwner()
+						.execute2(ColonyPlan.Plan.of(args[1]))
+				}
+
 				colonyApplicationScreen.initColony(colony)
 			}
 		}.addParams {

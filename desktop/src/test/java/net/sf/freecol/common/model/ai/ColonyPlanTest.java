@@ -16,37 +16,22 @@ import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionAssert;
-import net.sf.freecol.common.model.ProductionInfoAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.ColonyPlan.Plan;
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan2;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 import promitech.map.isometric.NeighbourIterableTile;
 
-class ColonyPlanTest {
-
-	Game game;
-	Player dutch;
-	Colony nieuwAmsterdam;
-	
-    @BeforeAll
-    public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
-    }
-
-    @BeforeEach
-    public void setup() throws Exception {
-    	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-    	dutch = game.players.getById("player:1");
-    	nieuwAmsterdam = game.map.getTile(24, 78).getSettlement().asColony();
-    }
+class ColonyPlanTest extends Savegame1600BaseClass {
 
     @Test
 	public void canGenerateFoodPlanForColony() throws Exception {
@@ -73,6 +58,29 @@ class ColonyPlanTest {
 			.hasOutput(GoodsType.GRAIN, 3);
     	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3392").production)
     		.hasOutput(GoodsType.GRAIN, 5, true);
+	}
+
+	@Test
+	void canGenerateFoodPlanForColony2() {
+		// given
+		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+
+		// when
+		colonyPlan.execute(new ColonyPlan2.Plan.Food());
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(6)
+			.hasProductionOnTile("tile:3472", UnitType.EXPERT_FISHERMAN, GoodsType.FISH, 10)
+			.hasProductionOnTile("tile:3432", GoodsType.FISH, 7)
+
+			.hasProductionOnTile("tile:3431", GoodsType.GRAIN, 6)
+			.hasProductionOnTile("tile:3393", GoodsType.FISH, 4)
+			.hasProductionOnTile("tile:3391", GoodsType.GRAIN, 3)
+			.hasProductionOnTile("tile:3352", GoodsType.GRAIN, 3)
+			.produce(GoodsType.FOOD, 19)
+			.produce(GoodsType.HORSES, 8)
+		;
 	}
 
     @Test

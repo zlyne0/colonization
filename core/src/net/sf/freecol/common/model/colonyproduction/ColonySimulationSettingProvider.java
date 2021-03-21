@@ -4,15 +4,13 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyLiberty;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
-import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.Modifier;
-import net.sf.freecol.common.util.MapList;
 
 import java.util.List;
-import java.util.Map;
 
 public class ColonySimulationSettingProvider implements ColonySettingProvider {
     private final DefaultColonySettingProvider defaultColonySettingProvider;
@@ -21,28 +19,17 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
     private Modifier productionBonus = new Modifier(Modifier.COLONY_PRODUCTION_BONUS, Modifier.ModifierType.ADDITIVE, 0);
     private boolean consumeWarehouseResources = false;
 
-    private final MapIdEntities<ColonyTileProduction> additionalTileWorkers = new MapIdEntities<ColonyTileProduction>();;
-    private final MapList<String, UnitType> additionalBuildingWorkers = new MapList<String, UnitType>();
-
     public ColonySimulationSettingProvider(Colony colony) {
         defaultColonySettingProvider = new DefaultColonySettingProvider(colony);
         colonyLiberty.copy(colony.colonyLiberty);
+
+        defaultColonySettingProvider.initProductionLocations();
     }
 
     @Override
     public void initProductionLocations() {
-        defaultColonySettingProvider.initProductionLocations();
-
         if (!this.consumeWarehouseResources) {
             defaultColonySettingProvider.warehouse().reset(defaultColonySettingProvider.colony.warehouseCapacity());
-        }
-
-        for (ColonyTileProduction atw : additionalTileWorkers) {
-            defaultColonySettingProvider.addWorker(atw);
-        }
-        for (Map.Entry<String, List<UnitType>> addBuildingWorkers : additionalBuildingWorkers.entrySet()) {
-            BuildingType buildingType = Specification.instance.buildingTypes.getById(addBuildingWorkers.getKey());
-            defaultColonySettingProvider.addWorker(addBuildingWorkers.getValue(), buildingType);
         }
 
         colonyLiberty.updateSonOfLiberty(
@@ -94,20 +81,35 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
 
     public void addWorkerToColony(UnitType workerType, MaxGoodsProductionLocation maxProd) {
         if (maxProd.colonyTile != null) {
-            ColonyTileProduction tileProduction = new ColonyTileProduction(maxProd.colonyTile);
-            tileProduction.init(maxProd.tileTypeInitProduction, workerType);
-            additionalTileWorkers.add(tileProduction);
+            defaultColonySettingProvider.addWorker(maxProd.colonyTile, workerType, maxProd.tileTypeInitProduction);
         }
         if (maxProd.buildingType != null) {
-            additionalBuildingWorkers.add(maxProd.buildingType.getId(), workerType);
+            defaultColonySettingProvider.addWorker(maxProd.buildingType, workerType);
+        }
+    }
+
+    public void addWorker(Unit worker, MaxGoodsProductionLocation maxProd) {
+        if (maxProd.colonyTile != null) {
+            defaultColonySettingProvider.addWorker(maxProd.colonyTile, worker, maxProd.tileTypeInitProduction);
+        }
+        if (maxProd.buildingType != null) {
+            defaultColonySettingProvider.addWorker(maxProd.buildingType, worker);
         }
     }
 
     public void addWorkerToColony(UnitType workerType, BuildingType buildingType) {
-        additionalBuildingWorkers.add(buildingType.getId(), workerType);
+        defaultColonySettingProvider.addWorker(buildingType, workerType);
     }
 
     public void withConsumeWarehouseResources() {
         this.consumeWarehouseResources = true;
+    }
+
+    public void clearAllProductionLocations() {
+        defaultColonySettingProvider.clearAllProductionLocations();
+    }
+
+    public void putWorkersToColonyViaAllocation() {
+        defaultColonySettingProvider.putWorkersToColonyViaAllocation();
     }
 }

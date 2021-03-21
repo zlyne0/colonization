@@ -245,6 +245,11 @@ public class Colony extends Settlement {
         addWorkerToColony(unit, building);
     }
 
+    public void addWorkerToBuilding(BuildingType buildingType, Unit unit) {
+		Building building = findBuildingByType(buildingType.getId());
+		addWorkerToColony(unit, building);
+	}
+
 	public void addWorkerToTerrain(Tile aTile, Unit unit) {
 		ColonyTile aColonyTile = colonyTiles.getById(aTile.getId());
 		addWorkerToTerrain(aColonyTile, unit);
@@ -255,6 +260,13 @@ public class Colony extends Settlement {
         aColonyTile.tile.changeOwner(owner, this);
         aColonyTile.initMaxPossibleProductionOnTile();
     }
+
+    public void addWorkerToTerrain(Tile aTile, Unit unit, Production production) {
+		ColonyTile aColonyTile = colonyTiles.getById(aTile.getId());
+		addWorkerToColony(unit, aColonyTile);
+		aColonyTile.tile.changeOwner(owner, this);
+		aColonyTile.initProduction(production);
+	}
 
     public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
         addWorkerToColony(unit, aColonyTile);
@@ -447,7 +459,11 @@ public class Colony extends Settlement {
     public ProductionConsumption productionSummary(ProductionLocation productionLocation) {
     	return colonyProduction.productionConsumptionForObject(productionLocation.getId());
     }
-    
+
+	public ProductionConsumption productionSummary(String productionLocationId) {
+		return colonyProduction.productionConsumptionForObject(productionLocationId);
+	}
+
     public ProductionSummary productionSummary() {
     	return colonyProduction.globalProductionConsumption();
     }

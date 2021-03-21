@@ -72,7 +72,15 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
         }
         return en;
     }
-    
+
+    public T getById(Identifiable identifiable) {
+        T en = entities.get(identifiable.getId());
+        if (en == null) {
+            throw new IllegalArgumentException("can not find entity by id: " + identifiable.getId());
+        }
+        return en;
+    }
+
     public T getByIdOrNull(String id) {
         return entities.get(id);
     }

@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.colonyproduction;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
 import net.sf.freecol.common.model.ObjectWithFeatures;
@@ -31,25 +32,37 @@ class BuildingProduction implements Identifiable {
 		return buildingType.getId();
 	}
 	
-	void initWorkers(MapIdEntitiesReadOnly<Unit> units) {
+	void initWorkers(MapIdEntitiesReadOnly<Unit> units, List<Worker> globalWorkers) {
 		this.workers.clear();
 		for (Unit unit : units.entities()) {
-			this.workers.add(new Worker(unit, unit.unitType));
+			Worker worker = new Worker(unit, unit.unitType);
+			this.workers.add(worker);
+			globalWorkers.add(worker);
 		}
 	}
 
-	public void addWorker(UnitType workerType) {
-		this.workers.add(new Worker(workerType));
+	public void addWorker(UnitType workerType, List<Worker> globalWorkers) {
+		Worker worker = new Worker(workerType);
+		globalWorkers.add(worker);
+		this.workers.add(worker);
 	}
 
-	public void addWorker(List<UnitType> workerType) {
+	public void addWorker(Unit unit, List<Worker> globalWorkers) {
+		Worker worker = new Worker(unit, unit.unitType);
+		globalWorkers.add(worker);
+		this.workers.add(worker);
+	}
+
+	public void addWorker(List<UnitType> workerType, List<Worker> globalWorkers) {
 		for (UnitType unitType : workerType) {
-			this.workers.add(new Worker(unitType));
+			Worker worker = new Worker(unitType);
+			globalWorkers.add(worker);
+			this.workers.add(worker);
 		}
 	}
 
-	public void sumWorkers(List<Worker> globalWorkers) {
-		globalWorkers.addAll(this.workers);
+	public void removeWorkers() {
+		workers.clear();
 	}
 
 	public ProductionConsumption determineProductionConsumption(
@@ -241,4 +254,11 @@ class BuildingProduction implements Identifiable {
         goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
+
+	void assignWorkersToColony(Colony colony) {
+		for (Worker worker : workers) {
+			colony.addWorkerToBuilding(buildingType, worker.unit);
+		}
+	}
+
 }

@@ -1,19 +1,19 @@
 package net.sf.freecol.common.model.colonyproduction;
 
-import net.sf.freecol.common.model.Identifiable;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 
 class Worker {
-	Identifiable unitId;
+	Unit unit;
 	UnitType unitType;
 	
-	public Worker(Identifiable unitId, UnitType unitType) {
-		this.unitId = unitId;
+	public Worker(Unit unit, UnitType unitType) {
+		this.unit = unit;
 		this.unitType = unitType;
 	}
 
 	public Worker(UnitType unitType) {
-		this.unitId = null;
+		this.unit = null;
 		this.unitType = unitType;
 	}
 }

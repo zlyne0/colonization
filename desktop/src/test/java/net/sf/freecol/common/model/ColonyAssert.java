@@ -124,4 +124,20 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
         }
         return this;
     }
+
+	public ColonyAssert hasProductionOnTile(String tileId, String unitTypeId, String goodsTypeId, int amount) {
+		hasWorkerInLocation(tileId, unitTypeId);
+		ProductionSummaryAssert.assertThat(actual.productionSummary(tileId).realProduction)
+			.has(goodsTypeId, amount);
+		return this;
+	}
+
+	public ColonyAssert hasProductionOnTile(String tileId, String goodsTypeId, int amount) {
+		hasWorkerInLocation(tileId);
+		ProductionSummaryAssert.assertThat(actual.productionSummary(tileId).realProduction)
+			.has(goodsTypeId, amount);
+		return this;
+	}
+
+
 }

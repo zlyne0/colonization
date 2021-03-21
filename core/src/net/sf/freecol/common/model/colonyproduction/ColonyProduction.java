@@ -120,10 +120,17 @@ public class ColonyProduction {
 	}
 
     public boolean canSustainNewWorker(UnitType workerType) {
-    	return canSustainWorkers(1, 0);
+    	return canSustainNewWorkers(1, 0);
     }
-	
-    public boolean canSustainWorkers(int workersCount, int additionalFoodProduction) {
+
+	public boolean canSustainNewWorker(UnitType workerType, GoodsType goodsType, int production) {
+		if (goodsType.isFood()) {
+			return canSustainNewWorkers(1, production);
+		}
+		return canSustainNewWorkers(1, 0);
+	}
+
+    private boolean canSustainNewWorkers(int workersCount, int additionalFoodProduction) {
     	ProductionSummary productionSummary = globalProductionConsumption();    	
     	int prod = productionSummary.getQuantity(GoodsType.FOOD);
     	prod += productionSummary.getQuantity(GoodsType.HORSES);
