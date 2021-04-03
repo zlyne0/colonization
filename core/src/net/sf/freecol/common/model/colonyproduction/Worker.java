@@ -16,4 +16,9 @@ class Worker {
 		this.unit = null;
 		this.unitType = unitType;
 	}
+
+	@Override
+	public String toString() {
+		return "Worker[" + unit.getId() + ", " + unitType.getId() + ']';
+	}
 }

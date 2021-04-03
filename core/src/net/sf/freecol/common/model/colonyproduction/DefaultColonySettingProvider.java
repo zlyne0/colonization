@@ -138,12 +138,23 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
 
     void clearAllProductionLocations() {
         for (ColonyTileProduction colonyTileProduction : tiles) {
-            colonyTileProduction.removeWorker();
+            colonyTileProduction.clearWorkersAllocation();
         }
         for (BuildingProduction buildingProduction : buildings) {
             buildingProduction.removeWorkers();
         }
         workers.clear();
+    }
+
+    public void printAllocation() {
+        String str = "";
+        for (ColonyTileProduction tileProduction : tiles) {
+            str += tileProduction.toString() + "\n";
+        }
+        for (BuildingProduction buildingProduction : buildings) {
+            str += buildingProduction.toString() + "\n";
+        }
+        System.out.println("colony " + colony.getName() + " units allocation \n" + str);
     }
 
     void putWorkersToColonyViaAllocation() {

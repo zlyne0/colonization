@@ -41,6 +41,8 @@ public class UnitType extends BuildableType {
 	public static final String MASTER_TOBACCONIST = "model.unit.masterTobacconist";
 	public static final String MASTER_TOBACCO_PLANTER = "model.unit.masterTobaccoPlanter";
 	public static final String MASTER_WEAVER = "model.unit.masterWeaver";
+	public static final String ELDER_STATESMAN = "model.unit.elderStatesman";
+
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -178,23 +180,23 @@ public class UnitType extends BuildableType {
 		return defence;
 	}
     
-    /**
-     * Can this type of unit be upgraded to another given type by a given
-     * educational change type?
-     *
-     * If the target type is null, return true if the UnitType can be
-     * upgraded to any other type by the given means of education.
-     *
-     * @param newType The <code>UnitType</code> to learn (may be null
-     *     in the case of attempting to move to a native settlement
-     *     when the skill taught there is still unknown).
-     * @param changeType The educational <code>ChangeType</code>.
-     * @return True if this unit type can learn.
-     */
     public boolean canBeUpgraded(ChangeType changeType) {
     	return canBeUpgraded(null, changeType);
     }
 
+	/**
+	 * Can this type of unit be upgraded to another given type by a given
+	 * educational change type?
+	 *
+	 * If the target type is null, return true if the UnitType can be
+	 * upgraded to any other type by the given means of education.
+	 *
+	 * @param newType The <code>UnitType</code> to learn (may be null
+	 *     in the case of attempting to move to a native settlement
+	 *     when the skill taught there is still unknown).
+	 * @param changeType The educational <code>ChangeType</code>.
+	 * @return True if this unit type can learn.
+	 */
     public boolean canBeUpgraded(UnitType newType, ChangeType changeType) {
         for (UnitTypeChange change : unitTypeChanges.entities()) {
             if ((newType == null || newType.equalsId(change.getNewUnitTypeId())) && change.isPositiveProbability(changeType)) {

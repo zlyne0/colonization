@@ -27,6 +27,10 @@ class Warehouse {
 		goods.clear();
 	}
 
+	public int amount(String goodsTypeId) {
+		return goods.getQuantity(goodsTypeId);
+	}
+
 	public int amount(GoodsType goodsType) {
 		return goods.getQuantity(goodsType.getId());
 	}

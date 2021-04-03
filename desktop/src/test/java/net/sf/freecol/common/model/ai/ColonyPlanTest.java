@@ -33,7 +33,7 @@ import promitech.map.isometric.NeighbourIterableTile;
 
 class ColonyPlanTest extends Savegame1600BaseClass {
 
-    @Test
+	@Test
 	public void canGenerateFoodPlanForColony() throws Exception {
 		// given
     	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
@@ -95,10 +95,28 @@ class ColonyPlanTest extends Savegame1600BaseClass {
     	ColonyAssert.assertThat(nieuwAmsterdam)
     	    .hasSize(3)
             .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
             .produce(GoodsType.FOOD, 0)
 	    ;
 	}
+
+	@Test
+	public void canHandleBellPlan2() throws Exception {
+		// given
+		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+
+		// when
+		colonyPlan.execute(new ColonyPlan2.Plan.Bell());
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(3)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
+			.produce(GoodsType.FOOD, 0)
+		;
+	}
+
 
     @Test
 	public void canHandleBellPlanAndAddFoodWorker() throws Exception {
@@ -114,11 +132,30 @@ class ColonyPlanTest extends Savegame1600BaseClass {
         ColonyAssert.assertThat(nieuwAmsterdam)
             .hasSize(4)
             .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
             .produce(GoodsType.FOOD, 3)
         ;
 	}
-    
+
+	@Test
+	public void canHandleBellPlanAndAddFoodWorker2() throws Exception {
+		// given
+		addForestOnColonyCenterTile();
+
+		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+
+		// when
+		colonyPlan.execute(new ColonyPlan2.Plan.Bell());
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(4)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
+			.produce(GoodsType.FOOD, 3)
+		;
+	}
+
     @Test
     void canExecuteBellFoodPlan() throws Exception {
         // given
@@ -131,14 +168,35 @@ class ColonyPlanTest extends Savegame1600BaseClass {
         ColonyAssert.assertThat(nieuwAmsterdam)
             .hasSize(6)
             .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
-            .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
+            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
+            .hasWorkerInLocation("tile:3472", UnitType.EXPERT_FISHERMAN)
             .hasWorkerInLocation("tile:3431")
             .hasWorkerInLocation("tile:3432")
             .produce(GoodsType.BELLS, 14)
             .produce(GoodsType.FOOD, 11)
         ;
     }
+
+	@Test
+	void canExecuteBellFoodPlan2() throws Exception {
+		// given
+		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+
+		// when
+		colonyPlan.execute(new ColonyPlan2.Plan.Bell(), new ColonyPlan2.Plan.Food());
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(6)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
+			.hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
+			.hasWorkerInLocation("tile:3472", UnitType.EXPERT_FISHERMAN)
+			.hasWorkerInLocation("tile:3431")
+			.hasWorkerInLocation("tile:3432")
+			.produce(GoodsType.BELLS, 14)
+			.produce(GoodsType.FOOD, 11)
+		;
+	}
 
     
     @Test
@@ -160,7 +218,28 @@ class ColonyPlanTest extends Savegame1600BaseClass {
             .produce("model.goods.hammers", 18)
         ;
     }
-    
+
+	@Test
+	void canExecuteBuildPlan2() throws Exception {
+		// given
+		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		colonyPlan.withConsumeWarehouseResources(false);
+
+		// when
+		colonyPlan.execute(new ColonyPlan2.Plan.Building());
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(6)
+			.hasWorkerInLocation("tile:3352", "model.unit.expertLumberJack")
+			.hasWorkerInBuildingType("model.building.lumberMill", 2)
+			.hasWorkerInBuildingType("model.building.lumberMill", "model.unit.masterCarpenter")
+			.produce("model.goods.lumber", 6)
+			.produce("model.goods.hammers", 18)
+		;
+	}
+
+
     @Test
 	void canExecuteToolsPlanWithoutWarehouseResources() throws Exception {
 		// given

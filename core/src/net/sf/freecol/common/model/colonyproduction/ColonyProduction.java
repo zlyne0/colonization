@@ -42,6 +42,7 @@ public class ColonyProduction {
 		if (!updateRequired) {
 			return;
 		}
+
 		colonyProvider.initProductionLocations();
 		colonyProductionBonus = colonyProvider.productionBonus();
 		colonyFeatures = colonyProvider.colonyUpdatableFeatures();

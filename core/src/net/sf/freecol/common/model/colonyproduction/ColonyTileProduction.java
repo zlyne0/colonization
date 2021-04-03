@@ -77,9 +77,12 @@ class ColonyTileProduction implements Identifiable {
 		}
 	}
 
-	public void removeWorker() {
-		this.worker = null;
-		this.tileProduction = Production.EMPTY_READONLY;
+	public void clearWorkersAllocation() {
+		if (worker != null) {
+			// do not remove center tile production
+			this.worker = null;
+			this.tileProduction = Production.EMPTY_READONLY;
+		}
 	}
 
 	public boolean hasWorker() {
@@ -159,5 +162,14 @@ class ColonyTileProduction implements Identifiable {
 		if (worker != null) {
 			colony.addWorkerToTerrain(tile, worker.unit, tileProduction);
 		}
+	}
+
+	@Override
+	public String toString() {
+		return "ColonyTileProduction{" +
+			"tile=" + tile.getId() +
+			", worker=" + worker +
+			", tileProduction=" + tileProduction +
+			'}';
 	}
 }

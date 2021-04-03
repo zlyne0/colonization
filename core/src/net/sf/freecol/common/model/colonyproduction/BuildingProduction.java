@@ -261,4 +261,11 @@ class BuildingProduction implements Identifiable {
 		}
 	}
 
+	@Override
+	public String toString() {
+		return "BuildingProduction{" +
+			"buildingType=" + buildingType +
+			", workers=" + workers +
+			'}';
+	}
 }
