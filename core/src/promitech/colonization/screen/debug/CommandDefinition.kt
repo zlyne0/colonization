@@ -28,9 +28,9 @@ import promitech.colonization.screen.map.hud.DiplomacyContactDialog
 import promitech.colonization.screen.map.hud.GUIGameModel
 
 fun createCommands(
-		di: DI, console: ConsoleOutput,
-		mapActor: MapActor?,
-		colonyApplicationScreen: ColonyApplicationScreen?
+	di: DI, console: ConsoleOutput,
+	mapActor: MapActor?,
+	colonyApplicationScreen: ColonyApplicationScreen?
 ) : Commands {
 	val guiGameModel = di.guiGameModel
 	val gameController = di.guiGameController
@@ -176,25 +176,19 @@ fun createCommands(
 		command("show_continental_congress") {
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
-		
-		commandArg("colony_plan") { args ->
+
+		commandArg("colony_plan0") { args ->
 			if (colonyApplicationScreen == null) {
 				console.keepOpen()
 					.out("no colony selected")
 			} else {
 				var colony = colonyApplicationScreen.getColony()
+				colony.updateProductionToMaxPossible(colony.tile)
 
-				if (args[1].equals("food", true)) {
-					ColonyPlan2(colonyApplicationScreen.colony)
-						.withConsumeWarehouseResources(true)
-						.withIgnoreIndianOwner()
-						.execute(ColonyPlan2.Plan.Food())
-				} else {
-					ColonyPlan(colonyApplicationScreen.getColony())
-						.withConsumeWarehouseResources(true)
-						.withIgnoreIndianOwner()
-						.execute2(ColonyPlan.Plan.of(args[1]))
-				}
+				ColonyPlan(colonyApplicationScreen.getColony())
+					.withConsumeWarehouseResources(true)
+					.withIgnoreIndianOwner()
+					.execute2(ColonyPlan.Plan.of(args[1]))
 
 				colonyApplicationScreen.initColony(colony)
 			}
@@ -203,6 +197,33 @@ fun createCommands(
 				ColonyPlan.Plan.MostValuable.name.toLowerCase(),
 				ColonyPlan.Plan.Bell.name.toLowerCase(),
 				ColonyPlan.Plan.Food.name.toLowerCase(),
+				ColonyPlan.Plan.Building.name.toLowerCase(),
+				ColonyPlan.Plan.Muskets.name.toLowerCase()
+			)
+		}
+
+		commandArg("colony_plan") { args ->
+			if (colonyApplicationScreen == null) {
+				console.keepOpen()
+					.out("no colony selected")
+			} else {
+				var colony = colonyApplicationScreen.getColony()
+				colony.updateProductionToMaxPossible(colony.tile)
+
+				val plan = ColonyPlan2.Plan.valueOf(args[1])
+				ColonyPlan2(colonyApplicationScreen.colony)
+					.withConsumeWarehouseResources(true)
+					.withIgnoreIndianOwner()
+					.execute(plan)
+
+				colonyApplicationScreen.initColony(colony)
+			}
+		}.addParams {
+			listOf<String>(
+				ColonyPlan.Plan.MostValuable.name.toLowerCase(),
+				ColonyPlan.Plan.Bell.name.toLowerCase(),
+				ColonyPlan.Plan.Food.name.toLowerCase(),
+				ColonyPlan.Plan.Tools.name.toLowerCase(),
 				ColonyPlan.Plan.Building.name.toLowerCase(),
 				ColonyPlan.Plan.Muskets.name.toLowerCase()
 			)
@@ -363,7 +384,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
-						.runMission(tile.getSettlement().getOwner(), mission)
+					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
 	}

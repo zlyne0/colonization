@@ -120,6 +120,10 @@ public class ColonyProduction {
 		return new ProductionSimulation(colonyProvider, this);
 	}
 
+	public boolean canSustainNewWorker() {
+		return canSustainNewWorkers(1, 0);
+	}
+
     public boolean canSustainNewWorker(UnitType workerType) {
     	return canSustainNewWorkers(1, 0);
     }

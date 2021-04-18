@@ -22,6 +22,7 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String SILVER = "model.goods.silver";
     public static final String HAMMERS = "model.goods.hammers";
     public static final String TOOLS = "model.goods.tools";
+    public static final String ORE = "model.goods.ore";
 
     private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
     private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;

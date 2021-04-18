@@ -86,6 +86,15 @@ public class ProductionSimulation {
 		return goodsProduction;
 	}
 
+	public MaxGoodsProductionLocation determineMaxProduction(GoodsType goodsType, UnitType unitType, boolean ignoreIndianOwner) {
+		if (goodsType.isFarmed()) {
+			return maxProductionFromTile(goodsType, unitType, ignoreIndianOwner);
+		} else {
+			ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
+			return maxProductionFromBuilding(goodsType, unitType, prodCons);
+		}
+	}
+
     private MaxGoodsProductionLocation maxProductionFromTile(
 		final GoodsType goodsType, 
 		final UnitType workerType, 
