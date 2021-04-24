@@ -129,7 +129,16 @@ public class BuildingType extends BuildableType {
 	public int getGoodsOutputChainLevel() {
 		return goodsOutputChainLevel;
 	}
-    
+
+	public boolean hasAttendedOutputGoods(GoodsType goodsType) {
+		for (Production production : productionInfo.getAttendedProductions()) {
+			if (production.containsOutputGoods(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     public static class Xml extends XmlNodeParser<BuildingType> {
         private static final String ATTR_PRIORITY = "priority";
 		private static final String ATTR_UPKEEP = "upkeep";

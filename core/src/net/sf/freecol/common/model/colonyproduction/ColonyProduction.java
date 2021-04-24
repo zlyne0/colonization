@@ -135,7 +135,7 @@ public class ColonyProduction {
 		return canSustainNewWorkers(1, 0);
 	}
 
-    private boolean canSustainNewWorkers(int workersCount, int additionalFoodProduction) {
+    public boolean canSustainNewWorkers(int workersCount, int additionalFoodProduction) {
     	ProductionSummary productionSummary = globalProductionConsumption();    	
     	int prod = productionSummary.getQuantity(GoodsType.FOOD);
     	prod += productionSummary.getQuantity(GoodsType.HORSES);

@@ -226,6 +226,15 @@ public class Production {
 		return false;
 	}
 
+	public boolean containsOutputGoods(GoodsType goodsType) {
+		for (Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (entry.getKey().equalsId(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static class Xml extends XmlNodeParser<Production> {
 
 		private static final String ATTR_VALUE = "value";

@@ -16,6 +16,20 @@ public class MaxGoodsProductionLocation {
         }
     };
 
+    public static MaxGoodsProductionLocation max(MaxGoodsProductionLocation a, MaxGoodsProductionLocation b) {
+        if (a == null) {
+            return b;
+        }
+        if (b == null) {
+            return a;
+        }
+        if (a.production > b.production) {
+            return a;
+        } else {
+            return b;
+        }
+    }
+
     GoodsType goodsType;
     int production;
     Production tileTypeInitProduction;
@@ -31,6 +45,13 @@ public class MaxGoodsProductionLocation {
             st += " buildingType " + this.buildingType.getId();
         }
         return st;
+    }
+
+    public String productionLocationId() {
+        if (colonyTile != null) {
+            return colonyTile.getId();
+        }
+        return buildingType.getId();
     }
 
 	public GoodsType getGoodsType() {

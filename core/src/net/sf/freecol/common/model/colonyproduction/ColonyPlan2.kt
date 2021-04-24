@@ -2,30 +2,34 @@ package net.sf.freecol.common.model.colonyproduction
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.GoodMaxProductionLocation
-import net.sf.freecol.common.model.ProductionLocation
 import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.player.Market
 import net.sf.freecol.common.model.specification.GoodsType
-import java.util.*
+import java.util.HashMap
+import java.util.LinkedList
 import kotlin.collections.ArrayList
-import kotlin.collections.HashMap
 
 class GoodsMaxProductionLocationWithUnit {
     var score = -1
-    var worker: Unit? = null
-    var productionLocation: MaxGoodsProductionLocation? = null
+    lateinit var worker: Unit
+    lateinit var productionLocation: MaxGoodsProductionLocation
 //    private var goodsType: GoodsType? = null
 //    private var location: ProductionLocation? = null
-//    private val ingredientsWorkersAllocation: MutableMap<Unit, GoodMaxProductionLocation> = HashMap()
+    val ingredientsWorkersAllocation: MutableMap<Unit, MaxGoodsProductionLocation> = HashMap()
 
-    fun update(newScore: Int, worker: Unit, productionLocation: MaxGoodsProductionLocation) {
+    fun update(newScore: Int, worker: Unit,
+       productionLocation: MaxGoodsProductionLocation,
+       ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>
+    ) {
         if (newScore > this.score) {
             this.score = newScore
             this.worker = worker
             this.productionLocation = productionLocation
+            ingredientsWorkersAllocation.clear()
+            ingredientsWorkersAllocation.putAll(ingredientsWorkersAllocation)
         }
     }
 
@@ -42,6 +46,10 @@ class GoodsMaxProductionLocationWithUnit {
 
     fun hasBetterNewScore(newScore: Int): Boolean {
         return newScore > score
+    }
+
+    fun isNotEmpty(): Boolean {
+        return score > 0;
     }
 
 }
@@ -117,9 +125,13 @@ class AvailableWorkers(initWorkers: Collection<Unit>) {
     inline fun remove(unit: Unit) {
         availableWorkers.remove(unit)
     }
+
+    inline fun isEmptyWithout(worker: Unit): Boolean {
+        return availableWorkers.contains(worker) && availableWorkers.size == 1
+    }
 }
 
-class ColonyPlan2(colony: Colony) {
+class ColonyPlan2(val colony: Colony) {
 
     class PlanSequence(private val planList: List<Plan>) {
         private var nextPlanIndex : Int = 0
@@ -172,7 +184,6 @@ class ColonyPlan2(colony: Colony) {
         }
     }
 
-    private val availableWorkers : AvailableWorkers
     private val market : Market
     private val foodPlan = Plan.Food()
     private val colonySimulationSettingProvider : ColonySimulationSettingProvider
@@ -190,8 +201,6 @@ class ColonyPlan2(colony: Colony) {
 
         colonySimulationSettingProvider.clearAllProductionLocations()
         colonyProduction.updateRequest()
-
-        availableWorkers = AvailableWorkers(colony.settlementWorkers())
     }
 
     fun execute(vararg plan: Plan) {
@@ -203,6 +212,8 @@ class ColonyPlan2(colony: Colony) {
     }
 
     private fun createAllocationPlan(planSequence: PlanSequence) {
+        val availableWorkers = AvailableWorkers(colony.settlementWorkers())
+
         // -first- implemented scenario (BalancedProduction)
         // plan list means that assign one colonist per plan
         // -second- not implemented scenario (MaximizationProduction)
@@ -219,7 +230,7 @@ class ColonyPlan2(colony: Colony) {
             if (productionPriority.isEmpty()) {
                 val plan = planSequence.nextPlan()
                 if (plan is Plan.MostValuable) {
-                    var assignedWorker = assignToMostValuable(productionPriority)
+                    var assignedWorker = assignToMostValuable(availableWorkers, productionPriority)
                     if (assignedWorker) {
                         infiniteLoopProtection = 0
                     } else {
@@ -249,7 +260,7 @@ class ColonyPlan2(colony: Colony) {
             val productionLocation = maxGoodsProductions.first()
 
             if (colonyProduction.canSustainNewWorker(candidate.unitType, productionLocation.goodsType, productionLocation.production)) {
-                addWorkerToProductionLocation(candidate, productionLocation)
+                addWorkerToProductionLocation(candidate, productionLocation, availableWorkers)
                 infiniteLoopProtection = 0
             } else {
                 productionPriority.add(foodPlan.goodsTypes)
@@ -257,8 +268,9 @@ class ColonyPlan2(colony: Colony) {
         }
     }
 
-    private fun assignToMostValuable(productionPriority: LinkedList<List<GoodsType>>): Boolean {
+    private fun assignToMostValuable(availableWorkers: AvailableWorkers, productionPriority: LinkedList<List<GoodsType>>): Boolean {
         var max = GoodsMaxProductionLocationWithUnit()
+        val ingredientsWorkersAllocation = HashMap<Unit, MaxGoodsProductionLocation>()
 
         if (!colonyProduction.canSustainNewWorker()) {
             productionPriority.add(foodPlan.goodsTypes)
@@ -276,23 +288,55 @@ class ColonyPlan2(colony: Colony) {
                 if (maxProduction != null) {
                     val score : Int = market.getSalePrice(maxProduction.goodsType, maxProduction.production)
                     if (max.hasBetterNewScore(score)) {
-                        max.update(score, candidate, maxProduction)
+                        if (canSustainProduction(maxProduction, candidate, availableWorkers, ingredientsWorkersAllocation)) {
+                            max.update(score, candidate, maxProduction, ingredientsWorkersAllocation)
+                        }
                     }
                 }
             } else {
-                //println("XX try determine production for " + goodsType)
+                println("XX try determine production for " + goodsType + " " + colonySimulationSettingProvider.findBuildingType(goodsType, candidate.unitType))
             }
         }
 
-        return false
+        if (max.isNotEmpty()) {
+            addWorkerToProductionLocation(max.worker, max.productionLocation, availableWorkers)
+            for ((unit, goodMaxProductionLocation) in max.ingredientsWorkersAllocation) {
+                addWorkerToProductionLocation(unit, goodMaxProductionLocation, availableWorkers)
+            }
+        }
+        return max.isNotEmpty()
     }
 
-    private fun addWorkerToProductionLocation(worker: Unit, productionLocation: MaxGoodsProductionLocation) {
+    private fun canSustainProduction(
+        maxProduction: MaxGoodsProductionLocation,
+        worker: Unit,
+        availableWorkers: AvailableWorkers,
+        ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>
+    ) : Boolean {
+        if (!colonyProduction.canSustainNewWorker(worker.unitType)) {
+            if (availableWorkers.isEmptyWithout(worker)) {
+                return false
+            }
+            val foodProductionCandidate = availableWorkers.theBestCandidateForProduction(foodPlan.goodsTypes)
+            val excludeLocationsIds = HashSet<String>()
+            excludeLocationsIds.add(maxProduction.productionLocationId())
+            val foodMaxGoodsProduction = productionSimulation.determineMaxProduction(
+                foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, excludeLocationsIds
+            )
+            if (foodMaxGoodsProduction == null) {
+                return false;
+            }
+            ingredientsWorkersAllocation.put(foodProductionCandidate, foodMaxGoodsProduction)
+            return colonyProduction.canSustainNewWorkers(2, foodMaxGoodsProduction.getProduction())
+        }
+        return true;
+    }
+
+    private fun addWorkerToProductionLocation(worker: Unit, productionLocation: MaxGoodsProductionLocation, availableWorkers: AvailableWorkers) {
         availableWorkers.remove(worker)
         colonySimulationSettingProvider.addWorker(worker, productionLocation)
         colonyProduction.updateRequest()
     }
-
 
     private val prod = ProductionSummary()
     private val ingredients = ProductionSummary()

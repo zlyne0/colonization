@@ -9,9 +9,12 @@ import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 public class ProductionSimulation {
+	private static final Set<String> emptyExcludeLocationIds = Collections.emptySet();
 
 	private final ColonyTileProduction simTileProduction = new ColonyTileProduction();
 	private final ColonySettingProvider colonyProvider;
@@ -72,11 +75,11 @@ public class ProductionSimulation {
 			MaxGoodsProductionLocation maxProd = null;
 			if (gt.isFarmed()) {
 				maxProd = maxProductionFromTile(
-					gt, workerType, ignoreIndianOwner
+					gt, workerType, ignoreIndianOwner, emptyExcludeLocationIds
 				);
 			} else {
 				maxProd = maxProductionFromBuilding(
-					gt, workerType, prodCons
+					gt, workerType, prodCons, emptyExcludeLocationIds
 				);
 			}
 			if (maxProd != null) {
@@ -86,19 +89,45 @@ public class ProductionSimulation {
 		return goodsProduction;
 	}
 
+	public MaxGoodsProductionLocation determineMaxProduction(
+		Collection<GoodsType> goodsTypes,
+		UnitType workerType,
+		boolean ignoreIndianOwner,
+		Set<String> excludeLocationIds
+	) {
+		ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
+		MaxGoodsProductionLocation globalMaxProd = null;
+
+		for (GoodsType gt : goodsTypes) {
+			MaxGoodsProductionLocation maxProd = null;
+			if (gt.isFarmed()) {
+				maxProd = maxProductionFromTile(
+					gt, workerType, ignoreIndianOwner, excludeLocationIds
+				);
+			} else {
+				maxProd = maxProductionFromBuilding(
+					gt, workerType, prodCons, excludeLocationIds
+				);
+			}
+			globalMaxProd = MaxGoodsProductionLocation.max(globalMaxProd, maxProd);
+		}
+		return globalMaxProd;
+	}
+
 	public MaxGoodsProductionLocation determineMaxProduction(GoodsType goodsType, UnitType unitType, boolean ignoreIndianOwner) {
 		if (goodsType.isFarmed()) {
-			return maxProductionFromTile(goodsType, unitType, ignoreIndianOwner);
+			return maxProductionFromTile(goodsType, unitType, ignoreIndianOwner, emptyExcludeLocationIds);
 		} else {
 			ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
-			return maxProductionFromBuilding(goodsType, unitType, prodCons);
+			return maxProductionFromBuilding(goodsType, unitType, prodCons, emptyExcludeLocationIds);
 		}
 	}
 
     private MaxGoodsProductionLocation maxProductionFromTile(
 		final GoodsType goodsType, 
 		final UnitType workerType, 
-		boolean ignoreIndianOwner
+		boolean ignoreIndianOwner,
+		Set<String> excludeLocationIds
 	) {
     	MaxGoodsProductionLocation maxProd = null;
 	    
@@ -106,6 +135,7 @@ public class ProductionSimulation {
 	        if (colonyTile.hasWorker() 
         		|| colonyProvider.isCenterTile(colonyTile.tile) 
         		|| colonyProvider.isTileLocked(colonyTile.tile, ignoreIndianOwner)
+				|| excludeLocationIds.contains(colonyTile.getId())
     		) {
 	            continue;
 	        }
@@ -128,12 +158,13 @@ public class ProductionSimulation {
 	 */
 	private MaxGoodsProductionLocation maxProductionFromBuilding(
 		GoodsType goodsType, UnitType workerType, 
-		ProductionSummary prodCons
+		ProductionSummary prodCons,
+		Set<String> excludeLocationIds
 	) {
 		MaxGoodsProductionLocation maxProd = null;
 		
 		for (BuildingProduction productionBuilding : colonyProvider.buildings()) {
-			if (!productionBuilding.canAddWorker(workerType)) {
+			if (!productionBuilding.canAddWorker(workerType) || excludeLocationIds.contains(productionBuilding.getId())) {
 				continue;
 			}
 			int quantity = productionBuilding.singleWorkerProduction(
