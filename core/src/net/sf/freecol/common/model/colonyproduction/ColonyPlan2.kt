@@ -436,7 +436,7 @@ class ColonyPlan2(val colony: Colony) {
         val ingredient = ingredients.first()
         val worker2 = availableWorkers.theBestCandidateForProduction(ingredient.type())
         val maxGoodsProduction2 = productionSimulation.determineMaxProduction(
-            listOf(ingredient.type()), worker2.unitType, ignoreIndianOwner, excludeLocationsIds
+            ingredient.type(), worker2.unitType, ignoreIndianOwner, excludeLocationsIds
         )
         if (maxGoodsProduction2 == null || maxGoodsProduction2.getProduction() < ingredient.amount()) {
             return false

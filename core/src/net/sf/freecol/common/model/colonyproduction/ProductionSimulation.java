@@ -76,6 +76,27 @@ public class ProductionSimulation {
 	}
 
 	public MaxGoodsProductionLocation determineMaxProduction(
+		GoodsType gt,
+		UnitType workerType,
+		boolean ignoreIndianOwner,
+		Set<String> excludeLocationIds
+	) {
+		ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
+
+		MaxGoodsProductionLocation maxProd = null;
+		if (gt.isFarmed()) {
+			maxProd = maxProductionFromTile(
+				gt, workerType, ignoreIndianOwner, excludeLocationIds
+			);
+		} else {
+			maxProd = maxProductionFromBuilding(
+				gt, workerType, prodCons, excludeLocationIds
+			);
+		}
+		return maxProd;
+	}
+
+	public MaxGoodsProductionLocation determineMaxProduction(
 		Collection<GoodsType> goodsTypes,
 		UnitType workerType,
 		boolean ignoreIndianOwner,
