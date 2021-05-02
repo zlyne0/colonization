@@ -90,15 +90,15 @@ class BuildingProduction implements Identifiable {
 	public void determineMaxPotentialProduction(
 		ObjectWithFeatures colonyFeatures,
 		UnitType workerType,
-		ProductionSummary prod,
-		ProductionSummary cons,
+		GoodsCollection prod,
+		GoodsCollection cons,
 		String goodsTypeId
 	) {
 		List<Production> productions = buildingType.productionInfo.getAttendedProductions();
 		for (Production production : productions) {
 			for (java.util.Map.Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {
-				String outputGoodsId = outputEntry.getKey().getId();
-				if (goodsTypeId != null && !goodsTypeId.equals(outputGoodsId)) {
+				GoodsType outputGoods = outputEntry.getKey();
+				if (goodsTypeId != null && !goodsTypeId.equals(outputGoods.getId())) {
 					continue;
 				}
 				if (0 == outputEntry.getValue().intValue()) {
@@ -106,12 +106,12 @@ class BuildingProduction implements Identifiable {
 				}
 
 				int goodQuantity = workerProductionAmount(workerType, outputEntry, colonyFeatures);
-				if (goodQuantity > prod.getQuantity(outputGoodsId)) {
-					prod.addGoods(outputGoodsId, goodQuantity);
+				if (goodQuantity > prod.amount(outputGoods)) {
+					prod.add(outputEntry.getKey(), goodQuantity);
 				}
 				for (java.util.Map.Entry<GoodsType, Integer> inputEntry : production.inputEntries()) {
 					// assumption, production amount to consumption amount ratio is one to one
-					cons.addGoods(inputEntry.getKey().getId(), goodQuantity);
+					cons.add(inputEntry.getKey(), goodQuantity);
 				}
 			}
 		}

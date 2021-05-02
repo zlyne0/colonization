@@ -110,16 +110,12 @@ class AvailableWorkers(initWorkers: Collection<Unit>) {
         availableWorkers.addAll(initWorkers)
     }
 
-    inline fun theBestCandidateForProduction(goodsType: GoodsType) : Unit {
-        return theBestCandidateForProduction(goodsType.id)
-    }
-
-    fun theBestCandidateForProduction(goodsTypeId: String) : Unit {
+    fun theBestCandidateForProduction(goodsType: GoodsType) : Unit {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
         val workerProdCal: (Unit) -> Float = { unit ->
-            unit.unitType.applyModifier(goodsTypeId, 10f)
+            unit.unitType.applyModifier(goodsType.id, 10f)
         }
         return theBest(availableWorkers, workerProdCal)
     }
@@ -357,8 +353,8 @@ class ColonyPlan2(val colony: Colony) {
                 continue
             }
             excludeLocationsIds.clear()
-            prod.makeEmpty()
-            ingredients.makeEmpty()
+            prod.clear()
+            ingredients.clear()
 
             var candidate = availableWorkers.theBestCandidateForProduction(goodsType)
             if (goodsType.isFarmed()) {
@@ -386,7 +382,7 @@ class ColonyPlan2(val colony: Colony) {
 
                 productionSimulation.determineMaxPotentialProduction(buildingType, goodsType, candidate.unitType, prod, ingredients)
 
-                var productionQuantity = prod.getQuantity(goodsType)
+                var productionQuantity = prod.amount(goodsType)
                 productionQuantity = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType, productionQuantity)
                 val score : Int = market.getSalePrice(goodsType, productionQuantity)
 
@@ -410,7 +406,7 @@ class ColonyPlan2(val colony: Colony) {
     private fun canSustainProduction(
         worker: Unit,
         availableWorkers: AvailableWorkers,
-        ingredients : ProductionSummary,
+        ingredients : GoodsCollection,
         ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>,
         excludeLocationsIds : HashSet<String>
     ) : Boolean {
@@ -437,12 +433,12 @@ class ColonyPlan2(val colony: Colony) {
             return false
         }
 
-        var ingredientGoodsTypeId = ingredients.singleEntry().key
-        val worker2 = availableWorkers.theBestCandidateForProduction(ingredientGoodsTypeId)
+        val ingredient = ingredients.first()
+        val worker2 = availableWorkers.theBestCandidateForProduction(ingredient.type())
         val maxGoodsProduction2 = productionSimulation.determineMaxProduction(
-            listOf(gt(ingredientGoodsTypeId)), worker2.unitType, ignoreIndianOwner, excludeLocationsIds
+            listOf(ingredient.type()), worker2.unitType, ignoreIndianOwner, excludeLocationsIds
         )
-        if (maxGoodsProduction2 == null || maxGoodsProduction2.getProduction() < ingredients.singleEntry().value) {
+        if (maxGoodsProduction2 == null || maxGoodsProduction2.getProduction() < ingredient.amount()) {
             return false
         }
         ingredientsWorkersAllocation.put(worker2, maxGoodsProduction2)
@@ -468,11 +464,6 @@ class ColonyPlan2(val colony: Colony) {
         return colonyProduction.canSustainNewWorkers(3, foodMaxGoodsProduction.getProduction());
     }
 
-    // TODO: remove method
-    private inline fun gt(goodsTypeId : String) : GoodsType {
-        return Specification.instance.goodsTypes.getById(goodsTypeId)
-    }
-
     private fun addWorkerToProductionLocation(worker: Unit, productionLocation: GoodsMaxProductionLocationWithUnit, availableWorkers: AvailableWorkers) {
         availableWorkers.remove(worker)
         if (productionLocation.colonyTile != null) {
@@ -496,8 +487,8 @@ class ColonyPlan2(val colony: Colony) {
     }
 
 
-    private val prod = ProductionSummary()
-    private val ingredients = ProductionSummary()
+    private val prod = GoodsCollection()
+    private val ingredients = GoodsCollection()
 
     private fun lackOfIngredients(goodsToProduce: List<GoodsType>, workerType: UnitType, productionPriority: LinkedList<List<GoodsType>>) : Boolean {
         prod.clear()
@@ -507,27 +498,26 @@ class ColonyPlan2(val colony: Colony) {
             productionSimulation.determineMaxPotentialProduction(goodsType, workerType, prod, ingredients);
         }
         var lack = false
-        for (ingredient in ingredients.entries()) {
-            if (!hasGoodsToConsume(ingredient.key, ingredient.value)) {
+        for (ingredient in ingredients) {
+            if (!hasGoodsToConsume(ingredient)) {
                 lack = true
-                productionPriority.add(listOf(Specification.instance.goodsTypes.getById(ingredient.key)))
+                productionPriority.add(listOf(ingredient.type()))
             }
         }
         return lack
     }
 
-    private fun hasGoodsToConsume(goodsTypeId: String, amount: Int): Boolean {
-        var available = colonyProduction.globalProductionConsumption().getQuantity(goodsTypeId)
-        available += colonySimulationSettingProvider.warehouse().amount(goodsTypeId)
-        return amount * 0.5 <= available
+    private fun hasGoodsToConsume(goods : GoodsEntry): Boolean {
+        var available = colonyProduction.globalProductionConsumption().getQuantity(goods.type())
+        available += colonySimulationSettingProvider.warehouse().amount(goods.type())
+        return goods.amount() * 0.5 <= available
     }
 
-    private fun hasGoodsToConsume(ps: ProductionSummary): Boolean {
-        for (entry in ps.entries()) {
-            var goodsTypeId = entry.key
-            var available = colonyProduction.globalProductionConsumption().getQuantity(goodsTypeId)
-            available += colonySimulationSettingProvider.warehouse().amount(goodsTypeId)
-            if (entry.value * 0.5 > available) {
+    private fun hasGoodsToConsume(goods: GoodsCollection): Boolean {
+        for (goodsEntry in goods) {
+            var available = colonyProduction.globalProductionConsumption().getQuantity(goodsEntry.type())
+            available += colonySimulationSettingProvider.warehouse().amount(goodsEntry.type())
+            if (goodsEntry.amount() * 0.5 > available) {
                 return false
             }
         }

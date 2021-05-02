@@ -173,7 +173,7 @@ public class ProductionSimulation {
 
 	public void determineMaxPotentialProduction(
 		BuildingType buildingType, GoodsType goodsType, UnitType workerType,
-		ProductionSummary prod, ProductionSummary cons
+		GoodsCollection prod, GoodsCollection cons
 	) {
 		BuildingProduction buildingProduction = colonyProvider.buildings().getByIdOrNull(buildingType.getId());
 		if (buildingProduction == null || !buildingProduction.canAddWorker(workerType)) {
@@ -184,7 +184,7 @@ public class ProductionSimulation {
 		buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsType.getId());
 	}
 
-	public void determineMaxPotentialProduction(GoodsType goodsType, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+	public void determineMaxPotentialProduction(GoodsType goodsType, UnitType workerType, GoodsCollection prod, GoodsCollection cons) {
 		if (!workerType.isPerson()) {
 			throw new IllegalArgumentException("worker[" + workerType + "] is not a person ");
 		}
