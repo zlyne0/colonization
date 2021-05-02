@@ -215,7 +215,7 @@ public class ColonyPlan {
 	    			building.determineMaxPotentialProduction(colony, worker.unitType, prod, ingredients, goodsType.getId());
 	    			int produceAmount = prod.getQuantity(goodsType.getId());
 	    			
-	    			produceAmount = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType.getId(), produceAmount);
+	    			produceAmount = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType, produceAmount);
 	    			// first calculate score to avoid production check because it is heavy
 	    			int score = colony.getOwner().market().getSalePrice(goodsType, produceAmount);
 	    			if (max.hasBetterNewScore(score)) {
@@ -332,7 +332,7 @@ public class ColonyPlan {
                 }
                 stos.add(goodsFromPlan(plan));
         	}
-        	
+
         	String[] goodsTypeToProduce = stos.pop();
         	Unit worker = workersByPriorityToPlan(availableWorkers, goodsTypeToProduce);
 

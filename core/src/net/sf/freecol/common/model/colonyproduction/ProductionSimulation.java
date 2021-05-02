@@ -5,6 +5,7 @@ import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.ArrayList;
@@ -25,21 +26,6 @@ public class ProductionSimulation {
 		this.colonyProvider = colonySettingProvider;
 		this.colonyProduction = colonyProduction;
 		this.productionValueComparator = ProductionValueComparator.byQuantity;
-	}
-
-	public void determineMaxPotentialProduction(String goodsTypeId, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
-		if (!workerType.isPerson()) {
-			throw new IllegalArgumentException("worker[" + workerType + "] is not a person ");
-		}
-		// init buildings etc
-		colonyProduction.globalProductionConsumption();
-
-		for (BuildingProduction buildingProduction : colonyProvider.buildings()) {
-			if (!buildingProduction.canAddWorker(workerType)) {
-				continue;
-			}
-			buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsTypeId);
-		}
 	}
 
 	public List<MaxGoodsProductionLocation> determinePotentialTerrainProductions(ColonyTile colonyTile, UnitType workerType) {
@@ -184,6 +170,32 @@ public class ProductionSimulation {
 		}
 		return maxProd;
 	}
-	
-	
+
+	public void determineMaxPotentialProduction(
+		BuildingType buildingType, GoodsType goodsType, UnitType workerType,
+		ProductionSummary prod, ProductionSummary cons
+	) {
+		BuildingProduction buildingProduction = colonyProvider.buildings().getByIdOrNull(buildingType.getId());
+		if (buildingProduction == null || !buildingProduction.canAddWorker(workerType)) {
+			return;
+		}
+		// init buildings etc
+		colonyProduction.globalProductionConsumption();
+		buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsType.getId());
+	}
+
+	public void determineMaxPotentialProduction(GoodsType goodsType, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
+		if (!workerType.isPerson()) {
+			throw new IllegalArgumentException("worker[" + workerType + "] is not a person ");
+		}
+		// init buildings etc
+		colonyProduction.globalProductionConsumption();
+
+		for (BuildingProduction buildingProduction : colonyProvider.buildings()) {
+			if (!buildingProduction.canAddWorker(workerType)) {
+				continue;
+			}
+			buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsType.getId());
+		}
+	}
 }

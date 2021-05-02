@@ -13,6 +13,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.GoodsType;
+
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
@@ -48,6 +50,10 @@ public class Savegame1600BaseClass {
 
 	protected UnitType unitType(String unitTypeId) {
 		return Specification.instance.unitTypes.getById(unitTypeId);
+	}
+
+	protected GoodsType goodsType(String goodsTypeId) {
+		return Specification.instance.goodsTypes.getById(goodsTypeId);
 	}
 
 }

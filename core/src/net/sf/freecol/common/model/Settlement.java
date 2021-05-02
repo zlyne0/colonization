@@ -123,8 +123,8 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
         }
     }
 	
-	public int maxGoodsAmountToFillWarehouseCapacity(String goodsTypeId, int goodsAmount) {
-		int freeSpace = warehouseCapacity() - goodsContainer.goodsAmount(goodsTypeId);
+	public int maxGoodsAmountToFillWarehouseCapacity(GoodsType goodsType, int goodsAmount) {
+		int freeSpace = warehouseCapacity() - goodsContainer.goodsAmount(goodsType);
 		if (freeSpace < 0) {
 			freeSpace = 0;
 		}

@@ -503,7 +503,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
 
 		// when
-		List<GoodsType> productionChain = colonyPlan.createPlanProductionChain(new ColonyPlan2.Plan.Muskets());
+		List<GoodsType> productionChain = colonyPlan.productionChain(goodsType(GoodsType.MUSKETS));
 
 		// then
 		assertThat(productionChain)
@@ -517,7 +517,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
 
 		// when
-		List<GoodsType> productionChain = colonyPlan.createPlanProductionChain(new ColonyPlan2.Plan.Bell());
+		List<GoodsType> productionChain = colonyPlan.productionChain(goodsType(GoodsType.BELLS));
 
 		// then
 		assertThat(productionChain)

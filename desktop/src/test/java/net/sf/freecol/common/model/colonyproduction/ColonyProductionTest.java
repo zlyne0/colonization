@@ -88,9 +88,9 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		// given
 		ColonySimulationSettingProvider colonyProvider = new ColonySimulationSettingProvider(nieuwAmsterdam);
 		colonyProvider.withConsumeWarehouseResources();
-		colonyProvider.addWorkerToColony(
-			Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST),
-			Specification.instance.buildingTypes.getById("model.building.tobacconistHouse")
+		colonyProvider.addWorker(
+			Specification.instance.buildingTypes.getById("model.building.tobacconistHouse"),
+			Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCONIST)
 		);
 
 		ColonyProduction colonyProduction = new ColonyProduction(colonyProvider);

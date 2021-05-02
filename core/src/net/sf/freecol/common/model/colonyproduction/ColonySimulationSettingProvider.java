@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyLiberty;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithFeatures;
+import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -92,16 +93,15 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         }
     }
 
-    public void addWorker(Unit worker, MaxGoodsProductionLocation maxProd) {
-        if (maxProd.colonyTile != null) {
-            defaultColonySettingProvider.addWorker(maxProd.colonyTile, worker, maxProd.tileTypeInitProduction);
-        }
-        if (maxProd.buildingType != null) {
-            defaultColonySettingProvider.addWorker(maxProd.buildingType, worker);
-        }
+    public void addWorker(Tile tile, Unit worker, Production production) {
+        defaultColonySettingProvider.addWorker(tile, worker, production);
     }
 
-    public void addWorkerToColony(UnitType workerType, BuildingType buildingType) {
+    public void addWorker(BuildingType buildingType, Unit worker) {
+        defaultColonySettingProvider.addWorker(buildingType, worker);
+    }
+
+    public void addWorker(BuildingType buildingType, UnitType workerType) {
         defaultColonySettingProvider.addWorker(buildingType, workerType);
     }
 
