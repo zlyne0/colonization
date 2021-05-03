@@ -226,7 +226,10 @@ class ColonyPlan2(val colony: Colony) {
             }
         }
 
-        private var chain : MutableList<GoodsType>? = null
+        private val chain : List<GoodsType> by lazy(LazyThreadSafetyMode.NONE) {
+            productionChain()
+        }
+
         val goodsTypes : List<GoodsType>
 
         init {
@@ -236,10 +239,7 @@ class ColonyPlan2(val colony: Colony) {
             }
         }
 
-        fun productionChain() : List<GoodsType> {
-            if (this.chain != null) {
-                return this.chain!!
-            }
+        private fun productionChain() : List<GoodsType> {
             var goodsList = mutableListOf<GoodsType>()
             for (goodsType in goodsTypes) {
                 goodsList.add(goodsType)
@@ -250,7 +250,6 @@ class ColonyPlan2(val colony: Colony) {
                     goodsList.add(0, gt)
                 }
             }
-            this.chain = goodsList
             return goodsList
         }
     }
