@@ -2,7 +2,6 @@ package net.sf.freecol.common.model.colonyproduction
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Production
-import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
@@ -16,8 +15,6 @@ import kotlin.collections.Collection
 import kotlin.collections.HashMap
 import kotlin.collections.HashSet
 import kotlin.collections.List
-import kotlin.collections.MutableList
-import kotlin.collections.MutableMap
 import kotlin.collections.asList
 import kotlin.collections.component1
 import kotlin.collections.component2
@@ -31,49 +28,29 @@ import kotlin.collections.sortWith
 
 class GoodsMaxProductionLocationWithUnit {
     var score = -1
-    lateinit var worker: Unit
     lateinit var goodsType: GoodsType
+    lateinit var worker: Unit
     var production: Production? = null
     var colonyTile: Tile? = null
     var buildingType: BuildingType? = null
 
-    val ingredientsWorkersAllocation: MutableMap<Unit, MaxGoodsProductionLocation> = HashMap()
+    val ingredientsWorkersAllocation = HashMap<Unit, MaxGoodsProductionLocation>()
+    val excludeLocationsIds = HashSet<String>()
 
-    fun update(newScore: Int, worker: Unit,
-        goodsType: GoodsType,
-        colonyTile : Tile,
-        production : Production,
-        ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>
-    ) {
-        if (newScore > this.score) {
-            this.score = newScore
-            this.worker = worker
-            this.goodsType = goodsType
-            this.colonyTile = colonyTile
-            this.buildingType = null
-            this.production = production
-            this.ingredientsWorkersAllocation.clear()
-            this.ingredientsWorkersAllocation.putAll(ingredientsWorkersAllocation)
-        }
+    fun resetScore() {
+        this.score = -1
     }
 
-    fun update(newScore: Int, worker: Unit,
-        goodsType: GoodsType,
-        buildingType: BuildingType,
-        ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>
-    ) {
-        if (newScore > this.score) {
-            this.score = newScore
-            this.worker = worker
-            this.goodsType = goodsType
-            this.colonyTile = null
-            this.production = null
-            this.buildingType = buildingType
-            this.ingredientsWorkersAllocation.clear()
-            this.ingredientsWorkersAllocation.putAll(ingredientsWorkersAllocation)
-        }
+    fun reset(goodsType: GoodsType, worker : Unit) {
+        this.goodsType = goodsType
+        this.worker = worker
+        this.score = -1
+        this.excludeLocationsIds.clear()
+        this.ingredientsWorkersAllocation.clear()
+        this.production = null
+        this.colonyTile = null
+        this.buildingType = null
     }
-
 
     override fun toString(): String {
         var st = ""
@@ -92,14 +69,28 @@ class GoodsMaxProductionLocationWithUnit {
         return st
     }
 
-    fun hasBetterNewScore(newScore: Int): Boolean {
-        return newScore > score
+    inline fun hasBetterScore(a : GoodsMaxProductionLocationWithUnit) : Boolean {
+        return this.score > a.score
     }
 
     fun isNotEmpty(): Boolean {
         return score > 0;
     }
 
+    fun scoreForTile(maxProduction: MaxGoodsProductionLocation, market: Market) {
+        excludeLocationsIds.add(maxProduction.productionLocationId())
+        colonyTile = maxProduction.colonyTile
+        production = maxProduction.tileTypeInitProduction
+
+        score = market.getSalePrice(maxProduction.goodsType, maxProduction.production)
+    }
+
+    fun scoreForBuilding(buildingType: BuildingType, productionAmount: Int, market: Market) {
+        excludeLocationsIds.add(buildingType.id)
+        this.buildingType = buildingType
+
+        score = market.getSalePrice(goodsType, productionAmount)
+    }
 }
 
 
@@ -226,10 +217,6 @@ class ColonyPlan2(val colony: Colony) {
             }
         }
 
-        private val chain : List<GoodsType> by lazy(LazyThreadSafetyMode.NONE) {
-            productionChain()
-        }
-
         val goodsTypes : List<GoodsType>
 
         init {
@@ -238,23 +225,10 @@ class ColonyPlan2(val colony: Colony) {
                 goodsTypes.add(Specification.instance.goodsTypes.getById(goodsTypesId))
             }
         }
-
-        private fun productionChain() : List<GoodsType> {
-            var goodsList = mutableListOf<GoodsType>()
-            for (goodsType in goodsTypes) {
-                goodsList.add(goodsType)
-
-                var gt = goodsType
-                while (gt.madeFrom != null) {
-                    gt = gt.madeFrom
-                    goodsList.add(0, gt)
-                }
-            }
-            return goodsList
-        }
     }
 
-    private val productionChainForGoodsType = HashMap<GoodsType, List<GoodsType>>()
+    private val prod = GoodsCollection()
+    private val ingredients = GoodsCollection()
 
     private val market : Market
     private val foodPlan = Plan.Food()
@@ -336,58 +310,57 @@ class ColonyPlan2(val colony: Colony) {
         }
     }
 
+    var max = GoodsMaxProductionLocationWithUnit()
+    var maxCandidate = GoodsMaxProductionLocationWithUnit()
+
     private fun assignToMostValuable(availableWorkers: AvailableWorkers, productionPriority: LinkedList<List<GoodsType>>): Boolean {
         if (!colonyProduction.canSustainNewWorker()) {
             productionPriority.add(foodPlan.goodsTypes)
             return false
         }
 
-        var max = GoodsMaxProductionLocationWithUnit()
-        val ingredientsWorkersAllocation = HashMap<Unit, MaxGoodsProductionLocation>()
-        val excludeLocationsIds = HashSet<String>()
+        max.resetScore()
 
         // iterate over goods to find most valuable
         for (goodsType in Specification.instance.goodsTypes) {
             if (!goodsType.isStorable()) {
                 continue
             }
-            excludeLocationsIds.clear()
             prod.clear()
             ingredients.clear()
 
-            var candidate = availableWorkers.theBestCandidateForProduction(goodsType)
-            if (goodsType.isFarmed()) {
-                val maxProduction = productionSimulation.determineMaxProduction(goodsType, candidate.unitType, ignoreIndianOwner)
-                if (maxProduction != null) {
-                    excludeLocationsIds.add(maxProduction.productionLocationId())
+            maxCandidate.reset(goodsType, availableWorkers.theBestCandidateForProduction(goodsType))
 
-                    val score : Int = market.getSalePrice(maxProduction.goodsType, maxProduction.production)
-                    if (max.hasBetterNewScore(score)) {
-                        if (canSustainProduction(candidate, availableWorkers.without(candidate), ingredients, ingredientsWorkersAllocation, excludeLocationsIds)) {
-                            max.update(score, candidate,
-                                maxProduction.goodsType,
-                                maxProduction.colonyTile,
-                                maxProduction.tileTypeInitProduction,
-                                ingredientsWorkersAllocation
-                            )
+            if (goodsType.isFarmed()) {
+                val maxProduction = productionSimulation.determineMaxProduction(goodsType, maxCandidate.worker.unitType, ignoreIndianOwner)
+                if (maxProduction != null) {
+                    maxCandidate.scoreForTile(maxProduction, market)
+                    if (maxCandidate.hasBetterScore(max)) {
+                        if (canSustainProduction(maxCandidate, availableWorkers.without(maxCandidate.worker), ingredients)) {
+                            val tmp = max
+                            max = maxCandidate
+                            maxCandidate = tmp
+                            // reset maxCandidate on goodsTypes loop
                         }
                     }
                 }
             } else {
-                val buildingType = colonySimulationSettingProvider.findBuildingType(goodsType, candidate.unitType)
+                val buildingType = colonySimulationSettingProvider.findBuildingType(goodsType, maxCandidate.worker.unitType)
                 if (buildingType == null) {
                     continue
                 }
+                productionSimulation.determineMaxPotentialProduction(buildingType, goodsType, maxCandidate.worker.unitType, prod, ingredients)
 
-                productionSimulation.determineMaxPotentialProduction(buildingType, goodsType, candidate.unitType, prod, ingredients)
+                var productionAmount = prod.amount(goodsType)
+                productionAmount = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType, productionAmount)
+                maxCandidate.scoreForBuilding(buildingType, productionAmount, market)
 
-                var productionQuantity = prod.amount(goodsType)
-                productionQuantity = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType, productionQuantity)
-                val score : Int = market.getSalePrice(goodsType, productionQuantity)
-
-                if (score > 0 && max.hasBetterNewScore(score)) {
-                    if (canSustainProduction(candidate, availableWorkers.without(candidate), ingredients, ingredientsWorkersAllocation, excludeLocationsIds)) {
-                        max.update(score, candidate, goodsType, buildingType, ingredientsWorkersAllocation)
+                if (maxCandidate.hasBetterScore(max)) {
+                    if (canSustainProduction(maxCandidate, availableWorkers.without(maxCandidate.worker), ingredients)) {
+                        val tmp = max
+                        max = maxCandidate
+                        maxCandidate = tmp
+                        // reset maxCandidate on goodsTypes loop
                     }
                 }
             }
@@ -403,27 +376,24 @@ class ColonyPlan2(val colony: Colony) {
     }
 
     private fun canSustainProduction(
-        worker: Unit,
+        maxCandidate : GoodsMaxProductionLocationWithUnit,
         availableWorkers: AvailableWorkers,
-        ingredients : GoodsCollection,
-        ingredientsWorkersAllocation: HashMap<Unit, MaxGoodsProductionLocation>,
-        excludeLocationsIds : HashSet<String>
+        ingredients : GoodsCollection
     ) : Boolean {
-        ingredientsWorkersAllocation.clear()
 
         if (hasGoodsToConsume(ingredients)) {
-            if (!colonyProduction.canSustainNewWorker(worker.unitType)) {
+            if (!colonyProduction.canSustainNewWorker(maxCandidate.worker.unitType)) {
                 if (availableWorkers.isEmpty()) {
                     return false
                 }
                 val foodProductionCandidate = availableWorkers.theBestCandidateForProduction(foodPlan.goodsTypes)
                 val foodMaxGoodsProduction = productionSimulation.determineMaxProduction(
-                    foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, excludeLocationsIds
+                    foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
                 )
                 if (foodMaxGoodsProduction == null) {
                     return false;
                 }
-                ingredientsWorkersAllocation.put(foodProductionCandidate, foodMaxGoodsProduction)
+                maxCandidate.ingredientsWorkersAllocation.put(foodProductionCandidate, foodMaxGoodsProduction)
                 return colonyProduction.canSustainNewWorkers(2, foodMaxGoodsProduction.getProduction())
             }
             return true
@@ -435,13 +405,13 @@ class ColonyPlan2(val colony: Colony) {
         val ingredient = ingredients.first()
         val worker2 = availableWorkers.theBestCandidateForProduction(ingredient.type())
         val maxGoodsProduction2 = productionSimulation.determineMaxProduction(
-            ingredient.type(), worker2.unitType, ignoreIndianOwner, excludeLocationsIds
+            ingredient.type(), worker2.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
         )
         if (maxGoodsProduction2 == null || maxGoodsProduction2.getProduction() < ingredient.amount()) {
             return false
         }
-        ingredientsWorkersAllocation.put(worker2, maxGoodsProduction2)
-        excludeLocationsIds.add(maxGoodsProduction2.productionLocationId())
+        maxCandidate.ingredientsWorkersAllocation.put(worker2, maxGoodsProduction2)
+        maxCandidate.excludeLocationsIds.add(maxGoodsProduction2.productionLocationId())
 
         // has worker to produce food
         if (colonyProduction.canSustainNewWorkers(2, 0)) {
@@ -453,13 +423,13 @@ class ColonyPlan2(val colony: Colony) {
         val availableWorkers2 = availableWorkers.without(worker2)
         val foodProductionCandidate = availableWorkers2.theBestCandidateForProduction(foodPlan.goodsTypes)
         val foodMaxGoodsProduction = productionSimulation.determineMaxProduction(
-            foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, excludeLocationsIds
+            foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
         )
         if (foodMaxGoodsProduction == null) {
             return false
         }
-        ingredientsWorkersAllocation.put(foodProductionCandidate, foodMaxGoodsProduction)
-        excludeLocationsIds.add(foodMaxGoodsProduction.productionLocationId())
+        maxCandidate.ingredientsWorkersAllocation.put(foodProductionCandidate, foodMaxGoodsProduction)
+        maxCandidate.excludeLocationsIds.add(foodMaxGoodsProduction.productionLocationId())
         return colonyProduction.canSustainNewWorkers(3, foodMaxGoodsProduction.getProduction());
     }
 
@@ -484,10 +454,6 @@ class ColonyPlan2(val colony: Colony) {
         }
         colonyProduction.updateRequest()
     }
-
-
-    private val prod = GoodsCollection()
-    private val ingredients = GoodsCollection()
 
     private fun lackOfIngredients(goodsToProduce: List<GoodsType>, workerType: UnitType, productionPriority: LinkedList<List<GoodsType>>) : Boolean {
         prod.clear()
@@ -521,23 +487,6 @@ class ColonyPlan2(val colony: Colony) {
             }
         }
         return true
-    }
-
-    fun productionChain(goodsType: GoodsType) : List<GoodsType> {
-        var chain = productionChainForGoodsType.get(goodsType)
-        if (chain != null) {
-            return chain
-        }
-        chain = mutableListOf<GoodsType>()
-        chain.add(goodsType)
-
-        var gt = goodsType
-        while (gt.madeFrom != null) {
-            gt = gt.madeFrom
-            chain.add(0, gt)
-        }
-        productionChainForGoodsType.put(goodsType, chain)
-        return chain
     }
 
     fun withConsumeWarehouseResources(consumeWarehouseResources: Boolean): ColonyPlan2 {

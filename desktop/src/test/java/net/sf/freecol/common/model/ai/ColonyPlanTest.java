@@ -500,10 +500,9 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	@Test
 	void canCreateProductionChainForMuskets() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
 
 		// when
-		List<GoodsType> productionChain = colonyPlan.productionChain(goodsType(GoodsType.MUSKETS));
+		List<GoodsType> productionChain = goodsType(GoodsType.MUSKETS).productionChain();
 
 		// then
 		assertThat(productionChain)
@@ -514,10 +513,9 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	@Test
 	void canCreateProductionChainForBells() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
 
 		// when
-		List<GoodsType> productionChain = colonyPlan.productionChain(goodsType(GoodsType.BELLS));
+		List<GoodsType> productionChain = goodsType(GoodsType.BELLS).productionChain();
 
 		// then
 		assertThat(productionChain)
@@ -551,7 +549,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	}
 
 	@Test
-	public void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources2() throws Exception {
+	void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources2() throws Exception {
 		// given
 		addForestOnColonyCenterTile();
 		nieuwAmsterdam.resetLiberty();
@@ -607,7 +605,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	}
 
 	@Test
-	public void canAssignWorkersToMostValueableProductionUsingWarehouseResources2() throws Exception {
+	void canAssignWorkersToMostValueableProductionUsingWarehouseResources2() throws Exception {
 		// given
 		addForestOnColonyCenterTile();
 		nieuwAmsterdam.resetLiberty();
