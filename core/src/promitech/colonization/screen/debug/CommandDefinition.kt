@@ -2,7 +2,6 @@ package promitech.colonization.screen.debug
 
 import net.sf.freecol.common.model.*
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
-import net.sf.freecol.common.model.ai.ColonyPlan
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
@@ -11,7 +10,7 @@ import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
-import net.sf.freecol.common.model.colonyproduction.ColonyPlan2
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -177,31 +176,6 @@ fun createCommands(
 			gameController.showDialog(ContinentalCongress(guiGameModel.game.playingPlayer))
 		}
 
-		commandArg("colony_plan0") { args ->
-			if (colonyApplicationScreen == null) {
-				console.keepOpen()
-					.out("no colony selected")
-			} else {
-				var colony = colonyApplicationScreen.getColony()
-				colony.updateProductionToMaxPossible(colony.tile)
-
-				ColonyPlan(colonyApplicationScreen.getColony())
-					.withConsumeWarehouseResources(true)
-					.withIgnoreIndianOwner()
-					.execute2(ColonyPlan.Plan.of(args[1]))
-
-				colonyApplicationScreen.initColony(colony)
-			}
-		}.addParams {
-			listOf<String>(
-				ColonyPlan.Plan.MostValuable.name.toLowerCase(),
-				ColonyPlan.Plan.Bell.name.toLowerCase(),
-				ColonyPlan.Plan.Food.name.toLowerCase(),
-				ColonyPlan.Plan.Building.name.toLowerCase(),
-				ColonyPlan.Plan.Muskets.name.toLowerCase()
-			)
-		}
-
 		commandArg("colony_plan") { args ->
 			if (colonyApplicationScreen == null) {
 				console.keepOpen()
@@ -210,8 +184,8 @@ fun createCommands(
 				var colony = colonyApplicationScreen.getColony()
 				colony.updateProductionToMaxPossible(colony.tile)
 
-				val plan = ColonyPlan2.Plan.valueOf(args[1])
-				ColonyPlan2(colonyApplicationScreen.colony)
+				val plan = ColonyPlan.Plan.valueOf(args[1])
+				ColonyPlan(colonyApplicationScreen.colony)
 					.withConsumeWarehouseResources(true)
 					.withIgnoreIndianOwner()
 					.execute(plan)
@@ -220,12 +194,12 @@ fun createCommands(
 			}
 		}.addParams {
 			listOf<String>(
-				ColonyPlan.Plan.MostValuable.name.toLowerCase(),
-				ColonyPlan.Plan.Bell.name.toLowerCase(),
-				ColonyPlan.Plan.Food.name.toLowerCase(),
-				ColonyPlan.Plan.Tools.name.toLowerCase(),
-				ColonyPlan.Plan.Building.name.toLowerCase(),
-				ColonyPlan.Plan.Muskets.name.toLowerCase()
+				"food",
+				"bell",
+				"building",
+				"mostvaluable",
+				"tools",
+				"muskets"
 			)
 		}
 

@@ -1,72 +1,37 @@
 package net.sf.freecol.common.model.ai;
 
-import static org.assertj.core.api.Assertions.*;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
-
-import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
-import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.GoodMaxProductionLocation;
-import net.sf.freecol.common.model.ProductionAssert;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.ai.ColonyPlan.Plan;
-import net.sf.freecol.common.model.colonyproduction.ColonyPlan2;
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.savegame.SaveGameParser;
+
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import promitech.colonization.savegame.Savegame1600BaseClass;
 import promitech.map.isometric.NeighbourIterableTile;
+
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
 
 class ColonyPlanTest extends Savegame1600BaseClass {
 
 	@Test
-	public void canGenerateFoodPlanForColony() throws Exception {
+	void canGenerateFoodPlanForColony() {
 		// given
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Food);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam).hasSize(6);
-    	
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3472").production)
-    		.hasOutput(GoodsType.FISH, 2);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3432").production)
-    		.hasOutput(GoodsType.FISH, 2);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3393").production)
-    		.hasOutput(GoodsType.FISH, 2);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3431").production)
-			.hasOutput(GoodsType.GRAIN, 5);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3352").production)
-			.hasOutput(GoodsType.GRAIN, 3);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3391").production)
-			.hasOutput(GoodsType.GRAIN, 3);
-    	ProductionAssert.assertThat(nieuwAmsterdam.colonyTiles.getById("tile:3392").production)
-    		.hasOutput(GoodsType.GRAIN, 5, true);
-	}
-
-	@Test
-	void canGenerateFoodPlanForColony2() {
-		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Food());
+		colonyPlan.execute(new ColonyPlan.Plan.Food());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -83,30 +48,13 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-    @Test
-	public void canHandleBellPlan() throws Exception {
-		// given
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Bell);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-    	    .hasSize(3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
-            .produce(GoodsType.FOOD, 0)
-	    ;
-	}
-
 	@Test
-	public void canHandleBellPlan2() throws Exception {
+	void canHandleBellPlan() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Bell());
+		colonyPlan.execute(new ColonyPlan.Plan.Bell());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -117,35 +65,15 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-
-    @Test
-	public void canHandleBellPlanAndAddFoodWorker() throws Exception {
-		// given
-    	addForestOnColonyCenterTile();
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Bell);
-
-    	// then
-        ColonyAssert.assertThat(nieuwAmsterdam)
-            .hasSize(4)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
-            .produce(GoodsType.FOOD, 3)
-        ;
-	}
-
 	@Test
-	public void canHandleBellPlanAndAddFoodWorker2() throws Exception {
+	void canHandleBellPlanAndAddFoodWorker() {
 		// given
 		addForestOnColonyCenterTile();
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Bell());
+		colonyPlan.execute(new ColonyPlan.Plan.Bell());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -156,34 +84,13 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-    @Test
-    void canExecuteBellFoodPlan() throws Exception {
-        // given
-        ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-
-        // when
-        colonyPlan.execute2(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
-
-        // then
-        ColonyAssert.assertThat(nieuwAmsterdam)
-            .hasSize(6)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 3)
-            .hasWorkerInBuildingType(BuildingType.TOWN_HALL, UnitType.ELDER_STATESMAN)
-            .hasWorkerInLocation("tile:3472", UnitType.EXPERT_FISHERMAN)
-            .hasWorkerInLocation("tile:3431")
-            .hasWorkerInLocation("tile:3432")
-            .produce(GoodsType.BELLS, 14)
-            .produce(GoodsType.FOOD, 11)
-        ;
-    }
-
 	@Test
-	void canExecuteBellFoodPlan2() throws Exception {
+	void canExecuteBellFoodPlan() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Bell(), new ColonyPlan2.Plan.Food());
+		colonyPlan.execute(new ColonyPlan.Plan.Bell(), new ColonyPlan.Plan.Food());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -198,35 +105,14 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-    
-    @Test
-    void canExecuteBuildPlan() throws Exception {
-        // given
-        ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-        colonyPlan.withConsumeWarehouseResources(false);
-        
-        // when
-        colonyPlan.execute2(ColonyPlan.Plan.Building);
-
-        // then
-        ColonyAssert.assertThat(nieuwAmsterdam)
-            .hasSize(6)
-            .hasWorkerInLocation("tile:3352", "model.unit.expertLumberJack")
-            .hasWorkerInBuildingType("model.building.lumberMill", 2)
-            .hasWorkerInBuildingType("model.building.lumberMill", "model.unit.masterCarpenter")
-            .produce("model.goods.lumber", 6)
-            .produce("model.goods.hammers", 18)
-        ;
-    }
-
 	@Test
-	void canExecuteBuildPlan2() throws Exception {
+	void canExecuteBuildPlan() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Building());
+		colonyPlan.execute(new ColonyPlan.Plan.Building());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -239,37 +125,14 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-
-    @Test
-	void canExecuteToolsPlanWithoutWarehouseResources() throws Exception {
-		// given
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(false);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Tools);
-
-		// then
-        ColonyAssert.assertThat(nieuwAmsterdam)
-        	.hasSize(6)
-        	.hasWorkerInLocation("tile:3391")
-        	.hasWorkerInLocation("tile:3351")
-        	.hasWorkerInLocation("tile:3431")
-        	.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
-        	.hasWorkerInBuildingType("model.building.blacksmithHouse", 2)
-        	.produce("model.goods.ore", -1)
-        	.produce("model.goods.tools", 6)
-        ;
-	}
-
 	@Test
-	void canExecuteToolsPlanWithoutWarehouseResources2() throws Exception {
+	void canExecuteToolsPlanWithoutWarehouseResources() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Tools());
+		colonyPlan.execute(new ColonyPlan.Plan.Tools());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -284,37 +147,16 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-    @Test
-	void canExecuteToolsPlanWithWarehouseResources() throws Exception {
-		// given
-    	addForestOnColonyCenterTile();
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(true);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Tools);
-
-		// then
-        ColonyAssert.assertThat(nieuwAmsterdam)
-            .hasWorkerInBuildingType("model.building.blacksmithHouse", 3)
-            .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
-            .produce("model.goods.ore", -9)
-            .produce("model.goods.tools", 9)
-            .hasSize(4)
-        ;
-	}
-
 	@Test
-	void canExecuteToolsPlanWithWarehouseResources2() throws Exception {
+	void canExecuteToolsPlanWithWarehouseResources() {
 		// given
 		addForestOnColonyCenterTile();
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Tools());
+		colonyPlan.execute(new ColonyPlan.Plan.Tools());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -326,34 +168,14 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-
-    @Test
-	public void canExecutePlanForToolsAndBell() throws Exception {
-		// given
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(true);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Tools, ColonyPlan.Plan.Bell);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-    	    .hasSize(6)
-    	    .hasWorkerInBuildingType("model.building.blacksmithHouse", 3)
-    	    .hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
-    	    .hasWorkerInBuildingType(BuildingType.TOWN_HALL, 2)
-    	    .hasWorkerInBuildingType(BuildingType.TOWN_HALL, "model.unit.elderStatesman")
-	    ;
-	}
-
 	@Test
-	public void canExecutePlanForToolsAndBell2() throws Exception {
+	void canExecutePlanForToolsAndBell() {
 		// given
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Tools(), new ColonyPlan2.Plan.Bell());
+		colonyPlan.execute(new ColonyPlan.Plan.Tools(), new ColonyPlan.Plan.Bell());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -365,41 +187,16 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-    @Test
-	public void canAssignWorkersToProduceMuskets() throws Exception {
-		// given
-    	nieuwAmsterdam.addBuilding(Specification.instance.buildingTypes.getById("model.building.armory"));
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(false);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Muskets);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-    		.hasSize(6)
-    		.hasWorkerInLocation("tile:3391")
-    		.hasWorkerInLocation("tile:3351")
-    		.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
-	    	.hasWorkerInBuildingType("model.building.armory")
-	    	.hasWorkerInBuildingType("model.building.blacksmithHouse")
-            .produce("model.goods.ore", 2)
-            .produce("model.goods.tools", 0)
-            .produce("model.goods.muskets", 3)
-    	;
-	}
-
 	@Test
-	public void canAssignWorkersToProduceMuskets2() throws Exception {
+	void canAssignWorkersToProduceMuskets() {
 		// given
 		nieuwAmsterdam.addBuilding(Specification.instance.buildingTypes.getById("model.building.armory"));
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Muskets());
+		colonyPlan.execute(new ColonyPlan.Plan.Muskets());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -417,7 +214,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 
 
     @Test
-	public void noProductionLocationForLockedTiles() throws Exception {
+	void noProductionLocationForLockedTiles() {
 		// given
     	lockAllTilesInColony();
     	
@@ -435,62 +232,31 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		}
 	}
     
-    @Test
-	public void endExecutePlanWhenCanNotFindWorkLocation() throws Exception {
-		// given
-    	lockAllTilesInColony();
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Food);		
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-			.hasSize(0);
-	}
-
 	@Test
-	public void endExecutePlanWhenCanNotFindWorkLocation2() throws Exception {
+	void endExecutePlanWhenCanNotFindWorkLocation() {
 		// given
 		lockAllTilesInColony();
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Food());
+		colonyPlan.execute(new ColonyPlan.Plan.Food());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
 			.hasSize(0);
 	}
 
-    @Test
-	public void canAssignWorkersWhenTilesLockedAndIgnoreIndianOwner() throws Exception {
-		// given
-    	lockAllTilesInColony();
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withIgnoreIndianOwner();
-    	
-		// when
-    	colonyPlan.execute2(ColonyPlan.Plan.Food);		
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-			.hasSize(5);
-	}
-
 	@Test
-	public void canAssignWorkersWhenTilesLockedAndIgnoreIndianOwner2() throws Exception {
+	void canAssignWorkersWhenTilesLockedAndIgnoreIndianOwner() {
 		// given
 		lockAllTilesInColony();
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withIgnoreIndianOwner();
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.Food());
+		colonyPlan.execute(new ColonyPlan.Plan.Food());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -524,41 +290,16 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	}
 
 	@Test
-	public void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources() throws Exception {
-		// given
-    	addForestOnColonyCenterTile();
-    	nieuwAmsterdam.resetLiberty();
-    	
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(false);
-    	
-		// when
-		colonyPlan.execute2(Plan.MostValuable);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-			.hasSize(6)
-			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
-			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
-			.hasWorkerInLocation("tile:3352", "model.unit.expertFurTrapper")
-			.produce("model.goods.coats", 12)
-			.produce("model.goods.furs", 2)
-			.produce("model.goods.food", 0)
-			.produce("model.goods.horses", 0)
-		;
-	}
-
-	@Test
-	void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources2() throws Exception {
+	void canAssignWorkersToMostValueableProductionNotUsingWarehouseResources2() {
 		// given
 		addForestOnColonyCenterTile();
 		nieuwAmsterdam.resetLiberty();
 
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.MostValuable());
+		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -573,50 +314,19 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
-
-    @Test
-	public void canAssignWorkersToMostValueableProductionUsingWarehouseResources() throws Exception {
-		// given
-    	addForestOnColonyCenterTile();
-    	nieuwAmsterdam.resetLiberty();
-    	
-    	nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD);
-    	nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.HORSES);
-    	ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-    	colonyPlan.withConsumeWarehouseResources(true);
-    	
-		// when
-    	colonyPlan.execute2(Plan.MostValuable);
-
-		// then
-    	ColonyAssert.assertThat(nieuwAmsterdam)
-			.hasSize(6)
-			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
-			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
-			.hasWorkerInBuildingType("model.building.tobacconistHouse", 2)
-			.hasWorkerInLocation("tile:3472", "model.unit.expertFisherman")
-			.produce("model.goods.coats", 12)
-			.produce("model.goods.furs", -10)
-			.produce("model.goods.tobacco", -6)
-			.produce("model.goods.cigars", 6)
-			.produce("model.goods.food", 0)
-			.produce("model.goods.horses", 0)
-		;
-	}
-
 	@Test
-	void canAssignWorkersToMostValueableProductionUsingWarehouseResources2() throws Exception {
+	void canAssignWorkersToMostValueableProductionUsingWarehouseResources2() {
 		// given
 		addForestOnColonyCenterTile();
 		nieuwAmsterdam.resetLiberty();
 
 		nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.FOOD);
 		nieuwAmsterdam.getGoodsContainer().decreaseToZero(GoodsType.HORSES);
-		ColonyPlan2 colonyPlan = new ColonyPlan2(nieuwAmsterdam);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan2.Plan.MostValuable());
+		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)

@@ -174,7 +174,7 @@ class AvailableWorkers(initWorkers: Collection<Unit>) {
     }
 }
 
-class ColonyPlan2(val colony: Colony) {
+class ColonyPlan(val colony: Colony) {
 
     class PlanSequence(private val planList: List<Plan>) {
         private var nextPlanIndex : Int = 0
@@ -211,7 +211,7 @@ class ColonyPlan2(val colony: Colony) {
                     "building" -> return Building()
                     "mostvaluable" -> return MostValuable()
                     "tools" -> return Tools()
-                    "Muskets" -> return Muskets()
+                    "muskets" -> return Muskets()
                     else -> throw java.lang.IllegalArgumentException("can not recognize plan name $planStr");
                 }
             }
@@ -489,7 +489,7 @@ class ColonyPlan2(val colony: Colony) {
         return true
     }
 
-    fun withConsumeWarehouseResources(consumeWarehouseResources: Boolean): ColonyPlan2 {
+    fun withConsumeWarehouseResources(consumeWarehouseResources: Boolean): ColonyPlan {
         if (consumeWarehouseResources) {
             colonySimulationSettingProvider.withConsumeWarehouseResources()
         } else {
@@ -498,7 +498,7 @@ class ColonyPlan2(val colony: Colony) {
         return this
     }
 
-    fun withIgnoreIndianOwner(): ColonyPlan2 {
+    fun withIgnoreIndianOwner(): ColonyPlan {
         ignoreIndianOwner = true
         return this;
     }

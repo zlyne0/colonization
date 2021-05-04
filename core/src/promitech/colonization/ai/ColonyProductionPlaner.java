@@ -2,9 +2,8 @@ package promitech.colonization.ai;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Settlement;
-import net.sf.freecol.common.model.ai.ColonyPlan;
-import net.sf.freecol.common.model.ai.ColonyPlan.Plan;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan;
 import net.sf.freecol.common.model.player.Player;
 
 public class ColonyProductionPlaner {
@@ -17,7 +16,7 @@ public class ColonyProductionPlaner {
 			new ColonyPlan(settlement.asColony())
 				.withIgnoreIndianOwner()
 				.withConsumeWarehouseResources(true)
-				.execute2(Plan.MostValuable);
+				.execute(new ColonyPlan.Plan.MostValuable());
 		}
 	}
 	
@@ -25,7 +24,7 @@ public class ColonyProductionPlaner {
 		new ColonyPlan(colony)
 			.withIgnoreIndianOwner()
 			.withConsumeWarehouseResources(true)
-			.execute2(Plan.MostValuable);
+			.execute(new ColonyPlan.Plan.MostValuable());
 	}
 	
 }
