@@ -64,7 +64,6 @@ public class FirstContactController {
      * Method wait until human answer on first contact
      * @param humanPlayer
      * @param aiPlayer
-     * @param humanPlayerInteractionSemaphore 
      */
     public void blockedShowFirstContactDialog(Player humanPlayer, Player aiPlayer) {
     	showFirstContactDialog(humanPlayer, aiPlayer);

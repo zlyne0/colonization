@@ -24,7 +24,6 @@ package net.sf.freecol.common.model.map.generator;
  * More of a handy place to organize the names than an actual option type.
  *
  * @see MapGenerator
- * @see net.sf.freecol.common.option.OptionGroup
  */
 public class MapGeneratorOptions {
 

@@ -69,7 +69,6 @@ public class IndianSettlement extends Settlement {
 
     /**
      * constructor used only by xml parser.
-     * Xml parser also create {@link goodsContainer}
      * @param id
      * @param settlementType
      */

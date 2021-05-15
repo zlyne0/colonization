@@ -55,7 +55,7 @@ class GoodsMaxProductionLocationWithUnit {
     override fun toString(): String {
         var st = ""
         if (worker != null) {
-            st = worker!!.unitType.id
+            st = worker.unitType.id
         } else {
             st = "[no worker]"
         }
@@ -492,9 +492,8 @@ class ColonyPlan(val colony: Colony) {
     fun withConsumeWarehouseResources(consumeWarehouseResources: Boolean): ColonyPlan {
         if (consumeWarehouseResources) {
             colonySimulationSettingProvider.withConsumeWarehouseResources()
-        } else {
-            // default behavior to not consume warehouse resources
         }
+        // else default behavior to not consume warehouse resources
         return this
     }
 

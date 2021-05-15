@@ -700,13 +700,13 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     /**
      * Gets the cost of moving this <code>Unit</code> from the given
      * <code>Tile</code> onto the given <code>Tile</code>. A call to
-     * {@link #getMoveType(Tile, Tile, int)} will return
+     * {@link #getMoveType(Tile, Tile)} will return
      * <code>MOVE_NO_MOVES</code>, if {@link #getMoveCost} returns a move cost
      * larger than the {@link #getMovesLeft moves left}.
      *
      * @param from The <code>Tile</code> this <code>Unit</code> will move from.
      * @param target The <code>Tile</code> this <code>Unit</code> will move onto.
-     * @param movesLeft The amount of moves this Unit has left.
+     * @param _movesLeft The amount of moves this Unit has left.
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
     public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {

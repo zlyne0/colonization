@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model;
+package net.sf.freecol.common.model.colonyproduction;
 
 import promitech.logger.Logger;
 import promitech.logger.LoggerFactory;
