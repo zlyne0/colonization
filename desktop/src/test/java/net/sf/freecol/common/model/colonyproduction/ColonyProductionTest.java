@@ -130,7 +130,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	        
 			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			// when
-			List<GoodMaxProductionLocation> potentialProductions = colony.productionSimulation().determinePotentialMaxGoodsProduction(
+			List<MaxGoodsProductionLocation> potentialProductions = colony.productionSimulation().determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
 			);
 			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.simulation().determinePotentialMaxGoodsProduction(
@@ -156,7 +156,7 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	        
 			ColonyProduction newColonyProduction = new ColonyProduction(new DefaultColonySettingProvider(colony));
 			// when
-			List<GoodMaxProductionLocation> potentialProductions = colony.productionSimulation().determinePotentialMaxGoodsProduction(
+			List<MaxGoodsProductionLocation> potentialProductions = colony.productionSimulation().determinePotentialMaxGoodsProduction(
 				goodsTypes, unitType, ignoreIndianOwner
 			);
 			List<MaxGoodsProductionLocation> newPotentialProductions = newColonyProduction.simulation().determinePotentialMaxGoodsProduction(
@@ -168,23 +168,23 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 	}
 
 	void theSameProductionList(
-		List<GoodMaxProductionLocation> potentialProductions, 
+		List<MaxGoodsProductionLocation> potentialProductions,
 		List<MaxGoodsProductionLocation> newPotentialProductions
 	) {
 		assertThat(potentialProductions).hasSize(newPotentialProductions.size());
 		
 		for (int i = 0; i < potentialProductions.size(); i++) {
-			GoodMaxProductionLocation oldOne = potentialProductions.get(i);
+			MaxGoodsProductionLocation oldOne = potentialProductions.get(i);
 			MaxGoodsProductionLocation newOne = newPotentialProductions.get(i);
 			
 			assertThat(oldOne.getGoodsType()).isEqualTo(newOne.goodsType);
 			assertThat(oldOne.getProduction()).isEqualTo(newOne.production);
 			
-			if (oldOne.getBuilding() != null) {
-				assertThat(oldOne.getBuilding().buildingType.getId()).isEqualTo(newOne.buildingType.getId());
+			if (oldOne.buildingType != null) {
+				assertThat(oldOne.buildingType.getId()).isEqualTo(newOne.buildingType.getId());
 			}
 			if (oldOne.getColonyTile() != null) {
-				assertThat(oldOne.getColonyTile().tile.getId()).isEqualTo(newOne.colonyTile.getId());
+				assertThat(oldOne.getColonyTile().getId()).isEqualTo(newOne.colonyTile.getId());
 			}
 		}
 	}
@@ -239,12 +239,12 @@ class ColonyProductionTest extends Savegame1600BaseClass {
 		ColonyProduction colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(nieuwAmsterdam));
 
 		// when
-		List<GoodMaxProductionLocation> terrainProductions = nieuwAmsterdam.productionSimulation().determinePotentialTerrainProductions(tile, furTrapper);
+		List<MaxGoodsProductionLocation> terrainProductions = nieuwAmsterdam.productionSimulation().determinePotentialTerrainProductions(tile, furTrapper);
 		List<MaxGoodsProductionLocation> newTerrainProductions = colonyProduction.simulation().determinePotentialTerrainProductions(tile, furTrapper);
 
 		// then
 		System.out.println("oldProductions");
-		for (GoodMaxProductionLocation loc : terrainProductions) {
+		for (MaxGoodsProductionLocation loc : terrainProductions) {
 			System.out.println(loc.getGoodsType() + " " + loc.getProduction());
 		}
 		System.out.println("newProductions");

@@ -71,7 +71,7 @@ public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMi
 
 	private void addWorkerToColony(ColonyWorkerMission mission) {
 		Colony colony = mission.getTile().getSettlement().asColony();
-		colony.initColonyBuilderUnit(mission.getUnit());
+		ColonyProductionPlaner.initColonyBuilderUnit(colony, mission.getUnit());
 		ColonyProductionPlaner.createPlan(colony);
 		
 		mission.setDone();

@@ -15,7 +15,7 @@ import java.util.List;
 import java.util.Set;
 
 public class ProductionSimulation {
-	private static final Set<String> emptyExcludeLocationIds = Collections.emptySet();
+	private static final Set<String> emptyExcludeLocationIds = Collections.unmodifiableSet(Collections.<String>emptySet());
 
 	private final ColonyTileProduction simTileProduction = new ColonyTileProduction();
 	private final ColonySettingProvider colonyProvider;
@@ -47,6 +47,20 @@ public class ProductionSimulation {
 
 	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(UnitType workerType, boolean ignoreIndianOwner) {
 		return determinePotentialMaxGoodsProduction(Specification.instance.goodsTypes.entities(), workerType, ignoreIndianOwner);
+	}
+
+	public MaxGoodsProductionLocation determinePotentialMaxTilesProduction(UnitType workerType, boolean ignoreIndianOwner) {
+		MaxGoodsProductionLocation maxProd = null;
+
+		for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
+			if (gt.isFarmed()) {
+				MaxGoodsProductionLocation prod = maxProductionFromTile(
+					gt, workerType, ignoreIndianOwner, emptyExcludeLocationIds
+				);
+				maxProd = MaxGoodsProductionLocation.max(maxProd, prod);
+			}
+		}
+		return maxProd;
 	}
 
 	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(

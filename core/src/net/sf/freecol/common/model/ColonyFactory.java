@@ -56,9 +56,9 @@ public class ColonyFactory {
     	
     	colony.initDefaultBuildings();
     	colony.updateColonyFeatures();
-    	
-    	colony.initColonyBuilderUnit(buildByUnit);
-    	
+
+    	ColonyProductionPlaner.initColonyBuilderUnit(colony, buildByUnit);
+
     	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);
     	tile.addImprovement(tileImprovement);

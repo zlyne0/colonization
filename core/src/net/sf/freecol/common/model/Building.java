@@ -28,6 +28,11 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         this.buildingType = aBuildingType;
     }
 
+	@Override
+	public String productionLocationId() {
+		return buildingType.getId();
+	}
+
 	public UnitContainer.NoAddReason getNoAddReason(UnitType unitType) {
 		int workersSpaceTaken = 0;
 		for (Unit u : workers.entities()) {
@@ -44,10 +49,6 @@ public class Building extends ObjectWithId implements ProductionLocation, UnitLo
         return NoAddReason.NONE == reason;
     }
 	
-    public void determineMaxPotentialProduction(Colony colony, UnitType workerType, ProductionSummary prod, ProductionSummary cons) {
-    	determineMaxPotentialProduction(colony, workerType, prod, cons, null);
-    }
-    
     public void determineMaxPotentialProduction(
 		Colony colony, 
 		UnitType workerType, 

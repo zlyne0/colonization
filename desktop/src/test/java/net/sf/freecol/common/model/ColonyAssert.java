@@ -127,14 +127,18 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 
 	public ColonyAssert hasProductionOnTile(String tileId, String unitTypeId, String goodsTypeId, int amount) {
 		hasWorkerInLocation(tileId, unitTypeId);
-		ProductionSummaryAssert.assertThat(actual.productionSummary(tileId).realProduction)
+		ProductionSummaryAssert.assertThat(actual.productionSummary(tileProductionLocation(tileId)).realProduction)
 			.has(goodsTypeId, amount);
 		return this;
 	}
 
+	private ProductionLocation tileProductionLocation(final String tileId) {
+		return () -> tileId;
+	}
+
 	public ColonyAssert hasProductionOnTile(String tileId, String goodsTypeId, int amount) {
 		hasWorkerInLocation(tileId);
-		ProductionSummaryAssert.assertThat(actual.productionSummary(tileId).realProduction)
+		ProductionSummaryAssert.assertThat(actual.productionSummary(tileProductionLocation(tileId)).realProduction)
 			.has(goodsTypeId, amount);
 		return this;
 	}

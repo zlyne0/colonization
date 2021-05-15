@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.ProductionConsumption;
+import net.sf.freecol.common.model.ProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.UnitConsumption;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.util.Validation;
 
 import java.util.HashMap;
 
@@ -142,4 +144,11 @@ public class ColonyProduction {
     	prod += additionalFoodProduction;
     	return workersCount*2 <= prod;
     }
+
+	public ProductionConsumption productionConsumptionForLocation(ProductionLocation location) {
+		update();
+		ProductionConsumption productionConsumption = prodConsByProducer.get(location.productionLocationId());
+		Validation.notNull(productionConsumption, "can not find producer/consumer by id: " + location.productionLocationId());
+		return productionConsumption;
+	}
 }

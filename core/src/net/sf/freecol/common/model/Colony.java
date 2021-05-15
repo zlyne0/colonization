@@ -10,6 +10,9 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
+import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.MessageNotification;
@@ -24,6 +27,7 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Modifier.ModifierType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.util.StringUtils;
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
@@ -65,7 +69,6 @@ public class Colony extends Settlement {
     public final ObjectWithFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
-    private final ColonyProduction.ProductionSimulation productionSimulation;
 
     private final MapIdEntities<Unit> colonyWorkers = new MapIdEntities<Unit>();
     private Modifier productionBonus = new Modifier(Modifier.COLONY_PRODUCTION_BONUS, ModifierType.ADDITIVE, 0);
@@ -76,9 +79,8 @@ public class Colony extends Settlement {
     private Colony(String id, SettlementType settlementType) {
     	super(id, settlementType);
     	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
-    	colonyProduction = new ColonyProduction(this);
-    	this.productionSimulation = new ColonyProduction.ProductionSimulation(colonyProduction);
-    	// constructor used only by xml parser which create goodsContainer 
+    	colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(this));
+    	// constructor used only by xml parser which create goodsContainer
     }
 
     public Colony(IdGenerator idGenerator, SettlementType settlementType) {
@@ -104,7 +106,7 @@ public class Colony extends Settlement {
     }
     
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
-    	colonyProduction.setAsNeedUpdate();
+		colonyProduction.updateRequest();
     }
 
     public boolean isUnitInColony(Unit unit) {
@@ -133,7 +135,7 @@ public class Colony extends Settlement {
 				colonyWorkers.add(colonyTile.getWorker());
 			}
 		}
-		colonyProduction.setAsNeedUpdate();
+		colonyProduction.updateRequest();
     	colonyLiberty.updateSonOfLiberty(owner, getColonyUnitsCount());
     	updateProductionBonus();
     }
@@ -457,12 +459,8 @@ public class Colony extends Settlement {
 	}
     
     public ProductionConsumption productionSummary(ProductionLocation productionLocation) {
-    	return colonyProduction.productionConsumptionForObject(productionLocation.getId());
+        return colonyProduction.productionConsumptionForLocation(productionLocation);
     }
-
-	public ProductionConsumption productionSummary(String productionLocationId) {
-		return colonyProduction.productionConsumptionForObject(productionLocationId);
-	}
 
     public ProductionSummary productionSummary() {
     	return colonyProduction.globalProductionConsumption();
@@ -470,7 +468,7 @@ public class Colony extends Settlement {
     
 	public void increaseWarehouseByProduction() {
 		goodsContainer.increaseGoodsQuantity(productionSummary());
-		colonyProduction.setAsNeedUpdate();
+		colonyProduction.updateRequest();
 	}
     
 	public void reduceTileResourceQuantity() {
@@ -545,7 +543,7 @@ public class Colony extends Settlement {
 
         if (productionBonus.asInt() != newBonus) {
             productionBonus.setValue(newBonus);
-            colonyProduction.setAsNeedUpdate();
+			colonyProduction.updateRequest();
             return true;
         }
         return false;
@@ -1040,7 +1038,7 @@ public class Colony extends Settlement {
     	for (BuildingType buildingType : Specification.instance.buildingTypes.entities()) {
     		if (isAutoBuildable(buildingType)) {
     			buildings.add(new Building(Game.idGenerator, buildingType));
-    			colonyProduction.setAsNeedUpdate();
+				colonyProduction.updateRequest();
     		}
     	}
 	}
@@ -1055,40 +1053,6 @@ public class Colony extends Settlement {
     	return modified == 0f && noBuildReason == NoBuildReason.NONE;
     }
 	
-    public void initColonyBuilderUnit(Unit builder) {
-    	updateModelOnWorkerAllocationOrGoodsTransfer();
-    	
-    	GoodMaxProductionLocation maxProd = null;
-        for (GoodsType gt : Specification.instance.goodsTypes.entities()) {
-            if (gt.isFarmed()) {
-            	GoodMaxProductionLocation prod = colonyProduction.maxProductionFromTile(gt, builder.unitType, false);
-            	if (prod != null && (maxProd == null || maxProd.hasLessProduction(prod.getProduction()))) {
-            		maxProd = prod;
-            	}
-            }
-        }
-    	if (maxProd != null) {
-    		addWorkerToTerrain(maxProd.getColonyTile(), builder);
-    	} else {
-    		addUnitToRandomBuilding(builder);
-    	}
-    	updateColonyPopulation();
-    }
-    
-    private void addUnitToRandomBuilding(Unit unit) {
-		Building townHall = findBuildingByType(BuildingType.TOWN_HALL);
-		if (townHall.canAddWorker(unit.unitType)) {
-			addWorkerToBuilding(townHall, unit);
-		} else {
-			for (Building building : buildings) {
-				if (building.canAddWorker(unit.unitType)) {
-					addWorkerToBuilding(building, unit);
-					break;
-				}
-			}
-		}
-    }
-    
 	public boolean isTileLockedBecauseNoDock(Tile tile) {
 		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
 			return true;
@@ -1219,8 +1183,8 @@ public class Colony extends Settlement {
 		}
 	}
 
-	public ColonyProduction.ProductionSimulation productionSimulation() {
-		return productionSimulation;
+	public ProductionSimulation productionSimulation() {
+		return colonyProduction.simulation();
 	}
 
     public static class Xml extends XmlNodeParser<Colony> {

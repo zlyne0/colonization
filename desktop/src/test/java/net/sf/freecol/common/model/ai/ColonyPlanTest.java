@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -217,14 +218,14 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 	void noProductionLocationForLockedTiles() {
 		// given
     	lockAllTilesInColony();
-    	
-    	UnitType fisherman = Specification.instance.unitTypes.getById(UnitType.EXPERT_FISHERMAN);
+
+    	UnitType fisherman = unitType(UnitType.EXPERT_FISHERMAN);
     	
 		// when
-    	List<GoodMaxProductionLocation> productions = nieuwAmsterdam.productionSimulation().determinePotentialMaxGoodsProduction(fisherman, false);
+    	List<MaxGoodsProductionLocation> productions = nieuwAmsterdam.productionSimulation().determinePotentialMaxGoodsProduction(fisherman, false);
 		
 		// then
-    	for (GoodMaxProductionLocation gpl : productions) {
+    	for (MaxGoodsProductionLocation gpl : productions) {
     		//System.out.println("" + gpl.getProductionLocation() + " " + gpl.getGoodsType() + " " + gpl.getProduction());
     		if (gpl.getColonyTile() != null) {
     			fail("should no production on tile because all tile should be locked");

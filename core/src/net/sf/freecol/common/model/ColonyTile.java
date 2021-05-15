@@ -27,6 +27,11 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		this.tile = tile;
 	}
 
+	@Override
+	public String productionLocationId() {
+		return tile.getId();
+	}
+
 	public Unit getWorker() {
 		return worker;
 	}
