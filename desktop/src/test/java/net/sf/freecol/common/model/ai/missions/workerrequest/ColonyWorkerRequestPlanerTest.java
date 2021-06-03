@@ -45,7 +45,7 @@ class ColonyWorkerRequestPlanerTest extends Savegame1600BaseClass {
 	public void canScoreTiles() throws Exception {
 		// given
 		PathFinder pathFinder = new PathFinder();
-		ColonyWorkerRequestPlaner sut = new ColonyWorkerRequestPlaner(game, pathFinder);
+		ColonyWorkerRequestPlaner sut = new ColonyWorkerRequestPlaner(game.map, pathFinder);
 		
 		Unit transporter = Units.findCarrier(dutch);
 		

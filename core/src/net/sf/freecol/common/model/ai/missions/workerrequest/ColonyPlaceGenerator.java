@@ -4,6 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
@@ -16,18 +17,18 @@ public class ColonyPlaceGenerator {
 	public static final int TILES_NUMBER = 5;
 	
 	private final PathFinder pathFinder;
-	private final Game game;
+	private final Map map;
 	private final BuildColony buildColony;
 
     private int maxTurnsRange = TILES_NUMBER;
     private int[] theBestWeights = new int[maxTurnsRange+1];
     private Tile[] theBestTiles = new Tile[maxTurnsRange+1];
 	
-	public ColonyPlaceGenerator(PathFinder pathFinder, Game game) {
+	public ColonyPlaceGenerator(PathFinder pathFinder, Map map) {
 		this.pathFinder = pathFinder;
-		this.game = game;
+		this.map = map;
 		
-		buildColony = new BuildColony(game.map);
+		buildColony = new BuildColony(map);
 	}
 
 	public void generateWeights(Player player) {
@@ -37,7 +38,7 @@ public class ColonyPlaceGenerator {
     }
 
 	public Tile[] theBestTiles(Unit unit, Tile rangeSourceTile) {
-        pathFinder.generateRangeMap(game.map, rangeSourceTile, unit, PathFinder.includeUnexploredTiles);
+        pathFinder.generateRangeMap(map, rangeSourceTile, unit, PathFinder.includeUnexploredTiles);
 
 	    generateWeights(unit.getOwner());
 		
@@ -60,7 +61,7 @@ public class ColonyPlaceGenerator {
             }
             if (tileWeight > theBestWeights[turnCost]) {
                 theBestWeights[turnCost] = tileWeight;
-                theBestTiles[turnCost] = game.map.getSafeTile(
+                theBestTiles[turnCost] = map.getSafeTile(
                     buildColony.getTileWeights().toX(cellIndex), 
                     buildColony.getTileWeights().toY(cellIndex)
                 );

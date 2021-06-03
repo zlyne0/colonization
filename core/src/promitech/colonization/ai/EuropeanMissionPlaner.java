@@ -18,8 +18,6 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequest
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
-import promitech.colonization.orders.NewTurnLogger;
-
 import static promitech.colonization.orders.NewTurnLogger.logger;
 
 public class EuropeanMissionPlaner {
@@ -30,8 +28,8 @@ public class EuropeanMissionPlaner {
 	
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
-		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
-		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game, pathFinder);
+		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game.map);
+		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game.map, pathFinder);
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
@@ -60,14 +58,13 @@ public class EuropeanMissionPlaner {
 //		colonyProductionPlaner.createPlan(player, playerMissionContainer);
 //		prepareFoundColonyMissions(player, playerMissionContainer);
 //		transportGoodsToSellMissionPlaner.plan(player);
-//		prepareExploreMissions(player, playerMissionContainer);
 	}
 	
 	private void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}
-		transportUnitForColonyWorkerMission(navyUnit, playerMissionContainer);
+		transportContainedUnits(navyUnit, playerMissionContainer);
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}
@@ -79,6 +76,7 @@ public class EuropeanMissionPlaner {
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}
+		// one turn mission
 		prepareExploreMissions(navyUnit, playerMissionContainer);
 	}
 
@@ -128,7 +126,7 @@ public class EuropeanMissionPlaner {
 		return mission.canEmbarkUnit(unit);
 	}
 	
-	private void transportUnitForColonyWorkerMission(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+	private void transportContainedUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		if (navyUnit.getUnitContainer() != null) {
 			TransportUnitMission tum = null;
 			

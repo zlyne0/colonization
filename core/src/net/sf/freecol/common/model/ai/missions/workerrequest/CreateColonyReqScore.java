@@ -31,7 +31,16 @@ class CreateColonyReqScore {
 		this.colonistUnitType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
 		this.goodsType = goodsType;
 	}
-	
+
+	public void score(ObjectsListScore<TileUnitType> tileScore, Tile[] tiles) {
+		for (Tile tile : tiles) {
+			if (tile == null) {
+				continue;
+			}
+			score(tileScore, tile);
+		}
+	}
+
     public void score(ObjectsListScore<TileUnitType> tileScore, Tile tile) {
     	int unattendedScore = 0;
     	

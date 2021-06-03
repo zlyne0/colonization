@@ -235,7 +235,7 @@ fun generateTheBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView:
 	val rangeSource = guiGameModel.game.map.getSafeTile(player.getEntryLocation());
 	val galleon = UnitFactory.create(UnitType.GALLEON, player, rangeSource)
 		
-	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)
+	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game.map)
 	colonyPlaceGenerator.theBestTiles(galleon, rangeSource)
 	colonyPlaceGenerator.theBestTilesWeight(tileDebugView)
 	
@@ -247,7 +247,7 @@ fun generateTileScoresForNewColony(guiGameModel: GUIGameModel, tileDebugView: Ti
 	
 	var pathFinder = PathFinder()
 	
-	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game)
+	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game.map)
 	colonyPlaceGenerator.generateWeights(guiGameModel.game.playingPlayer)
 	colonyPlaceGenerator.tilesWeights(tileDebugView)
 }
@@ -256,7 +256,7 @@ fun generateWorkerReqScore(di: DI, guiGameModel: GUIGameModel, tileDebugView: Ti
 	tileDebugView.reset()
 	
 	val player = guiGameModel.game.playingPlayer
-	val sut = ColonyWorkerRequestPlaner(guiGameModel.game, di.pathFinder)
+	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
 	sut.score(player, Units.findCarrier(player))
 	sut.debug(tileDebugView)
 }

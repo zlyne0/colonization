@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
@@ -36,13 +37,13 @@ public class ColonyWorkerRequestPlaner {
 		{6, 15}
 	};
 	
-	private final Game game;
+	private final Map map;
 	private final PathFinder pathFinder;
 	private final MapIdEntities<GoodsType> goodsTypeToScoreByPrice;
 	private final ObjectsListScore<TileUnitType> tileScore; 
 	
-	public ColonyWorkerRequestPlaner(Game game, PathFinder pathFinder) {
-		this.game = game;
+	public ColonyWorkerRequestPlaner(Map map, PathFinder pathFinder) {
+		this.map = map;
 		this.pathFinder = pathFinder;
 		this.goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice;
 		this.tileScore = new ObjectsListScore<TileUnitType>(20);
@@ -120,19 +121,13 @@ public class ColonyWorkerRequestPlaner {
 	}
 	
 	private void workerForCreateColony(Player player, Unit transporter, ObjectsListScore<TileUnitType> tileScore) {
-		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game);
+		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, map);
 		
-		Tile playerEntryTile = game.map.getSafeTile(player.getEntryLocation());
+		Tile playerEntryTile = map.getSafeTile(player.getEntryLocation());
 		Tile[] theBestTiles = colonyPlaceGenerator.theBestTiles(transporter, playerEntryTile);
 		
-		CreateColonyReqScore newColonyReqScore = new CreateColonyReqScore(game.map, player, goodsTypeToScoreByPrice);
-		
-		for (Tile tile : theBestTiles) {
-			if (tile == null) {
-				continue;
-			}
-			newColonyReqScore.score(tileScore, tile);
-		}
+		CreateColonyReqScore newColonyReqScore = new CreateColonyReqScore(map, player, goodsTypeToScoreByPrice);
+		newColonyReqScore.score(tileScore, theBestTiles);
 		tileScore.sortDescending();
 	}
 	
