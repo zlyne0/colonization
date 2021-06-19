@@ -89,6 +89,36 @@ public class ProductionSimulation {
 		return goodsProduction;
 	}
 
+	/**
+	 * For expert units.
+	 */
+	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
+		Collection<GoodsType> goodsTypes,
+		boolean ignoreIndianOwner
+	) {
+		ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
+		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
+
+		for (GoodsType gt : goodsTypes) {
+			UnitType workerType = Specification.instance.expertUnitTypeForGoodsType(gt);
+
+			MaxGoodsProductionLocation maxProd = null;
+			if (gt.isFarmed()) {
+				maxProd = maxProductionFromTile(
+					gt, workerType, ignoreIndianOwner, emptyExcludeLocationIds
+				);
+			} else {
+				maxProd = maxProductionFromBuilding(
+					gt, workerType, prodCons, emptyExcludeLocationIds
+				);
+			}
+			if (maxProd != null) {
+				goodsProduction.add(maxProd);
+			}
+		}
+		return goodsProduction;
+	}
+
 	public MaxGoodsProductionLocation determineMaxProduction(
 		GoodsType gt,
 		UnitType workerType,

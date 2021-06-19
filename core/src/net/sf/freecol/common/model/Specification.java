@@ -129,7 +129,7 @@ public class Specification {
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
-    
+    public UnitType freeColonistUnitType;
     
     public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
     public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
@@ -158,7 +158,8 @@ public class Specification {
         for (Nation nation : nations.entities()) {
             nation.updateReferences();
         }
-        
+
+        freeColonistUnitType = unitTypes.getById(UnitType.FREE_COLONIST);
         expertUnitTypeByGoodType.clear();
         for (UnitType unitType : unitTypes.entities()) {
         	unitType.updateDefaultRoleReference();
@@ -285,7 +286,11 @@ public class Specification {
     	}
     	return types;
     }
-    
+
+    public UnitType expertUnitTypeForGoodsType(GoodsType goodsType) {
+        return expertUnitTypeForGoodsType(goodsType, freeColonistUnitType);
+    }
+
     public UnitType expertUnitTypeForGoodsType(GoodsType goodsType, UnitType defaultUnitType) {
     	UnitType unitType = expertUnitTypeByGoodType.get(goodsType.getId());
     	if (unitType == null) {

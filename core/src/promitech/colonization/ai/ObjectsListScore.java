@@ -14,7 +14,11 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 			return o2.score - o1.score;
 		}
 	};
-	
+
+	public static interface Scorable {
+		int getScore();
+	}
+
 	public static class ObjectScore<O> {
 		private O obj;
 		private int score;
@@ -41,7 +45,7 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 		}
 		
 		public String toString() {
-			return this.obj + " " + score;
+			return "score = " + score + ", obj = [" + this.obj + "]";
 		}
 
 		public O getObj() {
@@ -137,5 +141,12 @@ public class ObjectsListScore<T> implements Iterable<ObjectsListScore.ObjectScor
 
 	public boolean isEmpty() {
 		return this.objs.isEmpty();
+	}
+
+	public void prettyPrint() {
+		System.out.println("size = " + this.objs.size());
+		for (ObjectScore<T> obj : this.objs) {
+			System.out.println(obj);
+		}
 	}
 }
