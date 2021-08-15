@@ -12,7 +12,6 @@ import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -23,12 +22,10 @@ import static promitech.colonization.orders.NewTurnLogger.logger;
 public class EuropeanMissionPlaner {
 
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
-	private final ColonyPlaceGenerator colonyPlaceGenerator;
 	private final ColonyWorkerRequestPlaner colonyWorkerRequestPlaner;
 	
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
-		this.colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, game.map);
 		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game.map, pathFinder);
 	}
 
@@ -56,7 +53,6 @@ public class EuropeanMissionPlaner {
 		}
 		
 //		colonyProductionPlaner.createPlan(player, playerMissionContainer);
-//		prepareFoundColonyMissions(player, playerMissionContainer);
 //		transportGoodsToSellMissionPlaner.plan(player);
 	}
 	

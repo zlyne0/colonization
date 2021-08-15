@@ -1,23 +1,24 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest;
 
-import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.util.Predicate;
-import static promitech.colonization.ai.MissionHandlerLogger.logger;
+
 import promitech.colonization.ai.ObjectsListScore;
 import promitech.colonization.ai.ObjectsListScore.ObjectScore;
 import promitech.colonization.ai.Units;
+import promitech.colonization.screen.debug.TileDebugView;
+
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class ColonyWorkerRequestPlaner {
 
@@ -155,4 +156,15 @@ public class ColonyWorkerRequestPlaner {
 		return 0;
 	}
 
+	public void debugTheBestBlaceToBuildColony(TileDebugView tileDebugView, Unit galleon, Tile rangeSource) {
+		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, map);
+		colonyPlaceGenerator.theBestTiles(galleon, rangeSource);
+		colonyPlaceGenerator.theBestTilesWeight(tileDebugView);
+	}
+
+	public void debugGenerateTileScoresForNewColony(TileDebugView tileDebugView, Player playingPlayer) {
+		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, map);
+		colonyPlaceGenerator.generateWeights(playingPlayer);
+		colonyPlaceGenerator.tilesWeights(tileDebugView);
+	}
 }

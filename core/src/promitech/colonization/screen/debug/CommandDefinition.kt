@@ -1,6 +1,10 @@
 package promitech.colonization.screen.debug
 
-import net.sf.freecol.common.model.*
+import net.sf.freecol.common.model.IndianSettlement
+import net.sf.freecol.common.model.Settlement
+import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.UnitFactory
+import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
@@ -8,7 +12,6 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyPlaceGenerator
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
@@ -18,7 +21,12 @@ import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
 import promitech.colonization.DI
-import promitech.colonization.ai.*
+import promitech.colonization.ai.MissionExecutor
+import promitech.colonization.ai.MissionExecutorDebugRun
+import promitech.colonization.ai.MissionPlaner
+import promitech.colonization.ai.NavyExplorer
+import promitech.colonization.ai.SeekAndDestroyMissionHandler
+import promitech.colonization.ai.Units
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.screen.colony.ColonyApplicationScreen
 import promitech.colonization.screen.ff.ContinentalCongress
@@ -87,11 +95,11 @@ fun createCommands(
 		}
 
 		command("ai_generateTileScoresForNewColony") {
-			generateTileScoresForNewColony(guiGameModel, tileDebugView)
+			generateTileScoresForNewColony(di, guiGameModel, tileDebugView)
 		}
 		
 		command("ai_generateTheBestPlaceToBuildColony") {
-			generateTheBestPlaceToBuildColony(guiGameModel, tileDebugView)
+			generateTheBestPlaceToBuildColony(di, guiGameModel, tileDebugView)
 		}
 
 		command("ai_generateWorkerReqScore") {
@@ -226,30 +234,26 @@ fun createCommands(
 	}
 }
 
-fun generateTheBestPlaceToBuildColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+fun generateTheBestPlaceToBuildColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 	
 	val player = guiGameModel.game.playingPlayer
-	val pathFinder = PathFinder()
-	
+
 	val rangeSource = guiGameModel.game.map.getSafeTile(player.getEntryLocation());
 	val galleon = UnitFactory.create(UnitType.GALLEON, player, rangeSource)
-		
-	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game.map)
-	colonyPlaceGenerator.theBestTiles(galleon, rangeSource)
-	colonyPlaceGenerator.theBestTilesWeight(tileDebugView)
-	
+
+	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
+
+	sut.debugTheBestBlaceToBuildColony(tileDebugView, galleon, rangeSource)
+
 	player.removeUnit(galleon)
 }
 
-fun generateTileScoresForNewColony(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+fun generateTileScoresForNewColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 	
-	var pathFinder = PathFinder()
-	
-	val colonyPlaceGenerator = ColonyPlaceGenerator(pathFinder, guiGameModel.game.map)
-	colonyPlaceGenerator.generateWeights(guiGameModel.game.playingPlayer)
-	colonyPlaceGenerator.tilesWeights(tileDebugView)
+	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
+	sut.debugGenerateTileScoresForNewColony(tileDebugView, guiGameModel.game.playingPlayer)
 }
 
 fun generateWorkerReqScore(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {

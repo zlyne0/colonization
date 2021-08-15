@@ -1,9 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest;
 
-import java.util.HashSet;
-import java.util.Set;
-
-import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -12,7 +8,10 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.BuildColony.TileSel
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
-public class ColonyPlaceGenerator {
+import java.util.HashSet;
+import java.util.Set;
+
+class ColonyPlaceGenerator {
 
 	public static final int TILES_NUMBER = 5;
 	
