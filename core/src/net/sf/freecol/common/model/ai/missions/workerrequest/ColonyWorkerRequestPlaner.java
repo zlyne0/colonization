@@ -13,8 +13,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.util.Predicate;
 
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.Units;
 import promitech.colonization.screen.debug.TileDebugView;
 
@@ -41,15 +40,15 @@ public class ColonyWorkerRequestPlaner {
 	private final Map map;
 	private final PathFinder pathFinder;
 	private final MapIdEntities<GoodsType> goodsTypeToScoreByPrice;
-	private final ObjectsListScore<WorkerRequestScoreValue> tileScore;
+	private final ScoreableObjectsList<WorkerRequestScoreValue> tileScore;
 	
 	public ColonyWorkerRequestPlaner(Map map, PathFinder pathFinder) {
 		this.map = map;
 		this.pathFinder = pathFinder;
 		this.goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice;
-		this.tileScore = new ObjectsListScore<WorkerRequestScoreValue>(20);
+		this.tileScore = new ScoreableObjectsList<WorkerRequestScoreValue>(20);
 	}
-	
+
 	/**
 	 * Prepare mission for create new colony or put worker in colony.
 	 * Unit can be on europe dock, on carrier on tile. 
@@ -65,12 +64,12 @@ public class ColonyWorkerRequestPlaner {
 			return;
 		}
 		score(player, transporter);
-		
-		for (final ObjectScore<WorkerRequestScoreValue> objectScore : tileScore) {
-			if (!hasMissionToTile(playerMissionContainer, objectScore.getObj().getLocation())) {
-				ColonyWorkerMission mission = new ColonyWorkerMission(objectScore.getObj().getLocation(), landUnit);
+
+		for (WorkerRequestScoreValue workerRequestScore : tileScore) {
+			if (!hasMissionToTile(playerMissionContainer, workerRequestScore.getLocation())) {
+				ColonyWorkerMission mission = new ColonyWorkerMission(workerRequestScore.getLocation(), landUnit);
 				playerMissionContainer.addMission(mission);
-				
+
 				break;
 			}
 		}
@@ -85,7 +84,7 @@ public class ColonyWorkerRequestPlaner {
 		});
 	}
 	
-	public ObjectsListScore<WorkerRequestScoreValue> score(Player player, Unit transporter) {
+	public ScoreableObjectsList<WorkerRequestScoreValue> score(Player player, Unit transporter) {
 		tileScore.clear();
 		if (player.settlements.isEmpty()) {
 			workerForCreateColony(player, transporter, tileScore);
@@ -93,36 +92,36 @@ public class ColonyWorkerRequestPlaner {
 		} else {
 			workerForColony(player, tileScore);
 			workerForCreateColony(player, transporter, tileScore);
-			tileScore.sortDescending();
 		}
+		tileScore.sortDescending();
 		// maybe it should return list of list to score pack of workers for one colony
 		return tileScore;
 	}
 	
 	public void debug(MapTileDebugInfo mapDebugInfo) {
 		printTileScores(tileScore);
-		
-		for (ObjectScore<WorkerRequestScoreValue> ts : tileScore) {
+
+		for (WorkerRequestScoreValue ts : tileScore) {
 			mapDebugInfo.str(
-				ts.getObj().getLocation().x,
-				ts.getObj().getLocation().y,
+				ts.getLocation().x,
+				ts.getLocation().y,
 				"" + ts.getScore()
 			);
 		}
 	}
 	
-	private void printTileScores(ObjectsListScore<WorkerRequestScoreValue> tileScore) {
-		for (ObjectScore<WorkerRequestScoreValue> objectScore : tileScore) {
-			System.out.println("" 
+	private void printTileScores(ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+		for (WorkerRequestScoreValue objectScore : tileScore) {
+			System.out.println(""
 				+ objectScore.getScore() + ", " 
-				+ objectScore.getObj().getWorkerType() + ", "
-				+ "[" + objectScore.getObj().getLocation().x + "," + objectScore.getObj().getLocation().y + "]"
-				+ (objectScore.getObj().getLocation().hasSettlement() ? " settlement(" + objectScore.getObj().getLocation().getSettlement().getName() + ")" : "")
+				+ objectScore.getWorkerType() + ", "
+				+ "[" + objectScore.getLocation().x + "," + objectScore.getLocation().y + "]"
+				+ (objectScore.getLocation().hasSettlement() ? " settlement(" + objectScore.getLocation().getSettlement().getName() + ")" : "")
 			);
 		}
 	}
 	
-	private void workerForCreateColony(Player player, Unit transporter, ObjectsListScore<WorkerRequestScoreValue> tileScore) {
+	private void workerForCreateColony(Player player, Unit transporter, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
 		ColonyPlaceGenerator colonyPlaceGenerator = new ColonyPlaceGenerator(pathFinder, map);
 		
 		Tile playerEntryTile = map.getSafeTile(player.getEntryLocation());
@@ -133,24 +132,26 @@ public class ColonyWorkerRequestPlaner {
 		tileScore.sortDescending();
 	}
 	
-	private void workerForColony(Player player, ObjectsListScore<WorkerRequestScoreValue> tileScore) {
+	private void workerForColony(Player player, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
 		for (Settlement settlement : player.settlements) {
 			ColonyWorkerReqScore colonyWorkerReq = new ColonyWorkerReqScore(settlement.asColony(), goodsTypeToScoreByPrice);
-			ObjectsListScore<WorkerRequestScoreValue> score = colonyWorkerReq.simulate();
+			ScoreableObjectsList<WorkerRequestScoreValue> score = colonyWorkerReq.simulate();
 			if (!score.isEmpty()) {
-				if (score.firstScore().getScore() != 0) {
-					tileScore.add(score.firstObj(), score.firstScore().getScore());
+				WorkerRequestScoreValue firstObj = score.firstObj();
+				if (firstObj.score() != 0) {
+					tileScore.add(firstObj);
 				} else {
-					tileScore.add(score.firstObj(), firstNotZero(score));
+					firstObj.setScore(firstNotZeroScore(score));
+					tileScore.add(firstObj);
 				}
 			}
 		}
 	}
 
-	private int firstNotZero(ObjectsListScore<WorkerRequestScoreValue> score) {
-		for (ObjectScore<WorkerRequestScoreValue> value : score) {
-			if (value.getScore() != 0) {
-				return value.getScore();
+	private int firstNotZeroScore(ScoreableObjectsList<WorkerRequestScoreValue> score) {
+		for (WorkerRequestScoreValue value : score) {
+			if (value.score() != 0) {
+				return value.score();
 			}
 		}
 		return 0;

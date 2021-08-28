@@ -1,8 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest;
 
-import java.util.List;
-import java.util.Map.Entry;
-
 import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Map;
@@ -14,8 +11,11 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+
+import java.util.List;
+import java.util.Map.Entry;
+
+import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.map.isometric.NeighbourIterableTile;
 
 class CreateColonyReqScore {
@@ -32,7 +32,7 @@ class CreateColonyReqScore {
 		this.goodsType = goodsType;
 	}
 
-	public void score(ObjectsListScore<WorkerRequestScoreValue> tileScore, Tile[] tiles) {
+	public void score(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Tile[] tiles) {
 		for (Tile tile : tiles) {
 			if (tile == null) {
 				continue;
@@ -41,7 +41,7 @@ class CreateColonyReqScore {
 		}
 	}
 
-    public void score(ObjectsListScore<WorkerRequestScoreValue> tileScore, Tile tile) {
+    public void score(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Tile tile) {
     	int unattendedScore = 0;
     	
     	Entry<GoodsType, Integer> unattendedProduction = tile.getType().productionInfo.singleFilteredUnattendedProduction(goodsType);
@@ -55,7 +55,7 @@ class CreateColonyReqScore {
     	theBestScoreFromNeighbourTiles(tileScore, unattendedScore, tile, goodsType);
     }
     
-    private void centerColonyTileScore(ObjectsListScore<WorkerRequestScoreValue> tileScore, Entry<GoodsType, Integer> tileProduction, Tile tile) {
+    private void centerColonyTileScore(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Entry<GoodsType, Integer> tileProduction, Tile tile) {
     	// tile unattended production
     	
     	Entry<GoodsType, Integer> buildingOutput = null;
@@ -79,7 +79,7 @@ class CreateColonyReqScore {
 		}
     }
 
-    private ObjectScore<WorkerRequestScoreValue> scoreProduction(
+    private WorkerRequestScoreValue scoreProduction(
     	UnitType unitType,
 		Entry<GoodsType, Integer> buildingOutput,
 		Entry<GoodsType, Integer> tileProduction,
@@ -104,17 +104,17 @@ class CreateColonyReqScore {
 			sum += player.market().getSalePrice(entry.key, entry.value);
 		}
 
-		return new ObjectScore<WorkerRequestScoreValue>(new WorkerRequestScoreValue(
+		return new WorkerRequestScoreValue(
 			buildingOutput.getKey(),
 			ps.get(buildingOutput.getKey(), 0),
 			sum,
 			unitType,
 			tile
-		), sum);
+		);
     }
     
     private void theBestScoreFromNeighbourTiles(
-    	ObjectsListScore<WorkerRequestScoreValue> tileScore,
+		ScoreableObjectsList<WorkerRequestScoreValue> tileScore,
 		int colonyCenterTileScore,
 		Tile tile,
 		MapIdEntities<GoodsType> goodsTypeToScore
@@ -165,23 +165,23 @@ class CreateColonyReqScore {
     	if (colonistTheBestScore > 0) {
 			int score = colonistTheBestScore + colonyCenterTileScore;
 
-			tileScore.add(new ObjectScore<WorkerRequestScoreValue>(new WorkerRequestScoreValue(
+			tileScore.add(new WorkerRequestScoreValue(
 				theBestGoodsType,
 				colonistProdAmount,
 				score,
 				colonistUnitType,
 				tile
-			), score));
+			));
     	}
     	if (theBestExpertType != null) {
 			int score = expertTheBestScore + colonyCenterTileScore;
-			tileScore.add(new ObjectScore<WorkerRequestScoreValue>(new WorkerRequestScoreValue(
+			tileScore.add(new WorkerRequestScoreValue(
 				theBestGoodsType,
 				expertProdAmount,
 				score,
 				theBestExpertType,
 				tile
-			), score));
+			));
     	}
     }
     

@@ -105,7 +105,7 @@ class TilePlayer {
     
 }
 
-public class BuildColony {
+class BuildColony {
 
     public static enum TileSelection {
         WITHOUT_UNEXPLORED,

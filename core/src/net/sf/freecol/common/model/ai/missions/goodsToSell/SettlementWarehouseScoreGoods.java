@@ -1,8 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -14,8 +11,11 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import promitech.colonization.ai.score.ObjectScoreList;
 
 class SettlementGoods {
 	final Settlement settlement;
@@ -34,7 +34,7 @@ class SettlementGoods {
 		return goodsContainer.goodsAmount(gt);
 	}
 	
-	public void score(ObjectsListScore<GoodsType> settlementGoodsScore) {
+	public void score(ObjectScoreList<GoodsType> settlementGoodsScore) {
 		settlementGoodsScore.clear();
 		for (GoodsType gt : goodsType) {
 			int amount = amount(gt);
@@ -57,8 +57,8 @@ class SettlementWarehouseScoreGoods {
 	
 	private final Market market;
 	
-	private final ObjectsListScore<GoodsType> settlementGoodsScore;
-	private final ObjectsListScore<Settlement> settlementsScore;
+	private final ObjectScoreList<GoodsType> settlementGoodsScore;
+	private final ObjectScoreList<Settlement> settlementsScore;
 	private final List<SettlementGoods> settlementsGoods;
 	
 	SettlementWarehouseScoreGoods(MapIdEntities<GoodsType> goodsType, Player player) {
@@ -73,8 +73,8 @@ class SettlementWarehouseScoreGoods {
 		
 		settlementsGoods = createSettlementsGoods(player);
 		
-		settlementGoodsScore = new ObjectsListScore<GoodsType>(Specification.instance.goodsTypes.size());
-		settlementsScore = new ObjectsListScore<Settlement>(player.settlements.size());
+		settlementGoodsScore = new ObjectScoreList<GoodsType>(Specification.instance.goodsTypes.size());
+		settlementsScore = new ObjectScoreList<Settlement>(player.settlements.size());
 	}
 	
 	private List<SettlementGoods> createSettlementsGoods(Player player) {
@@ -90,8 +90,8 @@ class SettlementWarehouseScoreGoods {
 		}
 		return sGoods;
 	}
-	
-	ObjectsListScore<Settlement> score(Unit carrier) {
+
+	ObjectScoreList<Settlement> score(Unit carrier) {
 		settlementsScore.clear();
 		for (SettlementGoods settlementGoods : settlementsGoods) {
 			settlementsScore.add(settlementGoods.settlement, scoreSettlementGoods(settlementGoods, carrier));
@@ -100,7 +100,7 @@ class SettlementWarehouseScoreGoods {
 		return settlementsScore;
 	}
 
-	ObjectsListScore<Settlement> score(Unit carrier, Tile startLocation) {
+	ObjectScoreList<Settlement> score(Unit carrier, Tile startLocation) {
 		rangeCalculator.generateRangeMap(map, startLocation, carrier, PathFinder.includeUnexploredTiles);
 		
 		settlementsScore.clear();
@@ -150,7 +150,7 @@ class SettlementWarehouseScoreGoods {
 		carrierCargoSpace.getGoodsContainer().cloneTo(tmpCarrierGoodsContainer);
 		int cargoSlots = carrierCargoSpace.allGoodsCargoSlots();
 		
-		for (ObjectScore<GoodsType> scoreGoods : settlementGoodsScore) {
+		for (ObjectScoreList.ObjectScore<GoodsType> scoreGoods : settlementGoodsScore) {
 			GoodsType scoreGoodsType = scoreGoods.getObj();
 			int goodsAmount = tmpCarrierGoodsContainer.maxGoodsAmountToFillFreeSlots(
 				scoreGoodsType.getId(), 

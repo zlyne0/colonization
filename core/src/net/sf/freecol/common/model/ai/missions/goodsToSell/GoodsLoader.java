@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import java.util.List;
-
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
@@ -9,8 +7,10 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+
+import java.util.List;
+
+import promitech.colonization.ai.score.ObjectScoreList;
 
 public class GoodsLoader {
 	private final Player player;
@@ -59,10 +59,10 @@ public class GoodsLoader {
 	
 	private void loadMostValuableGoods(Settlement settlement, Unit carrier) {
 		SettlementGoods settlementGoods = new SettlementGoods(settlement, player.market(), goodsToScore);
-		ObjectsListScore<GoodsType> goodsScores = new ObjectsListScore<GoodsType>(goodsToScore.size());
+		ObjectScoreList<GoodsType> goodsScores = new ObjectScoreList<GoodsType>(goodsToScore.size());
 		settlementGoods.score(goodsScores);
-		
-		for (ObjectScore<GoodsType> goodsTypeScore : goodsScores) {
+
+		for (ObjectScoreList.ObjectScore<GoodsType> goodsTypeScore : goodsScores) {
 			int amountToFillSlot = Math.min(
 				carrier.maxGoodsAmountToFillFreeSlots(goodsTypeScore.getObj().getId()), 
 				settlement.getGoodsContainer().goodsAmount(goodsTypeScore.getObj())

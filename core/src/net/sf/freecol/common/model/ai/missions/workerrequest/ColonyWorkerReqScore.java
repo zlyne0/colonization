@@ -14,7 +14,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.List;
 
-import promitech.colonization.ai.ObjectsListScore;
+import promitech.colonization.ai.score.ScoreableObjectsList;
 
 class ColonyWorkerReqScore {
 
@@ -23,7 +23,7 @@ class ColonyWorkerReqScore {
 	
 	private final Market market;
 	private final Tile colonyLocation;
-	private ObjectsListScore<WorkerRequestScoreValue> reqUnits = new ObjectsListScore<WorkerRequestScoreValue>(MAX_UNITS_TYPES);
+	private ScoreableObjectsList<WorkerRequestScoreValue> reqUnits = new ScoreableObjectsList<WorkerRequestScoreValue>(MAX_UNITS_TYPES);
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
@@ -41,7 +41,7 @@ class ColonyWorkerReqScore {
 		productionSimulation = colonyProduction.simulation();
 	}
 	
-	public ObjectsListScore<WorkerRequestScoreValue> simulate() {
+	public ScoreableObjectsList<WorkerRequestScoreValue> simulate() {
 		if (consumeWarehouseResources) {
 			colonyProvider.withConsumeWarehouseResources();
 		}
@@ -103,7 +103,7 @@ class ColonyWorkerReqScore {
 				foodTheBestLocation.getGoodsType(),
 				foodTheBestLocation.getProduction(), 0, expertType,
 				colonyLocation
-			),0);
+			));
 			colonyProvider.addWorkerToColony(expertType, foodTheBestLocation);
 			colonyProduction.updateRequest();
 			return true;
@@ -132,15 +132,12 @@ class ColonyWorkerReqScore {
 		}
 		if (theBestScoreLoc != null) {
 			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(theBestScoreLoc.getGoodsType());
-			reqUnits.add(
-				new WorkerRequestScoreValue(
-					theBestScoreLoc.getGoodsType(),
-					theBestScoreLoc.getProduction(),
-					theBestScore, expertType,
-					colonyLocation
-				),
-				theBestScore
-			);
+			reqUnits.add(new WorkerRequestScoreValue(
+				theBestScoreLoc.getGoodsType(),
+				theBestScoreLoc.getProduction(),
+				theBestScore, expertType,
+				colonyLocation
+			));
 			colonyProvider.addWorkerToColony(expertType, theBestScoreLoc);
 			colonyProduction.updateRequest();
 			return true;

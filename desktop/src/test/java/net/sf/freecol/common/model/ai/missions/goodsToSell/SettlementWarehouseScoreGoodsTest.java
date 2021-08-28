@@ -1,15 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.CsvSource;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
@@ -23,9 +13,20 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScoreAssert;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+
+import java.util.function.Predicate;
+
+import promitech.colonization.ai.score.ObjectScoreList;
+import promitech.colonization.ai.score.ScoreableObjectsListAssert;
 import promitech.colonization.savegame.SaveGameParser;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class SettlementWarehouseScoreGoodsTest {
 
@@ -57,19 +58,19 @@ class SettlementWarehouseScoreGoodsTest {
     	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(wagonTrain);
+		ObjectScoreList<Settlement> settlementsScore = sut.score(wagonTrain);
     	
 		// then
-    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    	ScoreableObjectsListAssert.assertThat(settlementsScore)
     		.hasSize(4)
-    		.hasScore(0, 1264, dutch.settlements.getById("colony:6528"))
-    		.hasScore(1, 650, dutch.settlements.getById("colony:6554"))
-    		.hasScore(2, 378, dutch.settlements.getById("colony:6788"))
-    		.hasScore(3, 344, dutch.settlements.getById("colony:6993"))
+    		.hasScore(0, 1264, eq(dutch.settlements.getById("colony:6528")))
+    		.hasScore(1, 650, eq(dutch.settlements.getById("colony:6554")))
+    		.hasScore(2, 378, eq(dutch.settlements.getById("colony:6788")))
+    		.hasScore(3, 344, eq(dutch.settlements.getById("colony:6993")))
 		;
 	}
 
-    @Test
+	@Test
 	public void canDetermineSettlementGoodsScoreForGallen() throws Exception {
 		// given
     	Unit galleon = UnitFactory.create(
@@ -80,15 +81,15 @@ class SettlementWarehouseScoreGoodsTest {
     	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon);
+    	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon);
     	
 		// then
-    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    	ScoreableObjectsListAssert.assertThat(settlementsScore)
     		.hasSize(4)
-    		.hasScore(0, 2186, dutch.settlements.getById("colony:6528"))
-    		.hasScore(1, 1130, dutch.settlements.getById("colony:6554"))
-    		.hasScore(2, 378, dutch.settlements.getById("colony:6788"))
-    		.hasScore(3, 344, dutch.settlements.getById("colony:6993"))
+    		.hasScore(0, 2186, eq(dutch.settlements.getById("colony:6528")))
+    		.hasScore(1, 1130, eq(dutch.settlements.getById("colony:6554")))
+    		.hasScore(2, 378, eq(dutch.settlements.getById("colony:6788")))
+    		.hasScore(3, 344, eq(dutch.settlements.getById("colony:6993")))
 		;
 	}
 
@@ -104,19 +105,19 @@ class SettlementWarehouseScoreGoodsTest {
     	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon);
+    	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon);
     	
 //		for (ObjectScore<Settlement> x : settlementsScore) {
 //			System.out.println(x);
 //		}    	
     	
 		// then
-    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    	ScoreableObjectsListAssert.assertThat(settlementsScore)
     		.hasSize(4)
-    		.hasScore(dutch.settlements.getById("colony:6993"), 0)
-    		.hasScore(dutch.settlements.getById("colony:6554"), 0)
-    		.hasScore(dutch.settlements.getById("colony:6788"), 0)
-    		.hasScore(dutch.settlements.getById("colony:6993"), 0)
+    		.hasScore(0, eq(dutch.settlements.getById("colony:6993")))
+    		.hasScore(0, eq(dutch.settlements.getById("colony:6554")))
+    		.hasScore(0, eq(dutch.settlements.getById("colony:6788")))
+    		.hasScore(0, eq(dutch.settlements.getById("colony:6993")))
 		;
 	}
     
@@ -132,16 +133,16 @@ class SettlementWarehouseScoreGoodsTest {
     	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
+    	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
 
 		// then
 
-    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    	ScoreableObjectsListAssert.assertThat(settlementsScore)
 			.hasSize(4)
-			.hasScore(0, 1858, dutch.settlements.getById("colony:6528"))
-			.hasScore(1, 960, dutch.settlements.getById("colony:6554"))
-			.hasScore(2, 264, dutch.settlements.getById("colony:6788"))
-			.hasScore(3, -68, dutch.settlements.getById("colony:6993"))
+			.hasScore(0, 1858, eq(dutch.settlements.getById("colony:6528")))
+			.hasScore(1, 960, eq(dutch.settlements.getById("colony:6554")))
+			.hasScore(2, 264, eq(dutch.settlements.getById("colony:6788")))
+			.hasScore(3, -68, eq(dutch.settlements.getById("colony:6993")))
 		;
 	}
     
@@ -157,19 +158,19 @@ class SettlementWarehouseScoreGoodsTest {
     	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
     	
 		// when
-    	ObjectsListScore<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
+    	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
 
 //    	for (ObjectScore<Settlement> x : settlementsScore) {
 //    		System.out.println(x);
 //    	}
     	
 		// then
-    	ObjectsListScoreAssert.assertThat(settlementsScore)
+    	ScoreableObjectsListAssert.assertThat(settlementsScore)
 			.hasSize(4)
-			.hasScore(0, 1530, dutch.settlements.getById("colony:6528"))
-			.hasScore(1, 791, dutch.settlements.getById("colony:6554"))
-			.hasScore(2, 321, dutch.settlements.getById("colony:6788"))
-			.hasScore(3, 137, dutch.settlements.getById("colony:6993"))
+			.hasScore(0, 1530, eq(dutch.settlements.getById("colony:6528")))
+			.hasScore(1, 791, eq(dutch.settlements.getById("colony:6554")))
+			.hasScore(2, 321, eq(dutch.settlements.getById("colony:6788")))
+			.hasScore(3, 137, eq(dutch.settlements.getById("colony:6993")))
 		;
 	}
 
@@ -198,5 +199,14 @@ class SettlementWarehouseScoreGoodsTest {
 		// then
     	assertThat(settlementTurnsScore).isEqualTo(expectedScore);
 	}
-    
+
+	private Predicate<Settlement> eq(Settlement aSettlement) {
+		return new Predicate<Settlement>() {
+			@Override
+			public boolean test(Settlement settlement) {
+				return aSettlement.equalsId(settlement);
+			}
+		};
+	}
+
 }

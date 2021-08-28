@@ -8,8 +8,8 @@ import net.sf.freecol.common.model.specification.GoodsType;
 
 import org.junit.jupiter.api.Test;
 
-import promitech.colonization.ai.ObjectsListScore;
-import promitech.colonization.ai.ObjectsListScoreAssert;
+import promitech.colonization.ai.score.ScoreableObjectsList;
+import promitech.colonization.ai.score.ScoreableObjectsListAssert;
 import promitech.colonization.savegame.Savegame1600BaseClass;
 
 import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq;
@@ -25,13 +25,13 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectsListScore<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
 
 		// then
-		ObjectsListScoreAssert.assertThat(colonyScore)
+		ScoreableObjectsListAssert.assertThat(colonyScore)
 			.hasSumScore(84)
 			.hasScore(0, 0, unitTypeEq(UnitType.EXPERT_FISHERMAN))
 			.hasScore(1, 48, unitTypeEq(UnitType.MASTER_FUR_TRADER))
@@ -47,14 +47,14 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectsListScore<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
 
 		// then
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
 
-		ObjectsListScoreAssert.assertThat(colonyScore)
+		ScoreableObjectsListAssert.assertThat(colonyScore)
 			.hasSumScore(54)
 			.hasScore(0, 30, unitTypeEq(UnitType.MASTER_WEAVER))
 			.hasScore(1, 24, unitTypeEq(UnitType.EXPERT_FUR_TRAPPER))
@@ -69,13 +69,13 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectsListScore<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
 
 		// then
-		ObjectsListScoreAssert.assertThat(colonyScore)
+		ScoreableObjectsListAssert.assertThat(colonyScore)
 			.hasSumScore(64)
 			.hasScore(0, 40, unitTypeEq(UnitType.MASTER_TOBACCONIST))
 			.hasScore(1, 24, unitTypeEq(UnitType.EXPERT_FUR_TRAPPER))
@@ -90,13 +90,13 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ObjectsListScore<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
 
 		// then
-		ObjectsListScoreAssert.assertThat(colonyScore)
+		ScoreableObjectsListAssert.assertThat(colonyScore)
 			.hasSumScore(196)
 			.hasScore(0, 72, unitTypeEq(UnitType.MASTER_FUR_TRADER))
 			.hasScore(1, 64, unitTypeEq(UnitType.MASTER_TOBACCO_PLANTER))
@@ -118,14 +118,14 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		);
 		
 		// when
-		ObjectsListScore<WorkerRequestScoreValue> tileScore1 = new ObjectsListScore<>(2);
+		ScoreableObjectsList<WorkerRequestScoreValue> tileScore1 = new ScoreableObjectsList<>(2);
 		sut.score(tileScore1, tile1);
-		ObjectsListScore<WorkerRequestScoreValue> tileScore2 = new ObjectsListScore<>(2);
+		ScoreableObjectsList<WorkerRequestScoreValue> tileScore2 = new ScoreableObjectsList<>(2);
 		sut.score(tileScore2, tile2);
 
 		// then
 		tileScore1.prettyPrint();
-		ObjectsListScoreAssert.assertThat(tileScore1)
+		ScoreableObjectsListAssert.assertThat(tileScore1)
 			.hasSize(4)
 			.hasScore(0, 24, eq(tile1, UnitType.FREE_COLONIST))
 			.hasScore(1,24, eq(tile1, UnitType.MASTER_FUR_TRADER))
@@ -134,7 +134,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		;
 
 		tileScore2.prettyPrint();
-		ObjectsListScoreAssert.assertThat(tileScore2)
+		ScoreableObjectsListAssert.assertThat(tileScore2)
 			.hasSize(4)
 			.hasScore(0,30, eq(tile2, UnitType.FREE_COLONIST))
 			.hasScore(1,30, eq(tile2, UnitType.MASTER_TOBACCONIST))

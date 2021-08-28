@@ -1,9 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-
 import com.badlogic.gdx.math.GridPoint2;
 
 import net.sf.freecol.common.model.Game;
@@ -15,9 +11,13 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
-import promitech.colonization.ai.ObjectsListScore;
+
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import promitech.colonization.ai.Units;
-import promitech.colonization.ai.ObjectsListScore.ObjectScore;
+import promitech.colonization.ai.score.ObjectScoreList;
 
 public class TransportGoodsToSellMissionPlaner {
 
@@ -46,30 +46,31 @@ public class TransportGoodsToSellMissionPlaner {
 
 		for (Unit carrier : carriers) {
 			Tile startLocation = scoreColonyGoodsStartLocation(carrier);
-			ObjectsListScore<Settlement> score = scoreGoodsCalculator.score(carrier, startLocation);
+			ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(carrier, startLocation);
 
 			if (!score.isEmpty()) {
-				if (score.theBestScore().getScore() >= MIN_SETTLEMENT_SCORE) {
+				ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
+				if (theBestScore.getScore() >= MIN_SETTLEMENT_SCORE) {
 					Set<String> possibleSettlementsToVisit = createPossibleSettlementToVisit(score);
 
 					TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
 						carrier,
-						score.theBestScore().getObj(),
+						theBestScore.getObj(),
 						possibleSettlementsToVisit
 					);
 					game.aiContainer.missionContainer(player).addMission(mission);
 
 					// from scoreCalculator reduce settlement goods with the best score for free cargo space in carrier
 					// because to avoid two carriers go to the same colony
-					scoreGoodsCalculator.settlementGoodsReduce(score.theBestScore().getObj(), carrier);
+					scoreGoodsCalculator.settlementGoodsReduce(theBestScore.getObj(), carrier);
 				}
 			}
 		}
 	}
 
-	private Set<String> createPossibleSettlementToVisit(ObjectsListScore<Settlement> score) {
+	private Set<String> createPossibleSettlementToVisit(ObjectScoreList<Settlement> score) {
 		Set<String> settlementIds = new HashSet<String>();
-		for (ObjectScore<Settlement> settlementObjectScore : score) {
+		for (ObjectScoreList.ObjectScore<Settlement> settlementObjectScore : score) {
 			settlementIds.add(settlementObjectScore.getObj().getId());
 		}
 		settlementIds.remove(score.theBestScore().getObj().getId());
@@ -92,13 +93,13 @@ public class TransportGoodsToSellMissionPlaner {
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
 			Specification.instance.goodsTypeToScoreByPrice, player, game.map, pathFinder
 		);
-		ObjectsListScore<Settlement> score = scoreGoodsCalculator.score(
+		ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(
 			mission.getTransporter(), 
 			mission.getTransporter().getTile()
 		);
 		
 		mission.removeFirstSettlement();
-		for (ObjectScore<Settlement> objectScore : score) {
+		for (ObjectScoreList.ObjectScore<Settlement> objectScore : score) {
 			if (objectScore.getScore() >= MIN_SETTLEMENT_SCORE && mission.isSettlementPossibleToVisit(objectScore.getObj())) {
 				mission.visitSettlementAsFirst(objectScore.getObj());
 				break;
