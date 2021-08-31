@@ -2,26 +2,73 @@ package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitType
+import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.ai.score.ScoreableObjectsList
 
-class WorkerRequestScoreValue  (
+class MultipleWorkerRequestScoreValue(
+    val workersScores: ScoreableObjectsList<SingleWorkerRequestScoreValue>
+) : WorkerRequestScoreValue {
+
+    override var score: Int = 0
+    override lateinit var location: Tile
+
+    var productionValue: Int = 0
+    private lateinit var goodsType: GoodsType
+    private var productionAmount: Int = 0
+    private lateinit var workerType: UnitType
+
+    init {
+        for (workerScore in workersScores) {
+            if (workerScore.score != 0) {
+                goodsType = workerScore.goodsType
+                workerType = workerScore.workerType
+                productionAmount = workerScore.productionAmount
+                productionValue += workerScore.productionValue
+                location = workerScore.location
+                break
+            }
+        }
+        score = productionValue
+    }
+
+    override fun toPrettyString(player: Player) : String {
+        val unitPrice = player.europe.getUnitPrice(workerType)
+        var settlementName = ""
+        if (location.hasSettlement()) {
+            settlementName = location.settlement.name
+        }
+        return "${score}, ${workerType} (${goodsType} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName"
+    }
+}
+
+class SingleWorkerRequestScoreValue(
     val goodsType: GoodsType,
     val productionAmount: Int,
     val productionValue: Int,
     val workerType: UnitType,
-    val location: Tile
-) : ScoreableObjectsList.Scoreable {
+    override var location: Tile
+) : WorkerRequestScoreValue {
 
-    public var score = productionValue
+    override var score: Int = productionValue
 
-    override fun toString(): String {
-        return "workerType = $workerType, goodsType = $goodsType, amount = $productionAmount, productionValue = $productionValue"
+    override fun toPrettyString(player: Player) : String {
+        val unitPrice = player.europe.getUnitPrice(workerType)
+        var settlementName = ""
+        if (location.hasSettlement()) {
+            settlementName = location.settlement.name
+        }
+        return "${score}, ${workerType} (${goodsType} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName"
     }
+}
 
-    override fun score(): Int {
-        return score
-    }
+interface WorkerRequestScoreValue : ScoreableObjectsList.Scoreable {
+    var score : Int
+    var location : Tile
+
+    fun location() : Tile = location
+    override fun score(): Int = score
+    fun toPrettyString(player: Player) : String
 }
 
 class WorkerRequestScore {

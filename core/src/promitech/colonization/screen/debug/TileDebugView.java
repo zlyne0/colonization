@@ -26,6 +26,14 @@ public class TileDebugView implements MapTileDebugInfo {
         debugTileStrTab[y][x] = str;
     }
 
+    @Override
+    public void strIfNull(int x, int y, String str) {
+        initTileStrTab();
+        if (debugTileStrTab[y][x] == null) {
+            debugTileStrTab[y][x] = str;
+        }
+    }
+
     public String[][] getDebugTileStrTab() {
         initTileStrTab();
         return debugTileStrTab;

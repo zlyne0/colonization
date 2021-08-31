@@ -1,5 +1,7 @@
 package promitech.colonization.ai.score
 
+import net.sf.freecol.common.util.MyInteger
+
 open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: Int) : Iterable<T> {
 
     interface Scoreable {
@@ -10,7 +12,13 @@ open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: In
 
     private val scorableDescendingComparator = object : Comparator<Scoreable> {
         override fun compare(p0: Scoreable, p1: Scoreable): Int {
-            return p1.score() - p0.score()
+            return MyInteger.compare(p1.score(), p0.score());
+        }
+    }
+
+    private val scorableAscendingComparator = object : Comparator<Scoreable> {
+        override fun compare(p0: Scoreable, p1: Scoreable): Int {
+            return MyInteger.compare(p0.score(), p1.score());
         }
     }
 
@@ -20,6 +28,10 @@ open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: In
 
     fun sortDescending() {
         objects.sortWith(scorableDescendingComparator)
+    }
+
+    fun sortAscending() {
+        objects.sortWith(scorableAscendingComparator)
     }
 
     override fun iterator(): Iterator<T> {

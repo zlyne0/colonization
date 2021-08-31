@@ -66,8 +66,8 @@ public class ColonyWorkerRequestPlaner {
 		score(player, transporter);
 
 		for (WorkerRequestScoreValue workerRequestScore : tileScore) {
-			if (!hasMissionToTile(playerMissionContainer, workerRequestScore.getLocation())) {
-				ColonyWorkerMission mission = new ColonyWorkerMission(workerRequestScore.getLocation(), landUnit);
+			if (!hasMissionToTile(playerMissionContainer, workerRequestScore.location())) {
+				ColonyWorkerMission mission = new ColonyWorkerMission(workerRequestScore.location(), landUnit);
 				playerMissionContainer.addMission(mission);
 
 				break;
@@ -94,30 +94,28 @@ public class ColonyWorkerRequestPlaner {
 			workerForCreateColony(player, transporter, tileScore);
 		}
 		tileScore.sortDescending();
-		// maybe it should return list of list to score pack of workers for one colony
 		return tileScore;
 	}
-	
-	public void debug(MapTileDebugInfo mapDebugInfo) {
-		printTileScores(tileScore);
+
+	public void debugToConsole(Player player) {
+		printTileScores(player, tileScore);
+	}
+
+	public void debug(Player player, MapTileDebugInfo mapDebugInfo) {
+		printTileScores(player, tileScore);
 
 		for (WorkerRequestScoreValue ts : tileScore) {
-			mapDebugInfo.str(
-				ts.getLocation().x,
-				ts.getLocation().y,
+			mapDebugInfo.strIfNull(
+				ts.location().x,
+				ts.location().y,
 				"" + ts.getScore()
 			);
 		}
 	}
 	
-	private void printTileScores(ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+	private void printTileScores(Player player, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
 		for (WorkerRequestScoreValue objectScore : tileScore) {
-			System.out.println(""
-				+ objectScore.getScore() + ", " 
-				+ objectScore.getWorkerType() + ", "
-				+ "[" + objectScore.getLocation().x + "," + objectScore.getLocation().y + "]"
-				+ (objectScore.getLocation().hasSettlement() ? " settlement(" + objectScore.getLocation().getSettlement().getName() + ")" : "")
-			);
+			System.out.println(objectScore.toPrettyString(player));
 		}
 	}
 	
@@ -135,26 +133,12 @@ public class ColonyWorkerRequestPlaner {
 	private void workerForColony(Player player, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
 		for (Settlement settlement : player.settlements) {
 			ColonyWorkerReqScore colonyWorkerReq = new ColonyWorkerReqScore(settlement.asColony(), goodsTypeToScoreByPrice);
-			ScoreableObjectsList<WorkerRequestScoreValue> score = colonyWorkerReq.simulate();
-			if (!score.isEmpty()) {
-				WorkerRequestScoreValue firstObj = score.firstObj();
-				if (firstObj.score() != 0) {
-					tileScore.add(firstObj);
-				} else {
-					firstObj.setScore(firstNotZeroScore(score));
-					tileScore.add(firstObj);
-				}
+			ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyWorkerScores = colonyWorkerReq.simulate();
+			if (colonyWorkerScores.sumScore() > 0) {
+				// sum > 0 has worker requests and produce something valuable (!= food)
+				tileScore.add(new MultipleWorkerRequestScoreValue(colonyWorkerScores));
 			}
 		}
-	}
-
-	private int firstNotZeroScore(ScoreableObjectsList<WorkerRequestScoreValue> score) {
-		for (WorkerRequestScoreValue value : score) {
-			if (value.score() != 0) {
-				return value.score();
-			}
-		}
-		return 0;
 	}
 
 	public void debugTheBestBlaceToBuildColony(TileDebugView tileDebugView, Unit galleon, Tile rangeSource) {

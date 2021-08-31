@@ -23,7 +23,7 @@ class ColonyWorkerReqScore {
 	
 	private final Market market;
 	private final Tile colonyLocation;
-	private ScoreableObjectsList<WorkerRequestScoreValue> reqUnits = new ScoreableObjectsList<WorkerRequestScoreValue>(MAX_UNITS_TYPES);
+	private ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits = new ScoreableObjectsList<SingleWorkerRequestScoreValue>(MAX_UNITS_TYPES);
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
@@ -41,7 +41,7 @@ class ColonyWorkerReqScore {
 		productionSimulation = colonyProduction.simulation();
 	}
 	
-	public ScoreableObjectsList<WorkerRequestScoreValue> simulate() {
+	public ScoreableObjectsList<SingleWorkerRequestScoreValue> simulate() {
 		if (consumeWarehouseResources) {
 			colonyProvider.withConsumeWarehouseResources();
 		}
@@ -99,7 +99,7 @@ class ColonyWorkerReqScore {
 		}
 		if (foodTheBestLocation != null) {
 			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(foodTheBestLocation.getGoodsType());
-			reqUnits.add(new WorkerRequestScoreValue(
+			reqUnits.add(new SingleWorkerRequestScoreValue(
 				foodTheBestLocation.getGoodsType(),
 				foodTheBestLocation.getProduction(), 0, expertType,
 				colonyLocation
@@ -132,7 +132,7 @@ class ColonyWorkerReqScore {
 		}
 		if (theBestScoreLoc != null) {
 			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(theBestScoreLoc.getGoodsType());
-			reqUnits.add(new WorkerRequestScoreValue(
+			reqUnits.add(new SingleWorkerRequestScoreValue(
 				theBestScoreLoc.getGoodsType(),
 				theBestScoreLoc.getProduction(),
 				theBestScore, expertType,

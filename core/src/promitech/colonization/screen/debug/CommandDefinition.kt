@@ -13,6 +13,8 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
+import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
+import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy.scoreByWorkerValue
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
@@ -102,8 +104,12 @@ fun createCommands(
 			generateTheBestPlaceToBuildColony(di, guiGameModel, tileDebugView)
 		}
 
-		command("ai_generateWorkerReqScore") {
-			generateWorkerReqScore(di, guiGameModel, tileDebugView)
+		command("ai_generateWorkerReqScoreByValue") {
+			generateWorkerReqScoreByValue(di, guiGameModel, tileDebugView)
+		}
+
+		command("ai_generateWorkerReqScoreByPriceToValue") {
+			generateWorkerReqScoreByPriceToValue(di, guiGameModel, tileDebugView)
 		}
 
 		command("ai_settlements_goods_score") {
@@ -256,13 +262,23 @@ fun generateTileScoresForNewColony(di: DI, guiGameModel: GUIGameModel, tileDebug
 	sut.debugGenerateTileScoresForNewColony(tileDebugView, guiGameModel.game.playingPlayer)
 }
 
-fun generateWorkerReqScore(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 	
 	val player = guiGameModel.game.playingPlayer
 	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
 	sut.score(player, Units.findCarrier(player))
-	sut.debug(tileDebugView)
+	sut.debug(player, tileDebugView)
+}
+
+fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	tileDebugView.reset()
+
+	val player = guiGameModel.game.playingPlayer
+	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
+	val colonyWorkerRequestScores = sut.score(player, Units.findCarrier(player))
+	ScorePolicy.scoreByWorkerValue(player, colonyWorkerRequestScores)
+	sut.debug(player, tileDebugView)
 }
 
 

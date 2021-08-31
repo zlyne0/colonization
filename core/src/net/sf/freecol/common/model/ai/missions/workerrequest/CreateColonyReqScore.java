@@ -104,7 +104,7 @@ class CreateColonyReqScore {
 			sum += player.market().getSalePrice(entry.key, entry.value);
 		}
 
-		return new WorkerRequestScoreValue(
+		return new SingleWorkerRequestScoreValue(
 			buildingOutput.getKey(),
 			ps.get(buildingOutput.getKey(), 0),
 			sum,
@@ -165,7 +165,7 @@ class CreateColonyReqScore {
     	if (colonistTheBestScore > 0) {
 			int score = colonistTheBestScore + colonyCenterTileScore;
 
-			tileScore.add(new WorkerRequestScoreValue(
+			tileScore.add(new SingleWorkerRequestScoreValue(
 				theBestGoodsType,
 				colonistProdAmount,
 				score,
@@ -175,7 +175,7 @@ class CreateColonyReqScore {
     	}
     	if (theBestExpertType != null) {
 			int score = expertTheBestScore + colonyCenterTileScore;
-			tileScore.add(new WorkerRequestScoreValue(
+			tileScore.add(new SingleWorkerRequestScoreValue(
 				theBestGoodsType,
 				expertProdAmount,
 				score,

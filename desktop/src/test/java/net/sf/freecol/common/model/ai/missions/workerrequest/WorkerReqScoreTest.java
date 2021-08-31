@@ -25,7 +25,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
@@ -47,7 +47,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
 
 		// then
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
@@ -69,7 +69,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
@@ -90,7 +90,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
 //		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
 //			System.out.println(unitTypeObjectScore);
 //		}
