@@ -11,7 +11,7 @@ public class WorkerRequestScoreValueComparator {
             @Override
             public boolean test(WorkerRequestScoreValue workerRequestScoreValue) {
                 return workerRequestScoreValue.getLocation().equalsCoordinates(tile)
-                    && workerRequestScoreValue.getWorkerType().equalsId(unitTypeId);
+                    && workerRequestScoreValue.workerType().equalsId(unitTypeId);
             }
         };
     }
@@ -20,7 +20,7 @@ public class WorkerRequestScoreValueComparator {
         return new Predicate<WorkerRequestScoreValue>() {
             @Override
             public boolean test(WorkerRequestScoreValue workerRequestScoreValue) {
-                return workerRequestScoreValue.getWorkerType().equalsId(unitTypeId);
+                return workerRequestScoreValue.workerType().equalsId(unitTypeId);
             }
         };
     }

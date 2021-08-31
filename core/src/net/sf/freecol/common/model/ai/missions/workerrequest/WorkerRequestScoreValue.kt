@@ -19,8 +19,10 @@ class MultipleWorkerRequestScoreValue(
     private lateinit var workerType: UnitType
 
     init {
+        var foundWorker = false
         for (workerScore in workersScores) {
             if (workerScore.score != 0) {
+                foundWorker = true
                 goodsType = workerScore.goodsType
                 workerType = workerScore.workerType
                 productionAmount = workerScore.productionAmount
@@ -29,8 +31,13 @@ class MultipleWorkerRequestScoreValue(
                 break
             }
         }
+        if (!foundWorker) {
+            throw IllegalArgumentException("empty workerscore list")
+        }
         score = productionValue
     }
+
+    override fun workerType(): UnitType = workerType
 
     override fun toPrettyString(player: Player) : String {
         val unitPrice = player.europe.getUnitPrice(workerType)
@@ -52,6 +59,8 @@ class SingleWorkerRequestScoreValue(
 
     override var score: Int = productionValue
 
+    override fun workerType(): UnitType = workerType
+
     override fun toPrettyString(player: Player) : String {
         val unitPrice = player.europe.getUnitPrice(workerType)
         var settlementName = ""
@@ -67,14 +76,7 @@ interface WorkerRequestScoreValue : ScoreableObjectsList.Scoreable {
     var location : Tile
 
     fun location() : Tile = location
-    override fun score(): Int = score
     fun toPrettyString(player: Player) : String
-}
-
-class WorkerRequestScore {
-
-    fun createScore() : List<WorkerRequestScore> {
-        return emptyList()
-    }
-
+    fun workerType() : UnitType
+    override fun score(): Int = score
 }
