@@ -3,7 +3,6 @@ package net.sf.freecol.common.model.ai.missions.workerrequest;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.model.colonyproduction.ColonySimulationSettingProvider;
@@ -22,70 +21,79 @@ class ColonyWorkerReqScore {
 	private static final boolean IGNORE_INDIAN_OWNER = true;
 	
 	private final Market market;
-	private final Tile colonyLocation;
-	private ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits = new ScoreableObjectsList<SingleWorkerRequestScoreValue>(MAX_UNITS_TYPES);
+	private final Colony colony;
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
-	private final ColonyProduction colonyProduction;
-	private final ProductionSimulation productionSimulation;
-	private final ColonySimulationSettingProvider colonyProvider;
+	private ColonyProduction colonyProduction;
+	private ProductionSimulation productionSimulation;
+	private ColonySimulationSettingProvider colonyProvider;
 	
 	public ColonyWorkerReqScore(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
 		this.market = colony.getOwner().market();		
 		this.goodsTypeToScore = goodsTypeToScore;
-		this.colonyLocation = colony.tile;
+		this.colony = colony;
+	}
+
+	public void simulate(ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits;
+
+		reqUnits = simulate(ProductionSimulation.expertForGoodsType);
+		if (!reqUnits.isEmpty() && reqUnits.sumScore() > 0) {
+			tileScore.add(new MultipleWorkerRequestScoreValue(reqUnits));
+		}
+		reqUnits = simulate(ProductionSimulation.freeColonistsForGoodsType);
+		if (!reqUnits.isEmpty() && reqUnits.sumScore() > 0) {
+			tileScore.add(new MultipleWorkerRequestScoreValue(reqUnits));
+		}
+	}
+
+	private ScoreableObjectsList<SingleWorkerRequestScoreValue> simulate(ProductionSimulation.UnitTypeByGoodsTypePolicy unitTypeByGoodsTypePolicy) {
+		ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits = new ScoreableObjectsList<SingleWorkerRequestScoreValue>(MAX_UNITS_TYPES);
 
 		colonyProvider = new ColonySimulationSettingProvider(colony);
 		colonyProduction = new ColonyProduction(colonyProvider);
 		productionSimulation = colonyProduction.simulation();
-	}
-	
-	public ScoreableObjectsList<SingleWorkerRequestScoreValue> simulate() {
+
 		if (consumeWarehouseResources) {
 			colonyProvider.withConsumeWarehouseResources();
 		}
 
 		while (reqUnits.size() < MAX_UNITS_TYPES) {
 			if (!colonyProduction.canSustainNewWorker()) {
-				boolean found = tryFindFoodProducer();
-				if (!found) {
+				SingleWorkerRequestScoreValue scoreValue = tryFindFoodProducer(unitTypeByGoodsTypePolicy);
+				if (scoreValue == null) {
 					break;
 				}
+				reqUnits.add(scoreValue);
 			} else {
-				boolean found = tryFindMaxValuableProducer();
-				if (!found) {
+				SingleWorkerRequestScoreValue scoreValue = tryFindMaxValuableProducer(unitTypeByGoodsTypePolicy);
+				if (scoreValue == null) {
 					break;
 				}
+				reqUnits.add(scoreValue);
 			}
 		}
-
-		removeLastNotDesiredProduction();
+		removeLastNotDesiredProduction(reqUnits);
 		return reqUnits;
 	}
 
-	private void removeLastNotDesiredProduction() {
+	private void removeLastNotDesiredProduction(ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits) {
 		// usually food
 		while (!reqUnits.isEmpty()) {
-			UnitType unitType = reqUnits.lastObj().getWorkerType();
-			if (unitType.isType(UnitType.FREE_COLONIST)) {
-				break;
-			}
-			if (isExistsOnDesiredProductionGoods(unitType.getExpertProductionForGoodsId())) {
-				break;
-			} else {
+			SingleWorkerRequestScoreValue lastScoreValue = reqUnits.lastObj();
+			if (!goodsTypeToScore.containsId(lastScoreValue.getGoodsType())) {
 				reqUnits.removeLast();
+			} else {
+				break;
 			}
 		}
 	}
 
-	private boolean isExistsOnDesiredProductionGoods(String goodsTypeId) {
-		return goodsTypeToScore.containsId(goodsTypeId);
-	}
-	
-	private boolean tryFindFoodProducer() {
+	private SingleWorkerRequestScoreValue tryFindFoodProducer(ProductionSimulation.UnitTypeByGoodsTypePolicy unitTypeByGoodsTypePolicy) {
 		List<MaxGoodsProductionLocation> maxProductionForGoods = productionSimulation.determinePotentialMaxGoodsProduction(
 			Specification.instance.foodsGoodsTypes,
+			unitTypeByGoodsTypePolicy,
 			IGNORE_INDIAN_OWNER
 		);
 		MaxGoodsProductionLocation foodTheBestLocation = null;
@@ -98,22 +106,22 @@ class ColonyWorkerReqScore {
 			}
 		}
 		if (foodTheBestLocation != null) {
-			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(foodTheBestLocation.getGoodsType());
-			reqUnits.add(new SingleWorkerRequestScoreValue(
-				foodTheBestLocation.getGoodsType(),
-				foodTheBestLocation.getProduction(), 0, expertType,
-				colonyLocation
-			));
-			colonyProvider.addWorkerToColony(expertType, foodTheBestLocation);
+			UnitType unitType = unitTypeByGoodsTypePolicy.unitType(foodTheBestLocation.getGoodsType());
+			colonyProvider.addWorkerToColony(unitType, foodTheBestLocation);
 			colonyProduction.updateRequest();
-			return true;
+			return new SingleWorkerRequestScoreValue(
+				foodTheBestLocation.getGoodsType(),
+				foodTheBestLocation.getProduction(), 0, unitType,
+				colony.tile
+			);
 		}
-		return false;
+		return null;
 	}
 
-	private boolean tryFindMaxValuableProducer() {
+	private SingleWorkerRequestScoreValue tryFindMaxValuableProducer(ProductionSimulation.UnitTypeByGoodsTypePolicy unitTypeByGoodsTypePolicy) {
 		List<MaxGoodsProductionLocation> maxProductionForGoods = productionSimulation.determinePotentialMaxGoodsProduction(
 			goodsTypeToScore.entities(),
+			unitTypeByGoodsTypePolicy,
 			IGNORE_INDIAN_OWNER
 		);
 		
@@ -131,18 +139,18 @@ class ColonyWorkerReqScore {
 			}
 		}
 		if (theBestScoreLoc != null) {
-			UnitType expertType = Specification.instance.expertUnitTypeForGoodsType(theBestScoreLoc.getGoodsType());
-			reqUnits.add(new SingleWorkerRequestScoreValue(
+			UnitType unitType = unitTypeByGoodsTypePolicy.unitType(theBestScoreLoc.getGoodsType());
+			colonyProvider.addWorkerToColony(unitType, theBestScoreLoc);
+			colonyProduction.updateRequest();
+
+			return new SingleWorkerRequestScoreValue(
 				theBestScoreLoc.getGoodsType(),
 				theBestScoreLoc.getProduction(),
-				theBestScore, expertType,
-				colonyLocation
-			));
-			colonyProvider.addWorkerToColony(expertType, theBestScoreLoc);
-			colonyProduction.updateRequest();
-			return true;
+				theBestScore, unitType,
+				colony.tile
+			);
 		}
-		return false;
+		return null;
 	}
 
 	public boolean isConsumeWarehouseResources() {

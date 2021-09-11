@@ -312,24 +312,15 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     }
 
     public boolean canAiBuyUnit(UnitType unitType, int budget) {
-    	int recruitImmigrantPrice = getRecruitImmigrantPrice();
-    	
-    	if (recruitables.containsId(unitType) && recruitImmigrantPrice <= budget) {
-    		return true;
-    	}
-    	// ai has advantage to buy colonist when they want
-    	if (unitType.equalsId(UnitType.FREE_COLONIST) && recruitImmigrantPrice <= budget) {
-    		return true;
-    	}
-    	
-    	// buy the cheapest trained unit and degrade to colonist
-    	UnitType theCheapestTrainableUnit = theCheapestTrainableUnit();
-    	if (unitType.equalsId(UnitType.FREE_COLONIST) && theCheapestTrainableUnit.getPrice() <= budget) {
-    		return true;
-    	}
-    	
-    	UnitType ut = Specification.instance.unitTypesTrainedInEurope.getByIdOrNull(unitType);
-    	return ut != null && ut.getPrice() <= budget;
+    	if (!unitType.equalsId(UnitType.FREE_COLONIST)
+    		&& !recruitables.containsId(unitType)
+			&& !Specification.instance.unitTypesTrainedInEurope.containsId(unitType)
+		) {
+    		return false;
+		}
+
+		int price = aiUnitPrice(unitType);
+		return budget >= price;
     }
     
     public Unit buyUnitByAI(UnitType unitType) {
@@ -339,7 +330,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     		return buyImmigrant(unitType, recruitImmigrantPrice);
     	}
     	// ai has advantage to buy colonist when they want
-    	if (unitType.equalsId(UnitType.FREE_COLONIST) && owner.hasGold(recruitPrice)) {
+    	if (unitType.equalsId(UnitType.FREE_COLONIST) && owner.hasGold(recruitImmigrantPrice)) {
     		return buyImmigrant(unitType, recruitImmigrantPrice);
     	}
     	
@@ -350,7 +341,25 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	}
     	return buyUnit(unitType, unitType.getPrice());
     }
-    
+
+    public int aiUnitPrice(UnitType unitType) {
+		int recruitImmigrantPrice = getRecruitImmigrantPrice();
+
+		// ai has advantage to buy colonist when they want
+    	if (unitType.equalsId(UnitType.FREE_COLONIST)) {
+			UnitType theCheapestTrainableUnit = theCheapestTrainableUnit();
+			// buy the cheapest trained unit and degrade to colonist
+			int trainedPrice = getUnitPrice(theCheapestTrainableUnit);
+			return Math.min(recruitImmigrantPrice, trainedPrice);
+		}
+
+		int trainableUnitPrice = getUnitPrice(unitType);
+    	if (recruitables.containsId(unitType)) {
+    		return Math.min(trainableUnitPrice, recruitImmigrantPrice);
+		}
+    	return trainableUnitPrice;
+	}
+
     private UnitType theCheapestTrainableUnit() {
     	return Specification.instance.unitTypesTrainedInEurope.sortedEntities().iterator().next();
     }

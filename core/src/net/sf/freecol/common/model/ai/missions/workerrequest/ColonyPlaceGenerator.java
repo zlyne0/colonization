@@ -2,10 +2,8 @@ package net.sf.freecol.common.model.ai.missions.workerrequest;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.ai.missions.workerrequest.BuildColony.TileSelection;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
 import java.util.HashSet;
@@ -15,7 +13,7 @@ class ColonyPlaceGenerator {
 
 	public static final int TILES_NUMBER = 5;
 	
-	private final PathFinder pathFinder;
+	private final EntryPointTurnRange entryPointTurnRange;
 	private final Map map;
 	private final BuildColony buildColony;
 
@@ -23,8 +21,8 @@ class ColonyPlaceGenerator {
     private int[] theBestWeights = new int[maxTurnsRange+1];
     private Tile[] theBestTiles = new Tile[maxTurnsRange+1];
 	
-	public ColonyPlaceGenerator(PathFinder pathFinder, Map map) {
-		this.pathFinder = pathFinder;
+	public ColonyPlaceGenerator(EntryPointTurnRange entryPointTurnRange, Map map) {
+	    this.entryPointTurnRange = entryPointTurnRange;
 		this.map = map;
 		
 		buildColony = new BuildColony(map);
@@ -36,10 +34,8 @@ class ColonyPlaceGenerator {
         buildColony.generateWeights(player, tileFilter);
     }
 
-	public Tile[] theBestTiles(Unit unit, Tile rangeSourceTile) {
-        pathFinder.generateRangeMap(map, rangeSourceTile, unit, PathFinder.includeUnexploredTiles);
-
-	    generateWeights(unit.getOwner());
+	public Tile[] theBestTiles(Player player) {
+	    generateWeights(player);
 		
         for (int i=0; i<maxTurnsRange; i++) {
             theBestWeights[i] = -1;
@@ -53,7 +49,7 @@ class ColonyPlaceGenerator {
             if (tileWeight <= 0) {
                 continue;
             }
-            turnCost = pathFinder.turnsCost(cellIndex);
+            turnCost = entryPointTurnRange.turnsCost(cellIndex);
             
             if (turnCost > maxTurnsRange) {
                 turnCost = maxTurnsRange;
@@ -69,8 +65,8 @@ class ColonyPlaceGenerator {
         return theBestTiles;
 	}
 	
-    public Tile findTileToBuildColony(Unit unit, Tile rangeSourceTile) {
-    	theBestTiles(unit, rangeSourceTile);
+    public Tile findTileToBuildColony(Player player) {
+    	theBestTiles(player);
         
         for (Tile tile : theBestTiles) {
             if (tile != null) {

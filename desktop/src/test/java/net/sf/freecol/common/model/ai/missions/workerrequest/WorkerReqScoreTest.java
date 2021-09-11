@@ -4,19 +4,28 @@ import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import promitech.colonization.ai.Units;
 import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.score.ScoreableObjectsListAssert;
 import promitech.colonization.savegame.Savegame1600BaseClass;
 
 import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq;
-import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.unitTypeEq;
 import static org.assertj.core.api.Assertions.assertThat;
 
 class WorkerReqScoreTest extends Savegame1600BaseClass {
+
+	EntryPointTurnRange entryPointTurnRange;
+
+	@BeforeEach
+	public void beforeEach() {
+		entryPointTurnRange = new EntryPointTurnRange(game.map, new PathFinder(), dutch, Units.findCarrier(dutch));
+	}
 
 	@Test
 	void canGenerateRequiredColonistsFortNassau() throws Exception {
@@ -25,18 +34,32 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
-//		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
-//			System.out.println(unitTypeObjectScore);
-//		}
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.simulate(colonyScore);
+
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		workerProductionValueScorePolicy.calculateScore(colonyScore);
+		colonyScore.prettyPrint();
 
 		// then
 		ScoreableObjectsListAssert.assertThat(colonyScore)
-			.hasSumScore(84)
-			.hasScore(0, 0, unitTypeEq(UnitType.EXPERT_FISHERMAN))
-			.hasScore(1, 48, unitTypeEq(UnitType.MASTER_FUR_TRADER))
-			.hasScore(2, 36, unitTypeEq(UnitType.EXPERT_ORE_MINER))
+			.hasSumScore(61)
+			.hasScore(0, 35, eq(UnitType.EXPERT_FISHERMAN))
+			.hasScore(1, 26, eq(UnitType.FREE_COLONIST))
 		;
+		ScoreableObjectsListAssert.assertThat(((MultipleWorkerRequestScoreValue)colonyScore.get(0)).getWorkersScores())
+			.hasSumScore(84)
+			.hasScore(0, 0, eq(UnitType.EXPERT_FISHERMAN))
+			.hasScore(1, 48, eq(UnitType.MASTER_FUR_TRADER))
+			.hasScore(2, 36, eq(UnitType.EXPERT_ORE_MINER))
+		;
+		ScoreableObjectsListAssert.assertThat(((MultipleWorkerRequestScoreValue)colonyScore.get(1)).getWorkersScores())
+			.hasSumScore(60)
+			.hasScore(0, 0, eq(UnitType.FREE_COLONIST))
+			.hasScore(1, 36, eq(UnitType.FREE_COLONIST))
+			.hasScore(2, 24, eq(UnitType.FREE_COLONIST))
+		;
+
 		assertThat(new ColonySnapshot(fortNassau)).isEqualTo(snapshotBefore);
 	}
 
@@ -47,17 +70,28 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.simulate(colonyScore);
+
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		workerProductionValueScorePolicy.calculateScore(colonyScore);
+		colonyScore.prettyPrint();
 
 		// then
-//		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
-//			System.out.println(unitTypeObjectScore);
-//		}
-
 		ScoreableObjectsListAssert.assertThat(colonyScore)
+			.hasSumScore(60)
+			.hasScore(0, 30, eq(UnitType.MASTER_WEAVER))
+			.hasScore(1, 30, eq(UnitType.FREE_COLONIST))
+		;
+		ScoreableObjectsListAssert.assertThat(((MultipleWorkerRequestScoreValue)colonyScore.get(0)).getWorkersScores())
 			.hasSumScore(54)
-			.hasScore(0, 30, unitTypeEq(UnitType.MASTER_WEAVER))
-			.hasScore(1, 24, unitTypeEq(UnitType.EXPERT_FUR_TRAPPER))
+			.hasScore(0, 30, eq(UnitType.MASTER_WEAVER))
+			.hasScore(1, 24, eq(UnitType.EXPERT_FUR_TRAPPER))
+		;
+		ScoreableObjectsListAssert.assertThat(((MultipleWorkerRequestScoreValue)colonyScore.get(1)).getWorkersScores())
+			.hasSumScore(46)
+			.hasScore(0, 30, eq(UnitType.FREE_COLONIST))
+			.hasScore(1, 16, eq(UnitType.FREE_COLONIST))
 		;
 		assertThat(new ColonySnapshot(nieuwAmsterdam)).isEqualTo(snapshotBefore);
 	}
@@ -69,16 +103,18 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
-//		for (ObjectScore<UnitType> unitTypeObjectScore : colonyScore) {
-//			System.out.println(unitTypeObjectScore);
-//		}
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.simulate(colonyScore);
+
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		workerProductionValueScorePolicy.calculateScore(colonyScore);
+		colonyScore.prettyPrint();
 
 		// then
 		ScoreableObjectsListAssert.assertThat(colonyScore)
-			.hasSumScore(64)
-			.hasScore(0, 40, unitTypeEq(UnitType.MASTER_TOBACCONIST))
-			.hasScore(1, 24, unitTypeEq(UnitType.EXPERT_FUR_TRAPPER))
+			.hasSumScore(70)
+			.hasScore(0, 40, eq(UnitType.MASTER_TOBACCONIST))
+			.hasScore(1, 30, eq(UnitType.FREE_COLONIST))
 		;
 		assertThat(new ColonySnapshot(fortOranje)).isEqualTo(snapshotBefore);
 	}
@@ -90,17 +126,18 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
-		ScoreableObjectsList<SingleWorkerRequestScoreValue> colonyScore = sut.simulate();
-//		for (ObjectsListScore.ObjectScore<WorkerRequestScoreValue> unitTypeObjectScore : colonyScore) {
-//			System.out.println(unitTypeObjectScore);
-//		}
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.simulate(colonyScore);
+
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		workerProductionValueScorePolicy.calculateScore(colonyScore);
+		colonyScore.prettyPrint();
 
 		// then
 		ScoreableObjectsListAssert.assertThat(colonyScore)
-			.hasSumScore(196)
-			.hasScore(0, 72, unitTypeEq(UnitType.MASTER_FUR_TRADER))
-			.hasScore(1, 64, unitTypeEq(UnitType.MASTER_TOBACCO_PLANTER))
-			.hasScore(2, 60, unitTypeEq(UnitType.MASTER_TOBACCONIST))
+			.hasSumScore(102)
+			.hasScore(0, 67, eq(UnitType.MASTER_FUR_TRADER))
+			.hasScore(1, 35, eq(UnitType.FREE_COLONIST))
 		;
 		assertThat(new ColonySnapshot(fortMaurits)).isEqualTo(snapshotBefore);
 	}

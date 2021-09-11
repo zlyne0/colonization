@@ -16,7 +16,7 @@ public class WorkerRequestScoreValueComparator {
         };
     }
 
-    public static Predicate<WorkerRequestScoreValue> unitTypeEq(String unitTypeId) {
+    public static Predicate<WorkerRequestScoreValue> eq(String unitTypeId) {
         return new Predicate<WorkerRequestScoreValue>() {
             @Override
             public boolean test(WorkerRequestScoreValue workerRequestScoreValue) {

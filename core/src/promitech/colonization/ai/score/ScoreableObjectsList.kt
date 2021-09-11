@@ -62,7 +62,7 @@ open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: In
     }
 
     fun prettyPrint() {
-        println("size = " + this.objects.size)
+        println("size = " + this.objects.size + ", sumScore = " + sumScore())
         for (obj in this.objects) {
             println(obj)
         }

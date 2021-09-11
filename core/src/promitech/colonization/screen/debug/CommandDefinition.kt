@@ -12,9 +12,9 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
+import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
-import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy.scoreByWorkerValue
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
@@ -242,45 +242,56 @@ fun createCommands(
 
 fun generateTheBestPlaceToBuildColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
-	
+
 	val player = guiGameModel.game.playingPlayer
+	val transportUnit = Units.findCarrier(player)
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit))
 
-	val rangeSource = guiGameModel.game.map.getSafeTile(player.getEntryLocation());
-	val galleon = UnitFactory.create(UnitType.GALLEON, player, rangeSource)
-
-	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
-
-	sut.debugTheBestBlaceToBuildColony(tileDebugView, galleon, rangeSource)
-
-	player.removeUnit(galleon)
+	sut.debugTheBestBlaceToBuildColony(tileDebugView)
 }
 
 fun generateTileScoresForNewColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
-	
-	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
-	sut.debugGenerateTileScoresForNewColony(tileDebugView, guiGameModel.game.playingPlayer)
+
+	val player = guiGameModel.game.playingPlayer
+	val transportUnit = Units.findCarrier(player)
+	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
+
+	sut.debugGenerateTileScoresForNewColony(tileDebugView)
 }
 
 fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
-	
+
 	val player = guiGameModel.game.playingPlayer
-	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
-	sut.score(player, Units.findCarrier(player))
-	sut.debug(player, tileDebugView)
+	val transportUnit = Units.findCarrier(player)
+	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
+
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
+	val colonyWorkerRequestScores = sut.score()
+
+	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
+	scorePolicy.calculateScore(colonyWorkerRequestScores)
+
+	sut.debug(tileDebugView)
 }
 
 fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
-	val sut = ColonyWorkerRequestPlaner(guiGameModel.game.map, di.pathFinder)
-	val colonyWorkerRequestScores = sut.score(player, Units.findCarrier(player))
-	ScorePolicy.scoreByWorkerValue(player, colonyWorkerRequestScores)
-	sut.debug(player, tileDebugView)
-}
+	val transportUnit = Units.findCarrier(player)
+	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
+	val colonyWorkerRequestScores = sut.score()
+
+	val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
+	scorePolicy.calculateScore(colonyWorkerRequestScores)
+
+	sut.debug(tileDebugView)
+}
 
 fun theBestMove(di: DI, mapActor: MapActor?) {
 	System.out.println("theBestMove")

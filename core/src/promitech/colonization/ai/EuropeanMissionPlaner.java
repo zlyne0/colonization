@@ -13,7 +13,9 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
+import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
@@ -22,11 +24,13 @@ import static promitech.colonization.orders.NewTurnLogger.logger;
 public class EuropeanMissionPlaner {
 
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
-	private final ColonyWorkerRequestPlaner colonyWorkerRequestPlaner;
-	
+	private final Game game;
+	private final PathFinder pathFinder;
+
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
-		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game.map, pathFinder);
+		this.game = game;
+		this.pathFinder = pathFinder;
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
@@ -35,13 +39,27 @@ public class EuropeanMissionPlaner {
 			logger.debug("player[%s] colonies production gold value %s", player.getId(), colniesProdValue.goldValue());
 		}
 
+		Unit transporter = Units.findCarrier(player);
+		if (transporter == null) {
+			MissionHandlerLogger.logger.debug("player[%s] no carrier unit", player.getId());
+			return;
+		}
+		ColonyWorkerRequestPlaner colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(
+			player,
+			new ColonyWorkerRequestPlaceCalculator(
+				player,
+				game.map,
+				new EntryPointTurnRange(game.map, pathFinder, player, transporter)
+			)
+		);
+
 		for (Unit unit : player.units.copy()) {
 			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
 					continue;
 				}
 				if (unit.isColonist()) {
-					colonyWorkerRequestPlaner.prepareMission(player, unit, playerMissionContainer);
+					colonyWorkerRequestPlaner.prepareMission(unit, playerMissionContainer);
 				}
 			}
 		}

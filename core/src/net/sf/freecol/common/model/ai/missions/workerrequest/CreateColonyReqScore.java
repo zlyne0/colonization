@@ -127,7 +127,7 @@ class CreateColonyReqScore {
     	GoodsType theBestGoodsType = null;
     	
     	for (NeighbourIterableTile<Tile> neighbourTile : map.neighbourLandTiles(tile)) {
-			if (neighbourTile.tile.hasSettlement()) {
+			if (neighbourTile.tile.hasSettlement() || neighbourTile.tile.hasWorkerOnTile()) {
 				continue;
 			}
 			List<Production> productions = neighbourTile.tile.getType().productionInfo.getAttendedProductions();

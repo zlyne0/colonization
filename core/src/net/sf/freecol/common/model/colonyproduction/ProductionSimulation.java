@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Set;
 
 public class ProductionSimulation {
+
+	public static final UnitTypeByGoodsTypePolicy expertForGoodsType = new ExpertUnitTypeByGoodsTypePolicy();
+	public static final UnitTypeByGoodsTypePolicy freeColonistsForGoodsType = new AlwaysFreeColonistForAnyGoodsTypePolicy();
+
 	private static final Set<String> emptyExcludeLocationIds = Collections.unmodifiableSet(Collections.<String>emptySet());
 
 	private final ColonyTileProduction simTileProduction = new ColonyTileProduction();
@@ -89,18 +93,16 @@ public class ProductionSimulation {
 		return goodsProduction;
 	}
 
-	/**
-	 * For expert units.
-	 */
 	public List<MaxGoodsProductionLocation> determinePotentialMaxGoodsProduction(
 		Collection<GoodsType> goodsTypes,
+		UnitTypeByGoodsTypePolicy unitTypeForGoodsTypePolicy,
 		boolean ignoreIndianOwner
 	) {
 		ProductionSummary prodCons = colonyProduction.globalProductionConsumption();
 		List<MaxGoodsProductionLocation> goodsProduction = new ArrayList<MaxGoodsProductionLocation>();
 
 		for (GoodsType gt : goodsTypes) {
-			UnitType workerType = Specification.instance.expertUnitTypeForGoodsType(gt);
+			UnitType workerType = unitTypeForGoodsTypePolicy.unitType(gt);
 
 			MaxGoodsProductionLocation maxProd = null;
 			if (gt.isFarmed()) {
@@ -263,4 +265,25 @@ public class ProductionSimulation {
 			buildingProduction.determineMaxPotentialProduction(colonyProvider.colonyUpdatableFeatures(), workerType, prod, cons, goodsType.getId());
 		}
 	}
+
+	public static interface UnitTypeByGoodsTypePolicy {
+		UnitType unitType(GoodsType goodsType);
+	}
+
+	static class ExpertUnitTypeByGoodsTypePolicy implements UnitTypeByGoodsTypePolicy {
+
+		@Override
+		public UnitType unitType(GoodsType goodsType) {
+			return Specification.instance.expertUnitTypeForGoodsType(goodsType);
+		}
+	}
+
+	static class AlwaysFreeColonistForAnyGoodsTypePolicy implements UnitTypeByGoodsTypePolicy {
+
+		@Override
+		public UnitType unitType(GoodsType goodsType) {
+			return Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
+		}
+	}
+
 }
