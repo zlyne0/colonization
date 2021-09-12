@@ -34,36 +34,16 @@ public class EuropeanMissionPlaner {
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
-		ColoniesProductionGoldValue colniesProdValue = new ColoniesProductionGoldValue(player, Specification.instance.goodsTypeToScoreByPrice);
-		if (logger.isDebug()) {
-			logger.debug("player[%s] colonies production gold value %s", player.getId(), colniesProdValue.goldValue());
-		}
+//		ColoniesProductionGoldValue colniesProdValue = new ColoniesProductionGoldValue(player, Specification.instance.goodsTypeToScoreByPrice);
+//		if (logger.isDebug()) {
+//			logger.debug("player[%s] colonies production gold value %s", player.getId(), colniesProdValue.goldValue());
+//		}
 
-		Unit transporter = Units.findCarrier(player);
-		if (transporter == null) {
-			MissionHandlerLogger.logger.debug("player[%s] no carrier unit", player.getId());
-			return;
-		}
 		ColonyWorkerRequestPlaner colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(
-			player,
-			new ColonyWorkerRequestPlaceCalculator(
-				player,
-				game.map,
-				new EntryPointTurnRange(game.map, pathFinder, player, transporter)
-			)
+			player, playerMissionContainer, game, pathFinder
 		);
+		colonyWorkerRequestPlaner.prepareMissions();
 
-		for (Unit unit : player.units.copy()) {
-			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
-				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
-					continue;
-				}
-				if (unit.isColonist()) {
-					colonyWorkerRequestPlaner.prepareMission(unit, playerMissionContainer);
-				}
-			}
-		}
-		
 		for (Unit unit : player.units.copy()) {
 			if (unit.isNaval() && !unit.isDamaged()) {
 				navyUnitPlaner(unit, playerMissionContainer);

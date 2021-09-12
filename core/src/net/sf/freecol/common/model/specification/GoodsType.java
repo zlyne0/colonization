@@ -1,14 +1,12 @@
 package net.sf.freecol.common.model.specification;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Market;
 
-import org.jetbrains.annotations.Nullable;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -28,6 +26,7 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String HAMMERS = "model.goods.hammers";
     public static final String TOOLS = "model.goods.tools";
     public static final String ORE = "model.goods.ore";
+    public static final String FURS = "model.goods.furs";
 
     private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
     private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;

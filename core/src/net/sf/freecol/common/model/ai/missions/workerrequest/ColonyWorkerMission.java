@@ -3,11 +3,14 @@ package net.sf.freecol.common.model.ai.missions.workerrequest;
 import java.io.IOException;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
+import net.sf.freecol.common.model.specification.GoodsType;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 
@@ -15,11 +18,13 @@ public class ColonyWorkerMission extends AbstractMission {
 
 	private Tile tile;
 	private Unit unit;
+	private GoodsType goodsType;
 
-	public ColonyWorkerMission(Tile tile, Unit unit) {
+	public ColonyWorkerMission(Tile tile, Unit unit, GoodsType goodsType) {
 		super(Game.idGenerator.nextId(ColonyWorkerMission.class));
 		this.tile = tile;
 		this.unit = unit;
+		this.goodsType = goodsType;
 	}
 	
 	private ColonyWorkerMission(String id) {
@@ -49,16 +54,22 @@ public class ColonyWorkerMission extends AbstractMission {
 		return unit;
 	}
 
-    public static class Xml extends AbstractMission.Xml<ColonyWorkerMission> {
+	public GoodsType getGoodsType() {
+		return goodsType;
+	}
+
+	public static class Xml extends AbstractMission.Xml<ColonyWorkerMission> {
 
         private static final String ATTR_UNIT = "unit";
         private static final String ATTR_TILE = "tile";
+		private static final String ATTR_GOODS_TYPE = "goods-type";
 
-        @Override
+		@Override
         public void startElement(XmlNodeAttributes attr) {
             ColonyWorkerMission m = new ColonyWorkerMission(attr.getId());
             m.tile = game.map.getSafeTile(attr.getPoint(ATTR_TILE));
             m.unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT));
+			m.goodsType = attr.getEntity(ATTR_GOODS_TYPE, Specification.instance.goodsTypes);
             nodeObject = m;
         }
 
@@ -67,6 +78,7 @@ public class ColonyWorkerMission extends AbstractMission {
             attr.setId(mission);
             attr.setPoint(ATTR_TILE, mission.tile.x, mission.tile.y);
             attr.set(ATTR_UNIT, mission.unit);
+            attr.set(ATTR_GOODS_TYPE, mission.goodsType);
         }
 
         @Override

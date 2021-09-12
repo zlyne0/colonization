@@ -21,21 +21,21 @@ class ColonyWorkerReqScore {
 	private static final boolean IGNORE_INDIAN_OWNER = true;
 	
 	private final Market market;
-	private final Colony colony;
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	
+	private Colony colony;
 	private ColonyProduction colonyProduction;
 	private ProductionSimulation productionSimulation;
 	private ColonySimulationSettingProvider colonyProvider;
-	
-	public ColonyWorkerReqScore(Colony colony, MapIdEntities<GoodsType> goodsTypeToScore) {
-		this.market = colony.getOwner().market();		
+
+	public ColonyWorkerReqScore(Market market, MapIdEntities<GoodsType> goodsTypeToScore) {
+		this.market = market;
 		this.goodsTypeToScore = goodsTypeToScore;
-		this.colony = colony;
 	}
 
-	public void simulate(ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+	public void simulate(Colony colony, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+		this.colony = colony;
 		ScoreableObjectsList<SingleWorkerRequestScoreValue> reqUnits;
 
 		reqUnits = simulate(ProductionSimulation.expertForGoodsType);

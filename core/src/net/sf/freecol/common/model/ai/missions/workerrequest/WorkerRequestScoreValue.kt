@@ -11,12 +11,12 @@ class MultipleWorkerRequestScoreValue(
 ) : WorkerRequestScoreValue {
 
     override var score: Int = 0
-    override lateinit var location: Tile
+    override val location: Tile
+    override val goodsType: GoodsType
 
     var productionValue: Int = 0
-    private lateinit var goodsType: GoodsType
     private var productionAmount: Int = 0
-    private lateinit var workerType: UnitType
+    private var workerType: UnitType
 
     init {
         if (workersScores.isEmpty()) {
@@ -61,7 +61,7 @@ class MultipleWorkerRequestScoreValue(
 }
 
 class SingleWorkerRequestScoreValue(
-    val goodsType: GoodsType,
+    override val goodsType: GoodsType,
     val productionAmount: Int,
     val productionValue: Int,
     val workerType: UnitType,
@@ -95,6 +95,9 @@ class SingleWorkerRequestScoreValue(
 interface WorkerRequestScoreValue : ScoreableObjectsList.Scoreable {
     var score : Int
     val location : Tile
+    val goodsType : GoodsType
+
+    fun goodsType(): GoodsType = goodsType
 
     fun location() : Tile = location
     fun toPrettyString(player: Player, entryPointTurnRange: EntryPointTurnRange) : String

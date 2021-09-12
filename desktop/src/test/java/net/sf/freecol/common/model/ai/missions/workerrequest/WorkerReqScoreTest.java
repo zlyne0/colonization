@@ -21,21 +21,22 @@ import static org.assertj.core.api.Assertions.assertThat;
 class WorkerReqScoreTest extends Savegame1600BaseClass {
 
 	EntryPointTurnRange entryPointTurnRange;
+	ColonyWorkerReqScore sut;
 
 	@BeforeEach
 	public void beforeEach() {
 		entryPointTurnRange = new EntryPointTurnRange(game.map, new PathFinder(), dutch, Units.findCarrier(dutch));
+		sut = new ColonyWorkerReqScore(dutch.market(), Specification.instance.goodsTypeToScoreByPrice);
 	}
 
 	@Test
 	void canGenerateRequiredColonistsFortNassau() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortNassau, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
-		sut.simulate(colonyScore);
+		sut.simulate(fortNassau, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
@@ -67,11 +68,10 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsNieuwAmsterdam() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(nieuwAmsterdam);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(nieuwAmsterdam, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
-		sut.simulate(colonyScore);
+		sut.simulate(nieuwAmsterdam, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
@@ -100,11 +100,10 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortOrange() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortOranje);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortOranje, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
-		sut.simulate(colonyScore);
+		sut.simulate(fortOranje, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
@@ -123,11 +122,10 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	void canGenerateRequiredColonistsFortMaurits() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(fortMaurits);
-		ColonyWorkerReqScore sut = new ColonyWorkerReqScore(fortMaurits, Specification.instance.goodsTypeToScoreByPrice);
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
-		sut.simulate(colonyScore);
+		sut.simulate(fortMaurits, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
