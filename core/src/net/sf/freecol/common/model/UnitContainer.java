@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Player;
 
 public class UnitContainer {
 	public static enum NoAddReason {
@@ -74,8 +75,8 @@ public class UnitContainer {
 		this.containerUnit = containerUnit;
 	}
 	
-    public boolean canAdd(Unit unit) {
-        return getNoAddReason(unit) == NoAddReason.NONE;
+    public boolean canAdd(Player unitOwner, UnitType unitType) {
+        return generateAddUnitReason(unitOwner, unitType) == NoAddReason.NONE;
     }
 	
     public void addUnit(Unit unit) {
@@ -93,14 +94,12 @@ public class UnitContainer {
         return space;
     }
     
-    public NoAddReason getNoAddReason(Unit unit) {
-        return (unit == null)
+    public NoAddReason generateAddUnitReason(Player unitOwner, UnitType unitType) {
+        return (unitType == null)
             ? NoAddReason.WRONG_TYPE
-            : (units.isNotEmpty() && units.first().getOwner().notEqualsId(unit.getOwner()))
+            : (units.isNotEmpty() && units.first().getOwner().notEqualsId(unitOwner))
             ? NoAddReason.OCCUPIED_BY_ENEMY
-            : (units.containsId(unit))
-            ? NoAddReason.ALREADY_PRESENT
-            : (!containerUnit.hasSpaceForAdditionalUnit(unit))
+            : (!containerUnit.hasSpaceForAdditionalUnit(unitType))
             ? NoAddReason.CAPACITY_EXCEEDED
             : NoAddReason.NONE;
     }

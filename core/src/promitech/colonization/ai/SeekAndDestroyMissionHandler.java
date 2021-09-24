@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission;
 import net.sf.freecol.common.model.map.path.Path;
@@ -19,6 +20,7 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
     private final CombatService combatService;
     private final Game game;
     private final PathFinder pathFinder;
+    private final UnitMoveType unitMoveType = new UnitMoveType();
     
     public SeekAndDestroyMissionHandler(Game game, MoveService moveService, CombatService combatService, PathFinder pathFinder) {
         this.moveService = moveService;
@@ -64,6 +66,8 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
     }
     
     private Tile enemyTile(SeekAndDestroyMission mission) {
+        unitMoveType.init(mission.unit);
+
         Map map = game.map;
         Tile unitTileLocation = mission.unit.getTileLocationOrNull();
         
@@ -73,7 +77,7 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         
         while (spiralIterator.hasNext()) {
             Tile destTile = map.getSafeTile(spiralIterator.getX(), spiralIterator.getY());
-            MoveType moveType = mission.unit.getMoveType(unitTileLocation, destTile);
+            MoveType moveType = unitMoveType.calculateMoveType(unitTileLocation, destTile);
             if (moveType == MoveType.ATTACK_UNIT || moveType == MoveType.ATTACK_SETTLEMENT) {
                 return destTile;
             }

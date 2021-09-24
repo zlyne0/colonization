@@ -173,13 +173,20 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		disposed = true;
 	}
 	
-    public boolean canAddUnit(Unit unit) {
+    public boolean canAddUnit(Player unitOwner, UnitType unitType) {
     	if (unitContainer == null) {
-    		throw new IllegalStateException("unit " + this.toString() + " does not have unit container. Unit container not initialized");
+    	    return false;
     	}
-    	return unitContainer.canAdd(unit);
+    	return unitContainer.canAdd(unitOwner, unitType);
     }
-    
+
+	private boolean canAddUnit(Unit unit) {
+		if (unitContainer == null) {
+			return false;
+		}
+		return unitContainer.canAdd(unit.owner, unit.unitType);
+	}
+
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }
@@ -228,8 +235,12 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     public boolean isDamaged() {
         return hitPoints < unitType.getHitPoints();
     }
-	
-    public boolean isOnCarrier() {
+
+	public int getHitPoints() {
+		return hitPoints;
+	}
+
+	public boolean isOnCarrier() {
         return location != null && location instanceof Unit;
     }
     
@@ -265,8 +276,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	return unitType.getSpace() - getSpaceTaken(); 
     }
     
-    public boolean hasSpaceForAdditionalUnit(Unit unit) {
-    	return getSpaceTaken() + unit.unitType.getSpaceTaken() <= unitType.getSpace();
+    public boolean hasSpaceForAdditionalUnit(UnitType additionalUnitType) {
+    	return getSpaceTaken() + additionalUnitType.getSpaceTaken() <= unitType.getSpace();
     }
     
     public boolean hasSpaceForAdditionalCargo() {
@@ -318,10 +329,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             && !isOnCarrier();
     }
 
-    public boolean isTradingUnit() {
-        return unitType.hasAbility(Ability.CARRY_GOODS) && owner.nationType().isEuropean();
-    }
-    
     public final TradeRoute getTradeRoute() {
         return tradeRoute;
     }
@@ -413,10 +420,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	return unitType.isPerson();
     }
     
-    public boolean isOffensiveUnit() {
-        return unitType.isOffensive() || unitRole.isOffensive();
-    }
-    
 	public boolean isArmed() {
         return hasAbility(Ability.ARMED);
 	}
@@ -466,10 +469,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return getGoodsSpaceTaken() > 0;
     }
     
-    private boolean allowMoveFrom(Tile from) {
-        return from.getType().isLand() || (!owner.isRoyal() && Specification.options.getBoolean(GameOptions.AMPHIBIOUS_MOVES));
-    }
-    
     public String getOccupationKey(Player player) {
         return (player.equalsId(owner))
             ? ((isDamaged())
@@ -488,209 +487,12 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
             : "model.unit.occupation.activeNoMovesLeft";
     }
 
-    public MoveType getMoveType(Tile from, Tile target) {
-		if (from == null || target == null) {
-			return MoveType.MOVE_NO_TILE;
-		}
-    	if (isNaval()) {
-    		return getNavalMoveType(target);
-    	} else {
-    		return getLandMoveType(from, target);
-    	}
-    }
-
-    public boolean isColonist() {
-        return unitType.hasAbility(Ability.FOUND_COLONY) && owner.getFeatures().hasAbility(Ability.FOUNDS_COLONIES);
-    }
-    
-    private MoveType getLandMoveType(Tile from, Tile target) {
-        if (target == null) {
-        	return MoveType.MOVE_ILLEGAL;
-        }
-
-        Unit defender = target.getUnits().first();
-
-        if (target.getType().isLand()) {
-            Settlement settlement = target.getSettlement();
-            if (settlement == null) {
-                if (defender != null && owner.notEqualsId(defender.getOwner())) {
-                    if (defender.isNaval()) {
-                        return MoveType.ATTACK_UNIT;
-                    } else if (!isOffensiveUnit()) {
-                        return MoveType.MOVE_NO_ATTACK_CIVILIAN;
-                    } else {
-                        return (allowMoveFrom(from)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_MARINE;
-                    }
-                } else if (target.hasLostCityRumour() && owner.nationType().isEuropean()) {
-                    // Natives do not explore rumours, see:
-                    // server/control/InGameInputHandler.java:move()
-                    return MoveType.EXPLORE_LOST_CITY_RUMOUR;
-                } else {
-                    return MoveType.MOVE;
-                }
-            } else if (owner.equalsId(settlement.getOwner())) {
-                if (hasAbility(Ability.CARRY_TREASURE) && canCashInTreasureInLocation(target)) {
-                    return MoveType.MOVE_CASH_IN_TREASURE;
-                }
-                return MoveType.MOVE;
-            } else if (isTradingUnit()) {
-                return getTradeMoveType(settlement);
-            } else if (isColonist()) {
-                if (settlement instanceof Colony && hasAbility(Ability.NEGOTIATE)) {
-                    return (allowMoveFrom(from)) ? MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT : MoveType.MOVE_NO_ACCESS_WATER;
-                } else if (settlement instanceof IndianSettlement && hasAbility(Ability.SPEAK_WITH_CHIEF)) {
-                    return (allowMoveFrom(from)) ? MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT : MoveType.MOVE_NO_ACCESS_WATER;
-                } else if (isOffensiveUnit()) {
-                    return (allowMoveFrom(from)) ? MoveType.ATTACK_SETTLEMENT : MoveType.MOVE_NO_ATTACK_MARINE;
-                } else if (hasAbility(Ability.ESTABLISH_MISSION)) {
-                    return getMissionaryMoveType(from, settlement);
-                } else {
-                    return getLearnMoveType(from, settlement);
-                }
-            } else if (isOffensiveUnit()) {
-                return (allowMoveFrom(from)) ? MoveType.ATTACK_SETTLEMENT : MoveType.MOVE_NO_ATTACK_MARINE;
-            } else {
-                return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
-            }
-        } else { // moving to sea, check for embarkation
-            if (defender == null || !defender.isOwner(owner)) {
-                return MoveType.MOVE_NO_ACCESS_EMBARK;
-            }
-            for (Unit u : target.getUnits().entities()) {
-                if (u.unitContainer != null && u.canAddUnit(this)) {
-                	return MoveType.EMBARK;
-                }
-            }
-            return MoveType.MOVE_NO_ACCESS_FULL;
-        }
-    }
-    
-    public boolean canCashInTreasureInLocation(UnitLocation unitLocation) {
-        if (unitLocation == null) {
-            throw new IllegalStateException("can not cash in treasure in null location");
-        }
-        if (owner.getEurope() == null) {
-            // when inpedence any colony can cash in treasure
-            return unitLocation instanceof Tile && ((Tile)unitLocation).hasSettlement();
-        }
-        if (unitLocation instanceof Europe) {
-            return true;
-        }
-        if (unitLocation instanceof Tile) {
-            Tile locTile = (Tile)unitLocation;
-            if (locTile.hasSettlement() && locTile.getSettlement().isColony()) {
-                if (locTile.getSettlement().asColony().hasSeaConnectionToEurope() && !owner.hasUnitType(UnitType.GALLEON)) {
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-    
     public int treasureTransportFee() {
         if (isAtLocation(Europe.class) || owner.getEurope() == null) {
             return 0;
         }
         float fee = (Specification.options.getIntValue(GameOptions.TREASURE_TRANSPORT_FEE) * treasureAmount) / 100f;
         return (int)owner.getFeatures().applyModifier(Modifier.TREASURE_TRANSPORT_FEE, fee);
-    }
-    
-    private MoveType getLearnMoveType(Tile from, Settlement settlement) {
-        if (settlement instanceof Colony) {
-            return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
-        } else if (settlement instanceof IndianSettlement) {
-            return (!allowContact(settlement))
-                ? MoveType.MOVE_NO_ACCESS_CONTACT
-                : (!allowMoveFrom(from))
-                ? MoveType.MOVE_NO_ACCESS_WATER
-                : (!unitType.canBeUpgraded(ChangeType.NATIVES))
-                ? MoveType.MOVE_NO_ACCESS_SKILL
-                : MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST;
-        } else {
-            return MoveType.MOVE_ILLEGAL; // should not happen
-        }
-    }
-    
-    private MoveType getMissionaryMoveType(Tile from, Settlement settlement) {
-        if (settlement instanceof Colony) {
-            return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
-        } else if (settlement instanceof IndianSettlement) {
-            return (!allowContact(settlement))
-                ? MoveType.MOVE_NO_ACCESS_CONTACT
-                : (!allowMoveFrom(from))
-                ? MoveType.MOVE_NO_ACCESS_WATER
-                : (settlement.getOwner().missionsBanned(getOwner()))
-                ? MoveType.MOVE_NO_ACCESS_MISSION_BAN
-                : MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY;
-        } else {
-            return MoveType.MOVE_ILLEGAL; // should not happen
-        }
-    }
-    
-	public MoveType getNavalMoveType(Tile target) {
-		if (target == null) {
-			return (owner.canMoveToEurope()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE_NO_EUROPE;
-		} 
-		if (isDamaged()) {
-			return MoveType.MOVE_NO_REPAIR;
-		}
-
-		if (target.getType().isLand()) {
-			Settlement settlement = target.getSettlement();
-			if (settlement == null) {
-				if (unitContainer != null && unitContainer.hasUnitWithMovePoints()) {
-					if (!hasTileEnemyUnits(target)) {
-						return MoveType.DISEMBARK;
-					}
-				}
-				return MoveType.MOVE_NO_ACCESS_LAND;
-			} else if (settlement.getOwner().equalsId(owner)) {
-				return MoveType.MOVE;
-			} else if (isTradingUnit()) {
-				return getTradeMoveType(settlement);
-			} else {
-				return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
-			}
-		} else { // target at sea
-			if (hasTileEnemyUnits(target)) {
-				return (isOffensiveUnit()) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
-			}
-			return (target.isDirectlyHighSeasConnected()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE;
-		}
-	}
-    
-	private boolean hasTileEnemyUnits(Tile target) {
-		Unit defender = target.getUnits().first();
-		return defender != null && !defender.isOwner(owner);
-	}
-	
-    /**
-     * Is this unit allowed to contact a settlement?
-     *
-     * @param settlement The <code>Settlement</code> to consider.
-     * @return True if the contact is allowed.
-     */
-    private boolean allowContact(Settlement settlement) {
-        return owner.hasContacted(settlement.getOwner());
-    }
-	
-    private MoveType getTradeMoveType(Settlement settlement) {
-        if (settlement instanceof Colony) {
-            return (owner.atWarWith(settlement.getOwner()))
-                ? MoveType.MOVE_NO_ACCESS_WAR
-                : (!owner.getFeatures().hasAbility(Ability.TRADE_WITH_FOREIGN_COLONIES))
-                ? MoveType.MOVE_NO_ACCESS_TRADE
-                : MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS;
-        } else if (settlement instanceof IndianSettlement) {
-            // Do not block for war, bringing gifts is allowed
-            return (!allowContact(settlement))
-                ? MoveType.MOVE_NO_ACCESS_CONTACT
-                : (hasGoodsCargo() || Specification.options.getBoolean(GameOptions.EMPTY_TRADERS))
-                ? MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS
-                : MoveType.MOVE_NO_ACCESS_GOODS;
-        } else {
-            return MoveType.MOVE_ILLEGAL; // should not happen
-        }
     }
 
     public int getMoveCost(Tile from, Tile target, Direction moveDirection) {

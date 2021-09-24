@@ -330,11 +330,11 @@ public class Tile implements UnitLocation, Identifiable {
                 break;
             }
             if (isNavyPiracy) {
-                if (unit.isOffensiveUnit()) {
+                if (UnitMethods.isOffensiveUnit(unit)) {
                     return true;
                 }
             } else {
-                if ((unit.isOffensiveUnit() && navyUnitOwner.atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY)) {
+                if ((UnitMethods.isOffensiveUnit(unit) && navyUnitOwner.atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY)) {
                     return true;
                 }
             }
@@ -500,7 +500,7 @@ public class Tile implements UnitLocation, Identifiable {
         Unit tileUnit = units.first();
         if (tileUnit != null && tileUnit.getOwner().notEqualsId(player) && tileUnit.getOwner().atWarWith(player)) {
             for (Unit unit : tileUnit.getUnits().entities()) {
-                if (unit.isOffensiveUnit()) {
+                if (UnitMethods.isOffensiveUnit(unit)) {
                     return true;
                 }
             }

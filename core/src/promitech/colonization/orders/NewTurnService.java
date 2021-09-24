@@ -175,12 +175,35 @@ public class NewTurnService {
             }
             
             if (unit.isDestinationTile()) {
-                Tile tile = guiGameModel.game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
+                Tile tile = findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
                 unit.clearDestination();
                 unit.changeUnitLocation(tile);
             }
         }
     }
+
+	private Tile findFirstMovableHighSeasTile(final Unit unit, int x, int y) {
+		Tile tile = guiGameModel.game.map.getSafeTile(x, y);
+		if (tile.getUnits().isEmpty()) {
+			return tile;
+		}
+		Unit firstUnit = tile.getUnits().first();
+		if (firstUnit.isOwner(unit.getOwner())) {
+			return tile;
+		}
+		for (promitech.map.isometric.NeighbourIterableTile<Tile> neighbourIterableTile : guiGameModel.game.map.neighbourTiles(x, y)) {
+			if (neighbourIterableTile.tile.getType().isHighSea()) {
+				if (neighbourIterableTile.tile.getUnits().isEmpty()) {
+					return neighbourIterableTile.tile;
+				}
+				firstUnit = neighbourIterableTile.tile.getUnits().first();
+				if (firstUnit.isOwner(unit.getOwner())) {
+					return neighbourIterableTile.tile;
+				}
+			}
+		}
+		return null;
+	}
 
     private void checkAndCashInTreasureInEurope(Player player) {
     	List<Unit> units = null; 

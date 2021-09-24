@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitMethods;
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -85,7 +86,7 @@ public class EuropeanMissionPlaner {
 		TransportUnitMission tum = null;
 		
 		for (Unit dockUnit : europe.getUnits().entities()) {
-			if (!dockUnit.isColonist() || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
+			if (!UnitMethods.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
 				continue;
 			}
 			List<ColonyWorkerMission> colonyWorkerMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, dockUnit);
@@ -115,7 +116,7 @@ public class EuropeanMissionPlaner {
 	
 	private boolean canEmbarkUnit(Unit navyUnit, TransportUnitMission mission, Unit unit) {
 		if (mission == null) {
-			return navyUnit.hasSpaceForAdditionalUnit(unit);
+			return navyUnit.hasSpaceForAdditionalUnit(unit.unitType);
 		}
 		return mission.canEmbarkUnit(unit);
 	}

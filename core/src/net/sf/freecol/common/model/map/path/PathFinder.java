@@ -9,6 +9,8 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitMoveType;
+
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
@@ -80,6 +82,7 @@ public class PathFinder {
 	private Tile startTile;
 	private Tile endTile;
 	private Unit moveUnit;
+	private final UnitMoveType unitMoveType = new UnitMoveType();
 	
 	private boolean findPossibilities = false;
 	
@@ -92,6 +95,7 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
+        this.unitMoveType.init(moveUnit);
         this.findPossibilities = false;
         this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
         this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -109,6 +113,7 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = endTile;
         this.moveUnit = moveUnit;
+        this.unitMoveType.init(moveUnit);
         this.findPossibilities = false;
 		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -140,6 +145,7 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = null;
         this.moveUnit = moveUnit;
+        this.unitMoveType.init(moveUnit);
         this.findPossibilities = true;
 		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -195,7 +201,7 @@ public class PathFinder {
 					continue;
 				}
 				
-				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
+				MoveType moveType = unitMoveType.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
 					// change moveType to default move. Sometimes goal can be indian settlement 

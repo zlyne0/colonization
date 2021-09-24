@@ -5,9 +5,12 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.map.path.Path;
 
 public class MoveContext {
+	private final UnitMoveType unitMoveType = new UnitMoveType();
+
 	public Unit unit;
 	public Tile sourceTile;
 	public Tile destTile;
@@ -97,7 +100,7 @@ public class MoveContext {
 			hasMovePoints = false;
 			return;
 		}
-		this.moveType = unit.getMoveType(sourceTile, destTile);
+		this.moveType = unitMoveType.calculateMoveType(unit, sourceTile, destTile);
 	}
 	
 	public String toString() {

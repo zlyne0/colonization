@@ -7,6 +7,8 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitMoveType;
+
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
@@ -44,18 +46,19 @@ public class TransportPathFinder {
 	private Tile startTile;
 	private Tile endTile;
 	private Unit moveUnit;
+	private final UnitMoveType unitMoveType = new UnitMoveType();
 	
 	public TransportPathFinder(Map map) {
 	    this.map = map;
 	}
 	
 	public Path findToTile(
-			final Tile sourceTile, 
-			final Tile findDestTile, 
-			final Unit landUnit, 
-			final Unit potentialTransporter, 
-			final PathFinder transporterRangeMap) 
-	{
+		final Tile sourceTile,
+		final Tile findDestTile,
+		final Unit landUnit,
+		final Unit potentialTransporter,
+		final PathFinder transporterRangeMap
+	) {
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
 	    if (sourceTile.getType().isWater()) {
@@ -63,6 +66,7 @@ public class TransportPathFinder {
 	    } else {
 	    	this.moveUnit = landUnit;
 	    }
+	    this.unitMoveType.init(moveUnit);
         this.navyCostDecider.avoidUnexploredTiles = false;
         this.baseCostDecider.avoidUnexploredTiles = false;
 	
@@ -91,9 +95,11 @@ public class TransportPathFinder {
 			}
 			if (currentNode.tile.getType().isWater()) {
 				moveUnit = potentialTransporter;
+				unitMoveType.init(moveUnit);
 				costDecider = navyCostDecider;
 			} else {
 				moveUnit = landUnit;
+				unitMoveType.init(landUnit);
 				costDecider = baseCostDecider;
 			}
 			
@@ -113,7 +119,7 @@ public class TransportPathFinder {
 					reachedGoalNode = moveNode;
 				}
 				
-				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
+				MoveType moveType = unitMoveType.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (moveType == MoveType.MOVE_NO_ACCESS_EMBARK || moveType == MoveType.EMBARK) {
 					costDecider.getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
 					costDecider.costMovesLeft = navyCostDecider.unitInitialMoves;

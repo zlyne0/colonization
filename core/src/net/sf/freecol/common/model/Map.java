@@ -207,22 +207,6 @@ public class Map extends ObjectWithId {
         return tiles.isTileExists(tile.x, tile.y, radius, TILE_HAS_COLONY);
 	}
 	
-	public Tile findFirstMovableHighSeasTile(final Unit unit, int x, int y) {
-	    Tile tile = tiles.getSafeTile(x, y);
-	    MoveType navalMoveType = unit.getNavalMoveType(tile);
-	    if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
-	        return tile;
-	    }
-
-	    for (promitech.map.isometric.NeighbourIterableTile<Tile> neighbourIterableTile : tiles.neighbourTiles(x, y)) {
-            navalMoveType = unit.getNavalMoveType(neighbourIterableTile.tile);
-            if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
-                return neighbourIterableTile.tile;
-            }
-        }
-	    return null;
-	}
-
 	public Iterable<NeighbourIterableTile<Tile>> neighbourTiles(int x, int y) {
 	    return tiles.neighbourTiles(x, y);
 	}

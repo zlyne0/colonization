@@ -84,7 +84,8 @@ public class UnitTest {
     	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, player, srcTile);
 		
     	// when
-    	MoveType moveType = unit.getMoveType(srcTile, destTile);
+		UnitMoveType unitMoveType = new UnitMoveType();
+		MoveType moveType = unitMoveType.calculateMoveType(unit, srcTile, destTile);
     	
 		// then
     	assertThat(moveType).isEqualTo(MoveType.MOVE_NO_ATTACK_CIVILIAN);
@@ -103,8 +104,9 @@ public class UnitTest {
     	Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, indian, srcTile);
     	
     	// when
-    	MoveType moveType = unit.getMoveType(srcTile, destTile);
-    	
+		UnitMoveType unitMoveType = new UnitMoveType();
+		MoveType moveType = unitMoveType.calculateMoveType(unit, srcTile, destTile);
+
 		// then
     	assertThat(moveType).isEqualTo(MoveType.MOVE);
 	}
