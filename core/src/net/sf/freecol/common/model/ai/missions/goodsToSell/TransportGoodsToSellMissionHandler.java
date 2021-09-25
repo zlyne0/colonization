@@ -140,7 +140,7 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 			PathFinder.includeUnexploredAndExcludeNavyThreatTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(transporter, path);
 			moveService.aiConfirmedMovePath(moveContext);
 			// colony accessibility handled by TransportGoodsToSellMission.firstSettlementToVisit(player)
 		}

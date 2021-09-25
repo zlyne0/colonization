@@ -67,7 +67,7 @@ public class TradeRouteMissionHandler {
             return;
         }
         
-        MoveContext moveContext = new MoveContext(path);
+        MoveContext moveContext = new MoveContext(wagon, path);
         moveContext.initNextPathStep();
         moveService.handlePathMoveContext(moveContext);
         if (nextStopLocation.tile.equalsCoordinates(wagon.getTile())) {

@@ -54,7 +54,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
         
         if (mission.needUnitMove()) {
             Path path = pathFinder.findToTile(game.map, mission.unit.getTile(), mission.unitDestination, mission.unit, PathFinder.includeUnexploredTiles);
-            MoveContext moveContext = new MoveContext(path);
+            MoveContext moveContext = new MoveContext(mission.unit, path);
             moveService.aiConfirmedMovePath(moveContext);
         }
         if (mission.isUnitOnRellocationDestination()) {
@@ -86,7 +86,7 @@ public class RellocationMissionHandler implements MissionHandler<RellocationMiss
 		if (carrierPath == null) {
 			carrierPath = pathFinder.findToTile(game.map, mission.carrier.getTile(), mission.carrierDestination, mission.carrier, PathFinder.includeUnexploredTiles);
 		}
-		MoveContext moveContext = new MoveContext(carrierPath);
+		MoveContext moveContext = new MoveContext(mission.carrier, carrierPath);
 		moveService.aiConfirmedMovePath(moveContext);
 	}
 

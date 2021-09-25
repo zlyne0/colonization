@@ -150,9 +150,9 @@ public class TransportPathFinder {
 			}
 		}
 		if (reachedGoalNode == null) {
-			return createPath(landUnit, grid.get(startTile.x, startTile.y));
+			return createPath(grid.get(startTile.x, startTile.y));
 		} else {
-			return createPath(landUnit, reachedGoalNode);
+			return createPath(reachedGoalNode);
 		}
 	}
 
@@ -165,7 +165,7 @@ public class TransportPathFinder {
 		}
 	}
 	
-	private Path createPath(final Unit moveUnit, final Node endPathNode) {
+	private Path createPath(final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -176,7 +176,7 @@ public class TransportPathFinder {
 			count++;
 		}
 
-		Path path = new Path(moveUnit, startTile, endPathNode.tile, count, 
+		Path path = new Path(startTile, endPathNode.tile, count,
 			endTile == null || endPathNode.tile.equalsCoordinates(endTile)
 		);
 		n = begining;

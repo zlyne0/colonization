@@ -41,7 +41,7 @@ public class CommonMissionHandler {
 					PathFinder.includeUnexploredAndExcludeNavyThreatTiles
 				);
 				
-				MoveContext moveContext = new MoveContext(pathEurope);
+				MoveContext moveContext = new MoveContext(unit, pathEurope);
 		    	MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 		    	
 		    	if (aiConfirmedMovePath == MoveType.MOVE_HIGH_SEAS) {

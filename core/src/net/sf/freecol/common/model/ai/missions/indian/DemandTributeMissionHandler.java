@@ -111,7 +111,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(mission.getUnitToDemandTribute(), path);
 			
 			if (path.moveStepDest().equalsCoordinates(mission.getColony().tile)) {
 				moveContext.initNextPathStep();
@@ -208,7 +208,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(mission.getUnitToDemandTribute(), path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}

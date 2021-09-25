@@ -149,7 +149,7 @@ public class MoveController {
 		}
 		guiGameModel.setCreateGotoPathMode(false);
 		
-		MoveContext moveContext = new MoveContext(unitPath);
+		MoveContext moveContext = new MoveContext(mapActor.mapDrawModel().getSelectedUnit(), unitPath);
 		moveContext.initNextPathStep();
 		if (unitPath.isPathToEurope()) {
 			moveContext.unit.setDestinationEurope();

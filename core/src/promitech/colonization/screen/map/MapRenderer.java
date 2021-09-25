@@ -182,10 +182,10 @@ public class MapRenderer {
 	}
 
 	private void drawPathLayer(Batch batch) {
-    	if (mapDrawModel.unitPath == null) {
+    	if (mapDrawModel.unitPath == null || mapDrawModel.getSelectedUnit() == null) {
     		return;
     	}
-    	Frame pathStepImg = gameResources.unitPathStepImage(mapDrawModel.unitPath.unit);
+    	Frame pathStepImg = gameResources.unitPathStepImage(mapDrawModel.getSelectedUnit());
     	
     	for (int i=0; i<mapDrawModel.unitPath.tiles.size; i++) {
     		Tile tile = mapDrawModel.unitPath.tiles.get(i);

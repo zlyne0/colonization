@@ -227,13 +227,13 @@ public class PathFinder {
 		}
 		
 		if (reachedGoalNode != null) {
-			return createPath(moveUnit, reachedGoalNode);
+			return createPath(reachedGoalNode);
 		} else {
-			return createPath(moveUnit, oneOfTheBest);
+			return createPath(oneOfTheBest);
 		}
 	}
 	
-	private Path createPath(final Unit moveUnit, final Node endPathNode) {
+	private Path createPath(final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -246,15 +246,13 @@ public class PathFinder {
 
 		if (endPathNode == null) {
 			return new Path(
-				moveUnit, 
-				startTile, startTile, 
+				startTile, startTile,
 				0, false
 			);  
 		}
 		
 		Path path = new Path(
-			moveUnit, 
-			startTile, endPathNode.tile, 
+			startTile, endPathNode.tile,
 			count, endTile == null || endPathNode.tile.equalsCoordinates(endTile)
 		);
 		n = begining;
@@ -339,7 +337,7 @@ public class PathFinder {
 
     public Path getPathInto(int cellIndex) {
         Node node = grid.get(cellIndex);
-        return createPath(moveUnit, node);
+        return createPath(node);
     }
 
 	public Path getPathInto(Tile dest) {

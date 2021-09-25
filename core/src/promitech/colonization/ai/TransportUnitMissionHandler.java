@@ -86,7 +86,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		if (path.isReachedDestination()) {
 			Tile destination = path.endTile;
 			
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(carrier, path);
 			MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 			
 			if (MoveType.MOVE.equals(aiConfirmedMovePath) || MoveType.DISEMBARK.equals(aiConfirmedMovePath)) {

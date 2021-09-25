@@ -93,7 +93,7 @@ public class MapDrawModel {
 		this.changeSelectedUnitListeners.add(listener);
 	}
 
-	Unit getSelectedUnit() {
+	public Unit getSelectedUnit() {
 		return selectedUnit;
 	}
 	

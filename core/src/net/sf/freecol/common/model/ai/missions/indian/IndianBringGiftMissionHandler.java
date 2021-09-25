@@ -93,7 +93,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}
@@ -116,7 +116,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
 			
 			if (path.moveStepDest().equalsCoordinates(mission.getDestinationColony().tile)) {
 				moveContext.initNextPathStep();
@@ -177,7 +177,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(path);
+			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}

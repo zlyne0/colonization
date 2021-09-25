@@ -38,7 +38,7 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
 			galleon,
 			PathFinder.includeUnexploredAndExcludeNavyThreatTiles
 		);
-		MoveContext moveContext = new MoveContext(path);
+		MoveContext moveContext = new MoveContext(galleon, path);
 
 		// when
 		di.moveService.aiConfirmedMovePath(moveContext);

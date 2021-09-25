@@ -63,7 +63,7 @@ public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMi
             PathFinder.includeUnexploredTiles
         );
         if (path.reachTile(mission.getTile())) {
-            MoveContext moveContext = new MoveContext(path);
+            MoveContext moveContext = new MoveContext(mission.getUnit(), path);
             moveContext.initNextPathStep();
             moveService.handlePathMoveContext(moveContext);
         }

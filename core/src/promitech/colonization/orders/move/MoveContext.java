@@ -49,9 +49,9 @@ public class MoveContext {
 		initMoveCostAndType();
 	}
 
-	public MoveContext(Path unitPath) {
+	public MoveContext(Unit unit, Path unitPath) {
 		this.path = unitPath;
-		this.unit = path.unit;
+		this.unit = unit;
 	}
 
 	public boolean isAi() {

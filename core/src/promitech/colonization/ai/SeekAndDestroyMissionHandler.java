@@ -50,7 +50,7 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
 
         System.out.println("path to enemy = " + pathToEnemy);
         
-        MoveContext moveContext = new MoveContext(pathToEnemy);
+        MoveContext moveContext = new MoveContext(mission.unit, pathToEnemy);
         moveContext.initNextPathStep();
         while (moveContext.canHandleMove()) {
             if (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
