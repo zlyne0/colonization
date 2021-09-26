@@ -7,7 +7,6 @@ import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitMoveType;
 
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
@@ -45,41 +44,47 @@ public class TransportPathFinder {
 	private Map map;
 	private Tile startTile;
 	private Tile endTile;
-	private Unit moveUnit;
-	private final UnitMoveType unitMoveType = new UnitMoveType();
+	private PathUnit pathUnit;
+	private final PathUnitFactory pathUnitFactory = new PathUnitFactory();
 	
 	public TransportPathFinder(Map map) {
 	    this.map = map;
 	}
-	
+
+	public PathUnit createPathUnit(Unit unit) {
+		return pathUnitFactory.obtain(unit);
+	}
+
 	public Path findToTile(
 		final Tile sourceTile,
 		final Tile findDestTile,
-		final Unit landUnit,
-		final Unit potentialTransporter,
+		final Unit aLandUnit,
+		final Unit aPotentialTransporter,
 		final PathFinder transporterRangeMap
 	) {
+		PathUnit landUnit = createPathUnit(aLandUnit);
+		PathUnit potentialTransporter = createPathUnit(aPotentialTransporter);
+
 	    this.startTile = sourceTile;
 	    this.endTile = findDestTile;
 	    if (sourceTile.getType().isWater()) {
-	    	this.moveUnit = potentialTransporter;
+	    	this.pathUnit = potentialTransporter;
 	    } else {
-	    	this.moveUnit = landUnit;
+	    	this.pathUnit = landUnit;
 	    }
-	    this.unitMoveType.init(moveUnit);
         this.navyCostDecider.avoidUnexploredTiles = false;
         this.baseCostDecider.avoidUnexploredTiles = false;
 	
 		resetFinderBeforeSearching(map);
 		lowerGridIntegerMaxValue(transporterRangeMap.grid);
 		
-		navyCostDecider.init(map, potentialTransporter);
-		baseCostDecider.init(map, landUnit);
+		navyCostDecider.init(map, potentialTransporter.unitMove);
+		baseCostDecider.init(map, landUnit.unitMove);
 		
 		int iDirections = 0, nDirections = Direction.values().length;
 		
 		Node currentNode = grid.get(startTile.x, startTile.y);
-		currentNode.reset(moveUnit.getMovesLeft(), 0);
+		currentNode.reset(pathUnit.movesLeft, 0);
 		currentNode.turns = 0;
 		nodes.add(currentNode);
 
@@ -94,12 +99,10 @@ public class TransportPathFinder {
 				break;
 			}
 			if (currentNode.tile.getType().isWater()) {
-				moveUnit = potentialTransporter;
-				unitMoveType.init(moveUnit);
+				pathUnit = potentialTransporter;
 				costDecider = navyCostDecider;
 			} else {
-				moveUnit = landUnit;
-				unitMoveType.init(landUnit);
+				pathUnit = landUnit;
 				costDecider = baseCostDecider;
 			}
 			
@@ -119,7 +122,7 @@ public class TransportPathFinder {
 					reachedGoalNode = moveNode;
 				}
 				
-				MoveType moveType = unitMoveType.calculateMoveType(currentNode.tile, moveNode.tile);
+				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (moveType == MoveType.MOVE_NO_ACCESS_EMBARK || moveType == MoveType.EMBARK) {
 					costDecider.getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
 					costDecider.costMovesLeft = navyCostDecider.unitInitialMoves;
@@ -149,6 +152,8 @@ public class TransportPathFinder {
 				}
 			}
 		}
+		pathUnitFactory.free(landUnit);
+		pathUnitFactory.free(potentialTransporter);
 		if (reachedGoalNode == null) {
 			return createPath(grid.get(startTile.x, startTile.y));
 		} else {

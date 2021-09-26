@@ -16,7 +16,6 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.ScopeAppliable;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
-import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -89,11 +88,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	this.unitRole = aUnitRole;
     	this.owner = anOwner;
     	
-    	this.movesLeft = getInitialMovesLeft();
+    	this.movesLeft = UnitMethods.initialMoves(owner, unitType, unitRole);
     	this.hitPoints = unitType.getHitPoints();
     	
         if (unitType.canCarryUnits()) {
-            unitContainer = new UnitContainer(this);
+            unitContainer = new UnitContainer();
         }
         if (unitType.hasAbility(Ability.CARRY_GOODS)) {
         	goodsContainer = new GoodsContainer();
@@ -177,14 +176,14 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	if (unitContainer == null) {
     	    return false;
     	}
-    	return unitContainer.canAdd(unitOwner, unitType);
+    	return unitContainer.canAdd(this, unitOwner, unitType);
     }
 
 	private boolean canAddUnit(Unit unit) {
 		if (unitContainer == null) {
 			return false;
 		}
-		return unitContainer.canAdd(unit.owner, unit.unitType);
+		return unitContainer.canAdd(this, unit.owner, unit.unitType);
 	}
 
     public GoodsContainer getGoodsContainer() {
@@ -495,64 +494,8 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         return (int)owner.getFeatures().applyModifier(Modifier.TREASURE_TRANSPORT_FEE, fee);
     }
 
-    public int getMoveCost(Tile from, Tile target, Direction moveDirection) {
-    	return getMoveCost(from, target, moveDirection, movesLeft);
-    }
-    
-    /**
-     * Gets the cost of moving this <code>Unit</code> from the given
-     * <code>Tile</code> onto the given <code>Tile</code>. A call to
-     * {@link #getMoveType(Tile, Tile)} will return
-     * <code>MOVE_NO_MOVES</code>, if {@link #getMoveCost} returns a move cost
-     * larger than the {@link #getMovesLeft moves left}.
-     *
-     * @param from The <code>Tile</code> this <code>Unit</code> will move from.
-     * @param target The <code>Tile</code> this <code>Unit</code> will move onto.
-     * @param _movesLeft The amount of moves this Unit has left.
-     * @return The cost of moving this unit onto the given <code>Tile</code>.
-     */
-    public int getMoveCost(Tile from, Tile target, Direction moveDirection, int _movesLeft) {
-        int cost = target.getType().getBasicMoveCost();
-        if (target.getType().isLand() && !isNaval()) {
-        	cost = target.getMoveCost(moveDirection, cost);
-        }
-
-        if (isBeached(from)) {
-            // Ship on land due to it was in a colony which was abandoned
-            cost = _movesLeft;
-        } else if (cost > _movesLeft) {
-            // Using +2 in order to make 1/3 and 2/3 move count as
-            // 3/3, only when getMovesLeft > 0
-            if ((_movesLeft + 2 >= getInitialMovesLeft() 
-            		|| cost <= _movesLeft + 2
-            		|| target.hasSettlement()) && _movesLeft != 0) {
-                cost = _movesLeft;
-            }
-        }
-        return cost;
-    }
-    
-    public int getInitialMovesLeft() {
-        float m = owner.getFeatures().applyModifier(
-            Modifier.MOVEMENT_BONUS, 
-            unitType.getMovement(), 
-            unitType
-        );
-    	return (int)unitRole.applyModifier(Modifier.MOVEMENT_BONUS, m);
-    }
-    
-    /**
-     * Would this unit be beached if it was on a particular tile?
-     *
-     * @param tile The <code>Tile</code> to check.
-     * @return True if the unit is a beached ship.
-     */
-    public boolean isBeached(Tile tile) {
-        return isNaval() && tile != null && tile.getType().isLand() && !tile.hasSettlement();
-    }
-    
     public boolean isBeached() {
-    	return isBeached(this.getTileLocationOrNull());
+    	return UnitMethods.isBeached(this.getTileLocationOrNull(), unitType);
     }
     
     public void setState(UnitState newState) {
@@ -640,12 +583,16 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		if (isDamaged()) {
 			movesLeft = 0;
 		} else {
-			movesLeft = getInitialMovesLeft();
+			movesLeft = UnitMethods.initialMoves(owner, unitType, unitRole);
 		}
 	}
-	
+
+	public int initialMoves() {
+    	return UnitMethods.initialMoves(owner, unitType, unitRole);
+	}
+
 	public boolean hasFullMovesPoints() {
-		return movesLeft == getInitialMovesLeft();
+		return movesLeft == UnitMethods.initialMoves(owner, unitType, unitRole);
 	}
 	
     public int getMovesLeft() {
@@ -667,6 +614,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     
     @Override
     public void addUnit(Unit unit) {
+		if (!unitType.canCarryUnits()) {
+			throw new IllegalStateException("unit[" + this + "] has not ability carry unit but try add unit to it");
+		}
         unitContainer.addUnit(unit);
     }
 

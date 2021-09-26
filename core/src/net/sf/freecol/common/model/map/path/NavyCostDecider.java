@@ -57,7 +57,7 @@ class NavyCostDecider extends CostDecider {
             	continue;
             }
             if (neighbourToMoveTile.hasSettlement()) {
-                if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(moveUnit.getOwner(), moveUnitPiracy)) {
+                if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(unitMove.getOwner(), moveUnitPiracy)) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
                     
@@ -65,7 +65,7 @@ class NavyCostDecider extends CostDecider {
                     return true;
                 }
             } else {
-                boolean useAllMove = neighbourToMoveTile.isTileHasNavyUnitThatCanBombardUnit(moveUnit.getOwner(), moveUnitPiracy);
+                boolean useAllMove = neighbourToMoveTile.isTileHasNavyUnitThatCanBombardUnit(unitMove.getOwner(), moveUnitPiracy);
                 if (useAllMove) {
                     costMovesLeft = 0;
                     costNewTurns = 1;

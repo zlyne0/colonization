@@ -188,7 +188,12 @@ public class GoodsContainer {
 	public String toString() {
 		return goods.toString();
 	}
-	
+
+	public void clear() {
+        goods.clear();
+        updateTakenCargoSlots();
+    }
+
     public static class Xml extends XmlNodeParser<GoodsContainer> {
         private static final String ATTR_AMOUNT = "amount";
 		private static final String ATTR_TYPE = "type";

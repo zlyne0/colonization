@@ -50,7 +50,7 @@ public class UnitTest {
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
-        int initialMovesLeft = merchantman.getInitialMovesLeft();
+        int initialMovesLeft = merchantman.initialMoves();
         
         // then
         assertThat(initialMovesLeft).isEqualTo(15);
@@ -66,7 +66,7 @@ public class UnitTest {
         Unit merchantman = player.units.getById("unit:6437");
         
         // when
-        int initialMovesLeft = merchantman.getInitialMovesLeft();
+        int initialMovesLeft = merchantman.initialMoves();
         
         // then
         assertThat(initialMovesLeft).isEqualTo(18);

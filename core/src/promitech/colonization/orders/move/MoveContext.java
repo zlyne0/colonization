@@ -93,14 +93,18 @@ public class MoveContext {
 	}
 	
 	private void initMoveCostAndType() {
-		moveCost = unit.getMoveCost(sourceTile, destTile, direction);
+		unitMoveType.init(unit);
+		moveCost = unitMoveType.caclulateMoveCost(
+			sourceTile, destTile, direction,
+			unit.getMovesLeft(), unit.initialMoves()
+		);
 		if (unit.hasMovesPoints(moveCost)) {
 			hasMovePoints = true;
 		} else {
 			hasMovePoints = false;
 			return;
 		}
-		this.moveType = unitMoveType.calculateMoveType(unit, sourceTile, destTile);
+		this.moveType = unitMoveType.calculateMoveType(sourceTile, destTile);
 	}
 	
 	public String toString() {

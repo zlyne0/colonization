@@ -338,10 +338,13 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		}
 		
 		val dutch = guiGameModel.game.players.getById("player:1")
-		val galleon = UnitFactory.create(UnitType.GALLEON, dutch, mapActor.mapDrawModel().selectedTile)
-		
+
 	    var pathFinder = PathFinder()
-	    pathFinder.generateRangeMap(guiGameModel.game.map, galleon.getTile(), galleon, PathFinder.excludeUnexploredTiles)
+	    pathFinder.generateRangeMap(
+			guiGameModel.game.map, mapActor.mapDrawModel().selectedTile,
+			pathFinder.createPathUnit(dutch, Specification.instance.unitTypes.getById(UnitType.GALLEON)),
+			PathFinder.excludeUnexploredTiles
+		)
 		
 		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
 		pathFinder.turnCostToStringArrays(tileStrings)

@@ -67,17 +67,11 @@ public class ColonyFactory {
     }
 	
 	private void determineEuropeSeaConnection(Colony colony) {
-		// tmp unit only for find path to europe
-    	Unit tmpGalleon = new Unit(
-			"tmp:buildColony:findToEurope:-1",
-			Specification.instance.unitTypes.getById(UnitType.GALLEON),
-			Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID),
-			colony.owner
+    	Path path = pathFinder.findToEurope(
+    		game.map, colony.tile,
+			pathFinder.createPathUnit(colony.getOwner(), Specification.instance.unitTypes.getById(UnitType.GALLEON)),
+			PathFinder.includeUnexploredTiles
 		);
-    	tmpGalleon.changeUnitLocation(colony.tile);
-		colony.getOwner().units.add(tmpGalleon);
-    	tmpGalleon.setOwner(colony.getOwner());
-    	Path path = pathFinder.findToEurope(game.map, colony.tile, tmpGalleon, PathFinder.includeUnexploredTiles);
 
     	boolean foundPath = false;
     	if (!path.tiles.isEmpty()) {
@@ -86,9 +80,6 @@ public class ColonyFactory {
     			foundPath = true;
     		}
     	}
-    	tmpGalleon.changeUnitLocation(colony.tile);
-    	colony.getOwner().removeUnit(tmpGalleon);
-    	
     	colony.seaConnectionToEurope = foundPath;
 	}
 }

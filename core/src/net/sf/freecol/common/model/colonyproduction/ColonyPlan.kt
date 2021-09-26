@@ -53,7 +53,7 @@ class GoodsMaxProductionLocationWithUnit {
     }
 
     override fun toString(): String {
-        var st = ""
+        var st : String
         if (worker != null) {
             st = worker.unitType.id
         } else {
@@ -69,7 +69,7 @@ class GoodsMaxProductionLocationWithUnit {
         return st
     }
 
-    inline fun hasBetterScore(a : GoodsMaxProductionLocationWithUnit) : Boolean {
+    fun hasBetterScore(a : GoodsMaxProductionLocationWithUnit) : Boolean {
         return this.score > a.score
     }
 

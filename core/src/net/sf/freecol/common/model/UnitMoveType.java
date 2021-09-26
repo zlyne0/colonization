@@ -5,6 +5,8 @@ import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 
+import promitech.colonization.Direction;
+
 public class UnitMoveType {
 
     private Player owner;
@@ -14,13 +16,51 @@ public class UnitMoveType {
     private UnitContainer unitContainer = null;
     private GoodsContainer goodsContainer = null;
 
-    public void init(Unit unit) {
+    private UnitContainer emptyUnitContainer = null;
+    private GoodsContainer emptyGoodsContainer = null;
+
+    public void reset() {
+        this.owner = null;
+        this.unitType = null;
+        this.unitRole = null;
+        this.hitPoints = 0;
+        this.unitContainer = null;
+        this.goodsContainer = null;
+    }
+
+    public UnitMoveType init(Unit unit) {
         this.owner = unit.getOwner();
         this.unitType = unit.unitType;
         this.unitRole = unit.unitRole;
         this.hitPoints = unit.getHitPoints();
         this.unitContainer = unit.getUnitContainer();
         this.goodsContainer = unit.getGoodsContainer();
+        return this;
+    }
+
+    public UnitMoveType init(Player owner, UnitType unitType) {
+        this.owner = owner;
+        this.unitType = unitType;
+        this.unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        this.hitPoints = unitType.getHitPoints();
+
+        if (unitType.canCarryUnits()) {
+            if (emptyUnitContainer == null) {
+                emptyUnitContainer = new UnitContainer();
+            } else {
+                emptyUnitContainer.clear();
+            }
+            unitContainer = emptyUnitContainer;
+        }
+        if (unitType.hasAbility(Ability.CARRY_GOODS)) {
+            if (emptyGoodsContainer == null) {
+                emptyGoodsContainer = new GoodsContainer();
+            } else {
+                emptyGoodsContainer.clear();
+            }
+            goodsContainer = emptyGoodsContainer;
+        }
+        return this;
     }
 
     public MoveType calculateMoveType(Unit unit, Tile from, Tile target) {
@@ -234,4 +274,51 @@ public class UnitMoveType {
         }
         return false;
     }
+
+    /**
+     * Gets the cost of moving this <code>Unit</code> from the given
+     * <code>Tile</code> onto the given <code>Tile</code>. A call to
+     * {@link #getMoveType(Tile, Tile)} will return
+     * <code>MOVE_NO_MOVES</code>, if {@link #getMoveCost} returns a move cost
+     * larger than the {@link #getMovesLeft moves left}.
+     *
+     * @param from The <code>Tile</code> this <code>Unit</code> will move from.
+     * @param target The <code>Tile</code> this <code>Unit</code> will move onto.
+     * @param actualMovesLeft The amount of moves this Unit has left.
+     * @param unitInitialMoves Unit initial moves
+     * @return The cost of moving this unit onto the given <code>Tile</code>.
+     */
+    public int caclulateMoveCost(Tile from, Tile target, Direction moveDirection, int actualMovesLeft, int unitInitialMoves) {
+        int cost = target.getType().getBasicMoveCost();
+        if (target.getType().isLand() && !unitType.isNaval()) {
+            cost = target.getMoveCost(moveDirection, cost);
+        }
+
+        if (UnitMethods.isBeached(from, unitType)) {
+            // Ship on land due to it was in a colony which was abandoned
+            cost = actualMovesLeft;
+        } else if (cost > actualMovesLeft) {
+            // Using +2 in order to make 1/3 and 2/3 move count as
+            // 3/3, only when getMovesLeft > 0
+            if ((actualMovesLeft + 2 >= unitInitialMoves
+                || cost <= actualMovesLeft + 2
+                || target.hasSettlement()) && actualMovesLeft != 0) {
+                cost = actualMovesLeft;
+            }
+        }
+        return cost;
+    }
+
+    public int initialMoves() {
+        return UnitMethods.initialMoves(owner, unitType, unitRole);
+    }
+
+    public UnitType getUnitType() {
+        return unitType;
+    }
+
+    public Player getOwner() {
+        return owner;
+    }
+
 }

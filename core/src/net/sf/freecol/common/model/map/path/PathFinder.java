@@ -3,34 +3,36 @@ package net.sf.freecol.common.model.map.path;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitMoveType;
+import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.player.Player;
 
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
 public class PathFinder {
 
-	public static final EnumSet<FlagTypes> excludeUnexploredTiles = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
-	public static final EnumSet<FlagTypes> includeUnexploredTiles = EnumSet.noneOf(FlagTypes.class);
+	public static final Set<FlagTypes> excludeUnexploredTiles = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
+	public static final Set<FlagTypes> includeUnexploredTiles = EnumSet.noneOf(FlagTypes.class);
 
-	public static final EnumSet<FlagTypes> includeNavyThreat = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
-	public static final EnumSet<FlagTypes> excludeNavyThreat = EnumSet.noneOf(FlagTypes.class);
+	public static final Set<FlagTypes> includeNavyThreat = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final Set<FlagTypes> excludeNavyThreat = EnumSet.noneOf(FlagTypes.class);
 
-	public static final EnumSet<FlagTypes> includeUnexploredAndNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
-	public static final EnumSet<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final Set<FlagTypes> includeUnexploredAndNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final Set<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
 
-	public static final EnumSet<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = EnumSet.of(
+	public static final Set<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = EnumSet.of(
 		FlagTypes.AvoidUnexploredTiles,
 		FlagTypes.IncludeNavyThreatTiles
 	);
 
-	private enum FlagTypes {
+	public enum FlagTypes {
 		// move only through explored tiles
 		AvoidUnexploredTiles,
 
@@ -78,24 +80,36 @@ public class PathFinder {
 	private CostDecider costDecider;
 	private GoalDecider goalDecider;
 
+	private final PathUnitFactory pathUnitFactory = new PathUnitFactory();
+
 	private Map map;
 	private Tile startTile;
 	private Tile endTile;
-	private Unit moveUnit;
-	private final UnitMoveType unitMoveType = new UnitMoveType();
-	
+	private PathUnit pathUnit;
+
 	private boolean findPossibilities = false;
-	
+
 	public PathFinder() {
 	}
 
-	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
+	private PathUnit createPathUnit(Unit unit) {
+		return pathUnitFactory.obtain(unit);
+	}
+
+	public PathUnit createPathUnit(Player owner, UnitType unitType) {
+		return pathUnitFactory.obtain(owner, unitType);
+	}
+
+	public Path findToEurope(Map map, Tile startTile, Unit unit, Set<FlagTypes> flags) {
+		return findToEurope(map, startTile, createPathUnit(unit), flags);
+	}
+
+	public Path findToEurope(final Map map, final Tile startTile, PathUnit pathUnit, Set<FlagTypes> flags) {
 	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
-        this.moveUnit = moveUnit;
-        this.unitMoveType.init(moveUnit);
+        this.pathUnit = pathUnit;
         this.findPossibilities = false;
         this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
         this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -107,13 +121,16 @@ public class PathFinder {
 		return path;
 	}
 
-	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit unit, Set<FlagTypes> flags) {
+		return findToTile(map, startTile, endTile, createPathUnit(unit), flags);
+	}
+
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
         goalDecider = pathToTileGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = endTile;
-        this.moveUnit = moveUnit;
-        this.unitMoveType.init(moveUnit);
+        this.pathUnit = pathUnit;
         this.findPossibilities = false;
 		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -125,27 +142,30 @@ public class PathFinder {
         return path;
     }
 	
-	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit moveUnit, EnumSet<FlagTypes> flags) {
+	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
 		if (endTiles.isEmpty()) {
 			throw new IllegalArgumentException("endTiles can not be empty");
 		}
 		Path theBestPath = null;
 		for (Tile oneTile : endTiles) {
-			Path onePath = findToTile(map, startTile, oneTile, moveUnit, flags);
+			Path onePath = findToTile(map, startTile, oneTile, createPathUnit(unit), flags);
 			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
 				theBestPath = onePath;
 			}
 		}
 		return theBestPath;
 	}
-	
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, EnumSet<FlagTypes> flags) {
+
+	public void generateRangeMap(final Map map, final Tile startTile, final Unit unit, Set<FlagTypes> flags) {
+		generateRangeMap(map, startTile, createPathUnit(unit), flags);
+	}
+
+	public void generateRangeMap(final Map map, final Tile startTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
 	    goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
-        this.moveUnit = moveUnit;
-        this.unitMoveType.init(moveUnit);
+        this.pathUnit = pathUnit;
         this.findPossibilities = true;
 		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
@@ -156,7 +176,7 @@ public class PathFinder {
 	}
 	
 	private void determineCostDecider(boolean includeNavyThreat) {
-	    if (moveUnit.isNaval()) {
+	    if (pathUnit.isNaval()) {
 	        if (includeNavyThreat) {
 	            costDecider = navyWithoutThreatCostDecider;
 	        } else {
@@ -172,10 +192,10 @@ public class PathFinder {
 		
 		int iDirections = 0; 
 		int nDirections = Direction.values().length;
-		costDecider.init(map, moveUnit);
+		costDecider.init(map, pathUnit.unitMove);
 		
 		Node currentNode = grid.get(startTile.x, startTile.y);
-		currentNode.reset(moveUnit.getMovesLeft(), 0);
+		currentNode.reset(pathUnit.movesLeft, 0);
 		currentNode.turns = 0;
 		nodes.add(currentNode);
 
@@ -201,7 +221,7 @@ public class PathFinder {
 					continue;
 				}
 				
-				MoveType moveType = unitMoveType.calculateMoveType(currentNode.tile, moveNode.tile);
+				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
 					// change moveType to default move. Sometimes goal can be indian settlement 
@@ -221,6 +241,9 @@ public class PathFinder {
 				}
 			}
 		}
+
+		pathUnitFactory.free(pathUnit);
+		pathUnit = null;
 
 		if (findPossibilities) {
 			return null;

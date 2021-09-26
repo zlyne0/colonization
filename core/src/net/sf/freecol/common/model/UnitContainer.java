@@ -69,20 +69,18 @@ public class UnitContainer {
 
 	private MapIdEntities<Unit> units = new MapIdEntities<Unit>();
 	
-	private final Unit containerUnit;
-	
-	public UnitContainer(Unit containerUnit) {
-		this.containerUnit = containerUnit;
-	}
-	
-    public boolean canAdd(Player unitOwner, UnitType unitType) {
-        return generateAddUnitReason(unitOwner, unitType) == NoAddReason.NONE;
+    public boolean canAdd(Unit containerUnit, Player unitOwner, UnitType unitType) {
+		NoAddReason reason = (unitType == null)
+			? NoAddReason.WRONG_TYPE
+			: (units.isNotEmpty() && units.first().getOwner().notEqualsId(unitOwner))
+			? NoAddReason.OCCUPIED_BY_ENEMY
+			: (!containerUnit.hasSpaceForAdditionalUnit(unitType))
+			? NoAddReason.CAPACITY_EXCEEDED
+			: NoAddReason.NONE;
+        return reason == NoAddReason.NONE;
     }
 	
     public void addUnit(Unit unit) {
-        if (!containerUnit.unitType.canCarryUnits()) {
-            throw new IllegalStateException("unit[" + containerUnit + "] has not ability carry unit but try add unit to it");
-        }
         this.units.add(unit);
     }
     
@@ -94,16 +92,6 @@ public class UnitContainer {
         return space;
     }
     
-    public NoAddReason generateAddUnitReason(Player unitOwner, UnitType unitType) {
-        return (unitType == null)
-            ? NoAddReason.WRONG_TYPE
-            : (units.isNotEmpty() && units.first().getOwner().notEqualsId(unitOwner))
-            ? NoAddReason.OCCUPIED_BY_ENEMY
-            : (!containerUnit.hasSpaceForAdditionalUnit(unitType))
-            ? NoAddReason.CAPACITY_EXCEEDED
-            : NoAddReason.NONE;
-    }
-
     public void setStateToAllChildren(UnitState state) {
         for (Unit u : units.entities()) {
             u.setState(state);
@@ -128,5 +116,9 @@ public class UnitContainer {
 			}
 		}
 		return false;
+	}
+
+	public void clear() {
+		units.clear();
 	}
 }
