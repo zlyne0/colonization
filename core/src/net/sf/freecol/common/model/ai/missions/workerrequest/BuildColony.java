@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitMethods;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.ai.missions.workerrequest.TilePlayer.NoClaimReason;
 import net.sf.freecol.common.model.player.Player;
@@ -402,7 +401,7 @@ class BuildColony {
 				}
 				if (nTile.getUnits().isNotEmpty()) {
 					Unit unit = nTile.getUnits().first();
-					if (unit.getOwner().notEqualsId(player) && UnitMethods.isOffensiveUnit(unit) && player.atWarWith(unit.getOwner())) {
+					if (unit.getOwner().notEqualsId(player) && Unit.isOffensiveUnit(unit) && player.atWarWith(unit.getOwner())) {
 						values.nearby *= MOD_ENEMY_UNIT[radius];
 					}
 				}

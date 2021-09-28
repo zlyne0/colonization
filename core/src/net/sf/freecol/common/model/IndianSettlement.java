@@ -221,7 +221,7 @@ public class IndianSettlement extends Settlement {
 				if (enemy.isLiveEuropeanPlayer()) {
 					int alarm = 0;
 					for (Unit unit : neighbourTile.getUnits().entities()) {
-						if (!unit.isNaval() && UnitMethods.isOffensiveUnit(unit)) {
+						if (!unit.isNaval() && Unit.isOffensiveUnit(unit)) {
 							alarm += unit.unitType.getBaseOffence(); 
 						}
 					}

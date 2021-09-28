@@ -7,7 +7,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitMethods;
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -86,7 +85,7 @@ public class EuropeanMissionPlaner {
 		TransportUnitMission tum = null;
 		
 		for (Unit dockUnit : europe.getUnits().entities()) {
-			if (!UnitMethods.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
+			if (!Unit.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
 				continue;
 			}
 			List<ColonyWorkerMission> colonyWorkerMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, dockUnit);

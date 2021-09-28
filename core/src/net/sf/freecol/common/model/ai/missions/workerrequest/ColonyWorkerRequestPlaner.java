@@ -4,7 +4,6 @@ import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitMethods;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -54,7 +53,7 @@ public class ColonyWorkerRequestPlaner {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
 					continue;
 				}
-				if (UnitMethods.isColonist(unit.unitType, unit.getOwner())) {
+				if (Unit.isColonist(unit.unitType, unit.getOwner())) {
 					prepareMission(unit, tileScore);
 				}
 			}

@@ -105,7 +105,7 @@ public class UnitMoveType {
             }
         } else { // target at sea
             if (hasTileEnemyUnits(target)) {
-                return (UnitMethods.isOffensiveUnit(unitType, unitRole)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
+                return (Unit.isOffensiveUnit(unitType, unitRole)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_CIVILIAN;
             }
             return (target.isDirectlyHighSeasConnected()) ? MoveType.MOVE_HIGH_SEAS : MoveType.MOVE;
         }
@@ -124,7 +124,7 @@ public class UnitMoveType {
                 if (defender != null && owner.notEqualsId(defender.getOwner())) {
                     if (defender.isNaval()) {
                         return MoveType.ATTACK_UNIT;
-                    } else if (!UnitMethods.isOffensiveUnit(unitType, unitRole)) {
+                    } else if (!Unit.isOffensiveUnit(unitType, unitRole)) {
                         return MoveType.MOVE_NO_ATTACK_CIVILIAN;
                     } else {
                         return (allowMoveFrom(from)) ? MoveType.ATTACK_UNIT : MoveType.MOVE_NO_ATTACK_MARINE;
@@ -137,25 +137,25 @@ public class UnitMoveType {
                     return MoveType.MOVE;
                 }
             } else if (owner.equalsId(settlement.getOwner())) {
-                if (hasAbility(Ability.CARRY_TREASURE) && UnitMethods.canCashInTreasureInLocation(owner, target)) {
+                if (hasAbility(Ability.CARRY_TREASURE) && Unit.canCashInTreasureInLocation(owner, target)) {
                     return MoveType.MOVE_CASH_IN_TREASURE;
                 }
                 return MoveType.MOVE;
             } else if (isTradingUnit()) {
                 return getTradeMoveType(settlement);
-            } else if (UnitMethods.isColonist(unitType, owner)) {
+            } else if (Unit.isColonist(unitType, owner)) {
                 if (settlement instanceof Colony && hasAbility(Ability.NEGOTIATE)) {
                     return (allowMoveFrom(from)) ? MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT : MoveType.MOVE_NO_ACCESS_WATER;
                 } else if (settlement instanceof IndianSettlement && hasAbility(Ability.SPEAK_WITH_CHIEF)) {
                     return (allowMoveFrom(from)) ? MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT : MoveType.MOVE_NO_ACCESS_WATER;
-                } else if (UnitMethods.isOffensiveUnit(unitType, unitRole)) {
+                } else if (Unit.isOffensiveUnit(unitType, unitRole)) {
                     return (allowMoveFrom(from)) ? MoveType.ATTACK_SETTLEMENT : MoveType.MOVE_NO_ATTACK_MARINE;
                 } else if (hasAbility(Ability.ESTABLISH_MISSION)) {
                     return getMissionaryMoveType(from, settlement);
                 } else {
                     return getLearnMoveType(from, settlement);
                 }
-            } else if (UnitMethods.isOffensiveUnit(unitType, unitRole)) {
+            } else if (Unit.isOffensiveUnit(unitType, unitRole)) {
                 return (allowMoveFrom(from)) ? MoveType.ATTACK_SETTLEMENT : MoveType.MOVE_NO_ATTACK_MARINE;
             } else {
                 return MoveType.MOVE_NO_ACCESS_SETTLEMENT;
@@ -294,7 +294,7 @@ public class UnitMoveType {
             cost = target.getMoveCost(moveDirection, cost);
         }
 
-        if (UnitMethods.isBeached(from, unitType)) {
+        if (Unit.isBeached(from, unitType)) {
             // Ship on land due to it was in a colony which was abandoned
             cost = actualMovesLeft;
         } else if (cost > actualMovesLeft) {
@@ -310,7 +310,7 @@ public class UnitMoveType {
     }
 
     public int initialMoves() {
-        return UnitMethods.initialMoves(owner, unitType, unitRole);
+        return Unit.initialMoves(owner, unitType, unitRole);
     }
 
     public UnitType getUnitType() {

@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
-import net.sf.freecol.common.model.UnitMethods;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
@@ -176,7 +175,7 @@ public class MoveService {
 				}
 			}
 		}
-		if (treasureWagon != null && UnitMethods.canCashInTreasureInLocation(treasureWagon.getOwner(), tile)) {
+		if (treasureWagon != null && Unit.canCashInTreasureInLocation(treasureWagon.getOwner(), tile)) {
 			if (carrier.getOwner().isHuman()) {
 				moveController.showCashInTreasureConfirmation(treasureWagon);
 			}
