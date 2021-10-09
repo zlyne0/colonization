@@ -160,4 +160,10 @@ public class CollectionUtils {
         }
         return true;
     }
+
+    public static <T> Set<T> setOf(T value) {
+        Set<T> set = new HashSet<T>();
+        set.add(value);
+        return set;
+    }
 }

@@ -10,6 +10,10 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 import promitech.colonization.ai.MissionHandlerLogger;
 import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.Units;
@@ -46,21 +50,21 @@ public class ColonyWorkerRequestPlaner {
 			new EntryPointTurnRange(game.map, pathFinder, player, transporter)
 		);
 
-		ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score();
 
 		for (Unit unit : player.units.copy()) {
 			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
 					continue;
 				}
+				ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score(tilesForCreateColony(playerMissionContainer));
 				if (Unit.isColonist(unit.unitType, unit.getOwner())) {
-					prepareMission(unit, tileScore);
+					assignExistingUnitToColony(unit, tileScore);
 				}
 			}
 		}
 	}
 
-	private void prepareMission(Unit unit, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
+	private void assignExistingUnitToColony(Unit unit, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {
 		WorkerRequestScoreValue unitPlace = null;
 		WorkerRequestScoreValue freeColonistsPlace = null;
 
@@ -84,7 +88,22 @@ public class ColonyWorkerRequestPlaner {
 			playerMissionContainer.addMission(mission);
 		}
 	}
-	
+
+	private List<Tile> tilesForCreateColony(PlayerMissionsContainer playerMissionContainer) {
+		List<Tile> tiles = null;
+		List<ColonyWorkerMission> missions = playerMissionContainer.findMissions(ColonyWorkerMission.class);
+		for (ColonyWorkerMission mission : missions) {
+			if (tiles == null) {
+				tiles = new ArrayList<Tile>();
+			}
+			tiles.add(mission.getTile());
+		}
+		if (tiles == null) {
+			tiles = Collections.emptyList();
+		}
+		return tiles;
+	}
+
 	private boolean hasMissionToWorkerRequestPlace(PlayerMissionsContainer playerMissionContainer, WorkerRequestScoreValue workerRequestPlace) {
 	    this.tmpWorkerRequestPlace = workerRequestPlace;
         return playerMissionContainer.hasMission(ColonyWorkerMission.class, hasMissionPredicate);

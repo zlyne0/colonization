@@ -5,13 +5,17 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.ai.missions.workerrequest.BuildColony.TileSelection;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.CollectionUtils;
 
-import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import promitech.map.isometric.NeighbourIterableTile;
 
 class ColonyPlaceGenerator {
 
-	public static final int TILES_NUMBER = 5;
+    private static Set<TileSelection> ONLY_SEASIZE_TILE_FILTER = CollectionUtils.setOf(TileSelection.ONLY_SEASIDE);
+	private static final int TILES_NUMBER = 5;
 	
 	private final EntryPointTurnRange entryPointTurnRange;
 	private final Map map;
@@ -24,19 +28,19 @@ class ColonyPlaceGenerator {
 	public ColonyPlaceGenerator(EntryPointTurnRange entryPointTurnRange, Map map) {
 	    this.entryPointTurnRange = entryPointTurnRange;
 		this.map = map;
-		
 		buildColony = new BuildColony(map);
 	}
 
-	public void generateWeights(Player player) {
-        Set<TileSelection> tileFilter = new HashSet<BuildColony.TileSelection>();
-        tileFilter.add(TileSelection.ONLY_SEASIDE);
-        buildColony.generateWeights(player, tileFilter);
-    }
+	public Tile[] theBestTiles(Player player, List<Tile> tilesWithCreateColonyMission) {
+        buildColony.generateWeights(player, ONLY_SEASIZE_TILE_FILTER);
 
-	public Tile[] theBestTiles(Player player) {
-	    generateWeights(player);
-		
+        for (Tile tile : tilesWithCreateColonyMission) {
+            buildColony.getTileWeights().set(tile.x, tile.y, 0);
+            for (NeighbourIterableTile<Tile> neighbourTile : map.neighbourTiles(tile)) {
+                buildColony.getTileWeights().set(neighbourTile.tile.x, neighbourTile.tile.y, 0);
+            }
+        }
+
         for (int i=0; i<maxTurnsRange; i++) {
             theBestWeights[i] = -1;
             theBestTiles[i] = null;
@@ -64,23 +68,13 @@ class ColonyPlaceGenerator {
         }
         return theBestTiles;
 	}
-	
-    public Tile findTileToBuildColony(Player player) {
-    	theBestTiles(player);
-        
-        for (Tile tile : theBestTiles) {
-            if (tile != null) {
-                return tile;
-            }
-        }
-        return null;
-        
-    }
 
-    public void tilesWeights(MapTileDebugInfo mapTileInfo) {
+    public void debugTilesWeights(Player player, MapTileDebugInfo mapTileInfo) {
+        buildColony.generateWeights(player, ONLY_SEASIZE_TILE_FILTER);
+	    //buildColony.reduceWeightsByEntryPointTurnRange(entryPointTurnRange);
     	buildColony.toStringValues(mapTileInfo);
     }
-    
+
     public void theBestTilesWeight(MapTileDebugInfo mapTileInfo) {
     	System.out.println("the best place for colony");
         for (int i=0; i<theBestTiles.length; i++) {

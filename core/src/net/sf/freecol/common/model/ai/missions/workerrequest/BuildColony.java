@@ -529,10 +529,25 @@ class BuildColony {
 			}
 		}
 	}
-	
+
+	public void reduceWeightsByEntryPointTurnRange(EntryPointTurnRange entryPointTurnRange) {
+		int cost;
+		for (int i = 0; i < tileWeights.size(); i++) {
+			cost = tileWeights.get(i);
+			if (cost > 0 && cost != Integer.MAX_VALUE) {
+				int turnRange = entryPointTurnRange.turnsCost(i);
+				if (turnRange == 0) {
+					turnRange = 1;
+				}
+				System.out.println("turnRange[" + i + "] = " + (cost / turnRange));
+				tileWeights.set(i, cost / turnRange);
+			}
+		}
+	}
+
 	public void toStringValues(MapTileDebugInfo mapFileInfo) {
         int x, y, cost;
-        for (int i=0; i<tileWeights.size(); i++) {
+		for (int i = 0; i < tileWeights.size(); i++) {
             x = tileWeights.toX(i);
             y = tileWeights.toY(i);
             cost = tileWeights.get(i);
@@ -541,7 +556,6 @@ class BuildColony {
             	mapFileInfo.str(x, y, Integer.toString(cost));
             }
         }
-		
 	}
 
 	public Int2dArray getTileWeights() {

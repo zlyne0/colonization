@@ -33,11 +33,15 @@ class CreateColonyReqScore {
 	}
 
 	public void score(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Tile[] tiles) {
+		Tile firstTheBest = null;
 		for (Tile tile : tiles) {
-			if (tile == null) {
-				continue;
+			if (tile != null) {
+				firstTheBest = tile;
+				break;
 			}
-			score(tileScore, tile);
+		}
+		if (firstTheBest != null) {
+			score(tileScore, firstTheBest);
 		}
 	}
 
@@ -68,10 +72,8 @@ class CreateColonyReqScore {
 			}
 		}
 		if (buildingOutput != null) {
-			{
-				tileScore.add(scoreProduction(colonistUnitType, buildingOutput, tileProduction, tile));
-			}
-			
+			tileScore.add(scoreProduction(colonistUnitType, buildingOutput, tileProduction, tile));
+
 			UnitType specialist = Specification.instance.expertUnitTypeForGoodsType(buildingOutput.getKey());
 			if (specialist != null) {
 				tileScore.add(scoreProduction(specialist, buildingOutput, tileProduction, tile));

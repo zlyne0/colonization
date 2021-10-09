@@ -1,16 +1,13 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.Map
-import net.sf.freecol.common.model.MapIdEntities
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
-import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
-import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.ai.score.ScoreableObjectsList
 import promitech.colonization.screen.debug.TileDebugView
+import java.util.*
 
 class ColonyWorkerRequestPlaceCalculator(
     val player : Player,
@@ -38,22 +35,22 @@ class ColonyWorkerRequestPlaceCalculator(
     private val goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice
     private val colonyWorkerReq = ColonyWorkerReqScore(player.market(), goodsTypeToScoreByPrice)
 
-    fun score(): ScoreableObjectsList<WorkerRequestScoreValue> {
+    fun score(tilesWithCreateColony : List<Tile>): ScoreableObjectsList<WorkerRequestScoreValue> {
         tileScore.clear()
         if (player.settlements.isEmpty()) {
-            workerForCreateColony(player, tileScore)
+            workerForCreateColony(player, tileScore, tilesWithCreateColony);
             // tileScore already sorted
         } else {
             workerForColony(player, tileScore)
-            workerForCreateColony(player, tileScore)
+            workerForCreateColony(player, tileScore, tilesWithCreateColony);
         }
         tileScore.sortDescending()
         return tileScore
     }
 
-    private fun workerForCreateColony(player: Player, tileScore: ScoreableObjectsList<WorkerRequestScoreValue>) {
+    private fun workerForCreateColony(player: Player, tileScore: ScoreableObjectsList<WorkerRequestScoreValue>, tilesWithCreateColony : List<Tile>) {
         val colonyPlaceGenerator = ColonyPlaceGenerator(entryPointTurnRange, map)
-        val theBestTiles = colonyPlaceGenerator.theBestTiles(player)
+        val theBestTiles = colonyPlaceGenerator.theBestTiles(player, tilesWithCreateColony)
         val newColonyReqScore = CreateColonyReqScore(map, player, goodsTypeToScoreByPrice)
         newColonyReqScore.score(tileScore, theBestTiles)
         tileScore.sortDescending()
@@ -82,16 +79,15 @@ class ColonyWorkerRequestPlaceCalculator(
         }
     }
 
-    fun debugTheBestBlaceToBuildColony(tileDebugView: TileDebugView) {
+    fun debugTheBestBlaceToBuildColony(tileDebugView: TileDebugView, tilesWithCreateColonyMission : List<Tile>) {
         val colonyPlaceGenerator = ColonyPlaceGenerator(entryPointTurnRange, map)
-        colonyPlaceGenerator.theBestTiles(player)
+        colonyPlaceGenerator.theBestTiles(player, tilesWithCreateColonyMission);
         colonyPlaceGenerator.theBestTilesWeight(tileDebugView)
     }
 
     fun debugGenerateTileScoresForNewColony(tileDebugView: TileDebugView) {
         val colonyPlaceGenerator = ColonyPlaceGenerator(entryPointTurnRange, map)
-        colonyPlaceGenerator.generateWeights(player)
-        colonyPlaceGenerator.tilesWeights(tileDebugView)
+        colonyPlaceGenerator.debugTilesWeights(player, tileDebugView)
     }
 
 }

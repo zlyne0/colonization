@@ -3,6 +3,7 @@ package promitech.colonization.screen.debug
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
@@ -12,6 +13,7 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
@@ -247,7 +249,9 @@ fun generateTheBestPlaceToBuildColony(di: DI, guiGameModel: GUIGameModel, tileDe
 	val transportUnit = Units.findCarrier(player)
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit))
 
-	sut.debugTheBestBlaceToBuildColony(tileDebugView)
+	val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+	val createColonyTiles = missionContainer.findMissions(ColonyWorkerMission::class.java).map { it -> it.tile }
+	sut.debugTheBestBlaceToBuildColony(tileDebugView, createColonyTiles)
 }
 
 fun generateTileScoresForNewColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
@@ -269,7 +273,7 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
-	val colonyWorkerRequestScores = sut.score()
+	val colonyWorkerRequestScores = sut.score(emptyList())
 
 	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
@@ -285,7 +289,7 @@ fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, til
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
-	val colonyWorkerRequestScores = sut.score()
+	val colonyWorkerRequestScores = sut.score(emptyList())
 
 	val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)

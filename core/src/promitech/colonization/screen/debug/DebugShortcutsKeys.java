@@ -62,14 +62,15 @@ public class DebugShortcutsKeys {
         this.stage = stage;
         
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
-        
+
         commandByKeycode.put(Input.Keys.NUM_1, "player_turn_as_ai");
-        commandByKeycode.put(Input.Keys.NUM_2, "ai_generateTheBestPlaceToBuildColony");
-        commandByKeycode.put(Input.Keys.NUM_3, "ai_generateWorkerReqScoreByValue");
-        commandByKeycode.put(Input.Keys.NUM_4, "ai_generateWorkerReqScoreByPriceToValue");
+        commandByKeycode.put(Input.Keys.NUM_2, "ai_generateTileScoresForNewColony");
+        commandByKeycode.put(Input.Keys.NUM_3, "ai_generateTheBestPlaceToBuildColony");
+        commandByKeycode.put(Input.Keys.NUM_4, "ai_generateWorkerReqScoreByValue");
+        commandByKeycode.put(Input.Keys.NUM_5, "ai_generateWorkerReqScoreByPriceToValue");
         //commandByKeycode.put(Input.Keys.NUM_5, "aiTransportUnitsFromEuropeToNewWorld");
         //commandByKeycode.put(Input.Keys.NUM_6, "colonies_gold_value_production");
-        //commandByKeycode.put(Input.Keys.NUM_9, "map show");
+        commandByKeycode.put(Input.Keys.NUM_0, "map_show");
         //commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
     }
 
