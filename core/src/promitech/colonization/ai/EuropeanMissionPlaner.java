@@ -50,8 +50,7 @@ public class EuropeanMissionPlaner {
 			}
 		}
 		
-//		colonyProductionPlaner.createPlan(player, playerMissionContainer);
-//		transportGoodsToSellMissionPlaner.plan(player);
+		//colonyProductionPlaner.createPlan(player, playerMissionContainer);
 	}
 	
 	private void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
@@ -62,11 +61,12 @@ public class EuropeanMissionPlaner {
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}
-		
+
 		if (navyUnit.isAtLocation(Europe.class)) {
 			transportUnitFromEurope(navyUnit, playerMissionContainer);
+		} else {
+			transportGoodsToSellMissionPlaner.plan(navyUnit);
 		}
-		
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
 		}

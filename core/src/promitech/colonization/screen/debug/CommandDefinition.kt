@@ -114,10 +114,6 @@ fun createCommands(
 			generateWorkerReqScoreByPriceToValue(di, guiGameModel, tileDebugView)
 		}
 
-		command("ai_settlements_goods_score") {
-			settlementsGoodsScore(di, guiGameModel)
-		}
-						
 		command("ai_transport_goods_to_sell_mission_example") {
 			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
 		}
@@ -458,11 +454,6 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 				mapActor.resetUnexploredBorders()
 			}
 		})
-	}
-
-	fun settlementsGoodsScore(di: DI, guiGameModel: GUIGameModel) {
-		val planer = TransportGoodsToSellMissionPlaner(guiGameModel.game, di.pathFinder)
-		planer.plan(guiGameModel.game.playingPlayer)
 	}
 
 	fun ai_transport_goods_to_sell_mission_example(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor?) {

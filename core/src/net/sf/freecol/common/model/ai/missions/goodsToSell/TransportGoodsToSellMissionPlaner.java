@@ -34,36 +34,36 @@ public class TransportGoodsToSellMissionPlaner {
     	goodsTypeToScore = Specification.instance.goodsTypeToScoreByPrice;
 	}
 	
-	public void plan(Player player) {
-		List<Unit> carriers = Units.findCarrierTransportResources(game, player);
-		if (carriers.isEmpty()) {
+	public void plan(Unit navyUnit) {
+		if (!navyUnit.hasSpaceForAdditionalCargo()) {
 			return;
 		}
-		
+		Player player = navyUnit.getOwner();
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
 			goodsTypeToScore, player, game.map, pathFinder
 		);
+		singleUnitPlaner(player, scoreGoodsCalculator, navyUnit);
+	}
 
-		for (Unit carrier : carriers) {
-			Tile startLocation = scoreColonyGoodsStartLocation(carrier);
-			ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(carrier, startLocation);
+	private void singleUnitPlaner(Player player, SettlementWarehouseScoreGoods scoreGoodsCalculator, Unit carrier) {
+		Tile startLocation = scoreColonyGoodsStartLocation(carrier);
+		ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(carrier, startLocation);
 
-			if (!score.isEmpty()) {
-				ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
-				if (theBestScore.getScore() >= MIN_SETTLEMENT_SCORE) {
-					Set<String> possibleSettlementsToVisit = createPossibleSettlementToVisit(score);
+		if (!score.isEmpty()) {
+			ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
+			if (theBestScore.getScore() >= MIN_SETTLEMENT_SCORE) {
+				Set<String> possibleSettlementsToVisit = createPossibleSettlementToVisit(score);
 
-					TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
-						carrier,
-						theBestScore.getObj(),
-						possibleSettlementsToVisit
-					);
-					game.aiContainer.missionContainer(player).addMission(mission);
+				TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
+					carrier,
+					theBestScore.getObj(),
+					possibleSettlementsToVisit
+				);
+				game.aiContainer.missionContainer(player).addMission(mission);
 
-					// from scoreCalculator reduce settlement goods with the best score for free cargo space in carrier
-					// because to avoid two carriers go to the same colony
-					scoreGoodsCalculator.settlementGoodsReduce(theBestScore.getObj(), carrier);
-				}
+				// from scoreCalculator reduce settlement goods with the best score for free cargo space in carrier
+				// because to avoid two carriers go to the same colony
+				scoreGoodsCalculator.settlementGoodsReduce(theBestScore.getObj(), carrier);
 			}
 		}
 	}
