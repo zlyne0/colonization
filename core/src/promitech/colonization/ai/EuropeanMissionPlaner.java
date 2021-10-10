@@ -1,25 +1,18 @@
 package promitech.colonization.ai;
 
-import java.util.List;
-
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
-import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
-import static promitech.colonization.orders.NewTurnLogger.logger;
+import java.util.List;
 
 public class EuropeanMissionPlaner {
 
@@ -49,8 +42,8 @@ public class EuropeanMissionPlaner {
 				navyUnitPlaner(unit, playerMissionContainer);
 			}
 		}
-		
-		//colonyProductionPlaner.createPlan(player, playerMissionContainer);
+
+		ColonyProductionPlaner.createPlan(player, playerMissionContainer);
 	}
 	
 	private void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {

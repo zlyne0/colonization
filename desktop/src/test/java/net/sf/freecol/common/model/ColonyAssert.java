@@ -81,7 +81,25 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId) {
 		return hasWorkerInBuildingType(buildingTypeId, 1);
 	}
-	
+
+	public ColonyAssert hasNoWorkerInBuildingType(String buildingTypeId) {
+		Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
+		if (building == null) {
+			failWithMessage(
+				"exptected no workers in building type <%s> location, but building type not found",
+				buildingTypeId
+			);
+		} else {
+			if (building.getUnits().size() > 0) {
+				failWithMessage("exptected no workers in building type <%s> location, but it has <%s> workers",
+					buildingTypeId,
+					building.getUnits().size()
+				);
+			}
+		}
+		return this;
+	}
+
 	public ColonyAssert hasWorkerInBuildingType(String buildingTypeId, int workersAmount) {
 		Building building = actual.findBuildingByTypeOrNull(buildingTypeId);
 		if (building == null) {

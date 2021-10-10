@@ -185,7 +185,8 @@ public class ProductionSimulation {
     	MaxGoodsProductionLocation maxProd = null;
 	    
     	for (ColonyTileProduction colonyTile : colonyProvider.tiles()) {
-	        if (colonyTile.hasWorker() 
+	        if (colonyTile.hasWorker()
+				|| colonyTile.tile.hasSettlement()
         		|| colonyProvider.isCenterTile(colonyTile.tile) 
         		|| colonyProvider.isTileLocked(colonyTile.tile, ignoreIndianOwner)
 				|| excludeLocationIds.contains(colonyTile.getId())

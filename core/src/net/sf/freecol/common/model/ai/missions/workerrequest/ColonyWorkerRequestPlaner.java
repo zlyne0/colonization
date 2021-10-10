@@ -56,8 +56,8 @@ public class ColonyWorkerRequestPlaner {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
 					continue;
 				}
-				ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score(tilesForCreateColony(playerMissionContainer));
 				if (Unit.isColonist(unit.unitType, unit.getOwner())) {
+					ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score(tilesForCreateColony(playerMissionContainer));
 					assignExistingUnitToColony(unit, tileScore);
 				}
 			}

@@ -1,7 +1,7 @@
 package net.sf.freecol.common.model.ai;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -345,14 +345,52 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		;
 	}
 
+	@Test
+	void shouldChangeBuildingProductionWhenFullWarehouse() {
+		// given
+		nieuwAmsterdam.getGoodsContainer().increaseGoodsQuantity(GoodsType.COAST, nieuwAmsterdam.warehouseCapacity());
 
-    private void printColonyWorkers() {
-    	System.out.println("XXXXX printColonyWorkers size " + nieuwAmsterdam.settlementWorkers().size());
-        for (Unit unit : nieuwAmsterdam.settlementWorkers()) {
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+		colonyPlan.withConsumeWarehouseResources(true);
+
+		// when
+		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		//printColonyWorkers();
+
+		// then
+		ColonyAssert.assertThat(nieuwAmsterdam)
+			.hasSize(6)
+			.hasNoWorkerInBuildingType("model.building.furTraderHouse")
+		;
+	}
+
+	@Test
+	void shouldChangeTileProductionWhenFullWarehouse() {
+		// given
+		fortMaurits.getGoodsContainer().decreaseAllToZero();
+		fortMaurits.getGoodsContainer().increaseGoodsQuantity(GoodsType.TOBACCO, fortMaurits.warehouseCapacity());
+
+		ColonyPlan colonyPlan = new ColonyPlan(fortMaurits);
+		colonyPlan.withConsumeWarehouseResources(true);
+
+		// when
+		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		//printColonyWorkers(fortMaurits);
+
+		// then
+		ColonyAssert.assertThat(fortMaurits)
+			.hasSize(2)
+			.produce(GoodsType.TOBACCO, 0)
+		;
+	}
+
+	private void printColonyWorkers(Colony colony) {
+    	System.out.println("XXXXX printColonyWorkers size " + colony.settlementWorkers().size());
+        for (Unit unit : colony.settlementWorkers()) {
             System.out.println("XX colony worker " + unit.toStringTypeLocation());
         }
-        System.out.println("XX productionConsumption " + nieuwAmsterdam.productionSummary());
-        System.out.println("XX warehause " + nieuwAmsterdam.getGoodsContainer().cloneGoods());
+        System.out.println("XX productionConsumption " + colony.productionSummary());
+        System.out.println("XX warehause " + colony.getGoodsContainer().cloneGoods());
     }
     
     private void lockAllTilesInColony() {

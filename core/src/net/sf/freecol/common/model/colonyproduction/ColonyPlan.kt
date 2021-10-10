@@ -334,6 +334,9 @@ class ColonyPlan(val colony: Colony) {
             if (goodsType.isFarmed()) {
                 val maxProduction = productionSimulation.determineMaxProduction(goodsType, maxCandidate.worker.unitType, ignoreIndianOwner)
                 if (maxProduction != null) {
+                    if (colony.goodsContainer.hasGoodsQuantity(maxProduction.goodsType, colony.warehouseCapacity())) {
+                        continue;
+                    }
                     maxCandidate.scoreForTile(maxProduction, market)
                     if (maxCandidate.hasBetterScore(max)) {
                         if (canSustainProduction(maxCandidate, availableWorkers.without(maxCandidate.worker), ingredients)) {
