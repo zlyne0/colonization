@@ -10,10 +10,6 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 import promitech.colonization.ai.MissionHandlerLogger;
 import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.Units;
@@ -44,20 +40,18 @@ public class ColonyWorkerRequestPlaner {
 			return;
 		}
 
+		EntryPointTurnRange entryPointTurnRange = new EntryPointTurnRange(game.map, pathFinder, player, transporter);
 		ColonyWorkerRequestPlaceCalculator placeCalculator = new ColonyWorkerRequestPlaceCalculator(
-			player,
-			game.map,
-			new EntryPointTurnRange(game.map, pathFinder, player, transporter)
+			player, game.map, entryPointTurnRange
 		);
 
-
-		for (Unit unit : player.units.copy()) {
+		for (Unit unit : player.units) {
 			if (unit.isAtLocation(Tile.class) || unit.isAtLocation(Unit.class) || unit.isAtLocation(Europe.class)) {
 				if (playerMissionContainer.isUnitBlockedForMission(unit)) {
 					continue;
 				}
 				if (Unit.isColonist(unit.unitType, unit.getOwner())) {
-					ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score(tilesForCreateColony(playerMissionContainer));
+					ScoreableObjectsList<WorkerRequestScoreValue> tileScore = placeCalculator.score(playerMissionContainer);
 					assignExistingUnitToColony(unit, tileScore);
 				}
 			}
@@ -87,21 +81,6 @@ public class ColonyWorkerRequestPlaner {
 			ColonyWorkerMission mission = new ColonyWorkerMission(place.location(), unit, place.goodsType());
 			playerMissionContainer.addMission(mission);
 		}
-	}
-
-	private List<Tile> tilesForCreateColony(PlayerMissionsContainer playerMissionContainer) {
-		List<Tile> tiles = null;
-		List<ColonyWorkerMission> missions = playerMissionContainer.findMissions(ColonyWorkerMission.class);
-		for (ColonyWorkerMission mission : missions) {
-			if (tiles == null) {
-				tiles = new ArrayList<Tile>();
-			}
-			tiles.add(mission.getTile());
-		}
-		if (tiles == null) {
-			tiles = Collections.emptyList();
-		}
-		return tiles;
 	}
 
 	private boolean hasMissionToWorkerRequestPlace(PlayerMissionsContainer playerMissionContainer, WorkerRequestScoreValue workerRequestPlace) {

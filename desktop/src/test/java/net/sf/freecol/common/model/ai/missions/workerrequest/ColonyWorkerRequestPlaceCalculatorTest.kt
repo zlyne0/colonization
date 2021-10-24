@@ -22,11 +22,11 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
         val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, entryPointTurnRange)
 
         // when
-        val scores = sut.score(emptyList())
+        val scores = sut.score(game.aiContainer.missionContainer(dutch))
         val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, dutch)
         scorePolicy.calculateScore(scores)
         //scores.prettyPrint();
-        //sut.debugToConsole(dutch)
+        //sut.debugToConsole()
 
         // then
         ScoreableObjectsListAssert.assertThat(scores)

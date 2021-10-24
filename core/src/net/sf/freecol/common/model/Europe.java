@@ -312,18 +312,20 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     }
 
     public boolean canAiBuyUnit(UnitType unitType, int budget) {
-    	if (!unitType.equalsId(UnitType.FREE_COLONIST)
-    		&& !recruitables.containsId(unitType)
-			&& !Specification.instance.unitTypesTrainedInEurope.containsId(unitType)
-		) {
+    	if (!isUnitAvailableToBuyByAI(unitType)) {
     		return false;
 		}
-
 		int price = aiUnitPrice(unitType);
 		return budget >= price;
     }
-    
-    public Unit buyUnitByAI(UnitType unitType) {
+
+	public boolean isUnitAvailableToBuyByAI(UnitType unitType) {
+		return unitType.equalsId(UnitType.FREE_COLONIST)
+			|| recruitables.containsId(unitType)
+			|| Specification.instance.unitTypesTrainedInEurope.containsId(unitType);
+	}
+
+	public Unit buyUnitByAI(UnitType unitType) {
     	int recruitImmigrantPrice = getRecruitImmigrantPrice();
     	
     	if (recruitables.containsId(unitType)) {

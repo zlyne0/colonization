@@ -4,14 +4,26 @@ import org.assertj.core.api.AbstractAssert;
 
 public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, MapIdEntitiesReadOnly<?>> {
 
+	private final MapIdEntitiesReadOnly<?> preview;
+
 	public MapIdEntitiesAssert(MapIdEntitiesReadOnly<?> actual, Class<?> selfType) {
 		super(actual, selfType);
+		this.preview = null;
+	}
+
+	public MapIdEntitiesAssert(MapIdEntitiesReadOnly<?> actual, MapIdEntitiesReadOnly<?> preview, Class<?> selfType) {
+		super(actual, selfType);
+		this.preview = preview;
 	}
 
 	public static MapIdEntitiesAssert assertThat(MapIdEntitiesReadOnly<?> map) {
 		return new MapIdEntitiesAssert(map, MapIdEntitiesAssert.class);
 	}
-	
+
+	public static MapIdEntitiesAssert assertThat(MapIdEntitiesReadOnly<?> map, MapIdEntitiesReadOnly<?> previewMap) {
+		return new MapIdEntitiesAssert(map, previewMap, MapIdEntitiesAssert.class);
+	}
+
 	public MapIdEntitiesAssert containsId(String id) {
 		isNotNull();
 		if (!actual.containsId(id)) {
@@ -42,5 +54,13 @@ public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, Map
         return this;
     }
 	
-	
+	public MapIdEntitiesAssert hasNewSizeMore(int size) {
+		if (preview == null) {
+			failWithMessage("preview state not initialized");
+		}
+		if (preview.size() + size != actual.size()) {
+			failWithMessage("expected new size be greater about <%s> then preview size", size);
+		}
+		return this;
+	}
 }

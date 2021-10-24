@@ -3,19 +3,18 @@ package promitech.colonization.screen.debug
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
-import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
@@ -114,13 +113,17 @@ fun createCommands(
 			generateWorkerReqScoreByPriceToValue(di, guiGameModel, tileDebugView)
 		}
 
+		command("ai_generateWorkerReqBuyRecommendations") {
+			generateWorkerReqBuyRecommendations(di, guiGameModel, tileDebugView)
+		}
+
 		command("ai_transport_goods_to_sell_mission_example") {
-			ai_transport_goods_to_sell_mission_example(di, guiGameModel, mapActor)
+			ai_transport_goods_to_sell_mission_example(guiGameModel, mapActor)
 		}
 		
 		command("aiTransportUnitsFromEuropeToNewWorld") {
 			if (mapActor != null) {
-				aiTransportUnitsFromEuropeToNewWorld(di, guiGameModel, mapActor)
+				aiTransportUnitsFromEuropeToNewWorld(guiGameModel, mapActor)
 			}
 		}
 		
@@ -265,11 +268,12 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
+	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = Units.findCarrier(player)
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
-	val colonyWorkerRequestScores = sut.score(emptyList())
+	val colonyWorkerRequestScores = sut.score(playerMissionContainer)
 
 	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
@@ -281,16 +285,32 @@ fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, til
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
+	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = Units.findCarrier(player)
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
-	val colonyWorkerRequestScores = sut.score(emptyList())
+	val colonyWorkerRequestScores = sut.score(playerMissionContainer)
 
 	val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
 
 	sut.debug(tileDebugView)
+}
+
+fun generateWorkerReqBuyRecommendations(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+	tileDebugView.reset()
+
+	val player = guiGameModel.game.playingPlayer
+	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+	val transportUnit = Units.findCarrier(player)
+	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
+	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
+
+	val purchaseColonists = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+	val buyRecomendations = purchaseColonists.generateRecommendations(workerPlaceCalculator, entryPointTurnRange)
+	purchaseColonists.printToLog(buyRecomendations, entryPointTurnRange)
+	purchaseColonists.printToMap(buyRecomendations, tileDebugView)
 }
 
 fun theBestMove(di: DI, mapActor: MapActor?) {
@@ -456,7 +476,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		})
 	}
 
-	fun ai_transport_goods_to_sell_mission_example(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor?) {
+	fun ai_transport_goods_to_sell_mission_example(guiGameModel: GUIGameModel, mapActor: MapActor?) {
 		val game = guiGameModel.game
 		
 		val dutch = game.players.getById("player:1")
@@ -491,7 +511,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		mapActor?.resetUnexploredBorders()
 	}
 
-	fun aiTransportUnitsFromEuropeToNewWorld(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
+	fun aiTransportUnitsFromEuropeToNewWorld(guiGameModel: GUIGameModel, mapActor: MapActor) {
 		val game = guiGameModel.game
 		
 		val dutch = game.players.getById("player:1")				
