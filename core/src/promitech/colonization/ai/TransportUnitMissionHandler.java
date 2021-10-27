@@ -37,14 +37,14 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	Player player = playerMissionsContainer.getPlayer();
     	
     	if (!mission.isTransportUnitExists(player)) {
-			logger.debug("TransportUnitMissionHandler[%s] transport unit does not exists", player.getId());
+			logger.debug("player[%s].TransportUnitMissionHandler transport unit does not exists", player.getId());
 			mission.setDone();
 			return;
     	}
 
 		Unit firstUnit = mission.firstUnit();
 		if (firstUnit == null) {
-			logger.debug("TransportUnitMissionHandler[%s] no units to transport", player.getId());
+			logger.debug("player[%s].TransportUnitMissionHandler no units to transport", player.getId());
 			mission.setDone();
 			return;
     	}
@@ -60,7 +60,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	} else {
 			mission.removeUnit(firstUnit);
 			if (mission.firstUnit() == null) {
-				logger.debug("TransportUnitMissionHandler[%s] transport unit destination does not exists", player.getId());
+				logger.debug("player[%s].TransportUnitMissionHandler transport unit destination does not exists", player.getId());
 				mission.setDone();
 			} else {
 				// TODO: try handle another unit
@@ -106,7 +106,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					}
 
 					if (mission.getUnitsDest().isEmpty()) {
-						logger.debug("TransportUnitMissionHandler[%s].disembark all units, end mission", player.getId());
+						logger.debug("player[%s].TransportUnitMissionHandler.disembark all units, end mission", player.getId());
 						mission.setDone();
 					}
 				}

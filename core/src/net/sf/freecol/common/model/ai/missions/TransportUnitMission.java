@@ -61,7 +61,7 @@ public class TransportUnitMission extends AbstractMission {
     }
     
 	public boolean canEmbarkUnit(Unit unit) {
-		return carrier.freeUnitsSlots() - unitsDest.size() - unit.unitType.getSpaceTaken() > 0; 
+		return carrier.freeUnitsSlots() - unitsDest.size() - unit.unitType.getSpaceTaken() >= 0;
 	}
     
 	public boolean isTransportUnitExists(Player player) {
@@ -118,7 +118,7 @@ public class TransportUnitMission extends AbstractMission {
 				logStr.append(ud.unit.getId());
 			}
 		}
-		logger.debug("TransportUnitMissionHandler[%s].disembark units[%s] to tile[%s]", 
+		logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s]",
 			player.getId(), 
 			logStr.toString(), 
 			location.toStringCords()
@@ -142,7 +142,23 @@ public class TransportUnitMission extends AbstractMission {
 
 	@Override
 	public String toString() {
-		return "TransportUnitMission";
+    	return "carrier[" + carrier.getId() + ", " + carrier.unitType.toSmallIdStr() + "] " + unitsDestListToString();
+	}
+
+	private String unitsDestListToString() {
+    	String str = "";
+		for (UnitDest unitDest : unitsDest) {
+			if (!str.isEmpty()) {
+				str += ", ";
+			}
+
+			String tileStr = "[" + unitDest.dest.toStringCords() + "]";
+			if (unitDest.dest.hasSettlement()) {
+				tileStr += " " + unitDest.dest.getSettlement().getName();
+			}
+			str += "[" +unitDest.unit.getId() + " " + unitDest.unit.unitType.toSmallIdStr() + " to " + tileStr + "]";
+		}
+		return str;
 	}
 
     public List<UnitDest> getUnitsDest() {

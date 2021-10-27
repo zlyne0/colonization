@@ -18,6 +18,8 @@ import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
+import net.sf.freecol.common.util.StringUtils;
+
 import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -95,7 +97,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 
 	public void loadGoodsFrom(Settlement settlement) {
 		logger.debug(
-			"TransportGoodsToSellMissionHandler[%s] load goods in %s", 
+			"player[%s].TransportGoodsToSellMissionHandler load goods in %s",
 			transporter.getOwner().getId(), settlement.getId()
 		);
 		
@@ -152,7 +154,19 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		logStr.append(", sumPrice: " + sumPrice);
 		transporter.getGoodsContainer().decreaseAllToZero();
 	}
-	
+
+	@Override
+	public String toString() {
+		String str = "unit[" + transporter.getId() + " " + transporter.unitType.toSmallIdStr() +  "] " + phase;
+		if (firstSettlementIdToVisit != null) {
+			str += ", next: " + firstSettlementIdToVisit;
+		} else {
+			str += ", next: no";
+		}
+		str += ", to visit[" + StringUtils.join(", ", possibleSettlementToVisit) + "]";
+		return str;
+	}
+
 	public static class Xml extends AbstractMission.Xml<TransportGoodsToSellMission> {
 
 		private static final String ELEMENT_SETTLEMENT = "settlement";

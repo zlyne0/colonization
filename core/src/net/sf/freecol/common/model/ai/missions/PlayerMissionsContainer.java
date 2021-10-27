@@ -45,7 +45,9 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public void addMission(AbstractMission m) {
-		logger.debug("player[%s] add mission[%s]", player.getId(), m.getId());
+		if (logger.isDebug()) {
+			logger.debug("player[%s] add mission[%s] %s", player.getId(), m.getId(), m.toString());
+		}
 		missions.add(m);
 		blockUnitsForMission(m);
 	}

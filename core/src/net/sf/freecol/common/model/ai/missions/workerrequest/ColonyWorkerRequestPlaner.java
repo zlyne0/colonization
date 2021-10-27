@@ -33,7 +33,7 @@ public class ColonyWorkerRequestPlaner {
 	 * Prepare mission for create new colony or put worker in colony.
 	 * Unit can be on europe dock, on carrier on tile.
 	 */
-	public void prepareMissions() {
+	public void prepareMissionsAndBuyWorkers() {
 		Unit transporter = Units.findCarrier(player);
 		if (transporter == null) {
 			MissionHandlerLogger.logger.debug("player[%s] no carrier unit", player.getId());
@@ -56,6 +56,9 @@ public class ColonyWorkerRequestPlaner {
 				}
 			}
 		}
+
+		ColonistsPurchaseRecommendations purchaseRecommendations = new ColonistsPurchaseRecommendations(player, playerMissionContainer);
+		purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange);
 	}
 
 	private void assignExistingUnitToColony(Unit unit, ScoreableObjectsList<WorkerRequestScoreValue> tileScore) {

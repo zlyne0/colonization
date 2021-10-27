@@ -2,6 +2,7 @@ package promitech.colonization.ai;
 
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 
 import net.sf.freecol.common.model.Game;
@@ -26,6 +27,8 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
+
+import static promitech.colonization.ai.MissionHandlerLogger.*;
 
 public class MissionExecutor {
 
@@ -92,7 +95,16 @@ public class MissionExecutor {
         }
         missionsContainer.clearDoneMissions();
 	}
-	
+
+	public <T extends AbstractMission> void executeMissions(PlayerMissionsContainer missionsContainer, Class<T> missionClass) {
+        List<T> missions = missionsContainer.findMissions(missionClass);
+        for (T mission : missions) {
+            if (!mission.isDone() && !mission.hasDependMissions()) {
+                executeSingleMission(missionsContainer, mission);
+            }
+        }
+    }
+
     private void executedAllLeafs(PlayerMissionsContainer missionsContainer, AbstractMission am) {
         if (!am.hasDependMissions()) {
             executeSingleMission(missionsContainer, am);
@@ -127,8 +139,10 @@ public class MissionExecutor {
     
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
-    	MissionHandlerLogger.logger.debug("executeMission[%s]", am.getId());
-    	
+	    if (logger.isDebug()) {
+    	    logger.debug("player[%s].executeMission[%s] %s", missionsContainer.getPlayer().getId(), am.getId(), am.toString());
+        }
+
         MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
         if (missionHandler == null) {
         	throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());

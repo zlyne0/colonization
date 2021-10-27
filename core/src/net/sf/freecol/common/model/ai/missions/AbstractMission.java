@@ -97,7 +97,12 @@ public abstract class AbstractMission extends ObjectWithId {
 		}
 		return null;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "TODO: " + this.getClass().getName() + " " + this.getId();
+	}
+
 	public static abstract class Xml<AM extends AbstractMission> extends XmlNodeParser<AM> {
 
 		public Xml() {

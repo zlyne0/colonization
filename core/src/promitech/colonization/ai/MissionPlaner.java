@@ -8,15 +8,15 @@ import net.sf.freecol.common.model.player.Player;
 public class MissionPlaner {
 
 	private final Game game;
-	
+
 	private final NativeMissionPlaner nativeMissionPlaner;
 	private final EuropeanMissionPlaner europeanMissionPlaner;
 
-	public MissionPlaner(Game game, PathFinder pathFinder) {
+	public MissionPlaner(Game game, PathFinder pathFinder, MissionExecutor missionExecutor) {
 		this.game = game;
-		
+
 		nativeMissionPlaner = new NativeMissionPlaner(pathFinder);
-        europeanMissionPlaner = new EuropeanMissionPlaner(game, pathFinder);
+        europeanMissionPlaner = new EuropeanMissionPlaner(game, pathFinder, missionExecutor);
 	}
 	
 	public void planMissions(Player player) {
@@ -30,5 +30,5 @@ public class MissionPlaner {
 			europeanMissionPlaner.prepareMissions(player, playerMissionContainer);
 		}
 	}
-	
+
 }

@@ -58,6 +58,17 @@ public class ColonyWorkerMission extends AbstractMission {
 		return goodsType;
 	}
 
+	@Override
+	public String toString() {
+		String str = "dest: [" + tile.toStringCords() + "]";
+		if (tile.hasSettlement()) {
+			str += " " + tile.getSettlement().getName();
+		}
+		str += ", unit[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " " + unit.unitRole.toSmallIdStr() + "]";
+		str += ", goodsType: " + goodsType.toSmallIdStr();
+		return str;
+	}
+
 	public static class Xml extends AbstractMission.Xml<ColonyWorkerMission> {
 
         private static final String ATTR_UNIT = "unit";

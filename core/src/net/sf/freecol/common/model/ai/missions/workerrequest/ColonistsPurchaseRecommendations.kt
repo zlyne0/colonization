@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
+import net.sf.freecol.common.model.Europe
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.*
@@ -44,14 +45,20 @@ class ColonistsPurchaseRecommendations(
 
     private fun occupiedNavyCapacity(): Int {
         val missions = playerMissionContainer.findMissions(ColonyWorkerMission::class.java)
-        return missions.size
+        var occupied = 0
+        for (mission in missions) {
+            if (mission.unit.isAtLocation(Europe::class.java) || mission.unit.isAtLocation(net.sf.freecol.common.model.Unit::class.java)) {
+                occupied++;
+            }
+        }
+        return occupied
     }
 
     private fun createList(
         gold: Int, navyCargoCapacity: Int, workerRequests: ScoreableObjectsList<WorkerRequestScoreValue>
     ): ScoreableObjectsList<WorkerRequestScoreValue> {
-        if (navyCargoCapacity == 0) {
-            logger.debug("PurchaseColonists.player[%s] no navy cargo capacity", player.id)
+        if (navyCargoCapacity <= 0) {
+            logger.debug("player[%s].PurchaseColonists no navy cargo capacity", player.id)
             return ScoreableObjectsList<WorkerRequestScoreValue>(0)
         }
         var budget = gold

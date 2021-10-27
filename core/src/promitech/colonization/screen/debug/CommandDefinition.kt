@@ -453,7 +453,6 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 	}
 
 	fun playerTurnAsAi(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
-		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder)
 		val missionExecutor = MissionExecutor(
 			guiGameModel.game,
 			di.moveService,
@@ -461,6 +460,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 			di.guiGameController,
 			di.pathFinder
 		)
+		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder, missionExecutor)
 		val player = guiGameModel.game.playingPlayer
 
 		ThreadsResources.instance.executeMovement(object : Runnable {

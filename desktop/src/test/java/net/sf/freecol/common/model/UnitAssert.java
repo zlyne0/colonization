@@ -152,7 +152,18 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		}
 		return this;
 	}
-    
+
+	public UnitAssert hasUnitsSize(int size) {
+		int actualSize = actual.getUnitContainer().getUnits().size();
+		if (actualSize != size) {
+			failWithMessage(
+				"expected unit <%s> has <%s> units in cargo but has <%s>",
+				actual.getId(), size, actualSize
+			);
+		}
+		return this;
+	}
+
     public UnitAssert isDamaged() {
         if (!actual.isDamaged()) {
             failWithMessage("expected unit <%s> to be damaged", actual.getId());

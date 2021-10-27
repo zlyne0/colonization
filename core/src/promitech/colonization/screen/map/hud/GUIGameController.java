@@ -359,7 +359,7 @@ public class GUIGameController {
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
 		
 		MissionExecutor missionExecutor = new MissionExecutor(guiGameModel.game, moveService, combatService, this, pathFinder);
-		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder);
+		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder, missionExecutor);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			
@@ -369,7 +369,7 @@ public class GUIGameController {
 			newTurnService.newTurn(player);
 			missionPlaner.planMissions(player);
 			missionExecutor.executeMissions(player);
-			
+
 			System.out.println("end turn for player " + player);
 		}
 		

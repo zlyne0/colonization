@@ -85,7 +85,7 @@ public class Tile implements UnitLocation, Identifiable {
     }
     
     public String toStringCords() {
-    	return "" + x + ", " + y;
+    	return Integer.toString(x) + ", " + Integer.toString(y);
     }
     
 	public String toString() {

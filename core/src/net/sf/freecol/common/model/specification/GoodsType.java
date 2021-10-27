@@ -283,6 +283,10 @@ public class GoodsType extends ObjectWithFeatures {
         return chain;
     }
 
+    public String toSmallIdStr() {
+        return getId().replaceFirst("model.goods.", "");
+    }
+
     public static class Xml extends XmlNodeParser<GoodsType> {
 		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
 		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";

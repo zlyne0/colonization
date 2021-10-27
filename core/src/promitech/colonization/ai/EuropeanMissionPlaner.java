@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
+import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
@@ -19,11 +20,13 @@ public class EuropeanMissionPlaner {
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
 	private final Game game;
 	private final PathFinder pathFinder;
+	private final MissionExecutor missionExecutor;
 
-	public EuropeanMissionPlaner(Game game, PathFinder pathFinder) {
+	public EuropeanMissionPlaner(Game game, PathFinder pathFinder, MissionExecutor missionExecutor) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
 		this.game = game;
 		this.pathFinder = pathFinder;
+		this.missionExecutor = missionExecutor;
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
@@ -32,10 +35,13 @@ public class EuropeanMissionPlaner {
 //			logger.debug("player[%s] colonies production gold value %s", player.getId(), colniesProdValue.goldValue());
 //		}
 
+		// transport goods(sell) and then better plan mission
+		missionExecutor.executeMissions(playerMissionContainer, TransportGoodsToSellMission.class);
+
 		ColonyWorkerRequestPlaner colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(
 			player, playerMissionContainer, game, pathFinder
 		);
-		colonyWorkerRequestPlaner.prepareMissions();
+		colonyWorkerRequestPlaner.prepareMissionsAndBuyWorkers();
 
 		for (Unit unit : player.units.copy()) {
 			if (unit.isNaval() && !unit.isDamaged()) {

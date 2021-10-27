@@ -31,6 +31,7 @@ public class UnitType extends BuildableType {
 	public static final String ARTILLERY = "model.unit.artillery";
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	public static final String SCOUT = "model.unit.seasonedScout";
+	public static final String CARAVEL = "model.unit.caravel";
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
 	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";
@@ -111,7 +112,7 @@ public class UnitType extends BuildableType {
 
 	protected String extendsId;
 	private boolean naval = false;
-    
+
     private UnitType(String id) {
     	super(id);
     }
@@ -308,7 +309,11 @@ public class UnitType extends BuildableType {
 			}
 		};
     }
-    
+
+    public String toSmallIdStr() {
+    	return getId().replaceFirst("model.unit.", "");
+	}
+
     public static class Xml extends XmlNodeParser<UnitType> {
         private static final String ELEMENT_DEFAULT_ROLE = "default-role";
 		private static final String ATTR_EXTENDS = "extends";

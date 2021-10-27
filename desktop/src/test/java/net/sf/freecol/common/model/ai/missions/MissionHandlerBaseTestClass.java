@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.DI;
 import promitech.colonization.ai.MissionExecutor;
+import promitech.colonization.ai.MissionPlaner;
 import promitech.colonization.orders.NewTurnService;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
@@ -36,6 +37,7 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
     }
 
     protected void newTurnAndExecuteMission(Player player) {
+		System.out.println("### NEW TURN ###");
 		di.newTurnService.newTurn(player);
 
 		MissionExecutor missionExecutor = new MissionExecutor(
@@ -47,6 +49,19 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 		);
 
 		missionExecutor.executeMissions(player);
+	}
+
+	protected void planMissions(Player player) {
+		MissionExecutor missionExecutor = new MissionExecutor(
+			di.guiGameModel.game,
+			di.moveService,
+			di.combatService,
+			di.guiGameController,
+			di.pathFinder
+		);
+
+		MissionPlaner missionPlaner = new MissionPlaner(game, di.pathFinder, missionExecutor);
+		missionPlaner.planMissions(player);
 	}
 
 	DI createDependencies() {
