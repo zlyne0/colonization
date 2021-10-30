@@ -33,7 +33,7 @@ public class StringUtils {
     public static String join(String delimiter, Collection<String> collection) {
 	    StringBuilder str = new StringBuilder();
         for (String s : collection) {
-            if (str.length() == 0) {
+            if (str.length() != 0) {
                 str.append(delimiter);
             }
             str.append(s);

@@ -231,7 +231,11 @@ fun createCommands(
 		commandArg("indian_demand_tribute") {
 			indianDemandTributeExample(di, guiGameModel, mapActor)
 		}
-		
+
+		commandArg("show_missions") {
+			showMissions(guiGameModel, tileDebugView)
+		}
+
 		commandArg("reset_debug") {
 			resetDebug(tileDebugView)
 		}
@@ -540,6 +544,39 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch);				
 		mapActor.resetMapModel()
 		mapActor.resetUnexploredBorders()
+	}
+
+	fun showMissions(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
+		tileDebugView.reset()
+
+		val player = guiGameModel.game.playingPlayer
+		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+
+		for (mission in missionContainer.missions.entities()) {
+			if (mission.isDone) {
+				continue
+			}
+			when (mission) {
+				is ColonyWorkerMission -> tileDebugView.strIfNull(mission.tile.x, mission.tile.y, "Worker")
+
+				is TransportUnitMission -> {
+					for (unitDest in mission.unitsDest) {
+						tileDebugView.strIfNull(unitDest.dest.x, unitDest.dest.y, "TransportUnit")
+					}
+				}
+
+				is TransportGoodsToSellMission -> {
+					if (mission.phase == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
+						tileDebugView.strIfNull(player.entryLocation.x, player.entryLocation.y, "SellGoods")
+					} else {
+						val settlement = mission.firstSettlementToVisit(player)
+						tileDebugView.strIfNull(settlement.tile.x, settlement.tile.y, "TakeForSale")
+					}
+				}
+
+				else -> println("Can not print mission on map for " + mission.javaClass.name)
+			}
+		}
 	}
 
 	fun resetDebug(tileDebugView: TileDebugView) {

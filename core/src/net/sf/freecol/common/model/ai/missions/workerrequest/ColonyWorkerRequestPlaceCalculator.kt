@@ -32,6 +32,7 @@ class ColonyWorkerRequestPlaceCalculator(
 //        {6, 15}
 //    };
 
+    private val workerPriceToValueScorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
     private val tileScore = ScoreableObjectsList<WorkerRequestScoreValue>(20)
     private val goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice
     private val colonyWorkerReq = ColonyWorkerReqScore(player.market(), goodsTypeToScoreByPrice)
@@ -47,6 +48,7 @@ class ColonyWorkerRequestPlaceCalculator(
             workerForColony(player, tileScore)
             workerForCreateColony(player, tileScore, tilesWithCreateColony);
         }
+        workerPriceToValueScorePolicy.calculateScore(tileScore)
         tileScore.sortDescending()
         return tileScore
     }
