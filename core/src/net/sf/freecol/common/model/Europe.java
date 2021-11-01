@@ -362,6 +362,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	return trainableUnitPrice;
 	}
 
+	public int aiTheCheapestUnitPrice() {
+		UnitType theCheapestTrainableUnit = theCheapestTrainableUnit();
+		int recruitImmigrantPrice = getRecruitImmigrantPrice();
+		int trainedPrice = getUnitPrice(theCheapestTrainableUnit);
+		return Math.min(recruitImmigrantPrice, trainedPrice);
+	}
+
     private UnitType theCheapestTrainableUnit() {
     	return Specification.instance.unitTypesTrainedInEurope.sortedEntities().iterator().next();
     }

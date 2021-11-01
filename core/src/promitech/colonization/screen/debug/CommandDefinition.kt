@@ -5,7 +5,8 @@ import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitType
-import net.sf.freecol.common.model.ai.ColoniesProductionGoldValue
+import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
@@ -218,9 +219,9 @@ fun createCommands(
 			)
 		}
 
-		commandArg("colonies_gold_value_production") {
-			val coloniesGoldValueProduction = ColoniesProductionGoldValue(guiGameModel.game.playingPlayer, Specification.instance.goodsTypeToScoreByPrice)
-			val gold = coloniesGoldValueProduction.goldValue()
+		commandArg("colonies_production_value") {
+			val coloniesProductionValue = ColoniesProductionValue(guiGameModel.game.playingPlayer)
+			val gold = coloniesProductionValue.goldValue()
 			print(String.format("player[%s] colonies production gold value %s", guiGameModel.game.playingPlayer.id, gold))
 		}
 
@@ -272,12 +273,11 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
-	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = Units.findCarrier(player)
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
-	val colonyWorkerRequestScores = sut.score(playerMissionContainer)
+	val colonyWorkerRequestScores = sut.score(PlayerMissionsContainer(player))
 
 	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
@@ -289,12 +289,12 @@ fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, til
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
-	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = Units.findCarrier(player)
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
-	val colonyWorkerRequestScores = sut.score(playerMissionContainer)
+	// create new player mission container to ignore actual mission destination
+	val colonyWorkerRequestScores = sut.score(PlayerMissionsContainer(player))
 
 	val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)

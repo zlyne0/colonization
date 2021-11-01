@@ -42,7 +42,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			return;
     	}
 
-		Unit firstUnit = mission.firstUnit();
+		Unit firstUnit = mission.firstUnitToTransport();
 		if (firstUnit == null) {
 			logger.debug("player[%s].TransportUnitMissionHandler no units to transport", player.getId());
 			mission.setDone();
@@ -59,7 +59,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     		if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(player, mission); }
     	} else {
 			mission.removeUnit(firstUnit);
-			if (mission.firstUnit() == null) {
+			if (mission.firstUnitToTransport() == null) {
 				logger.debug("player[%s].TransportUnitMissionHandler transport unit destination does not exists", player.getId());
 				mission.setDone();
 			} else {

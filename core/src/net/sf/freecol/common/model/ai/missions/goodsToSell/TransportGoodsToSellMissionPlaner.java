@@ -13,15 +13,14 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
-import promitech.colonization.ai.Units;
+import promitech.colonization.ai.MissionPlanStatus;
 import promitech.colonization.ai.score.ObjectScoreList;
 
 public class TransportGoodsToSellMissionPlaner {
 
-	private static final int MIN_SETTLEMENT_SCORE = 200;
+	public static final int MIN_SETTLEMENT_SCORE = 200;
 
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private final PathFinder pathFinder;
@@ -34,20 +33,22 @@ public class TransportGoodsToSellMissionPlaner {
     	goodsTypeToScore = Specification.instance.goodsTypeToScoreByPrice;
 	}
 	
-	public void plan(Unit navyUnit) {
+	public MissionPlanStatus plan(Unit navyUnit) {
 		if (!navyUnit.hasSpaceForAdditionalCargo()) {
-			return;
+			// TODO: fix: has cargo and no mission?
+			return MissionPlanStatus.NO_MISSION;
 		}
 		Player player = navyUnit.getOwner();
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
 			goodsTypeToScore, player, game.map, pathFinder
 		);
-		singleUnitPlaner(player, scoreGoodsCalculator, navyUnit);
+		return singleUnitPlaner(player, scoreGoodsCalculator, navyUnit);
 	}
 
-	private void singleUnitPlaner(Player player, SettlementWarehouseScoreGoods scoreGoodsCalculator, Unit carrier) {
+	private MissionPlanStatus singleUnitPlaner(Player player, SettlementWarehouseScoreGoods scoreGoodsCalculator, Unit carrier) {
 		Tile startLocation = scoreColonyGoodsStartLocation(carrier);
 		ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(carrier, startLocation);
+		MissionPlanStatus result = MissionPlanStatus.NO_MISSION;
 
 		if (!score.isEmpty()) {
 			ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
@@ -60,12 +61,14 @@ public class TransportGoodsToSellMissionPlaner {
 					possibleSettlementsToVisit
 				);
 				game.aiContainer.missionContainer(player).addMission(mission);
+				result = MissionPlanStatus.MISSION_CREATED;
 
 				// from scoreCalculator reduce settlement goods with the best score for free cargo space in carrier
 				// because to avoid two carriers go to the same colony
 				scoreGoodsCalculator.settlementGoodsReduce(theBestScore.getObj(), carrier);
 			}
 		}
+		return result;
 	}
 
 	private Set<String> createPossibleSettlementToVisit(ObjectScoreList<Settlement> score) {

@@ -45,7 +45,7 @@ public class TransportUnitMission extends AbstractMission {
         return this;
     }
 
-    public Unit firstUnit() {
+    public Unit firstUnitToTransport() {
         if (!unitsDest.isEmpty()) {
             return unitsDest.get(0).unit;
         }
