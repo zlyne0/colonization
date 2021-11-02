@@ -71,7 +71,7 @@ public class MapActor extends Widget implements Map {
 			private final Point tmpPoint = new Point(); 
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("screenPoint: " + x + ", " + y);
+				//System.out.println("screenPoint: " + x + ", " + y);
 				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
 				
 				if (getTapCount() > 1) {
@@ -86,7 +86,7 @@ public class MapActor extends Widget implements Map {
 			
 			@Override
 			public void clicked(InputEvent event, float x, float y) {
-				System.out.println("screenPoint: " + x + ", " + y);
+				//System.out.println("screenPoint: " + x + ", " + y);
 				mapRenderer.screenToMapCords((int)x, (int)y, tmpPoint);
 				
 				gameController.rightClickOnTile(tmpPoint);

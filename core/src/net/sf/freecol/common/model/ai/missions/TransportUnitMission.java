@@ -46,10 +46,10 @@ public class TransportUnitMission extends AbstractMission {
     }
 
     public Unit firstUnitToTransport() {
-        if (!unitsDest.isEmpty()) {
-            return unitsDest.get(0).unit;
-        }
-        return null;
+    	if (unitsDest.isEmpty()) {
+    		return null;
+		}
+		return unitsDest.get(0).unit;
     }
 
     public List<Tile> destTiles() {

@@ -44,7 +44,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
 		Unit firstUnit = mission.firstUnitToTransport();
 		if (firstUnit == null) {
-			logger.debug("player[%s].TransportUnitMissionHandler no units to transport", player.getId());
+			logger.debug("player[%s].TransportUnitMissionHandler[%s] no units to transport", player.getId(), mission.getId());
 			mission.setDone();
 			return;
     	}
@@ -85,7 +85,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
 		if (path.isReachedDestination()) {
 			Tile destination = path.endTile;
-			
+
 			MoveContext moveContext = new MoveContext(carrier, path);
 			MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 			

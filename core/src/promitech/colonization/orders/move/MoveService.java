@@ -83,6 +83,7 @@ public class MoveService {
     }
     
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
+        moveContext.setMoveViaHighSea();
     	moveContext.initNextPathStep();
     	while (moveContext.canHandleMove() && !moveContext.isRequireUserInteraction()) {
     		aiConfirmedMoveProcessor(moveContext);

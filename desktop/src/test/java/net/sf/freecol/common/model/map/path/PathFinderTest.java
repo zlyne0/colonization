@@ -16,19 +16,25 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
+import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+
+import java.util.Arrays;
+
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.map.isometric.NeighbourIterableTile;
 
 public class PathFinderTest {
 
     Path path;
     Game game;
     PathFinder sut = new PathFinder();
+    Player dutch;
     
     @BeforeAll
     public static void beforeClass() {
@@ -38,6 +44,7 @@ public class PathFinderTest {
     @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+    	dutch = game.players.getById("player:1");
     }
     
 	@Test
@@ -313,4 +320,34 @@ public class PathFinderTest {
 	        .assertPathStep(1, 0, 20, 78)
 	        .assertPathStep(2, 1, 20, 79);
 	}
+
+	@Test
+	void shouldFindPathThroughHighSea() {
+		// given
+		Tile dest = game.map.getSafeTile(25, 86);
+		Tile source = game.map.getSafeTile(29, 86);
+
+		TileType highSeas = Specification.instance.tileTypes.getById(TileType.HIGH_SEAS);
+		for (NeighbourIterableTile<Tile> neighbourTile : game.map.neighbourTiles(source)) {
+			neighbourTile.tile.changeTileType(highSeas);
+		}
+		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, source);
+
+		// when
+		path = sut.findTheQuickestToTile(game.map, source, Arrays.asList(dest), caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
+		//path = sut.findToTile(game.map, source, dest, caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
+
+		// then
+		//System.out.println("path = " + path);
+
+		PathAssert.assertThat(path)
+			.reachedDestination()
+			.assertPathStep(0, 0, 29, 86)
+			.assertPathStep(1, 0, 28, 86)
+			.assertPathStep(2, 0, 27, 86)
+			.assertPathStep(3, 0, 26, 86)
+			.assertPathStep(4, 0, 25, 86)
+		;
+	}
+
 }
