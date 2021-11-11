@@ -185,7 +185,7 @@ public class NavyExplorer {
     }
     
     public Path getExploreDestinationAsPath() {
-        return pathFinder.getPathInto(theBestCellIndex);
+        return pathFinder.createPath(theBestCellIndex);
     }
     
     public String toString() {

@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.player.Player;
 
 import promitech.colonization.Direction;
@@ -121,6 +122,10 @@ public class PathFinder {
 		return path;
 	}
 
+	public Path findToTile(Map map, Unit unit, Tile endTile, Set<FlagTypes> flags) {
+		return findToTile(map, unit.getTile(), endTile, createPathUnit(unit), flags);
+	}
+
 	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit unit, Set<FlagTypes> flags) {
 		return findToTile(map, startTile, endTile, createPathUnit(unit), flags);
 	}
@@ -148,7 +153,7 @@ public class PathFinder {
 		}
 		Path theBestPath = null;
 		for (Tile oneTile : endTiles) {
-			Path onePath = findToTile(map, startTile, oneTile, createPathUnit(unit), flags);
+			Path onePath = findToTile(map, startTile, oneTile, unit, flags);
 			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
 				theBestPath = onePath;
 			}
@@ -248,14 +253,27 @@ public class PathFinder {
 		if (findPossibilities) {
 			return null;
 		}
-		
+
 		if (reachedGoalNode != null) {
 			return createPath(reachedGoalNode);
 		} else {
 			return createPath(oneOfTheBest);
 		}
 	}
-	
+
+	public Path createPath(int cellIndex) {
+		Node node = grid.get(cellIndex);
+		return createPath(node);
+	}
+
+	public Path createPath(Tile destTile) {
+		Node destNode = grid.get(destTile.x, destTile.y);
+		if (destNode.noMove) {
+			throw new IllegalStateException("no path from tile [" + destTile.toStringCords() + "]");
+		}
+		return createPath(destNode);
+	}
+
 	private Path createPath(final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
@@ -297,7 +315,7 @@ public class PathFinder {
 	}
 	
 	private void resetFinderBeforeSearching(Map map) {
-		if (grid == null || !grid.sizeEquals(map.width, map.height)) {
+		if (grid == null || !grid.isSizeEquals(map.width, map.height)) {
 		    grid = new Object2dArray<Node>(map.width, map.height);
 		    
 		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
@@ -326,14 +344,22 @@ public class PathFinder {
 	}
 	
 	public void totalCostToStringArrays(String[][] strTab) {
+		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
-	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+			cost = totalCost(i);
+			if (cost != INFINITY) {
+				strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+			}
 	    }
 	}
 
 	public void turnCostToStringArrays(String[][] strTab) {
+		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
-	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(turnsCost(i));
+			cost = turnsCost(i);
+			if (cost != INFINITY) {
+				strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(cost);
+			}
 	    }
 	}
 	
@@ -358,12 +384,56 @@ public class PathFinder {
 		);
 	}
 
-    public Path getPathInto(int cellIndex) {
-        Node node = grid.get(cellIndex);
-        return createPath(node);
-    }
+	public void printSumTurnCost(PathFinder b, MapTileDebugInfo mapTileDebugInfo) {
+		checkMapSizes(this, b);
 
-	public Path getPathInto(Tile dest) {
-		return getPathInto(grid.toIndex(dest.x, dest.y));
+		int aCost;
+		int bCost;
+		int sum;
+		for (int cellIndex = 0; cellIndex < grid.getMaxCellIndex(); cellIndex++) {
+			aCost = turnsCost(cellIndex);
+			bCost = b.turnsCost(cellIndex);
+			if (aCost == INFINITY || bCost == INFINITY) {
+				continue;
+			}
+			sum = aCost + bCost;
+			mapTileDebugInfo.str(grid.toX(cellIndex), grid.toY(cellIndex), Integer.toString(sum));
+		}
+	}
+
+	public Tile findFirstTheBestSumTurnCost(PathFinder b) {
+		checkMapSizes(this, b);
+		int theBestSum = INFINITY;
+		Node theBestNode = null;
+
+		int aCost;
+		int bCost;
+		int sum;
+		for (int cellIndex = 0; cellIndex < grid.getMaxCellIndex(); cellIndex++) {
+			aCost = turnsCost(cellIndex);
+			bCost = b.turnsCost(cellIndex);
+			if (aCost == INFINITY || bCost == INFINITY) {
+				continue;
+			}
+			sum = aCost + bCost;
+			if (sum < theBestSum) {
+				theBestSum = sum;
+				theBestNode = grid.get(cellIndex);
+			}
+		}
+		if (theBestNode == null) {
+			return null;
+		}
+		return theBestNode.tile;
+	}
+
+	private void checkMapSizes(PathFinder a, PathFinder b) {
+		if (!a.grid.isSizeEquals(b.grid)) {
+			throw new IllegalStateException(String.format(
+				"grid sizes not equals: first [%d, %d] second [%d, %d]",
+				a.grid.width, a.grid.height,
+				b.grid.width, b.grid.height
+			));
+		}
 	}
 }

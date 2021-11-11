@@ -38,6 +38,9 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 
     protected void newTurnAndExecuteMission(Player player) {
 		System.out.println("### NEW TURN ###");
+		boolean wasAI = player.isAi();
+		player.setAi(true);
+
 		di.newTurnService.newTurn(player);
 
 		MissionExecutor missionExecutor = new MissionExecutor(
@@ -49,6 +52,7 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 		);
 
 		missionExecutor.executeMissions(player);
+		player.setAi(wasAI);
 	}
 
 	protected void planMissions(Player player) {

@@ -45,11 +45,11 @@ public class TransportUnitMission extends AbstractMission {
         return this;
     }
 
-    public Unit firstUnitToTransport() {
+    public UnitDest firstUnitToTransport() {
     	if (unitsDest.isEmpty()) {
     		return null;
 		}
-		return unitsDest.get(0).unit;
+		return unitsDest.get(0);
     }
 
     public List<Tile> destTiles() {
@@ -97,19 +97,15 @@ public class TransportUnitMission extends AbstractMission {
 		return units;
 	}
 	
-	public void removeUnit(Unit unit) {
-		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
-			if (ud.unit.equalsId(unit)) {
-				unitsDest.remove(ud);
-			}
-		}
+	public void removeUnit(UnitDest unitDest) {
+    	unitsDest.remove(unitDest);
 	}
 	
-	public void removeDisembarkedUnits(Player player, Tile location) {
+	public void removeDisembarkedUnits(Player player, Tile destinationLocation, Tile disembarkLocation) {
 		StringBuilder logStr = new StringBuilder();
 		
 		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
-			if (ud.dest.equalsCoordinates(location)) {
+			if (ud.dest.equalsCoordinates(destinationLocation)) {
 				unitsDest.remove(ud);
 				
 				if (logStr.length() != 0) {
@@ -118,12 +114,12 @@ public class TransportUnitMission extends AbstractMission {
 				logStr.append(ud.unit.getId());
 			}
 		}
-		logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s]",
+		logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s] moved to [%s]",
 			player.getId(), 
-			logStr.toString(), 
-			location.toStringCords()
+			logStr.toString(),
+			disembarkLocation.toStringCords(),
+			disembarkLocation.toStringCords()
 		);
-		
 	}
 	
 	@Override

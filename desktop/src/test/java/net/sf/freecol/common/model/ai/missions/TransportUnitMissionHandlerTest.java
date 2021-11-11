@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.ai.missions;
 
 import org.junit.jupiter.api.Test;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import promitech.colonization.orders.move.MoveContext;
+import promitech.colonization.savegame.AbstractMissionAssert;
 
 class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
 	
@@ -22,7 +24,7 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
     Unit u2;
 	
     @Test
-	void canGoFromOneTileToAnother() throws Exception {
+	void canMoveFromOneTileToAnother() throws Exception {
 		// given
         game.aiContainer.missionContainer(this.dutch).clearAllMissions();
 
@@ -50,9 +52,9 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
 	}
     
     @Test
-    void canTranportUnits() {
+    void canTranportUnitsFromEuropeToNewWorld() {
         // given
-        createTransportUnitMission();
+        createTransportUnitMissionFromEurope();
 
         // when
         // move to europe and back to new world for colonists
@@ -79,7 +81,7 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
     @Test
 	public void canNotEnterToColony() throws Exception {
         // given
-        createTransportUnitMission();
+        createTransportUnitMissionFromEurope();
 		fortOrangeTile.getSettlement().setOwner(spain);
         
         // when
@@ -106,7 +108,7 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
     @Test
 	public void canNotDisembarkToOccupiedTile() throws Exception {
         // given
-        createTransportUnitMission();
+        createTransportUnitMissionFromEurope();
         UnitFactory.create(UnitType.FREE_COLONIST, spain, disembarkTile);
         
         // when
@@ -117,20 +119,21 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
 
 		// then
         UnitAssert.assertThat(u1)
-	    	.isNotAtLocation(galleon)
+	    	.isAtLocation(galleon)
 	    	.isNotAtLocation(dutch.getEurope())
-	    	.isAtLocation(fortOrangeTile);
+	    	.isNotAtLocation(disembarkTile);
 	    UnitAssert.assertThat(u2)
 	    	.isAtLocation(galleon)
 	    	.isNotAtLocation(dutch.getEurope())
 	    	.isNotAtLocation(disembarkTile);
 	    UnitAssert.assertThat(galleon)
+	        .hasUnit(u1)
 	        .hasUnit(u2)
-	        .isAtLocation(fortOrangeTile)
+			.isNextToLocation(game.map, disembarkTile)
         ;
 	}
 
-	TransportUnitMission createTransportUnitMission() {
+	TransportUnitMission createTransportUnitMissionFromEurope() {
 		game.aiContainer.missionContainer(this.dutch).clearAllMissions();
 
         sourceTile = game.map.getTile(26, 79);
@@ -148,5 +151,33 @@ class TransportUnitMissionHandlerTest extends MissionHandlerBaseTestClass {
         game.aiContainer.missionContainer(this.dutch).addMission(transportMission);
         
         return transportMission;
+	}
+
+	@Test
+	void shouldDisembarkNextToInLandDestination() {
+		// given
+		game.aiContainer.missionContainer(this.dutch).clearAllMissions();
+
+		Tile sourceTile = game.map.getTile(28, 82);
+		Tile destInLand = game.map.getTile(26, 72);
+		galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile);
+		u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon);
+		TransportUnitMission transportMission = new TransportUnitMission(galleon)
+			.addUnitDest(u1, destInLand);
+		game.aiContainer.missionContainer(this.dutch).addMission(transportMission);
+
+		// when
+		newTurnAndExecuteMission(dutch);
+
+		// then
+		Tile transferLocation = game.map.getTile(27, 72);
+		UnitAssert.assertThat(u1)
+			.isNotAtLocation(galleon)
+			.isAtLocation(transferLocation);
+
+		assertThat(transportMission.destTiles()).isEmpty();
+
+		AbstractMissionAssert.assertThat(transportMission)
+			.isDone();
 	}
 }

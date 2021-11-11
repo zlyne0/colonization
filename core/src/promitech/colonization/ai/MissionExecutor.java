@@ -68,7 +68,7 @@ public class MissionExecutor {
     		game, pathFinder, moveService
 		);
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
-    		game, pathFinder, moveService
+    		game, pathFinder, moveService, new PathFinder()
 		);
         ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
     		game, pathFinder, moveService
