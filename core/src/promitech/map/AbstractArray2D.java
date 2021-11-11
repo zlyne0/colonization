@@ -4,7 +4,7 @@ public abstract class AbstractArray2D {
     public final int width;
     public final int height;
 
-    AbstractArray2D(final int width, final int height) {
+    protected AbstractArray2D(final int width, final int height) {
         this.width = width;
         this.height = height;
     }

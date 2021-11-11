@@ -39,12 +39,14 @@ import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert;
 import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
@@ -153,6 +155,7 @@ public class Savegame1600Verifier {
 		verifyExploreMission(game);
 		verifyDutchMissions(game);
 		verifyMissionRecursion(game);
+		verifySpainMissions(game);
 	}
 
     private void verifyColonyWorkerMission(Game game) {
@@ -167,7 +170,7 @@ public class Savegame1600Verifier {
     private void verifyDutchMissions(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 		Player dutch = game.players.getById("player:1");
-        
+
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
         UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
         assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
@@ -177,14 +180,23 @@ public class Savegame1600Verifier {
         SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals("colony:6993");
 	}
 
+    private void verifySpainMissions(Game game) {
+        Player spanish = game.players.getById("player:133");
+        PlayerMissionsContainer missions = game.aiContainer.missionContainer(spanish);
+
+        PlayerMissionsContainerAssert.assertThat(missions)
+            .hasMission(ScoutMission.class, spanish.units.getById("unit:7205"))
+        ;
+    }
+
 	private void verifyMissionRecursion(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
-		
+
         AbstractMissionAssert.assertThat(missions.getMission("explorerMission:5"))
         	.isType(ExplorerMission.class)
         	.hasDependMission("explorerMission:5:1", ExplorerMission.class)
         	.hasDependMission("explorerMission:5:2", RellocationMission.class);
-        
+
         assertThat(missions.getMission("explorerMission:5").getDependMissionById("explorerMission:5:2"))
         	.hasDependMission("explorerMission:5:2:1", ExplorerMission.class);
 	}

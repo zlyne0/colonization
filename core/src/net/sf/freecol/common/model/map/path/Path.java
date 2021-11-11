@@ -13,7 +13,7 @@ public class Path {
 	public final Tile endTile;
 	boolean toEurope = false;
 	private final boolean reachDestination;
-	
+
 	public Path(Tile startTile, Tile endTile, int length, boolean reachDestination) {
 		this.tiles = new Array<Tile>(length);
 		this.turns = new IntArray(length);
@@ -30,6 +30,11 @@ public class Path {
 	
 	public String toString() {
 		String st = "";
+		if (reachDestination) {
+			st = "reachDestination";
+		} else {
+			st = "not reachDestination";
+		}
 		if (tiles.size == 0) {
 			st = "empty path";
 		}

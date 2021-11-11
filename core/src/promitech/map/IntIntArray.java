@@ -27,4 +27,8 @@ public class IntIntArray extends AbstractArray2D {
         }
         return this;
     }
+
+    public int size() {
+        return width * height;
+    }
 }

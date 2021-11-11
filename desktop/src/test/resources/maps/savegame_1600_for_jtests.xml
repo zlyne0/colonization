@@ -817,7 +817,7 @@
     <serverColonyTile id="colonyTile:6851"/>
     <serverColonyTile id="colonyTile:6859"/>
   </serverObjects>
-  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
+  <game id="0" nextId="7206" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
     <freecol-specification id="freecol" difficultyLevel="model.difficulty.medium" version="0.86">
       <modifiers>
         <modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>
@@ -15450,6 +15450,7 @@
       <tile id="tile:2476" x="28" y="55" type="model.tile.grassland" owner="player:58" owningSettlement="indianSettlement:6019" style="0" region="region:5008" contiguity="2">
         <cachedTile player="player:1" copied="false"/>
         <cachedTile player="player:133" copied="false"/>
+        <unit id="unit:7205" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.scout" roleCount="1" owner="player:133" nationality="model.nation.spanish" location="tile:2476" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
       </tile>
       <tile id="tile:2477" x="29" y="55" type="model.tile.swamp" owner="player:58" owningSettlement="indianSettlement:6019" style="0" region="region:5008" contiguity="2">
         <cachedTile player="player:1" copied="false"/>
@@ -21050,7 +21051,11 @@
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>
 	      </playerMissions>
-	      
+
+          <playerMissions player="player:133">
+              <scoutMission id="scoutMission:1" unit="unit:7205" />
+          </playerMissions>
+
 	      <playerMissions player="player:154">
 	      		<indianBringGiftMission id="indianBringGiftMission:123"
 					indianSettlementId="indianSettlement:6339"
