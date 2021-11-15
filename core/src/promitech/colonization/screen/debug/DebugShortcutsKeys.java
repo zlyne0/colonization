@@ -69,6 +69,7 @@ public class DebugShortcutsKeys {
         commandByKeycode.put(Input.Keys.NUM_4, "ai_generateWorkerReqScoreByValue");
         commandByKeycode.put(Input.Keys.NUM_5, "ai_generateWorkerReqScoreByPriceToValue");
         commandByKeycode.put(Input.Keys.NUM_6, "ai_generateWorkerReqBuyRecommendations");
+        commandByKeycode.put(Input.Keys.NUM_7, "simpleTest");
         //commandByKeycode.put(Input.Keys.NUM_5, "aiTransportUnitsFromEuropeToNewWorld");
         //commandByKeycode.put(Input.Keys.NUM_6, "colonies_gold_value_production");
         commandByKeycode.put(Input.Keys.NUM_9, "show_missions");

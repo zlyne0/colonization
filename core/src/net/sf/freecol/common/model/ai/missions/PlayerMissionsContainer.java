@@ -224,7 +224,6 @@ public class PlayerMissionsContainer extends ObjectWithId {
         public Xml() {
             addNodeForMapIdEntities("missions", WanderMission.class);
             addNodeForMapIdEntities("missions", TransportUnitMission.class);
-            addNodeForMapIdEntities("missions", RellocationMission.class);
             addNodeForMapIdEntities("missions", ExplorerMission.class);
             addNodeForMapIdEntities("missions", IndianBringGiftMission.class);
             addNodeForMapIdEntities("missions", DemandTributeMission.class);

@@ -21035,12 +21035,8 @@
 	          <transportUnitMission id="transportUnitMission:2" carrier="unit:6437">
 	              <unitDest unit="unit:7095" tile="24,78" />
               </transportUnitMission>
-              <rellocationMission id="rellocationMission:3" dest="20,22" unit="unit:7095" unitDest="25,27" carrier="unit:6437" carrierDest="30,32" />
               <explorerMission id="explorerMission:5" unit="unit:6437">
                   <explorerMission id="explorerMission:5:1" unit="unit:6437"/>
-                  <rellocationMission id="explorerMission:5:2" dest="15,10" unit="unit:7095" unitDest="16,10" carrier="unit:6437" carrierDest="30,32">
-                      <explorerMission id="explorerMission:5:2:1" unit="unit:6437"/>
-                  </rellocationMission>
               </explorerMission>
 			  <transportGoodsToSellMission id="transportGoodsToSellMission:1" unit="unit:6437" firstToVisit="colony:6993">
 				  <settlement id="colony:6993" />

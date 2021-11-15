@@ -120,7 +120,6 @@ public abstract class AbstractMission extends ObjectWithId {
 			
 			addNode(WanderMission.class, setter);
 			addNode(TransportUnitMission.class, setter);
-			addNode(RellocationMission.class, setter);
 			addNode(ExplorerMission.class, setter);
 			addNode(IndianBringGiftMission.class, setter);
 			addNode(DemandTributeMission.class, setter);

@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.missions.RellocationMission;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionHandler;
@@ -22,7 +21,6 @@ import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
-import net.sf.freecol.common.model.map.path.TransportPathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
@@ -36,13 +34,10 @@ public class MissionExecutor {
     		new HashMap<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>>();
 
 	private final Game game;
-	private final TransportPathFinder transportPathFinder;
-	
-	
+
 	private final ExplorerMissionHandler explorerMissionHandler;
 	private final WanderMissionHandler wanderMissionHandler;
-	private final RellocationMissionHandler rellocationMissionHandler;
-    
+
 	public MissionExecutor(
 		Game game, 
 		MoveService moveService, 
@@ -52,12 +47,9 @@ public class MissionExecutor {
 	) {
 		this.game = game;
 		
-        transportPathFinder = new TransportPathFinder(game.map);
-        
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
 		wanderMissionHandler = new WanderMissionHandler(game, moveService);
-        rellocationMissionHandler = new RellocationMissionHandler(pathFinder, transportPathFinder, game, moveService);
-        
+
         IndianBringGiftMissionHandler indianBringGiftMission = new IndianBringGiftMissionHandler(
     		game, pathFinder, moveService, guiGameController
 		);
@@ -74,8 +66,6 @@ public class MissionExecutor {
     		game, pathFinder, moveService
 		);
         
-        
-        missionHandlerMapping.put(RellocationMission.class, rellocationMissionHandler);
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
 		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);

@@ -1,25 +1,29 @@
 package promitech.colonization.screen.debug
 
+import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitFactory
+import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
-import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
+import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
@@ -94,7 +98,7 @@ fun createCommands(
 			    console.keepOpen() 
 				console.out("no view mode")
 			} else {
-				mapTurnRange(di, mapActor)
+				mapTurnRange(di, mapActor, tileDebugView)
 			}			 
 		}
 
@@ -120,12 +124,6 @@ fun createCommands(
 
 		command("ai_transport_goods_to_sell_mission_example") {
 			ai_transport_goods_to_sell_mission_example(guiGameModel, mapActor)
-		}
-		
-		command("aiTransportUnitsFromEuropeToNewWorld") {
-			if (mapActor != null) {
-				aiTransportUnitsFromEuropeToNewWorld(guiGameModel, mapActor)
-			}
 		}
 		
 		command("ai_explore") {
@@ -240,7 +238,13 @@ fun createCommands(
 		commandArg("reset_debug") {
 			resetDebug(tileDebugView)
 		}
-		
+
+		command("simpleTest") {
+			if (mapActor != null) {
+				simpleTest(di, guiGameModel, tileDebugView)
+			}
+		}
+
     	command("nothing") {
 		}
 	}
@@ -355,7 +359,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
     mapActor?.showTileDebugStrings(tileStrings);
 }
 
-	fun mapTurnRange(di: DI, mapActor: MapActor) {
+	fun mapTurnRange(di: DI, mapActor: MapActor, tileDebugView: TileDebugView) {
 		var guiGameModel = di.guiGameModel
 		if (!guiGameModel.isViewMode()) {
 			return
@@ -369,10 +373,7 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 			pathFinder.createPathUnit(dutch, Specification.instance.unitTypes.getById(UnitType.GALLEON)),
 			PathFinder.excludeUnexploredTiles
 		)
-		
-		val tileStrings = Array(guiGameModel.game.map.height, { Array(guiGameModel.game.map.width, { "" }) })
-		pathFinder.turnCostToStringArrays(tileStrings)
-		mapActor.showTileDebugStrings(tileStrings);
+		pathFinder.printTurnCost(tileDebugView)
 	}
 
 	fun aiAttack(di: DI) {
@@ -469,13 +470,15 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
+				player.setAi(true)
 				di.newTurnService.newTurn(player)
 
-				missionPlaner.planMissions(player)
+				//missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
+				player.setAi(false)
 			}
 		})
 	}
@@ -515,42 +518,25 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 		mapActor?.resetUnexploredBorders()
 	}
 
-	fun aiTransportUnitsFromEuropeToNewWorld(guiGameModel: GUIGameModel, mapActor: MapActor) {
-		val game = guiGameModel.game
-		
-		val dutch = game.players.getById("player:1")				
-        var sourceTile = game.map.getTile(26, 79)
-        //var sourceTile = game.map.getTile(30, 80)
-        //var sourceTile = game.map.getTile(28, 76)
-		
-        var disembarkTile = game.map.getTile(27, 76)
-        var fortOrangeTile = game.map.getTile(25, 75)
-
-        var galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile);
-        var u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope());
-        var u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope());
-//        var u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon);
-//        var u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon);
-
-        var transportMission = TransportUnitMission(galleon)
-            .addUnitDest(u1, fortOrangeTile)
-            .addUnitDest(u2, disembarkTile);
-
-        game.aiContainer.missionContainer(dutch).addMission(transportMission);
-
-		//UnitFactory.create(UnitType.FREE_COLONIST, game.players.getById("player:133"), disembarkTile);
-		//fortOrangeTile.getSettlement().setOwner(game.players.getById("player:133"));
-
-		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch);				
-		mapActor.resetMapModel()
-		mapActor.resetUnexploredBorders()
-	}
-
 	fun showMissions(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 		tileDebugView.reset()
-
 		val player = guiGameModel.game.playingPlayer
 		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
+
+		fun showOnMap(mission: TransportUnitMission) {
+			for (unitDest in mission.unitsDest) {
+				tileDebugView.strIfNull(unitDest.dest.x, unitDest.dest.y, "TransportUnit")
+			}
+		}
+
+		fun showOnMap(mission: TransportGoodsToSellMission) {
+			if (mission.phase == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
+				tileDebugView.strIfNull(player.entryLocation.x, player.entryLocation.y, "SellGoods")
+			} else {
+				val settlement = mission.firstSettlementToVisit(player)
+				tileDebugView.strIfNull(settlement.tile.x, settlement.tile.y, "TakeForSale")
+			}
+		}
 
 		for (mission in missionContainer.missions.entities()) {
 			if (mission.isDone) {
@@ -558,25 +544,15 @@ fun theBestMove(di: DI, mapActor: MapActor?) {
 			}
 			when (mission) {
 				is ColonyWorkerMission -> tileDebugView.strIfNull(mission.tile.x, mission.tile.y, "Worker")
-
-				is TransportUnitMission -> {
-					for (unitDest in mission.unitsDest) {
-						tileDebugView.strIfNull(unitDest.dest.x, unitDest.dest.y, "TransportUnit")
-					}
-				}
-
-				is TransportGoodsToSellMission -> {
-					if (mission.phase == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
-						tileDebugView.strIfNull(player.entryLocation.x, player.entryLocation.y, "SellGoods")
-					} else {
-						val settlement = mission.firstSettlementToVisit(player)
-						tileDebugView.strIfNull(settlement.tile.x, settlement.tile.y, "TakeForSale")
-					}
-				}
-
+				is TransportUnitMission -> showOnMap(mission)
+				is TransportGoodsToSellMission -> showOnMap(mission)
 				else -> println("Can not print mission on map for " + mission.javaClass.name)
 			}
 		}
+
+	}
+
+	fun simpleTest(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	}
 
 	fun resetDebug(tileDebugView: TileDebugView) {
