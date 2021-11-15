@@ -165,6 +165,10 @@ public class PathFinder {
 		generateRangeMap(map, startTile, createPathUnit(unit), flags);
 	}
 
+	public void generateRangeMap(final Map map, final Unit unit, Set<FlagTypes> flags) {
+		generateRangeMap(map, unit.getTile(), createPathUnit(unit), flags);
+	}
+
 	public void generateRangeMap(final Map map, final Tile startTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
 	    goalDecider = rangeMapGoalDecider;
         this.map = map;
@@ -268,9 +272,9 @@ public class PathFinder {
 
 	public Path createPath(Tile destTile) {
 		Node destNode = grid.get(destTile.x, destTile.y);
-		if (destNode.noMove) {
-			throw new IllegalStateException("no path from tile [" + destTile.toStringCords() + "]");
-		}
+//		if (destNode.noMove) {
+//			throw new IllegalStateException("no path from tile [" + destTile.toStringCords() + "]");
+//		}
 		return createPath(destNode);
 	}
 
@@ -343,22 +347,22 @@ public class PathFinder {
 		return grid.get(tile.x, tile.y).turns;
 	}
 	
-	public void totalCostToStringArrays(String[][] strTab) {
+	public void printCost(MapTileDebugInfo mapTileDebugInfo) {
 		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
 			cost = totalCost(i);
 			if (cost != INFINITY) {
-				strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+				mapTileDebugInfo.str(grid.toX(i), grid.toY(i), Integer.toString(cost));
 			}
 	    }
 	}
 
-	public void turnCostToStringArrays(String[][] strTab) {
+	public void printTurnCost(MapTileDebugInfo mapTileDebugInfo) {
 		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
 			cost = turnsCost(i);
 			if (cost != INFINITY) {
-				strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(cost);
+				mapTileDebugInfo.str(grid.toX(i), grid.toY(i), Integer.toString(cost));
 			}
 	    }
 	}

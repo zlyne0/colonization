@@ -40,32 +40,26 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 		System.out.println("### NEW TURN ###");
 		boolean wasAI = player.isAi();
 		player.setAi(true);
-
 		di.newTurnService.newTurn(player);
-
-		MissionExecutor missionExecutor = new MissionExecutor(
-			di.guiGameModel.game,
-			di.moveService,
-			di.combatService,
-			di.guiGameController,
-			di.pathFinder
-		);
-
+		MissionExecutor missionExecutor = createMissionExecutor();
 		missionExecutor.executeMissions(player);
 		player.setAi(wasAI);
 	}
 
 	protected void planMissions(Player player) {
-		MissionExecutor missionExecutor = new MissionExecutor(
+		MissionExecutor missionExecutor = createMissionExecutor();
+		MissionPlaner missionPlaner = new MissionPlaner(game, di.pathFinder, missionExecutor);
+		missionPlaner.planMissions(player);
+	}
+
+	private MissionExecutor createMissionExecutor() {
+		return new MissionExecutor(
 			di.guiGameModel.game,
 			di.moveService,
 			di.combatService,
 			di.guiGameController,
 			di.pathFinder
 		);
-
-		MissionPlaner missionPlaner = new MissionPlaner(game, di.pathFinder, missionExecutor);
-		missionPlaner.planMissions(player);
 	}
 
 	DI createDependencies() {

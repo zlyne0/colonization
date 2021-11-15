@@ -21,12 +21,23 @@ public class TransportUnitMission extends AbstractMission {
     public class UnitDest {
         public final Unit unit;
         public final Tile dest;
+        public final boolean allowUnitMove;
 
-        public UnitDest(Unit unit, Tile dest) {
+        public UnitDest(Unit unit, Tile dest, boolean allowUnitMove) {
             this.unit = unit;
             this.dest = dest;
+            this.allowUnitMove = allowUnitMove;
         }
-    }
+
+		@Override
+		public String toString() {
+			String tileStr = "[" + dest.toStringCords() + "]";
+			if (dest.hasSettlement()) {
+				tileStr += " " + dest.getSettlement().getName();
+			}
+			return "[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " to " + tileStr + "]";
+		}
+	}
 
 	private Unit carrier;
     private final List<UnitDest> unitsDest = new ArrayList<UnitDest>();
@@ -41,9 +52,14 @@ public class TransportUnitMission extends AbstractMission {
 	}
 
 	public TransportUnitMission addUnitDest(Unit unit, Tile tile) {
-        this.unitsDest.add(new UnitDest(unit, tile));
+        this.unitsDest.add(new UnitDest(unit, tile, false));
         return this;
     }
+
+	public TransportUnitMission addUnitDest(Unit unit, Tile tile, boolean allowUnitMove) {
+		this.unitsDest.add(new UnitDest(unit, tile, allowUnitMove));
+		return this;
+	}
 
     public UnitDest firstUnitToTransport() {
     	if (unitsDest.isEmpty()) {
@@ -147,12 +163,7 @@ public class TransportUnitMission extends AbstractMission {
 			if (!str.isEmpty()) {
 				str += ", ";
 			}
-
-			String tileStr = "[" + unitDest.dest.toStringCords() + "]";
-			if (unitDest.dest.hasSettlement()) {
-				tileStr += " " + unitDest.dest.getSettlement().getName();
-			}
-			str += "[" +unitDest.unit.getId() + " " + unitDest.unit.unitType.toSmallIdStr() + " to " + tileStr + "]";
+			str += unitDest.toString();
 		}
 		return str;
 	}
