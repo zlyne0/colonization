@@ -189,7 +189,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	private void increasePrice(UnitType unitType, int actualPrice) {
 		String option;
     	if (Specification.options.getBoolean(GameOptions.PRICE_INCREASE_PER_TYPE)) {
-    		option = "model.option.priceIncrease." + unitType.getSuffix();
+    		option = "model.option.priceIncrease." + unitType.idSuffix();
     	} else {
     		option = "model.option.priceIncrease";
     	}

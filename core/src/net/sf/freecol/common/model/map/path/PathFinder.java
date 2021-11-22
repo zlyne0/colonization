@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.map.path;
 
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -17,27 +18,30 @@ import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
+import static java.util.Collections.*;
+
 public class PathFinder {
 
-	public static final Set<FlagTypes> excludeUnexploredTiles = EnumSet.of(FlagTypes.AvoidUnexploredTiles);
-	public static final Set<FlagTypes> includeUnexploredTiles = EnumSet.noneOf(FlagTypes.class);
+	public static final Set<FlagTypes> excludeUnexploredTiles = unmodifiableSet(EnumSet.of(FlagTypes.AvoidUnexploredTiles));
+	public static final Set<FlagTypes> includeUnexploredTiles = unmodifiableSet(EnumSet.noneOf(FlagTypes.class));
 
-	public static final Set<FlagTypes> includeNavyThreat = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
-	public static final Set<FlagTypes> excludeNavyThreat = EnumSet.noneOf(FlagTypes.class);
+	public static final Set<FlagTypes> includeNavyThreat = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
+	public static final Set<FlagTypes> excludeNavyThreat = unmodifiableSet(EnumSet.noneOf(FlagTypes.class));
 
-	public static final Set<FlagTypes> includeUnexploredAndNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
-	public static final Set<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = EnumSet.of(FlagTypes.IncludeNavyThreatTiles);
+	public static final Set<FlagTypes> includeUnexploredAndNavyThreatTiles = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
+	public static final Set<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
 
-	public static final Set<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = EnumSet.of(
+	public static final Set<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = unmodifiableSet(EnumSet.of(
 		FlagTypes.AvoidUnexploredTiles,
 		FlagTypes.IncludeNavyThreatTiles
-	);
+	));
 
 	public enum FlagTypes {
 		// move only through explored tiles
 		AvoidUnexploredTiles,
-
-		IncludeNavyThreatTiles
+		IncludeNavyThreatTiles,
+		AvoidDisembark,
+		AllowEmbark
 	}
 
     static final int INFINITY = Integer.MAX_VALUE;
@@ -87,8 +91,10 @@ public class PathFinder {
 	private Tile startTile;
 	private Tile endTile;
 	private PathUnit pathUnit;
+	private List<Tile> startTiles = new ArrayList<Tile>();
 
-	private boolean findPossibilities = false;
+	private Node oneOfTheBest = null;
+	private Node reachedGoalNode = null;
 
 	public PathFinder() {
 	}
@@ -111,12 +117,10 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = null;
         this.pathUnit = pathUnit;
-        this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-        this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-        this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-        
+
+		setCostDeciderFlags(flags);
         determineCostDecider(false);
+
         Path path = find();
         path.toEurope = true;
 		return path;
@@ -136,17 +140,15 @@ public class PathFinder {
         this.startTile = startTile;
         this.endTile = endTile;
         this.pathUnit = pathUnit;
-        this.findPossibilities = false;
-		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-        
+
+		setCostDeciderFlags(flags);
         determineCostDecider(flags.contains(FlagTypes.IncludeNavyThreatTiles));
+
         Path path = find();
         path.toEurope = false;
         return path;
     }
-	
+
 	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
 		if (endTiles.isEmpty()) {
 			throw new IllegalArgumentException("endTiles can not be empty");
@@ -161,29 +163,51 @@ public class PathFinder {
 		return theBestPath;
 	}
 
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit unit, Set<FlagTypes> flags) {
-		generateRangeMap(map, startTile, createPathUnit(unit), flags);
+	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, createPathUnit(unit), flags);
 	}
 
 	public void generateRangeMap(final Map map, final Unit unit, Set<FlagTypes> flags) {
-		generateRangeMap(map, unit.getTile(), createPathUnit(unit), flags);
+		this.startTiles.clear();
+		this.startTiles.add(unit.getTile());
+		generateRangeMap(map, createPathUnit(unit), flags);
 	}
 
-	public void generateRangeMap(final Map map, final Tile startTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
-	    goalDecider = rangeMapGoalDecider;
+	public void generateRangeMap(final Map map, List<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.addAll(startTiles);
+		generateRangeMap(map, pathUnit, flags);
+	}
+
+	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, pathUnit, flags);
+	}
+
+	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags) {
+	    this.goalDecider = rangeMapGoalDecider;
         this.map = map;
-        this.startTile = startTile;
         this.endTile = null;
         this.pathUnit = pathUnit;
-        this.findPossibilities = true;
-		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
-		
+
+        setCostDeciderFlags(flags);
         determineCostDecider(false);
-        find();
+
+		calculatePaths();
 	}
-	
+
+	private void setCostDeciderFlags(Set<FlagTypes> flags) {
+		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyWithoutThreatCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.baseCostDecider.allowEmbark = flags.contains(FlagTypes.AllowEmbark);
+	}
+
 	private void determineCostDecider(boolean includeNavyThreat) {
 	    if (pathUnit.isNaval()) {
 	        if (includeNavyThreat) {
@@ -195,21 +219,38 @@ public class PathFinder {
 	        costDecider = baseCostDecider;
 	    }
 	}
-	
-	private Path find() {
-		resetFinderBeforeSearching(map);
-		
-		int iDirections = 0; 
-		int nDirections = Direction.values().length;
-		costDecider.init(map, pathUnit.unitMove);
-		
-		Node currentNode = grid.get(startTile.x, startTile.y);
-		currentNode.reset(pathUnit.movesLeft, 0);
-		currentNode.turns = 0;
-		nodes.add(currentNode);
 
-		Node oneOfTheBest = null;
-		Node reachedGoalNode = null;
+	private Path find() {
+		this.startTiles.clear();
+		this.startTiles.add(startTile);
+		calculatePaths();
+
+		if (reachedGoalNode != null) {
+			return createPath(reachedGoalNode);
+		} else {
+			return createPath(oneOfTheBest);
+		}
+	}
+
+	private void calculatePaths() {
+		resetFinderBeforeSearching(map);
+		for (Tile tile : startTiles) {
+			Node currentNode = grid.get(tile.x, tile.y);
+			currentNode.reset(pathUnit.movesLeft, 0);
+			currentNode.turns = 0;
+			nodes.add(currentNode);
+		}
+		startTiles.clear();
+
+		costDecider.init(map, pathUnit.unitMove);
+
+		oneOfTheBest = null;
+		reachedGoalNode = null;
+
+		Node currentNode;
+		int iDirections = 0;
+		int nDirections = Direction.values().length;
+
 		while (true) {
 			currentNode = nodes.pollFirst();
 			if (currentNode == null) {
@@ -220,7 +261,7 @@ public class PathFinder {
 			}
 			for (iDirections=0; iDirections<nDirections; iDirections++) {
 				Direction moveDirection = Direction.values()[iDirections];
-				
+
 				Tile moveTile = map.getTile(currentNode.tile, moveDirection);
 				if (moveTile == null) {
 					continue;
@@ -229,17 +270,18 @@ public class PathFinder {
 				if (moveNode.noMove) {
 					continue;
 				}
-				
+
 				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
-					// change moveType to default move. Sometimes goal can be indian settlement 
+					// change moveType to default move. Sometimes goal can be indian settlement
 					// and moveType should be used only to find path
 					moveType = MoveType.MOVE;
 				}
-				
+
 				if (costDecider.calculateAndImproveMove(currentNode, moveNode, moveType, moveDirection)) {
 					if (oneOfTheBest == null || moveNode.hasBetterCostThen(oneOfTheBest)) {
+						// TODO: remove - no sense, always next to start tile because everyone has greater cost
 						oneOfTheBest = moveNode;
 					}
 					nodes.add(moveNode);
@@ -250,19 +292,8 @@ public class PathFinder {
 				}
 			}
 		}
-
 		pathUnitFactory.free(pathUnit);
 		pathUnit = null;
-
-		if (findPossibilities) {
-			return null;
-		}
-
-		if (reachedGoalNode != null) {
-			return createPath(reachedGoalNode);
-		} else {
-			return createPath(oneOfTheBest);
-		}
 	}
 
 	public Path createPath(int cellIndex) {
@@ -272,9 +303,6 @@ public class PathFinder {
 
 	public Path createPath(Tile destTile) {
 		Node destNode = grid.get(destTile.x, destTile.y);
-//		if (destNode.noMove) {
-//			throw new IllegalStateException("no path from tile [" + destTile.toStringCords() + "]");
-//		}
 		return createPath(destNode);
 	}
 

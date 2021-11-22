@@ -25,6 +25,7 @@ class CostDecider {
 	protected int moveCost;
 	private int newTotalPathCost;
 	protected boolean avoidUnexploredTiles = true;
+	protected boolean allowEmbark = false;
 
     void init(Map map, UnitMoveType unitMove) {
         this.map = map;
@@ -37,6 +38,16 @@ class CostDecider {
      * @return boolean - return true when can improve move
      */
 	boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+		if (
+			moveType == MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT
+			|| moveType == MoveType.MOVE_NO_ACCESS_EMBARK && allowEmbark
+		) {
+			getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
+			improveMove(currentNode, moveNode);
+			moveNode.noMove = true;
+			return false;
+		}
+
         if (isMoveIllegal(moveNode.tile, moveType)) {
         	return false;
         }

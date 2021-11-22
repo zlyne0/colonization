@@ -113,10 +113,6 @@ public class UnitRole extends ObjectWithFeatures {
 		return false;
 	}
 
-	public String toSmallIdStr() {
-		return getId().replaceFirst("model.role.", "");
-	}
-
 	public static class Xml extends XmlNodeParser<UnitRole> {
 		private static final String ATTR_MAXIMUM_COUNT = "maximumCount";
 		private static final String ATTR_DOWNGRADE = "downgrade";

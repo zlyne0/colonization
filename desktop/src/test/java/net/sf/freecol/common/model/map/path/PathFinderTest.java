@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.map.path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,20 +24,24 @@ import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.CollectionUtils;
 
 import java.util.Arrays;
+import java.util.Set;
 
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.map.isometric.NeighbourIterableTile;
 
-public class PathFinderTest {
+class PathFinderTest {
 
     Path path;
     Game game;
     PathFinder sut = new PathFinder();
     Player dutch;
-    
-    @BeforeAll
+	Colony nieuwAmsterdam;
+	Colony fortNassau;
+
+	@BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
@@ -45,10 +50,13 @@ public class PathFinderTest {
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	dutch = game.players.getById("player:1");
+
+		nieuwAmsterdam = game.map.getTile(24, 78).getSettlement().asColony();
+		fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
     }
     
 	@Test
-	public void canFindLandPathForColonist() throws Exception {
+	void canFindLandPathForColonist() throws Exception {
 		// given
         Tile startTile = game.map.getTile(24, 78);
         Tile endTile = game.map.getTile(21, 72);
@@ -78,7 +86,7 @@ public class PathFinderTest {
 	}
 
 	@Test
-	public void canFindMarinePathForNavy() throws Exception {
+	void canFindMarinePathForNavy() throws Exception {
 		// given
         Tile startTile = game.map.getTile(12, 79);
         Tile endTile = game.map.getTile(12, 83);
@@ -101,7 +109,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-    public void canFindNavyPathAndOmitFortressTile() throws Exception {
+    void canFindNavyPathAndOmitFortressTile() throws Exception {
         // given
         Tile startTile = game.map.getTile(26, 77);
         Tile endTile = game.map.getTile(28, 72);
@@ -143,7 +151,7 @@ public class PathFinderTest {
     }
 	
 	@Test
-    public void canFindNavyPathAndDoesNotOmitFortressTile() throws Exception {
+    void canFindNavyPathAndDoesNotOmitFortressTile() throws Exception {
         // given
         Tile startTile = game.map.getTile(26, 77);
         Tile endTile = game.map.getTile(28, 72);
@@ -171,7 +179,7 @@ public class PathFinderTest {
     }
 	
 	@Test
-    public void canFindPathToEurope() throws Exception {
+    void canFindPathToEurope() throws Exception {
         // given
         Tile startTile = game.map.getTile(12, 79);
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
@@ -211,7 +219,7 @@ public class PathFinderTest {
     }
 
 	@Test
-	public void colonistsShouldNotMoveViaEnemy() throws Exception {
+	void colonistsShouldNotMoveViaEnemy() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(24, 77));
@@ -243,7 +251,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
+	void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
 		// given
 		Tile startTile = game.map.getSafeTile(23, 70);
     	Unit galleon = new Unit(
@@ -263,7 +271,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldNotFindPathBecauseBlockedByEnemy() throws Exception {
+	void shouldNotFindPathBecauseBlockedByEnemy() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
@@ -286,7 +294,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldNotFindPathBetweenIslands() throws Exception {
+	void shouldNotFindPathBetweenIslands() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
@@ -302,7 +310,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void indianShouldFindPathFromSettlementToColony() throws Exception {
+	void indianShouldFindPathFromSettlementToColony() throws Exception {
 		// given
 		Tile fromTile = game.map.getSafeTile(19, 78);
 		Tile toTile = game.map.getSafeTile(20, 79);
@@ -350,4 +358,55 @@ public class PathFinderTest {
 		;
 	}
 
+	@Test
+	void shouldGenerateRangeToIndianSettlement() {
+		// given
+		Tile source = game.map.getTile(22, 80);
+		Unit scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, source);
+
+		// when
+		sut.generateRangeMap(game.map, scout, PathFinder.includeUnexploredTiles);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(19, 78))).isEqualTo(0);
+		assertThat(sut.turnsCost(game.map.getTile(15, 85))).isEqualTo(1);
+	}
+
+	@Test
+	void shouldGenerateRangeMapWithoutDisembarkTiles() {
+		// given
+		Tile sourceTile = game.map.getTile(26, 83);
+		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, sourceTile);
+
+		// when
+		Set<PathFinder.FlagTypes> flagTypes = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark);
+		sut.generateRangeMap(game.map, caravel, flagTypes);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(23, 80))).isEqualTo(PathFinder.INFINITY);
+		assertThat(sut.turnsCost(nieuwAmsterdam.tile)).isEqualTo(1);
+	}
+
+	@Test
+	void shouldGenerateRangeMapWithEmbarkTiles() {
+		// given
+		Unit scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, fortNassau.tile);
+
+		// when
+		Set<PathFinder.FlagTypes> flagTypes = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark);
+		sut.generateRangeMap(
+			game.map,
+			fortNassau.tile,
+			scout,
+			flagTypes
+		);
+
+		// then
+		// in middle of ocean
+		assertThat(sut.turnsCost(game.map.getTile(22, 85))).isEqualTo(PathFinder.INFINITY);
+		// ocean next to FortNassau
+		assertThat(sut.turnsCost(game.map.getTile(20, 81))).isEqualTo(0);
+		// ocean next to land, two tiles from colony
+		assertThat(sut.turnsCost(game.map.getTile(21, 81))).isEqualTo(0);
+	}
 }

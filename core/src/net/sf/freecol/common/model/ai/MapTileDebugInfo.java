@@ -6,4 +6,5 @@ public interface MapTileDebugInfo {
 
 	void strIfNull(int x, int y, String str);
 
+    void appendStr(int x, int y, String str);
 }

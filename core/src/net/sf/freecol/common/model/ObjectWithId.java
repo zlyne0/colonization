@@ -35,8 +35,11 @@ public abstract class ObjectWithId implements Identifiable {
 	    return id;
 	}
 	
-	public String getSuffix() {
+	public String idSuffix() {
 		return StringUtils.lastPart(getId(), ".").toLowerCase(Locale.US);
 	}
-	
+
+	public String toSmallIdStr() {
+		return StringUtils.lastPart(getId(), ".");
+	}
 }

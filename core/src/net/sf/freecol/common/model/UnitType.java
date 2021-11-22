@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.WithProbability;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -309,10 +310,6 @@ public class UnitType extends BuildableType {
 			}
 		};
     }
-
-    public String toSmallIdStr() {
-    	return getId().replaceFirst("model.unit.", "");
-	}
 
     public static class Xml extends XmlNodeParser<UnitType> {
         private static final String ELEMENT_DEFAULT_ROLE = "default-role";

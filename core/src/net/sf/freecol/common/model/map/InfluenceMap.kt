@@ -9,7 +9,7 @@ import promitech.map.IntIntArray
 
 class InfluenceMap(
     private val map: Map,
-    private val maxRange: Int = 12
+    private val maxRange: Int = Int.MAX_VALUE
 ) {
     private val initialRange = 0
     private val maxValue = Int.MAX_VALUE
@@ -51,6 +51,14 @@ class InfluenceMap(
                 }
             }
         }
+    }
+
+    fun range(x: Int, y: Int): Int {
+        return rangeMap.get(x, y)
+    }
+
+    fun range(tile: Tile): Int {
+        return rangeMap.get(tile.x, tile.y)
     }
 
     fun printTo(mapDebugInfo: MapTileDebugInfo) {

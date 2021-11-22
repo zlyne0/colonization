@@ -2,6 +2,7 @@ package promitech.colonization.screen.debug;
 
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.map.path.Path;
+
 import promitech.colonization.screen.map.MapActor;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 
@@ -33,6 +34,19 @@ public class TileDebugView implements MapTileDebugInfo {
             debugTileStrTab[y][x] = str;
         }
     }
+
+    @Override
+    public void appendStr(int x, int y, String str) {
+        initTileStrTab();
+        String actualStr = debugTileStrTab[y][x];
+        if (actualStr == null) {
+            actualStr = str;
+        } else {
+            actualStr += " " + str;
+        }
+        debugTileStrTab[y][x] = actualStr;
+    }
+
 
     public String[][] getDebugTileStrTab() {
         initTileStrTab();

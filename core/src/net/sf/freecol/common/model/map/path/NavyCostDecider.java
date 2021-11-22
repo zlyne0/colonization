@@ -7,11 +7,12 @@ import promitech.colonization.Direction;
 class NavyCostDecider extends CostDecider {
     
     private boolean moveToSeaside = false;
+    protected boolean allowDisembark = true;
     
     @Override
     boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
         moveToSeaside = false;
-        if ((moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
+        if (allowDisembark && (moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
             moveType = MoveType.MOVE;
             moveToSeaside = true;
         }
