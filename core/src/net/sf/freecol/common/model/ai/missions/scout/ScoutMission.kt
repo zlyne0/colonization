@@ -5,6 +5,8 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
+import net.sf.freecol.common.model.player.Player
+import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 
@@ -16,8 +18,12 @@ class ScoutMission : AbstractMission {
         this.scout = scout
     }
 
-    constructor(scout: Unit, missionId: String) : super(missionId) {
+    private constructor(scout: Unit, missionId: String) : super(missionId) {
         this.scout = scout
+    }
+
+    override fun toString(): String {
+        return "scout: " + scout.id
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
@@ -26,6 +32,10 @@ class ScoutMission : AbstractMission {
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
         unitMissionsMapping.unblockUnitFromMission(scout, this)
+    }
+
+    fun isScoutExists(): Boolean {
+        return CommonMissionHandler.isUnitExists(scout.owner, scout)
     }
 
     class Xml : AbstractMission.Xml<ScoutMission>() {

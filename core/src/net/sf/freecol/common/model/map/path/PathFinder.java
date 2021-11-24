@@ -22,6 +22,24 @@ import static java.util.Collections.*;
 
 public class PathFinder {
 
+	public interface SumPolicy {
+		public static final SumPolicy SIMPLY_SUM = new SumPolicy() {
+			@Override
+			public int sum(int a, int b) {
+				return a + b;
+			}
+		};
+
+		public static final SumPolicy PRIORITY_SUM = new SumPolicy() {
+			@Override
+			public int sum(int a, int b) {
+				return 100 * a + b;
+			}
+		};
+
+		int sum(int a, int b);
+	}
+
 	public static final Set<FlagTypes> excludeUnexploredTiles = unmodifiableSet(EnumSet.of(FlagTypes.AvoidUnexploredTiles));
 	public static final Set<FlagTypes> includeUnexploredTiles = unmodifiableSet(EnumSet.noneOf(FlagTypes.class));
 
@@ -44,7 +62,7 @@ public class PathFinder {
 		AllowEmbark
 	}
 
-    static final int INFINITY = Integer.MAX_VALUE;
+    public static final int INFINITY = Integer.MAX_VALUE;
     static final int UNDEFINED = Integer.MIN_VALUE;
 	
 	private static Comparator<Node> NODE_WEIGHT_COMPARATOR = new Comparator<Node>() {
@@ -416,7 +434,7 @@ public class PathFinder {
 		);
 	}
 
-	public void printSumTurnCost(PathFinder b, MapTileDebugInfo mapTileDebugInfo) {
+	public void printSumTurnCost(PathFinder b, SumPolicy sumPolicy, MapTileDebugInfo mapTileDebugInfo) {
 		checkMapSizes(this, b);
 
 		int aCost;
@@ -428,12 +446,12 @@ public class PathFinder {
 			if (aCost == INFINITY || bCost == INFINITY) {
 				continue;
 			}
-			sum = aCost + bCost;
+			sum = sumPolicy.sum(aCost, bCost);
 			mapTileDebugInfo.str(grid.toX(cellIndex), grid.toY(cellIndex), Integer.toString(sum));
 		}
 	}
 
-	public Tile findFirstTheBestSumTurnCost(PathFinder b) {
+	public Tile findFirstTheBestSumTurnCost(PathFinder b, SumPolicy sumPolicy) {
 		checkMapSizes(this, b);
 		int theBestSum = INFINITY;
 		Node theBestNode = null;
@@ -447,7 +465,7 @@ public class PathFinder {
 			if (aCost == INFINITY || bCost == INFINITY) {
 				continue;
 			}
-			sum = aCost + bCost;
+			sum = sumPolicy.sum(aCost, bCost);
 			if (sum < theBestSum) {
 				theBestSum = sum;
 				theBestNode = grid.get(cellIndex);

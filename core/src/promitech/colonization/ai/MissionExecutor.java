@@ -18,6 +18,9 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMissionHandler;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionHandler;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -46,7 +49,8 @@ public class MissionExecutor {
 		PathFinder pathFinder
 	) {
 		this.game = game;
-		
+        PathFinder secoundPathFinder = new PathFinder();
+
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
 		wanderMissionHandler = new WanderMissionHandler(game, moveService);
 
@@ -60,12 +64,15 @@ public class MissionExecutor {
     		game, pathFinder, moveService
 		);
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
-    		game, pathFinder, moveService, new PathFinder()
+    		game, pathFinder, moveService, secoundPathFinder
 		);
         ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
     		game, pathFinder, moveService
 		);
-        
+        ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
+            new ScoutMissionPlaner(game, pathFinder, secoundPathFinder), moveService
+        );
+
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
 		missionHandlerMapping.put(IndianBringGiftMission.class, indianBringGiftMission);
@@ -73,6 +80,7 @@ public class MissionExecutor {
 		missionHandlerMapping.put(TransportGoodsToSellMission.class, transportGoodsToSellMissionHandler);
 		missionHandlerMapping.put(TransportUnitMission.class, transportUnitMissionHandler);
 		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
+        missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
 	}
     
 	public void executeMissions(Player player) {

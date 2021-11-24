@@ -300,7 +300,7 @@ public class MoveController {
     }
 
     public void showLostCityRumourConfirmation(MoveContext moveContext) {
-        new LostCityRumourService(guiGameController, moveInThreadService, guiGameModel.game)
-            .showLostCityRumourConfirmation(moveContext);
+        new LostCityRumourService(guiGameController, guiGameModel.game)
+            .showLostCityRumourConfirmation(moveInThreadService, moveContext);
     }
 }

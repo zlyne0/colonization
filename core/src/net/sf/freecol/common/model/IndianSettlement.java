@@ -113,7 +113,7 @@ public class IndianSettlement extends Settlement {
     	return contactLevel(player) != ContactLevel.UNCONTACTED;
     }
     
-    public boolean hasAnyScouted() {
+    public boolean isScouted() {
     	for (Entry<String, ContactLevel> entrySet : contactLevelByPlayer.entrySet()) {
     		if (entrySet.getValue() == ContactLevel.SCOUTED) {
     			return true;

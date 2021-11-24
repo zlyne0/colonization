@@ -135,7 +135,8 @@ public class MoveContext {
 				}
 				moveUnit();
 			break;
-			case ENTER_FOREIGN_COLONY_WITH_SCOUT: 
+			case ENTER_FOREIGN_COLONY_WITH_SCOUT:
+			case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
 			case ATTACK_UNIT:
 			case ATTACK_SETTLEMENT:
 			    if (moveAfterAttack) {
@@ -149,8 +150,10 @@ public class MoveContext {
 				}
 				embarkUnit();
 			break;
-			default:
+			default: {
+				unit.reduceMovesLeftToZero();
 				System.out.println("not handled move type: " + moveType);
+			}
 		}
 	}
 	
@@ -174,7 +177,7 @@ public class MoveContext {
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (
+		return hasMovePoints && !endOfPath && !unit.isDisposed() && (
 				MoveType.MOVE.equals(moveType) || 
 				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
 				MoveType.EMBARK.equals(moveType) ||

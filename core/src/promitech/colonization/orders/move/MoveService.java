@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.LostCityRumourService;
@@ -18,6 +20,7 @@ import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
 import promitech.colonization.orders.diplomacy.FirstContactService;
+import promitech.colonization.orders.diplomacy.SpeakToChiefResult;
 import promitech.colonization.orders.diplomacy.TradeController;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
@@ -85,7 +88,7 @@ public class MoveService {
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
         moveContext.setMoveViaHighSea();
     	moveContext.initNextPathStep();
-    	while (moveContext.canHandleMove() && !moveContext.isRequireUserInteraction()) {
+    	while (moveContext.canHandleMove()) {
     		aiConfirmedMoveProcessor(moveContext);
     		moveContext.initNextPathStep();
     	}
@@ -95,6 +98,16 @@ public class MoveService {
     public void aiConfirmedMoveProcessor(MoveContext moveContext) {
         showMoveIfRequired(moveContext);
         processMove(moveContext);
+
+        if (moveContext.moveType == MoveType.EXPLORE_LOST_CITY_RUMOUR) {
+            LostCityRumourService lostCityRumourService = new LostCityRumourService(guiGameController, guiGameModel.game);
+            LostCityRumour.RumourType explorationResult = lostCityRumourService.processExploration(moveContext);
+            System.out.println(String.format("player[%s].explorationLostCityRumourResult %s", moveContext.unit.getOwner().getId(), explorationResult));
+        } else if (moveContext.moveType == MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT) {
+            IndianSettlement indianSettlement = moveContext.destTile.getSettlement().asIndianSettlement();
+            SpeakToChiefResult speakResult = firstContactService.scoutSpeakWithIndianSettlementChief(indianSettlement, moveContext.unit);
+            System.out.println(String.format("player[%s].speakToChiefResult %s", moveContext.unit.getOwner().getId(), speakResult));
+        }
     }
     
     public void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {

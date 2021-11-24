@@ -94,7 +94,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		// pathFinder.generateRangeMap(game.map, carrier, unitDest, PathFinder.includeUnexplored...
 		pathFinder2.generateRangeMap(game.map, unitDest.dest, unitDest.unit, PathFinder.includeUnexploredTiles);
 
-		Tile theClosestTileToDisembark = pathFinder.findFirstTheBestSumTurnCost(pathFinder2);
+		Tile theClosestTileToDisembark = pathFinder.findFirstTheBestSumTurnCost(pathFinder2, PathFinder.SumPolicy.SIMPLY_SUM);
 		if (theClosestTileToDisembark == null) {
 			logger.debug(
 				"player[%s].TransportUnitMissionHandler there is no direct and transfer disembark location to destination %s",
@@ -177,7 +177,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
 		if (!shipPath.isReachedDestination()) {
 			pathFinder2.generateRangeMap(game.map, unitDest.unit, PathFinder.includeUnexploredTiles);
-			Tile transferLocation = pathFinder.findFirstTheBestSumTurnCost(pathFinder2);
+			Tile transferLocation = pathFinder.findFirstTheBestSumTurnCost(pathFinder2, PathFinder.SumPolicy.SIMPLY_SUM);
 			if (transferLocation == null) {
 				logger.debug("player[%s].TransportUnitMissionHandler can not find transfer location. End mission.", player.getId());
 				// TODO: ship can not sail to embark unit, end mission, notify parent mission to change destination
