@@ -21049,8 +21049,13 @@
 	      </playerMissions>
 
           <playerMissions player="player:133">
-              <scoutMission id="scoutMission:1" unit="unit:7205" />
+              <scoutMission id="scoutMission:1" unit="unit:7205" phase="SCOUT" />
           </playerMissions>
+
+          <playerAiContainer player="player:133">
+              <scoutBlockTile tile="10,10" />
+              <scoutBlockTile tile="11,11" />
+          </playerAiContainer>
 
 	      <playerMissions player="player:154">
 	      		<indianBringGiftMission id="indianBringGiftMission:123"

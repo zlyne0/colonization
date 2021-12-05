@@ -52,7 +52,7 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         
         MoveContext moveContext = new MoveContext(mission.unit, pathToEnemy);
         moveContext.initNextPathStep();
-        while (moveContext.canHandleMove()) {
+        while (moveContext.canAiHandleMove()) {
             if (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
             		|| moveContext.isMoveType(MoveType.ATTACK_SETTLEMENT)
     		) {

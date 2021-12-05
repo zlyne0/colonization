@@ -1,5 +1,7 @@
 package promitech.colonization.ai;
 
+import com.badlogic.gdx.utils.Disposable;
+
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import java.util.List;
@@ -10,17 +12,19 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitMoveType;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.CollectionUtils;
 
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 
-class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission> {
+class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission>, Disposable {
 
     private final PathFinder pathFinder;
     private final PathFinder pathFinder2;
@@ -29,7 +33,11 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     private final CommonMissionHandler.MoveToEurope moveToEuropeStep;
 	private final UnitMoveType unitMoveType = new UnitMoveType();
 
-    public TransportUnitMissionHandler(Game game, PathFinder pathFinder, MoveService moveService, PathFinder pathFinder2) {
+	private MissionExecutor missionExecutor;
+	private PlayerMissionsContainer playerMissionsContainer;
+
+    public TransportUnitMissionHandler(MissionExecutor missionExecutor, Game game, PathFinder pathFinder, MoveService moveService, PathFinder pathFinder2) {
+        this.missionExecutor = missionExecutor;
         this.pathFinder = pathFinder;
         this.pathFinder2 = pathFinder2;
         this.game = game;
@@ -37,8 +45,15 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
         this.moveToEuropeStep = new CommonMissionHandler.MoveToEurope(pathFinder, moveService, game);
     }
 
+    @Override
+    public void dispose() {
+    	this.missionExecutor = null;
+    	this.playerMissionsContainer = null;
+	}
+
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, TransportUnitMission mission) {
+    	this.playerMissionsContainer = playerMissionsContainer;
     	Player player = playerMissionsContainer.getPlayer();
     	
     	if (!mission.isTransportUnitExists(player)) {
@@ -82,7 +97,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	Unit carrier = mission.getCarrier();
 		Path path = pathFinder.findToTile(game.map, carrier, unitDest.dest, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
 		MoveType lastMoveType = unitMoveType.calculateMoveType(carrier, carrier.getTileLocationOrNull(), path.endTile);
-		if (path.isReachedDestination() && lastMoveType == MoveType.DISEMBARK) {
+		if (path.isReachedDestination() && (lastMoveType == MoveType.DISEMBARK || lastMoveType == MoveType.MOVE)) {
+			// disembark on seaside and move to colony
 			moveViaPathToReachableDestination(mission, path, unitDest.dest, unitDest.dest);
 		} else {
 			moveToCloseToDestination(mission, unitDest);
@@ -151,13 +167,14 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		} else {
 			if (logger.isDebug()) {
 				logger.debug(
-					"player[%s].TransportUnitMissionHandler.disembark.error can not disembark to %s. MoveType: %s",
+					"player[%s].TransportUnitMissionHandler.disembark.error can not disembark to [%s]. MoveType: %s",
 					player.getId(),
 					disembarkLocation.toStringCords(),
 					aiConfirmedMovePath
 				);
 			}
 			mission.setDone();
+			notifyParentMissionAboutNoDisembarkAccess(mission, unitDestination);
 		}
 	}
 
@@ -172,11 +189,15 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			game.map,
 			mission.getCarrier(),
 			unitDest.unit.getTile(),
-			PathFinder.includeUnexploredTiles
+			CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
 		);
 
 		if (!shipPath.isReachedDestination()) {
-			pathFinder2.generateRangeMap(game.map, unitDest.unit, PathFinder.includeUnexploredTiles);
+			pathFinder2.generateRangeMap(
+				game.map,
+				unitDest.unit,
+				CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
+			);
 			Tile transferLocation = pathFinder.findFirstTheBestSumTurnCost(pathFinder2, PathFinder.SumPolicy.SIMPLY_SUM);
 			if (transferLocation == null) {
 				logger.debug("player[%s].TransportUnitMissionHandler can not find transfer location. End mission.", player.getId());
@@ -225,7 +246,9 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					str += unitDest.toString();
 				}
 			}
-			logger.debug("player[%s].TransportUnitMissionHandler embark units %s", player.getId(), str);
+			if (!str.isEmpty()) {
+				logger.debug("player[%s].TransportUnitMissionHandler embark units %s", player.getId(), str);
+			}
 		}
 
 		for (TransportUnitMission.UnitDest unitDest : mission.getUnitsDest()) {
@@ -235,6 +258,28 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			} else if (unitDest.unit.getTile().equalsCoordinates(carrierLocation)) {
 			    unitDest.unit.embarkTo(carrier);
             }
+		}
+	}
+
+	private void notifyParentMissionAboutNoDisembarkAccess(
+		TransportUnitMission transportUnitMission,
+		Tile unitDestination
+	) {
+		Player player = playerMissionsContainer.getPlayer();
+		if (logger.isDebug()) {
+			logger.debug("player[%s].TransportUnitMissionHandler notify parent mission about no disembark access", player.getId());
+		}
+		AbstractMission parentMission = playerMissionsContainer.findParentMission(transportUnitMission);
+		if (parentMission == null) {
+			return;
+		}
+		MissionHandler<AbstractMission> missionHandler = missionExecutor.findMissionHandler(parentMission);
+		if (missionHandler instanceof TransportUnitNoDisembarkAccessNotification) {
+			((TransportUnitNoDisembarkAccessNotification)missionHandler).noDisembarkAccessNotification(
+				transportUnitMission,
+				unitDestination,
+				parentMission
+			);
 		}
 	}
 }

@@ -36,6 +36,8 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.PlayerAiContainer;
+import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert;
@@ -178,12 +180,19 @@ public class Savegame1600Verifier {
 	}
 
     private void verifySpainMissions(Game game) {
-        Player spanish = game.players.getById("player:133");
-        PlayerMissionsContainer missions = game.aiContainer.missionContainer(spanish);
+        Player spain = game.players.getById("player:133");
+        PlayerMissionsContainer missions = game.aiContainer.missionContainer(spain);
 
         PlayerMissionsContainerAssert.assertThat(missions)
-            .hasMission(ScoutMission.class, spanish.units.getById("unit:7205"))
+            .hasMission(ScoutMission.class, spain.units.getById("unit:7205"))
         ;
+        ScoutMission mission = missions.getMission("scoutMission:1");
+        assertThat(mission.getPhase()).isEqualByComparingTo(ScoutMission.Phase.SCOUT);
+
+        PlayerAiContainer playerAiContainer = game.aiContainer.playerAiContainer(spain);
+        assertThat(playerAiContainer.getScoutBlockTiles()).hasSize(2);
+        TileAssert.assertThat(playerAiContainer.getScoutBlockTiles().get(0)).isEquals(10, 10);
+        TileAssert.assertThat(playerAiContainer.getScoutBlockTiles().get(1)).isEquals(11, 11);
     }
 
 	private void verifyMissionRecursion(Game game) {

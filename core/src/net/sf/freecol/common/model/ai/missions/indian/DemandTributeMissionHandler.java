@@ -76,7 +76,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 				mission.getUnitToDemandTribute()
 			);
 			
-	        if (moveContext.canHandleMove() &&
+	        if (moveContext.canAiHandleMove() &&
 	            (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
 	            		|| moveContext.isMoveType(MoveType.ATTACK_SETTLEMENT)
         		)

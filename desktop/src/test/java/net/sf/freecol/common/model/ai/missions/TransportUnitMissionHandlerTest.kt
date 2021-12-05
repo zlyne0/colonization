@@ -50,108 +50,217 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
         TileAssert.assertThat(galleon.tile).isEqualsCords(tileDest)
     }
 
+    @Nested
+    inner class Disembark {
 
-    @Test
-    fun shouldDisembarkNextToInLandDestination() {
-        // given
-        val sourceTile = game.map.getTile(28, 82)
-        val destInLand = game.map.getTile(26, 72)
-        val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
-        val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
-        val transportMission = TransportUnitMission(galleon)
-            .addUnitDest(colonist, destInLand)
-        game.aiContainer.missionContainer(dutch).addMission(transportMission)
+        @Test
+        fun shouldDisembarkNextToInLandDestination() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val destInLand = game.map.getTile(26, 72)
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, destInLand)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
 
-        // when
-        newTurnAndExecuteMission(dutch)
+            // when
+            newTurnAndExecuteMission(dutch)
 
-        // then
-        val transferLocation = game.map.getTile(27, 72)
-        UnitAssert.assertThat(colonist)
-            .isNotAtLocation(galleon)
-            .isAtLocation(transferLocation)
-        Assertions.assertThat(transportMission.destTiles()).isEmpty()
-        AbstractMissionAssert.assertThat(transportMission)
-            .isDone
-    }
-
-    @Test
-    fun shouldEmbarkUnitWhenUnitIsInland() {
-        // given
-        val destInlandTile = game.map.getTile(26, 72)
-        val sourceInlandTile = game.map.getTile(25, 88)
-        createIsland(sourceInlandTile, game)
-        val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, sourceInlandTile)
-        val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
-
-        // create transport mission
-        val transportUnitMission = TransportUnitMission(caravel)
-        transportUnitMission.addUnitDest(scout, destInlandTile, true)
-        game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
-
-        // when
-        newTurnAndExecuteMission(dutch, 2)
-
-        // then
-        UnitAssert.assertThat(scout).isAtLocation(caravel)
-        UnitAssert.assertThat(caravel).hasUnit(scout)
-    }
-
-    @Test
-    fun shouldEmbarkUnitWhenUnitIsOnSeaSide() {
-        // given
-        val destInlandTile = game.map.getTile(26, 72)
-        val sourceInlandTile = game.map.getTile(25, 88)
-        createIsland(sourceInlandTile, game)
-        val seaSide = game.map.getTile(25, 87)
-        val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, seaSide)
-        val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
-
-        // create transport mission
-        val transportUnitMission = TransportUnitMission(caravel)
-        transportUnitMission.addUnitDest(scout, destInlandTile, true)
-        game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
-
-        // when
-        newTurnAndExecuteMission(dutch, 2)
-
-        // then
-        UnitAssert.assertThat(scout).isAtLocation(caravel)
-        UnitAssert.assertThat(caravel).hasUnit(scout)
-    }
-
-    @Test
-    fun shouldEmbarkUnitWhenUnitsOnSeaSideInColony() {
-        // given
-        val destInlandTile = game.map.getTile(26, 72)
-        val sourceInlandTile = game.map.getTile(25, 88)
-        createIsland(sourceInlandTile, game)
-        val seaSide = game.map.getTile(25, 87)
-        val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, seaSide)
-        val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
-
-        // create transport mission
-        val transportUnitMission = TransportUnitMission(caravel)
-        transportUnitMission.addUnitDest(scout, destInlandTile, true)
-        game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
-
-		val colonyFactory = ColonyFactory(game, di.pathFinder)
-		colonyFactory.buildColonyByAI(UnitFactory.create(UnitType.FREE_COLONIST, dutch, seaSide), seaSide)
-
-        // when
-        newTurnAndExecuteMission(dutch, 2)
-
-        // then
-        UnitAssert.assertThat(scout).isAtLocation(caravel)
-        UnitAssert.assertThat(caravel).hasUnit(scout)
-    }
-
-    fun createIsland(sourceTile: Tile, game: Game) {
-        val plains = Specification.instance.tileTypes.getById("model.tile.plains")
-        sourceTile.changeTileType(plains)
-        for (neighbourTile in game.map.neighbourTiles(sourceTile)) {
-            neighbourTile.tile.changeTileType(plains)
+            // then
+            val transferLocation = game.map.getTile(27, 72)
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(transferLocation)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            AbstractMissionAssert.assertThat(transportMission)
+                .isDone
         }
+
+        @Test
+        fun shouldDisembarkNextToOccupiedByNative() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val destInLand = game.map.getTile(27, 73)
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, destInLand)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch)
+
+            // then
+            val transferLocation = game.map.getTile(27, 72)
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(transferLocation)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            AbstractMissionAssert.assertThat(transportMission)
+                .isDone
+        }
+
+        @Test
+        fun shouldDisembarkNextToLostCity() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val destInLand = game.map.getTile(27, 75)
+            destInLand.addLostCityRumors()
+
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, destInLand)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch)
+
+            // then
+            val transferLocation = game.map.getTile(27, 74)
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(transferLocation)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            AbstractMissionAssert.assertThat(transportMission)
+                .isDone
+        }
+
+        @Test
+        fun shouldDisembarkNextToNativeSettlement() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val destInLand = game.map.getTile(25, 71) // native settlement
+
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, destInLand)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            val transferLocation = game.map.getTile(26, 70)
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(transferLocation)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            AbstractMissionAssert.assertThat(transportMission)
+                .isDone
+        }
+
+        @Test
+        fun shouldDisembarkDirectlyToColony() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val dest = nieuwAmsterdam.tile
+
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, dest)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch)
+
+            // then
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(dest)
+            UnitAssert.assertThat(galleon)
+                .isAtLocation(dest)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            AbstractMissionAssert.assertThat(transportMission)
+                .isDone
+        }
+    }
+
+    @Nested
+    inner class Embark {
+
+        @Test
+        fun shouldEmbarkUnitWhenUnitIsInland() {
+            // given
+            val destInlandTile = game.map.getTile(26, 72)
+            val sourceInlandTile = game.map.getTile(25, 88)
+            createIsland(sourceInlandTile, game)
+            val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, sourceInlandTile)
+            val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
+
+            // create transport mission
+            val transportUnitMission = TransportUnitMission(caravel)
+            transportUnitMission.addUnitDest(scout, destInlandTile, true)
+            game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            UnitAssert.assertThat(scout).isAtLocation(caravel)
+            UnitAssert.assertThat(caravel).hasUnit(scout)
+        }
+
+        @Test
+        fun shouldEmbarkUnitWhenUnitIsOnSeaSide() {
+            // given
+            val destInlandTile = game.map.getTile(26, 72)
+            val sourceInlandTile = game.map.getTile(25, 88)
+            createIsland(sourceInlandTile, game)
+            val seaSide = game.map.getTile(25, 87)
+            val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, seaSide)
+            val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
+
+            // create transport mission
+            val transportUnitMission = TransportUnitMission(caravel)
+            transportUnitMission.addUnitDest(scout, destInlandTile, true)
+            game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            UnitAssert.assertThat(scout).isAtLocation(caravel)
+            UnitAssert.assertThat(caravel).hasUnit(scout)
+        }
+
+        @Test
+        fun shouldEmbarkUnitWhenUnitsOnSeaSideInColony() {
+            // given
+            val destInlandTile = game.map.getTile(26, 72)
+            val sourceInlandTile = game.map.getTile(25, 88)
+            createIsland(sourceInlandTile, game)
+            val seaSide = game.map.getTile(25, 87)
+            val scout = UnitFactory.create(UnitType.FREE_COLONIST, UnitRole.SCOUT, dutch, seaSide)
+            val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, game.map.getTile(29, 78))
+
+            // create transport mission
+            val transportUnitMission = TransportUnitMission(caravel)
+            transportUnitMission.addUnitDest(scout, destInlandTile, true)
+            game.aiContainer.missionContainer(dutch).addMission(transportUnitMission)
+
+            val colonyFactory = ColonyFactory(game, di.pathFinder)
+            colonyFactory.buildColonyByAI(UnitFactory.create(UnitType.FREE_COLONIST, dutch, seaSide), seaSide)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            UnitAssert.assertThat(scout).isAtLocation(caravel)
+            UnitAssert.assertThat(caravel).hasUnit(scout)
+        }
+
+        fun createIsland(sourceTile: Tile, game: Game) {
+            val plains = Specification.instance.tileTypes.getById("model.tile.plains")
+            sourceTile.changeTileType(plains)
+            for (neighbourTile in game.map.neighbourTiles(sourceTile)) {
+                neighbourTile.tile.changeTileType(plains)
+            }
+        }
+
     }
 
     @Nested
@@ -212,7 +321,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isAtLocation(disembarkTile)
             UnitAssert.assertThat(galleon)
                 .hasUnit(u1)
-                .isNextToLocation(game.map, fortOrangeTile)
+                .isNextToLocation(fortOrangeTile)
         }
 
         @Test
@@ -233,7 +342,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isNotAtLocation(dutch.europe)
                 .isNotAtLocation(disembarkTile)
             UnitAssert.assertThat(u2)
-                .isNextToLocation(game.map, disembarkTile)
+                .isNextToLocation(disembarkTile)
                 .isNotAtLocation(dutch.europe)
                 .isNotAtLocation(disembarkTile)
             UnitAssert.assertThat(galleon)

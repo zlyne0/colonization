@@ -1,5 +1,7 @@
 package promitech.colonization.ai;
 
+import com.badlogic.gdx.utils.Disposable;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -31,7 +33,7 @@ import promitech.colonization.screen.map.hud.GUIGameController;
 
 import static promitech.colonization.ai.MissionHandlerLogger.*;
 
-public class MissionExecutor {
+public class MissionExecutor implements Disposable {
 
     private final Map<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>> missionHandlerMapping = 
     		new HashMap<Class<? extends AbstractMission>, MissionHandler<? extends AbstractMission>>();
@@ -64,13 +66,13 @@ public class MissionExecutor {
     		game, pathFinder, moveService
 		);
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
-    		game, pathFinder, moveService, secoundPathFinder
+    		this, game, pathFinder, moveService, secoundPathFinder
 		);
         ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
     		game, pathFinder, moveService
 		);
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
-            new ScoutMissionPlaner(game, pathFinder, secoundPathFinder), moveService
+            game, new ScoutMissionPlaner(game, pathFinder, secoundPathFinder), moveService
         );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
@@ -141,13 +143,27 @@ public class MissionExecutor {
     	    logger.debug("player[%s].executeMission[%s] %s", missionsContainer.getPlayer().getId(), am.getId(), am.toString());
         }
 
-        MissionHandler missionHandler = missionHandlerMapping.get(am.getClass());
-        if (missionHandler == null) {
-        	throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());
-        }
+        MissionHandler missionHandler = findMissionHandler(am);
 		missionHandler.handle(missionsContainer, am);
 		if (am.isDone()) {
 			missionsContainer.unblockUnitsFromMission(am);
 		}
+    }
+
+    public <T extends AbstractMission> MissionHandler<T> findMissionHandler(T am) {
+        MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(am.getClass());
+        if (missionHandler == null) {
+            throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());
+        }
+        return missionHandler;
+    }
+
+    @Override
+    public void dispose() {
+        for (MissionHandler<? extends AbstractMission> missionHandler : missionHandlerMapping.values()) {
+            if (missionHandler instanceof Disposable) {
+                ((Disposable) missionHandler).dispose();
+            }
+        }
     }
 }

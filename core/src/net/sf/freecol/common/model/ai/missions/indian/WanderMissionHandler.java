@@ -72,7 +72,7 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 			Tile destTile = game.map.getTile(sourceTile, moveDirection);
 			moveContext.init(sourceTile, destTile, mission.unit, moveDirection);
 			
-			if (moveContext.canHandleMove()) {
+			if (moveContext.canAiHandleMove()) {
 	            moveService.aiConfirmedMoveProcessor(moveContext);
 				
 				mission.previewDirection = moveDirection;					
@@ -106,7 +106,7 @@ public class WanderMissionHandler implements MissionHandler<WanderMission> {
 			}
 			moveContext.init(sourceTile, neighbourTile, mission.unit, direction);
 			
-			if (moveContext.canHandleMove() && moveContext.isMoveType()) {
+			if (moveContext.canAiHandleMove() && moveContext.isMoveType()) {
 				allowedDirections.add(direction);
 			}
 		}

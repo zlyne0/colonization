@@ -372,6 +372,7 @@ public class GUIGameController {
 
 			System.out.println("end turn for player " + player);
 		}
+		missionExecutor.dispose();
 		
 		marketSnapshoot.comparePrices(guiGameModel.game.playingPlayer);
 		

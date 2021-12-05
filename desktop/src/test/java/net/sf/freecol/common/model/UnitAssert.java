@@ -84,8 +84,8 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		}
 		return this;
 	}
-	
-	public UnitAssert isNextToLocation(Map map, Tile location) {
+
+	public UnitAssert isNextToLocation(Tile location) {
 		isNotNull();
 		Tile unitLocation = actual.getTileLocationOrNull();
 		if (unitLocation == null) {
@@ -97,13 +97,7 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 			return this;
 		}
 		
-		boolean found = false;
-		for (NeighbourIterableTile<Tile> neighbourIterableTile : map.neighbourTiles(location)) {
-			if (neighbourIterableTile.tile.equalsCoordinates(unitLocation)) {
-				found = true;
-			}
-		}
-		if (!found) {
+		if (!unitLocation.isStepNextTo(location)) {
 			failWithMessage("expected unit <%s> to be next to tile <%s>", actual.getId(), location);
 		}
 		return this;

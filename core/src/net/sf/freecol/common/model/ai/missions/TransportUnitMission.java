@@ -178,6 +178,7 @@ public class TransportUnitMission extends AbstractMission {
         private static final String ELEMENT_UNIT = "unitDest";
         private static final String DEST_UNIT = "unit";
         private static final String DEST_TILE = "tile";
+        private static final String DEST_ALLOW_UNIT_MOVE = "allowMove";
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
@@ -192,7 +193,7 @@ public class TransportUnitMission extends AbstractMission {
                 Unit unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(DEST_UNIT));
                 Tile tile = game.map.getSafeTile(attr.getPoint(DEST_TILE));
                 if (unit != null) {
-                    nodeObject.addUnitDest(unit, tile);
+                    nodeObject.addUnitDest(unit, tile, attr.getBooleanAttribute(DEST_ALLOW_UNIT_MOVE, false));
                 }
             }
         }
@@ -206,6 +207,7 @@ public class TransportUnitMission extends AbstractMission {
                 attr.xml.element(ELEMENT_UNIT);
                 attr.set(DEST_UNIT, ud.unit.getId());
                 attr.setPoint(DEST_TILE, ud.dest.x, ud.dest.y);
+                attr.set(DEST_ALLOW_UNIT_MOVE, ud.allowUnitMove, false);
                 attr.xml.pop();
             }
         }

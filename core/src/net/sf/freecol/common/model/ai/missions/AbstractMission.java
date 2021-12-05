@@ -90,6 +90,19 @@ public abstract class AbstractMission extends ObjectWithId {
 		return false;
 	}
 
+	AbstractMission findParentForMission(AbstractMission m) {
+		for (AbstractMission childMission : dependMissions) {
+			if (childMission.equalsId(m)) {
+				return this;
+			}
+			AbstractMission localParent = childMission.findParentForMission(m);
+			if (localParent != null) {
+				return localParent;
+			}
+		}
+		return null;
+	}
+
 	public AbstractMission getDependMissionById(String missionId) {
 		for (AbstractMission am : dependMissions) {
 			if (am.equalsId(missionId)) {

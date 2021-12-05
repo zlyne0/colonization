@@ -173,7 +173,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 		return result;
 	}
-	
+
+	public <T extends AbstractMission> AbstractMission findParentMission(T someMission) {
+		for (AbstractMission mission : missions) {
+			AbstractMission parentForMission = mission.findParentForMission(someMission);
+			if (parentForMission != null) {
+				return parentForMission;
+			}
+		}
+		return null;
+	}
+
 	public boolean isUnitBlockedForMission(Unit unit) {
 		return unitMissionsMapping.isUnitInMission(unit.getId());
 	}

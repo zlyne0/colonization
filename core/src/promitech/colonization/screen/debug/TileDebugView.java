@@ -1,5 +1,6 @@
 package promitech.colonization.screen.debug;
 
+import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.map.path.Path;
 
@@ -19,6 +20,10 @@ public class TileDebugView implements MapTileDebugInfo {
 
     public boolean isDebug() {
         return true;
+    }
+
+    public void str(Tile tile, String str) {
+        str(tile.x, tile.y, str);
     }
 
     @Override

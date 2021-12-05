@@ -16,6 +16,8 @@ import promitech.colonization.screen.debug.TileDebugView
 sealed class ScoutDestination {
     class TheSameIsland(val tile: Tile, val path: Path) : ScoutDestination()
     class OtherIsland(val tile: Tile, val transferLocationPath: Path): ScoutDestination()
+    class OtherIslandFromCarrier(val tile: Tile) : ScoutDestination()
+    class AlreadOnShip(val tile: Tile)
     class Lack : ScoutDestination()
 }
 
@@ -25,19 +27,29 @@ class ScoutMissionPlaner(
     private val pathFinder2: PathFinder
 ) {
 
-    fun findScoutDestinationFromLandTile(scout: Unit): ScoutDestination {
-        pathFinder.generateRangeMap(game.map, scout, PathFinder.includeUnexploredTiles)
+    private val maxRangeForScoutOnOtherIsland = 12
 
-        var theBestTile: Tile? = findTheBestForRange { tile -> pathFinder.turnsCost(tile) }
+    fun findScoutDestination(scout: Unit): ScoutDestination {
+        if (scout.isAtUnitLocation) {
+            val theBestTile = findInOtherIsland(scout.owner)
+            if (theBestTile == null) {
+                return ScoutDestination.Lack()
+            }
+            return ScoutDestination.OtherIslandFromCarrier(theBestTile)
+        }
+
+        pathFinder.generateRangeMap(game.map, scout, PathFinder.includeUnexploredTiles)
+        var theBestTile: Tile? = findTheBestForRange(scout.owner) { tile -> pathFinder.turnsCost(tile) }
         if (theBestTile != null) {
             return ScoutDestination.TheSameIsland(theBestTile, pathFinder.createPath(theBestTile))
         }
+
         // can not find destination on the same island
-        theBestTile = findInOtherIsland(scout)
+        theBestTile = findInOtherIsland(scout.owner)
         if (theBestTile != null) {
             var transferLocationPath: Path? = settlementAsTransferLocation(scout)
             if (transferLocationPath == null) {
-                transferLocationPath = seaSizeAsTransferLocation(scout)
+                transferLocationPath = seaSideAsTransferLocation(scout)
             }
             if (transferLocationPath == null) {
                 return ScoutDestination.Lack()
@@ -54,7 +66,7 @@ class ScoutMissionPlaner(
         var theBestRange: Int = PathFinder.INFINITY
         for (settlement in scout.owner.settlements) {
             val cost = pathFinder.turnsCost(settlement.tile)
-            if (theBestTile == null || cost < theBestRange) {
+            if (cost < theBestRange) {
                 theBestTile = settlement.tile
                 theBestRange = cost
             }
@@ -65,12 +77,12 @@ class ScoutMissionPlaner(
         return null
     }
 
-    fun seaSizeAsTransferLocation(scout: Unit): Path? {
+    fun seaSideAsTransferLocation(scout: Unit): Path? {
         val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
         pathFinder.generateRangeMap(game.map, scout, scoutEmbarkGenerateRangeFlags)
         pathFinder2.generateRangeMap(
             game.map,
-            findCivilizationSources(scout.owner),
+            generateCivilizationSources(scout.owner),
             pathFinder2.createPathUnit(scout.owner, Specification.instance.unitTypes.getById(UnitType.CARAVEL)),
             CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
         )
@@ -81,13 +93,17 @@ class ScoutMissionPlaner(
         return pathFinder.createPath(embarkLocation)
     }
 
-    private fun findInOtherIsland(scout: Unit): Tile? {
-        val influenceMap = InfluenceMap(game.map)
-        influenceMap.generate(findCivilizationSources(scout.owner))
-        return findTheBestForRange { tile -> influenceMap.range(tile) }
+    private fun findInOtherIsland(player: Player): Tile? {
+        val influenceMap = InfluenceMap(game.map, maxRangeForScoutOnOtherIsland)
+        influenceMap.generate(generateCivilizationSources(player))
+        val tileOnOtherIsland = findTheBestForRange(player) { tile -> influenceMap.range(tile) }
+        if (tileOnOtherIsland == null) {
+            return null
+        }
+        return tileOnOtherIsland
     }
 
-    private fun findCivilizationSources(player: Player): List<Tile> {
+    private fun generateCivilizationSources(player: Player): List<Tile> {
         val sourceTiles = mutableListOf<Tile>()
         sourceTiles.add(game.map.getSafeTile(player.entryLocation))
         for (settlement in player.settlements) {
@@ -96,10 +112,10 @@ class ScoutMissionPlaner(
         return sourceTiles
     }
 
-    private inline fun findTheBestForRange(rangeFunction: (Tile) -> Int): Tile? {
+    private inline fun findTheBestForRange(player: Player, rangeFunction: (Tile) -> Int): Tile? {
         var theBestTile: Tile? = null
         var theBestTileRange : Int = Int.MAX_VALUE
-        forAllScoutDestinations { tile ->
+        forAllScoutDestinations(player) { tile ->
             val range = rangeFunction(tile)
             if (range < theBestTileRange) {
                 theBestTile = tile
@@ -109,11 +125,16 @@ class ScoutMissionPlaner(
         return theBestTile
     }
 
-    private inline fun forAllScoutDestinations(tileConsumer: (Tile) -> kotlin.Unit) {
+    private inline fun forAllScoutDestinations(player: Player, tileConsumer: (Tile) -> kotlin.Unit) {
+        val playerAiContainer = game.aiContainer.playerAiContainer(player)
+
         for (y in 0 .. game.map.height-1) {
             for (x in 0 .. game.map.width-1) {
                 val tile = game.map.getSafeTile(x, y)
                 if (isScoutDestinationCandidate(tile)) {
+                    if (playerAiContainer.isScoutTileBlocked(tile)) {
+                        continue
+                    }
                     tileConsumer(tile)
                 }
             }
@@ -125,14 +146,14 @@ class ScoutMissionPlaner(
             || tile.hasSettlement() && tile.settlement.isIndianSettlement && !tile.settlement.asIndianSettlement().isScouted
     }
 
-    fun printAllCandidates(tileDebugView: TileDebugView) {
-        forAllScoutDestinations { tile ->
+    fun printAllCandidates(player: Player, tileDebugView: TileDebugView) {
+        forAllScoutDestinations(player) { tile ->
             tileDebugView.appendStr(tile.x, tile.y, "Dest")
         }
     }
 
     fun printFirstDestination(scout: Unit, mapTileDebugInfo: MapTileDebugInfo) {
-        val destination = findScoutDestinationFromLandTile(scout)
+        val destination = findScoutDestination(scout)
         when (destination) {
             is ScoutDestination.TheSameIsland -> mapTileDebugInfo.appendStr(destination.tile.x, destination.tile.y, "First")
             is ScoutDestination.OtherIsland -> {

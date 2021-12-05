@@ -8,6 +8,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public class AIContainer {
 	private final MapIdEntities<PlayerMissionsContainer> playerMissions = new MapIdEntities<PlayerMissionsContainer>();
+	private final MapIdEntities<PlayerAiContainer> playersAiContainers = new MapIdEntities();
 
 	public PlayerMissionsContainer getMissionContainer(String playerId) {
 		return playerMissions.getByIdOrNull(playerId);
@@ -21,11 +22,21 @@ public class AIContainer {
 		}
 		return missionsContainer;
 	}
-	
+
+	public PlayerAiContainer playerAiContainer(Player player) {
+		PlayerAiContainer playerAiContainer = playersAiContainers.getByIdOrNull(player.getId());
+		if (playerAiContainer == null) {
+			playerAiContainer = new PlayerAiContainer(player);
+			playersAiContainers.add(playerAiContainer);
+		}
+		return playerAiContainer;
+	}
+
 	public static class Xml extends XmlNodeParser<AIContainer> {
 
 	    public Xml() {
 	        addNodeForMapIdEntities("playerMissions", PlayerMissionsContainer.class);
+	        addNodeForMapIdEntities("playersAiContainers", PlayerAiContainer.class);
 	    }
 	    
         @Override

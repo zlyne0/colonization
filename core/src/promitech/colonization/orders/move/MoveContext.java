@@ -194,6 +194,24 @@ public class MoveContext {
 		);
 	}
 
+	public boolean canAiHandleMove() {
+		return hasMovePoints && !endOfPath && !unit.isDisposed() && (
+				MoveType.MOVE.equals(moveType) ||
+				MoveType.MOVE_HIGH_SEAS.equals(moveType) ||
+				MoveType.EMBARK.equals(moveType) ||
+				//MoveType.DISEMBARK.equals(moveType) ||
+				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
+				MoveType.ATTACK_UNIT.equals(moveType) ||
+				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
+				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType) ||
+				MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType) ||
+				MoveType.MOVE_CASH_IN_TREASURE.equals(moveType)
+		);
+	}
+
 	public boolean isMoveTypeRevealMap() {
         return 
     		MoveType.MOVE.equals(moveType) ||

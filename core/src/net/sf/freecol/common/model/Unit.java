@@ -138,7 +138,19 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 		return null;
 	}
-	
+
+	public boolean isAtTileLocation() {
+    	return isAtLocation(Tile.class);
+	}
+
+	public boolean isAtUnitLocation() {
+		return isAtLocation(Unit.class);
+	}
+
+	public boolean isAtEuropeLocation() {
+        return isAtLocation(Europe.class);
+    }
+
 	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
 	    return location != null && location.getClass().equals(unitLocationClass);
 	}

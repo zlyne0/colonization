@@ -75,7 +75,7 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
             Tile sourceTile = ship.getTile();            
             Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
             MoveContext moveContext = new MoveContext(sourceTile, destTile, ship, direction);
-            if (!moveContext.canHandleMove()) {
+            if (!moveContext.canAiHandleMove()) {
                 return ExploreStatus.NO_MOVE_POINTS;
             }
             moveService.aiConfirmedMoveProcessor(moveContext);
@@ -101,7 +101,7 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
         Tile destTile = game.map.getTile(sourceTile.x, sourceTile.y, direction);
         MoveContext moveContext = new MoveContext(sourceTile, destTile, ship, direction);
        
-        if (moveContext.canHandleMove()) {
+        if (moveContext.canAiHandleMove()) {
             moveService.aiConfirmedMoveProcessor(moveContext);
         } else {
             exploreStatus = ExploreStatus.NO_MOVE_POINTS;

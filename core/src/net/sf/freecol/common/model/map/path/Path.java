@@ -31,9 +31,9 @@ public class Path {
 	public String toString() {
 		String st = "";
 		if (reachDestination) {
-			st = "reachDestination";
+			st = "reachDestination ";
 		} else {
-			st = "not reachDestination";
+			st = "not reachDestination ";
 		}
 		if (tiles.size == 0) {
 			st = "empty path";

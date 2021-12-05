@@ -78,4 +78,8 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 		di.combatService.inject(di.moveService, di.guiGameModel);
 		return di;
 	}
+
+	protected void clearAllMissions(Player player) {
+		game.aiContainer.missionContainer(player).clearAllMissions();
+	}
 }

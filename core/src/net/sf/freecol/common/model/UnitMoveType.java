@@ -90,6 +90,9 @@ public class UnitMoveType {
         if (target.getType().isLand()) {
             Settlement settlement = target.getSettlement();
             if (settlement == null) {
+                if (target.hasLostCityRumour()) {
+                    return MoveType.MOVE_NO_ACCESS_LAND;
+                }
                 if (unitContainer != null && unitContainer.hasUnitWithMovePoints()) {
                     if (!hasTileEnemyUnits(target)) {
                         return MoveType.DISEMBARK;
