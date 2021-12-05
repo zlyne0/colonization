@@ -8,26 +8,26 @@ import promitech.colonization.Direction
 import promitech.map.Int2dArray
 import promitech.map.IntIntArray
 
-class LandSeaAreaMap(private val map: Map) {
+class LandSeaAreaMap(private val width: Int, private val height: Int) {
 
-    private val areas = IntIntArray(map.width, map.height)
+    private val areas = IntIntArray(width, height)
 
     private val notTouched = 0
     private var areaCounter = notTouched
 
-    fun generate() {
+    fun generate(map: Map) {
         val poolIndex = Array<Tile>(false, map.width * map.height)
         for (y in 0 .. map.height - 1) {
             for (x in 0 .. map.width - 1) {
                 val tile = map.getSafeTile(x, y)
                 if (isAreaNotCreated(tile)) {
-                    createArea(poolIndex, tile)
+                    createArea(poolIndex, tile, map)
                 }
             }
         }
     }
 
-    private fun createArea(poolIndex: Array<Tile>, tile: Tile) {
+    private fun createArea(poolIndex: Array<Tile>, tile: Tile, map: Map) {
         areaCounter++
         areas.set(tile.x, tile.y, areaCounter)
         poolIndex.add(tile)
