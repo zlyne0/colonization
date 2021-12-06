@@ -210,6 +210,7 @@ public class PathFinder {
         this.map = map;
         this.endTile = null;
         this.pathUnit = pathUnit;
+		this.startTile = startTiles.get(0);
 
         setCostDeciderFlags(flags);
         determineCostDecider(false);
@@ -427,7 +428,7 @@ public class PathFinder {
 		if (oneBefore == null) {
 			return null;
 		}
-		
+
 		return Direction.fromCoordinates(
 			startTile.x, startTile.y, 
 			oneBefore.tile.x, oneBefore.tile.y

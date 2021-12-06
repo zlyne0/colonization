@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
+import promitech.colonization.screen.debug.TileDebugView;
 import promitech.map.Int2dArray;
 
 public class NavyExplorer {
@@ -132,7 +133,7 @@ public class NavyExplorer {
     
     private void determineTheBestTileToExplore() {
         int x, y, cost, cellIndex;
-        
+
         for (int i=0; i<exploredBordersIndexes.size; i++) {
             cellIndex = exploredBordersIndexes.get(i);
             x = exploredBorders.toX(cellIndex);
@@ -189,8 +190,10 @@ public class NavyExplorer {
     }
     
     public String toString() {
-        StringBuilder sb = new StringBuilder();
         int x, y, v, cost, cellIndex;
+
+        StringBuilder sb = new StringBuilder();
+        sb.append("theBestCellIndex: " + theBestCellIndex + ", theBestCost: " + theBestCost + " \n");
         for (int i=0; i<exploredBordersIndexes.size; i++) {
             cellIndex = exploredBordersIndexes.get(i);
             x = exploredBorders.toX(cellIndex);
@@ -198,7 +201,7 @@ public class NavyExplorer {
             v = exploredBorders.get(x, y);
             cost = explorationCost(x, y, cellIndex);
             
-            sb.append("xy [" + x + "," + y + "] " + v +
+            sb.append("xy[" + x + "," + y + "][idx: " + cellIndex + "] " + v +
                     ", turns\t" + pathFinder.turnsCost(cellIndex) +
                     ", totalC\t" + pathFinder.totalCost(cellIndex) +
                     ", v\t" + v +
@@ -221,15 +224,15 @@ public class NavyExplorer {
         }
     }
     
-    public void toStringsBorderValues(String strings[][]) {
+    public void toStringsBorderValues(TileDebugView tileDebugView) {
         int x, y, cost, cellIndex;
         for (int i=0; i<exploredBordersIndexes.size; i++) {
             cellIndex = exploredBordersIndexes.get(i);
             x = exploredBorders.toX(cellIndex);
             y = exploredBorders.toY(cellIndex);
             cost = explorationCost(x, y, cellIndex);
-            
-            strings[y][x] = Integer.toString(cost);
+
+            tileDebugView.str(x, y, Integer.toString(cost));
         }
     }
     

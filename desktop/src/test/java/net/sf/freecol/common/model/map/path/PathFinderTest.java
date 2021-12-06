@@ -29,6 +29,7 @@ import net.sf.freecol.common.util.CollectionUtils;
 import java.util.Arrays;
 import java.util.Set;
 
+import promitech.colonization.Direction;
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.map.isometric.NeighbourIterableTile;
 
@@ -408,5 +409,28 @@ class PathFinderTest {
 		assertThat(sut.turnsCost(game.map.getTile(20, 81))).isEqualTo(0);
 		// ocean next to land, two tiles from colony
 		assertThat(sut.turnsCost(game.map.getTile(21, 81))).isEqualTo(0);
+	}
+
+	@Test
+	void canGenerateDirectionInto() {
+		// given
+		Tile sourceTile = game.map.getTile(28, 81);
+		Tile westTile = game.map.getTile(sourceTile, Direction.W);
+
+		Unit ship = UnitFactory.create(UnitType.CARAVEL, dutch, sourceTile);
+		sut.generateRangeMap(game.map, ship, PathFinder.includeUnexploredTiles);
+		int westTileIndex = sut.grid.toIndex(westTile.x, westTile.y);
+
+		// when
+		Direction directionInto = sut.getDirectionInto(westTileIndex);
+		Path path = sut.createPath(westTile);
+
+		// then
+		assertThat(directionInto).isEqualTo(Direction.W);
+		PathAssert.assertThat(path)
+			.reachedDestination()
+			.assertPathStep(0, 0, 28, 81)
+			.assertPathStep(1, 0, 27, 81)
+		;
 	}
 }
