@@ -357,9 +357,10 @@ public class GUIGameController {
 		guiGameModel.game.playingPlayer.endTurn();
 		
 		MarketSnapshoot marketSnapshoot = new MarketSnapshoot(guiGameModel.game.playingPlayer.market());
-		
-		MissionExecutor missionExecutor = new MissionExecutor(guiGameModel.game, moveService, combatService, this, pathFinder);
-		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder, missionExecutor);
+
+		PathFinder pathFinder2 = new PathFinder();
+		MissionExecutor missionExecutor = new MissionExecutor(guiGameModel.game, moveService, combatService, this, pathFinder, pathFinder2);
+		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder, missionExecutor, pathFinder2);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
 		for (Player player : players) {			

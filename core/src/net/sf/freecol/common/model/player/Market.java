@@ -26,17 +26,19 @@ public class Market extends ObjectWithId {
 		void logSale(TransactionEffectOnMarket transaction);
 		void logPurchase(TransactionEffectOnMarket transaction);
 	}
-	
-	public final MapIdEntities<MarketData> marketGoods = MapIdEntities.linkedMapIdEntities();
-	private MarketTransactionLogger marketTransactionLogger = new MarketTransactionLogger() {
+
+	public static final MarketTransactionLogger emptyMarketTransactionLogger = new MarketTransactionLogger() {
 		@Override
 		public void logSale(TransactionEffectOnMarket transaction) {
 		}
-		
+
 		@Override
 		public void logPurchase(TransactionEffectOnMarket transaction) {
 		}
 	};
+
+	public final MapIdEntities<MarketData> marketGoods = MapIdEntities.linkedMapIdEntities();
+	private MarketTransactionLogger marketTransactionLogger = emptyMarketTransactionLogger;
 	
 	// Propagate 5-30% of the original change.
 	private static final int PROPAGATED_GOODS_LOWER_BOUND = 5; 

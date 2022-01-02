@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Market.MarketTransactionLogger;
 import net.sf.freecol.common.model.player.ChooseEmigrantToRecruitNotification;
 import net.sf.freecol.common.model.player.Player;
@@ -283,6 +284,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			}
 		}
 		return true;
+	}
+
+	public void changeUnitRole(Game game, Unit unit, UnitRole newUnitRole) {
+		changeUnitRole(game, unit, newUnitRole, Market.emptyMarketTransactionLogger);
 	}
 
     public void changeUnitRole(Game game, Unit unit, UnitRole newUnitRole, MarketTransactionLogger marketLog) {

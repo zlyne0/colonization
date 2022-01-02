@@ -62,6 +62,11 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			return;
     	}
 
+    	// small optimization, transport mission can be executed several times on different parent missions
+    	if (mission.getCarrier().isAtTileLocation() && !mission.getCarrier().hasMovesPoints()) {
+			return;
+		}
+
     	// order should be set by parent mission, parent mission should decide what destination is more important
 		TransportUnitMission.UnitDest firstUnitDest = mission.firstUnitToTransport();
 		if (firstUnitDest == null) {
@@ -269,7 +274,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		if (logger.isDebug()) {
 			logger.debug("player[%s].TransportUnitMissionHandler notify parent mission about no disembark access", player.getId());
 		}
-		AbstractMission parentMission = playerMissionsContainer.findParentMission(transportUnitMission);
+		AbstractMission parentMission = playerMissionsContainer.findFirstParentMission(transportUnitMission);
 		if (parentMission == null) {
 			return;
 		}

@@ -419,7 +419,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
-				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
+				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder, PathFinder())
 					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
@@ -454,21 +454,23 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
-				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder)
+				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder, PathFinder())
 					.runMission(tile.getSettlement().getOwner(), mission)
 			}
 		})
 	}
 
 	fun playerTurnAsAi(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
+		val pathFinder2 = PathFinder()
 		val missionExecutor = MissionExecutor(
 			guiGameModel.game,
 			di.moveService,
 			di.combatService,
 			di.guiGameController,
-			di.pathFinder
+			di.pathFinder,
+			pathFinder2
 		)
-		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder, missionExecutor)
+		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder, missionExecutor, pathFinder2)
 		val player = guiGameModel.game.playingPlayer
 
 		ThreadsResources.instance.executeMovement(object : Runnable {

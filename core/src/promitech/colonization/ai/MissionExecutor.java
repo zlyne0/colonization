@@ -48,10 +48,10 @@ public class MissionExecutor implements Disposable {
 		MoveService moveService, 
 		CombatService combatService, 
 		GUIGameController guiGameController,
-		PathFinder pathFinder
+		PathFinder pathFinder,
+        PathFinder pathFinder2
 	) {
 		this.game = game;
-        PathFinder secoundPathFinder = new PathFinder();
 
 		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
 		wanderMissionHandler = new WanderMissionHandler(game, moveService);
@@ -66,13 +66,13 @@ public class MissionExecutor implements Disposable {
     		game, pathFinder, moveService
 		);
         TransportUnitMissionHandler transportUnitMissionHandler = new TransportUnitMissionHandler(
-    		this, game, pathFinder, moveService, secoundPathFinder
+    		this, game, pathFinder, moveService, pathFinder2
 		);
         ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
     		game, pathFinder, moveService
 		);
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
-            game, new ScoutMissionPlaner(game, pathFinder, secoundPathFinder), moveService
+            game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService
         );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);

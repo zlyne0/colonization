@@ -13,7 +13,7 @@ public class RequiredGoods extends ObjectWithId {
     public final int amount;
     public final GoodsType goodsType;
     
-    public RequiredGoods(GoodsType goodsType, int amount) {
+    private RequiredGoods(GoodsType goodsType, int amount) {
         super(goodsType.getId());
         this.goodsType = goodsType;
         this.amount = amount;

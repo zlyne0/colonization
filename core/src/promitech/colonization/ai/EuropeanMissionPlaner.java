@@ -3,12 +3,15 @@ package promitech.colonization.ai;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -19,20 +22,26 @@ import java.util.List;
 public class EuropeanMissionPlaner {
 
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
+	private final ScoutMissionPlaner scoutMissionPlaner;
 	private final Game game;
 	private final PathFinder pathFinder;
+	private final PathFinder pathFinder2;
 	private final MissionExecutor missionExecutor;
 
-	public EuropeanMissionPlaner(Game game, PathFinder pathFinder, MissionExecutor missionExecutor) {
+	public EuropeanMissionPlaner(Game game, PathFinder pathFinder, MissionExecutor missionExecutor, PathFinder pathFinder2) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
+		this.scoutMissionPlaner = new ScoutMissionPlaner(game, pathFinder, pathFinder2);
 		this.game = game;
 		this.pathFinder = pathFinder;
 		this.missionExecutor = missionExecutor;
+		this.pathFinder2 = pathFinder2;
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
 		// transport goods(sell) and then better plan mission
 		missionExecutor.executeMissions(playerMissionContainer, TransportGoodsToSellMission.class);
+
+		scoutMissionPlaner.prepareMission(player, playerMissionContainer);
 
 		ColonyWorkerRequestPlaner colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(
 			player, playerMissionContainer, game, pathFinder
@@ -61,20 +70,41 @@ public class EuropeanMissionPlaner {
 
 		if (navyUnit.isAtLocation(Europe.class)) {
 			status = transportUnitFromEurope(navyUnit, playerMissionContainer);
-		} else {
+			if (status == MissionPlanStatus.MISSION_CREATED) {
+				return;
+			}
+		}
+
+		if (navyUnit.isAtTileLocation()) {
+			status = transportScoutUnits(navyUnit, playerMissionContainer);
+			if (status == MissionPlanStatus.MISSION_CREATED) {
+				return;
+			}
+
 			status = transportGoodsToSellMissionPlaner.plan(navyUnit);
-		}
-		if (status == MissionPlanStatus.MISSION_CREATED) {
-			return;
-		}
+			if (status == MissionPlanStatus.MISSION_CREATED) {
+				return;
+			}
 
-		status = transportUnitFromEuropeWhenOnNewWorld(navyUnit, playerMissionContainer);
-		if (status == MissionPlanStatus.MISSION_CREATED) {
-			return;
-		}
+			status = transportUnitFromEuropeWhenOnNewWorld(navyUnit, playerMissionContainer);
+			if (status == MissionPlanStatus.MISSION_CREATED) {
+				return;
+			}
 
-		// one turn mission
-		prepareExploreMissions(navyUnit, playerMissionContainer);
+			// one turn mission
+			prepareExploreMissions(navyUnit, playerMissionContainer);
+		}
+	}
+
+	private MissionPlanStatus transportScoutUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+		ScoutMission scoutMission = playerMissionContainer.findFirstMission(ScoutMission.class);
+		if (scoutMission != null && scoutMission.isWaitingForTransport() && !scoutMission.hasDependMissions()) {
+			TransportUnitMission transportUnitMission = new TransportUnitMission(navyUnit);
+			transportUnitMission.addUnitDest(scoutMission.getScout(), scoutMission.getScoutDistantDestination(), true);
+			scoutMission.addDependMission(transportUnitMission);
+			return MissionPlanStatus.MISSION_CREATED;
+		}
+		return MissionPlanStatus.NO_MISSION;
 	}
 
 	private MissionPlanStatus transportUnitFromEuropeWhenOnNewWorld(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
@@ -90,6 +120,23 @@ public class EuropeanMissionPlaner {
 		TransportUnitMission tum = null;
 
 		Europe europe = navyUnit.getOwner().getEurope();
+
+        for (Unit dockUnit : europe.getUnits().entities()) {
+            if (dockUnit.unitRole.equalsId(UnitRole.SCOUT) && !isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
+                ScoutMission scoutMission = playerMissionContainer.findFirstMission(ScoutMission.class, dockUnit);
+                if (scoutMission == null) {
+                    continue;
+                }
+                if (scoutMission.isWaitingForTransport() && !scoutMission.hasDependMissions() && canEmbarkUnit(navyUnit, tum, dockUnit)) {
+					if (tum == null) {
+						tum = new TransportUnitMission(navyUnit);
+					}
+					tum.addUnitDest(dockUnit, scoutMission.getScoutDistantDestination(), true);
+					scoutMission.addDependMission(tum);
+                }
+            }
+        }
+
 		for (Unit dockUnit : europe.getUnits().entities()) {
 			if (!Unit.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
 				continue;

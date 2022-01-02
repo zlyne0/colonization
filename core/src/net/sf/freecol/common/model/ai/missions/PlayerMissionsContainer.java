@@ -156,7 +156,25 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 		return filteredMissions;
 	}
-	
+
+	public <T extends AbstractMission> T findFirstMission(Class<T> clazz, Unit unit) {
+		for (AbstractMission abstractMission : unitMissionsMapping.getUnitMission(unit)) {
+			if (abstractMission.is(clazz)) {
+				return (T)abstractMission;
+			}
+		}
+		return null;
+	}
+
+	public <T extends AbstractMission> T findFirstMission(Class<T> clazz) {
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz)) {
+				return (T)abstractMission;
+			}
+		}
+		return null;
+	}
+
 	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz) {
 		List<T> result = null;
 		
@@ -174,7 +192,16 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return result;
 	}
 
-	public <T extends AbstractMission> AbstractMission findParentMission(T someMission) {
+	public <T extends AbstractMission> boolean isMissionTypeExists(Class<T> clazz) {
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public <T extends AbstractMission> AbstractMission findFirstParentMission(T someMission) {
 		for (AbstractMission mission : missions) {
 			AbstractMission parentForMission = mission.findParentForMission(someMission);
 			if (parentForMission != null) {

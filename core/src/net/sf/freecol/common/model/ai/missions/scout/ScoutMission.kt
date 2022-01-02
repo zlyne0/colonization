@@ -54,6 +54,10 @@ class ScoutMission : AbstractMission {
         this.scoutDistantDestination = scoutDistantDestination
     }
 
+    fun isWaitingForTransport(): Boolean {
+        return this.phase == ScoutMission.Phase.WAIT_FOR_TRANSPORT
+    }
+
     fun isScoutReadyToEmbark(embarkLocation: Tile): Boolean {
         val scoutLocation = scout.tile
         return scoutLocation.equalsCoordinates(embarkLocation) || scoutLocation.isStepNextTo(embarkLocation)

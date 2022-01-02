@@ -25,14 +25,15 @@ public class MissionExecutorDebugRun {
 		MoveService moveService, MapActor mapActor, 
 		CombatService combatService, 
 		GUIGameController guiGameController,
-		PathFinder pathFinder
+		PathFinder pathFinder,
+        PathFinder pathFinder2
 	) {
     	this.moveService = moveService;
         this.gameModel = gameModel;
         this.mapActor = mapActor;
 
         tileDebugView = new TileDebugView(mapActor, gameModel);
-        missionExecutor = new MissionExecutor(gameModel.game, moveService, combatService, guiGameController, pathFinder);
+        missionExecutor = new MissionExecutor(gameModel.game, moveService, combatService, guiGameController, pathFinder, pathFinder2);
     }
     
     public void runMission(Player player, AbstractMission mission) {
