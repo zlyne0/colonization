@@ -24,7 +24,7 @@ public class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert,
 	
 	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
 		isNotNull();
-		AbstractMission dependMission = actual.getDependMissionById(missionId);
+		AbstractMission dependMission = actual.findDependMissionById(missionId);
 		if (dependMission == null) {
 			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
 		} else {

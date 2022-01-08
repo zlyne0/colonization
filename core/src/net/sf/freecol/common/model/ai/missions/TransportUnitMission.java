@@ -13,6 +13,8 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.util.Predicate;
+
 import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -37,6 +39,15 @@ public class TransportUnitMission extends AbstractMission {
 			}
 			return "[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " to " + tileStr + "]";
 		}
+	}
+
+	public static boolean isUnitExistsOnTransportMission(final PlayerMissionsContainer playerMissionContainer, final Unit unit) {
+		return playerMissionContainer.hasMission(TransportUnitMission.class, new Predicate<TransportUnitMission>() {
+			@Override
+			public boolean test(TransportUnitMission mission) {
+				return mission.isTransportedUnit(unit);
+			}
+		});
 	}
 
 	private Unit carrier;
@@ -116,26 +127,38 @@ public class TransportUnitMission extends AbstractMission {
 	public void removeUnit(UnitDest unitDest) {
     	unitsDest.remove(unitDest);
 	}
-	
-	public void removeDisembarkedUnits(Player player, Tile destinationLocation, Tile disembarkLocation) {
-		StringBuilder logStr = new StringBuilder();
-		
+
+	public void removeNoAccessTileUnits(Player player, Tile destinationLocation) {
+		if (logger.isDebug()) {
+			String unitsIds = unitsDestListToString(destinationLocation);
+			logger.debug("player[%s].TransportUnitMissionHandler.removeNoAccessTileUnits units[%s] to tile[%s]",
+				player.getId(),
+				unitsIds.toString(),
+				destinationLocation.toStringCords()
+			);
+		}
 		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
 			if (ud.dest.equalsCoordinates(destinationLocation)) {
 				unitsDest.remove(ud);
-				
-				if (logStr.length() != 0) {
-					logStr.append(", ");
-				}
-				logStr.append(ud.unit.getId());
 			}
 		}
-		logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s] moved to [%s]",
-			player.getId(), 
-			logStr.toString(),
-			disembarkLocation.toStringCords(),
-			disembarkLocation.toStringCords()
-		);
+	}
+
+	public void removeDisembarkedUnits(Player player, Tile destinationLocation, Tile disembarkLocation) {
+		if (logger.isDebug()) {
+			String unitsIds = unitsDestListToString(destinationLocation);
+			logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s] moved to [%s]",
+				player.getId(),
+				unitsIds.toString(),
+				disembarkLocation.toStringCords(),
+				destinationLocation.toStringCords()
+			);
+		}
+		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
+			if (ud.dest.equalsCoordinates(destinationLocation)) {
+				unitsDest.remove(ud);
+			}
+		}
 	}
 	
 	@Override
@@ -157,6 +180,20 @@ public class TransportUnitMission extends AbstractMission {
     	return "carrier[" + carrier.getId() + ", " + carrier.unitType.toSmallIdStr() + "] " + unitsDestListToString();
 	}
 
+	private String unitsDestListToString(Tile destinationLocation) {
+		StringBuilder logStr = new StringBuilder();
+
+		for (UnitDest ud : unitsDest) {
+			if (ud.dest.equalsCoordinates(destinationLocation)) {
+				if (logStr.length() != 0) {
+					logStr.append(", ");
+				}
+				logStr.append(ud.unit.getId());
+			}
+		}
+		return logStr.toString();
+	}
+
 	private String unitsDestListToString() {
     	String str = "";
 		for (UnitDest unitDest : unitsDest) {
@@ -166,6 +203,10 @@ public class TransportUnitMission extends AbstractMission {
 			str += unitDest.toString();
 		}
 		return str;
+	}
+
+	public boolean isEmptyUnitsDest() {
+    	return unitsDest.isEmpty();
 	}
 
     public List<UnitDest> getUnitsDest() {

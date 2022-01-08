@@ -63,7 +63,7 @@ class ScoutMission : AbstractMission {
         return scoutLocation.equalsCoordinates(embarkLocation) || scoutLocation.isStepNextTo(embarkLocation)
     }
 
-    fun scoutAfterTransport(game: Game) {
+    fun startScoutAfterTransport(game: Game) {
         if (game.map.isTheSameArea(scoutDistantDestination, scout.tile)) {
             phase = ScoutMission.Phase.SCOUT
             scoutDistantDestination = null

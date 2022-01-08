@@ -584,8 +584,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			val carrier = Units.findCarrier(player)
 			val transportUnitMission = TransportUnitMission(carrier)
 			transportUnitMission.addUnitDest(scoutMission.scout, scoutMission.scoutDistantDestination, true)
-			scoutMission.addDependMission(transportUnitMission)
-			//missionContainer.addMission(transportUnitMission)
+			missionContainer.addMission(transportUnitMission)
 		}
 
 
@@ -627,7 +626,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			val carrier = UnitFactory.create(UnitType.CARAVEL, dutch, shipLocation)
 			val transportUnitMission = TransportUnitMission(carrier)
 			transportUnitMission.addUnitDest(scoutMission.scout, scoutMission.scoutDistantDestination, true)
-			scoutMission.addDependMission(transportUnitMission)
+			missionContainer.addMission(transportUnitMission)
 		}
 
 

@@ -2,10 +2,6 @@ package promitech.colonization.ai;
 
 import com.badlogic.gdx.utils.Disposable;
 
-import static promitech.colonization.ai.MissionHandlerLogger.logger;
-
-import java.util.List;
-
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MoveType;
@@ -21,8 +17,12 @@ import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.CollectionUtils;
 
+import java.util.List;
+
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
+
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission>, Disposable {
 
@@ -149,7 +149,10 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		MoveContext moveContext = new MoveContext(carrier, path);
 		MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 
-		if (MoveType.MOVE.equals(aiConfirmedMovePath) || MoveType.DISEMBARK.equals(aiConfirmedMovePath)) {
+		if (MoveType.MOVE.equals(aiConfirmedMovePath)
+			|| MoveType.DISEMBARK.equals(aiConfirmedMovePath)
+			|| MoveType.MOVE_HIGH_SEAS.equals(aiConfirmedMovePath)
+		) {
 			if (moveContext.destTile.equalsCoordinates(disembarkLocation)) {
 				List<Unit> unitsToDisembark = mission.unitsToDisembark(unitDestination);
 				// disembarkLocation should equals moveContext.destTile
@@ -164,7 +167,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 				} else {
 					// ignore action, wait turn maybe something change, or next run disembark units co closest place
 				}
-				if (mission.getUnitsDest().isEmpty()) {
+				if (mission.isEmptyUnitsDest()) {
 					logger.debug("player[%s].TransportUnitMissionHandler.disembark all units, end mission", player.getId());
 					mission.setDone();
 				}
@@ -178,8 +181,15 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					aiConfirmedMovePath
 				);
 			}
-			mission.setDone();
-			notifyParentMissionAboutNoDisembarkAccess(mission, unitDestination);
+
+			List<Unit> unitsToDisembark = mission.unitsToDisembark(unitDestination);
+			notifyParentMissionAboutNoDisembarkAccess(mission, unitDestination, unitsToDisembark);
+
+			// planer should take case about unit and generate another destination
+			mission.removeNoAccessTileUnits(player, unitDestination);
+			if (mission.isEmptyUnitsDest()) {
+				mission.setDone();
+			}
 		}
 	}
 
@@ -268,23 +278,24 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
 	private void notifyParentMissionAboutNoDisembarkAccess(
 		TransportUnitMission transportUnitMission,
-		Tile unitDestination
+		Tile unitDestination,
+		List<Unit> unitsToDisembark
 	) {
 		Player player = playerMissionsContainer.getPlayer();
 		if (logger.isDebug()) {
 			logger.debug("player[%s].TransportUnitMissionHandler notify parent mission about no disembark access", player.getId());
 		}
-		AbstractMission parentMission = playerMissionsContainer.findFirstParentMission(transportUnitMission);
-		if (parentMission == null) {
-			return;
-		}
-		MissionHandler<AbstractMission> missionHandler = missionExecutor.findMissionHandler(parentMission);
-		if (missionHandler instanceof TransportUnitNoDisembarkAccessNotification) {
-			((TransportUnitNoDisembarkAccessNotification)missionHandler).noDisembarkAccessNotification(
-				transportUnitMission,
-				unitDestination,
-				parentMission
-			);
+		for (MissionHandler<? extends AbstractMission> missionHandler : missionExecutor.allMissionHandlers()) {
+			if (missionHandler instanceof TransportUnitNoDisembarkAccessNotification) {
+				for (Unit unitToDisembark : unitsToDisembark) {
+					((TransportUnitNoDisembarkAccessNotification)missionHandler).noDisembarkAccessNotification(
+						playerMissionsContainer,
+						transportUnitMission,
+						unitDestination,
+						unitToDisembark
+					);
+				}
+			}
 		}
 	}
 }

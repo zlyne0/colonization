@@ -21,7 +21,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
 	protected List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
 	
-	public AbstractMission(String id) {
+	protected AbstractMission(String id) {
 		super(id);
 	}
 
@@ -59,7 +59,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	    }
 	    return leafs;
 	}
-	
+
 	public boolean hasDependMissions() {
 		if (dependMissions.isEmpty()) {
 			return false;
@@ -103,7 +103,7 @@ public abstract class AbstractMission extends ObjectWithId {
 		return null;
 	}
 
-	public AbstractMission getDependMissionById(String missionId) {
+	public AbstractMission findDependMissionById(String missionId) {
 		for (AbstractMission am : dependMissions) {
 			if (am.equalsId(missionId)) {
 				return am;

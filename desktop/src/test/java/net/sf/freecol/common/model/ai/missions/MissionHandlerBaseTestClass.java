@@ -48,7 +48,7 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 
 	protected void planMissions(Player player) {
 		MissionExecutor missionExecutor = createMissionExecutor();
-		MissionPlaner missionPlaner = new MissionPlaner(game, di.pathFinder, missionExecutor);
+		MissionPlaner missionPlaner = new MissionPlaner(game, di.pathFinder, missionExecutor, di.pathFinder2);
 		missionPlaner.planMissions(player);
 	}
 
@@ -58,13 +58,15 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 			di.moveService,
 			di.combatService,
 			di.guiGameController,
-			di.pathFinder
+			di.pathFinder,
+			di.pathFinder2
 		);
 	}
 
 	DI createDependencies() {
 		di = new DI();
 		di.pathFinder = new PathFinder();
+		di.pathFinder2 = new PathFinder();
 		di.moveService = new MoveService();
 		di.combatService = new CombatService();
 		di.guiGameModel = new GUIGameModel();

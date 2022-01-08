@@ -2,6 +2,7 @@ package promitech.colonization.ai;
 
 import com.badlogic.gdx.utils.Disposable;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -27,6 +28,7 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
@@ -156,6 +158,10 @@ public class MissionExecutor implements Disposable {
             throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());
         }
         return missionHandler;
+    }
+
+    public Collection<MissionHandler<? extends AbstractMission>> allMissionHandlers() {
+	    return missionHandlerMapping.values();
     }
 
     @Override

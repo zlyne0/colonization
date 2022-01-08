@@ -22,6 +22,7 @@ public class DI {
 	public CombatService combatService;
 	public MoveView moveView;
 	public PathFinder pathFinder;
+	public PathFinder pathFinder2;
 	public NewTurnService newTurnService;
 	
 	public void createBeans() {
@@ -34,6 +35,7 @@ public class DI {
 		moveView = new MoveView();
 		firstContactController = new FirstContactController();
 		pathFinder = new PathFinder();
+		pathFinder2 = new PathFinder();
 		
 		newTurnService = new NewTurnService(guiGameModel, combatService, moveService);
 		

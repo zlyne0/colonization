@@ -76,7 +76,7 @@ public class EuropeanMissionPlaner {
 		}
 
 		if (navyUnit.isAtTileLocation()) {
-			status = transportScoutUnits(navyUnit, playerMissionContainer);
+			status = prepareTransportForScoutUnits(navyUnit, playerMissionContainer);
 			if (status == MissionPlanStatus.MISSION_CREATED) {
 				return;
 			}
@@ -96,12 +96,15 @@ public class EuropeanMissionPlaner {
 		}
 	}
 
-	private MissionPlanStatus transportScoutUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+	private MissionPlanStatus prepareTransportForScoutUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		ScoutMission scoutMission = playerMissionContainer.findFirstMission(ScoutMission.class);
-		if (scoutMission != null && scoutMission.isWaitingForTransport() && !scoutMission.hasDependMissions()) {
+		if (scoutMission != null
+			&& scoutMission.isWaitingForTransport()
+			&& TransportUnitMission.isUnitExistsOnTransportMission(playerMissionContainer, scoutMission.getScout())
+		) {
 			TransportUnitMission transportUnitMission = new TransportUnitMission(navyUnit);
 			transportUnitMission.addUnitDest(scoutMission.getScout(), scoutMission.getScoutDistantDestination(), true);
-			scoutMission.addDependMission(transportUnitMission);
+			playerMissionContainer.addMission(transportUnitMission);
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 		return MissionPlanStatus.NO_MISSION;
@@ -127,12 +130,12 @@ public class EuropeanMissionPlaner {
                 if (scoutMission == null) {
                     continue;
                 }
-                if (scoutMission.isWaitingForTransport() && !scoutMission.hasDependMissions() && canEmbarkUnit(navyUnit, tum, dockUnit)) {
+                if (scoutMission.isWaitingForTransport() && canEmbarkUnit(navyUnit, tum, dockUnit)) {
 					if (tum == null) {
 						tum = new TransportUnitMission(navyUnit);
 					}
 					tum.addUnitDest(dockUnit, scoutMission.getScoutDistantDestination(), true);
-					scoutMission.addDependMission(tum);
+					playerMissionContainer.addMission(tum);
                 }
             }
         }
