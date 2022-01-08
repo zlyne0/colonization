@@ -86,7 +86,12 @@ public class EuropeanMissionPlaner {
 				return;
 			}
 
-			status = transportUnitFromEuropeWhenOnNewWorld(navyUnit, playerMissionContainer);
+			status = transportGoodsToSellMissionPlaner.planSellGoodsToBuyUnit(navyUnit);
+			if (status == MissionPlanStatus.MISSION_CREATED) {
+				return;
+			}
+
+			status = transportUnitFromEurope(navyUnit, playerMissionContainer);
 			if (status == MissionPlanStatus.MISSION_CREATED) {
 				return;
 			}
@@ -106,14 +111,6 @@ public class EuropeanMissionPlaner {
 			transportUnitMission.addUnitDest(scoutMission.getScout(), scoutMission.getScoutDistantDestination(), true);
 			playerMissionContainer.addMission(transportUnitMission);
 			return MissionPlanStatus.MISSION_CREATED;
-		}
-		return MissionPlanStatus.NO_MISSION;
-	}
-
-	private MissionPlanStatus transportUnitFromEuropeWhenOnNewWorld(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
-		ColoniesProductionValue coloniesProductionValue = new ColoniesProductionValue(navyUnit.getOwner());
-		if (!coloniesProductionValue.findSettlementWorthTakeGoodsToBuyUnit(navyUnit)) {
-			return transportUnitFromEurope(navyUnit, playerMissionContainer);
 		}
 		return MissionPlanStatus.NO_MISSION;
 	}
@@ -144,14 +141,13 @@ public class EuropeanMissionPlaner {
 			if (!Unit.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
 				continue;
 			}
-			List<ColonyWorkerMission> colonyWorkerMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, dockUnit);
-			
+			ColonyWorkerMission colonyWorkerMission = playerMissionContainer.findFirstMission(ColonyWorkerMission.class, dockUnit);
+
 			// should be one mission
-			if (colonyWorkerMissions.size() == 1 && canEmbarkUnit(navyUnit, tum, dockUnit)) {
+			if (colonyWorkerMission != null && canEmbarkUnit(navyUnit, tum, dockUnit)) {
 				if (tum == null) {
 					tum = new TransportUnitMission(navyUnit);
 				}
-				ColonyWorkerMission colonyWorkerMission = colonyWorkerMissions.get(0);
 				tum.addUnitDest(dockUnit, colonyWorkerMission.getTile());
 			}
 		}

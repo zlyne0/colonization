@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.MapIdEntities
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
 
@@ -30,10 +31,9 @@ class ColoniesProductionValue(val player: Player) {
 		return sum
 	}
 
-	fun findSettlementWorthTakeGoodsToBuyUnit(navyUnit: Unit): Boolean {
+	fun findSettlementWorthTakeGoodsToBuyUnit(navyUnit: Unit): Settlement? {
 		val goodsTypeToValue: MapIdEntities<GoodsType> = Specification.instance.goodsTypeToScoreByPrice
 
-		val turnMultiplier = navyUnit.sailTurns
 		val navyUnitCapacity = navyUnit.unitType.space
 		val theCheapestUnitPrice = player.europe.aiTheCheapestUnitPrice()
 
@@ -42,25 +42,23 @@ class ColoniesProductionValue(val player: Player) {
 			if (!(settlement is Colony)) {
 				continue
 			}
-			val navyCapacityPriceSum = navyUnitGoodsCapacityPrice(settlement, goodsPrices, turnMultiplier, navyUnitCapacity)
+			val navyCapacityPriceSum = navyUnitGoodsCapacityPrice(settlement, goodsPrices, navyUnitCapacity)
 			if (navyCapacityPriceSum >= theCheapestUnitPrice) {
-				return true
+				return settlement
 			}
 		}
-		return false
+		return null
 	}
 
 	private fun navyUnitGoodsCapacityPrice(
 		settlement: Settlement,
 		goodsPrices: IntArray,
-		turnMultiplier: Int,
 		navyUnitCapacity: Int
 	): Int {
 		val productionSummary = settlement.productionSummary()
 		goodsPrices.clear()
 		for (goodsType in goodsTypeToValue) {
 			var amount = productionSummary.getQuantity(goodsType)
-			amount *= turnMultiplier
 			amount += settlement.goodsContainer.goodsAmount(goodsType)
 			goodsPrices.add(player.market().getSalePrice(goodsType, amount))
 		}
