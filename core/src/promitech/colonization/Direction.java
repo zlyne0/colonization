@@ -21,7 +21,7 @@ public enum Direction {
     W  (-1,  0, -1,  0),
     NW ( 0, -1, -1, -1);
 
-    public final static int NUMBER_OF_DIRECTIONS = values().length;
+    public static final int NUMBER_OF_DIRECTIONS = values().length;
 
     public static final List<Direction> allDirections
         = makeUnmodifiableList(Direction.N, Direction.NE,
@@ -146,7 +146,7 @@ public enum Direction {
     }
     
     public static Direction fromCoordinates(int x, int y, int x2, int y2) {
-    	for (Direction d : Direction.values()) {
+    	for (Direction d : allDirections) {
     		if (d.stepX(x, y) == x2 && d.stepY(x, y) == y2) {
     			return d;
     		}

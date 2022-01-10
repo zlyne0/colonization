@@ -129,7 +129,7 @@ class BuildingActor extends ImageButton implements DragAndDropSourceContainer<Un
 
 	@Override
 	public boolean canPutPayload(UnitActor unitActor, float x, float y) {
-		return building.canAddWorker(unitActor.unit);
+		return building.canAddWorker(unitActor.unit.unitType);
 	}
 
 	@Override

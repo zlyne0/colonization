@@ -26,8 +26,19 @@ public class Market extends ObjectWithId {
 		void logSale(TransactionEffectOnMarket transaction);
 		void logPurchase(TransactionEffectOnMarket transaction);
 	}
-	
+
+	public static final MarketTransactionLogger emptyMarketTransactionLogger = new MarketTransactionLogger() {
+		@Override
+		public void logSale(TransactionEffectOnMarket transaction) {
+		}
+
+		@Override
+		public void logPurchase(TransactionEffectOnMarket transaction) {
+		}
+	};
+
 	public final MapIdEntities<MarketData> marketGoods = MapIdEntities.linkedMapIdEntities();
+	private MarketTransactionLogger marketTransactionLogger = emptyMarketTransactionLogger;
 	
 	// Propagate 5-30% of the original change.
 	private static final int PROPAGATED_GOODS_LOWER_BOUND = 5; 
@@ -94,7 +105,7 @@ public class Market extends ObjectWithId {
 		int paidSum = 0;
 		for (Entry<String> goodsTypeEntry : required.entries()) {
 			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
-			if (data != null && data.hasArrears()) {
+			if (data != null || data.hasArrears()) {
 				return false;
 			}
 			if (goodsTypeEntry.value > 0) {
@@ -202,6 +213,7 @@ public class Market extends ObjectWithId {
         TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
         
         propagateTransactionToEuropeanMarkets(game, player, goodsType, playerModifiedMarketAmount);
+        marketTransactionLogger.logSale(TRANSACTION_EFFECT_ON_MARKET);
         return TRANSACTION_EFFECT_ON_MARKET;
 	}
 	
@@ -313,6 +325,10 @@ public class Market extends ObjectWithId {
         }
     }
 	
+	public void setMarketTransactionLogger(MarketTransactionLogger marketTransactionLogger) {
+		this.marketTransactionLogger = marketTransactionLogger;
+	}
+    
 	public static class Xml extends XmlNodeParser<Market> {
 		public Xml() {
 			addNodeForMapIdEntities("marketGoods", MarketData.class);

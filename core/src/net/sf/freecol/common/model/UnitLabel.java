@@ -74,7 +74,7 @@ public class UnitLabel {
         if (remainder > 0) {
             sb.append("(").append(remainder).append("/3) ");
         }
-        sb.append("/").append(unit.getInitialMovesLeft() / 3);
+        sb.append("/").append(unit.initialMoves() / 3);
         return sb.toString();
     }
     

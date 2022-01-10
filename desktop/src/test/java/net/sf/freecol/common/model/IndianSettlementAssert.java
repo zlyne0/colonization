@@ -15,6 +15,13 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 		return new IndianSettlementAssert(settlement, IndianSettlementAssert.class);
 	}
 
+	public static IndianSettlementAssert assertThat(Settlement settlement) {
+		if (!settlement.isIndianSettlement()) {
+			throw new IllegalStateException("settlement is not IndianSettlement " + settlement.getId());
+		}
+		return new IndianSettlementAssert(settlement.asIndianSettlement(), IndianSettlementAssert.class);
+	}
+
 	public IndianSettlementAssert hasNoMissionary(Player player) {
 		if (actual.hasMissionary(player)) {
 			failWithMessage("expected indian settlement <%s> has no missionary", actual.getId());
@@ -81,6 +88,20 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 				amount,
 				count
 			);
+		}
+		return this;
+	}
+
+	public IndianSettlementAssert isScouted() {
+		if (!actual.isScouted()) {
+			failWithMessage("expected indian settlement <%s> is scouted", actual.getId());
+		}
+		return this;
+	}
+
+	public IndianSettlementAssert isNotScouted() {
+		if (actual.isScouted()) {
+			failWithMessage("expected indian settlement <%s> is not scouted", actual.getId());
 		}
 		return this;
 	}

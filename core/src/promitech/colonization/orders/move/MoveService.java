@@ -4,6 +4,7 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.orders.LostCityRumourService;
@@ -18,6 +20,7 @@ import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.diplomacy.FirstContactController;
 import promitech.colonization.orders.diplomacy.FirstContactService;
+import promitech.colonization.orders.diplomacy.SpeakToChiefResult;
 import promitech.colonization.orders.diplomacy.TradeController;
 import promitech.colonization.screen.map.hud.GUIGameController;
 import promitech.colonization.screen.map.hud.GUIGameModel;
@@ -83,8 +86,9 @@ public class MoveService {
     }
     
     public MoveType aiConfirmedMovePath(MoveContext moveContext) {
+        moveContext.setMoveViaHighSea();
     	moveContext.initNextPathStep();
-    	while (moveContext.canHandleMove()) {
+    	while (moveContext.canAiHandleMove()) {
     		aiConfirmedMoveProcessor(moveContext);
     		moveContext.initNextPathStep();
     	}
@@ -94,6 +98,16 @@ public class MoveService {
     public void aiConfirmedMoveProcessor(MoveContext moveContext) {
         showMoveIfRequired(moveContext);
         processMove(moveContext);
+
+        if (moveContext.moveType == MoveType.EXPLORE_LOST_CITY_RUMOUR) {
+            LostCityRumourService lostCityRumourService = new LostCityRumourService(guiGameController, guiGameModel.game);
+            LostCityRumour.RumourType explorationResult = lostCityRumourService.processExploration(moveContext);
+            System.out.println(String.format("player[%s].explorationLostCityRumourResult %s", moveContext.unit.getOwner().getId(), explorationResult));
+        } else if (moveContext.moveType == MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT) {
+            IndianSettlement indianSettlement = moveContext.destTile.getSettlement().asIndianSettlement();
+            SpeakToChiefResult speakResult = firstContactService.scoutSpeakWithIndianSettlementChief(indianSettlement, moveContext.unit);
+            System.out.println(String.format("player[%s].speakToChiefResult %s", moveContext.unit.getOwner().getId(), speakResult));
+        }
     }
     
     public void preMoveProcessor(MoveContext moveContext, AfterMoveProcessor afterMoveProcessor) {
@@ -103,6 +117,9 @@ public class MoveService {
         if (moveContext.isMoveViaPath()) {
             boolean requireUserInteraction = handlePathMoveContext(moveContext);
             if (!requireUserInteraction) {
+                if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+            		moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+                }
             	afterMoveProcessor.afterMove(moveContext);
             }
         } else {
@@ -112,6 +129,9 @@ public class MoveService {
             }
             showMoveIfRequired(moveContext);
             processMove(moveContext);
+            if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+        		moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+            }
             afterMoveProcessor.afterMove(moveContext);
         }
     }
@@ -139,10 +159,15 @@ public class MoveService {
         
         if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
         	checkCashInTreasureInCarrier(moveContext.unit, moveContext.destTile);
-        	moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
         }
     }
     
+    /**
+     * Wake up neighbour sentry units. Not only in newturn but in MoveService too 
+     * because unit with lots of moves can move close and move further. NewTurn check
+     * only on sign radius. Unit can move in radius and go out. 
+     * One tile range not ideal but enough.   
+     */
     private void wakeUpSentryUnits(Player player, Tile tile) {
     	for (NeighbourIterableTile<Tile> neighbourTile : guiGameModel.game.map.neighbourTiles(tile)) {
     		for (Unit u : neighbourTile.tile.getUnits().entities()) {
@@ -164,7 +189,7 @@ public class MoveService {
 				}
 			}
 		}
-		if (treasureWagon != null && treasureWagon.canCashInTreasureInLocation(tile)) {
+		if (treasureWagon != null && Unit.canCashInTreasureInLocation(treasureWagon.getOwner(), tile)) {
 			if (carrier.getOwner().isHuman()) {
 				moveController.showCashInTreasureConfirmation(treasureWagon);
 			}
@@ -317,6 +342,28 @@ public class MoveService {
                 || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
     }
 
+    public boolean disembarkUnits(Unit carrier, List<Unit> units, Tile sourceTile, Tile destTile) {
+    	boolean canDisembark = true;
+    	
+    	if (sourceTile.equalsCoordinates(destTile)) {
+    		// colony no show move
+    		for (Unit u : units) {
+    			carrier.disembarkUnitToLocation(destTile, u);
+    		}
+    	} else {
+    		MoveContext mc = new MoveContext();
+    		for (Unit u : units) {
+    			mc.init(sourceTile, destTile, u);
+    			if (mc.isMoveType()) {
+    				aiConfirmedMoveProcessor(mc);
+    			} else {
+    				canDisembark = false;
+    			}
+    		}
+    	}
+    	return canDisembark;
+    }
+    
     /**
      * Return true when user interation request
      */

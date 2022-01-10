@@ -64,11 +64,11 @@ public class IndianSettlement extends Settlement {
     
     public IndianSettlement(IdGenerator idGenerator, SettlementType settlementType) {
     	super(idGenerator.nextId(IndianSettlement.class), settlementType);
+    	goodsContainer = new GoodsContainer();
     }
 
     /**
      * constructor used only by xml parser.
-     * Xml parser also create {@link goodsContainer}
      * @param id
      * @param settlementType
      */
@@ -113,7 +113,7 @@ public class IndianSettlement extends Settlement {
     	return contactLevel(player) != ContactLevel.UNCONTACTED;
     }
     
-    public boolean hasAnyScouted() {
+    public boolean isScouted() {
     	for (Entry<String, ContactLevel> entrySet : contactLevelByPlayer.entrySet()) {
     		if (entrySet.getValue() == ContactLevel.SCOUTED) {
     			return true;
@@ -221,7 +221,7 @@ public class IndianSettlement extends Settlement {
 				if (enemy.isLiveEuropeanPlayer()) {
 					int alarm = 0;
 					for (Unit unit : neighbourTile.getUnits().entities()) {
-						if (!unit.isNaval() && unit.isOffensiveUnit()) {
+						if (!unit.isNaval() && Unit.isOffensiveUnit(unit)) {
 							alarm += unit.unitType.getBaseOffence(); 
 						}
 					}

@@ -34,7 +34,7 @@ public class EventsNotifications {
 	}
 	
 	public void addMessageNotification(StringTemplate st) {
-		System.out.println("message notification: " + st);
+		//System.out.println("message notification: " + st);
 		this.addMessageNotification(new MessageNotification(Game.idGenerator, Messages.message(st)));
 	}
 

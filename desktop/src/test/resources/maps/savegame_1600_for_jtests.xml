@@ -817,7 +817,7 @@
     <serverColonyTile id="colonyTile:6851"/>
     <serverColonyTile id="colonyTile:6859"/>
   </serverObjects>
-  <game id="0" nextId="7205" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
+  <game id="0" nextId="7206" UUID="54a5fcef-389e-4f48-8a55-4897633b75c7" turn="120" spanishSuccession="false" currentPlayer="player:1" activeUnit="unit:6781">
     <freecol-specification id="freecol" difficultyLevel="model.difficulty.medium" version="0.86">
       <modifiers>
         <modifier id="model.modifier.smallMovementPenalty" source="model.source.movementPenalty" value="-33.0" type="percentage" index="50"/>
@@ -4528,7 +4528,7 @@
         <Nation id="model.nation.tupi" state="not_available"/>
       </Nations>
     </nationOptions>
-    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" interventionBells="0" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="tile:3398" index.river="2" index.land="7" index.mountain="3">
+    <player id="player:1" username="ne0" nationId="model.nation.dutch" nationType="model.nationType.trade" admin="true" ready="true" dead="false" playerType="colonial" ai="false" bankrupt="false" tax="25" gold="4792" immigration="0" interventionBells="0" immigrationRequired="107" attackedByPrivateers="true" oldSoL="9" score="1019" newLandName="New Holland" entryLocation="30,78" index.river="2" index.land="7" index.mountain="3">
       <tradeRouteDef id="tradeRouteDef:1" name="route1">
       	<stop location="colony:6993">
       		<goods id="model.goods.sugar"/>
@@ -5270,7 +5270,7 @@
       <foundingFathers xLength="0"/>
       <offeredFathers xLength="0"/>
     </player>
-    <player id="player:112" username="Elizabeth I" nationId="model.nation.english" nationType="model.nationType.immigration" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="6" gold="0" immigration="0" liberty="66" interventionBells="0" currentFather="model.foundingFather.hernandoDeSoto" immigrationRequired="22" attackedByPrivateers="false" oldSoL="23" score="1416" newLandName="New England" entryLocation="tile:843" index.land="2">
+    <player id="player:112" username="Elizabeth I" nationId="model.nation.english" nationType="model.nationType.immigration" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="6" gold="0" immigration="0" liberty="66" interventionBells="0" currentFather="model.foundingFather.hernandoDeSoto" immigrationRequired="22" attackedByPrivateers="false" oldSoL="23" score="1416" newLandName="New England" entryLocation="35,14" index.land="2">
       <market id="market:116" owner="player:112">
         <marketData id="marketData:117" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:118" goods-type="model.goods.sugar" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -5659,7 +5659,7 @@
         </mercenaryForce>
       </monarch>
     </player>
-    <player id="player:133" username="Philip II" nationId="model.nation.spanish" nationType="model.nationType.conquest" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="0" gold="0" immigration="2" liberty="20" interventionBells="0" currentFather="model.foundingFather.francisDrake" immigrationRequired="35" attackedByPrivateers="true" oldSoL="20" score="982" newLandName="New Spain" entryLocation="tile:2919" index.river="2" index.land="2">
+    <player id="player:133" username="Philip II" nationId="model.nation.spanish" nationType="model.nationType.conquest" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="0" gold="0" immigration="2" liberty="20" interventionBells="0" currentFather="model.foundingFather.francisDrake" immigrationRequired="35" attackedByPrivateers="true" oldSoL="20" score="982" newLandName="New Spain" entryLocation="31,66" index.river="2" index.land="2">
       <market id="market:137" owner="player:133">
         <marketData id="marketData:138" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:139" goods-type="model.goods.sugar" amount="1500" initialPrice="2" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -6193,7 +6193,7 @@
       <foundingFathers xLength="0"/>
       <offeredFathers xLength="0"/>
     </player>
-    <player id="player:208" username="Louis XIV" nationId="model.nation.french" nationType="model.nationType.cooperation" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="0" gold="0" immigration="24" liberty="288" interventionBells="0" currentFather="model.foundingFather.williamPenn" immigrationRequired="39" attackedByPrivateers="false" oldSoL="16" score="1178" newLandName="New France" entryLocation="tile:1124" index.river="10" index.land="8" index.mountain="2">
+    <player id="player:208" username="Louis XIV" nationId="model.nation.french" nationType="model.nationType.cooperation" admin="false" ready="false" dead="false" playerType="colonial" ai="true" bankrupt="false" tax="0" gold="0" immigration="24" liberty="288" interventionBells="0" currentFather="model.foundingFather.williamPenn" immigrationRequired="39" attackedByPrivateers="false" oldSoL="16" score="1178" newLandName="New France" entryLocation="36,21" index.river="10" index.land="8" index.mountain="2">
       <market id="market:212" owner="player:208">
         <marketData id="marketData:213" goods-type="model.goods.food" amount="10000" initialPrice="1" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
         <marketData id="marketData:214" goods-type="model.goods.sugar" amount="1500" initialPrice="4" arrears="0" sales="0" incomeAfterTaxes="0" incomeBeforeTaxes="0" traded="false"/>
@@ -15450,6 +15450,7 @@
       <tile id="tile:2476" x="28" y="55" type="model.tile.grassland" owner="player:58" owningSettlement="indianSettlement:6019" style="0" region="region:5008" contiguity="2">
         <cachedTile player="player:1" copied="false"/>
         <cachedTile player="player:133" copied="false"/>
+        <unit id="unit:7205" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.scout" roleCount="1" owner="player:133" nationality="model.nation.spanish" location="tile:2476" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
       </tile>
       <tile id="tile:2477" x="29" y="55" type="model.tile.swamp" owner="player:58" owningSettlement="indianSettlement:6019" style="0" region="region:5008" contiguity="2">
         <cachedTile player="player:1" copied="false"/>
@@ -21031,24 +21032,31 @@
     
 	  <aiContainer>
 	      <playerMissions player="player:1">
-	          <transportUnitMission id="transportUnitMission:2" dest="10,12" carrier="unit:6437">
-	              <unit id="unit:7095"/>
+	          <transportUnitMission id="transportUnitMission:2" carrier="unit:6437">
+	              <unitDest unit="unit:7095" tile="24,78" />
               </transportUnitMission>
-              <rellocationMission id="rellocationMission:3" dest="20,22" unit="unit:7095" unitDest="25,27" carrier="unit:6437" carrierDest="30,32" />
-              <foundColonyMission id="foundColonyMission:4" dest="21,23" unit="unit:7095">
-                  <rellocationMission id="rellocationMission:3:1" dest="15,10" unit="unit:7095" unitDest="16,10" carrier="unit:6437" carrierDest="30,32"/>
-              </foundColonyMission>
               <explorerMission id="explorerMission:5" unit="unit:6437">
                   <explorerMission id="explorerMission:5:1" unit="unit:6437"/>
-                  <rellocationMission id="explorerMission:5:2" dest="15,10" unit="unit:7095" unitDest="16,10" carrier="unit:6437" carrierDest="30,32">
-                      <explorerMission id="explorerMission:5:2:1" unit="unit:6437"/>
-                  </rellocationMission>
               </explorerMission>
+			  <transportGoodsToSellMission id="transportGoodsToSellMission:1" unit="unit:6437" firstToVisit="colony:6993">
+				  <settlement id="colony:6993" />
+				  <settlement id="colony:6554" />
+			  </transportGoodsToSellMission>
+              <colonyWorkerMission id="colonyWorkerMission:1" tile="24,78" unit="unit:7095" />
 	      </playerMissions>
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>
 	      </playerMissions>
-	      
+
+          <playerMissions player="player:133">
+              <scoutMission id="scoutMission:1" unit="unit:7205" phase="SCOUT" />
+          </playerMissions>
+
+          <playerAiContainer player="player:133">
+              <scoutBlockTile tile="10,10" />
+              <scoutBlockTile tile="11,11" />
+          </playerAiContainer>
+
 	      <playerMissions player="player:154">
 	      		<indianBringGiftMission id="indianBringGiftMission:123"
 					indianSettlementId="indianSettlement:6339"

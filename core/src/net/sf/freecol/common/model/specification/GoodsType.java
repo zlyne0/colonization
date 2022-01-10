@@ -1,10 +1,13 @@
 package net.sf.freecol.common.model.specification;
 
-import java.io.IOException;
-
 import net.sf.freecol.common.model.ObjectWithFeatures;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.player.Market;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -18,7 +21,15 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String BELLS = "model.goods.bells";
     public static final String MUSKETS = "model.goods.muskets";
     public static final String HORSES = "model.goods.horses";
-    
+    public static final String RUM = "model.goods.rum";
+    public static final String SILVER = "model.goods.silver";
+    public static final String HAMMERS = "model.goods.hammers";
+    public static final String TOOLS = "model.goods.tools";
+    public static final String ORE = "model.goods.ore";
+    public static final String FURS = "model.goods.furs";
+    public static final String COAST = "model.goods.coats";
+    public static final String TOBACCO = "model.goods.tobacco";
+
     private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
     private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;
     private static final float DEFAULT_ZERO_PRODUCTION_FACTOR = 1.0f;
@@ -183,6 +194,10 @@ public class GoodsType extends ObjectWithFeatures {
         return food;
     }
     
+	public boolean isType(String goodTypeId) {
+		return equalsId(goodTypeId);
+	}
+    
 	public float getProductionWeight() {
 		return productionWeight;
 	}
@@ -241,8 +256,38 @@ public class GoodsType extends ObjectWithFeatures {
 		}
 		return madeFromLevel;
 	}
-	
-	public static class Xml extends XmlNodeParser<GoodsType> {
+
+	public static List<GoodsType> productionChain(List<GoodsType> goodsTypes) {
+        List<GoodsType> chain = new ArrayList<GoodsType>(5);
+        for (GoodsType goodsType : goodsTypes) {
+            chain.add(goodsType);
+
+            GoodsType gt = goodsType;
+            while (gt.madeFrom != null) {
+                gt = gt.madeFrom;
+                chain.add(0, gt);
+            }
+        }
+        return chain;
+    }
+
+    public List<GoodsType> productionChain() {
+        List<GoodsType> chain = new ArrayList<GoodsType>(5);
+        chain.add(this);
+
+        GoodsType gt = this;
+        while (gt.madeFrom != null) {
+            gt = gt.madeFrom;
+            chain.add(0, gt);
+        }
+        return chain;
+    }
+
+    public String toSmallIdStr() {
+        return getId().replaceFirst("model.goods.", "");
+    }
+
+    public static class Xml extends XmlNodeParser<GoodsType> {
 		private static final String ATTR_ZERO_PRODUCTION_FACTOR = "zero-production-factor";
 		private static final String ATTR_LOW_PRODUCTION_THRESHOLD = "low-production-threshold";
 		private static final String ATTR_PRODUCTION_WEIGHT = "production-weight";

@@ -124,9 +124,10 @@ public class MoveController {
 	
 	public void acceptPathToEuropeDestination() {
 		mapActor.mapDrawModel().unitPath = finder.findToEurope(
-				guiGameModel.game.map, 
-				guiGameModel.getActiveUnit().getTile(), 
-				guiGameModel.getActiveUnit()
+			guiGameModel.game.map,
+			guiGameModel.getActiveUnit().getTile(),
+			guiGameModel.getActiveUnit(),
+			PathFinder.excludeUnexploredTiles
 		);
 		logicAcceptGotoPath();
 	}
@@ -148,7 +149,7 @@ public class MoveController {
 		}
 		guiGameModel.setCreateGotoPathMode(false);
 		
-		MoveContext moveContext = new MoveContext(unitPath);
+		MoveContext moveContext = new MoveContext(mapActor.mapDrawModel().getSelectedUnit(), unitPath);
 		moveContext.initNextPathStep();
 		if (unitPath.isPathToEurope()) {
 			moveContext.unit.setDestinationEurope();
@@ -198,7 +199,9 @@ public class MoveController {
 		
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
-		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit());
+		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit(),
+			PathFinder.excludeUnexploredAndIncludeNavyThreatTiles
+		);
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;
 	}
@@ -209,11 +212,22 @@ public class MoveController {
 		if (unit.isDestinationTile()) {
 			Tile startTile = unit.getTile();
 			Tile endTile = guiGameModel.game.map.getTile(unit.getDestinationX(), unit.getDestinationY());
-			mapActor.mapDrawModel().unitPath = finder.findToTile(guiGameModel.game.map, startTile, endTile, unit);
+			mapActor.mapDrawModel().unitPath = finder.findToTile(
+				guiGameModel.game.map,
+				startTile,
+				endTile,
+				unit,
+				PathFinder.excludeUnexploredAndIncludeNavyThreatTiles
+			);
 		}
 		if (unit.isDestinationEurope()) {
 			Tile startTile = unit.getTile();
-			mapActor.mapDrawModel().unitPath = finder.findToEurope(guiGameModel.game.map, startTile, unit);
+			mapActor.mapDrawModel().unitPath = finder.findToEurope(
+				guiGameModel.game.map,
+				startTile,
+				unit,
+				PathFinder.excludeUnexploredAndIncludeNavyThreatTiles
+			);
 		}
 	}
 
@@ -286,7 +300,7 @@ public class MoveController {
     }
 
     public void showLostCityRumourConfirmation(MoveContext moveContext) {
-        new LostCityRumourService(guiGameController, moveInThreadService, guiGameModel.game)
-            .showLostCityRumourConfirmation(moveContext);
+        new LostCityRumourService(guiGameController, guiGameModel.game)
+            .showLostCityRumourConfirmation(moveInThreadService, moveContext);
     }
 }

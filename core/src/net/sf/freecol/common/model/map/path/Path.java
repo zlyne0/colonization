@@ -4,7 +4,6 @@ import com.badlogic.gdx.utils.Array;
 import com.badlogic.gdx.utils.IntArray;
 
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
 
 public class Path {
 
@@ -12,12 +11,10 @@ public class Path {
 	public final IntArray turns;
 	final Tile startTile;
 	public final Tile endTile;
-	public final Unit unit;
 	boolean toEurope = false;
 	private final boolean reachDestination;
-	
-	public Path(Unit unit, Tile startTile, Tile endTile, int length, boolean reachDestination) {
-	    this.unit = unit;
+
+	public Path(Tile startTile, Tile endTile, int length, boolean reachDestination) {
 		this.tiles = new Array<Tile>(length);
 		this.turns = new IntArray(length);
 		
@@ -33,6 +30,11 @@ public class Path {
 	
 	public String toString() {
 		String st = "";
+		if (reachDestination) {
+			st = "reachDestination ";
+		} else {
+			st = "not reachDestination ";
+		}
 		if (tiles.size == 0) {
 			st = "empty path";
 		}
@@ -66,7 +68,7 @@ public class Path {
 	}
 
 	public boolean reachTile(Tile tile) {
-	    for (int i=0; i<tiles.size; i++) {
+		for (int i = 0; i < tiles.size; i++) {
 	        if (tiles.get(i).equalsCoordinates(tile)) {
 	            return true;
 	        }
@@ -80,6 +82,10 @@ public class Path {
 
 	public int totalTurns() {
 		return turns.get(turns.size-1);
+	}
+	
+	public boolean isQuickestThan(Path path) {
+		return this.tiles.size < path.tiles.size;
 	}
 	
 	public boolean isPathToEurope() {

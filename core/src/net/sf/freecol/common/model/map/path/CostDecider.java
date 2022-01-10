@@ -3,7 +3,7 @@ package net.sf.freecol.common.model.map.path;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
-import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.Direction;
 
@@ -14,8 +14,8 @@ class CostDecider {
     private static final int TURN_FACTOR = 100;
 	private static final int ILLEGAL_MOVE_COST = -1;
 
+	protected UnitMoveType unitMove;
 	protected Map map;
-	protected Unit moveUnit;
 	protected int unitInitialMoves;
 	protected boolean moveUnitPiracy = false;
 
@@ -25,18 +25,29 @@ class CostDecider {
 	protected int moveCost;
 	private int newTotalPathCost;
 	protected boolean avoidUnexploredTiles = true;
+	protected boolean allowEmbark = false;
 
-    void init(Map map, Unit moveUnit) {
+    void init(Map map, UnitMoveType unitMove) {
         this.map = map;
-        this.unitInitialMoves = moveUnit.getInitialMovesLeft();
-        this.moveUnit = moveUnit;
-        moveUnitPiracy = moveUnit.unitType.hasAbility(Ability.PIRACY);
+        this.unitMove = unitMove;
+        this.unitInitialMoves = unitMove.initialMoves();
+        this.moveUnitPiracy = unitMove.getUnitType().hasAbility(Ability.PIRACY);
     }
 	
     /**
      * @return boolean - return true when can improve move
      */
 	boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+		if (
+			moveType == MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT
+			|| moveType == MoveType.MOVE_NO_ACCESS_EMBARK && allowEmbark
+		) {
+			getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
+			improveMove(currentNode, moveNode);
+			moveNode.noMove = true;
+			return false;
+		}
+
         if (isMoveIllegal(moveNode.tile, moveType)) {
         	return false;
         }
@@ -79,9 +90,9 @@ class CostDecider {
 	}
 	
 	protected void getCost(Tile oldTile, Tile newTile, final int movesLeftBefore, MoveType moveType, Direction moveDirection) {
-		int cost = moveUnit.getMoveCost(oldTile, newTile, moveDirection, movesLeftBefore);
+		int cost = unitMove.caclulateMoveCost(oldTile, newTile, moveDirection, movesLeftBefore, unitInitialMoves);
 		if (cost > movesLeftBefore) {
-            final int moveCostNextTurn = moveUnit.getMoveCost(oldTile, newTile, moveDirection, unitInitialMoves);
+            final int moveCostNextTurn = unitMove.caclulateMoveCost(oldTile, newTile, moveDirection, unitInitialMoves, unitInitialMoves);
             cost = movesLeftBefore + moveCostNextTurn;
             costMovesLeft = unitInitialMoves - moveCostNextTurn;
             costNewTurns = 1;
@@ -94,7 +105,7 @@ class CostDecider {
 	
 	protected boolean isMoveIllegal(Tile newTile, MoveType moveType) {
 		if (MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
-			if (newTile.getSettlement() != null && !newTile.getSettlement().getOwner().equalsId(moveUnit.getOwner())) {
+			if (newTile.getSettlement() != null && !newTile.getSettlement().getOwner().equalsId(unitMove.getOwner())) {
 				moveCost = ILLEGAL_MOVE_COST;
 				return true;
 			}
@@ -106,7 +117,7 @@ class CostDecider {
 			}
 		}
 		
-	    if (avoidUnexploredTiles && moveUnit.getOwner().isTileUnExplored(newTile)) {
+	    if (avoidUnexploredTiles && unitMove.getOwner().isTileUnExplored(newTile)) {
 	        moveCost = ILLEGAL_MOVE_COST;
 	        return true;
 	    }

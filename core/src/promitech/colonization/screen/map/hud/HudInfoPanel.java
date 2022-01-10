@@ -180,7 +180,7 @@ public class HudInfoPanel extends Widget implements ChangeSelectedUnitListener {
 	    
 	    carrierGoods = null;
 	    if (selectedUnit.getGoodsContainer() != null) {
-	        carrierGoods = selectedUnit.getGoodsContainer().carrierGoods();
+	        carrierGoods = selectedUnit.getGoodsContainer().slotedGoods();
 	    }
 	}
 	

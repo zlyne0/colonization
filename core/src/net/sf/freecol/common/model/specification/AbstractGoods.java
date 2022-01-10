@@ -12,6 +12,10 @@ public class AbstractGoods implements Identifiable {
 	    this.typeId = typeId;
 	}
 
+	public boolean isEquals(String typeId, int quantity) {
+		return this.typeId.equals(typeId) && this.quantity == quantity;
+	}
+
 	@Override
 	public String getId() {
 		return typeId;
@@ -26,6 +30,10 @@ public class AbstractGoods implements Identifiable {
 		} else {
 			return quantity / ProductionSummary.CARRIER_SLOT_MAX_QUANTITY;
 		}
+	}
+	
+	public int amountToFillSlot() {
+		return ProductionSummary.CARRIER_SLOT_MAX_QUANTITY - quantity;
 	}
 	
 	public void makeEmpty() {

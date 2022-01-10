@@ -24,12 +24,13 @@ public class UnitRole extends ObjectWithFeatures {
 	public static final String DEFAULT_ROLE_ID = "model.role.default";
 	public static final String CAVALRY_ROLE_ID = "model.role.cavalry";
 	public static final String INFANTRY_ROLE_ID = "model.role.infantry";
-	
+
 	public static final String SOLDIER = "model.role.soldier";
 	public static final String DRAGOON = "model.role.dragoon";
-	
+	public static final String SCOUT = "model.role.scout";
+
 	public static final int DEFAULT_UNIT_ROLE_COUNT = 1;
-	
+
     public static String getRoleSuffix(String roleId) {
         return StringUtils.lastPart(roleId, ".");
     }
@@ -111,7 +112,7 @@ public class UnitRole extends ObjectWithFeatures {
 		}
 		return false;
 	}
-	
+
 	public static class Xml extends XmlNodeParser<UnitRole> {
 		private static final String ATTR_MAXIMUM_COUNT = "maximumCount";
 		private static final String ATTR_DOWNGRADE = "downgrade";

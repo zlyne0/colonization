@@ -98,13 +98,18 @@ public class ProductionInfo {
 		}
 	}
 	
-	public void writeProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
+	public void initProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
 		clear();
 		for (Production p : sourceProduction.productions) {
 			if (p.outputTypesEquals(goodsType.getId())) {
 				addProduction(new Production(p));
 			}
 		}
+	}
+	
+	public void initProduction(Production sourceProduction) {
+		clear();
+		addProduction(sourceProduction);
 	}
 	
 	private Production maxProduction() {
@@ -120,6 +125,23 @@ public class ProductionInfo {
 		return maxProduction;
 	}
 
+	public Entry<GoodsType, Integer> singleFilteredUnattendedProduction(MapIdEntities<GoodsType> goodsType) {
+		if (unattendedProductions.isEmpty()) { 
+			return null;
+		}
+		Production production = unattendedProductions.get(0);
+		return production.singleFilteredOutputTypeEquals(goodsType);
+	}
+
+	public Production firstAttendentProduction(GoodsType goodsType) {
+		for (Production prod : attendedProductions) {
+			if (prod.outputTypesEquals(goodsType.getId())) {
+				return prod;
+			}
+		}
+		return Production.EMPTY_READONLY;
+	}
+
     public List<Production> getUnattendedProductions() {
         return unattendedProductions;
     }
@@ -127,4 +149,5 @@ public class ProductionInfo {
     public List<Production> getAttendedProductions() {
         return attendedProductions;
     }
+
 }

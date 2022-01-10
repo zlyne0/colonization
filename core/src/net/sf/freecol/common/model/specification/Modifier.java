@@ -68,6 +68,7 @@ public class Modifier implements Identifiable {
 	public static final String TRADE_VOLUME_PENALTY = "model.modifier.tradeVolumePenalty";
 	public static final String TREASURE_TRANSPORT_FEE = "model.modifier.treasureTransportFee";
 	public static final String WAREHOUSE_STORAGE = "model.modifier.warehouseStorage";
+	public static final String COLONY_PRODUCTION_BONUS = "colony.production.bonus";
 
 	public static final float UNKNOWN = Float.MIN_VALUE;
 	public static final int DEFAULT_MODIFIER_INDEX = 0;
@@ -161,6 +162,10 @@ public class Modifier implements Identifiable {
 	
 	public float getValue() {
 		return value;
+	}
+	
+	public int asInt() {
+		return (int)value;
 	}
 	
 	public void setValue(float value) {

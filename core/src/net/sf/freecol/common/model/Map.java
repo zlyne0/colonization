@@ -7,6 +7,7 @@ import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.math.GridPoint2;
 
+import net.sf.freecol.common.model.map.LandSeaAreaMap;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Consumer;
@@ -90,6 +91,7 @@ public class Map extends ObjectWithId {
 	
 	private final IsometricMap<Tile> tiles;
 	public final MapIdEntities<Region> regions = new MapIdEntities<Region>();
+	private LandSeaAreaMap areas;
 	
 	public Map(String id, int width, int height) {
 	    super(id);
@@ -207,22 +209,6 @@ public class Map extends ObjectWithId {
         return tiles.isTileExists(tile.x, tile.y, radius, TILE_HAS_COLONY);
 	}
 	
-	public Tile findFirstMovableHighSeasTile(final Unit unit, int x, int y) {
-	    Tile tile = tiles.getSafeTile(x, y);
-	    MoveType navalMoveType = unit.getNavalMoveType(tile);
-	    if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
-	        return tile;
-	    }
-
-	    for (promitech.map.isometric.NeighbourIterableTile<Tile> neighbourIterableTile : tiles.neighbourTiles(x, y)) {
-            navalMoveType = unit.getNavalMoveType(neighbourIterableTile.tile);
-            if (MoveType.MOVE_HIGH_SEAS.equals(navalMoveType)) {
-                return neighbourIterableTile.tile;
-            }
-        }
-	    return null;
-	}
-
 	public Iterable<NeighbourIterableTile<Tile>> neighbourTiles(int x, int y) {
 	    return tiles.neighbourTiles(x, y);
 	}
@@ -264,7 +250,15 @@ public class Map extends ObjectWithId {
     	is.reset(tiles, tile.x, tile.y, radius);
     	return is;
     }
-    
+
+	public boolean isTheSameArea(Tile tile1, Tile tile2) {
+    	if (areas == null) {
+    		areas = new LandSeaAreaMap(this.width, this.height);
+    		areas.generate(this);
+		}
+    	return areas.isTheSameArea(tile1, tile2);
+	}
+
 	public static class Xml extends XmlNodeParser<Map> {
 		
 		private static final String ATTR_HEIGHT = "height";

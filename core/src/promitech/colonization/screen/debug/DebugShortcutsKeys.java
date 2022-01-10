@@ -62,12 +62,20 @@ public class DebugShortcutsKeys {
         this.stage = stage;
         
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
-        
-        commandByKeycode.put(Input.Keys.NUM_1, "indian_demand_tribute");
-        commandByKeycode.put(Input.Keys.NUM_2, "indian_bring_gift");
-        commandByKeycode.put(Input.Keys.NUM_3, "ai attack");
-        commandByKeycode.put(Input.Keys.NUM_5, "map show");
-        commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
+
+        commandByKeycode.put(Input.Keys.NUM_1, "player_turn_as_ai");
+        commandByKeycode.put(Input.Keys.NUM_2, "ai_generateTileScoresForNewColony");
+        commandByKeycode.put(Input.Keys.NUM_3, "ai_generateTheBestPlaceToBuildColony");
+        commandByKeycode.put(Input.Keys.NUM_4, "ai_generateWorkerReqScoreByValue");
+        commandByKeycode.put(Input.Keys.NUM_5, "ai_generateWorkerReqScoreByPriceToValue");
+        commandByKeycode.put(Input.Keys.NUM_6, "ai_generateWorkerReqBuyRecommendations");
+        commandByKeycode.put(Input.Keys.NUM_7, "simpleTest");
+        commandByKeycode.put(Input.Keys.NUM_8, "simpleTest2");
+        //commandByKeycode.put(Input.Keys.NUM_5, "aiTransportUnitsFromEuropeToNewWorld");
+        //commandByKeycode.put(Input.Keys.NUM_6, "colonies_gold_value_production");
+        commandByKeycode.put(Input.Keys.NUM_9, "show_missions");
+        commandByKeycode.put(Input.Keys.NUM_0, "map_show");
+        //commandByKeycode.put(Input.Keys.NUM_6, "firstContactDialog");
     }
 
     public boolean canHandleKey(int keycode) {

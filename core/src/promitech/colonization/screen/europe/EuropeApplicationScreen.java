@@ -49,6 +49,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		public boolean executeCommand(UnitActor unitActor, UnitActionOrderItem item, UnitActionOrdersDialog dialog) {
 			switch (item.actionType) {
 			case SAIL_TO_NEW_WORLD:
+				unitActor.unit.embarkUnitsFromLocation(unitActor.unit.getOwner().getEurope());
 				unitActor.unit.sailUnitToNewWorld();
 				if (player.getEurope().isNoNavyInPort()) {
 					guiGameController.showMapScreenAndActiveNextUnit();

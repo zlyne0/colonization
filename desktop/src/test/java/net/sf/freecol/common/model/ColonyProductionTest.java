@@ -17,33 +17,25 @@ import org.xml.sax.SAXException;
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
+import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
+import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import promitech.colonization.savegame.SaveGameParser;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 import promitech.colonization.ui.resources.Messages;
 
-public class ColonyProductionTest {
+public class ColonyProductionTest extends Savegame1600BaseClass {
 
-    @BeforeAll
-    public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
-        Messages.instance().load();
-    }
-
-    Game game;
-    Colony colony;
-    Player dutch;
     FoundingFather henryHudson;
     FoundingFather thomasPaine;
     
     @BeforeEach
-    public void setup() throws IOException, ParserConfigurationException, SAXException {
-        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-        dutch = game.players.getById("player:1");
-        colony = (Colony)dutch.settlements.getById("colony:6528");
+    public void setup2() throws IOException, ParserConfigurationException, SAXException {
         henryHudson = Specification.instance.foundingFathers.getById("model.foundingFather.henryHudson");
         thomasPaine = Specification.instance.foundingFathers.getById("model.foundingFather.thomasPaine");
     }
@@ -52,10 +44,10 @@ public class ColonyProductionTest {
 	public void calcuateSonsOfLiberty() throws Exception {
     	// given
         // when
-        colony.calculateSonsOfLiberty();
+        nieuwAmsterdam.calculateSonsOfLiberty();
         // then
-        assertEquals(147, colony.liberty);
-        assertEquals(12, colony.sonsOfLiberty());
+        assertEquals(147, nieuwAmsterdam.colonyLiberty.liberty);
+        assertEquals(12, nieuwAmsterdam.sonsOfLiberty());
 	}
     
     @Test
@@ -64,9 +56,9 @@ public class ColonyProductionTest {
         dutch.addFoundingFathers(game, henryHudson);
         
         // when
-        colony.updateColonyFeatures();
-        colony.updateProductionBonus();
-        ProductionSummary ps = colony.productionSummary();
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
         // then
         System.out.println("productionSummary = " + ps);
@@ -83,8 +75,8 @@ public class ColonyProductionTest {
         assertEquals(2, ps.getQuantity("model.goods.food")); 
         assertEquals(0, ps.getQuantity("model.goods.grain"));
         
-        Building furTrading = colony.buildings.getById("building:6545");
-        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
         assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
@@ -96,17 +88,59 @@ public class ColonyProductionTest {
     }
 
     @Test
+    public void canCalculateProductionForColonyWithOneProductionBonus() throws Exception {
+        // given
+        dutch.addFoundingFathers(game, henryHudson);
+        nieuwAmsterdam.colonyLiberty.setLibertyForOneProductionBonus(nieuwAmsterdam.getColonyUnitsCount());
+        
+        // when
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.calculateSonsOfLiberty();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
+
+        // then
+        assertThat(nieuwAmsterdam.productionBonus().asInt()).isEqualTo(1);
+        
+        System.out.println("productionSummary = " + ps);
+        
+        assertEquals(4, ps.getQuantity("model.goods.cotton"));
+        assertEquals(-2, ps.getQuantity("model.goods.lumber")); 
+        assertEquals(2, ps.getQuantity("model.goods.horses")); 
+        assertEquals(-11, ps.getQuantity("model.goods.furs")); 
+        assertEquals(13, ps.getQuantity("model.goods.hammers")); 
+        assertEquals(2, ps.getQuantity("model.goods.crosses")); 
+        assertEquals(6, ps.getQuantity("model.goods.bells")); 
+        assertEquals(0, ps.getQuantity("model.goods.fish")); 
+        assertEquals(11, ps.getQuantity("model.goods.coats")); 
+        assertEquals(4, ps.getQuantity("model.goods.food")); 
+        assertEquals(0, ps.getQuantity("model.goods.grain"));
+        
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
+        System.out.println("furTradingProdCons = " + furTradingProdCons);
+        
+        assertEquals(-11, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
+        assertEquals(0, furTradingProdCons.baseProduction.getQuantity("model.goods.furs"));
+        assertEquals(11, furTradingProdCons.baseProduction.getQuantity("model.goods.coats"));
+
+        assertEquals(-11, furTradingProdCons.realConsumption.getQuantity("model.goods.furs"));
+        assertEquals(11, furTradingProdCons.realProduction.getQuantity("model.goods.coats"));
+    }
+    
+    
+    @Test
     public void canCalculateProductionForColonyForUpgradedFurTraderHouse() throws Exception {
         // given
         dutch.addFoundingFathers(game, henryHudson);
         
-        Building ft = colony.buildings.getById("building:6545");
+        Building ft = nieuwAmsterdam.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furTradingPost"));
         
         // when
-        colony.updateColonyFeatures();
-        colony.updateProductionBonus();
-        ProductionSummary ps = colony.productionSummary();
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
         // then
         System.out.println("productionSummary = " + ps);
@@ -123,8 +157,8 @@ public class ColonyProductionTest {
         assertEquals(2, ps.getQuantity("model.goods.food")); 
         assertEquals(0, ps.getQuantity("model.goods.grain"));
         
-        Building furTrading = colony.buildings.getById("building:6545");
-        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
         assertEquals(-18, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
@@ -141,13 +175,13 @@ public class ColonyProductionTest {
         // given
         dutch.addFoundingFathers(game, henryHudson);
         
-        Building ft = colony.buildings.getById("building:6545");
+        Building ft = nieuwAmsterdam.buildings.getById("building:6545");
         ft.upgrade(Specification.instance.buildingTypes.getById("model.building.furFactory"));
         
         // when
-        colony.updateColonyFeatures();
-        colony.updateProductionBonus();
-        ProductionSummary ps = colony.productionSummary();
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
         // then
         System.out.println("productionSummary = " + ps);
@@ -164,8 +198,8 @@ public class ColonyProductionTest {
         assertEquals(2, ps.getQuantity("model.goods.food")); 
         assertEquals(0, ps.getQuantity("model.goods.grain"));
         
-        Building furTrading = colony.buildings.getById("building:6545");
-        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
         assertEquals(-27, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
@@ -183,15 +217,15 @@ public class ColonyProductionTest {
         // move statesment from townHall to tile 
         Unit unit = dutch.units.getById("unit:7076");
         unit.removeFromLocation();
-        ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
+        ColonyTile fursColonyTile = nieuwAmsterdam.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
+        nieuwAmsterdam.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
-        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-        colony.updateColonyFeatures();
-        colony.updateProductionBonus();
-        ProductionSummary ps = colony.productionSummary();
+        nieuwAmsterdam.updateModelOnWorkerAllocationOrGoodsTransfer();
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
         // then
         System.out.println("productionSummary = " + ps);
@@ -208,8 +242,8 @@ public class ColonyProductionTest {
         assertEquals(2, ps.getQuantity("model.goods.food")); 
         assertEquals(0, ps.getQuantity("model.goods.grain"));
         
-        Building furTrading = colony.buildings.getById("building:6545");
-        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
         
         assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
@@ -228,15 +262,15 @@ public class ColonyProductionTest {
         // move statesment from townHall to tile 
         Unit unit = dutch.units.getById("unit:7076");
         unit.removeFromLocation();
-        ColonyTile fursColonyTile = colony.colonyTiles.getById("tile:3352");
+        ColonyTile fursColonyTile = nieuwAmsterdam.colonyTiles.getById("tile:3352");
         
-        colony.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
+        nieuwAmsterdam.addWorkerToTerrain(fursColonyTile, unit, Specification.instance.goodsTypes.getById("model.goods.furs"));
         
         // when
-        colony.updateModelOnWorkerAllocationOrGoodsTransfer();
-        colony.updateColonyFeatures();
-        colony.updateProductionBonus();
-        ProductionSummary ps = colony.productionSummary();
+        nieuwAmsterdam.updateModelOnWorkerAllocationOrGoodsTransfer();
+        nieuwAmsterdam.updateColonyFeatures();
+        nieuwAmsterdam.updateProductionBonus();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
         // then
         System.out.println("productionSummary = " + ps);
@@ -253,8 +287,8 @@ public class ColonyProductionTest {
         assertEquals(2, ps.getQuantity("model.goods.food")); 
         assertEquals(0, ps.getQuantity("model.goods.grain"));
         
-        Building furTrading = colony.buildings.getById("building:6545");
-        ProductionConsumption furTradingProdCons = colony.productionSummary(furTrading);
+        Building furTrading = nieuwAmsterdam.buildings.getById("building:6545");
+        ProductionConsumption furTradingProdCons = nieuwAmsterdam.productionSummary(furTrading);
         System.out.println("furTradingProdCons = " + furTradingProdCons);
 
         assertEquals(-9, furTradingProdCons.baseConsumption.getQuantity("model.goods.furs"));
@@ -291,12 +325,12 @@ public class ColonyProductionTest {
     	dutch.addFoundingFathers(game, williamPenn);
     	
     	BuildingType churchType = Specification.instance.buildingTypes.getById("model.building.church");
-        Building church = colony.addBuilding(churchType);
-        colony.addWorkerToBuilding(church, colony.getUnits().getById("unit:7076"));
-        colony.addWorkerToBuilding(church, colony.getUnits().getById("unit:6940"));
+        Building church = nieuwAmsterdam.addBuilding(churchType);
+        nieuwAmsterdam.addWorkerToBuilding(church, nieuwAmsterdam.getUnits().getById("unit:7076"));
+        nieuwAmsterdam.addWorkerToBuilding(church, nieuwAmsterdam.getUnits().getById("unit:6940"));
         
         // when
-        ProductionSummary ps = colony.productionSummary();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
         
         // then
         assertThat(ps.getQuantity("model.goods.crosses")).isEqualTo(9);
@@ -311,7 +345,7 @@ public class ColonyProductionTest {
         dutch.setTax(20);
 		
 		// when
-        ProductionSummary ps = colony.productionSummary();
+        ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
 		// then
 		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(6);
@@ -326,7 +360,7 @@ public class ColonyProductionTest {
 		dutch.setTax(20);
 		
 		// when
-		ProductionSummary ps = colony.productionSummary();
+		ProductionSummary ps = nieuwAmsterdam.productionSummary();
 
 		// then
 		assertThat(ps.getQuantity(GoodsType.BELLS)).isEqualTo(5);
@@ -335,21 +369,21 @@ public class ColonyProductionTest {
 	@Test
 	public void canDeterminePotentialProduction() throws Exception {
 		// given
-		Unit unit = dutch.units.getById("unit:7076");
-		dutch.addFoundingFathers(game, henryHudson);
-		colony.updateColonyFeatures();
+        UnitType statesman = Specification.instance.unitTypes.getById("model.unit.elderStatesman");
+
+        dutch.addFoundingFathers(game, henryHudson);
+		nieuwAmsterdam.updateColonyFeatures();
 		
 		// when
-		List<GoodMaxProductionLocation> locations = colony.determinePotentialMaxGoodsProduction(unit);
+		List<MaxGoodsProductionLocation> locations = nieuwAmsterdam.productionSimulation().determinePotentialMaxGoodsProduction(statesman, false);
 
 		// then
-		for (GoodMaxProductionLocation l : locations) {
+		for (MaxGoodsProductionLocation l : locations) {
 			System.out.println(l);
 			if (l.getGoodsType().equalsId("model.goods.furs")) {
 				assertThat(l.getProduction()).isEqualTo(8);
 				assertThat(l.getColonyTile().getId()).isEqualTo("tile:3352");
 			}
 		}
-		
 	}
 }

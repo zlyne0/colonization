@@ -11,11 +11,11 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
-import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
-import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
-import net.sf.freecol.common.model.ai.missions.MissionFromIndianSettlement;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
-import net.sf.freecol.common.model.ai.missions.WanderMission;
+import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
+import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
+import net.sf.freecol.common.model.ai.missions.indian.MissionFromIndianSettlement;
+import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -58,7 +58,6 @@ public class NativeMissionPlaner {
 					Unit unitToWander = units.get(i);
 					unitToWander.changeUnitLocation(settlement.tile);
 					WanderMission wanderMission = new WanderMission(unitToWander);
-					missionsContainer.blockUnitsForMission(wanderMission);
 					missionsContainer.addMission(wanderMission);
 				}
 			}
@@ -105,7 +104,7 @@ public class NativeMissionPlaner {
 			if (tile.hasSettlement() && tile.getSettlement().isColony()) {
 				Colony colony = tile.getSettlement().asColony();
 				if (indianSettlement.getOwner().hasContacted(colony.getOwner())) {
-					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, unitToDemandTribute, false);
+					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, unitToDemandTribute, PathFinder.includeUnexploredTiles);
 					if (path.isReachedDestination()) {
 						int totalTurnDistance = path.totalTurns();
 						if (totalTurnDistance == 0) {
@@ -175,7 +174,7 @@ public class NativeMissionPlaner {
 			if (tile.hasSettlement() && tile.getSettlement().isColony()) {
 				Colony colony = tile.getSettlement().asColony();
 				if (indianSettlement.getOwner().hasContacted(colony.getOwner())) {
-					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, transportUnit, false);
+					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, transportUnit, PathFinder.includeUnexploredTiles);
 					if (path.isReachedDestination()) {
 						int alarm = Math.max(1, indianSettlement.getTension(colony.getOwner()).getValue());
 						int turns = path.totalTurns();

@@ -6,6 +6,13 @@ import java.util.LinkedList;
 import java.util.List;
 
 import net.sf.freecol.common.model.ObjectWithId;
+import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission;
+import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
+import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
+import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
+import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
+
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.ObjectFromNodeSetter.ChildObject2XmlCustomeHandler;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -14,7 +21,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
 	protected List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
 	
-	public AbstractMission(String id) {
+	protected AbstractMission(String id) {
 		super(id);
 	}
 
@@ -52,7 +59,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	    }
 	    return leafs;
 	}
-	
+
 	public boolean hasDependMissions() {
 		if (dependMissions.isEmpty()) {
 			return false;
@@ -60,7 +67,7 @@ public abstract class AbstractMission extends ObjectWithId {
 		
 		boolean hasDepend = false;
 		for (AbstractMission am : dependMissions) {
-			if (am.done == false) {
+			if (!am.done) {
 				hasDepend = true;
 				break;
 			}
@@ -83,7 +90,20 @@ public abstract class AbstractMission extends ObjectWithId {
 		return false;
 	}
 
-	public AbstractMission getDependMissionById(String missionId) {
+	AbstractMission findParentForMission(AbstractMission m) {
+		for (AbstractMission childMission : dependMissions) {
+			if (childMission.equalsId(m)) {
+				return this;
+			}
+			AbstractMission localParent = childMission.findParentForMission(m);
+			if (localParent != null) {
+				return localParent;
+			}
+		}
+		return null;
+	}
+
+	public AbstractMission findDependMissionById(String missionId) {
 		for (AbstractMission am : dependMissions) {
 			if (am.equalsId(missionId)) {
 				return am;
@@ -91,7 +111,12 @@ public abstract class AbstractMission extends ObjectWithId {
 		}
 		return null;
 	}
-	
+
+	@Override
+	public String toString() {
+		return "TODO.mission.toString: " + this.getClass().getName() + " " + this.getId();
+	}
+
 	public static abstract class Xml<AM extends AbstractMission> extends XmlNodeParser<AM> {
 
 		public Xml() {
@@ -108,11 +133,12 @@ public abstract class AbstractMission extends ObjectWithId {
 			
 			addNode(WanderMission.class, setter);
 			addNode(TransportUnitMission.class, setter);
-			addNode(RellocationMission.class, setter);
-			addNode(FoundColonyMission.class, setter);
 			addNode(ExplorerMission.class, setter);
 			addNode(IndianBringGiftMission.class, setter);
 			addNode(DemandTributeMission.class, setter);
+			addNode(TransportGoodsToSellMission.class, setter);
+			addNode(ColonyWorkerMission.class, setter);
+			addNode(ScoutMission.class, setter);
 		}
 
 		@Override

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -15,7 +16,7 @@ import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.savegame.XmlTagMetaData;
 
-public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T> {
+public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadOnly<T>, Iterable<T> {
 	
     protected final java.util.Map<String,T> entities;
 
@@ -23,6 +24,10 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     	return new MapIdEntities<T>(new LinkedHashMap<String, T>());
     }
 
+	public static <T extends Identifiable> MapIdEntities<T> linkedMapIdEntities(int initialCapacity) {
+    	return new MapIdEntities<T>(new LinkedHashMap<String, T>(initialCapacity));
+	}
+    
 	public static <TT extends Identifiable> MapIdEntities<TT> unmodifiableEmpty() {
 		Map<String, TT> emptyMap = Collections.emptyMap();
 		return new MapIdEntities<TT>(Collections.unmodifiableMap(emptyMap));
@@ -30,6 +35,13 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
 	
     public MapIdEntities() {
     	entities = new HashMap<String,T>();
+    }
+    
+    public MapIdEntities(List<T> entitiesList) {
+    	entities = new HashMap<String, T>();
+    	for (T entity : entitiesList) {
+    		entities.put(entity.getId(), entity);
+    	}
     }
     
     private MapIdEntities(java.util.Map<String,T> entitiesMapImplementation) {
@@ -60,7 +72,15 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
         }
         return en;
     }
-    
+
+    public T getById(Identifiable identifiable) {
+        T en = entities.get(identifiable.getId());
+        if (en == null) {
+            throw new IllegalArgumentException("can not find entity by id: " + identifiable.getId());
+        }
+        return en;
+    }
+
     public T getByIdOrNull(String id) {
         return entities.get(id);
     }
@@ -138,6 +158,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     	return entities.values();
     }
 
+	@Override
+	public Iterator<T> iterator() {
+		return entities.values().iterator();
+	}
+    
     public MapIdEntities<T> reduceBy(MapIdEntities<T> reducer) {
         MapIdEntities<T> reduced = new MapIdEntities<T>();
         for (T u : this.entities()) {
@@ -158,6 +183,11 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     
     public void clear() {
         entities.clear();
+    }
+    
+    @Override
+    public List<T> copy() {
+    	return new ArrayList<T>(entities.values());
     }
     
     public static class Xml extends XmlNodeParser {

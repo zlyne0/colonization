@@ -10,9 +10,9 @@ import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.ai.missions.DemandTributeMission;
-import net.sf.freecol.common.model.ai.missions.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
+import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
+import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.MockedRandomizer;

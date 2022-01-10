@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.map.path;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.assertj.core.api.Assertions.assertThat;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,21 +17,32 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
+import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.savegame.SaveGameParser;
+import net.sf.freecol.common.util.CollectionUtils;
 
-public class PathFinderTest {
+import java.util.Arrays;
+import java.util.Set;
+
+import promitech.colonization.Direction;
+import promitech.colonization.savegame.SaveGameParser;
+import promitech.map.isometric.NeighbourIterableTile;
+
+class PathFinderTest {
 
     Path path;
     Game game;
     PathFinder sut = new PathFinder();
-    
-    @BeforeAll
+    Player dutch;
+	Colony nieuwAmsterdam;
+	Colony fortNassau;
+
+	@BeforeAll
     public static void beforeClass() {
         Gdx.files = new LwjglFiles();
     }
@@ -38,17 +50,21 @@ public class PathFinderTest {
     @BeforeEach
     public void setup() throws Exception {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
+    	dutch = game.players.getById("player:1");
+
+		nieuwAmsterdam = game.map.getTile(24, 78).getSettlement().asColony();
+		fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
     }
     
 	@Test
-	public void canFindLandPathForColonist() throws Exception {
+	void canFindLandPathForColonist() throws Exception {
 		// given
         Tile startTile = game.map.getTile(24, 78);
         Tile endTile = game.map.getTile(21, 72);
         Unit moveUnit = startTile.getUnits().getById("unit:6762");
         
 		// when
-		path = sut.findToTile(game.map, startTile, endTile, moveUnit);
+		path = sut.findToTile(game.map, startTile, endTile, moveUnit, PathFinder.excludeUnexploredTiles);
         
 		// then
 		System.out.println("path = \r\n" + path );
@@ -71,14 +87,14 @@ public class PathFinderTest {
 	}
 
 	@Test
-	public void canFindMarinePathForNavy() throws Exception {
+	void canFindMarinePathForNavy() throws Exception {
 		// given
         Tile startTile = game.map.getTile(12, 79);
         Tile endTile = game.map.getTile(12, 83);
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
 		
 		// when
-        path = sut.findToTile(game.map, startTile, endTile, moveUnit);
+        path = sut.findToTile(game.map, startTile, endTile, moveUnit, PathFinder.excludeUnexploredTiles);
 		
 		// then
 		System.out.println("path = \r\n" + path );
@@ -94,7 +110,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-    public void canFindNavyPathAndOmitFortressTile() throws Exception {
+    void canFindNavyPathAndOmitFortressTile() throws Exception {
         // given
         Tile startTile = game.map.getTile(26, 77);
         Tile endTile = game.map.getTile(28, 72);
@@ -115,7 +131,7 @@ public class PathFinderTest {
 
 
         // when
-        path = sut.findToTile(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer, PathFinder.excludeUnexploredTiles);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -136,7 +152,7 @@ public class PathFinderTest {
     }
 	
 	@Test
-    public void canFindNavyPathAndDoesNotOmitFortressTile() throws Exception {
+    void canFindNavyPathAndDoesNotOmitFortressTile() throws Exception {
         // given
         Tile startTile = game.map.getTile(26, 77);
         Tile endTile = game.map.getTile(28, 72);
@@ -146,7 +162,7 @@ public class PathFinderTest {
         privateer.changeUnitLocation(startTile);
 
         // when
-        path = sut.findToTile(game.map, startTile, endTile, privateer);
+        path = sut.findToTile(game.map, startTile, endTile, privateer, PathFinder.excludeUnexploredTiles);
 
         // then
         System.out.println("path = \r\n" + path);
@@ -164,13 +180,13 @@ public class PathFinderTest {
     }
 	
 	@Test
-    public void canFindPathToEurope() throws Exception {
+    void canFindPathToEurope() throws Exception {
         // given
         Tile startTile = game.map.getTile(12, 79);
         Unit moveUnit = startTile.getUnits().getById("unit:6900");
 
         // when
-	    path = sut.findToEurope(game.map, startTile, moveUnit);
+	    path = sut.findToEurope(game.map, startTile, moveUnit, PathFinder.excludeUnexploredTiles);
         // then
 	    System.out.println("path = " + path);
 
@@ -204,7 +220,7 @@ public class PathFinderTest {
     }
 
 	@Test
-	public void colonistsShouldNotMoveViaEnemy() throws Exception {
+	void colonistsShouldNotMoveViaEnemy() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(24, 77));
@@ -219,7 +235,7 @@ public class PathFinderTest {
 		Tile destTile = game.map.getSafeTile(23, 80);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), destTile, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), destTile, colonist, PathFinder.excludeUnexploredTiles);
 
 		// then
 		for (Tile t : path.tiles) {
@@ -236,7 +252,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
+	void shouldReturnEmptyPathWhenCanNotFindNavyWayToEurope() throws Exception {
 		// given
 		Tile startTile = game.map.getSafeTile(23, 70);
     	Unit galleon = new Unit(
@@ -247,7 +263,7 @@ public class PathFinderTest {
 		);
     	
 		// when
-		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon);
+		Path pathToEurope = sut.findToEurope(game.map, startTile, galleon, PathFinder.excludeUnexploredTiles);
 
 		// then
 		PathAssert.assertThat(pathToEurope)
@@ -256,7 +272,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldNotFindPathBecauseBlockedByEnemy() throws Exception {
+	void shouldNotFindPathBecauseBlockedByEnemy() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
@@ -271,7 +287,7 @@ public class PathFinderTest {
 		Tile nieuwAmsterdamTile = game.map.getSafeTile(24, 78);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), nieuwAmsterdamTile, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), nieuwAmsterdamTile, colonist, PathFinder.excludeUnexploredTiles);
 		
 		// then
 		PathAssert.assertThat(path)
@@ -279,7 +295,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void shouldNotFindPathBetweenIslands() throws Exception {
+	void shouldNotFindPathBetweenIslands() throws Exception {
 		// given
 		Player dutch = game.players.getById("player:1");
 		Unit colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, game.map.getSafeTile(23, 80));
@@ -287,7 +303,7 @@ public class PathFinderTest {
 		Tile tileOnIsland = game.map.getSafeTile(24, 89);
 		
 		// when
-		path = sut.findToTile(game.map, colonist.getTile(), tileOnIsland, colonist);
+		path = sut.findToTile(game.map, colonist.getTile(), tileOnIsland, colonist, PathFinder.excludeUnexploredTiles);
 
 		// then
 		PathAssert.assertThat(path)
@@ -295,7 +311,7 @@ public class PathFinderTest {
 	}
 	
 	@Test
-	public void indianShouldFindPathFromSettlementToColony() throws Exception {
+	void indianShouldFindPathFromSettlementToColony() throws Exception {
 		// given
 		Tile fromTile = game.map.getSafeTile(19, 78);
 		Tile toTile = game.map.getSafeTile(20, 79);
@@ -304,7 +320,7 @@ public class PathFinderTest {
 		Unit brave = UnitFactory.create(UnitType.BRAVE, inca, fromTile);
 		
 		// when
-		path = sut.findToTile(game.map, fromTile, toTile, brave, false);
+		path = sut.findToTile(game.map, fromTile, toTile, brave, PathFinder.includeUnexploredTiles);
 
 		// then
         PathAssert.assertThat(path)
@@ -312,5 +328,109 @@ public class PathFinderTest {
 	        .assertPathStep(0, 0, 19, 78)
 	        .assertPathStep(1, 0, 20, 78)
 	        .assertPathStep(2, 1, 20, 79);
+	}
+
+	@Test
+	void shouldFindPathThroughHighSea() {
+		// given
+		Tile dest = game.map.getSafeTile(25, 86);
+		Tile source = game.map.getSafeTile(29, 86);
+
+		TileType highSeas = Specification.instance.tileTypes.getById(TileType.HIGH_SEAS);
+		for (NeighbourIterableTile<Tile> neighbourTile : game.map.neighbourTiles(source)) {
+			neighbourTile.tile.changeTileType(highSeas);
+		}
+		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, source);
+
+		// when
+		path = sut.findTheQuickestToTile(game.map, source, Arrays.asList(dest), caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
+		//path = sut.findToTile(game.map, source, dest, caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
+
+		// then
+		//System.out.println("path = " + path);
+
+		PathAssert.assertThat(path)
+			.reachedDestination()
+			.assertPathStep(0, 0, 29, 86)
+			.assertPathStep(1, 0, 28, 86)
+			.assertPathStep(2, 0, 27, 86)
+			.assertPathStep(3, 0, 26, 86)
+			.assertPathStep(4, 0, 25, 86)
+		;
+	}
+
+	@Test
+	void shouldGenerateRangeToIndianSettlement() {
+		// given
+		Tile source = game.map.getTile(22, 80);
+		Unit scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, source);
+
+		// when
+		sut.generateRangeMap(game.map, scout, PathFinder.includeUnexploredTiles);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(19, 78))).isEqualTo(0);
+		assertThat(sut.turnsCost(game.map.getTile(15, 85))).isEqualTo(1);
+	}
+
+	@Test
+	void shouldGenerateRangeMapWithoutDisembarkTiles() {
+		// given
+		Tile sourceTile = game.map.getTile(26, 83);
+		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, sourceTile);
+
+		// when
+		Set<PathFinder.FlagTypes> flagTypes = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark);
+		sut.generateRangeMap(game.map, caravel, flagTypes);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(23, 80))).isEqualTo(PathFinder.INFINITY);
+		assertThat(sut.turnsCost(nieuwAmsterdam.tile)).isEqualTo(1);
+	}
+
+	@Test
+	void shouldGenerateRangeMapWithEmbarkTiles() {
+		// given
+		Unit scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, fortNassau.tile);
+
+		// when
+		Set<PathFinder.FlagTypes> flagTypes = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark);
+		sut.generateRangeMap(
+			game.map,
+			fortNassau.tile,
+			scout,
+			flagTypes
+		);
+
+		// then
+		// in middle of ocean
+		assertThat(sut.turnsCost(game.map.getTile(22, 85))).isEqualTo(PathFinder.INFINITY);
+		// ocean next to FortNassau
+		assertThat(sut.turnsCost(game.map.getTile(20, 81))).isEqualTo(0);
+		// ocean next to land, two tiles from colony
+		assertThat(sut.turnsCost(game.map.getTile(21, 81))).isEqualTo(0);
+	}
+
+	@Test
+	void canGenerateDirectionInto() {
+		// given
+		Tile sourceTile = game.map.getTile(28, 81);
+		Tile westTile = game.map.getTile(sourceTile, Direction.W);
+
+		Unit ship = UnitFactory.create(UnitType.CARAVEL, dutch, sourceTile);
+		sut.generateRangeMap(game.map, ship, PathFinder.includeUnexploredTiles);
+		int westTileIndex = sut.grid.toIndex(westTile.x, westTile.y);
+
+		// when
+		Direction directionInto = sut.getDirectionInto(westTileIndex);
+		Path path = sut.createPath(westTile);
+
+		// then
+		assertThat(directionInto).isEqualTo(Direction.W);
+		PathAssert.assertThat(path)
+			.reachedDestination()
+			.assertPathStep(0, 0, 28, 81)
+			.assertPathStep(1, 0, 27, 81)
+		;
 	}
 }

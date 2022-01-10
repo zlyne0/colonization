@@ -36,6 +36,11 @@ public class GoodsContainer {
     	decreaseGoodsQuantity(goodsType, quantity);
     	toContainer.increaseGoodsQuantity(goodsType, quantity);
     }
+
+    public void transferGoods(String goodsTypeId, int amount, GoodsContainer toContainer) {
+    	decreaseGoodsQuantity(goodsTypeId, amount);
+    	toContainer.increaseGoodsQuantity(goodsTypeId, amount);
+    }
     
     public void transferGoods(String goodsTypeId, GoodsContainer toContainer) {
     	int amount = goodsAmount(goodsTypeId);
@@ -87,9 +92,10 @@ public class GoodsContainer {
     	increaseGoodsQuantity(goodsType.getId(), quantity);
     }
     
-    public void increaseGoodsQuantity(String goodsId, int quantity) {
+    public GoodsContainer increaseGoodsQuantity(String goodsId, int quantity) {
     	goods.addGoods(goodsId, quantity);
     	updateTakenCargoSlots();
+    	return this;
     }
     
     public void increaseGoodsQuantity(AbstractGoods anAbstractGoods) {
@@ -152,7 +158,7 @@ public class GoodsContainer {
 		return cargoSpaceTaken;
 	}
     
-    public List<AbstractGoods> carrierGoods() {
+    public List<AbstractGoods> slotedGoods() {
         return goods.slotedGoods();
     }
 
@@ -171,7 +177,23 @@ public class GoodsContainer {
     public ProductionSummary cloneGoods() {
         return goods.cloneGoods();
     }
-    
+
+	public void cloneTo(GoodsContainer gc) {
+		gc.decreaseAllToZero();
+		goods.cloneTo(gc.goods);
+		updateTakenCargoSlots();
+	}
+	
+	@Override
+	public String toString() {
+		return goods.toString();
+	}
+
+	public void clear() {
+        goods.clear();
+        updateTakenCargoSlots();
+    }
+
     public static class Xml extends XmlNodeParser<GoodsContainer> {
         private static final String ATTR_AMOUNT = "amount";
 		private static final String ATTR_TYPE = "type";

@@ -54,14 +54,20 @@ public class TradeRouteMissionHandler {
         	wagon.removeTradeRoute();
             return;
         }
-        Path path = pathFinder.findToTile(guiGameModel.game.map, wagon.getTile(), nextStopLocation.tile, wagon);
+        Path path = pathFinder.findToTile(
+            guiGameModel.game.map,
+            wagon.getTile(),
+            nextStopLocation.tile,
+            wagon,
+            PathFinder.excludeUnexploredTiles
+        );
         if (!path.reachTile(nextStopLocation.tile)) {
             // just stop, and wait when path reach stop
             wagon.setState(UnitState.SKIPPED);
             return;
         }
         
-        MoveContext moveContext = new MoveContext(path);
+        MoveContext moveContext = new MoveContext(wagon, path);
         moveContext.initNextPathStep();
         moveService.handlePathMoveContext(moveContext);
         if (nextStopLocation.tile.equalsCoordinates(wagon.getTile())) {

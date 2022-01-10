@@ -20,9 +20,6 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.Ability;
-import net.sf.freecol.common.model.specification.Goods;
-import net.sf.freecol.common.model.specification.Modifier;
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.orders.combat.CombatService;
@@ -30,12 +27,12 @@ import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 import promitech.map.isometric.IterableSpiral;
+import static promitech.colonization.orders.NewTurnLogger.logger;
 
 public class NewTurnService {
 
 	private final GUIGameModel guiGameModel;
 	private final CombatService combatService;
-	private final NewTurnContext newTurnContext = new NewTurnContext();
 	private final MoveService moveService;
 	private final IndianSettlementWantedGoods indianWantedGoods = new IndianSettlementWantedGoods();
 	
@@ -49,9 +46,6 @@ public class NewTurnService {
 	}
 
 	public void newTurn(Player player) {
-		newTurnContext.restart();
-		System.out.println("newTurn for player " + player);
-
 		if (player.isEuropean()) {
 			player.foundingFathers.checkFoundingFathers(guiGameModel.game);
 		}
@@ -75,19 +69,21 @@ public class NewTurnService {
 				continue;
 			}
 			Colony colony = (Colony)settlement;
-			System.out.println("calculate new turn for colony " + colony);
+			if (logger.isDebug()) {
+				logger.debug("player[%s].colony[%s].newTurn.name[%s]", colony.getOwner().getId(), colony.getId(), colony.getName());
+			}
 			
 			colony.ifPossibleAddFreeBuildings();
 			colony.updateColonyFeatures();
 			colony.increaseWarehouseByProduction();
-			colony.reduceTileResourceQuantity(newTurnContext);
+			colony.reduceTileResourceQuantity();
 			
 			colony.increaseColonySize();
-			colony.buildBuildings(newTurnContext);
+			colony.buildBuildings();
 			
 			colony.exportGoods(guiGameModel.game);
 			colony.removeExcessedStorableGoods();
-			colony.handleLackOfResources(newTurnContext, guiGameModel.game);
+			colony.handleLackOfResources(guiGameModel.game);
 			colony.calculateSonsOfLiberty();
 			
 			colony.increaseWorkersExperience();
@@ -158,6 +154,13 @@ public class NewTurnService {
 
 	private void sailOnHighSeas(Unit unit) {
         unit.sailOnHighSea();
+        if (logger.isDebug()) {
+        	String dest = "new world";
+        	if (unit.isDestinationEurope()) {
+        		dest = "europe";
+        	}
+        	logger.debug("player[%s].unit[%s].sailOnHighSeas.turns %s dest %s", unit.getOwner().getId(), unit.getId(), unit.workTurnsToComplete(), dest);
+        }
         if (unit.isWorkComplete()) {
             if (unit.isDestinationEurope()) {
                 unit.clearDestination();
@@ -172,12 +175,35 @@ public class NewTurnService {
             }
             
             if (unit.isDestinationTile()) {
-                Tile tile = guiGameModel.game.map.findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
+                Tile tile = findFirstMovableHighSeasTile(unit, unit.getDestinationX(), unit.getDestinationY());
                 unit.clearDestination();
                 unit.changeUnitLocation(tile);
             }
         }
     }
+
+	private Tile findFirstMovableHighSeasTile(final Unit unit, int x, int y) {
+		Tile tile = guiGameModel.game.map.getSafeTile(x, y);
+		if (tile.getUnits().isEmpty()) {
+			return tile;
+		}
+		Unit firstUnit = tile.getUnits().first();
+		if (firstUnit.isOwner(unit.getOwner())) {
+			return tile;
+		}
+		for (promitech.map.isometric.NeighbourIterableTile<Tile> neighbourIterableTile : guiGameModel.game.map.neighbourTiles(x, y)) {
+			if (neighbourIterableTile.tile.getType().isHighSea()) {
+				if (neighbourIterableTile.tile.getUnits().isEmpty()) {
+					return neighbourIterableTile.tile;
+				}
+				firstUnit = neighbourIterableTile.tile.getUnits().first();
+				if (firstUnit.isOwner(unit.getOwner())) {
+					return neighbourIterableTile.tile;
+				}
+			}
+		}
+		return null;
+	}
 
     private void checkAndCashInTreasureInEurope(Player player) {
     	List<Unit> units = null; 
@@ -236,8 +262,6 @@ public class NewTurnService {
 				int initQuantity = resourceType.initQuantity();
 				improvingTile.addResource(new TileResource(Game.idGenerator, resourceType, initQuantity));
 			}
-			
-			newTurnContext.setRequireUpdateMapModel();
 			unit.setState(UnitState.ACTIVE);
 		}
 	}
@@ -247,10 +271,6 @@ public class NewTurnService {
 				&& Randomizer.instance().isHappen(improvementType.getExposedResourceAfterImprovement()) 
 				&& tile.getType().allowedResourceTypes.isNotEmpty();
 		
-	}
-
-	public NewTurnContext getNewTurnContext() {
-		return newTurnContext;
 	}
 }
 

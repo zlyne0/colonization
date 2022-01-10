@@ -4,7 +4,7 @@ public abstract class AbstractArray2D {
     public final int width;
     public final int height;
 
-    public AbstractArray2D(final int width, final int height) {
+    protected AbstractArray2D(final int width, final int height) {
         this.width = width;
         this.height = height;
     }
@@ -25,8 +25,12 @@ public abstract class AbstractArray2D {
         return index / width;
     }
 
-    public boolean sizeEquals(int w, int h) {
+    public boolean isSizeEquals(int w, int h) {
     	return width == w && height == h;
     }
-    
+
+    public boolean isSizeEquals(AbstractArray2D grid) {
+        return this.width == grid.width && this.height == grid.height;
+    }
+
 }

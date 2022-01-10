@@ -7,11 +7,12 @@ import promitech.colonization.Direction;
 class NavyCostDecider extends CostDecider {
     
     private boolean moveToSeaside = false;
+    protected boolean allowDisembark = true;
     
     @Override
     boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
         moveToSeaside = false;
-        if ((moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
+        if (allowDisembark && (moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
             moveType = MoveType.MOVE;
             moveToSeaside = true;
         }
@@ -57,7 +58,7 @@ class NavyCostDecider extends CostDecider {
             	continue;
             }
             if (neighbourToMoveTile.hasSettlement()) {
-                if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(moveUnit.getOwner(), moveUnitPiracy)) {
+                if (neighbourToMoveTile.isColonyOnTileThatCanBombardNavyUnit(unitMove.getOwner(), moveUnitPiracy)) {
                     costMovesLeft = 0;
                     costNewTurns = 1;
                     
@@ -65,7 +66,7 @@ class NavyCostDecider extends CostDecider {
                     return true;
                 }
             } else {
-                boolean useAllMove = neighbourToMoveTile.isTileHasNavyUnitThatCanBombardUnit(moveUnit.getOwner(), moveUnitPiracy);
+                boolean useAllMove = neighbourToMoveTile.isTileHasNavyUnitThatCanBombardUnit(unitMove.getOwner(), moveUnitPiracy);
                 if (useAllMove) {
                     costMovesLeft = 0;
                     costNewTurns = 1;

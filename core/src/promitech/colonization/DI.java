@@ -22,6 +22,8 @@ public class DI {
 	public CombatService combatService;
 	public MoveView moveView;
 	public PathFinder pathFinder;
+	public PathFinder pathFinder2;
+	public NewTurnService newTurnService;
 	
 	public void createBeans() {
 		guiGameModel = new GUIGameModel();
@@ -33,8 +35,9 @@ public class DI {
 		moveView = new MoveView();
 		firstContactController = new FirstContactController();
 		pathFinder = new PathFinder();
+		pathFinder2 = new PathFinder();
 		
-		NewTurnService newTurnService = new NewTurnService(guiGameModel, combatService, moveService);
+		newTurnService = new NewTurnService(guiGameModel, combatService, moveService);
 		
 		moveService.inject(guiGameController, moveController, guiGameModel, combatService, firstContactController);
 		moveInThreadService.inject(pathFinder, guiGameModel, moveService);

@@ -217,6 +217,7 @@ public class SaveGameList {
 	}
 
 	private Game loadGame(SaveGameElement saveGameElement) {
+		System.out.println("load save game file: " + saveGameElement.fileName + ", name: \"" + saveGameElement.name + "\"");
 		FileHandle sgfh = Gdx.files.local(saveGameElement.fileName);
 		try {
 			return SaveGameParser.loadGameFromFile(sgfh.file());

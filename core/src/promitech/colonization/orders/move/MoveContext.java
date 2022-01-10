@@ -5,9 +5,12 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.map.path.Path;
 
 public class MoveContext {
+	private final UnitMoveType unitMoveType = new UnitMoveType();
+
 	public Unit unit;
 	public Tile sourceTile;
 	public Tile destTile;
@@ -46,9 +49,9 @@ public class MoveContext {
 		initMoveCostAndType();
 	}
 
-	public MoveContext(Path unitPath) {
+	public MoveContext(Unit unit, Path unitPath) {
 		this.path = unitPath;
-		this.unit = path.unit;
+		this.unit = unit;
 	}
 
 	public boolean isAi() {
@@ -57,6 +60,10 @@ public class MoveContext {
 	
 	public boolean isHuman() {
 		return unit.getOwner().isHuman();
+	}
+
+	public void init(Tile sourceTile, Tile destTile, Unit unit) {
+		init(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));
 	}
 	
 	public void init(Tile sourceTile, Tile destTile, Unit unit, Direction direction) {
@@ -86,14 +93,18 @@ public class MoveContext {
 	}
 	
 	private void initMoveCostAndType() {
-		moveCost = unit.getMoveCost(sourceTile, destTile, direction);
+		unitMoveType.init(unit);
+		moveCost = unitMoveType.caclulateMoveCost(
+			sourceTile, destTile, direction,
+			unit.getMovesLeft(), unit.initialMoves()
+		);
 		if (unit.hasMovesPoints(moveCost)) {
 			hasMovePoints = true;
 		} else {
 			hasMovePoints = false;
 			return;
 		}
-		this.moveType = unit.getMoveType(sourceTile, destTile);
+		this.moveType = unitMoveType.calculateMoveType(sourceTile, destTile);
 	}
 	
 	public String toString() {
@@ -124,7 +135,8 @@ public class MoveContext {
 				}
 				moveUnit();
 			break;
-			case ENTER_FOREIGN_COLONY_WITH_SCOUT: 
+			case ENTER_FOREIGN_COLONY_WITH_SCOUT:
+			case ENTER_INDIAN_SETTLEMENT_WITH_SCOUT:
 			case ATTACK_UNIT:
 			case ATTACK_SETTLEMENT:
 			    if (moveAfterAttack) {
@@ -138,8 +150,10 @@ public class MoveContext {
 				}
 				embarkUnit();
 			break;
-			default:
+			default: {
+				unit.reduceMovesLeftToZero();
 				System.out.println("not handled move type: " + moveType);
+			}
 		}
 	}
 	
@@ -156,18 +170,36 @@ public class MoveContext {
 		unit.setState(UnitState.ACTIVE);
 		unit.setStateToAllChildren(UnitState.SENTRY);
 		unit.reduceMovesLeft(moveCost);
-		if (sourceTile.hasSettlement()) {
+		if (sourceTile.hasSettlement() && unit.getOwner().isHuman()) {
 			unit.embarkUnitsFromLocation(sourceTile);
 		}
 		unit.changeUnitLocation(destTile);
 	}
 	
 	public boolean canHandleMove() {
-		return hasMovePoints && !endOfPath && (
+		return hasMovePoints && !endOfPath && !unit.isDisposed() && (
 				MoveType.MOVE.equals(moveType) || 
 				MoveType.MOVE_HIGH_SEAS.equals(moveType) || 
 				MoveType.EMBARK.equals(moveType) ||
 				MoveType.DISEMBARK.equals(moveType) ||
+				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
+				MoveType.ATTACK_UNIT.equals(moveType) ||
+				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||
+				MoveType.ENTER_FOREIGN_COLONY_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_SCOUT.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_FREE_COLONIST.equals(moveType) ||
+				MoveType.ENTER_INDIAN_SETTLEMENT_WITH_MISSIONARY.equals(moveType) ||
+				MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType) ||
+				MoveType.MOVE_CASH_IN_TREASURE.equals(moveType)
+		);
+	}
+
+	public boolean canAiHandleMove() {
+		return hasMovePoints && !endOfPath && !unit.isDisposed() && (
+				MoveType.MOVE.equals(moveType) ||
+				MoveType.MOVE_HIGH_SEAS.equals(moveType) ||
+				MoveType.EMBARK.equals(moveType) ||
+				//MoveType.DISEMBARK.equals(moveType) ||
 				MoveType.EXPLORE_LOST_CITY_RUMOUR.equals(moveType) ||
 				MoveType.ATTACK_UNIT.equals(moveType) ||
 				MoveType.ATTACK_SETTLEMENT.equals(moveType) ||

@@ -46,6 +46,34 @@ class ProductionSummaryTest {
 		// then
 		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(190);
 	}
+
+	@Test
+	public void canCalculateMaxGoodsAmountToFillFreeSlots4() throws Exception {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 10);
+		
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("one", 2);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(100);
+	}
+
+	@Test
+	public void canCalculateMaxGoodsAmountToFillFreeSlots5() throws Exception {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 10);
+		sut.addGoods("three", 10);
+		
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("one", 3);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(100);
+	}
+	
 	
 	@Test
 	public void canVerifyHasPartOfGoods() throws Exception {

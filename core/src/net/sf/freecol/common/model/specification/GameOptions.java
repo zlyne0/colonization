@@ -20,6 +20,8 @@
 package net.sf.freecol.common.model.specification;
 
 
+import net.sf.freecol.common.model.Specification;
+
 /**
  * Keeps track of the available game options. New options must be
  * added to the {@link Specification} and each option should be given

@@ -22,6 +22,7 @@ package net.sf.freecol.common.util;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.EnumSet;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
@@ -159,5 +160,21 @@ public class CollectionUtils {
             first = false;
         }
         return true;
+    }
+
+    public static <T> Set<T> setOf(T value) {
+        Set<T> set = new HashSet<T>();
+        set.add(value);
+        return set;
+    }
+
+    public static <E extends Enum<E>> Set<E> enumSet(Set<E> set, E value) {
+        if (set.isEmpty()) {
+            return EnumSet.of(value);
+        } else {
+            EnumSet<E> cloneSet = EnumSet.copyOf(set);
+            cloneSet.add(value);
+            return cloneSet;
+        }
     }
 }

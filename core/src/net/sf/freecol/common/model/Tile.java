@@ -85,7 +85,7 @@ public class Tile implements UnitLocation, Identifiable {
     }
     
     public String toStringCords() {
-    	return "" + x + ", " + y;
+    	return Integer.toString(x) + ", " + Integer.toString(y);
     }
     
 	public String toString() {
@@ -330,11 +330,11 @@ public class Tile implements UnitLocation, Identifiable {
                 break;
             }
             if (isNavyPiracy) {
-                if (unit.isOffensiveUnit()) {
+                if (Unit.isOffensiveUnit(unit)) {
                     return true;
                 }
             } else {
-                if ((unit.isOffensiveUnit() && navyUnitOwner.atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY)) {
+                if ((Unit.isOffensiveUnit(unit) && navyUnitOwner.atWarWith(unit.getOwner())) || unit.unitType.hasAbility(Ability.PIRACY)) {
                     return true;
                 }
             }
@@ -500,7 +500,7 @@ public class Tile implements UnitLocation, Identifiable {
         Unit tileUnit = units.first();
         if (tileUnit != null && tileUnit.getOwner().notEqualsId(player) && tileUnit.getOwner().atWarWith(player)) {
             for (Unit unit : tileUnit.getUnits().entities()) {
-                if (unit.isOffensiveUnit()) {
+                if (Unit.isOffensiveUnit(unit)) {
                     return true;
                 }
             }
@@ -529,8 +529,12 @@ public class Tile implements UnitLocation, Identifiable {
 	public boolean isNextToLand() {
 		return getType().isWater() && tileConnected != ALL_NEIGHBOUR_WATER_BITS_VALUE;
 	}
-	
-	public static class Xml extends XmlNodeParser<Tile> {
+
+	public boolean isStepNextTo(Tile tile) {
+		return Direction.fromCoordinates(this.x, this.y, tile.x, tile.y) != null;
+	}
+
+    public static class Xml extends XmlNodeParser<Tile> {
 	    
 		private static final String ATTR_PLAYER = "player";
 		private static final String ELEMENT_CACHED_TILE = "cachedTile";

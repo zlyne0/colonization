@@ -9,6 +9,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.specification.AbstractGoods;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 
 public class ProductionSummary {
@@ -18,8 +19,16 @@ public class ProductionSummary {
 
 	public static final ProductionSummary EMPTY = new ProductionSummary();
 	
+	public int getQuantity(GoodsType goodsType) {
+		return goods.get(goodsType.getId(), 0);
+	}
+	
     public int getQuantity(String goodsId) {
         return goods.get(goodsId, 0);
+    }
+    
+    public void clear() {
+    	goods.clear();
     }
     
 	public void makeEmpty() {
@@ -52,6 +61,10 @@ public class ProductionSummary {
         return ps;
     }
 	
+	public void cloneTo(ProductionSummary ps) {
+		ps.goods.putAll(goods);
+	}
+    
 	public void addGoods(String goodsId, int goodQuantity) {
 	    if (goodQuantity != 0) {
 	        goods.getAndIncrement(goodsId, 0, goodQuantity);
@@ -249,17 +262,12 @@ public class ProductionSummary {
 		return true;
 	}
     
-	public Entries<String> entries() {
-		return goods.entries();
+	public void put(String goodsId, int quantity) {
+		goods.put(goodsId, quantity);
 	}
 	
-	public void applyTileImprovementsModifiers(Tile tile) {
-		for (Entry<String> entry : goods.entries()) {
-		    String goodsId = entry.key;
-			int quantity = entry.value;
-			quantity = tile.applyTileProductionModifier(goodsId, quantity);
-			goods.put(goodsId, quantity);
-		}
+	public Entries<String> entries() {
+		return goods.entries();
 	}
 	
 	public void applyModifiers(ObjectWithFeatures modifiers) {
@@ -270,12 +278,6 @@ public class ProductionSummary {
 		}
 	}
 	
-	public void applyModifier(int productionBonus) {
-	    for (Entry<String> entry : goods.entries()) {
-            goods.getAndIncrement(entry.key, 0, productionBonus);
-	    }
-	}
-	
 	public String toString() {
 		String st = "[";
 		for (Entry<String> entry : goods.entries()) {
@@ -283,5 +285,30 @@ public class ProductionSummary {
 		}
 		st += "]";
 		return st;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + ((goods == null) ? 0 : goods.hashCode());
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		ProductionSummary other = (ProductionSummary) obj;
+		if (goods == null) {
+			if (other.goods != null)
+				return false;
+		} else if (!goods.equals(other.goods))
+			return false;
+		return true;
 	}
 }

@@ -38,7 +38,19 @@ public class Production {
 		this.input.putAll(p.input);
 		this.output.putAll(p.output);
 	}
-    
+
+	public void init(Production p) {
+    	this.unattended = p.unattended;
+		this.input.clear();
+		this.output.clear();
+		this.input.putAll(p.input);
+		this.output.putAll(p.output);
+	}
+
+	public boolean isNotEmpty() {
+    	return output.size() != 0 || input.size() != 0;
+	}
+
 	public Set<Entry<GoodsType, Integer>> inputEntries() {
 		return input.entrySet();
 	}
@@ -74,6 +86,14 @@ public class Production {
 		return prod;
 	}
 	
+	public java.util.Map.Entry<GoodsType, Integer> singleOutput() {
+		if (output.isEmpty()) {
+			return null;
+		}
+		// first
+		return output.entrySet().iterator().next();
+	}
+	
 	public void applyTileImprovementsModifiers(Tile aTile) {
 		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
 			int quantity = aTile.applyTileProductionModifier(outputEntry.getKey().getId(), outputEntry.getValue());
@@ -92,7 +112,17 @@ public class Production {
 			outputEntry.setValue(quantity);
 		}
 	}
-	
+
+	public void applyModifiers(ObjectWithFeatures features) {
+		for (java.util.Map.Entry<GoodsType, Integer> outputEntry : output.entrySet()) {
+			int quantity = outputEntry.getValue();
+			String goodId = outputEntry.getKey().getId();
+
+			quantity = (int)features.applyModifier(goodId, quantity);
+			outputEntry.setValue(quantity);
+		}
+	}
+
 	public boolean isProductMoreThen(Production maxProduction) {
 		int sumThis = sumProduction(output);
 		int sumArg = sumProduction(maxProduction.output);
@@ -150,6 +180,15 @@ public class Production {
 		return true;
 	}
 	
+	public Entry<GoodsType, Integer> singleFilteredOutputTypeEquals(MapIdEntities<GoodsType> goodsType) {
+		for (java.util.Map.Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (goodsType.containsId(entry.getKey())) {
+				return entry;
+			}
+		}
+		return null;
+	}
+	
 	public boolean outputTypesEquals(String goodsTypeId) {
 		if (this.output.size() != 1) {
 			return false;
@@ -175,7 +214,27 @@ public class Production {
 		return found;
 	}
 	
-	
+	public boolean inputTypesEquals(GoodsType goodsType) {
+		if (this.input.size() != 1) {
+			return false;
+		}
+		for (Entry<GoodsType, Integer> entry : input.entrySet()) {
+			if (entry.getKey().equalsId(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean containsOutputGoods(GoodsType goodsType) {
+		for (Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (entry.getKey().equalsId(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public static class Xml extends XmlNodeParser<Production> {
 
 		private static final String ATTR_VALUE = "value";
@@ -234,6 +293,5 @@ public class Production {
 		public static String tagName() {
 			return "production";
 		}
-		
 	}
 }

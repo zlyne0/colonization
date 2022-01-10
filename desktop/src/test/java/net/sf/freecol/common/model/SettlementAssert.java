@@ -12,6 +12,13 @@ public class SettlementAssert extends AbstractAssert<SettlementAssert, Settlemen
 		return new SettlementAssert(settlement, SettlementAssert.class);
 	}
 
+	public SettlementAssert isEquals(String id) {
+		if (!actual.equalsId(id)) {
+			failWithMessage("expected settlement id %s equals %s", actual.getId(), id);
+		}
+		return this;
+	}
+	
 	public SettlementAssert hasGoods(String goodsTypeId, int amount) {
 		int actualAmount = actual.goodsContainer.goodsAmount(goodsTypeId);
 		if (actualAmount != amount) {

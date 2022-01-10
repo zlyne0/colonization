@@ -8,7 +8,7 @@ import java.util.Set;
 
 import net.sf.freecol.common.model.Unit;
 
-class UnitMissionsMapping {
+public class UnitMissionsMapping {
 	private final Map<String, Set<AbstractMission>> unitMissions = new HashMap<String, Set<AbstractMission>>();
 
 	public void blockUnit(Unit unit, AbstractMission mission) {
@@ -21,12 +21,13 @@ class UnitMissionsMapping {
 		Set<AbstractMission> missions = unitMissions.get(unitId);
 		if (missions == null) {
 			missions = new HashSet<AbstractMission>(2);
+			unitMissions.put(unitId, missions);
 		}
 		missions.add(mission);
 	}
 	
-	public boolean isUnitInMission(Unit unit) {
-		Set<AbstractMission> missions = unitMissions.get(unit.getId());
+	public boolean isUnitInMission(String unitId) {
+		Set<AbstractMission> missions = unitMissions.get(unitId);
 		return missions != null && missions.size() > 0;
 	}
 

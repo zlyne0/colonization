@@ -32,12 +32,10 @@ public class LostCityRumourService {
 
 	private final Game game;
 	private final GUIGameController guiGameController;
-	private final MoveInThreadService moveInThreadService;
 
-	public LostCityRumourService(GUIGameController guiGameController, MoveInThreadService moveInThreadService, Game game) {
+	public LostCityRumourService(GUIGameController guiGameController, Game game) {
 		this.game = game;
 		this.guiGameController = guiGameController;
-		this.moveInThreadService = moveInThreadService;
 	}
 	
 	private void handleLostCityRumourType(final MoveContext mc, final RumourType type) {
@@ -197,9 +195,9 @@ public class LostCityRumourService {
 		return guiGameController.ifRequiredNextActiveUnitRunnable();
 	}	
 	
-	public LostCityRumourService showLostCityRumourConfirmation(MoveContext moveContext) {
+	public LostCityRumourService showLostCityRumourConfirmation(final MoveInThreadService moveInThreadService, MoveContext moveContext) {
 		if (moveContext.isAi()) {
-			throw new IllegalStateException("can run only by gui");
+			throw new IllegalStateException("can run only by human");
 		}
 		
 		QuestionDialog.OptionAction<MoveContext> exploreLostCityRumourYesAnswer = new QuestionDialog.OptionAction<MoveContext>() {
@@ -208,7 +206,8 @@ public class LostCityRumourService {
 				moveInThreadService.confirmedMoveProcessor(mc, new AfterMoveProcessor() {
 					@Override
 					public void afterMove(final MoveContext mc) {
-						processExploration(mc);
+						RumourType explorationResult = processExploration(mc);
+						System.out.println(String.format("player[%s].exploration lost city rumour result %s", mc.unit.getOwner().getId(), explorationResult));
 						guiGameController.resetMapModelOnTile(mc.destTile);
 					}
 				});
@@ -222,14 +221,13 @@ public class LostCityRumourService {
 		return this;
 	}
 	
-	private void processExploration(MoveContext mc) {
+	public RumourType processExploration(MoveContext mc) {
 		mc.destTile.removeLostCityRumour();
 		
 		LostCityRumour lostCityRumour = new LostCityRumour();
 		RumourType type = lostCityRumour.type(game, mc.unit, mc.destTile);
-		System.out.println("EXPLORE_LOST_CITY_RUMOUR RumourType.type " + type);
-		
 		handleLostCityRumourType(mc, type);
+		return type;
 	}
 	
 	/**

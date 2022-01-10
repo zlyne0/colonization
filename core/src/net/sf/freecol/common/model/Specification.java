@@ -129,7 +129,7 @@ public class Specification {
 
     public final MapIdEntities<Nation> europeanNations = new MapIdEntities<Nation>();
     public final java.util.Map<String,UnitType> expertUnitTypeByGoodType = new HashMap<String, UnitType>();
-    
+    public UnitType freeColonistUnitType;
     
     public final MapIdEntities<UnitType> unitTypesTrainedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
     public final MapIdEntities<UnitType> unitTypesPurchasedInEurope = new SortedMapIdEntities<UnitType>(UnitType.UNIT_TYPE_PRICE_COMPARATOR);
@@ -141,6 +141,8 @@ public class Specification {
     public final List<UnitType> mercenaryTypes = new ArrayList<UnitType>();
     public final List<UnitRole> militaryRoles = new ArrayList<UnitRole>();
     public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
+    public final MapIdEntities<GoodsType> goodsTypeToScoreByPrice = new MapIdEntities<GoodsType>();
+    public final List<GoodsType> foodsGoodsTypes = new ArrayList<GoodsType>();
     
     private String difficultyLevel;
     
@@ -156,7 +158,8 @@ public class Specification {
         for (Nation nation : nations.entities()) {
             nation.updateReferences();
         }
-        
+
+        freeColonistUnitType = unitTypes.getById(UnitType.FREE_COLONIST);
         expertUnitTypeByGoodType.clear();
         for (UnitType unitType : unitTypes.entities()) {
         	unitType.updateDefaultRoleReference();
@@ -197,8 +200,27 @@ public class Specification {
         createSupportUnitLists();
         updateModifiersFromDifficultyLevel();
         determineNativeMilitaryRoles();
+        createGoodsTypeToScoreByPrice();
+        
+        foodsGoodsTypes.clear();
+        foodsGoodsTypes.add(goodsTypes.getById(GoodsType.FISH));
+        foodsGoodsTypes.add(goodsTypes.getById(GoodsType.GRAIN));
     }
 
+    private void createGoodsTypeToScoreByPrice() {
+    	goodsTypeToScoreByPrice.clear();
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.sugar"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.tobacco"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cotton"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.furs"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.ore"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.silver"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.rum"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cigars"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.cloth"));
+    	goodsTypeToScoreByPrice.add(goodsTypes.getById("model.goods.coats"));
+    }
+    
     private void determineNativeMilitaryRoles() {
 		UnitType brave = Specification.instance.unitTypes.getById(UnitType.BRAVE);
 		NationType nativeType = nationTypes.getById("model.nationType.apache");
@@ -264,6 +286,18 @@ public class Specification {
     	}
     	return types;
     }
+
+    public UnitType expertUnitTypeForGoodsType(GoodsType goodsType) {
+        return expertUnitTypeForGoodsType(goodsType, freeColonistUnitType);
+    }
+
+    public UnitType expertUnitTypeForGoodsType(GoodsType goodsType, UnitType defaultUnitType) {
+    	UnitType unitType = expertUnitTypeByGoodType.get(goodsType.getId());
+    	if (unitType == null) {
+    		return defaultUnitType;
+    	}
+    	return unitType;
+    }
     
     private void createSupportUnitLists() {
 		for (UnitType unitType : unitTypes.entities()) {
@@ -303,6 +337,8 @@ public class Specification {
         landTypes.clear();
         mercenaryTypes.clear();
         militaryRoles.clear();
+        goodsTypeToScoreByPrice.clear();
+        foodsGoodsTypes.clear();
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {

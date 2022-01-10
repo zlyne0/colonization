@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.WithProbability;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -31,8 +32,19 @@ public class UnitType extends BuildableType {
 	public static final String ARTILLERY = "model.unit.artillery";
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	public static final String SCOUT = "model.unit.seasonedScout";
+	public static final String CARAVEL = "model.unit.caravel";
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
+	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";
+	public static final String EXPERT_ORE_MINER = "model.unit.expertOreMiner";
+	public static final String EXPERT_SILVER_MINER = "model.unit.expertSilverMiner";
+	public static final String EXPERT_FUR_TRAPPER = "model.unit.expertFurTrapper";
+	public static final String MASTER_FUR_TRADER = "model.unit.masterFurTrader";
+	public static final String MASTER_TOBACCONIST = "model.unit.masterTobacconist";
+	public static final String MASTER_TOBACCO_PLANTER = "model.unit.masterTobaccoPlanter";
+	public static final String MASTER_WEAVER = "model.unit.masterWeaver";
+	public static final String ELDER_STATESMAN = "model.unit.elderStatesman";
+
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;
@@ -101,7 +113,7 @@ public class UnitType extends BuildableType {
 
 	protected String extendsId;
 	private boolean naval = false;
-    
+
     private UnitType(String id) {
     	super(id);
     }
@@ -109,6 +121,10 @@ public class UnitType extends BuildableType {
     public String resourceImageKey() {
     	return getId() + ".image";
     }
+    
+	public boolean isType(String unitTypeId) {
+		return getId().equals(unitTypeId);
+	}
     
     @Override
 	public boolean isUnitType() {
@@ -139,6 +155,13 @@ public class UnitType extends BuildableType {
         return WAGON_TRAIN.equalsIgnoreCase(id);
     }
     
+    public boolean isPerson() {
+        return hasAbility(Ability.PERSON)
+            || hasAbility(Ability.BORN_IN_COLONY)
+            || hasAbility(Ability.BORN_IN_INDIAN_SETTLEMENT)
+            || hasAbility(Ability.FOUND_COLONY);
+    }
+    
 	public int getHitPoints() {
 		return hitPoints;
 	}
@@ -159,23 +182,23 @@ public class UnitType extends BuildableType {
 		return defence;
 	}
     
-    /**
-     * Can this type of unit be upgraded to another given type by a given
-     * educational change type?
-     *
-     * If the target type is null, return true if the UnitType can be
-     * upgraded to any other type by the given means of education.
-     *
-     * @param newType The <code>UnitType</code> to learn (may be null
-     *     in the case of attempting to move to a native settlement
-     *     when the skill taught there is still unknown).
-     * @param changeType The educational <code>ChangeType</code>.
-     * @return True if this unit type can learn.
-     */
     public boolean canBeUpgraded(ChangeType changeType) {
     	return canBeUpgraded(null, changeType);
     }
 
+	/**
+	 * Can this type of unit be upgraded to another given type by a given
+	 * educational change type?
+	 *
+	 * If the target type is null, return true if the UnitType can be
+	 * upgraded to any other type by the given means of education.
+	 *
+	 * @param newType The <code>UnitType</code> to learn (may be null
+	 *     in the case of attempting to move to a native settlement
+	 *     when the skill taught there is still unknown).
+	 * @param changeType The educational <code>ChangeType</code>.
+	 * @return True if this unit type can learn.
+	 */
     public boolean canBeUpgraded(UnitType newType, ChangeType changeType) {
         for (UnitTypeChange change : unitTypeChanges.entities()) {
             if ((newType == null || newType.equalsId(change.getNewUnitTypeId())) && change.isPositiveProbability(changeType)) {
@@ -287,7 +310,7 @@ public class UnitType extends BuildableType {
 			}
 		};
     }
-    
+
     public static class Xml extends XmlNodeParser<UnitType> {
         private static final String ELEMENT_DEFAULT_ROLE = "default-role";
 		private static final String ATTR_EXTENDS = "extends";

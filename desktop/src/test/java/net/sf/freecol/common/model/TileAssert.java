@@ -23,6 +23,20 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
 		}
 		return this;
 	}
+
+	public TileAssert hasUnit(Unit unit) {
+	    isNotNull();
+	    if (!actual.getUnits().containsId(unit)) {
+            failWithMessage("expected unit <%s> on tile %s, [%d, %d]", unit.getId(),
+                actual.id, actual.x, actual.y
+            );
+        }
+	    return this;
+	}
+
+	public TileAssert isEqualsCords(Tile tile) {
+    	return isEquals(tile.x, tile.y);
+    }
 	
     public TileAssert isEquals(int x, int y) {
         isNotNull();

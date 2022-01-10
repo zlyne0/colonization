@@ -23,7 +23,7 @@ class ColonyLockedTileDrawer extends TileDrawer {
 
 	@Override
 	public void draw() {
-		if (colony != null && colony.isTileLocked(tile)) {
+		if (colony != null && colony.isTileLocked(tile, false)) {
 			polygonSprite.polygonSprite.setPosition(screenPoint.x, screenPoint.y);
 			polygonSprite.polygonSprite.draw(polyBatch);
 		}

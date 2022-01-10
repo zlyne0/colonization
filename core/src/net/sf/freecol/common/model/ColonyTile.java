@@ -1,6 +1,9 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.GoodsType;
+
 import java.io.IOException;
+import java.util.List;
 
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -10,7 +13,8 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class ColonyTile extends ObjectWithId implements ProductionLocation, UnitLocation {
 
 	private Unit worker;
-	public final ProductionInfo productionInfo = new ProductionInfo();
+	public Production production = Production.EMPTY_READONLY;
+
     public Tile tile;
 	
 	private ColonyTile(String id) {
@@ -21,6 +25,11 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	public ColonyTile(Tile tile) {
 		super(tile.getId());
 		this.tile = tile;
+	}
+
+	@Override
+	public String productionLocationId() {
+		return tile.getId();
 	}
 
 	public Unit getWorker() {
@@ -58,28 +67,56 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
     public void removeUnit(Unit unit) {
     	unit.reduceMovesLeftToZero();
         worker = null;
-        productionInfo.clear();
+        production = Production.EMPTY_READONLY;
     }
-    
+
     public void initMaxPossibleProductionOnTile() {
-        System.out.println("possibleProductionOnTile.forTile: " + tile.getType().productionInfo);
-        ProductionInfo maxPossibleProductionOnTile = maxPossibleProductionOnTile();
-        System.out.println("possibleProductionOnTile.maxProductions: " + maxPossibleProductionOnTile);
-        
-        productionInfo.writeMaxProductionFromAllowed(maxPossibleProductionOnTile, tile.getType().productionInfo);
-        System.out.println("possibleProductionOnTile.maxProductionType: " + productionInfo);
-    }
-    
-	private ProductionInfo maxPossibleProductionOnTile() {
-		ProductionInfo productionSummaryForWorker = tile.getType().productionInfo.productionSummaryForWorker(worker);
-		if (tile.getOwner() != null) {
-		    productionSummaryForWorker.applyModifiers(tile.getOwner().foundingFathers.entities());
+		List<Production> tileProductions;
+		if (worker != null) {
+			tileProductions = tile.getType().productionInfo.getAttendedProductions();
+		} else {
+			tileProductions = tile.getType().productionInfo.getUnattendedProductions();
 		}
-		productionSummaryForWorker.applyTileImprovementsModifiers(tile);
-		return productionSummaryForWorker;
+
+		Production tmpProd = new Production(worker == null);
+
+		Production maxProd = null;
+		for (Production p : tileProductions) {
+			tmpProd.init(p);
+			if (worker != null) {
+				tmpProd.applyModifiers(worker.unitType);
+			}
+			if (tile.getOwner() != null) {
+				tmpProd.applyModifiers(tile.getOwner().foundingFathers.entities());
+			}
+			tmpProd.applyTileImprovementsModifiers(tile);
+			if (maxProd == null || tmpProd.isProductMoreThen(maxProd)) {
+				maxProd = p;
+			}
+		}
+		if (maxProd == null) {
+			throw new IllegalStateException("can not find max production for tile type " + tile.getType());
+		}
+		this.production = maxProd;
 	}
-    
-    public static class Xml extends XmlNodeParser<ColonyTile> {
+
+	public Production tileProduction() {
+		return this.production;
+	}
+
+	public void initProduction(Production production) {
+		this.production = production;
+	}
+
+	public void initProducitonType(GoodsType goodsType) {
+		for (Production p : tile.getType().productionInfo.productions) {
+			if (p.outputTypesEquals(goodsType.getId())) {
+				this.production = p;
+			}
+		}
+	}
+
+	public static class Xml extends XmlNodeParser<ColonyTile> {
 
     	private static final String ATTR_WORK_TILE = "workTile";
 
@@ -98,15 +135,16 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
                 }
             });
     		
-    		
     		addNode(Production.class, new ObjectFromNodeSetter<ColonyTile, Production>() {
 				@Override
 				public void set(ColonyTile target, Production entity) {
-					target.productionInfo.addProduction(entity);
+					target.production = entity;
 				}
 				@Override
 				public void generateXml(ColonyTile source, ChildObject2XmlCustomeHandler<Production> xmlGenerator) throws IOException {
-					xmlGenerator.generateXmlFromCollection(source.productionInfo.productions);
+					if (source.production.isNotEmpty()) {
+						xmlGenerator.generateXml(source.production);
+					}
 				}
 			});
 		}

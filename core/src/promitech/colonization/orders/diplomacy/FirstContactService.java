@@ -77,7 +77,7 @@ public class FirstContactService {
         }
     }
 	
-    SpeakToChiefResult scoutSpeakWithIndianSettlementChief(IndianSettlement is, Unit scout) {
+    public SpeakToChiefResult scoutSpeakWithIndianSettlementChief(IndianSettlement is, Unit scout) {
 		Tension tension = is.getTension(scout.getOwner());
 		if (tension.getLevel() == Tension.Level.HATEFUL) {
         	scout.removeFromLocation();
@@ -86,7 +86,7 @@ public class FirstContactService {
 		}
 		
 		SpeakToChiefResult result = null;
-		if (is.hasAnyScouted()) {
+		if (is.isScouted()) {
 			result = SpeakToChiefResult.NOTHING;
 		} else if (is.getLearnableSkill() != null 
 				&& !scout.hasAbility(Ability.EXPERT_SCOUT) 

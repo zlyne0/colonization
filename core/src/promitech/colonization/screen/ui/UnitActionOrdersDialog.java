@@ -18,6 +18,8 @@ import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
+
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
@@ -53,7 +55,7 @@ public class UnitActionOrdersDialog extends ClosableDialog<UnitActionOrdersDialo
         public final ActionTypes actionType;
         
         public final UnitRole newRole; 
-        public final GoodMaxProductionLocation prodLocation;
+        public final MaxGoodsProductionLocation prodLocation;
 
         private String label;
         private String goodsIds[];
@@ -64,7 +66,7 @@ public class UnitActionOrdersDialog extends ClosableDialog<UnitActionOrdersDialo
             this.newRole = null;
         }
         
-		public UnitActionOrderItem(GoodMaxProductionLocation prodLocation, ActionTypes actionType) {
+		public UnitActionOrderItem(MaxGoodsProductionLocation prodLocation, ActionTypes actionType) {
 			this.actionType = actionType;
             this.prodLocation = prodLocation;
             this.newRole = null;

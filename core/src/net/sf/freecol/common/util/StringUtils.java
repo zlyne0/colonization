@@ -19,8 +19,7 @@
 
 package net.sf.freecol.common.util;
 
-import java.util.List;
-
+import java.util.Collection;
 
 /**
  * Collection of small static helper methods using Strings.
@@ -31,39 +30,15 @@ public class StringUtils {
 		return str == null || str.trim().isEmpty();
 	}
 	
-    /**
-     * Joins the given strings.
-     *
-     * In Java 8, we can use String.join.
-     *
-     * @param delimiter The delimiter to place between the individual strings.
-     * @param strings The strings to be joined.
-     * @return Each of the strings in the given array delimited by the given
-     *         string.
-     */
-    public static String join(String delimiter, String... strings) {
-        if (strings == null || strings.length == 0) {
-            return null;
-        } else {
-            StringBuilder result = new StringBuilder(strings[0]);
-            for (int i = 1; i < strings.length; i++) {
-                result.append(delimiter);
-                result.append(strings[i]);
+    public static String join(String delimiter, Collection<String> collection) {
+	    StringBuilder str = new StringBuilder();
+        for (String s : collection) {
+            if (str.length() != 0) {
+                str.append(delimiter);
             }
-            return result.toString();
+            str.append(s);
         }
-    }
-
-    /**
-     * Joins the given strings.
-     *
-     * @param delimiter The delimiter to place between the individual strings.
-     * @param strings The strings to be joined.
-     * @return Each of the strings in the given array delimited by the given
-     *         string.
-     */
-    public static String join(String delimiter, List<String> strings) {
-        return join(delimiter, strings.toArray(new String[0]));
+        return str.toString();
     }
 
     /**

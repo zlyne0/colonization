@@ -1,18 +1,68 @@
 package net.sf.freecol.common.model.map.path;
 
+import java.util.ArrayList;
 import java.util.Comparator;
+import java.util.EnumSet;
+import java.util.List;
+import java.util.Set;
 import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.MapTileDebugInfo;
+import net.sf.freecol.common.model.player.Player;
+
 import promitech.colonization.Direction;
 import promitech.map.Object2dArray;
 
+import static java.util.Collections.*;
+
 public class PathFinder {
-	
-    static final int INFINITY = Integer.MAX_VALUE;
+
+	public interface SumPolicy {
+		public static final SumPolicy SIMPLY_SUM = new SumPolicy() {
+			@Override
+			public int sum(int a, int b) {
+				return a + b;
+			}
+		};
+
+		public static final SumPolicy PRIORITY_SUM = new SumPolicy() {
+			@Override
+			public int sum(int a, int b) {
+				return 100 * a + b;
+			}
+		};
+
+		int sum(int a, int b);
+	}
+
+	public static final Set<FlagTypes> excludeUnexploredTiles = unmodifiableSet(EnumSet.of(FlagTypes.AvoidUnexploredTiles));
+	public static final Set<FlagTypes> includeUnexploredTiles = unmodifiableSet(EnumSet.noneOf(FlagTypes.class));
+
+	public static final Set<FlagTypes> includeNavyThreat = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
+	public static final Set<FlagTypes> excludeNavyThreat = unmodifiableSet(EnumSet.noneOf(FlagTypes.class));
+
+	public static final Set<FlagTypes> includeUnexploredAndNavyThreatTiles = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
+	public static final Set<FlagTypes> includeUnexploredAndExcludeNavyThreatTiles = unmodifiableSet(EnumSet.of(FlagTypes.IncludeNavyThreatTiles));
+
+	public static final Set<FlagTypes> excludeUnexploredAndIncludeNavyThreatTiles = unmodifiableSet(EnumSet.of(
+		FlagTypes.AvoidUnexploredTiles,
+		FlagTypes.IncludeNavyThreatTiles
+	));
+
+	public enum FlagTypes {
+		// move only through explored tiles
+		AvoidUnexploredTiles,
+		IncludeNavyThreatTiles,
+		AvoidDisembark,
+		AllowEmbark
+	}
+
+    public static final int INFINITY = Integer.MAX_VALUE;
     static final int UNDEFINED = Integer.MIN_VALUE;
 	
 	private static Comparator<Node> NODE_WEIGHT_COMPARATOR = new Comparator<Node>() {
@@ -53,84 +103,133 @@ public class PathFinder {
 	private CostDecider costDecider;
 	private GoalDecider goalDecider;
 
+	private final PathUnitFactory pathUnitFactory = new PathUnitFactory();
+
 	private Map map;
 	private Tile startTile;
 	private Tile endTile;
-	private Unit moveUnit;
-	
-	private boolean findPossibilities = false;
-	
+	private PathUnit pathUnit;
+	private List<Tile> startTiles = new ArrayList<Tile>();
+
+	private Node oneOfTheBest = null;
+	private Node reachedGoalNode = null;
+
 	public PathFinder() {
 	}
 
-	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit) {
-		return findToEurope(map, startTile, moveUnit, true);
+	private PathUnit createPathUnit(Unit unit) {
+		return pathUnitFactory.obtain(unit);
 	}
-	
-	public Path findToEurope(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
+
+	public PathUnit createPathUnit(Player owner, UnitType unitType) {
+		return pathUnitFactory.obtain(owner, unitType);
+	}
+
+	public Path findToEurope(Map map, Tile startTile, Unit unit, Set<FlagTypes> flags) {
+		return findToEurope(map, startTile, createPathUnit(unit), flags);
+	}
+
+	public Path findToEurope(final Map map, final Tile startTile, PathUnit pathUnit, Set<FlagTypes> flags) {
 	    goalDecider = pathToEuropeGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = null;
-        this.moveUnit = moveUnit;
-        this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        
+        this.pathUnit = pathUnit;
+
+		setCostDeciderFlags(flags);
         determineCostDecider(false);
+
         Path path = find();
         path.toEurope = true;
 		return path;
 	}
-	
-	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit) {
-	    return findToTile(map, startTile, endTile, moveUnit, true, false);
+
+	public Path findToTile(Map map, Unit unit, Tile endTile, Set<FlagTypes> flags) {
+		return findToTile(map, unit.getTile(), endTile, createPathUnit(unit), flags);
 	}
 
-    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
-        return findToTile(map, startTile, endTile, moveUnit, avoidUnexploredTiles, false);
-    }
-	
-    public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit moveUnit, boolean avoidUnexploredTiles, boolean withoutNavyThreat) {
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final Unit unit, Set<FlagTypes> flags) {
+		return findToTile(map, startTile, endTile, createPathUnit(unit), flags);
+	}
+
+	public Path findToTile(final Map map, final Tile startTile, final Tile endTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
         goalDecider = pathToTileGoalDecider;
         this.map = map;
         this.startTile = startTile;
         this.endTile = endTile;
-        this.moveUnit = moveUnit;
-        this.findPossibilities = false;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        
-        determineCostDecider(withoutNavyThreat);
+        this.pathUnit = pathUnit;
+
+		setCostDeciderFlags(flags);
+        determineCostDecider(flags.contains(FlagTypes.IncludeNavyThreatTiles));
+
         Path path = find();
         path.toEurope = false;
         return path;
     }
-	
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit) {
-		generateRangeMap(map, startTile, moveUnit, true);
+
+	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
+		if (endTiles.isEmpty()) {
+			throw new IllegalArgumentException("endTiles can not be empty");
+		}
+		Path theBestPath = null;
+		for (Tile oneTile : endTiles) {
+			Path onePath = findToTile(map, startTile, oneTile, unit, flags);
+			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
+				theBestPath = onePath;
+			}
+		}
+		return theBestPath;
 	}
-	
-	public void generateRangeMap(final Map map, final Tile startTile, final Unit moveUnit, boolean avoidUnexploredTiles) {
-	    goalDecider = rangeMapGoalDecider;
+
+	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, createPathUnit(unit), flags);
+	}
+
+	public void generateRangeMap(final Map map, final Unit unit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.add(unit.getTile());
+		generateRangeMap(map, createPathUnit(unit), flags);
+	}
+
+	public void generateRangeMap(final Map map, List<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.addAll(startTiles);
+		generateRangeMap(map, pathUnit, flags);
+	}
+
+	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, pathUnit, flags);
+	}
+
+	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags) {
+	    this.goalDecider = rangeMapGoalDecider;
         this.map = map;
-        this.startTile = startTile;
         this.endTile = null;
-        this.moveUnit = moveUnit;
-        this.findPossibilities = true;
-        this.navyWithoutThreatCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.navyCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-        this.baseCostDecider.avoidUnexploredTiles = avoidUnexploredTiles;
-		
+        this.pathUnit = pathUnit;
+		this.startTile = startTiles.get(0);
+
+        setCostDeciderFlags(flags);
         determineCostDecider(false);
-        find();
+
+		calculatePaths();
 	}
-	
-	private void determineCostDecider(boolean withoutNavyThreat) {
-	    if (moveUnit.isNaval()) {
-	        if (withoutNavyThreat) {
+
+	private void setCostDeciderFlags(Set<FlagTypes> flags) {
+		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyWithoutThreatCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.navyCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
+		this.baseCostDecider.allowEmbark = flags.contains(FlagTypes.AllowEmbark);
+	}
+
+	private void determineCostDecider(boolean includeNavyThreat) {
+	    if (pathUnit.isNaval()) {
+	        if (includeNavyThreat) {
 	            costDecider = navyWithoutThreatCostDecider;
 	        } else {
 	            costDecider = navyCostDecider;
@@ -139,21 +238,38 @@ public class PathFinder {
 	        costDecider = baseCostDecider;
 	    }
 	}
-	
-	private Path find() {
-		resetFinderBeforeSearching(map);
-		
-		int iDirections = 0; 
-		int nDirections = Direction.values().length;
-		costDecider.init(map, moveUnit);
-		
-		Node currentNode = grid.get(startTile.x, startTile.y);
-		currentNode.reset(moveUnit.getMovesLeft(), 0);
-		currentNode.turns = 0;
-		nodes.add(currentNode);
 
-		Node oneOfTheBest = null;
-		Node reachedGoalNode = null;
+	private Path find() {
+		this.startTiles.clear();
+		this.startTiles.add(startTile);
+		calculatePaths();
+
+		if (reachedGoalNode != null) {
+			return createPath(reachedGoalNode);
+		} else {
+			return createPath(oneOfTheBest);
+		}
+	}
+
+	private void calculatePaths() {
+		resetFinderBeforeSearching(map);
+		for (Tile tile : startTiles) {
+			Node currentNode = grid.get(tile.x, tile.y);
+			currentNode.reset(pathUnit.movesLeft, 0);
+			currentNode.turns = 0;
+			nodes.add(currentNode);
+		}
+		startTiles.clear();
+
+		costDecider.init(map, pathUnit.unitMove);
+
+		oneOfTheBest = null;
+		reachedGoalNode = null;
+
+		Node currentNode;
+		int iDirections = 0;
+		int nDirections = Direction.values().length;
+
 		while (true) {
 			currentNode = nodes.pollFirst();
 			if (currentNode == null) {
@@ -164,7 +280,7 @@ public class PathFinder {
 			}
 			for (iDirections=0; iDirections<nDirections; iDirections++) {
 				Direction moveDirection = Direction.values()[iDirections];
-				
+
 				Tile moveTile = map.getTile(currentNode.tile, moveDirection);
 				if (moveTile == null) {
 					continue;
@@ -173,17 +289,18 @@ public class PathFinder {
 				if (moveNode.noMove) {
 					continue;
 				}
-				
-				MoveType moveType = moveUnit.getMoveType(currentNode.tile, moveNode.tile);
+
+				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
 					reachedGoalNode = moveNode;
-					// change moveType to default move. Sometimes goal can be indian settlement 
+					// change moveType to default move. Sometimes goal can be indian settlement
 					// and moveType should be used only to find path
 					moveType = MoveType.MOVE;
 				}
-				
+
 				if (costDecider.calculateAndImproveMove(currentNode, moveNode, moveType, moveDirection)) {
 					if (oneOfTheBest == null || moveNode.hasBetterCostThen(oneOfTheBest)) {
+						// TODO: remove - no sense, always next to start tile because everyone has greater cost
 						oneOfTheBest = moveNode;
 					}
 					nodes.add(moveNode);
@@ -194,19 +311,21 @@ public class PathFinder {
 				}
 			}
 		}
-
-		if (findPossibilities) {
-			return null;
-		}
-		
-		if (reachedGoalNode != null) {
-			return createPath(moveUnit, reachedGoalNode);
-		} else {
-			return createPath(moveUnit, oneOfTheBest);
-		}
+		pathUnitFactory.free(pathUnit);
+		pathUnit = null;
 	}
-	
-	private Path createPath(final Unit moveUnit, final Node endPathNode) {
+
+	public Path createPath(int cellIndex) {
+		Node node = grid.get(cellIndex);
+		return createPath(node);
+	}
+
+	public Path createPath(Tile destTile) {
+		Node destNode = grid.get(destTile.x, destTile.y);
+		return createPath(destNode);
+	}
+
+	private Path createPath(final Node endPathNode) {
 		Node begining = null;
 		Node n = endPathNode;
 		int count = 1;
@@ -219,15 +338,13 @@ public class PathFinder {
 
 		if (endPathNode == null) {
 			return new Path(
-				moveUnit, 
-				startTile, startTile, 
+				startTile, startTile,
 				0, false
 			);  
 		}
 		
 		Path path = new Path(
-			moveUnit, 
-			startTile, endPathNode.tile, 
+			startTile, endPathNode.tile,
 			count, endTile == null || endPathNode.tile.equalsCoordinates(endTile)
 		);
 		n = begining;
@@ -249,7 +366,7 @@ public class PathFinder {
 	}
 	
 	private void resetFinderBeforeSearching(Map map) {
-		if (grid == null || !grid.sizeEquals(map.width, map.height)) {
+		if (grid == null || !grid.isSizeEquals(map.width, map.height)) {
 		    grid = new Object2dArray<Node>(map.width, map.height);
 		    
 		    for (int cellIndex=0; cellIndex<grid.getMaxCellIndex(); cellIndex++) {
@@ -273,15 +390,27 @@ public class PathFinder {
 	    return grid.get(cellIndex).turns;
 	}
 
-	public void totalCostToStringArrays(String[][] strTab) {
+	public int turnsCost(Tile tile) {
+		return grid.get(tile.x, tile.y).turns;
+	}
+	
+	public void printCost(MapTileDebugInfo mapTileDebugInfo) {
+		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
-	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(totalCost(i));
+			cost = totalCost(i);
+			if (cost != INFINITY) {
+				mapTileDebugInfo.str(grid.toX(i), grid.toY(i), Integer.toString(cost));
+			}
 	    }
 	}
 
-	public void turnCostToStringArrays(String[][] strTab) {
+	public void printTurnCost(MapTileDebugInfo mapTileDebugInfo) {
+		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {
-	        strTab[grid.toY(i)][grid.toX(i)] = Integer.toString(turnsCost(i));
+			cost = turnsCost(i);
+			if (cost != INFINITY) {
+				mapTileDebugInfo.str(grid.toX(i), grid.toY(i), Integer.toString(cost));
+			}
 	    }
 	}
 	
@@ -299,19 +428,63 @@ public class PathFinder {
 		if (oneBefore == null) {
 			return null;
 		}
-		
+
 		return Direction.fromCoordinates(
 			startTile.x, startTile.y, 
 			oneBefore.tile.x, oneBefore.tile.y
 		);
 	}
 
-    public Path getPathInto(int cellIndex) {
-        Node node = grid.get(cellIndex);
-        return createPath(moveUnit, node);
-    }
+	public void printSumTurnCost(PathFinder b, SumPolicy sumPolicy, MapTileDebugInfo mapTileDebugInfo) {
+		checkMapSizes(this, b);
 
-	public Path getPathInto(Tile dest) {
-		return getPathInto(grid.toIndex(dest.x, dest.y));
+		int aCost;
+		int bCost;
+		int sum;
+		for (int cellIndex = 0; cellIndex < grid.getMaxCellIndex(); cellIndex++) {
+			aCost = turnsCost(cellIndex);
+			bCost = b.turnsCost(cellIndex);
+			if (aCost == INFINITY || bCost == INFINITY) {
+				continue;
+			}
+			sum = sumPolicy.sum(aCost, bCost);
+			mapTileDebugInfo.str(grid.toX(cellIndex), grid.toY(cellIndex), Integer.toString(sum));
+		}
+	}
+
+	public Tile findFirstTheBestSumTurnCost(PathFinder b, SumPolicy sumPolicy) {
+		checkMapSizes(this, b);
+		int theBestSum = INFINITY;
+		Node theBestNode = null;
+
+		int aCost;
+		int bCost;
+		int sum;
+		for (int cellIndex = 0; cellIndex < grid.getMaxCellIndex(); cellIndex++) {
+			aCost = turnsCost(cellIndex);
+			bCost = b.turnsCost(cellIndex);
+			if (aCost == INFINITY || bCost == INFINITY) {
+				continue;
+			}
+			sum = sumPolicy.sum(aCost, bCost);
+			if (sum < theBestSum) {
+				theBestSum = sum;
+				theBestNode = grid.get(cellIndex);
+			}
+		}
+		if (theBestNode == null) {
+			return null;
+		}
+		return theBestNode.tile;
+	}
+
+	private void checkMapSizes(PathFinder a, PathFinder b) {
+		if (!a.grid.isSizeEquals(b.grid)) {
+			throw new IllegalStateException(String.format(
+				"grid sizes not equals: first [%d, %d] second [%d, %d]",
+				a.grid.width, a.grid.height,
+				b.grid.width, b.grid.height
+			));
+		}
 	}
 }
