@@ -47,7 +47,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
         di.moveService.aiConfirmedMovePath(moveContext)
 
         // then
-        TileAssert.assertThat(galleon.tile).isEqualsCords(tileDest)
+        TileAssert.assertThat(galleon.tile).isEquals(tileDest)
     }
 
     @Nested

@@ -56,7 +56,19 @@ public class ProductionInfo {
 		}
 		return sum;
 	}
-	
+
+	public int attendedProductions(String goodsTypeId) {
+		int sum = 0;
+		for (Production production : attendedProductions) {
+			for (Entry<GoodsType, Integer> entry : production.outputEntries()) {
+				if (entry.getKey().equalsId(goodsTypeId)) {
+					sum += entry.getValue();
+				}
+			}
+		}
+		return sum;
+	}
+
 	public void addUnattendedProductionToSummary(ProductionSummary ps) {
 		for (Production production : unattendedProductions) {
 			for (Entry<GoodsType, Integer> outputEntry : production.outputEntries()) {

@@ -89,6 +89,7 @@ public class Savegame1600Verifier {
         verifyPlayer(game);
         verifySettlementsGoods(game);
         verifySettlementsBuildings(game);
+        verifyMap(game);
         
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
@@ -98,7 +99,13 @@ public class Savegame1600Verifier {
         verifyUnitTradeRoute(game);
 	}
 
-	private void verifyIndianMissions(Game game) {
+    private void verifyMap(Game game) {
+        Tile tile = game.map.getTile(21, 72);
+        TileAssert.assertThat(tile).hasImprovement(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+        TileAssert.assertThat(tile).hasImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    }
+
+    private void verifyIndianMissions(Game game) {
 		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
 		
 		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
@@ -289,8 +296,8 @@ public class Savegame1600Verifier {
         assertNotNull(food);
         
         assertEquals(2, player.foundingFathers.size());
-        assertNotNull(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
-        assertNotNull(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
+        assertTrue(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
+        assertTrue(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
         
         // should add fathers modifiers to player features
         assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);

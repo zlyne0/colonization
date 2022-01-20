@@ -132,7 +132,16 @@ public class Tile implements UnitLocation, Identifiable {
 		}
 		return false;
 	}
-	
+
+	public boolean hasRiver() {
+		for (TileImprovement imprv : getTileImprovements()) {
+			if (imprv.type.isRiver()) {
+				return true;
+			}
+		}
+		return false;
+	}
+
 	public TileImprovement getRoadImprovement() {
 		for (TileImprovement imprv : getTileImprovements()) {
 			if (imprv.type.isRoad()) {
@@ -174,7 +183,7 @@ public class Tile implements UnitLocation, Identifiable {
     	}
     	return tileItemContainer.resources.size() > 0;
     }
-    
+
 	public boolean hasSettlement() {
 		return settlement != null;
 	}
@@ -269,7 +278,12 @@ public class Tile implements UnitLocation, Identifiable {
     	}
     	return tileItemContainer.getMoveCost(moveDirection, basicMoveCost);
     }
-    
+
+    public int goodsProduction(final String goodsTypeId) {
+		int production = type.productionInfo.attendedProductions(goodsTypeId);
+		return applyTileProductionModifier(goodsTypeId, production);
+	}
+
     public int applyTileProductionModifier(final String goodsId, int quantity) {
         for (TileImprovement ti : getTileImprovements()) {
             quantity = (int)ti.type.applyModifier(goodsId, quantity);

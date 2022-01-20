@@ -116,6 +116,10 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		}
 	}
 
+	public boolean hasFoodGrainProduction() {
+		return this.production.containsOutputGoods(GoodsType.GRAIN);
+	}
+
 	public static class Xml extends XmlNodeParser<ColonyTile> {
 
     	private static final String ATTR_WORK_TILE = "workTile";

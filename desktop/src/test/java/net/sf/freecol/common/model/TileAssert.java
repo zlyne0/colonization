@@ -34,7 +34,7 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
 	    return this;
 	}
 
-	public TileAssert isEqualsCords(Tile tile) {
+	public TileAssert isEquals(Tile tile) {
     	return isEquals(tile.x, tile.y);
     }
 	
@@ -67,5 +67,11 @@ public class TileAssert extends AbstractAssert<TileAssert, Tile> {
     	}
     	return this;
     }
-    
+
+	public TileAssert hasImprovement(String improvementTypeId) {
+		if (!actual.hasImprovementType(improvementTypeId)) {
+			failWithMessage("expected tile id: %s has improvement type %s", actual.getId(), improvementTypeId);
+		}
+		return this;
+	}
 }

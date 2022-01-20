@@ -10,7 +10,10 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class ResourceType extends ObjectWithFeatures {
-	
+
+	public static final String GAME = "model.resource.game";
+	public static final String MINERALS = "model.resource.minerals";
+
 	private int minValue = UNLIMITED;
 	private int maxValue = UNLIMITED;
 	
