@@ -8,6 +8,13 @@ import net.sf.freecol.common.model.TileImprovementType
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.specification.GoodsType
 
+class TileImprovementPlan(val tile: Tile, val improvementType: TileImprovementType)
+class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<TileImprovementPlan>) {
+    fun hasImprovements(): Boolean {
+        return improvements.size > 0
+    }
+}
+
 sealed class AddImprovementPolicy {
 
     // balanced, leave forest resources
@@ -60,7 +67,7 @@ sealed class AddImprovementPolicy {
 
     protected abstract fun addImprovement(colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>)
 
-    fun generateImprovements(colony: Colony): List<TileImprovementPlan> {
+    fun generateImprovements(colony: Colony): ColonyTilesImprovementPlan {
         val imprList = mutableListOf<TileImprovementPlan>()
 
         findCenterTile(colony) { colonyTile ->
@@ -74,7 +81,7 @@ sealed class AddImprovementPolicy {
         }
         findVacantForFood(colony, imprList)
 
-        return imprList
+        return ColonyTilesImprovementPlan(colony, imprList)
     }
 
     private inline fun findCenterTile(colony: Colony, consumer: (colonyTile: ColonyTile) -> Unit) {
@@ -149,9 +156,9 @@ sealed class AddImprovementPolicy {
         }
     }
 
-    fun printToMap(mapTileDebugInfo: MapTileDebugInfo, imprList: List<TileImprovementPlan>) {
-        for (improvementPlan in imprList) {
-            mapTileDebugInfo.str(improvementPlan.tile.x, improvementPlan.tile.y, improvementPlan.improvementType.toSmallIdStr())
+    fun printToMap(mapTileDebugInfo: MapTileDebugInfo, improvementPlan: ColonyTilesImprovementPlan) {
+        for (plan in improvementPlan.improvements) {
+            mapTileDebugInfo.str(plan.tile.x, plan.tile.y, plan.improvementType.toSmallIdStr())
         }
     }
 }

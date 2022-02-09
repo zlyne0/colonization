@@ -85,6 +85,20 @@ public class Market extends ObjectWithId {
     	return marketGoodsPrice.price(goodsType, amount);
     }
 
+	/**
+	 * ai ignore arrears
+	 */
+	public int aiBidPrice(ProductionSummary goods) {
+		int sum = 0;
+		for (Entry<String> goodsTypeEntry : goods.entries()) {
+			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
+			if (goodsTypeEntry.value > 0) {
+				sum += data.getCostToBuy(goodsTypeEntry.value);
+			}
+		}
+		return sum;
+	}
+
     public int getSalePrice(GoodsType type, int amount) {
     	MarketData data = marketGoods.getByIdOrNull(type.getId());
     	if (data == null) {
@@ -105,7 +119,7 @@ public class Market extends ObjectWithId {
 		int paidSum = 0;
 		for (Entry<String> goodsTypeEntry : required.entries()) {
 			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
-			if (data != null || data.hasArrears()) {
+			if (data == null || data.hasArrears()) {
 				return false;
 			}
 			if (goodsTypeEntry.value > 0) {

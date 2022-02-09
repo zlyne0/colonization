@@ -28,6 +28,7 @@ public class UnitRole extends ObjectWithFeatures {
 	public static final String SOLDIER = "model.role.soldier";
 	public static final String DRAGOON = "model.role.dragoon";
 	public static final String SCOUT = "model.role.scout";
+	public static final String PIONEER = "model.role.pioneer";
 
 	public static final int DEFAULT_UNIT_ROLE_COUNT = 1;
 
@@ -111,6 +112,14 @@ public class UnitRole extends ObjectWithFeatures {
 			}
 		}
 		return false;
+	}
+
+	public ProductionSummary sumOfRequiredGoods() {
+		ProductionSummary required = new ProductionSummary();
+		for (RequiredGoods g : requiredGoods.entities()) {
+			required.addGoods(g.getId(), g.amount * getMaximumCount());
+		}
+		return required;
 	}
 
 	public static class Xml extends XmlNodeParser<UnitRole> {

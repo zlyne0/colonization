@@ -44,7 +44,7 @@ public class UnitType extends BuildableType {
 	public static final String MASTER_TOBACCO_PLANTER = "model.unit.masterTobaccoPlanter";
 	public static final String MASTER_WEAVER = "model.unit.masterWeaver";
 	public static final String ELDER_STATESMAN = "model.unit.elderStatesman";
-
+	public static final String HARDY_PIONEER = "model.unit.hardyPioneer";
 	
     private static final int DEFAULT_LINE_OF_SIGHT = 1;
     public static final int DEFAULT_MOVEMENT = 3;

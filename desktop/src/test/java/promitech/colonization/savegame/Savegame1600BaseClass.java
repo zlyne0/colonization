@@ -13,6 +13,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -51,8 +52,17 @@ public class Savegame1600BaseClass {
 
 	}
 
+	protected void setGold(Player player, int gold) {
+		player.subtractGold(player.getGold());
+		player.addGold(gold);
+	}
+
 	protected UnitType unitType(String unitTypeId) {
 		return Specification.instance.unitTypes.getById(unitTypeId);
+	}
+
+	protected UnitRole unitRole(String unitRoleId) {
+		return Specification.instance.unitRoles.getById(unitRoleId);
 	}
 
 	protected GoodsType goodsType(String goodsTypeId) {
