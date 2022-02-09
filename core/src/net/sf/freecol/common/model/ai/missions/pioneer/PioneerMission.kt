@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.pionier
+package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
@@ -10,47 +10,47 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 
-class PionierMission : AbstractMission {
+class PioneerMission : AbstractMission {
 
-    val pionier: Unit
+    val pioneer: Unit
     private var colonyId: String? = null
 
-    constructor(pionier: Unit, colony: Colony) : super(Game.idGenerator.nextId(PionierMission::class.java)) {
-        this.pionier = pionier
+    constructor(pioneer: Unit, colony: Colony) : super(Game.idGenerator.nextId(PioneerMission::class.java)) {
+        this.pioneer = pioneer
         this.colonyId = colony.id
     }
 
-    private constructor(pionier: Unit, missionId: String) : super(missionId) {
-        this.pionier = pionier
+    private constructor(pioneer: Unit, missionId: String) : super(missionId) {
+        this.pioneer = pioneer
     }
 
     fun isToColony(colony: Colony): Boolean = colony.equalsId(colonyId)
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.blockUnit(pionier, this)
+        unitMissionsMapping.blockUnit(pioneer, this)
     }
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.unblockUnitFromMission(pionier, this)
+        unitMissionsMapping.unblockUnitFromMission(pioneer, this)
     }
 
     fun isSpecialist(): Boolean {
-        return pionier.unitType.isType(UnitType.HARDY_PIONEER)
+        return pioneer.unitType.isType(UnitType.HARDY_PIONEER)
     }
 
-    class Xml : AbstractMission.Xml<PionierMission>() {
+    class Xml : AbstractMission.Xml<PioneerMission>() {
         private val ATTR_UNIT = "unit"
         private val ATTR_COLONY = "colony"
 
         override fun startElement(attr: XmlNodeAttributes) {
-            val pionier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
-            nodeObject = PionierMission(pionier, attr.id)
+            val pioneer = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
+            nodeObject = PioneerMission(pioneer, attr.id)
             nodeObject.colonyId = attr.getStrAttribute(ATTR_COLONY)
         }
 
-        override fun startWriteAttr(mission: PionierMission, attr: XmlNodeAttributesWriter) {
+        override fun startWriteAttr(mission: PioneerMission, attr: XmlNodeAttributesWriter) {
             attr.setId(mission)
-            attr.set(ATTR_UNIT, mission.pionier)
+            attr.set(ATTR_UNIT, mission.pioneer)
             attr.set(ATTR_COLONY, mission.colonyId)
         }
 
@@ -61,7 +61,7 @@ class PionierMission : AbstractMission {
         companion object {
             @JvmStatic
             fun tagName(): String {
-                return "pionierMission"
+                return "pioneerMission"
             }
         }
     }

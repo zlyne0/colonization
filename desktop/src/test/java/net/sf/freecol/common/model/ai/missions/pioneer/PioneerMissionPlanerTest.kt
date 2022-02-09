@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.pionier
+package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
@@ -7,7 +7,6 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovement
 import net.sf.freecol.common.model.TileImprovementType
 import net.sf.freecol.common.model.Unit
-import net.sf.freecol.common.model.UnitAssert
 import net.sf.freecol.common.model.UnitAssert.*
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
@@ -91,11 +90,11 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
     fun `can generate improvement plan score`() {
         // given
         val pathFinder = PathFinder()
-        val pionierMissionPlaner = PioneerMissionPlaner(game, pathFinder)
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
         val policy = AddImprovementPolicy.Balanced()
 
         // when
-        val planScore = pionierMissionPlaner.generateImprovementsPlanScore(dutch, policy)
+        val planScore = pioneerMissionPlaner.generateImprovementsPlanScore(dutch, policy)
 
         // then
         ScoreableObjectsListAssert.assertThat(planScore)
@@ -110,20 +109,20 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
     fun `should create buy pioneer and create mission`() {
         // given
         val pathFinder = PathFinder()
-        val pionierMissionPlaner = PioneerMissionPlaner(game, pathFinder)
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
         val playerMissionContainer = game.aiContainer.missionContainer(dutch)
         playerMissionContainer.clearAllMissions()
 
         // when
-        pionierMissionPlaner.plan(dutch, playerMissionContainer)
+        pioneerMissionPlaner.plan(dutch, playerMissionContainer)
 
         // then
-        val findMissions = playerMissionContainer.findMissions(PionierMission::class.java)
+        val findMissions = playerMissionContainer.findMissions(PioneerMission::class.java)
         assertThat(findMissions).hasSize(1)
         val mission = findMissions[0]
 
         assertThat(mission.isToColony(nieuwAmsterdam)).isTrue()
-        assertThat(mission.pionier).isAtLocation(dutch.europe)
+        assertThat(mission.pioneer).isAtLocation(dutch.europe)
     }
 
     @Test

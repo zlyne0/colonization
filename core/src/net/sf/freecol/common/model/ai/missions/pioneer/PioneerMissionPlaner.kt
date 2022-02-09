@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.pionier
+package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
@@ -15,7 +15,7 @@ import promitech.colonization.ai.score.ObjectScoreList
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
     fun plan(player: Player, playerMissionContainer: PlayerMissionsContainer) {
-        val pionierMissions : List<PionierMission> = playerMissionContainer.findMissions(PionierMission::class.java)
+        val pioneerMissions : List<PioneerMission> = playerMissionContainer.findMissions(PioneerMission::class.java)
 
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced())
 
@@ -26,42 +26,42 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             }
         }
 
-        // no more new pioniers mission then half of improvements destinations
-        val maxPioniersCount: Int = potentialImprovementsDestinationCount / 2
-        if (pionierMissions.size >= maxPioniersCount) {
+        // no more new pioneers mission then half of improvements destinations
+        val maxPioneersCount: Int = potentialImprovementsDestinationCount / 2
+        if (pioneerMissions.size >= maxPioneersCount) {
             // no missions
             return
         }
 
-        val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, pionierMissions)
+        val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, pioneerMissions)
         if (firstDestination != null) {
-            val buyPionnierOrder = calculateBuyPionnierOrder(player, pionierMissions)
+            val buyPionnierOrder = calculateBuyPionnierOrder(player, pioneerMissions)
             val boughtPioneer : Unit = when (buyPionnierOrder) {
                 is BuyPioneerOrder.BuySpecialistOrder -> buyPionnierOrder.buy(player)
                 is BuyPioneerOrder.RecruitColonistOrder -> buyPionnierOrder.buy(player, game)
                 else -> return
             }
-            val pionierMission = PionierMission(boughtPioneer, firstDestination.colony)
-            playerMissionContainer.addMission(pionierMission)
+            val pioneerMission = PioneerMission(boughtPioneer, firstDestination.colony)
+            playerMissionContainer.addMission(pioneerMission)
         }
     }
 
     private fun firstImprovmentColonyDestination(
         improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
-        pionierMissions : List<PionierMission>
+        pioneerMissions : List<PioneerMission>
     ): ColonyTilesImprovementPlan? {
         for (destinationScore in improvementsPlanDestinationsScore) {
-            if (destinationScore.obj.hasImprovements() && !hasMissionToColony(pionierMissions, destinationScore.obj.colony)) {
+            if (destinationScore.obj.hasImprovements() && !hasMissionToColony(pioneerMissions, destinationScore.obj.colony)) {
                 return destinationScore.obj
             }
         }
         return null
     }
 
-    fun calculateBuyPionnierOrder(player: Player, pionierMissions: List<PionierMission>): BuyPioneerOrder {
+    fun calculateBuyPionnierOrder(player: Player, pioneerMissions: List<PioneerMission>): BuyPioneerOrder {
         var hasSpecialist = false
-        for (pionierMission in pionierMissions) {
-            if (pionierMission.isSpecialist()) {
+        for (pioneerMission in pioneerMissions) {
+            if (pioneerMission.isSpecialist()) {
                 hasSpecialist = true
                 break
             }
@@ -109,9 +109,9 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return improvementPlan.colony.settlementWorkers().size * 10 + resCount
     }
 
-    private fun hasMissionToColony(pionierMissions: List<PionierMission>, colony: Colony): Boolean {
-        for (pionierMission in pionierMissions) {
-            if (pionierMission.isToColony(colony)) {
+    private fun hasMissionToColony(pioneerMissions: List<PioneerMission>, colony: Colony): Boolean {
+        for (pioneerMission in pioneerMissions) {
+            if (pioneerMission.isToColony(colony)) {
                 return true
             }
         }

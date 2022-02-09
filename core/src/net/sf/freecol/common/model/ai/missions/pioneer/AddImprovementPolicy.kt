@@ -1,4 +1,4 @@
-package net.sf.freecol.common.model.ai.missions.pionier
+package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.ColonyTile
