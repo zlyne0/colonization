@@ -19,6 +19,8 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.player.Player;
@@ -267,6 +269,8 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", TransportGoodsToSellMission.class);
 			addNodeForMapIdEntities("missions", ColonyWorkerMission.class);
 			addNodeForMapIdEntities("missions", ScoutMission.class);
+			addNodeForMapIdEntities("missions", PioneerMission.class);
+			addNodeForMapIdEntities("missions", RequestGoodsMission.class);
         }
         
         @Override

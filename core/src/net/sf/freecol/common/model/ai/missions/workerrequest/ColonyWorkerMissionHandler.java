@@ -31,7 +31,7 @@ public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMi
 	public void handle(PlayerMissionsContainer playerMissionsContainer, ColonyWorkerMission mission) {
 		Player player = playerMissionsContainer.getPlayer();
 		
-		if (mission.getUnit().getTileLocationOrNull() == null) {
+		if (!mission.getUnit().isAtTileLocation()) {
 			return;
 		}
 		

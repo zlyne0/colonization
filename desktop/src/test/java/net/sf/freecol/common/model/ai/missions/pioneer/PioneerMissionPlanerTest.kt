@@ -180,10 +180,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         setGold(player, 10)
 
         // when
-        val buyPionnierOrder = pioneerMissionPlaner.calculateBuyPionnierOrder(player, listOf())
+        val buyPioneerOrder = pioneerMissionPlaner.calculateBuyPionnierOrder(player, listOf())
 
         // then
-        assertThat(buyPionnierOrder).isInstanceOf(BuyPioneerOrder.CanNotAfford::class.java)
+        assertThat(buyPioneerOrder).isInstanceOf(BuyPioneerOrder.CanNotAfford::class.java)
     }
 
     fun eq(colony: Colony): Predicate<ColonyTilesImprovementPlan> {

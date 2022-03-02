@@ -154,7 +154,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
 	    return location != null && location.getClass().equals(unitLocationClass);
 	}
-	
+
+	public boolean isAtLocation(Tile tile) {
+    	return location instanceof Tile && ((Tile)location).equalsCoordinates(tile);
+	}
+
 	@SuppressWarnings("unchecked")
     public <T extends UnitLocation> T getLocationOrNull(Class<T> unitLocationClass) {
 	    if (location != null && location.getClass().equals(unitLocationClass)) {
@@ -758,7 +762,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 			return false;
 		}
 	}
-	
+
+	public boolean isWorkingOnImprovement() {
+		return state == UnitState.IMPROVING;
+	}
+
 	public void sailOnHighSea() {
 	    workLeft -= 1;
 	}

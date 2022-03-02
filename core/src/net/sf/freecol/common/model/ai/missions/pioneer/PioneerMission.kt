@@ -9,19 +9,23 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import promitech.colonization.ai.CommonMissionHandler
+import java.lang.IllegalStateException
 
 class PioneerMission : AbstractMission {
 
     val pioneer: Unit
-    private var colonyId: String? = null
+    var colonyId: String
+        private set
 
     constructor(pioneer: Unit, colony: Colony) : super(Game.idGenerator.nextId(PioneerMission::class.java)) {
         this.pioneer = pioneer
         this.colonyId = colony.id
     }
 
-    private constructor(pioneer: Unit, missionId: String) : super(missionId) {
+    private constructor(pioneer: Unit, missionId: String, colonyId: String) : super(missionId) {
         this.pioneer = pioneer
+        this.colonyId = colonyId
     }
 
     fun isToColony(colony: Colony): Boolean = colony.equalsId(colonyId)
@@ -38,14 +42,29 @@ class PioneerMission : AbstractMission {
         return pioneer.unitType.isType(UnitType.HARDY_PIONEER)
     }
 
+    fun isPioneerExists(): Boolean {
+        return CommonMissionHandler.isUnitExists(pioneer.owner, pioneer)
+    }
+
+    fun isColonyOwner(): Boolean {
+        return CommonMissionHandler.isColonyOwner(pioneer.owner, colonyId)
+    }
+
+    fun colony(): Colony {
+        return pioneer.owner.settlements.getById(colonyId).asColony()
+    }
+
+    override fun toString(): String {
+        return "pioneerMission: ${pioneer}, colonyId: ${colonyId}"
+    }
+
     class Xml : AbstractMission.Xml<PioneerMission>() {
         private val ATTR_UNIT = "unit"
         private val ATTR_COLONY = "colony"
 
         override fun startElement(attr: XmlNodeAttributes) {
             val pioneer = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
-            nodeObject = PioneerMission(pioneer, attr.id)
-            nodeObject.colonyId = attr.getStrAttribute(ATTR_COLONY)
+            nodeObject = PioneerMission(pioneer, attr.id, attr.getStrAttribute(ATTR_COLONY))
         }
 
         override fun startWriteAttr(mission: PioneerMission, attr: XmlNodeAttributesWriter) {

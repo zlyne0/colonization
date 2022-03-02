@@ -21,6 +21,11 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMissionHandler;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionHandler;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
@@ -76,6 +81,9 @@ public class MissionExecutor implements Disposable {
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
             game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService
         );
+        PioneerMissionHandler pioneerMissionHandler = new PioneerMissionHandler(
+            game, new PioneerMissionPlaner(game, pathFinder), moveService, pathFinder
+        );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
@@ -85,6 +93,8 @@ public class MissionExecutor implements Disposable {
 		missionHandlerMapping.put(TransportUnitMission.class, transportUnitMissionHandler);
 		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
+        missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
+        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
 	}
     
 	public void executeMissions(Player player) {

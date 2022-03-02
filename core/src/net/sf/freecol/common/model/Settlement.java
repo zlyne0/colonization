@@ -78,7 +78,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     }
 
     public boolean hasGoodsToEquipRole(UnitRole unitRole) {
-    	return goodsContainer.hasGoodsQuantity(unitRole.requiredGoods);
+		return unitRole.isContainerHasRequiredGoods(goodsContainer);
     }
     
     public void changeUnitRole(Unit unit, UnitRole newUnitRole, ObjectWithFeatures unitLocationFeatures) {

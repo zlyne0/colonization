@@ -2,12 +2,12 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
-import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ObjectScoreList
@@ -75,7 +75,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             val colonistPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType)
 
             val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
-            val pioneerSumOfRequiredGoods : ProductionSummary = pioneerRole.sumOfRequiredGoods()
+            val pioneerSumOfRequiredGoods : GoodsCollection = pioneerRole.sumOfRequiredGoods()
             val pionnerPrice = player.market().aiBidPrice(pioneerSumOfRequiredGoods) + colonistPrice
 
             if (player.hasGold(pionnerPrice * 2)) {
@@ -94,6 +94,12 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         }
         objectScore.sortDescending()
         return objectScore
+    }
+
+    fun generateImprovementsPlanForColony(player: Player, colonyId: String): ColonyTilesImprovementPlan {
+        val colony = player.settlements.getById(colonyId).asColony()
+        val improvementPolicy = AddImprovementPolicy.Balanced()
+        return improvementPolicy.generateImprovements(colony)
     }
 
     private fun calculateScore(improvementPlan: ColonyTilesImprovementPlan): Int {

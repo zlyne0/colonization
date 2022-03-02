@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -88,10 +89,10 @@ public class Market extends ObjectWithId {
 	/**
 	 * ai ignore arrears
 	 */
-	public int aiBidPrice(ProductionSummary goods) {
+	public int aiBidPrice(GoodsCollection goods) {
 		int sum = 0;
-		for (Entry<String> goodsTypeEntry : goods.entries()) {
-			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
+		for (Entry<GoodsType> goodsTypeEntry : goods.entries()) {
+			MarketData data = marketGoods.getById(goodsTypeEntry.key);
 			if (goodsTypeEntry.value > 0) {
 				sum += data.getCostToBuy(goodsTypeEntry.value);
 			}

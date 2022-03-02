@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import java.io.IOException;
 import java.util.Comparator;
 
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.util.StringUtils;
@@ -114,12 +115,21 @@ public class UnitRole extends ObjectWithFeatures {
 		return false;
 	}
 
-	public ProductionSummary sumOfRequiredGoods() {
-		ProductionSummary required = new ProductionSummary();
-		for (RequiredGoods g : requiredGoods.entities()) {
-			required.addGoods(g.getId(), g.amount * getMaximumCount());
+	public GoodsCollection sumOfRequiredGoods() {
+		GoodsCollection gc = new GoodsCollection();
+		for (RequiredGoods requiredGood : requiredGoods) {
+			gc.add(requiredGood.goodsType, requiredGood.amount * maximumCount);
 		}
-		return required;
+		return gc;
+	}
+
+	public boolean isContainerHasRequiredGoods(GoodsContainer goodsContainer) {
+		for (RequiredGoods requiredGood : requiredGoods) {
+			if (!goodsContainer.hasGoodsQuantity(requiredGood.goodsType, requiredGood.amount * maximumCount)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static class Xml extends XmlNodeParser<UnitRole> {

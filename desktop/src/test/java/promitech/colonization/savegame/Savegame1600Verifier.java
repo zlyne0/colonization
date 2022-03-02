@@ -9,6 +9,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
+import static net.sf.freecol.common.model.UnitAssert.assertThat;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
@@ -46,6 +47,8 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
@@ -72,9 +75,17 @@ import net.sf.freecol.common.model.specification.options.OptionGroup;
 
 public class Savegame1600Verifier {
 
-	public void verify(Game game) {
+    private GoodsType muskets;
+    private GoodsType tools;
+    private Colony nieuwAmsterdam;
+    private Colony fortMaurits;
+    private Colony fortOranje;
+    private Player dutch;
+
+    public void verify(Game game) {
+        init(game);
         verifySpecification(game);
-        
+
         verifyGame(game);
         verifyPlayers(game);
         
@@ -98,6 +109,16 @@ public class Savegame1600Verifier {
         
         verifyUnitTradeRoute(game);
 	}
+
+	private void init(Game game) {
+        muskets = Specification.instance.goodsTypes.getById(GoodsType.MUSKETS);
+        tools = Specification.instance.goodsTypes.getById(GoodsType.TOOLS);
+
+        dutch = game.players.getById("player:1");
+        nieuwAmsterdam = dutch.settlements.getById("colony:6528").asColony();
+        fortMaurits = dutch.settlements.getById("colony:6993").asColony();
+        fortOranje = dutch.settlements.getById("colony:6554").asColony();
+    }
 
     private void verifyMap(Game game) {
         Tile tile = game.map.getTile(21, 72);
@@ -174,17 +195,26 @@ public class Savegame1600Verifier {
     }
 
     private void verifyDutchMissions(Game game) {
-        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
-		Player dutch = game.players.getById("player:1");
+        PlayerMissionsContainer missions = game.aiContainer.missionContainer(dutch);
 
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
         UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
         assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
-			"colony:6993",
-			"colony:6554"
+            fortMaurits.getId(),
+            fortOranje.getId()
 		);
-        SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals("colony:6993");
-	}
+        SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals(fortMaurits.getId());
+
+        PioneerMission pioneerMission = missions.getMission("pioneerMission:1");
+        assertThat(pioneerMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
+        assertThat(pioneerMission.getPioneer()).isIdEquals("unit:6762");
+        assertThat(pioneerMission).hasDependMission("requestGoodsMission:1", RequestGoodsMission.class);
+
+        RequestGoodsMission requestGoodsMission = pioneerMission.findDependMissionById("requestGoodsMission:1");
+        assertThat(requestGoodsMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
+        assertThat(requestGoodsMission.amount(muskets)).isEqualTo(50);
+        assertThat(requestGoodsMission.amount(tools)).isEqualTo(100);
+    }
 
     private void verifySpainMissions(Game game) {
         Player spain = game.players.getById("player:133");

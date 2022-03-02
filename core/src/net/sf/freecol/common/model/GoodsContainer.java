@@ -9,7 +9,6 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
-import net.sf.freecol.common.model.specification.RequiredGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -70,10 +69,6 @@ public class GoodsContainer {
     
     public boolean hasGoodsQuantity(ProductionSummary g) {
     	return goods.hasMoreOrEquals(g);
-    }
-
-    public boolean hasGoodsQuantity(MapIdEntities<RequiredGoods> requiredGoods) {
-    	return goods.hasMoreOrEquals(requiredGoods);
     }
 
     public boolean hasPart(String goodsTypeId, int amount, float ratio) {

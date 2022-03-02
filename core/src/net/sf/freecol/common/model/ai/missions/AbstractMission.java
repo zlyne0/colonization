@@ -10,6 +10,8 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 
@@ -19,6 +21,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 
 public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
+
 	protected List<AbstractMission> dependMissions = new ArrayList<AbstractMission>();
 	
 	protected AbstractMission(String id) {
@@ -103,10 +106,10 @@ public abstract class AbstractMission extends ObjectWithId {
 		return null;
 	}
 
-	public AbstractMission findDependMissionById(String missionId) {
+	public <T extends AbstractMission> T findDependMissionById(String missionId) {
 		for (AbstractMission am : dependMissions) {
 			if (am.equalsId(missionId)) {
-				return am;
+				return (T)am;
 			}
 		}
 		return null;
@@ -115,6 +118,10 @@ public abstract class AbstractMission extends ObjectWithId {
 	@Override
 	public String toString() {
 		return "TODO.mission.toString: " + this.getClass().getName() + " " + this.getId();
+	}
+
+	public List<AbstractMission> getDependMissions() {
+		return dependMissions;
 	}
 
 	public static abstract class Xml<AM extends AbstractMission> extends XmlNodeParser<AM> {
@@ -139,6 +146,8 @@ public abstract class AbstractMission extends ObjectWithId {
 			addNode(TransportGoodsToSellMission.class, setter);
 			addNode(ColonyWorkerMission.class, setter);
 			addNode(ScoutMission.class, setter);
+			addNode(PioneerMission.class, setter);
+			addNode(RequestGoodsMission.class, setter);
 		}
 
 		@Override

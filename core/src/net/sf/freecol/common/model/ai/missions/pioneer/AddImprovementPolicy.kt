@@ -13,6 +13,14 @@ class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<Tile
     fun hasImprovements(): Boolean {
         return improvements.size > 0
     }
+
+    fun isEmpty(): Boolean {
+        return improvements.isEmpty()
+    }
+
+    fun firstImprovement(): TileImprovementPlan {
+        return improvements.first()
+    }
 }
 
 sealed class AddImprovementPolicy {
