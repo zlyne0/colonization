@@ -294,7 +294,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	if (!newUnitRole.isAvailableTo(unit.unitType, this)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
     	}
-    	ProductionSummary requiredGoods = UnitRoleLogic.requiredGoodsToChangeRole(unit, newUnitRole);
+    	ProductionSummary requiredGoods = UnitRole.requiredGoodsToChangeRole(unit, newUnitRole);
     	
     	unit.changeRole(newUnitRole);
 

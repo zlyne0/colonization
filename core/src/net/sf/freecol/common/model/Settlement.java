@@ -87,12 +87,11 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	}
 
     	ProductionSummary required = new ProductionSummary();
-		int maxAvailableRoleCount = UnitRoleLogic.maximumAvailableRequiredGoods(unit, newUnitRole, goodsContainer, required);
+		int maxAvailableRoleCount = newUnitRole.maximumAvailableRequiredGoods(unit, goodsContainer, required);
     	unit.changeRole(newUnitRole, maxAvailableRoleCount);
     	goodsContainer.decreaseGoodsQuantity(required);
     }
-    
-    
+
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Comparator;
 
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
+import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.util.StringUtils;
@@ -130,6 +131,69 @@ public class UnitRole extends ObjectWithFeatures {
 			}
 		}
 		return true;
+	}
+
+	public int maximumAvailableRequiredGoods(final Unit unit, GoodsContainer goodsContainer, ProductionSummary required) {
+		int maxRoleCount = DEFAULT_UNIT_ROLE_COUNT;
+		for (RequiredGoods g : requiredGoods.entities()) {
+			int marg = 0;
+			int containerGoodsAmount = goodsContainer.goodsAmount(g.getId());
+			for (int i = 1; i <= maximumCount; i++) {
+				if (containerGoodsAmount >= i * g.amount) {
+					marg = i * g.amount;
+					maxRoleCount = Math.max(maxRoleCount, i);
+				}
+			}
+			if (marg > 0) {
+				required.addGoods(g.getId(), marg);
+			}
+		}
+
+		for (RequiredGoods g : unit.unitRole.requiredGoods.entities()) {
+			required.addGoods(g.getId(), -g.amount * unit.getRoleCount());
+		}
+		return maxRoleCount;
+	}
+
+	public ProductionSummary minimumRequiredGoodsToChangeRole(UnitRole newRole) {
+		ProductionSummary required = new ProductionSummary();
+		for (RequiredGoods g : newRole.requiredGoods.entities()) {
+			required.addGoods(g.getId(), g.amount * DEFAULT_UNIT_ROLE_COUNT);
+		}
+		for (RequiredGoods g : requiredGoods.entities()) {
+			required.addGoods(g.getId(), -g.amount * DEFAULT_UNIT_ROLE_COUNT);
+		}
+		return required;
+	}
+
+	public static ProductionSummary requiredGoodsToChangeRole(Unit unit, UnitRole newRole) {
+		ProductionSummary required = new ProductionSummary();
+
+		for (RequiredGoods g : newRole.requiredGoods) {
+			required.addGoods(g.getId(), g.amount * newRole.maximumCount);
+		}
+		for (RequiredGoods g : unit.unitRole.requiredGoods) {
+			required.addGoods(g.getId(), -g.amount * unit.roleCount);
+		}
+		return required;
+	}
+
+	public static int countRequiredGoodsToChangeRole(GoodsType goodsType, Unit unit, UnitRole newRole) {
+		int requiredAmount = 0;
+		for (RequiredGoods g : newRole.requiredGoods.entities()) {
+			if (g.goodsType.equalsId(goodsType)) {
+				requiredAmount += g.amount * newRole.getMaximumCount();
+			}
+		}
+		for (RequiredGoods g : unit.unitRole.requiredGoods.entities()) {
+			if (g.goodsType.equalsId(goodsType)) {
+				requiredAmount -= g.amount * unit.roleCount;
+			}
+		}
+		if (requiredAmount < 0) {
+			requiredAmount = 0;
+		}
+		return requiredAmount;
 	}
 
 	public static class Xml extends XmlNodeParser<UnitRole> {

@@ -21043,6 +21043,16 @@
 				  <settlement id="colony:6554" />
 			  </transportGoodsToSellMission>
               <colonyWorkerMission id="colonyWorkerMission:1" tile="24,78" unit="unit:7095" />
+
+              <pioneerMission id="pioneerMission:1" unit="unit:6762" colony="colony:6528">
+                  <requestGoodsMission id="requestGoodsMission:1" colony="colony:6528">
+                      <goodsCollection>
+                          <goods type="model.goods.muskets" amount="50"/>
+                          <goods type="model.goods.tools" amount="100"/>
+                      </goodsCollection>
+                  </requestGoodsMission>
+              </pioneerMission>
+
 	      </playerMissions>
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>

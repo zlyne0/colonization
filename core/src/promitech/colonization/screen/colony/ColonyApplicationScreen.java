@@ -21,15 +21,12 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
-import net.sf.freecol.common.model.Production;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
@@ -173,7 +170,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	                if (unit.getUnitRole().equalsId(aRole)) {
 	                    continue;
 	                }
-	                ProductionSummary required = UnitRoleLogic.minimumRequiredGoods(unit.getUnitRole(), aRole);
+	                ProductionSummary required = unit.getUnitRole().minimumRequiredGoodsToChangeRole(aRole);
 	                if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
 	                }

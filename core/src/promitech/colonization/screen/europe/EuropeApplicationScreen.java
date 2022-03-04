@@ -1,6 +1,5 @@
 package promitech.colonization.screen.europe;
 
-import java.util.Collections;
 import java.util.List;
 
 import com.badlogic.gdx.Gdx;
@@ -14,13 +13,11 @@ import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
 import com.badlogic.gdx.utils.viewport.FitViewport;
 
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -101,7 +98,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, ProductionSummary.EMPTY, ActionTypes.EQUIPPED));
 	                	continue;
 	                }
-	                ProductionSummary required = UnitRoleLogic.requiredGoodsToChangeRole(unit, aRole);
+	                ProductionSummary required = UnitRole.requiredGoodsToChangeRole(unit, aRole);
 	                if (player.market().canAffordFor(player, required)) {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
 	                }
