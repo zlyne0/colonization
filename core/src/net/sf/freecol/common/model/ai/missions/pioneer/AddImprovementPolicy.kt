@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.specification.GoodsType
 
 class TileImprovementPlan(val tile: Tile, val improvementType: TileImprovementType)
+
 class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<TileImprovementPlan>) {
     fun hasImprovements(): Boolean {
         return improvements.size > 0

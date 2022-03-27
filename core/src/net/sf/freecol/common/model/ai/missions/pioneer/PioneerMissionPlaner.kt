@@ -7,10 +7,12 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.findMissionAndConsume
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ObjectScoreList
+import java.util.HashSet
 
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
@@ -44,6 +46,43 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             val pioneerMission = PioneerMission(boughtPioneer, firstDestination.colony)
             playerMissionContainer.addMission(pioneerMission)
         }
+    }
+
+    fun findNextColonyToImprove(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): ColonyTilesImprovementPlan? {
+        val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
+        playerMissionContainer.findMissionAndConsume(PioneerMission::class.java, { pioneerMission ->
+            colonyWithMissions.add(pioneerMission.colonyId)
+        })
+
+        val improvementsPlanDestinationsScore = generateImprovementsPlanScore(playerMissionContainer.player, AddImprovementPolicy.Balanced())
+        pathFinder.generateRangeMap(game.map, mission.pioneer, PathFinder.includeUnexploredTiles)
+
+        var improvementDestination: ColonyTilesImprovementPlan? = null
+        var destinationScore: Double = 0.0
+
+        for (planScore in improvementsPlanDestinationsScore) {
+            if (planScore.score == 0 || colonyWithMissions.contains(planScore.obj.colony.id)) {
+                continue
+            }
+            val dscore: Double = planScore.score.toDouble() / nextColonyDistanceValue(planScore.obj.colony)
+            if (improvementDestination == null || dscore > destinationScore) {
+                destinationScore = dscore
+                improvementDestination = planScore.obj
+            }
+        }
+        return improvementDestination
+    }
+
+    private fun nextColonyDistanceValue(colony: Colony): Int {
+        var distance = pathFinder.turnsCost(colony.tile)
+        if (distance == 0) {
+            distance = 1
+        } else {
+            if (distance == PathFinder.INFINITY) {
+                distance = 10
+            }
+        }
+        return distance
     }
 
     private fun firstImprovmentColonyDestination(

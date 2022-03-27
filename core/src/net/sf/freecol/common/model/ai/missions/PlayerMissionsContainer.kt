@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai.missions
 
+import net.sf.freecol.common.model.player.Player
+
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
@@ -12,6 +14,18 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
         }
     }
     return false
+}
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T: AbstractMission> PlayerMissionsContainer.findMissionAndConsume(
+    missionClass: Class<T>,
+    consumer: (T) -> Unit
+) {
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass)) {
+            consumer(playerMission as T)
+        }
+    }
 }
 
 inline fun <T : AbstractMission> PlayerMissionsContainer.findRecursively(

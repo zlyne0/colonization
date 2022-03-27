@@ -2,11 +2,13 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import promitech.colonization.ai.CommonMissionHandler
@@ -52,6 +54,17 @@ class PioneerMission : AbstractMission {
 
     fun colony(): Colony {
         return pioneer.owner.settlements.getById(colonyId).asColony()
+    }
+
+    fun waitOrResolveFreeColonistPionner(colony: Colony) {
+        if (pioneer.unitType.equalsId(UnitType.FREE_COLONIST)) {
+            colony.changeUnitRole(pioneer, Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID))
+            setDone()
+        } // else wait for new colony to improve
+    }
+
+    fun changeColony(colony: Colony) {
+        this.colonyId = colony.id
     }
 
     override fun toString(): String {

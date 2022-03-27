@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model;
 
 import org.assertj.core.api.AbstractAssert;
+import org.jetbrains.annotations.NotNull;
 
 public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 
@@ -161,5 +162,11 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		return this;
 	}
 
-
+    public ColonyAssert hasGoods(@NotNull String goodsTypeId, int amount) {
+		int actualAmount = actual.getGoodsContainer().goodsAmount(goodsTypeId);
+		if (actualAmount != amount) {
+			failWithMessage("expected colony %s has %d goods, but it has %d", actual.getId(), amount, actualAmount);
+		}
+        return this;
+    }
 }

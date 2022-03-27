@@ -8,9 +8,11 @@ import net.sf.freecol.common.model.TileImprovement
 import net.sf.freecol.common.model.TileImprovementType
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitAssert.*
+import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.map.path.PathFinder
+import net.sf.freecol.common.model.player.Player
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -184,6 +186,33 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
 
         // then
         assertThat(buyPioneerOrder).isInstanceOf(BuyPioneerOrder.CanNotAfford::class.java)
+    }
+
+    @Test
+    fun `should find next destination to improve colony`() {
+        // given
+        val playerMissionContainer = game.aiContainer.missionContainer(dutch)
+        playerMissionContainer.clearAllMissions()
+
+        val betweenColoniesTile = game.map.getTile(22, 78)
+        playerMissionContainer.addMission(
+            PioneerMission(
+                UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, betweenColoniesTile),
+                nieuwAmsterdam
+            )
+        )
+        val pioneerMission = PioneerMission(
+            UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, betweenColoniesTile),
+            fortMaurits
+        )
+
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
+        // when
+        val tilesImprovementPlan = pioneerMissionPlaner.findNextColonyToImprove(pioneerMission, playerMissionContainer)
+
+        // then
+        assertThat(tilesImprovementPlan).isNotNull()
+        assertThat(tilesImprovementPlan!!.colony.id).isEqualTo(fortNassau.id)
     }
 
     fun eq(colony: Colony): Predicate<ColonyTilesImprovementPlan> {
