@@ -38,6 +38,14 @@ class PioneerMissionHandler(
         if (mission.pioneer.isAtTileLocation) {
             improveTitles(playerMissionsContainer, mission)
         }
+        if (mission.pioneer.isAtUnitLocation) {
+            // do nothing, wait for transport
+            return
+        }
+        if (mission.pioneer.isAtEuropeLocation) {
+            // TODO: create TransportUnitRequest when not exists
+            return
+        }
     }
 
     private fun improveTitles(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
@@ -46,11 +54,12 @@ class PioneerMissionHandler(
         }
         val improvementsPlan = pioneerMissionPlaner.generateImprovementsPlanForColony(mission.pioneer.owner, mission.colonyId)
         if (improvementsPlan.hasImprovements()) {
-            if (mission.pioneer.unitRole.equalsId(UnitRole.DEFAULT_ROLE_ID)) {
+            if (mission.isPionnerWithoutTools()) {
                 goToColonyAndWaitForTools(playerMissionsContainer, mission)
                 return
             }
             val firstImprovement = improvementsPlan.firstImprovement()
+            // TODO: handle destination on other island
             moveToDestination(mission, firstImprovement.tile) {
                 startImprove(playerMissionsContainer, mission, firstImprovement)
             }
@@ -98,19 +107,29 @@ class PioneerMissionHandler(
     }
 
     private fun findNextColonyDestination(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
-        val nextPlan: ColonyTilesImprovementPlan? = pioneerMissionPlaner.findNextColonyToImprove(mission, playerMissionsContainer)
-        if (nextPlan == null) {
-            val colony = mission.colony()
-            moveToDestination(mission, colony.tile) {
-                mission.waitOrResolveFreeColonistPionner(colony)
+        val nextColonyDestination = pioneerMissionPlaner.findNextColonyToImprove(mission, playerMissionsContainer)
+
+        when (nextColonyDestination) {
+            is PioneerDestination.TheSameIsland -> {
+                mission.changeColony(nextColonyDestination.plan.colony)
+                moveToDestination(mission, nextColonyDestination.plan.colony.tile)
             }
-        } else {
-            mission.changeColony(nextPlan.colony)
-            moveToDestination(mission, nextPlan.colony.tile) {}
+            is PioneerDestination.OtherIsland -> {
+                // TODO: create transport request
+                moveToDestination(mission, nextColonyDestination.plan.colony.tile) {
+                    mission.changeColony(nextColonyDestination.plan.colony)
+                }
+            }
+            is PioneerDestination.Lack -> {
+                val colony = mission.colony()
+                moveToDestination(mission, colony.tile) {
+                    mission.waitOrResolveFreeColonistPionner(colony)
+                }
+            }
         }
     }
 
-    private inline fun moveToDestination(mission: PioneerMission, destTile: Tile, action: () -> kotlin.Unit) {
+    private inline fun moveToDestination(mission: PioneerMission, destTile: Tile, action: () -> kotlin.Unit = {}) {
         if (mission.pioneer.isAtLocation(destTile)) {
             action()
         } else {

@@ -7,37 +7,40 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.findMissionAndConsume
+import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ObjectScoreList
 import java.util.HashSet
 
+sealed class PioneerDestination {
+    class TheSameIsland(val plan: ColonyTilesImprovementPlan) : PioneerDestination()
+    class OtherIsland(val plan: ColonyTilesImprovementPlan) : PioneerDestination()
+    class Lack : PioneerDestination()
+}
+
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
-    fun plan(player: Player, playerMissionContainer: PlayerMissionsContainer) {
-        val pioneerMissions : List<PioneerMission> = playerMissionContainer.findMissions(PioneerMission::class.java)
-
+    fun prepareMission(player: Player, playerMissionContainer: PlayerMissionsContainer) {
+        val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
+        var hasSpecialistOnMission = false
+        playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
+            colonyWithMissions.add(pioneerMission.colonyId)
+            if (pioneerMission.isSpecialist()) {
+                hasSpecialistOnMission = true
+            }
+        })
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced())
 
-        var potentialImprovementsDestinationCount = 0
-        for (objectScore in improvementsPlanDestinationsScore) {
-            if (objectScore.obj.hasImprovements()) {
-                potentialImprovementsDestinationCount++
-            }
-        }
-
-        // no more new pioneers mission then half of improvements destinations
-        val maxPioneersCount: Int = potentialImprovementsDestinationCount / 2
-        if (pioneerMissions.size >= maxPioneersCount) {
+        if (isReachMaxPioneerMissions(improvementsPlanDestinationsScore, colonyWithMissions)) {
             // no missions
             return
         }
 
-        val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, pioneerMissions)
+        val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
         if (firstDestination != null) {
-            val buyPionnierOrder = calculateBuyPionnierOrder(player, pioneerMissions)
+            val buyPionnierOrder = calculateBuyPioneerOrder(player, hasSpecialistOnMission)
             val boughtPioneer : Unit = when (buyPionnierOrder) {
                 is BuyPioneerOrder.BuySpecialistOrder -> buyPionnierOrder.buy(player)
                 is BuyPioneerOrder.RecruitColonistOrder -> buyPionnierOrder.buy(player, game)
@@ -48,23 +51,61 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         }
     }
 
-    fun findNextColonyToImprove(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): ColonyTilesImprovementPlan? {
+    private fun isReachMaxPioneerMissions(
+        improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
+        colonyWithMissions: Set<String>
+    ): Boolean {
+        var potentialImprovementsDestinationCount = 0
+        for (objectScore in improvementsPlanDestinationsScore) {
+            if (objectScore.obj.hasImprovements()) {
+                potentialImprovementsDestinationCount++
+            }
+        }
+        // no more new pioneers mission then half of improvements destinations
+        val maxPioneersCount: Int = potentialImprovementsDestinationCount / 2
+        if (colonyWithMissions.size >= maxPioneersCount) {
+            // no missions
+            return true
+        }
+        return false
+    }
+
+    fun findNextColonyToImprove(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
-        playerMissionContainer.findMissionAndConsume(PioneerMission::class.java, { pioneerMission ->
+        playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
             colonyWithMissions.add(pioneerMission.colonyId)
         })
 
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(playerMissionContainer.player, AddImprovementPolicy.Balanced())
         pathFinder.generateRangeMap(game.map, mission.pioneer, PathFinder.includeUnexploredTiles)
 
+        var improvementDestination: ColonyTilesImprovementPlan? = findTheBestDestinationInRange(
+            pathFinder,
+            improvementsPlanDestinationsScore,
+            colonyWithMissions
+        )
+        if (improvementDestination == null) {
+            return PioneerDestination.Lack()
+        }
+        val distance = pathFinder.turnsCost(improvementDestination.colony.tile)
+        if (distance == PathFinder.INFINITY || distance > 5) {
+            return PioneerDestination.OtherIsland(improvementDestination)
+        }
+        return PioneerDestination.TheSameIsland(improvementDestination)
+    }
+
+    private fun findTheBestDestinationInRange(
+        rangePathFinder: PathFinder,
+        improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
+        colonyWithMissions: Set<String>
+    ): ColonyTilesImprovementPlan? {
         var improvementDestination: ColonyTilesImprovementPlan? = null
         var destinationScore: Double = 0.0
-
         for (planScore in improvementsPlanDestinationsScore) {
             if (planScore.score == 0 || colonyWithMissions.contains(planScore.obj.colony.id)) {
                 continue
             }
-            val dscore: Double = planScore.score.toDouble() / nextColonyDistanceValue(planScore.obj.colony)
+            val dscore: Double = planScore.score.toDouble() / nextColonyDistanceValue(rangePathFinder, planScore.obj.colony)
             if (improvementDestination == null || dscore > destinationScore) {
                 destinationScore = dscore
                 improvementDestination = planScore.obj
@@ -73,8 +114,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return improvementDestination
     }
 
-    private fun nextColonyDistanceValue(colony: Colony): Int {
-        var distance = pathFinder.turnsCost(colony.tile)
+    private fun nextColonyDistanceValue(rangePathFinder: PathFinder, colony: Colony): Int {
+        var distance = rangePathFinder.turnsCost(colony.tile)
         if (distance == 0) {
             distance = 1
         } else {
@@ -87,30 +128,22 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
     private fun firstImprovmentColonyDestination(
         improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
-        pioneerMissions : List<PioneerMission>
+        colonyWithMissions: Set<String>
     ): ColonyTilesImprovementPlan? {
         for (destinationScore in improvementsPlanDestinationsScore) {
-            if (destinationScore.obj.hasImprovements() && !hasMissionToColony(pioneerMissions, destinationScore.obj.colony)) {
+            if (destinationScore.obj.hasImprovements() && !colonyWithMissions.contains(destinationScore.obj.colony.id)) {
                 return destinationScore.obj
             }
         }
         return null
     }
 
-    fun calculateBuyPionnierOrder(player: Player, pioneerMissions: List<PioneerMission>): BuyPioneerOrder {
-        var hasSpecialist = false
-        for (pioneerMission in pioneerMissions) {
-            if (pioneerMission.isSpecialist()) {
-                hasSpecialist = true
-                break
-            }
-        }
-
+    fun calculateBuyPioneerOrder(player: Player, hasSpecialistOnMission: Boolean): BuyPioneerOrder {
         val hardyPioneerUnitType = Specification.instance.unitTypes.getById(UnitType.HARDY_PIONEER)
         val hardyPioneerPrice = player.europe.aiUnitPrice(hardyPioneerUnitType)
         if (player.hasGold(hardyPioneerPrice * 2)) {
             return BuyPioneerOrder.BuySpecialistOrder(hardyPioneerUnitType)
-        } else if (!hasSpecialist) {
+        } else if (!hasSpecialistOnMission) {
             val colonistPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType)
 
             val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
@@ -152,14 +185,5 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             }
         }
         return improvementPlan.colony.settlementWorkers().size * 10 + resCount
-    }
-
-    private fun hasMissionToColony(pioneerMissions: List<PioneerMission>, colony: Colony): Boolean {
-        for (pioneerMission in pioneerMissions) {
-            if (pioneerMission.isToColony(colony)) {
-                return true
-            }
-        }
-        return false
     }
 }

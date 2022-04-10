@@ -17,7 +17,7 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <T: AbstractMission> PlayerMissionsContainer.findMissionAndConsume(
+inline fun <T: AbstractMission> PlayerMissionsContainer.foreachMission(
     missionClass: Class<T>,
     consumer: (T) -> Unit
 ) {

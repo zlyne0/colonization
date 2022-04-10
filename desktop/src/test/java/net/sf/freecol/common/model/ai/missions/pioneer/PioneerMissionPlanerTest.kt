@@ -12,7 +12,6 @@ import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.map.path.PathFinder
-import net.sf.freecol.common.model.player.Player
 import org.assertj.core.api.Assertions.*
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.*
@@ -116,7 +115,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         // when
-        pioneerMissionPlaner.plan(dutch, playerMissionContainer)
+        pioneerMissionPlaner.prepareMission(dutch, playerMissionContainer)
 
         // then
         val findMissions = playerMissionContainer.findMissions(PioneerMission::class.java)
@@ -136,7 +135,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         setGold(player, unitType(UnitType.HARDY_PIONEER).price * 2)
 
         // when
-        val buyPionnierOrder = pioneerMissionPlaner.calculateBuyPionnierOrder(player, listOf())
+        val buyPionnierOrder = pioneerMissionPlaner.calculateBuyPioneerOrder(player, false)
         var pioneer: Unit? = null
         if (buyPionnierOrder is BuyPioneerOrder.BuySpecialistOrder) {
             pioneer = buyPionnierOrder.buy(player)
@@ -159,7 +158,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         setGold(player, 2000)
 
         // when
-        val buyPionnierOrder = pioneerMissionPlaner.calculateBuyPionnierOrder(player, listOf())
+        val buyPionnierOrder = pioneerMissionPlaner.calculateBuyPioneerOrder(player, false)
         var pioneer: Unit? = null
         if (buyPionnierOrder is BuyPioneerOrder.RecruitColonistOrder) {
             pioneer = buyPionnierOrder.buy(player, game)
@@ -182,7 +181,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         setGold(player, 10)
 
         // when
-        val buyPioneerOrder = pioneerMissionPlaner.calculateBuyPionnierOrder(player, listOf())
+        val buyPioneerOrder = pioneerMissionPlaner.calculateBuyPioneerOrder(player, false)
 
         // then
         assertThat(buyPioneerOrder).isInstanceOf(BuyPioneerOrder.CanNotAfford::class.java)
@@ -208,11 +207,15 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
 
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
         // when
-        val tilesImprovementPlan = pioneerMissionPlaner.findNextColonyToImprove(pioneerMission, playerMissionContainer)
+        val improveDestination = pioneerMissionPlaner.findNextColonyToImprove(pioneerMission, playerMissionContainer)
 
         // then
-        assertThat(tilesImprovementPlan).isNotNull()
-        assertThat(tilesImprovementPlan!!.colony.id).isEqualTo(fortNassau.id)
+        assertThat(improveDestination)
+            .isNotNull()
+            .isInstanceOf(PioneerDestination.TheSameIsland::class.java)
+        if (improveDestination is PioneerDestination.TheSameIsland) {
+            assertThat(improveDestination.plan.colony.id).isEqualTo(fortNassau.id)
+        }
     }
 
     fun eq(colony: Colony): Predicate<ColonyTilesImprovementPlan> {

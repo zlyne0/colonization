@@ -40,6 +40,10 @@ class PioneerMission : AbstractMission {
         unitMissionsMapping.unblockUnitFromMission(pioneer, this)
     }
 
+    fun isPionnerWithoutTools(): Boolean {
+        return pioneer.unitRole.equalsId(UnitRole.DEFAULT_ROLE_ID)
+    }
+
     fun isSpecialist(): Boolean {
         return pioneer.unitType.isType(UnitType.HARDY_PIONEER)
     }
