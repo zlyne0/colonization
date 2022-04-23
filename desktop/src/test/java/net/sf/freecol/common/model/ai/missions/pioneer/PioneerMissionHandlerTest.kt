@@ -15,7 +15,7 @@ import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
-import net.sf.freecol.common.model.ai.missions.findRecursively
+import net.sf.freecol.common.model.ai.missions.findMissions
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
@@ -96,7 +96,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
             .hasRoleCount(0)
         assertFalse(fortNassau.tile.type.isForested)
 
-        val requestGoodsMissions = dutchMissionContainer.findRecursively(RequestGoodsMission::class.java, {
+        val requestGoodsMissions = dutchMissionContainer.findMissions(RequestGoodsMission::class.java, {
             fortNassau.equalsId(it.colonyId) && pioneerMission.equalsId(it.purpose)
         })
         assertThat(requestGoodsMissions).hasSize(1)

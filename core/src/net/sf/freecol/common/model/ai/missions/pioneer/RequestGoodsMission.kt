@@ -79,9 +79,13 @@ class RequestGoodsMission : AbstractMission {
                 attr.getStrAttribute(ATTR_COLONY),
                 attr.getStrAttribute(ATTR_PURPOSE, "")
             )
+
+            super.startElement(attr)
         }
 
         override fun startWriteAttr(mission: RequestGoodsMission, attr: XmlNodeAttributesWriter) {
+            super.startWriteAttr(mission, attr)
+
             attr.setId(mission)
             attr.set(ATTR_COLONY, mission.colonyId)
             attr.set(ATTR_PURPOSE, mission.purpose, "")

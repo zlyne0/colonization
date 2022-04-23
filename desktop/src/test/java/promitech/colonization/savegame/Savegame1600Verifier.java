@@ -208,9 +208,11 @@ public class Savegame1600Verifier {
         PioneerMission pioneerMission = missions.getMission("pioneerMission:1");
         assertThat(pioneerMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
         assertThat(pioneerMission.getPioneer()).isIdEquals("unit:6762");
-        assertThat(pioneerMission).hasDependMission("requestGoodsMission:1", RequestGoodsMission.class);
 
-        RequestGoodsMission requestGoodsMission = pioneerMission.findDependMissionById("requestGoodsMission:1");
+        PlayerMissionsContainerAssert.assertThat(missions)
+            .hasDependMission(pioneerMission, "requestGoodsMission:1", RequestGoodsMission.class);
+
+        RequestGoodsMission requestGoodsMission = missions.getMission("requestGoodsMission:1");
         assertThat(requestGoodsMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
         assertThat(requestGoodsMission.amount(muskets)).isEqualTo(50);
         assertThat(requestGoodsMission.amount(tools)).isEqualTo(100);
@@ -235,9 +237,8 @@ public class Savegame1600Verifier {
 	private void verifyMissionRecursion(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 
-        AbstractMissionAssert.assertThat(missions.getMission("explorerMission:5"))
-        	.isType(ExplorerMission.class)
-        	.hasDependMission("explorerMission:5:1", ExplorerMission.class);
+        PlayerMissionsContainerAssert.assertThat(missions)
+            .hasDependMission("explorerMission:5", "explorerMission:5:1", ExplorerMission.class);
 	}
 
 	private void verifyExploreMission(Game game) {

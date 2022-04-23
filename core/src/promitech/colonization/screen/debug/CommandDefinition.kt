@@ -408,7 +408,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val mission : IndianBringGiftMission
 		
 		val indianAiContainer = guiGameModel.game.aiContainer.missionContainer(tile.getSettlement().getOwner())
-		if (!indianAiContainer.hasMissionType(IndianBringGiftMission::class.java)) {
+		if (!indianAiContainer.hasMission(IndianBringGiftMission::class.java)) {
 			val transportUnit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
 			mission = IndianBringGiftMission(
 				tile.getSettlement().asIndianSettlement(), colonyTile.getSettlement().asColony(),
@@ -436,7 +436,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val mission : DemandTributeMission
 		
 		val indianAiContainer = guiGameModel.game.aiContainer.missionContainer(tile.getSettlement().getOwner())
-		if (!indianAiContainer.hasMissionType(DemandTributeMission::class.java)) {
+		if (!indianAiContainer.hasMission(DemandTributeMission::class.java)) {
 			val unit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
 			
 			tile.getSettlement().asIndianSettlement().setTension(

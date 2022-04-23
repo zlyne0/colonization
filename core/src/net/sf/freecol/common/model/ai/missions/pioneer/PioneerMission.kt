@@ -82,9 +82,11 @@ class PioneerMission : AbstractMission {
         override fun startElement(attr: XmlNodeAttributes) {
             val pioneer = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
             nodeObject = PioneerMission(pioneer, attr.id, attr.getStrAttribute(ATTR_COLONY))
+            super.startElement(attr)
         }
 
         override fun startWriteAttr(mission: PioneerMission, attr: XmlNodeAttributesWriter) {
+            super.startWriteAttr(mission, attr)
             attr.setId(mission)
             attr.set(ATTR_UNIT, mission.pioneer)
             attr.set(ATTR_COLONY, mission.colonyId)

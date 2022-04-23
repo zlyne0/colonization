@@ -1,7 +1,5 @@
 package net.sf.freecol.common.model.ai.missions
 
-import net.sf.freecol.common.model.player.Player
-
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
@@ -17,7 +15,7 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
 }
 
 @Suppress("UNCHECKED_CAST")
-inline fun <T: AbstractMission> PlayerMissionsContainer.foreachMission(
+inline fun <T : AbstractMission> PlayerMissionsContainer.foreachMission(
     missionClass: Class<T>,
     consumer: (T) -> Unit
 ) {
@@ -28,23 +26,41 @@ inline fun <T: AbstractMission> PlayerMissionsContainer.foreachMission(
     }
 }
 
-inline fun <T : AbstractMission> PlayerMissionsContainer.findRecursively(
+@Suppress("UNCHECKED_CAST")
+inline fun <T : AbstractMission> PlayerMissionsContainer.findMissions(
     missionClass: Class<T>,
     predicate: (T) -> Boolean
 ): List<T> {
-    val buffor = mutableListOf<AbstractMission>()
-    val result = mutableListOf<T>()
-    buffor.addAll(this.missions.entities())
+    var result : MutableList<T>? = null
 
-    while (buffor.isNotEmpty()) {
-        val mission = buffor.removeAt(0)
-
-        @Suppress("UNCHECKED_CAST")
-        if (mission.`is`(missionClass) && predicate(mission as T)) {
-            result.add(mission)
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
+            if (result == null) {
+                result = mutableListOf<T>()
+            }
+            result.add(playerMission)
         }
-        if (mission.hasDependMissions()) {
-            buffor.addAll(mission.getDependMissions())
+    }
+    if (result == null) {
+        return emptyList()
+    }
+    return result
+}
+
+fun PlayerMissionsContainer.findDeepDependMissions(mission: AbstractMission): List<AbstractMission> {
+    val result: MutableList<AbstractMission> = mutableListOf()
+    val buf: MutableList<AbstractMission> = mutableListOf(mission)
+
+    while (buf.isNotEmpty()) {
+        val m = buf.removeAt(0)
+        if (m.notEqualsId(mission)) {
+            result.add(m)
+        }
+        for (dependMissionId in m.dependMissions2) {
+            val dependMission = this.missions.getByIdOrNull(dependMissionId)
+            if (dependMission != null) {
+                buf.add(dependMission)
+            }
         }
     }
     return result

@@ -226,6 +226,7 @@ public class TransportUnitMission extends AbstractMission {
             TransportUnitMission m = new TransportUnitMission(attr.getId());
             m.carrier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_CARRIER));
             nodeObject = m;
+			super.startElement(attr);
         }
 
         @Override
@@ -240,11 +241,12 @@ public class TransportUnitMission extends AbstractMission {
         }
         
         @Override
-        public void startWriteAttr(TransportUnitMission node, XmlNodeAttributesWriter attr) throws IOException {
-            attr.setId(node);
-            attr.set(ATTR_CARRIER, node.carrier);
+        public void startWriteAttr(TransportUnitMission mission, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(mission, attr);
+			attr.setId(mission);
+            attr.set(ATTR_CARRIER, mission.carrier);
 
-            for (UnitDest ud : node.unitsDest) {
+            for (UnitDest ud : mission.unitsDest) {
                 attr.xml.element(ELEMENT_UNIT);
                 attr.set(DEST_UNIT, ud.unit.getId());
                 attr.setPoint(DEST_TILE, ud.dest.x, ud.dest.y);

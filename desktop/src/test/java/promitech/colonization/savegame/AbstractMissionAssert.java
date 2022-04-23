@@ -22,15 +22,10 @@ public class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert,
 		return this;
 	}
 	
-	public AbstractMissionAssert hasDependMission(String missionId, Class<? extends AbstractMission> missionTypeClass) {
+	public AbstractMissionAssert hasDependMission(String missionId) {
 		isNotNull();
-		AbstractMission dependMission = actual.findDependMissionById(missionId);
-		if (dependMission == null) {
+		if (!actual.hasDependMission(missionId)) {
 			failWithMessage("Expected depend mission id: %s on Mission id: %s ", missionId, actual.getId());
-		} else {
-			if (dependMission.getClass() != missionTypeClass) {
-				failWithMessage("Expected depend mission type %s on Mission id: %s ", missionTypeClass.getName(), missionId);
-			}
 		}
 		return this;
 	}

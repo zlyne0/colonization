@@ -82,10 +82,12 @@ public class ColonyWorkerMission extends AbstractMission {
             m.unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT));
 			m.goodsType = attr.getEntity(ATTR_GOODS_TYPE, Specification.instance.goodsTypes);
             nodeObject = m;
+			super.startElement(attr);
         }
 
         @Override
         public void startWriteAttr(ColonyWorkerMission mission, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(mission, attr);
             attr.setId(mission);
             attr.setPoint(ATTR_TILE, mission.tile.x, mission.tile.y);
             attr.set(ATTR_UNIT, mission.unit);

@@ -181,6 +181,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 			m.firstSettlementIdToVisit = attr.getStrAttribute(ATTR_FIRST_TO_VISIT); 
 			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE);
 			nodeObject = m;
+			super.startElement(attr);
 		}
 
 		@Override
@@ -192,6 +193,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		
 		@Override
 		public void startWriteAttr(TransportGoodsToSellMission mission, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(mission, attr);
 			attr.setId(mission);
 			attr.set(ATTR_UNIT, mission.transporter);
 			attr.set(ATTR_FIRST_TO_VISIT, mission.firstSettlementIdToVisit);

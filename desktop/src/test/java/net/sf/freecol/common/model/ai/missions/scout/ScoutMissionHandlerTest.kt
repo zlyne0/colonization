@@ -1,15 +1,13 @@
 package net.sf.freecol.common.model.ai.missions.scout
 
-import net.sf.freecol.common.model.IndianSettlementAssert
-import net.sf.freecol.common.model.IndianSettlementAssert.*
-import net.sf.freecol.common.model.UnitAssert
+import net.sf.freecol.common.model.IndianSettlementAssert.assertThat
+import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
-import org.assertj.core.api.Assertions
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 
@@ -47,16 +45,16 @@ internal class ScoutMissionHandlerTest : MissionHandlerBaseTestClass() {
         // when
         val transportUnitMission = TransportUnitMission(ship)
         transportUnitMission.addUnitDest(scoutMission.scout, scoutMission.scoutDistantDestination, true)
-        scoutMission.addDependMission(transportUnitMission)
+        missionContainer.addMission(scoutMission, transportUnitMission)
         newTurnAndExecuteMission(dutch, 3)
         // then
-        UnitAssert.assertThat(ship).isAtLocation(fortOranje.tile)
-        UnitAssert.assertThat(scout).isAtLocation(fortOranje.tile)
+        assertThat(ship).isAtLocation(fortOranje.tile)
+        assertThat(scout).isAtLocation(fortOranje.tile)
 
         // when
         newTurnAndExecuteMission(dutch, 1)
         // then
-        UnitAssert.assertThat(scout).isNextToLocation(villageLocation)
+        assertThat(scout).isNextToLocation(villageLocation)
         assertThat(villageLocation.settlement).isScouted()
     }
 }

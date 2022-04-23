@@ -101,7 +101,7 @@ class PioneerMissionHandler(
             })
             if (!requestGoodsMissionExists) {
                 val requiredGoods = pioneerRole.sumOfRequiredGoods()
-                mission.addDependMission(RequestGoodsMission(colony, requiredGoods, mission.id))
+                playerMissionsContainer.addMission(mission, RequestGoodsMission(colony, requiredGoods, mission.id))
             }
         }
     }
