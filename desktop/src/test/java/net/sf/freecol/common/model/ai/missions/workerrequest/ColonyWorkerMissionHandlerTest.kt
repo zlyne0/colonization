@@ -74,51 +74,6 @@ class ColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
 		ColonyAssert.assertThat(tile.getSettlement().asColony()).hasSize(1)
 	}
 
-	@Test
-	fun `should sell goods, buy colonist and transport them to new world`() {
-		// given
-		game.aiContainer.missionContainer(dutch).clearAllMissions()
-
-		val missionContainer = game.aiContainer.missionContainer(dutch)
-		dutch.subtractGold(dutch.gold)
-
-		removeAllNavy(dutch)
-		removeAllUnitsFromLocation(dutch.europe)
-
-		// create colonists in europe
-		val dockFreeColonists = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.europe)
-		val colonyWorkerMission = ColonyWorkerMission(nieuwAmsterdam.tile, dockFreeColonists, goodsType(GoodsType.FURS))
-		missionContainer.addMission(colonyWorkerMission)
-
-		// prepare caravel with goods to sell
-		val dutchEntryLocation = game.map.getSafeTile(dutch.entryLocation)
-
-		val caravel = UnitFactory.create(UnitType.CARAVEL, dutch, dutchEntryLocation)
-		caravel.goodsContainer.increaseGoodsQuantity(GoodsType.SILVER, 100)
-		caravel.sailUnitToEurope(dutchEntryLocation)
-
-		val transportGoodsToSellMission = TransportGoodsToSellMission(caravel, nieuwAmsterdam, emptySet())
-		transportGoodsToSellMission.changePhase(TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE)
-		missionContainer.addMission(transportGoodsToSellMission)
-
-		// when
-		newTurnAndExecuteMission(dutch, caravel.sailTurns)
-		planMissions(dutch)
-		// should buy units
-		newTurnAndExecuteMission(dutch, 1)
-
-		// then
-		Assertions.assertThat(transactionLogger.containsSale(GoodsType.SILVER, 100)).isTrue()
-		UnitAssert.assertThat(caravel)
-			.isAtLocation(dutch.highSeas)
-			.hasUnitsSize(2);
-
-		for (unit in caravel.unitContainer.units) {
-			PlayerMissionsContainerAssert.assertThat(missionContainer)
-				.hasMission(ColonyWorkerMission::class.java, unit)
-		}
-	}
-
 	fun removeAllUnitsFromLocation(unitLocation: UnitLocation) {
 		for (unit in unitLocation.units.copy()) {
 			unit.owner.removeUnit(unit)

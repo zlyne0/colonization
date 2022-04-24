@@ -18,6 +18,7 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
@@ -563,6 +564,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 	}
 
+	// key 7
 	fun simpleTest(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView, mapActor: MapActor?) {
 		tileDebugView.reset()
 
@@ -621,6 +623,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		}
 	}
 
+	// key 8
 	fun simpleTest2(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView, mapActor: MapActor?) {
 		val game = guiGameModel.game
 		val player = game.playingPlayer

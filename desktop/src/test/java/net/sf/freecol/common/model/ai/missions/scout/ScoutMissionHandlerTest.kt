@@ -47,13 +47,9 @@ internal class ScoutMissionHandlerTest : MissionHandlerBaseTestClass() {
         transportUnitMission.addUnitDest(scoutMission.scout, scoutMission.scoutDistantDestination, true)
         missionContainer.addMission(scoutMission, transportUnitMission)
         newTurnAndExecuteMission(dutch, 3)
+
         // then
         assertThat(ship).isAtLocation(fortOranje.tile)
-        assertThat(scout).isAtLocation(fortOranje.tile)
-
-        // when
-        newTurnAndExecuteMission(dutch, 1)
-        // then
         assertThat(scout).isNextToLocation(villageLocation)
         assertThat(villageLocation.settlement).isScouted()
     }

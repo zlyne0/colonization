@@ -19,6 +19,21 @@ class PlayerMissionsContainerTest {
     private val playerMissionsContainer = PlayerMissionsContainer(player)
 
     @Test
+    fun `should find first mission`() {
+        // given
+        createMissionGraph()
+        playerMissionsContainer.addMission(MissionB("B"))
+
+        // when
+        val testingMission = playerMissionsContainer.findFirstMission(TestingMission::class.java)
+        val testingMissionB = playerMissionsContainer.findFirstMission(MissionB::class.java)
+
+        // then
+        assertThat(testingMission).isNotNull
+        assertThat(testingMissionB).isNotNull
+    }
+
+    @Test
     fun `should find mission to execute`() {
         // given
         createMissionGraph()
