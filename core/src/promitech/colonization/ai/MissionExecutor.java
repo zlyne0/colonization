@@ -23,6 +23,8 @@ import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandle
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMissionHandler;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
@@ -94,6 +96,7 @@ public class MissionExecutor implements Disposable {
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
         missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
         missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
+        missionHandlerMapping.put(TransportUnitRequestMission.class, new TransportUnitRequestMissionHandler());
 	}
     
 	public void executeMissions(Player player) {

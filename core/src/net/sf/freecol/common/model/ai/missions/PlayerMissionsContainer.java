@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
@@ -142,7 +143,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 		return false;
 	}
-	
+
+	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Predicate<T> predicate) {
+		List<T> result = new ArrayList<T>();
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz) && predicate.test((T)abstractMission)) {
+				result.add((T)abstractMission);
+			}
+		}
+		return result;
+	}
+
 	public boolean hasMission(Class<? extends AbstractMission> clazz) {
 		for (AbstractMission am : missions.entities()) {
 			if (am.getClass() == clazz) {
@@ -300,6 +311,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			addNodeForMapIdEntities("missions", ScoutMission.class);
 			addNodeForMapIdEntities("missions", PioneerMission.class);
 			addNodeForMapIdEntities("missions", RequestGoodsMission.class);
+			addNodeForMapIdEntities("missions", TransportUnitRequestMission.class);
         }
         
         @Override

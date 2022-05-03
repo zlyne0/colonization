@@ -21032,6 +21032,7 @@
     
 	  <aiContainer>
 	      <playerMissions player="player:1">
+              <transportUnitRequestMission id="transportUnitRequestMission:1" unit="unit:7095" dest="24,78" tranMissionId="transportUnitMission:2" />
 	          <transportUnitMission id="transportUnitMission:2" carrier="unit:6437">
 	              <unitDest unit="unit:7095" tile="24,78" />
               </transportUnitMission>

@@ -7,7 +7,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
 
@@ -38,7 +37,6 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.PlayerAiContainer;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert;
@@ -72,6 +70,8 @@ import net.sf.freecol.common.model.specification.RandomRangeAssert;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
+
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 
 public class Savegame1600Verifier {
 
@@ -253,15 +253,20 @@ public class Savegame1600Verifier {
 	private void verifyTransportUnitMission(Game game) {
 		PlayerMissionsContainer playerMissions1 = game.aiContainer.getMissionContainer("player:1");
 		assertThat(playerMissions1).isNotNull();
+
 		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
         assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
-
         assertThat(tm.getUnitsDest()).hasSize(1);
         TransportUnitMission.UnitDest unitDest = tm.getUnitsDest().get(0);
 
         assertThat(unitDest.unit.getId()).isEqualTo("unit:7095");
         assertThat(unitDest.dest.equalsCoordinates(24,78)).isTrue();
-	}
+
+        TransportUnitRequestMission transportRequest = playerMissions1.getMission("transportUnitRequestMission:1");
+        assertThat(transportRequest.getUnit()).isIdEquals("unit:7095");
+        assertThat(transportRequest.getDestination().equalsCoordinates(24,78)).isTrue();
+        assertThat(transportRequest.getTransportUnitMissionId()).isEqualTo("transportUnitMission:2");
+    }
 
 	private void verifyGame(Game game) {
 		assertEquals("unit:6781", game.activeUnitId);
