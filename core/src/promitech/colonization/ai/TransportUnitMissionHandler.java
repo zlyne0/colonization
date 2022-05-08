@@ -163,7 +163,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					moveContext.destTile
 				);
 				if (unitsDisembarked) {
-					mission.removeDisembarkedUnits(player, unitDestination, disembarkLocation);
+					List<TransportUnitMission.UnitDest> unitDests = mission.removeDisembarkedUnits(player, unitDestination, disembarkLocation);
+					endTransportRequestMissions(unitDests);
 				} else {
 					// ignore action, wait turn maybe something change, or next run disembark units co closest place
 				}
@@ -186,7 +187,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			notifyParentMissionAboutNoDisembarkAccess(mission, unitDestination, unitsToDisembark);
 
 			// planer should take case about unit and generate another destination
-			mission.removeNoAccessTileUnits(player, unitDestination);
+			List<TransportUnitMission.UnitDest> unitDests = mission.removeNoAccessTileUnits(player, unitDestination);
+			endTransportRequestMissions(unitDests);
 			if (mission.isEmptyUnitsDest()) {
 				mission.setDone();
 			}
@@ -273,6 +275,18 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			} else if (unitDest.unit.getTile().equalsCoordinates(carrierLocation)) {
 			    unitDest.unit.embarkTo(carrier);
             }
+		}
+	}
+
+	private void endTransportRequestMissions(List<TransportUnitMission.UnitDest> unitDestList) {
+		for (TransportUnitMission.UnitDest unitDest : unitDestList) {
+			if (unitDest.transportRequestMissionId == null) {
+				continue;
+			}
+			AbstractMission am = playerMissionsContainer.findMission(unitDest.transportRequestMissionId);
+			if (am != null) {
+				am.setDone();
+			}
 		}
 	}
 

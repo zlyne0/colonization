@@ -393,7 +393,12 @@ public class PathFinder {
 	public int turnsCost(Tile tile) {
 		return grid.get(tile.x, tile.y).turns;
 	}
-	
+
+	public boolean isTurnCostAbove(Tile tile, int turns) {
+		int distance = grid.get(tile.x, tile.y).turns;
+		return distance == PathFinder.INFINITY || distance > turns;
+	}
+
 	public void printCost(MapTileDebugInfo mapTileDebugInfo) {
 		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {

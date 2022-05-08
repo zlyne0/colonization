@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.score.ObjectScoreList
 import java.util.HashSet
 
@@ -21,6 +22,7 @@ sealed class PioneerDestination {
 }
 
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
+    private val minDistanceToUseShipTransport = 5
 
     fun prepareMission(player: Player, playerMissionContainer: PlayerMissionsContainer) {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
@@ -48,6 +50,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             }
             val pioneerMission = PioneerMission(boughtPioneer, firstDestination.colony)
             playerMissionContainer.addMission(pioneerMission)
+            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, firstDestination.colony.tile))
         }
     }
 
@@ -70,6 +73,21 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return false
     }
 
+    fun findImprovementDestination(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
+        val improvementsPlan = generateImprovementsPlanForColony(mission.pioneer.owner, mission.colonyId)
+        if (improvementsPlan.hasImprovements()) {
+            val firstImprovement = improvementsPlan.firstImprovement()
+
+            pathFinder.findToTile(game.map, mission.pioneer, firstImprovement.tile, PathFinder.includeUnexploredTiles)
+            if (pathFinder.isTurnCostAbove(firstImprovement.tile, minDistanceToUseShipTransport)) {
+                return PioneerDestination.OtherIsland(improvementsPlan)
+            }
+            return PioneerDestination.TheSameIsland(improvementsPlan)
+        } else {
+            return findNextColonyToImprove(mission, playerMissionContainer)
+        }
+    }
+
     fun findNextColonyToImprove(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
         playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
@@ -87,8 +105,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         if (improvementDestination == null) {
             return PioneerDestination.Lack()
         }
-        val distance = pathFinder.turnsCost(improvementDestination.colony.tile)
-        if (distance == PathFinder.INFINITY || distance > 5) {
+        if (pathFinder.isTurnCostAbove(improvementDestination.colony.tile, minDistanceToUseShipTransport)) {
             return PioneerDestination.OtherIsland(improvementDestination)
         }
         return PioneerDestination.TheSameIsland(improvementDestination)

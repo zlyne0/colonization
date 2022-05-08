@@ -104,6 +104,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return null;
 	}
 
+	public <T extends AbstractMission> T findParentMission(AbstractMission mission, Class<T> parentTypeMission) {
+		if (mission.parentMissionId == null) {
+			return null;
+		}
+		AbstractMission parentMission = missions.getByIdOrNull(mission.parentMissionId);
+		if (parentMission != null && parentMission.is(parentTypeMission)) {
+			return (T)parentMission;
+		}
+		return null;
+	}
+
 	public boolean isAllDependMissionDone(AbstractMission mission) {
 		for (String missionId : mission.dependMissions2) {
 			AbstractMission childMission = missions.getByIdOrNull(missionId);
@@ -116,6 +127,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 
 	public void clearAllMissions() {
 		missions.clear();
+		unitMissionsMapping.unblockAll();
 	}
 
 	public void clearDoneMissions() {
@@ -268,11 +280,15 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return (T)missions.getById(id);
 	}
 
+	public AbstractMission findMission(String id) {
+		return missions.getByIdOrNull(id);
+	}
+
 	public Player getPlayer() {
 		return player;
 	}
-	
-    public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
+
+	public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
         private static final String ATTR_PLAYER = "player";
 
         private static Player player;

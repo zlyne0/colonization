@@ -2,18 +2,15 @@ package net.sf.freecol.common.model.ai.missions.scout
 
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Tile
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.Unit
-import net.sf.freecol.common.model.ai.missions.AbstractMission
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.map.path.Path
-import net.sf.freecol.common.util.Predicate
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 import promitech.colonization.ai.TransportUnitNoDisembarkAccessNotification
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.orders.move.MoveService
-import java.lang.IllegalStateException
 
 class ScoutMissionHandler(
     private val game: Game,
@@ -44,6 +41,9 @@ class ScoutMissionHandler(
                 // when on the same island, start scout, else do nothing and wait for transport mission
                 mission.startScoutAfterTransport(game)
             }
+        }
+        if (mission.scout.isAtEuropeLocation && !mission.isWaitingForTransport()) {
+            findAndHandleDestination(playerMissionsContainer, mission)
         }
 
         if (mission.phase == ScoutMission.Phase.SCOUT && mission.scout.isAtTileLocation) {

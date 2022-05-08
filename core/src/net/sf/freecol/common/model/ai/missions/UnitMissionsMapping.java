@@ -52,4 +52,8 @@ public class UnitMissionsMapping {
 		}
 		return missions;
 	}
+
+	public void unblockAll() {
+		unitMissions.clear();
+	}
 }

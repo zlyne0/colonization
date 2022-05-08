@@ -1,31 +1,31 @@
 package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
-import net.sf.freecol.common.model.ColonyAssert
-import net.sf.freecol.common.model.ColonyAssert.*
+import net.sf.freecol.common.model.ColonyAssert.assertThat
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.SettlementAssert
 import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.TileAssert.*
+import net.sf.freecol.common.model.TileAssert.assertThat
 import net.sf.freecol.common.model.TileImprovement
 import net.sf.freecol.common.model.TileImprovementType
-import net.sf.freecol.common.model.UnitAssert
-import net.sf.freecol.common.model.UnitAssert.*
+import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
-import net.sf.freecol.common.model.ai.missions.findMissions
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
-import org.assertj.core.api.Assertions.*
-import org.junit.jupiter.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertFalse
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import promitech.colonization.Direction
-import promitech.colonization.savegame.AbstractMissionAssert
-import promitech.colonization.savegame.AbstractMissionAssert.*
+import promitech.colonization.savegame.AbstractMissionAssert.assertThat
 
 class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
@@ -165,6 +165,26 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         assertTrue(pioneerMission.isToColony(nieuwAmsterdam))
     }
 
+    @Test
+    fun `should generate transport request mission when move to another island`() {
+        // given
+        val dutchMissionContainer = game.aiContainer.missionContainer(dutch)
+
+        val islandTile = game.map.getTile(25, 86)
+
+        val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, islandTile)
+        val pioneerMission = PioneerMission(pioneer, fortOranje)
+        dutchMissionContainer.addMission(pioneerMission)
+
+        // when
+        newTurnAndExecuteMission(dutch, 1)
+
+        // then
+        val transportRequest = dutchMissionContainer.findFirstMission(TransportUnitRequestMission::class.java)
+        assertThat(dutchMissionContainer)
+            .hasDependMission(pioneerMission, transportRequest.id, TransportUnitRequestMission::class.java)
+    }
+
     fun addAllImprovements(player: Player) {
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
@@ -182,7 +202,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         }
     }
 
-    private fun givenImprovementsPlan() {
+    fun givenImprovementsPlan() {
         val tileImprovementPlan = balancedImprovementPolicy.generateImprovements(fortNassau)
         tileImprovementPlan.improvements.get(0).let { improvementPlan ->
             assertTrue(improvementPlan.tile.equalsCoordinates(fortNassau.tile))

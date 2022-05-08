@@ -10,6 +10,8 @@ import net.sf.freecol.common.model.UnitAssert
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.*
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
@@ -17,6 +19,7 @@ import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.savegame.AbstractMissionAssert
+import promitech.colonization.savegame.AbstractMissionAssert.*
 
 class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
@@ -73,7 +76,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
-            AbstractMissionAssert.assertThat(transportMission)
+            assertThat(transportMission)
                 .isDone
         }
 
@@ -97,7 +100,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
-            AbstractMissionAssert.assertThat(transportMission)
+            assertThat(transportMission)
                 .isDone
         }
 
@@ -123,7 +126,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
-            AbstractMissionAssert.assertThat(transportMission)
+            assertThat(transportMission)
                 .isDone
         }
 
@@ -148,7 +151,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
-            AbstractMissionAssert.assertThat(transportMission)
+            assertThat(transportMission)
                 .isDone
         }
 
@@ -174,7 +177,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             UnitAssert.assertThat(galleon)
                 .isAtLocation(dest)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
-            AbstractMissionAssert.assertThat(transportMission)
+            assertThat(transportMission)
                 .isDone
         }
     }
@@ -265,12 +268,22 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
     @Nested
     inner class TransportFromEurope {
-        var sourceTile: Tile? = null
-        var disembarkTile: Tile? = null
-        var fortOrangeTile: Tile? = null
-        var galleon: Unit? = null
-        var u1: Unit? = null
-        var u2: Unit? = null
+        lateinit var sourceTile: Tile
+        lateinit var disembarkTile: Tile
+        lateinit var fortOrangeTile: Tile
+        lateinit var galleon: Unit
+        lateinit var u1: Unit
+        lateinit var u2: Unit
+
+        @BeforeEach
+        fun beforeEach() {
+            sourceTile = game.map.getTile(26, 79)
+            disembarkTile = game.map.getTile(27, 76)
+            fortOrangeTile = game.map.getTile(25, 75)
+            galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
+            u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
+        }
 
         @Test
         fun canTranportUnitsFromEuropeToNewWorld() {
@@ -285,24 +298,44 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(u1)
-                .isNotAtLocation(galleon)
-                .isNotAtLocation(dutch.getEurope())
-                .isAtLocation(fortOrangeTile)
-            UnitAssert.assertThat(u2)
-                .isNotAtLocation(galleon)
-                .isNotAtLocation(dutch.getEurope())
-                .isAtLocation(disembarkTile)
-            UnitAssert.assertThat(galleon)
-                .hasNoUnits()
-                .isAtLocation(fortOrangeTile)
+            verifyUnitsAtDestination()
+        }
+
+        @Test
+        fun `should end transport request missions after disembark`() {
+            // given
+            val missionContainer = game.aiContainer.missionContainer(dutch)
+
+            val request1 = TransportUnitRequestMission(u1, fortOrangeTile)
+            val request2 = TransportUnitRequestMission(u2, disembarkTile)
+
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(request2)
+                .addUnitDest(request1)
+            missionContainer.addMission(transportMission)
+            missionContainer.addMission(request1)
+            missionContainer.addMission(request2)
+
+            // when
+            // move to europe and back to new world for colonists
+            newTurnAndExecuteMission(dutch, 8)
+
+            // move to destination
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            verifyUnitsAtDestination()
+
+            assertThat(missionContainer)
+                .doesNotHaveMission(request1).isDone(request1)
+                .doesNotHaveMission(request2).isDone(request2)
         }
 
         @Test
         fun canNotEnterToColony() {
             // given
             createTransportUnitMissionFromEurope()
-            fortOrangeTile!!.settlement.owner = spain
+            fortOrangeTile.settlement.owner = spain
 
             // when
             // move to europe and back to new world for colonists
@@ -350,13 +383,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isAtLocation(fortOrangeTile)
         }
 
-        fun createTransportUnitMissionFromEurope(): TransportUnitMission? {
-            sourceTile = game.map.getTile(26, 79)
-            disembarkTile = game.map.getTile(27, 76)
-            fortOrangeTile = game.map.getTile(25, 75)
-            galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
-            u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
-            u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
+        fun createTransportUnitMissionFromEurope(): TransportUnitMission {
             val transportMission = TransportUnitMission(galleon)
                 .addUnitDest(u2, disembarkTile)
                 .addUnitDest(u1, fortOrangeTile)
@@ -364,6 +391,18 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             return transportMission
         }
 
+        fun verifyUnitsAtDestination() {
+            UnitAssert.assertThat(u1)
+                .isNotAtLocation(galleon)
+                .isNotAtLocation(dutch.getEurope())
+                .isAtLocation(fortOrangeTile)
+            UnitAssert.assertThat(u2)
+                .isNotAtLocation(galleon)
+                .isNotAtLocation(dutch.getEurope())
+                .isAtLocation(disembarkTile)
+            UnitAssert.assertThat(galleon)
+                .hasNoUnits()
+                .isAtLocation(fortOrangeTile)
+        }
     }
-
 }

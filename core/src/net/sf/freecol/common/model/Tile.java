@@ -83,11 +83,19 @@ public class Tile implements UnitLocation, Identifiable {
     public boolean equalsCoordinates(Tile t) {
     	return this.x == t.x && this.y == t.y;
     }
-    
+
     public String toStringCords() {
     	return Integer.toString(x) + ", " + Integer.toString(y);
     }
-    
+
+	public String toPrettyString() {
+		String tileStr = "[" + toStringCords() + "]";
+		if (hasSettlement()) {
+			return tileStr + " " + getSettlement().getName();
+		}
+		return tileStr;
+	}
+
 	public String toString() {
 		return "id: " + id + ", [" + x + "," + y + "], type: " + type.toString() + ", style: " + style + ", unit.size: " + units.size(); 
 	}

@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.orders.move.MoveContext
 import promitech.colonization.orders.move.MoveService
 
@@ -37,14 +38,11 @@ class PioneerMissionHandler(
 
         if (mission.pioneer.isAtTileLocation) {
             improveTitles(playerMissionsContainer, mission)
-        }
-        if (mission.pioneer.isAtUnitLocation) {
+        } else if (mission.pioneer.isAtUnitLocation) {
             // do nothing, wait for transport
             return
-        }
-        if (mission.pioneer.isAtEuropeLocation) {
-            // TODO: create TransportUnitRequest when not exists
-            return
+        } else if (mission.pioneer.isAtEuropeLocation) {
+            createTransportRequest(playerMissionsContainer, mission)
         }
     }
 
@@ -52,19 +50,33 @@ class PioneerMissionHandler(
         if (mission.pioneer.isWorkingOnImprovement) {
             return
         }
-        val improvementsPlan = pioneerMissionPlaner.generateImprovementsPlanForColony(mission.pioneer.owner, mission.colonyId)
-        if (improvementsPlan.hasImprovements()) {
-            if (mission.isPionnerWithoutTools()) {
-                goToColonyAndWaitForTools(playerMissionsContainer, mission)
-                return
+
+        val improvementDestination = pioneerMissionPlaner.findImprovementDestination(mission, playerMissionsContainer)
+        when (improvementDestination) {
+            is PioneerDestination.TheSameIsland -> {
+                mission.changeColony(improvementDestination.plan.colony)
+
+                if (mission.isPionnerWithoutTools()) {
+                    gotoColonyAndWaitForTools(playerMissionsContainer, mission)
+                    return
+                }
+
+                val firstImprovement = improvementDestination.plan.firstImprovement()
+                moveToDestination(mission, firstImprovement.tile) {
+                    startImprove(playerMissionsContainer, mission, firstImprovement)
+                }
             }
-            val firstImprovement = improvementsPlan.firstImprovement()
-            // TODO: handle destination on other island
-            moveToDestination(mission, firstImprovement.tile) {
-                startImprove(playerMissionsContainer, mission, firstImprovement)
+
+            is PioneerDestination.OtherIsland -> {
+                mission.changeColony(improvementDestination.plan.colony)
+                createTransportRequest(playerMissionsContainer, mission)
             }
-        } else {
-            findNextColonyDestination(playerMissionsContainer, mission)
+            is PioneerDestination.Lack -> {
+                val colony = mission.colony()
+                moveToDestination(mission, colony.tile) {
+                    mission.waitOrResolveFreeColonistPionner(colony)
+                }
+            }
         }
     }
 
@@ -84,7 +96,7 @@ class PioneerMissionHandler(
         }
     }
 
-    private fun goToColonyAndWaitForTools(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
+    private fun gotoColonyAndWaitForTools(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
         val colony = mission.colony()
         moveToDestination(mission, colony.tile) {
             equipTools(playerMissionsContainer, mission, colony)
@@ -102,29 +114,6 @@ class PioneerMissionHandler(
             if (!requestGoodsMissionExists) {
                 val requiredGoods = pioneerRole.sumOfRequiredGoods()
                 playerMissionsContainer.addMission(mission, RequestGoodsMission(colony, requiredGoods, mission.id))
-            }
-        }
-    }
-
-    private fun findNextColonyDestination(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
-        val nextColonyDestination = pioneerMissionPlaner.findNextColonyToImprove(mission, playerMissionsContainer)
-
-        when (nextColonyDestination) {
-            is PioneerDestination.TheSameIsland -> {
-                mission.changeColony(nextColonyDestination.plan.colony)
-                moveToDestination(mission, nextColonyDestination.plan.colony.tile)
-            }
-            is PioneerDestination.OtherIsland -> {
-                // TODO: create transport request
-                moveToDestination(mission, nextColonyDestination.plan.colony.tile) {
-                    mission.changeColony(nextColonyDestination.plan.colony)
-                }
-            }
-            is PioneerDestination.Lack -> {
-                val colony = mission.colony()
-                moveToDestination(mission, colony.tile) {
-                    mission.waitOrResolveFreeColonistPionner(colony)
-                }
             }
         }
     }
@@ -149,4 +138,18 @@ class PioneerMissionHandler(
         }
     }
 
+    private fun createTransportRequest(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: PioneerMission
+    ) {
+        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java, { requestMission ->
+            requestMission.unit.equalsId(mission.pioneer)
+        })
+        if (!requestMissionExists) {
+            playerMissionsContainer.addMission(
+                mission,
+                TransportUnitRequestMission(mission.pioneer, mission.colony().tile)
+            )
+        }
+    }
 }
