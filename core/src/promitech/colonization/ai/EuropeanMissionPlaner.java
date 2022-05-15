@@ -3,11 +3,11 @@ package promitech.colonization.ai;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
@@ -23,6 +23,7 @@ import java.util.List;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.hasNotTransportUnitMission;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isFromEurope;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isFromTileLocation;
+import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isTransportHasParentType;
 import static net.sf.freecol.common.util.PredicateUtil.and;
 
 public class EuropeanMissionPlaner {
@@ -141,24 +142,20 @@ public class EuropeanMissionPlaner {
 			tum,
 			navyUnit,
 			playerMissionContainer,
+			and(hasNotTransportUnitMission, isFromEurope, isTransportHasParentType(playerMissionContainer, ScoutMission.class))
+		);
+		tum = createTransportMissionForCondition(
+			tum,
+			navyUnit,
+			playerMissionContainer,
+			and(hasNotTransportUnitMission, isFromEurope, isTransportHasParentType(playerMissionContainer, PioneerMission.class))
+		);
+		tum = createTransportMissionForCondition(
+			tum,
+			navyUnit,
+			playerMissionContainer,
 			and(hasNotTransportUnitMission, isFromEurope)
 		);
-
-        for (Unit dockUnit : europe.getUnits().entities()) {
-            if (dockUnit.unitRole.equalsId(UnitRole.SCOUT) && !isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
-                ScoutMission scoutMission = playerMissionContainer.findFirstMission(ScoutMission.class, dockUnit);
-                if (scoutMission == null) {
-                    continue;
-                }
-                if (scoutMission.isWaitingForTransport() && canEmbarkUnit(navyUnit, tum, dockUnit)) {
-					if (tum == null) {
-						tum = new TransportUnitMission(navyUnit);
-					}
-					tum.addUnitDest(dockUnit, scoutMission.getScoutDistantDestination(), true);
-					playerMissionContainer.addMission(tum);
-                }
-            }
-        }
 
 		for (Unit dockUnit : europe.getUnits().entities()) {
 			if (!Unit.isColonist(dockUnit.unitType, dockUnit.getOwner()) || isUnitExistsOnTransportMission(transportMissions, dockUnit)) {
@@ -194,22 +191,32 @@ public class EuropeanMissionPlaner {
 		// scenario from beggining of game ship with colonist without transport mission, create colonyWorkerMission
 		// and then TransportMission
 
-		if (navyUnit.getUnitContainer() != null) {
-			TransportUnitMission tum = null;
-			
-			for (Unit u : navyUnit.getUnitContainer().getUnits()) {
-				List<ColonyWorkerMission> findMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, u);
-				for (ColonyWorkerMission cwm : findMissions) {
-					if (tum == null) {
-						tum = new TransportUnitMission(navyUnit);
-					}
-					tum.addUnitDest(u, cwm.getTile());
+		if (navyUnit.getUnitContainer() == null) {
+			return MissionPlanStatus.NO_MISSION;
+		}
+
+		TransportUnitMission tum = null;
+
+		for (Unit u : navyUnit.getUnitContainer().getUnits()) {
+			List<ColonyWorkerMission> foundMissions = playerMissionContainer.findMissions(ColonyWorkerMission.class, u);
+			for (ColonyWorkerMission cwm : foundMissions) {
+				if (tum == null) {
+					tum = new TransportUnitMission(navyUnit);
 				}
+				tum.addUnitDest(u, cwm.getTile());
 			}
-			if (tum != null) {
-				playerMissionContainer.addMission(tum);
-				return MissionPlanStatus.MISSION_CREATED;
+
+			List<TransportUnitRequestMission> foundMissions2 = playerMissionContainer.findMissions(TransportUnitRequestMission.class, u);
+			for (TransportUnitRequestMission reqMission : foundMissions2) {
+				if (tum == null) {
+					tum = new TransportUnitMission(navyUnit);
+				}
+				tum.addUnitDest(reqMission);
 			}
+		}
+		if (tum != null) {
+			playerMissionContainer.addMission(tum);
+			return MissionPlanStatus.MISSION_CREATED;
 		}
 		return MissionPlanStatus.NO_MISSION;
 	}
@@ -221,7 +228,7 @@ public class EuropeanMissionPlaner {
 		}
 	}
 
-	private TransportUnitMission createTransportMissionForCondition(
+	public TransportUnitMission createTransportMissionForCondition(
 		TransportUnitMission tum,
 		final Unit navyUnit,
 		final PlayerMissionsContainer playerMissionContainer,

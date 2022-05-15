@@ -4,7 +4,9 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
@@ -19,6 +21,11 @@ import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isFromEurope
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isFromTileLocation
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.hasNotTransportUnitMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isTransportHasParentType
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
@@ -31,7 +38,10 @@ import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
+import net.sf.freecol.common.util.PredicateUtil
+import net.sf.freecol.common.util.PredicateUtil.*
 import promitech.colonization.DI
+import promitech.colonization.ai.EuropeanMissionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.MissionPlaner
@@ -236,6 +246,12 @@ fun createCommands(
 
 		commandArg("show_missions") {
 			showMissions(guiGameModel, tileDebugView)
+		}
+
+		commandArg("clear_all_missions") {
+			val missionContainer = guiGameModel.game.aiContainer.missionContainer(guiGameModel.game.playingPlayer)
+			missionContainer.clearAllMissions()
+			println("cleat all missions")
 		}
 
 		commandArg("reset_debug") {
@@ -530,6 +546,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		mapActor?.resetUnexploredBorders()
 	}
 
+	// key 9
 	fun showMissions(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 		tileDebugView.reset()
 		val player = guiGameModel.game.playingPlayer
@@ -537,17 +554,28 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 		fun showOnMap(mission: TransportUnitMission) {
 			for (unitDest in mission.unitsDest) {
-				tileDebugView.strIfNull(unitDest.dest.x, unitDest.dest.y, "TransportUnit")
+				tileDebugView.appendStr(unitDest.dest.x, unitDest.dest.y, "TransportUnit")
 			}
 		}
 
 		fun showOnMap(mission: TransportGoodsToSellMission) {
 			if (mission.phase == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
-				tileDebugView.strIfNull(player.entryLocation.x, player.entryLocation.y, "SellGoods")
+				tileDebugView.appendStr(player.entryLocation.x, player.entryLocation.y, "SellGoods")
 			} else {
 				val settlement = mission.firstSettlementToVisit(player)
-				tileDebugView.strIfNull(settlement.tile.x, settlement.tile.y, "TakeForSale")
+				tileDebugView.appendStr(settlement.tile.x, settlement.tile.y, "TakeForSale")
 			}
+		}
+
+		fun showOnMap(mission: ScoutMission) {
+			if (mission.scoutDistantDestination != null) {
+				val tile: Tile = mission.scoutDistantDestination!!
+				tileDebugView.appendStr(tile.x, tile.y, "ScoutDest")
+			}
+		}
+
+		fun showOnMap(mission: TransportUnitRequestMission) {
+			tileDebugView.appendStr(mission.destination.x, mission.destination.y, "TranUnitReq")
 		}
 
 		for (mission in missionContainer.missions.entities()) {
@@ -555,63 +583,155 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				continue
 			}
 			when (mission) {
-				is ColonyWorkerMission -> tileDebugView.strIfNull(mission.tile.x, mission.tile.y, "Worker")
+				is ColonyWorkerMission -> tileDebugView.strIfNull(
+					mission.tile.x,
+					mission.tile.y,
+					"Worker"
+				)
 				is TransportUnitMission -> showOnMap(mission)
 				is TransportGoodsToSellMission -> showOnMap(mission)
+				is ScoutMission -> showOnMap(mission)
+				is TransportUnitRequestMission -> showOnMap(mission)
 				else -> println("Can not print mission on map for " + mission.javaClass.name)
 			}
 		}
-
 	}
 
 	// key 7
-	fun simpleTest(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView, mapActor: MapActor?) {
+	fun simpleTest(
+		di: DI,
+		guiGameModel: GUIGameModel,
+		tileDebugView: TileDebugView,
+		mapActor: MapActor?
+	) {
 		tileDebugView.reset()
 
 		val game = guiGameModel.game
 		val player = game.playingPlayer
 		val missionContainer = game.aiContainer.missionContainer(player)
 
-		val fortNassau = game.map.getTile(20, 79).settlement.asColony()
+		val europeanMissionPlaner = EuropeanMissionPlaner(guiGameModel.game, di.pathFinder,di.pathFinder2)
+		val navyUnit = Units.findCarrier(player)
+		var tum : TransportUnitMission? = null
+		tum = europeanMissionPlaner.createTransportMissionForCondition(
+			tum, navyUnit, missionContainer,
+			and(hasNotTransportUnitMission, isFromTileLocation, isTransportHasParentType(missionContainer, ScoutMission::class.java))
+		)
+		if (tum != null) {
+			missionContainer.addMission(tum)
+		}
+	}
 
-		val plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
-		val roadType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
-		val clearForestType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID)
+	// key 8
+	fun simpleTest2(
+		di: DI,
+		guiGameModel: GUIGameModel,
+		tileDebugView: TileDebugView,
+		mapActor: MapActor?
+	) {
+		val game = guiGameModel.game
+		val player = game.playingPlayer
+		val missionContainer = game.aiContainer.missionContainer(player)
+		val pathFinder = di.pathFinder
 
+//		val scout = Scout(di, guiGameModel, tileDebugView, mapActor!!)
+//		scout.createScoutMission()
+
+		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+		mapActor?.resetMapModel()
+		mapActor?.resetUnexploredBorders()
+	}
+
+	fun resetDebug(tileDebugView: TileDebugView) {
+		tileDebugView.reset()
+	}
+
+class Scout(
+	val di: DI,
+	val guiGameModel: GUIGameModel,
+	val tileDebugView: TileDebugView,
+	val mapActor: MapActor
+) {
+	val game = guiGameModel.game
+	val player = game.playingPlayer
+	val missionContainer = game.aiContainer.missionContainer(player)
+
+	fun createScoutMission() {
+		val mission = missionContainer.findFirstMission(ScoutMission::class.java)
+		if (mission == null) {
+			var scout: Unit? = null
+			for (unit in player.units) {
+				if (unit.unitRole.equalsId(UnitRole.SCOUT)) {
+					scout = unit
+					break;
+				}
+			}
+			if (scout == null) {
+				// scout next3 savegame
+				val tile = game.map.getTile(32, 19)
+				scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, player, tile)
+			}
+
+			val scoutMission = ScoutMission(scout!!)
+			missionContainer.addMission(scoutMission)
+		}
+	}
+}
+
+class Pioneer(
+	val di: DI,
+	val guiGameModel: GUIGameModel,
+	val tileDebugView: TileDebugView,
+	val mapActor: MapActor
+) {
+
+	val plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+	val roadType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+	val clearForestType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID)
+
+	val game = guiGameModel.game
+	val player = game.playingPlayer
+	val missionContainer = game.aiContainer.missionContainer(player)
+
+	fun createPioneerMission() {
+		var pioneerMission = missionContainer.findFirstMission(PioneerMission::class.java)
+		if (pioneerMission == null) {
+			missionContainer.clearAllMissions()
+
+			// scout next3 savegame
+			val isabellaTile = game.map.getTile(32, 17)
+			val isabellaColony = isabellaTile.settlement.asColony()
+
+			//isabellaColony.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+
+			val pioneer = UnitFactory.create(
+				UnitType.HARDY_PIONEER,
+				UnitRole.PIONEER,
+				player,
+				isabellaColony.tile
+			)
+			pioneerMission = PioneerMission(pioneer, isabellaColony)
+			missionContainer.addMission(pioneerMission)
+		}
+	}
+
+	fun showImprovementsPlan() {
+		val game = guiGameModel.game
+		val player = game.playingPlayer
 		val balanced = AddImprovementPolicy.Balanced()
-//		for (settlement in player.settlements) {
-//			removeAllImprovements(settlement.asColony())
-//
-//			val tileImprovementPlan = balanced.generateImprovements(settlement.asColony())
-//			balanced.printToMap(tileDebugView, tileImprovementPlan)
-//		}
 
 		val pionierMissionPlaner = PioneerMissionPlaner(game, di.pathFinder)
-		val generateImprovementsPlanScore = pionierMissionPlaner.generateImprovementsPlanScore(player, balanced)
+		val generateImprovementsPlanScore = pionierMissionPlaner.generateImprovementsPlanScore(
+			player,
+			balanced
+		)
 
 		println("generateImprovementsPlanScore.size = " + generateImprovementsPlanScore.size())
 		for (objectScore in generateImprovementsPlanScore) {
 			println("colony: " + objectScore.obj.colony.name + ", score: " + objectScore.score)
 			balanced.printToMap(tileDebugView, objectScore.obj)
 		}
-
-		val fortNassauImprovmentPlan = pionierMissionPlaner.generateImprovementsPlanForColony(player, fortNassau.id)
-		println("fortNassauImprovmentPlan.size " + fortNassauImprovmentPlan.improvements.size)
-		for (improvement in fortNassauImprovmentPlan.improvements) {
-			println("improvmentType: " + improvement.improvementType + ", [" + improvement.tile.toStringCords() + "]")
-		}
-
-//		val fortMaurits = game.map.getTile(21, 72).settlement.asColony()
-//		removeAllImprovements(fortMaurits)
-//
-//		game.map.getTile(fortMaurits.tile, Direction.E).addImprovement(TileImprovement(Game.idGenerator, roadType))
-//		game.map.getTile(fortMaurits.tile, Direction.SE).addImprovement(TileImprovement(Game.idGenerator, plowedType))
-//		game.map.getTile(fortMaurits.tile, Direction.S).addImprovement(TileImprovement(Game.idGenerator, plowedType))
-//
-//		val tileImprovementPlan = balanced.generateImprovements(fortMaurits)
-//		balanced.printToMap(tileDebugView, tileImprovementPlan)
-
-		mapActor?.resetMapModel()
+		mapActor.resetMapModel()
 	}
 
 	fun removeAllImprovements(colony: Colony) {
@@ -622,29 +742,5 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			}
 		}
 	}
+}
 
-	// key 8
-	fun simpleTest2(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView, mapActor: MapActor?) {
-		val game = guiGameModel.game
-		val player = game.playingPlayer
-		val missionContainer = game.aiContainer.missionContainer(player)
-		val pathFinder = di.pathFinder
-
-		var pioneerMission = missionContainer.findFirstMission(PioneerMission::class.java)
-		if (pioneerMission == null) {
-			missionContainer.clearAllMissions()
-
-			val isabellaTile = game.map.getTile(32, 17)
-			val isabellaColony = isabellaTile.settlement.asColony()
-
-			//isabellaColony.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
-
-			val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, player, isabellaColony.tile)
-			pioneerMission = PioneerMission(pioneer, isabellaColony)
-			missionContainer.addMission(pioneerMission)
-		}
-	}
-
-	fun resetDebug(tileDebugView: TileDebugView) {
-		tileDebugView.reset()
-	}

@@ -39,6 +39,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             // no missions
             return
         }
+        // simplification: existed pioneer units without mission should handled by default colony worker
 
         val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
         if (firstDestination != null) {
