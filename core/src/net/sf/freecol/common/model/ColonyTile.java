@@ -95,7 +95,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 			}
 		}
 		if (maxProd == null) {
-			throw new IllegalStateException("can not find max production for tile type " + tile.getType());
+			maxProd = new Production(worker == null);
 		}
 		this.production = maxProd;
 	}
