@@ -81,13 +81,13 @@ class ScoutMissionPlaner(
     }
 
     fun seaSideAsTransferLocation(scout: Unit): Path? {
-        val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
+        val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
         pathFinder.generateRangeMap(game.map, scout, scoutEmbarkGenerateRangeFlags)
         pathFinder2.generateRangeMap(
             game.map,
             generateCivilizationSources(scout.owner),
             pathFinder2.createPathUnit(scout.owner, Specification.instance.unitTypes.getById(UnitType.CARAVEL)),
-            CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
+            CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
         )
         val embarkLocation = pathFinder2.findFirstTheBestSumTurnCost(pathFinder, PathFinder.SumPolicy.PRIORITY_SUM)
         if (embarkLocation == null) {
@@ -221,7 +221,7 @@ class ScoutMissionPlaner(
         val scoutRole = Specification.instance.unitRoles.getById(UnitRole.SCOUT)
         var goldSum = 0
         for (requiredGood in scoutRole.requiredGoods) {
-            goldSum += player.market().getSalePrice(requiredGood.goodsType, requiredGood.amount)
+            goldSum += player.market().getBidPrice(requiredGood.goodsType, requiredGood.amount)
         }
         val scoutType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST)
         goldSum += player.europe.aiUnitPrice(scoutType)

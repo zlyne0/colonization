@@ -206,14 +206,14 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			game.map,
 			mission.getCarrier(),
 			unitDest.unit.getTile(),
-			CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
+			CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
 		);
 
 		if (!shipPath.isReachedDestination()) {
 			pathFinder2.generateRangeMap(
 				game.map,
 				unitDest.unit,
-				CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
+				CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
 			);
 			Tile transferLocation = pathFinder.findFirstTheBestSumTurnCost(pathFinder2, PathFinder.SumPolicy.SIMPLY_SUM);
 			if (transferLocation == null) {

@@ -168,7 +168,7 @@ public class CollectionUtils {
         return set;
     }
 
-    public static <E extends Enum<E>> Set<E> enumSet(Set<E> set, E value) {
+    public static <E extends Enum<E>> Set<E> enumSum(Set<E> set, E value) {
         if (set.isEmpty()) {
             return EnumSet.of(value);
         } else {

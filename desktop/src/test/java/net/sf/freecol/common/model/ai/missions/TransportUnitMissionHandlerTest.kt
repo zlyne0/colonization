@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai.missions
 
 import net.sf.freecol.common.model.ColonyFactory
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.SettlementFactory
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileAssert
@@ -18,7 +19,6 @@ import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import promitech.colonization.orders.move.MoveContext
-import promitech.colonization.savegame.AbstractMissionAssert
 import promitech.colonization.savegame.AbstractMissionAssert.*
 
 class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
@@ -154,6 +154,36 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(transportMission)
                 .isDone
         }
+
+        @Test
+        fun shouldDisembarkNextToNativeSettlement2() {
+            // given
+            val sourceTile = game.map.getTile(28, 82)
+            val destInLand = game.map.getTile(25, 86) // native settlement
+
+            val settlementFactory = SettlementFactory(game.map)
+            val nativePlayer = game.players.getById("player:22")
+            settlementFactory.create(nativePlayer, destInLand, nativePlayer.nationType().getSettlementRegularType())
+
+            val galleon = UnitFactory.create(UnitType.GALLEON, dutch, sourceTile)
+            //val colonist = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, galleon)
+            val colonist = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+            val transportMission = TransportUnitMission(galleon)
+                .addUnitDest(colonist, destInLand)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+
+            // then
+            val transferLocation = game.map.getTile(24, 87)
+            UnitAssert.assertThat(colonist)
+                .isNotAtLocation(galleon)
+                .isAtLocation(transferLocation)
+            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission).isDone
+        }
+
 
         @Test
         fun shouldDisembarkDirectlyToColony() {

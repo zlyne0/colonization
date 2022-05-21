@@ -3,6 +3,8 @@ package promitech.colonization.screen.debug
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
+import net.sf.freecol.common.model.SettlementFactory
+import net.sf.freecol.common.model.SettlementType
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
@@ -21,10 +23,10 @@ import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
+import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isFromEurope
-import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isFromTileLocation
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.hasNotTransportUnitMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isFromTileLocation
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.Companion.isTransportHasParentType
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
@@ -38,8 +40,7 @@ import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
-import net.sf.freecol.common.util.PredicateUtil
-import net.sf.freecol.common.util.PredicateUtil.*
+import net.sf.freecol.common.util.PredicateUtil.and
 import promitech.colonization.DI
 import promitech.colonization.ai.EuropeanMissionPlaner
 import promitech.colonization.ai.MissionExecutor
@@ -494,6 +495,9 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val player = guiGameModel.game.playingPlayer
 		val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 
+		guiGameModel.setActiveUnit(null)
+		mapActor.mapDrawModel().setSelectedUnit(null)
+
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				player.setAi(true)
@@ -631,6 +635,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 	) {
 		val game = guiGameModel.game
 		val player = game.playingPlayer
+		val dutch = game.playingPlayer
 		val missionContainer = game.aiContainer.missionContainer(player)
 		val pathFinder = di.pathFinder
 
@@ -676,6 +681,17 @@ class Scout(
 			missionContainer.addMission(scoutMission)
 		}
 	}
+
+	fun printDestinations() {
+		val scoutMissionPlaner = ScoutMissionPlaner(
+			guiGameModel.game,
+			di.pathFinder,
+			di.pathFinder2
+		)
+		scoutMissionPlaner.printAllCandidates(player, tileDebugView)
+		//printFirstDestination
+	}
+
 }
 
 class Pioneer(
