@@ -1,12 +1,11 @@
 package promitech.colonization.screen.europe;
 
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.InputEvent;
 import com.badlogic.gdx.scenes.scene2d.InputListener;
 import com.badlogic.gdx.scenes.scene2d.Stage;
+import com.badlogic.gdx.scenes.scene2d.ui.SplitPane;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.DragAndDrop;
 import com.badlogic.gdx.scenes.scene2d.utils.TiledDrawable;
@@ -21,6 +20,9 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+
+import java.util.List;
+
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
 import promitech.colonization.screen.ApplicationScreenType;
@@ -31,10 +33,10 @@ import promitech.colonization.screen.ui.ChangeColonyStateListener;
 import promitech.colonization.screen.ui.GoodTransferActorBridge;
 import promitech.colonization.screen.ui.PlayerGoldTaxYearLabel;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog;
-import promitech.colonization.screen.ui.UnitActor;
-import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog.ActionTypes;
 import promitech.colonization.screen.ui.UnitActionOrdersDialog.UnitActionOrderItem;
+import promitech.colonization.screen.ui.UnitActor;
+import promitech.colonization.screen.ui.UnitsPanel;
 import promitech.colonization.ui.DoubleClickedListener;
 import promitech.colonization.ui.resources.Messages;
 
@@ -196,10 +198,11 @@ public class EuropeApplicationScreen extends ApplicationScreen {
         tableLayout.add(playerGoldTaxYearLabel).row();
         
         Table buttonsLayout = createButtonsLayout();
-        
+
+		SplitPane highSeasUnitsAndMarketSplitPane = new SplitPane(highSeasUnitsPanel, marketLog, false, gameResources.getUiSkin());
+
         Table rowGroup2 = new Table();
-        rowGroup2.add(highSeasUnitsPanel).expandX().fillX();
-        rowGroup2.add(marketLog).expandX().fillX().top();
+		rowGroup2.add(highSeasUnitsAndMarketSplitPane).fillX();
         rowGroup2.add(buttonsLayout).expandY().fillY();
         tableLayout.add(rowGroup2).expandX().fill().row();
         
