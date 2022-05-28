@@ -24,6 +24,8 @@ import promitech.colonization.ui.QuestionDialog;
 import promitech.colonization.ui.QuestionDialog.OptionAction;
 import promitech.colonization.ui.resources.StringTemplate;
 
+import static net.sf.freecol.common.util.CollectionUtils.enumSum;
+
 public class MoveController {
     private final MoveDrawerSemaphore unitAnimationSemaphore = new MoveDrawerSemaphore();
 	
@@ -200,7 +202,7 @@ public class MoveController {
 		Tile startTile = guiGameModel.getActiveUnit().getTile();
 		
 		Path path = finder.findToTile(guiGameModel.game.map, startTile, destinationTile, guiGameModel.getActiveUnit(),
-			PathFinder.excludeUnexploredAndIncludeNavyThreatTiles
+			enumSum(PathFinder.excludeUnexploredAndIncludeNavyThreatTiles, PathFinder.FlagTypes.AllowCarrierEnterWithGoods)
 		);
 		System.out.println("found path: " + path);
 		mapActor.mapDrawModel().unitPath = path;

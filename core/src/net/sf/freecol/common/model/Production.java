@@ -77,8 +77,7 @@ public class Production {
 			String goodsId = outputEntry.getKey().getId();
 			int goodQuantity = outputEntry.getValue();
 			
-			if (unattended) {
-			} else {
+			if (!unattended) {
 				goodQuantity = (int)worker.unitType.applyModifier(goodsId, goodQuantity);
 			}
 			prod.addOutput(outputEntry.getKey(), goodQuantity);
@@ -229,6 +228,15 @@ public class Production {
 	public boolean containsOutputGoods(GoodsType goodsType) {
 		for (Entry<GoodsType, Integer> entry : output.entrySet()) {
 			if (entry.getKey().equalsId(goodsType)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean containsOutputGoods(String goodsTypeId) {
+		for (Entry<GoodsType, Integer> entry : output.entrySet()) {
+			if (entry.getKey().equalsId(goodsTypeId)) {
 				return true;
 			}
 		}

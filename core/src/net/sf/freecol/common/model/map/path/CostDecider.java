@@ -26,6 +26,7 @@ class CostDecider {
 	private int newTotalPathCost;
 	protected boolean avoidUnexploredTiles = true;
 	protected boolean allowEmbark = false;
+	protected boolean allowCarrierEnterWithGoods = false;
 
     void init(Map map, UnitMoveType unitMove) {
         this.map = map;

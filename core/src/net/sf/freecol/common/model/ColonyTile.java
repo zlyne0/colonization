@@ -95,7 +95,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 			}
 		}
 		if (maxProd == null) {
-			throw new IllegalStateException("can not find max production for tile type " + tile.getType());
+			maxProd = new Production(worker == null);
 		}
 		this.production = maxProd;
 	}
@@ -114,6 +114,10 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 				this.production = p;
 			}
 		}
+	}
+
+	public boolean hasFoodGrainProduction() {
+		return this.production.containsOutputGoods(GoodsType.GRAIN);
 	}
 
 	public static class Xml extends XmlNodeParser<ColonyTile> {

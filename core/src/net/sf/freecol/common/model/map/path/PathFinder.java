@@ -59,7 +59,8 @@ public class PathFinder {
 		AvoidUnexploredTiles,
 		IncludeNavyThreatTiles,
 		AvoidDisembark,
-		AllowEmbark
+		AllowEmbark,
+		AllowCarrierEnterWithGoods
 	}
 
     public static final int INFINITY = Integer.MAX_VALUE;
@@ -221,10 +222,15 @@ public class PathFinder {
 	private void setCostDeciderFlags(Set<FlagTypes> flags) {
 		this.navyWithoutThreatCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyWithoutThreatCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.navyWithoutThreatCostDecider.allowCarrierEnterWithGoods = flags.contains(FlagTypes.AllowCarrierEnterWithGoods);
+
 		this.navyCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.navyCostDecider.allowDisembark = !flags.contains(FlagTypes.AvoidDisembark);
+		this.navyCostDecider.allowCarrierEnterWithGoods = flags.contains(FlagTypes.AllowCarrierEnterWithGoods);
+
 		this.baseCostDecider.avoidUnexploredTiles = flags.contains(FlagTypes.AvoidUnexploredTiles);
 		this.baseCostDecider.allowEmbark = flags.contains(FlagTypes.AllowEmbark);
+		this.baseCostDecider.allowCarrierEnterWithGoods = flags.contains(FlagTypes.AllowCarrierEnterWithGoods);
 	}
 
 	private void determineCostDecider(boolean includeNavyThreat) {
@@ -292,10 +298,12 @@ public class PathFinder {
 
 				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
-					reachedGoalNode = moveNode;
-					// change moveType to default move. Sometimes goal can be indian settlement
-					// and moveType should be used only to find path
-					moveType = MoveType.MOVE;
+					if (moveType != MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS || costDecider.allowCarrierEnterWithGoods) {
+						reachedGoalNode = moveNode;
+						// change moveType to default move. Sometimes goal can be indian settlement
+						// and moveType should be used only to find path
+						moveType = MoveType.MOVE;
+					}
 				}
 
 				if (costDecider.calculateAndImproveMove(currentNode, moveNode, moveType, moveDirection)) {
@@ -393,7 +401,12 @@ public class PathFinder {
 	public int turnsCost(Tile tile) {
 		return grid.get(tile.x, tile.y).turns;
 	}
-	
+
+	public boolean isTurnCostAbove(Tile tile, int turns) {
+		int distance = grid.get(tile.x, tile.y).turns;
+		return distance == PathFinder.INFINITY || distance > turns;
+	}
+
 	public void printCost(MapTileDebugInfo mapTileDebugInfo) {
 		int cost;
 	    for (int i=0; i<grid.getMaxCellIndex(); i++) {

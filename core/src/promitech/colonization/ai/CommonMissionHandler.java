@@ -61,5 +61,11 @@ public class CommonMissionHandler {
 		}
 		return true;
 	}
-	
+
+	public static boolean isColonyOwner(Player player, String settlementId) {
+		if (player.isDead()) {
+			return false;
+		}
+		return player.settlements.containsId(settlementId);
+	}
 }

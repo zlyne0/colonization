@@ -1,0 +1,67 @@
+package net.sf.freecol.common.model.ai.missions
+
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
+    missionClass: Class<T>,
+    predicate: (T) -> Boolean
+): Boolean {
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
+            return true
+        }
+    }
+    return false
+}
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T : AbstractMission> PlayerMissionsContainer.foreachMission(
+    missionClass: Class<T>,
+    consumer: (T) -> Unit
+) {
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass)) {
+            consumer(playerMission as T)
+        }
+    }
+}
+
+@Suppress("UNCHECKED_CAST")
+inline fun <T : AbstractMission> PlayerMissionsContainer.findMissions(
+    missionClass: Class<T>,
+    predicate: (T) -> Boolean
+): List<T> {
+    var result : MutableList<T>? = null
+
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
+            if (result == null) {
+                result = mutableListOf<T>()
+            }
+            result.add(playerMission)
+        }
+    }
+    if (result == null) {
+        return emptyList()
+    }
+    return result
+}
+
+fun PlayerMissionsContainer.findDeepDependMissions(mission: AbstractMission): List<AbstractMission> {
+    val result: MutableList<AbstractMission> = mutableListOf()
+    val buf: MutableList<AbstractMission> = mutableListOf(mission)
+
+    while (buf.isNotEmpty()) {
+        val m = buf.removeAt(0)
+        if (m.notEqualsId(mission)) {
+            result.add(m)
+        }
+        for (dependMissionId in m.dependMissions2) {
+            val dependMission = this.missions.getByIdOrNull(dependMissionId)
+            if (dependMission != null) {
+                buf.add(dependMission)
+            }
+        }
+    }
+    return result
+}

@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
 
 import promitech.colonization.ai.CommonMissionHandler;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 
@@ -24,20 +25,18 @@ public class TransportUnitMission extends AbstractMission {
         public final Unit unit;
         public final Tile dest;
         public final boolean allowUnitMove;
+        public final String transportRequestMissionId;
 
-        public UnitDest(Unit unit, Tile dest, boolean allowUnitMove) {
+        public UnitDest(Unit unit, Tile dest, boolean allowUnitMove, String transportRequestMissionId) {
             this.unit = unit;
             this.dest = dest;
             this.allowUnitMove = allowUnitMove;
+            this.transportRequestMissionId = transportRequestMissionId;
         }
 
 		@Override
 		public String toString() {
-			String tileStr = "[" + dest.toStringCords() + "]";
-			if (dest.hasSettlement()) {
-				tileStr += " " + dest.getSettlement().getName();
-			}
-			return "[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " to " + tileStr + "]";
+			return "[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " to " + dest.toPrettyString() + "]";
 		}
 	}
 
@@ -63,12 +62,22 @@ public class TransportUnitMission extends AbstractMission {
 	}
 
 	public TransportUnitMission addUnitDest(Unit unit, Tile tile) {
-        this.unitsDest.add(new UnitDest(unit, tile, false));
+        this.unitsDest.add(new UnitDest(unit, tile, false, null));
         return this;
     }
 
 	public TransportUnitMission addUnitDest(Unit unit, Tile tile, boolean allowUnitMove) {
-		this.unitsDest.add(new UnitDest(unit, tile, allowUnitMove));
+		this.unitsDest.add(new UnitDest(unit, tile, allowUnitMove, null));
+		return this;
+	}
+
+	private TransportUnitMission addUnitDest(Unit unit, Tile tile, boolean allowUnitMove, String transportRequestId) {
+		this.unitsDest.add(new UnitDest(unit, tile, allowUnitMove, transportRequestId));
+		return this;
+	}
+
+	public TransportUnitMission addUnitDest(TransportUnitRequestMission reqTransport) {
+		this.unitsDest.add(new UnitDest(reqTransport.getUnit(), reqTransport.getDestination(), true, reqTransport.getId()));
 		return this;
 	}
 
@@ -128,7 +137,7 @@ public class TransportUnitMission extends AbstractMission {
     	unitsDest.remove(unitDest);
 	}
 
-	public void removeNoAccessTileUnits(Player player, Tile destinationLocation) {
+	public List<UnitDest> removeNoAccessTileUnits(Player player, Tile destinationLocation) {
 		if (logger.isDebug()) {
 			String unitsIds = unitsDestListToString(destinationLocation);
 			logger.debug("player[%s].TransportUnitMissionHandler.removeNoAccessTileUnits units[%s] to tile[%s]",
@@ -137,14 +146,10 @@ public class TransportUnitMission extends AbstractMission {
 				destinationLocation.toStringCords()
 			);
 		}
-		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
-			if (ud.dest.equalsCoordinates(destinationLocation)) {
-				unitsDest.remove(ud);
-			}
-		}
+		return removeUnitDest(destinationLocation);
 	}
 
-	public void removeDisembarkedUnits(Player player, Tile destinationLocation, Tile disembarkLocation) {
+	public List<UnitDest> removeDisembarkedUnits(Player player, Tile destinationLocation, Tile disembarkLocation) {
 		if (logger.isDebug()) {
 			String unitsIds = unitsDestListToString(destinationLocation);
 			logger.debug("player[%s].TransportUnitMissionHandler.disembark units[%s] to tile[%s] moved to [%s]",
@@ -154,13 +159,22 @@ public class TransportUnitMission extends AbstractMission {
 				destinationLocation.toStringCords()
 			);
 		}
-		for (UnitDest ud : new ArrayList<UnitDest>(unitsDest)) {
+		return removeUnitDest(destinationLocation);
+	}
+
+	private List<UnitDest> removeUnitDest(Tile destinationLocation) {
+		List<UnitDest> toRemoveList = new ArrayList<UnitDest>(unitsDest.size());
+		for (UnitDest ud : unitsDest) {
 			if (ud.dest.equalsCoordinates(destinationLocation)) {
-				unitsDest.remove(ud);
+				toRemoveList.add(ud);
 			}
 		}
+		for (UnitDest ud : toRemoveList) {
+			unitsDest.remove(ud);
+		}
+		return toRemoveList;
 	}
-	
+
 	@Override
 	public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
 		unitMissionsMapping.blockUnit(carrier, this);
@@ -220,12 +234,14 @@ public class TransportUnitMission extends AbstractMission {
         private static final String DEST_UNIT = "unit";
         private static final String DEST_TILE = "tile";
         private static final String DEST_ALLOW_UNIT_MOVE = "allowMove";
+        private static final String TRANSPORT_REQUEST_ID = "transportRequestId";
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
             TransportUnitMission m = new TransportUnitMission(attr.getId());
             m.carrier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_CARRIER));
             nodeObject = m;
+			super.startElement(attr);
         }
 
         @Override
@@ -234,21 +250,28 @@ public class TransportUnitMission extends AbstractMission {
                 Unit unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(DEST_UNIT));
                 Tile tile = game.map.getSafeTile(attr.getPoint(DEST_TILE));
                 if (unit != null) {
-                    nodeObject.addUnitDest(unit, tile, attr.getBooleanAttribute(DEST_ALLOW_UNIT_MOVE, false));
+                    nodeObject.addUnitDest(
+                    	unit,
+						tile,
+						attr.getBooleanAttribute(DEST_ALLOW_UNIT_MOVE, false),
+						attr.getStrAttribute(TRANSPORT_REQUEST_ID)
+					);
                 }
             }
         }
         
         @Override
-        public void startWriteAttr(TransportUnitMission node, XmlNodeAttributesWriter attr) throws IOException {
-            attr.setId(node);
-            attr.set(ATTR_CARRIER, node.carrier);
+        public void startWriteAttr(TransportUnitMission mission, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(mission, attr);
+			attr.setId(mission);
+            attr.set(ATTR_CARRIER, mission.carrier);
 
-            for (UnitDest ud : node.unitsDest) {
+            for (UnitDest ud : mission.unitsDest) {
                 attr.xml.element(ELEMENT_UNIT);
                 attr.set(DEST_UNIT, ud.unit.getId());
                 attr.setPoint(DEST_TILE, ud.dest.x, ud.dest.y);
                 attr.set(DEST_ALLOW_UNIT_MOVE, ud.allowUnitMove, false);
+                attr.set(TRANSPORT_REQUEST_ID, ud.transportRequestMissionId);
                 attr.xml.pop();
             }
         }

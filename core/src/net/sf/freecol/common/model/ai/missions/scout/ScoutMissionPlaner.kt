@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.InfluenceMap
 import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -80,13 +81,13 @@ class ScoutMissionPlaner(
     }
 
     fun seaSideAsTransferLocation(scout: Unit): Path? {
-        val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
+        val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
         pathFinder.generateRangeMap(game.map, scout, scoutEmbarkGenerateRangeFlags)
         pathFinder2.generateRangeMap(
             game.map,
             generateCivilizationSources(scout.owner),
             pathFinder2.createPathUnit(scout.owner, Specification.instance.unitTypes.getById(UnitType.CARAVEL)),
-            CollectionUtils.enumSet(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
+            CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
         )
         val embarkLocation = pathFinder2.findFirstTheBestSumTurnCost(pathFinder, PathFinder.SumPolicy.PRIORITY_SUM)
         if (embarkLocation == null) {
@@ -172,25 +173,16 @@ class ScoutMissionPlaner(
         if (player.units.size() < 3) {
             return;
         }
-        for (unit in player.units) {
-            if (unit.unitRole.equalsId(UnitRole.SCOUT)) {
-                if (!playerMissionContainer.isUnitBlockedForMission(unit)) {
-                    val otherIslandDestination = findInOtherIsland(player)
-                    if (otherIslandDestination == null) {
-                        return
-                    }
-                    val scoutMission = ScoutMission(unit)
-                    scoutMission.waitForTransport(otherIslandDestination)
-                    playerMissionContainer.addMission(scoutMission)
-                    return
-                }
-            }
+
+        createMissionFromUnusedUnits(player, playerMissionContainer);
+        if (playerMissionContainer.isMissionTypeExists(ScoutMission::class.java)) {
+            return;
         }
 
         if (!canAffordForScout(player)) {
             return;
         }
-        val otherIslandDestination = findInOtherIsland(player)
+        val otherIslandDestination: Tile? = findInOtherIsland(player)
         if (otherIslandDestination == null) {
             return
         }
@@ -198,13 +190,38 @@ class ScoutMissionPlaner(
         val scoutMission = ScoutMission(scout)
         scoutMission.waitForTransport(otherIslandDestination)
         playerMissionContainer.addMission(scoutMission)
+        playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scout, otherIslandDestination))
+    }
+
+    private fun createMissionFromUnusedUnits(
+        player: Player,
+        playerMissionContainer: PlayerMissionsContainer
+    ) {
+        for (unit in player.units) {
+            if (unit.unitRole.equalsId(UnitRole.SCOUT) && !playerMissionContainer.isUnitBlockedForMission(unit)) {
+                val scoutDestination = findScoutDestination(unit)
+                if (scoutDestination is ScoutDestination.Lack) {
+                    // no destination so worker unit planer should handle it
+                    continue
+                }
+
+                val scoutMission = ScoutMission(unit)
+                playerMissionContainer.addMission(scoutMission)
+
+                if (scoutDestination is ScoutDestination.OtherIslandFromCarrier) {
+                    scoutMission.waitForTransport(scoutDestination.tile)
+                    playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scoutMission.scout, scoutDestination.tile))
+                }
+                // else ScoutMissionHandler should take care about mission and tile destination
+            }
+        }
     }
 
     private fun canAffordForScout(player: Player): Boolean {
         val scoutRole = Specification.instance.unitRoles.getById(UnitRole.SCOUT)
         var goldSum = 0
         for (requiredGood in scoutRole.requiredGoods) {
-            goldSum += player.market().getSalePrice(requiredGood.goodsType, requiredGood.amount)
+            goldSum += player.market().getBidPrice(requiredGood.goodsType, requiredGood.amount)
         }
         val scoutType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST)
         goldSum += player.europe.aiUnitPrice(scoutType)
@@ -217,5 +234,4 @@ class ScoutMissionPlaner(
         player.europe.changeUnitRole(game, colonist, scoutRole)
         return colonist
     }
-
 }

@@ -1,13 +1,5 @@
 package net.sf.freecol.common.model.ai.missions;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.LinkedList;
-import java.util.List;
-
-import org.xml.sax.SAXException;
-
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -19,15 +11,28 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.Predicate;
 
-import static promitech.colonization.ai.MissionHandlerLogger.*;
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 /**
  * Wdech, wydech
@@ -53,17 +58,91 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		blockUnitsForMission(m);
 	}
 
+	public void addMission(AbstractMission parentMission, AbstractMission childMission) {
+		if (logger.isDebug()) {
+			logger.debug("player[%s].mission[%s] add child mission[%s] %s", player.getId(), parentMission.getId(), childMission.getId(), childMission.toString());
+		}
+
+		if (parentMission.dependMissions2.isEmpty()) {
+			parentMission.dependMissions2 = new HashSet<String>();
+		}
+		parentMission.dependMissions2.add(childMission.getId());
+
+		childMission.parentMissionId = parentMission.getId();
+
+		missions.add(childMission);
+		blockUnitsForMission(childMission);
+	}
+
+	/**
+	 * @return List of {@link AbstractMission} that is not done and leaf on mission tree
+	 */
+	public List<AbstractMission> findMissionToExecute() {
+		List<AbstractMission> toExecute = new ArrayList<AbstractMission>(missions.size());
+		for (AbstractMission mission : missions) {
+			if (mission.isDone()) {
+				continue;
+			}
+			if (mission.dependMissions2.isEmpty() || isAllDependMissionDone(mission)) {
+				toExecute.add(mission);
+			}
+		}
+		return toExecute;
+	}
+
+	public AbstractMission findParentToExecute(AbstractMission mission) {
+		if (mission.parentMissionId == null) {
+			return null;
+		}
+		AbstractMission parentMission = missions.getByIdOrNull(mission.parentMissionId);
+		if (parentMission == null) {
+			return null;
+		}
+		if (isAllDependMissionDone(parentMission)) {
+			return parentMission;
+		}
+		return null;
+	}
+
+	public <T extends AbstractMission> T findParentMission(AbstractMission mission, Class<T> parentTypeMission) {
+		if (mission.parentMissionId == null) {
+			return null;
+		}
+		AbstractMission parentMission = missions.getByIdOrNull(mission.parentMissionId);
+		if (parentMission != null && parentMission.is(parentTypeMission)) {
+			return (T)parentMission;
+		}
+		return null;
+	}
+
+	public boolean isAllDependMissionDone(AbstractMission mission) {
+		for (String missionId : mission.dependMissions2) {
+			AbstractMission childMission = missions.getByIdOrNull(missionId);
+			if (childMission != null && !childMission.isDone()) {
+				return false;
+			}
+		}
+		return true;
+	}
+
 	public void clearAllMissions() {
 		missions.clear();
+		unitMissionsMapping.unblockAll();
 	}
 
 	public void clearDoneMissions() {
-		List<AbstractMission> l = new ArrayList<AbstractMission>(missions.entities());
-		for (AbstractMission am : l) {
-			if (am.isDone() && !am.hasDependMissions()) {
+		List<AbstractMission> list = new ArrayList<AbstractMission>(missions.entities());
+		for (AbstractMission am : list) {
+			if (am.isDone()) {
 				logger.debug("player[%s] clear done mission[%s]", player.getId(), am.getId());
 				missions.removeId(am);
 				am.unblockUnits(unitMissionsMapping);
+				if (am.parentMissionId != null) {
+					AbstractMission parentMission = missions.getByIdOrNull(am.parentMissionId);
+					if (parentMission != null) {
+						parentMission.dependMissions2.remove(am.getId());
+					}
+				}
 			}
 		}
 	}
@@ -76,13 +155,20 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 		return false;
 	}
-	
-	public boolean hasMissionType(Class<? extends AbstractMission> clazz) {
+
+	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Predicate<T> predicate) {
+		List<T> result = new ArrayList<T>();
+		for (AbstractMission abstractMission : missions) {
+			if (abstractMission.is(clazz) && predicate.test((T)abstractMission)) {
+				result.add((T)abstractMission);
+			}
+		}
+		return result;
+	}
+
+	public boolean hasMission(Class<? extends AbstractMission> clazz) {
 		for (AbstractMission am : missions.entities()) {
 			if (am.getClass() == clazz) {
-				return true;
-			}
-			if (am.hasDependMissionsType(clazz)) {
 				return true;
 			}
 		}
@@ -99,32 +185,8 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		throw new IllegalArgumentException("can not find mission by type " + clazz);
 	}
 	
-	public MapIdEntitiesReadOnly<AbstractMission> getMissions() {
-		return missions;
-	}
-
-	@SuppressWarnings("unchecked")
-	public <T extends AbstractMission> T getMission(String id) {
-		return (T)missions.getById(id);
-	}
-	
-	public void blockUnitForMission(Unit unit, AbstractMission mission) {
-		unitMissionsMapping.blockUnit(unit, mission);
-	}
-	
 	private void blockUnitsForMission(AbstractMission mission) {
 		mission.blockUnits(unitMissionsMapping);
-		
-		if (mission.hasDependMissions()) {
-			List<AbstractMission> dm = new ArrayList<AbstractMission>();
-			dm.addAll(mission.dependMissions);
-			
-			while (!dm.isEmpty()) {
-				AbstractMission first = dm.remove(0);
-				first.blockUnits(unitMissionsMapping);
-				dm.addAll(first.dependMissions);
-			}
-		}
 	}
 
 	public void unblockUnitFromMission(Unit unit, AbstractMission mission) {
@@ -201,16 +263,6 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return false;
 	}
 
-	public <T extends AbstractMission> AbstractMission findFirstParentMission(T someMission) {
-		for (AbstractMission mission : missions) {
-			AbstractMission parentForMission = mission.findParentForMission(someMission);
-			if (parentForMission != null) {
-				return parentForMission;
-			}
-		}
-		return null;
-	}
-
 	public boolean isUnitBlockedForMission(Unit unit) {
 		return unitMissionsMapping.isUnitInMission(unit.getId());
 	}
@@ -219,18 +271,24 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return unitMissionsMapping.isUnitInMission(unitId);
 	}
 	
-	public void interruptMission(Unit unit) {
-		for (AbstractMission mission : unitMissionsMapping.getUnitMission(unit)) {
-			mission.setDone();
-			unitMissionsMapping.unblockUnitFromMission(unit, mission);
-		}
+	public MapIdEntitiesReadOnly<AbstractMission> getMissions() {
+		return missions;
+	}
+
+	@SuppressWarnings("unchecked")
+	public <T extends AbstractMission> T getMission(String id) {
+		return (T)missions.getById(id);
+	}
+
+	public AbstractMission findMission(String id) {
+		return missions.getByIdOrNull(id);
 	}
 
 	public Player getPlayer() {
 		return player;
 	}
-	
-    public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
+
+	public static class Xml extends XmlNodeParser<PlayerMissionsContainer> {
         private static final String ATTR_PLAYER = "player";
 
         private static Player player;
@@ -267,6 +325,9 @@ public class PlayerMissionsContainer extends ObjectWithId {
             addNodeForMapIdEntities("missions", TransportGoodsToSellMission.class);
 			addNodeForMapIdEntities("missions", ColonyWorkerMission.class);
 			addNodeForMapIdEntities("missions", ScoutMission.class);
+			addNodeForMapIdEntities("missions", PioneerMission.class);
+			addNodeForMapIdEntities("missions", RequestGoodsMission.class);
+			addNodeForMapIdEntities("missions", TransportUnitRequestMission.class);
         }
         
         @Override
@@ -288,6 +349,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
             if (getTagName().equals(qName)) {
                 PlayerMissionsContainer.Xml.player = null;
                 markMissionUnitsAsBlocked(nodeObject);
+				createTreeStructure(nodeObject);
             }
         }
         
@@ -296,6 +358,20 @@ public class PlayerMissionsContainer extends ObjectWithId {
 				missionContainer.blockUnitsForMission(mission);
 			}
         }
+
+        private void createTreeStructure(PlayerMissionsContainer missionContainer) {
+			for (AbstractMission mission : missionContainer.missions) {
+				if (mission.parentMissionId != null) {
+					AbstractMission parentMission = missionContainer.missions.getByIdOrNull(mission.parentMissionId);
+					if (parentMission != null) {
+						if (parentMission.dependMissions2.isEmpty()) {
+							parentMission.dependMissions2 = new HashSet<String>();
+						}
+						parentMission.dependMissions2.add(mission.getId());
+					}
+				}
+			}
+		}
         
         @Override
         public String getTagName() {

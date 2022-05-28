@@ -52,10 +52,12 @@ public class WanderMission extends AbstractMission {
 		    
 		    WanderMission m = new WanderMission(attr.getId(), unit);
 		    nodeObject = m;
+			super.startElement(attr);
 		}
 
 		@Override
 		public void startWriteAttr(WanderMission m, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(m, attr);
 		    attr.setId(m);
 		    attr.set(ATTR_UNIT, m.unit);
 		}

@@ -86,9 +86,12 @@ class ScoutMission : AbstractMission {
             if (attr.hasAttr(ATTR_DESTINATION)) {
                 nodeObject.scoutDistantDestination = game.map.getSafeTile(attr.getPoint(ATTR_DESTINATION))
             }
+            super.startElement(attr)
         }
 
         override fun startWriteAttr(mission: ScoutMission, attr: XmlNodeAttributesWriter) {
+            super.startWriteAttr(mission, attr)
+
             attr.setId(mission)
             attr.set(ATTR_UNIT, mission.scout)
             attr.set(ATTR_PHASE, mission.phase)

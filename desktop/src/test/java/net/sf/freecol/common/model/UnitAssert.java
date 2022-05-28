@@ -21,7 +21,14 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
 		}
 		return this;
 	}
-	
+
+	public UnitAssert isEqualsTo(Unit unit) {
+		if (!actual.equalsId(unit)) {
+			failWithMessage("expected unit <%s> id is equals <%s>", actual.getId(), unit.getId());
+		}
+		return this;
+	}
+
 	public UnitAssert isDisposed() {
 		isNotNull();
 		if (actual.getOwner().units.containsId(actual)) {
@@ -199,4 +206,18 @@ public class UnitAssert extends AbstractAssert<UnitAssert, Unit> {
         }
         return this;
     }
+
+	public UnitAssert hasRoleCount(int roleCount) {
+		if (actual.getRoleCount() != roleCount) {
+			failWithMessage("expected unit <%s> has roleCount %s but has %s", actual.getId(), roleCount, actual.getRoleCount());
+		}
+		return this;
+	}
+
+	public UnitAssert isImproveming() {
+		if (actual.getState() != Unit.UnitState.IMPROVING) {
+			failWithMessage("expected unit <%s> improveming but it %s", actual.getId(), actual.getState());
+		}
+		return this;
+	}
 }

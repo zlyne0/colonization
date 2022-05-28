@@ -7,8 +7,8 @@ import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static promitech.colonization.savegame.AbstractMissionAssert.assertThat;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
+import static net.sf.freecol.common.model.UnitAssert.assertThat;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Colony;
@@ -37,7 +37,6 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.PlayerAiContainer;
-import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert;
@@ -46,6 +45,8 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
@@ -70,11 +71,21 @@ import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.options.OptionGroup;
 
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
+
 public class Savegame1600Verifier {
 
-	public void verify(Game game) {
+    private GoodsType muskets;
+    private GoodsType tools;
+    private Colony nieuwAmsterdam;
+    private Colony fortMaurits;
+    private Colony fortOranje;
+    private Player dutch;
+
+    public void verify(Game game) {
+        init(game);
         verifySpecification(game);
-        
+
         verifyGame(game);
         verifyPlayers(game);
         
@@ -89,6 +100,7 @@ public class Savegame1600Verifier {
         verifyPlayer(game);
         verifySettlementsGoods(game);
         verifySettlementsBuildings(game);
+        verifyMap(game);
         
         verifySettlementBuildingWorker(game);
         verifyAIContainer(game);
@@ -98,7 +110,23 @@ public class Savegame1600Verifier {
         verifyUnitTradeRoute(game);
 	}
 
-	private void verifyIndianMissions(Game game) {
+	private void init(Game game) {
+        muskets = Specification.instance.goodsTypes.getById(GoodsType.MUSKETS);
+        tools = Specification.instance.goodsTypes.getById(GoodsType.TOOLS);
+
+        dutch = game.players.getById("player:1");
+        nieuwAmsterdam = dutch.settlements.getById("colony:6528").asColony();
+        fortMaurits = dutch.settlements.getById("colony:6993").asColony();
+        fortOranje = dutch.settlements.getById("colony:6554").asColony();
+    }
+
+    private void verifyMap(Game game) {
+        Tile tile = game.map.getTile(21, 72);
+        TileAssert.assertThat(tile).hasImprovement(TileImprovementType.RIVER_IMPROVEMENT_TYPE_ID);
+        TileAssert.assertThat(tile).hasImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+    }
+
+    private void verifyIndianMissions(Game game) {
 		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
 		
 		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
@@ -167,17 +195,28 @@ public class Savegame1600Verifier {
     }
 
     private void verifyDutchMissions(Game game) {
-        PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
-		Player dutch = game.players.getById("player:1");
+        PlayerMissionsContainer missions = game.aiContainer.missionContainer(dutch);
 
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
         UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
         assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
-			"colony:6993",
-			"colony:6554"
+            fortMaurits.getId(),
+            fortOranje.getId()
 		);
-        SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals("colony:6993");
-	}
+        SettlementAssert.assertThat(mission.firstSettlementToVisit(dutch)).isEquals(fortMaurits.getId());
+
+        PioneerMission pioneerMission = missions.getMission("pioneerMission:1");
+        assertThat(pioneerMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
+        assertThat(pioneerMission.getPioneer()).isIdEquals("unit:6762");
+
+        PlayerMissionsContainerAssert.assertThat(missions)
+            .hasDependMission(pioneerMission, "requestGoodsMission:1", RequestGoodsMission.class);
+
+        RequestGoodsMission requestGoodsMission = missions.getMission("requestGoodsMission:1");
+        assertThat(requestGoodsMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
+        assertThat(requestGoodsMission.amount(muskets)).isEqualTo(50);
+        assertThat(requestGoodsMission.amount(tools)).isEqualTo(100);
+    }
 
     private void verifySpainMissions(Game game) {
         Player spain = game.players.getById("player:133");
@@ -198,9 +237,8 @@ public class Savegame1600Verifier {
 	private void verifyMissionRecursion(Game game) {
         PlayerMissionsContainer missions = game.aiContainer.getMissionContainer("player:1");
 
-        AbstractMissionAssert.assertThat(missions.getMission("explorerMission:5"))
-        	.isType(ExplorerMission.class)
-        	.hasDependMission("explorerMission:5:1", ExplorerMission.class);
+        PlayerMissionsContainerAssert.assertThat(missions)
+            .hasDependMission("explorerMission:5", "explorerMission:5:1", ExplorerMission.class);
 	}
 
 	private void verifyExploreMission(Game game) {
@@ -215,15 +253,20 @@ public class Savegame1600Verifier {
 	private void verifyTransportUnitMission(Game game) {
 		PlayerMissionsContainer playerMissions1 = game.aiContainer.getMissionContainer("player:1");
 		assertThat(playerMissions1).isNotNull();
+
 		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
         assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
-
         assertThat(tm.getUnitsDest()).hasSize(1);
         TransportUnitMission.UnitDest unitDest = tm.getUnitsDest().get(0);
 
         assertThat(unitDest.unit.getId()).isEqualTo("unit:7095");
         assertThat(unitDest.dest.equalsCoordinates(24,78)).isTrue();
-	}
+
+        TransportUnitRequestMission transportRequest = playerMissions1.getMission("transportUnitRequestMission:1");
+        assertThat(transportRequest.getUnit()).isIdEquals("unit:7095");
+        assertThat(transportRequest.getDestination().equalsCoordinates(24,78)).isTrue();
+        assertThat(transportRequest.getTransportUnitMissionId()).isEqualTo("transportUnitMission:2");
+    }
 
 	private void verifyGame(Game game) {
 		assertEquals("unit:6781", game.activeUnitId);
@@ -289,8 +332,8 @@ public class Savegame1600Verifier {
         assertNotNull(food);
         
         assertEquals(2, player.foundingFathers.size());
-        assertNotNull(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
-        assertNotNull(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
+        assertTrue(player.foundingFathers.containsId("model.foundingFather.peterMinuit"));
+        assertTrue(player.foundingFathers.containsId("model.foundingFather.williamBrewster"));
         
         // should add fathers modifiers to player features
         assertThat(player.getFeatures()).hasModifier(Modifier.LAND_PAYMENT_MODIFIER);

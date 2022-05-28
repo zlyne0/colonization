@@ -19,7 +19,6 @@ import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.UnitLocation;
 import net.sf.freecol.common.model.UnitRole;
-import net.sf.freecol.common.model.UnitRoleLogic;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
@@ -648,7 +647,7 @@ class Combat {
     private void indianTransferCapturedGoodToHomeSettlement(UnitRole roleEquipment) {
         // CHEAT: Immediately transferring the captured goods back to a potentially remote settlement
         // Apparently Col1 did it
-        ProductionSummary equipment = UnitRoleLogic.requiredGoodsToChangeRole(combatSides.winner, roleEquipment);
+        ProductionSummary equipment = UnitRole.requiredGoodsToChangeRole(combatSides.winner, roleEquipment);
         if (combatSides.winner.getIndianSettlementId() != null) {
             Settlement settlement = combatSides.winner.getOwner().settlements.getByIdOrNull(combatSides.winner.getIndianSettlementId());
             if (settlement != null) {

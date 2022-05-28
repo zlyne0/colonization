@@ -45,10 +45,14 @@ public class ExplorerMission extends AbstractMission {
                 PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
             );
             nodeObject = m;
+
+            super.startElement(attr);
         }
 
         @Override
         public void startWriteAttr(ExplorerMission node, XmlNodeAttributesWriter attr) throws IOException {
+            super.startWriteAttr(node, attr);
+
             attr.setId(node);
             attr.set(ATTR_UNIT, node.unit);
         }

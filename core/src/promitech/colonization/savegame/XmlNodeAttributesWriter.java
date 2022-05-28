@@ -30,6 +30,12 @@ public class XmlNodeAttributesWriter {
 		}
 	}
 
+	public void set(String attrName, String val, String defaultVal) throws IOException {
+		if (val != null && !val.equals(defaultVal)) {
+			xml.attribute(attrName, val);
+		}
+	}
+
 	public void set(String attrName, int val) throws IOException {
 		xml.attribute(attrName, Integer.toString(val));
 	}

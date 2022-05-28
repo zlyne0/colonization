@@ -168,10 +168,12 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 			
 			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE, Phase.BACK_TO_SETTLEMENT);
 			nodeObject = m;
+			super.startElement(attr);
 		}
 
 		@Override
 		public void startWriteAttr(IndianBringGiftMission m, XmlNodeAttributesWriter attr) throws IOException {
+			super.startWriteAttr(m, attr);
 			attr.setId(m);
 			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
 			attr.set(ATTR_COLONY_ID, m.destinationColony);

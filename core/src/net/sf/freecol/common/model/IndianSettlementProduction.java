@@ -100,7 +100,7 @@ public class IndianSettlementProduction {
 				if (unit.getUnitRole().equalsId(militaryRole)) {
 					continue;
 				}
-				need += UnitRoleLogic.countRequiredGoodsToChangeRole(goodsType, unit, militaryRole);
+				need += UnitRole.countRequiredGoodsToChangeRole(goodsType, unit, militaryRole);
 			}
 			return need;
 		}

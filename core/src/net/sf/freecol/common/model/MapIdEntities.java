@@ -49,7 +49,7 @@ public class MapIdEntities<T extends Identifiable> implements MapIdEntitiesReadO
     }
     
     public MapIdEntities(MapIdEntitiesReadOnly<T> aMapEntities) {
-    	this();
+        entities = new HashMap<String,T>(aMapEntities.size());
     	addAll(aMapEntities);
     }
     

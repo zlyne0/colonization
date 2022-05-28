@@ -87,8 +87,12 @@ public class ColonyWorkerRequestPlaner {
 	}
 
 	private boolean hasMissionToWorkerRequestPlace(PlayerMissionsContainer playerMissionContainer, WorkerRequestScoreValue workerRequestPlace) {
-	    this.tmpWorkerRequestPlace = workerRequestPlace;
-        return playerMissionContainer.hasMission(ColonyWorkerMission.class, hasMissionPredicate);
+	    try {
+	    	this.tmpWorkerRequestPlace = workerRequestPlace;
+			return playerMissionContainer.hasMission(ColonyWorkerMission.class, hasMissionPredicate);
+		} finally {
+			this.tmpWorkerRequestPlace = null;
+		}
 	}
 
     private final Predicate<ColonyWorkerMission> hasMissionPredicate = new Predicate<ColonyWorkerMission>() {

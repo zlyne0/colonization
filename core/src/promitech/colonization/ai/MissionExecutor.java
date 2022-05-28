@@ -2,12 +2,6 @@ package promitech.colonization.ai;
 
 import com.badlogic.gdx.utils.Disposable;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
@@ -21,19 +15,31 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMissionHandler;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionHandler;
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMissionHandler;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 
+import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 
-import static promitech.colonization.ai.MissionHandlerLogger.*;
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class MissionExecutor implements Disposable {
 
@@ -76,6 +82,9 @@ public class MissionExecutor implements Disposable {
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
             game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService
         );
+        PioneerMissionHandler pioneerMissionHandler = new PioneerMissionHandler(
+            game, new PioneerMissionPlaner(game, pathFinder), moveService, pathFinder
+        );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
@@ -85,15 +94,26 @@ public class MissionExecutor implements Disposable {
 		missionHandlerMapping.put(TransportUnitMission.class, transportUnitMissionHandler);
 		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
+        missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
+        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
+        missionHandlerMapping.put(TransportUnitRequestMission.class, new TransportUnitRequestMissionHandler());
 	}
     
 	public void executeMissions(Player player) {
 		PlayerMissionsContainer missionsContainer = game.aiContainer.missionContainer(player);
-        for (AbstractMission am : missionsContainer.getMissions().entities()) {
-        	if (am.isDone()) {
-        		continue;
-        	}
-        	executedAllLeafs(missionsContainer, am);
+
+        List<AbstractMission> missionToExecute = missionsContainer.findMissionToExecute();
+
+        while (!missionToExecute.isEmpty()) {
+            AbstractMission mission = missionToExecute.remove(missionToExecute.size() - 1);
+            executeSingleMission(missionsContainer, mission);
+
+            if (mission.isDone()) {
+                AbstractMission parentMission = missionsContainer.findParentToExecute(mission);
+                if (parentMission != null) {
+                    missionToExecute.add(parentMission);
+                }
+            }
         }
         missionsContainer.clearDoneMissions();
 	}
@@ -101,44 +121,12 @@ public class MissionExecutor implements Disposable {
 	public <T extends AbstractMission> void executeMissions(PlayerMissionsContainer missionsContainer, Class<T> missionClass) {
         List<T> missions = missionsContainer.findMissions(missionClass);
         for (T mission : missions) {
-            if (!mission.isDone() && !mission.hasDependMissions()) {
+            if (!mission.isDone() && missionsContainer.isAllDependMissionDone(mission)) {
                 executeSingleMission(missionsContainer, mission);
             }
         }
     }
 
-    private void executedAllLeafs(PlayerMissionsContainer missionsContainer, AbstractMission am) {
-        if (!am.hasDependMissions()) {
-            executeSingleMission(missionsContainer, am);
-            return;
-        }
-
-        HashSet<AbstractMission> executedMissions = new HashSet<AbstractMission>();
-        HashSet<AbstractMission> leafMissionToExecute = new HashSet<AbstractMission>();
-
-        leafMissionToExecute.addAll(am.getLeafMissionToExecute());
-        while (!leafMissionToExecute.isEmpty()) {
-            boolean foundDoneMission = false;
-            for (AbstractMission abs : leafMissionToExecute) {
-                if (!executedMissions.contains(abs)) {
-                    executeSingleMission(missionsContainer, abs);
-                    executedMissions.add(abs);
-                    if (abs.isDone()) {
-                        foundDoneMission = true;
-                    }
-                }
-            }
-            leafMissionToExecute.clear();
-            if (foundDoneMission) {
-                leafMissionToExecute.addAll(am.getLeafMissionToExecute());
-
-                for (AbstractMission executedMission : executedMissions) {
-                    leafMissionToExecute.remove(executedMission);
-                }
-            }
-        }
-    }
-    
     @SuppressWarnings({ "unchecked", "rawtypes" })
     protected void executeSingleMission(PlayerMissionsContainer missionsContainer, AbstractMission am) {
 	    if (logger.isDebug()) {

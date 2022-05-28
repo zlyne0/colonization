@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -85,6 +86,20 @@ public class Market extends ObjectWithId {
     	return marketGoodsPrice.price(goodsType, amount);
     }
 
+	/**
+	 * ai ignore arrears
+	 */
+	public int aiBidPrice(GoodsCollection goods) {
+		int sum = 0;
+		for (Entry<GoodsType> goodsTypeEntry : goods.entries()) {
+			MarketData data = marketGoods.getById(goodsTypeEntry.key);
+			if (goodsTypeEntry.value > 0) {
+				sum += data.getCostToBuy(goodsTypeEntry.value);
+			}
+		}
+		return sum;
+	}
+
     public int getSalePrice(GoodsType type, int amount) {
     	MarketData data = marketGoods.getByIdOrNull(type.getId());
     	if (data == null) {
@@ -105,7 +120,7 @@ public class Market extends ObjectWithId {
 		int paidSum = 0;
 		for (Entry<String> goodsTypeEntry : required.entries()) {
 			MarketData data = marketGoods.getByIdOrNull(goodsTypeEntry.key);
-			if (data != null || data.hasArrears()) {
+			if (data == null || data.hasArrears()) {
 				return false;
 			}
 			if (goodsTypeEntry.value > 0) {
