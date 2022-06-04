@@ -53,14 +53,4 @@ public class Units {
     		return Collections.emptyList(); 
     	}
     }
-
-    public static int calculateNavyCapacity(Player player) {
-    	int capacity = 0;
-		for (Unit unit : player.units) {
-			if (unit.isNaval() && unit.isCarrier() && !unit.isDamaged()) {
-				capacity += unit.unitType.getSpace();
-			}
-		}
-		return capacity;
-	}
 }

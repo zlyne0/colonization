@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.*
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.Units
+import promitech.colonization.ai.calculateNavyCapacity
 import promitech.colonization.ai.score.ScoreableObjectsList
 import kotlin.math.log
 
@@ -37,7 +38,7 @@ class ColonistsPurchaseRecommendations(
         val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
         scorePolicy.calculateScore(tileScore)
 
-        val navyCapacity = Units.calculateNavyCapacity(player) - occupiedNavyCapacity()
+        val navyCapacity = player.calculateNavyCapacity() - occupiedNavyCapacity()
 
         val buyRecomendations = createList(player.gold, navyCapacity, tileScore)
         return buyRecomendations

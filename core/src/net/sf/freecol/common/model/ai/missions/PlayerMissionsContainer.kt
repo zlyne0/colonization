@@ -65,3 +65,20 @@ fun PlayerMissionsContainer.findDeepDependMissions(mission: AbstractMission): Li
     }
     return result
 }
+
+fun PlayerMissionsContainer.findMissionToExecute(parentMission: AbstractMission): List<AbstractMission> {
+    val dependMissions = findDeepDependMissions(parentMission)
+    if (dependMissions.isEmpty()) {
+        return emptyList()
+    }
+
+    var result = mutableListOf<AbstractMission>()
+    for (dependMission in dependMissions) {
+        if (dependMission.hasDependMission() || dependMission.isDone) {
+            continue
+        }
+        result.add(dependMission)
+    }
+    return result
+}
+

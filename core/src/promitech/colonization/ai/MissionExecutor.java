@@ -39,6 +39,7 @@ import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
 import promitech.colonization.screen.map.hud.GUIGameController;
 
+import static net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerKt.findMissionToExecute;
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class MissionExecutor implements Disposable {
@@ -77,13 +78,16 @@ public class MissionExecutor implements Disposable {
     		this, game, pathFinder, moveService, pathFinder2
 		);
         ColonyWorkerMissionHandler colonyWorkerMissionHandler = new ColonyWorkerMissionHandler(
-    		game, pathFinder, moveService
+    		game, pathFinder
 		);
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
             game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService
         );
         PioneerMissionHandler pioneerMissionHandler = new PioneerMissionHandler(
             game, new PioneerMissionPlaner(game, pathFinder), moveService, pathFinder
+        );
+        TransportUnitRequestMissionHandler transportUnitRequestMissionHandler = new TransportUnitRequestMissionHandler(
+            game, moveService, pathFinder, pathFinder2
         );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
@@ -96,7 +100,7 @@ public class MissionExecutor implements Disposable {
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
         missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
         missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
-        missionHandlerMapping.put(TransportUnitRequestMission.class, new TransportUnitRequestMissionHandler());
+        missionHandlerMapping.put(TransportUnitRequestMission.class, transportUnitRequestMissionHandler);
 	}
     
 	public void executeMissions(Player player) {
@@ -113,6 +117,9 @@ public class MissionExecutor implements Disposable {
                 if (parentMission != null) {
                     missionToExecute.add(parentMission);
                 }
+            } else if (mission.hasDependMission()) {
+                // new missions so try them to execute
+                missionToExecute.addAll(findMissionToExecute(missionsContainer, mission));
             }
         }
         missionsContainer.clearDoneMissions();

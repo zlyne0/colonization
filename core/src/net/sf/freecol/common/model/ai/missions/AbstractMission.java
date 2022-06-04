@@ -39,6 +39,10 @@ public abstract class AbstractMission extends ObjectWithId {
 		return dependMissions2.contains(missionId);
 	}
 
+	public boolean hasDependMission() {
+		return !dependMissions2.isEmpty();
+	}
+
 	@Override
 	public String toString() {
 		return "TODO.mission.toString: " + this.getClass().getName() + " " + this.getId();

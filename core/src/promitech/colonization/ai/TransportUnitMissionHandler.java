@@ -149,6 +149,10 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		MoveContext moveContext = new MoveContext(carrier, path);
 		MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 
+		if (MoveType.MOVE_NO_MOVES.equals(aiConfirmedMovePath)) {
+			return;
+		}
+
 		if (MoveType.MOVE.equals(aiConfirmedMovePath)
 			|| MoveType.DISEMBARK.equals(aiConfirmedMovePath)
 			|| MoveType.MOVE_HIGH_SEAS.equals(aiConfirmedMovePath)
@@ -271,7 +275,9 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		for (TransportUnitMission.UnitDest unitDest : mission.getUnitsDest()) {
 			if (unitDest.unit.getTile().isStepNextTo(carrierLocation)) {
 				MoveContext moveContext = MoveContext.embarkUnit(unitDest.unit, carrier);
-				moveService.aiConfirmedMoveProcessor(moveContext);
+				if (MoveType.EMBARK.equals(moveContext.moveType)) {
+					moveService.aiConfirmedMoveProcessor(moveContext);
+				}
 			} else if (unitDest.unit.getTile().equalsCoordinates(carrierLocation)) {
 			    unitDest.unit.embarkTo(carrier);
             }

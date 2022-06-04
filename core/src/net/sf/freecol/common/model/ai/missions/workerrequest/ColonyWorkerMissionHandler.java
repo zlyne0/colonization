@@ -4,27 +4,26 @@ import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyFactory;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
-import net.sf.freecol.common.model.map.path.Path;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+
 import promitech.colonization.ai.ColonyProductionPlaner;
 import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.BuildColonyOrder.OrderStatus;
-import promitech.colonization.orders.move.MoveContext;
-import promitech.colonization.orders.move.MoveService;
 
 public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMission> {
 
+	private static final int NOT_WORTH_EMBARK_RANGE = 5;
+
 	private final Game game;
 	private final PathFinder pathFinder;
-	private final MoveService moveService;
 
-	public ColonyWorkerMissionHandler(Game game, PathFinder pathFinder, MoveService moveService) {
+	public ColonyWorkerMissionHandler(Game game, PathFinder pathFinder) {
 		this.game = game;
 		this.pathFinder = pathFinder;
-		this.moveService = moveService;
 	}
 	
 	@Override
@@ -39,34 +38,19 @@ public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMi
 			mission.setDone();
 			return;
 		}
-		
+
 		if (mission.isUnitAtDestination()) {
 			if (mission.getTile().hasSettlement()) {
 				addWorkerToColony(mission);
 			} else {
-				buildColony(playerMissionsContainer, mission);
+				buildColony(mission);
 			}
 		} else {
-			moveToDestination(playerMissionsContainer, mission);
-			if (mission.isUnitAtDestination()) {
-				buildColony(playerMissionsContainer, mission);
-			}
+			TransportUnitRequestMission transportUnitRequestMission = new TransportUnitRequestMission(
+				mission.getUnit(), mission.getTile(), true, true, NOT_WORTH_EMBARK_RANGE
+			);
+			playerMissionsContainer.addMission(mission, transportUnitRequestMission);
 		}
-	}
-	
-	private void moveToDestination(PlayerMissionsContainer playerMissionsContainer, ColonyWorkerMission mission) {
-        Path path = pathFinder.findToTile(
-            game.map,
-            mission.getUnit().getTile(),
-            mission.getTile(),
-            mission.getUnit(),
-            PathFinder.includeUnexploredTiles
-        );
-        if (path.reachTile(mission.getTile())) {
-            MoveContext moveContext = new MoveContext(mission.getUnit(), path);
-            moveContext.initNextPathStep();
-            moveService.handlePathMoveContext(moveContext);
-        }
 	}
 
 	private void addWorkerToColony(ColonyWorkerMission mission) {
@@ -77,14 +61,12 @@ public class ColonyWorkerMissionHandler implements MissionHandler<ColonyWorkerMi
 		mission.setDone();
 	}
 
-	private void buildColony(PlayerMissionsContainer playerMissionsContainer, ColonyWorkerMission mission) {
+	private void buildColony(ColonyWorkerMission mission) {
 		BuildColonyOrder buildColonyOrder = new BuildColonyOrder(game.map);
 		OrderStatus check = buildColonyOrder.check(mission.getUnit(), mission.getTile());
 		if (check == OrderStatus.OK) {
             ColonyFactory colonyFactory = new ColonyFactory(game, pathFinder);
             colonyFactory.buildColonyByAI(mission.getUnit(), mission.getTile());
-            
-            playerMissionsContainer.unblockUnitsFromMission(mission);
             mission.setDone();
 		} else {
             if (check == OrderStatus.NO_MOVE_POINTS) {

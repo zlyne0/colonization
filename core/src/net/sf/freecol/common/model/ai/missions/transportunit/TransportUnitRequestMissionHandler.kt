@@ -1,10 +1,25 @@
 package net.sf.freecol.common.model.ai.missions.transportunit
 
+import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.map.path.Path
+import net.sf.freecol.common.model.map.path.PathFinder
+import net.sf.freecol.common.util.CollectionUtils
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger.logger
+import promitech.colonization.ai.findShipsTileLocations
+import promitech.colonization.orders.move.MoveContext
+import promitech.colonization.orders.move.MoveService
 
-class TransportUnitRequestMissionHandler : MissionHandler<TransportUnitRequestMission> {
+class TransportUnitRequestMissionHandler(
+    private val game: Game,
+    private val moveService: MoveService,
+    private val pathFinder: PathFinder,
+    private val pathFinder2: PathFinder
+) : MissionHandler<TransportUnitRequestMission> {
+
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: TransportUnitRequestMission) {
         val player = playerMissionsContainer.player
 
@@ -13,6 +28,71 @@ class TransportUnitRequestMissionHandler : MissionHandler<TransportUnitRequestMi
             mission.setDone()
             return
         }
+
         // Do nothing. Transport request handled by transport unit handler and planer.
+
+        if (mission.allowMoveToDestination && !mission.hasTransportUnitMission() && mission.isUnitAtTileLocation()) {
+            if (mission.isDestinationOnTheSameIsland(game.map)) {
+                moveToDestination(mission, {
+                    mission.setDone()
+                })
+            } else {
+                // move to sea side and wait for ship
+                moveToOtherIsland(mission)
+            }
+        }
     }
+
+    private fun moveToOtherIsland(mission: TransportUnitRequestMission) {
+        val recommendEmbarkLocationPath = recommendEmbarkLocationPath(mission)
+        if (recommendEmbarkLocationPath != null) {
+            val moveContext = MoveContext(mission.unit, recommendEmbarkLocationPath)
+            moveService.aiConfirmedMovePath(moveContext)
+        }
+    }
+
+    private fun recommendEmbarkLocationPath(mission: TransportUnitRequestMission): Path? {
+        val unitEmbarkGenerateRangeFlags = CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
+        pathFinder.generateRangeMap(game.map, mission.unit, unitEmbarkGenerateRangeFlags)
+
+        val shipsTileLocations = mission.unit.owner.findShipsTileLocations(game.map)
+        if (shipsTileLocations.isEmpty()) {
+            return null
+        }
+        pathFinder2.generateRangeMap(
+            game.map,
+            shipsTileLocations,
+            pathFinder2.createPathUnit(mission.unit.owner, Specification.instance.unitTypes.getById(UnitType.CARAVEL)),
+            CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
+        )
+        val embarkLocation = pathFinder2.findFirstTheBestSumTurnCost(pathFinder, PathFinder.SumPolicy.PRIORITY_SUM)
+        if (embarkLocation == null || mission.isUnitAt(embarkLocation)) {
+            return null
+        }
+        return pathFinder.createPath(embarkLocation)
+    }
+
+    private inline fun moveToDestination(mission: TransportUnitRequestMission, actionOnDestination: () -> kotlin.Unit = {}) {
+        if (mission.isUnitAtDestination()) {
+            actionOnDestination()
+        } else {
+            val path: Path = pathFinder.findToTile(
+                game.map,
+                mission.unit,
+                mission.destination,
+                PathFinder.includeUnexploredTiles
+            )
+            if (path.reachTile(mission.destination)) {
+                mission.recalculateWorthEmbark(pathFinder.turnsCost(mission.destination))
+
+                val moveContext = MoveContext(mission.unit, path)
+                moveService.aiConfirmedMovePath(moveContext)
+
+                if (mission.isUnitAtDestination()) {
+                    actionOnDestination()
+                }
+            }
+        }
+    }
+
 }

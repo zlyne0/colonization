@@ -8,6 +8,8 @@ import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.map.path.Path;
 
+import static net.sf.freecol.common.model.MoveType.MOVE_NO_MOVES;
+
 public class MoveContext {
 	private final UnitMoveType unitMoveType = new UnitMoveType();
 
@@ -100,11 +102,11 @@ public class MoveContext {
 		);
 		if (unit.hasMovesPoints(moveCost)) {
 			hasMovePoints = true;
+			moveType = unitMoveType.calculateMoveType(sourceTile, destTile);
 		} else {
 			hasMovePoints = false;
-			return;
+			moveType = MOVE_NO_MOVES;
 		}
-		this.moveType = unitMoveType.calculateMoveType(sourceTile, destTile);
 	}
 	
 	public String toString() {
