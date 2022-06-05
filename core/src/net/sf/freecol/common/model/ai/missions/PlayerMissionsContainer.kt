@@ -82,3 +82,10 @@ fun PlayerMissionsContainer.findMissionToExecute(parentMission: AbstractMission)
     return result
 }
 
+fun PlayerMissionsContainer.findParentMission(childMission: AbstractMission): AbstractMission? {
+    if (childMission.parentMissionId == null) {
+        return null
+    }
+    return this.missions.getByIdOrNull(childMission.parentMissionId)
+}
+

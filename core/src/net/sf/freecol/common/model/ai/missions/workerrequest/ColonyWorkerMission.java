@@ -19,6 +19,7 @@ public class ColonyWorkerMission extends AbstractMission {
 	private Tile tile;
 	private Unit unit;
 	private GoodsType goodsType;
+	private int moveNoAccessCounter = 0;
 
 	public ColonyWorkerMission(Tile tile, Unit unit, GoodsType goodsType) {
 		super(Game.idGenerator.nextId(ColonyWorkerMission.class));
@@ -45,7 +46,15 @@ public class ColonyWorkerMission extends AbstractMission {
 		Tile ut = unit.getTileLocationOrNull();
 		return ut != null && tile != null && ut.equalsCoordinates(tile);
 	}
-	
+
+	public void increaseMoveNoAccessCounter() {
+		moveNoAccessCounter++;
+	}
+
+	public boolean isMoveNoAccessCounterAboveRange(int range) {
+		return moveNoAccessCounter > range;
+	}
+
 	public Tile getTile() {
 		return tile;
 	}
@@ -74,6 +83,7 @@ public class ColonyWorkerMission extends AbstractMission {
         private static final String ATTR_UNIT = "unit";
         private static final String ATTR_TILE = "tile";
 		private static final String ATTR_GOODS_TYPE = "goods-type";
+		private static final String ATTR_MOVE_NO_ACCESS_COUNTER = "moveNoAccessCounter";
 
 		@Override
         public void startElement(XmlNodeAttributes attr) {
@@ -81,6 +91,7 @@ public class ColonyWorkerMission extends AbstractMission {
             m.tile = game.map.getSafeTile(attr.getPoint(ATTR_TILE));
             m.unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT));
 			m.goodsType = attr.getEntity(ATTR_GOODS_TYPE, Specification.instance.goodsTypes);
+			m.moveNoAccessCounter = attr.getIntAttribute(ATTR_MOVE_NO_ACCESS_COUNTER, 0);
             nodeObject = m;
 			super.startElement(attr);
         }
@@ -92,6 +103,7 @@ public class ColonyWorkerMission extends AbstractMission {
             attr.setPoint(ATTR_TILE, mission.tile.x, mission.tile.y);
             attr.set(ATTR_UNIT, mission.unit);
             attr.set(ATTR_GOODS_TYPE, mission.goodsType);
+            attr.set(ATTR_MOVE_NO_ACCESS_COUNTER, mission.moveNoAccessCounter, 0);
         }
 
         @Override

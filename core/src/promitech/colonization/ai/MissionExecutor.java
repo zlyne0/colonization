@@ -87,7 +87,7 @@ public class MissionExecutor implements Disposable {
             game, new PioneerMissionPlaner(game, pathFinder), moveService, pathFinder
         );
         TransportUnitRequestMissionHandler transportUnitRequestMissionHandler = new TransportUnitRequestMissionHandler(
-            game, moveService, pathFinder, pathFinder2
+            game, moveService, pathFinder, pathFinder2, this
         );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
@@ -114,7 +114,7 @@ public class MissionExecutor implements Disposable {
 
             if (mission.isDone()) {
                 AbstractMission parentMission = missionsContainer.findParentToExecute(mission);
-                if (parentMission != null) {
+                if (parentMission != null && !parentMission.isDone()) {
                     missionToExecute.add(parentMission);
                 }
             } else if (mission.hasDependMission()) {
@@ -147,10 +147,10 @@ public class MissionExecutor implements Disposable {
 		}
     }
 
-    public <T extends AbstractMission> MissionHandler<T> findMissionHandler(T am) {
-        MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(am.getClass());
+    public <T extends AbstractMission> MissionHandler<T> findMissionHandler(T abstractMission) {
+        MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(abstractMission.getClass());
         if (missionHandler == null) {
-            throw new IllegalStateException("can not find missionHandler for mission type " + am.getClass());
+            throw new IllegalStateException("can not find missionHandler for mission type " + abstractMission.getClass());
         }
         return missionHandler;
     }
