@@ -185,6 +185,20 @@ public class TransportUnitMission extends AbstractMission {
 		unitMissionsMapping.unblockUnitFromMission(carrier, this);
 	}
 
+	public int freeCarrierUnitCapacity() {
+		int freeUnitsSlots = carrier.freeUnitsSlots();
+		for (UnitDest unitDest : unitsDest) {
+			if (!carrier.getUnitContainer().isContainUnit(unitDest.unit)) {
+				freeUnitsSlots--;
+			}
+		}
+		return freeUnitsSlots;
+	}
+
+	public boolean isCarrier(Unit unit) {
+    	return this.carrier.equalsId(unit);
+	}
+
 	public Unit getCarrier() {
 		return carrier;
 	}

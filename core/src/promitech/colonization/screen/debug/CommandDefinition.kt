@@ -1,10 +1,9 @@
 package promitech.colonization.screen.debug
 
 import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.IndianSettlement
 import net.sf.freecol.common.model.Settlement
-import net.sf.freecol.common.model.SettlementFactory
-import net.sf.freecol.common.model.SettlementType
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
@@ -42,6 +41,7 @@ import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.util.PredicateUtil.and
 import promitech.colonization.DI
+import promitech.colonization.Direction
 import promitech.colonization.ai.EuropeanMissionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionExecutorDebugRun
@@ -305,8 +305,12 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 	val colonyWorkerRequestScores = sut.score(PlayerMissionsContainer(player))
 
+	colonyWorkerRequestScores.prettyPrint()
+
 	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
+
+	colonyWorkerRequestScores.prettyPrint()
 
 	sut.debug(tileDebugView)
 }
@@ -338,7 +342,7 @@ fun generateWorkerReqBuyRecommendations(di: DI, guiGameModel: GUIGameModel, tile
 	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
 	val purchaseColonists = ColonistsPurchaseRecommendations(player, playerMissionContainer)
-	val buyRecomendations = purchaseColonists.generateRecommendations(workerPlaceCalculator, entryPointTurnRange)
+	val buyRecomendations = purchaseColonists.generateRecommendations(workerPlaceCalculator, entryPointTurnRange, transportUnit)
 	purchaseColonists.printToLog(buyRecomendations, entryPointTurnRange)
 	purchaseColonists.printToMap(buyRecomendations, tileDebugView)
 }
@@ -503,7 +507,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				player.setAi(true)
 				di.newTurnService.newTurn(player)
 
-//				missionPlaner.planMissions(player)
+				missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 //				missionExecutor.executeMissions(missionContainer, PioneerMission::class.java)
 //				missionExecutor.executeMissions(missionContainer, RequestGoodsMission::class.java)
@@ -612,18 +616,27 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 		val game = guiGameModel.game
 		val player = game.playingPlayer
+		val dutch = game.playingPlayer
 		val missionContainer = game.aiContainer.missionContainer(player)
 
-		val europeanMissionPlaner = EuropeanMissionPlaner(guiGameModel.game, di.pathFinder,di.pathFinder2)
-		val navyUnit = Units.findCarrier(player)
+		val europeanMissionPlaner = EuropeanMissionPlaner(guiGameModel.game, di.pathFinder, di.pathFinder2)
+
+        val shipLocation = game.map.getTile(26, 68)
+        val navyUnit = UnitFactory.create(UnitType.CARAVEL, dutch, shipLocation)
+
+
 		var tum : TransportUnitMission? = null
-		tum = europeanMissionPlaner.createTransportMissionForCondition(
+		tum = europeanMissionPlaner.createTransportMissionFromTransportRequest(
 			tum, navyUnit, missionContainer,
-			and(hasNotTransportUnitMission, isFromTileLocation, isTransportHasParentType(missionContainer, ScoutMission::class.java))
+			and(hasNotTransportUnitMission, isFromTileLocation, isTransportHasParentType(missionContainer, ColonyWorkerMission::class.java))
 		)
 		if (tum != null) {
 			missionContainer.addMission(tum)
 		}
+
+        player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+        mapActor?.resetMapModel()
+        mapActor?.resetUnexploredBorders()
 	}
 
 	// key 8
@@ -636,8 +649,11 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val game = guiGameModel.game
 		val player = game.playingPlayer
 		val dutch = game.playingPlayer
+		val england = game.players.getById("player:112")
 		val missionContainer = game.aiContainer.missionContainer(player)
 		val pathFinder = di.pathFinder
+		val pathFinder2 = di.pathFinder2
+		val pathFinder3 = PathFinder()
 
 //		val scout = Scout(di, guiGameModel, tileDebugView, mapActor!!)
 //		scout.createScoutMission()
@@ -645,6 +661,14 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
 		mapActor?.resetUnexploredBorders()
+	}
+
+	fun tileFrom(game: Game, settlement: Settlement, direction: Direction): Tile {
+		return game.map.getTile(settlement.tile, direction)
+	}
+
+	fun unitRole(unitRoleId: String): UnitRole {
+		return Specification.instance.unitRoles.getById(unitRoleId)
 	}
 
 	fun resetDebug(tileDebugView: TileDebugView) {

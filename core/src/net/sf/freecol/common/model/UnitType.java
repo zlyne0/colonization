@@ -33,6 +33,7 @@ public class UnitType extends BuildableType {
 	public static final String VETERAN_SOLDIER = "model.unit.veteranSoldier";
 	public static final String SCOUT = "model.unit.seasonedScout";
 	public static final String CARAVEL = "model.unit.caravel";
+	public static final String FRIGATE = "model.unit.frigate";
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
 	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";

@@ -46,6 +46,15 @@ class TransportUnitRequestMission : AbstractMission {
                 }
             }
         }
+
+        @JvmStatic
+        fun isAtShipLocation(navyUnit: Unit): Predicate<TransportUnitRequestMission> {
+            return object : Predicate<TransportUnitRequestMission> {
+                override fun test(mission: TransportUnitRequestMission): Boolean {
+                    return mission.isUnitAt(navyUnit)
+                }
+            }
+        }
     }
 
     val unit: Unit
@@ -92,6 +101,7 @@ class TransportUnitRequestMission : AbstractMission {
     fun isUnitAtDestination(): Boolean = unit.isAtLocation(destination)
     fun isDestinationOnTheSameIsland(map: Map): Boolean = map.isTheSameArea(destination, unit.tile)
     fun isUnitAt(tile: Tile): Boolean = unit.isAtLocation(tile)
+    fun isUnitAt(carrier: Unit): Boolean = carrier.unitContainer.isContainUnit(unit)
     fun isWorthEmbark(): Boolean = worthEmbark
 
     fun recalculateWorthEmbark(turnsCost: Int) {

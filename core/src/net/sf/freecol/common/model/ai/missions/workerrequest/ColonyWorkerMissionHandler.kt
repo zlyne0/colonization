@@ -25,9 +25,6 @@ class ColonyWorkerMissionHandler(
         mission: ColonyWorkerMission
     ) {
         val player = playerMissionsContainer.player
-        if (!mission.unit.isAtTileLocation) {
-            return
-        }
         if (!CommonMissionHandler.isUnitExists(player, mission.unit)) {
             mission.setDone()
             return

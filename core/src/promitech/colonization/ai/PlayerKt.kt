@@ -14,16 +14,6 @@ fun Player.generateCivilizationSources(map: Map): List<Tile> {
     return sourceTiles
 }
 
-fun Player.calculateNavyCapacity(): Int {
-    var capacity = 0
-    for (unit in units) {
-        if (unit.isNaval && unit.isCarrier && !unit.isDamaged) {
-            capacity += unit.unitType.space
-        }
-    }
-    return capacity
-}
-
 fun Player.findShipsTileLocations(map: Map): List<Tile> {
     val sourceTiles = mutableListOf<Tile>()
     for (unit in units) {

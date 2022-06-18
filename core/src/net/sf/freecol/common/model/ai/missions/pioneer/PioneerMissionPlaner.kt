@@ -21,10 +21,13 @@ sealed class PioneerDestination {
     class Lack : PioneerDestination()
 }
 
+data class PioneerBuyPlan(val buyPioneerOrder: BuyPioneerOrder, val colony: Colony)
+
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     private val minDistanceToUseShipTransport = 5
 
-    fun prepareMission(player: Player, playerMissionContainer: PlayerMissionsContainer) {
+
+    fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): PioneerBuyPlan? {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
         var hasSpecialistOnMission = false
         playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
@@ -37,22 +40,30 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
         if (isReachMaxPioneerMissions(improvementsPlanDestinationsScore, colonyWithMissions)) {
             // no missions
-            return
+            return null
         }
         // simplification: existed pioneer units without mission should handled by default colony worker
 
         val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
-        if (firstDestination != null) {
-            val buyPionnierOrder = calculateBuyPioneerOrder(player, hasSpecialistOnMission)
-            val boughtPioneer : Unit = when (buyPionnierOrder) {
-                is BuyPioneerOrder.BuySpecialistOrder -> buyPionnierOrder.buy(player)
-                is BuyPioneerOrder.RecruitColonistOrder -> buyPionnierOrder.buy(player, game)
-                else -> return
-            }
-            val pioneerMission = PioneerMission(boughtPioneer, firstDestination.colony)
-            playerMissionContainer.addMission(pioneerMission)
-            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, firstDestination.colony.tile))
+        if (firstDestination == null) {
+            return null
         }
+        val buyPionnierOrder = calculateBuyPioneerOrder(player, hasSpecialistOnMission)
+        if (buyPionnierOrder is BuyPioneerOrder.CanNotAfford) {
+            return null
+        }
+        return PioneerBuyPlan(buyPionnierOrder, firstDestination.colony)
+    }
+
+    fun handlePioneerBuyPlan(pioneerBuyPlan: PioneerBuyPlan, player: Player, playerMissionContainer: PlayerMissionsContainer) {
+        val boughtPioneer : Unit = when (pioneerBuyPlan.buyPioneerOrder) {
+            is BuyPioneerOrder.BuySpecialistOrder -> pioneerBuyPlan.buyPioneerOrder.buy(player)
+            is BuyPioneerOrder.RecruitColonistOrder -> pioneerBuyPlan.buyPioneerOrder.buy(player, game)
+            else -> return
+        }
+        val pioneerMission = PioneerMission(boughtPioneer, pioneerBuyPlan.colony)
+        playerMissionContainer.addMission(pioneerMission)
+        playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, pioneerBuyPlan.colony.tile))
     }
 
     private fun isReachMaxPioneerMissions(

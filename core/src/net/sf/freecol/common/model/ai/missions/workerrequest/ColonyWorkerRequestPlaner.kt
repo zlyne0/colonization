@@ -5,30 +5,29 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.MissionHandlerLogger
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonyWorkerRequestPlaner(
-    private val player: Player,
-    private val playerMissionsContainer: PlayerMissionsContainer,
     private val game: Game,
-    pathFinder: PathFinder
+    private val pathFinder: PathFinder
 ) {
 
-    private val transporter: Unit?
-    private var entryPointTurnRange: EntryPointTurnRange
-    private var placeCalculator: ColonyWorkerRequestPlaceCalculator
+    private var hasTransporter: Boolean = false
+    private lateinit var player: Player
+    private lateinit var playerMissionsContainer: PlayerMissionsContainer
+    private lateinit var entryPointTurnRange: EntryPointTurnRange
+    private lateinit var placeCalculator: ColonyWorkerRequestPlaceCalculator
 
-    init {
-        transporter = Units.findCarrier(player)
-        if (transporter == null) {
-            MissionHandlerLogger.logger.debug("player[%s] no carrier unit", player.id)
-        }
+    private fun init(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
+        this.hasTransporter = Units.findCarrier(player) != null
+        this.player = player
+        this.playerMissionsContainer = playerMissionsContainer
 
-        entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
+        entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player)
         placeCalculator = ColonyWorkerRequestPlaceCalculator(
             player,
             game.map,
@@ -36,16 +35,19 @@ class ColonyWorkerRequestPlaner(
         )
     }
 
-    fun createBuyPlan() {
-        if (transporter == null) {
-            return
-        }
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(player, playerMissionsContainer)
-        purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange)
+    fun buyUnitsToNavyCapacity(player: Player, playerMissionContainer: PlayerMissionsContainer, transporter: Unit) {
+        init(player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+        purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange, transporter)
     }
 
-    fun createMissionFromUnusedUnits() {
+    fun createMissionFromUnusedUnits(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
+        init(player, playerMissionsContainer)
+
         for (unit in player.units) {
+            if (unit.isNaval) {
+                continue
+            }
             if (unit.isAtTileLocation) {
                 if (playerMissionsContainer.isUnitBlockedForMission(unit)) {
                     continue
@@ -65,6 +67,9 @@ class ColonyWorkerRequestPlaner(
                     findTheBestLocationOnMap(unit, tileScore)?.let { place ->
                         val mission = ColonyWorkerMission(place.location(), unit, place.goodsType())
                         playerMissionsContainer.addMission(mission)
+
+                        val transportUnitRequestMission = TransportUnitRequestMission(unit, place.location())
+                        playerMissionsContainer.addMission(mission, transportUnitRequestMission)
                     }
                 }
             }
@@ -76,7 +81,7 @@ class ColonyWorkerRequestPlaner(
         if (place != null) {
             return place
         }
-        if (transporter == null) {
+        if (!hasTransporter) {
             return null
         }
         return findTheBestLocation(unit, tileScore, { _ -> true})

@@ -7,14 +7,14 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovement
 import net.sf.freecol.common.model.TileImprovementType
 import net.sf.freecol.common.model.Unit
-import net.sf.freecol.common.model.UnitAssert.*
+import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.map.path.PathFinder
-import org.assertj.core.api.Assertions.*
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import promitech.colonization.Direction
@@ -115,7 +115,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         // when
-        pioneerMissionPlaner.prepareMission(dutch, playerMissionContainer)
+        val buyPlan = pioneerMissionPlaner.createBuyPlan(dutch, playerMissionContainer)
+        if (buyPlan != null) {
+            pioneerMissionPlaner.handlePioneerBuyPlan(buyPlan, dutch, playerMissionContainer)
+        }
 
         // then
         val findMissions = playerMissionContainer.findMissions(PioneerMission::class.java)

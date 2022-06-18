@@ -8,7 +8,7 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 
-class EntryPointTurnRange(val map: Map, val pathFinder: PathFinder, player: Player, transportUnit: Unit?) {
+class EntryPointTurnRange(val map: Map, val pathFinder: PathFinder, player: Player, transportUnit: Unit? = null) {
     init {
         if (transportUnit == null) {
             pathFinder.generateRangeMap(

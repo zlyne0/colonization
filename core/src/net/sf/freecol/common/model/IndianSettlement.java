@@ -108,7 +108,11 @@ public class IndianSettlement extends Settlement {
     		contactLevelByPlayer.put(player.getId(), ContactLevel.SCOUTED);
     	}
     }
-    
+
+    public void resetContact() {
+    	contactLevelByPlayer.clear();
+	}
+
     public boolean hasContact(Player player) {
     	return contactLevel(player) != ContactLevel.UNCONTACTED;
     }
