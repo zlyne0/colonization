@@ -105,7 +105,7 @@ class CostDecider {
 	}
 	
 	protected boolean isMoveIllegal(Tile newTile, MoveType moveType) {
-		if (MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType)) {
+		if (MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS.equals(moveType) || MoveType.MOVE_NO_ACCESS_GOODS.equals(moveType)) {
 			if (newTile.getSettlement() != null && !newTile.getSettlement().getOwner().equalsId(unitMove.getOwner())) {
 				moveCost = ILLEGAL_MOVE_COST;
 				return true;
