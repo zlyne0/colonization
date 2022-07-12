@@ -1,6 +1,7 @@
 package promitech.colonization.ai;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -20,6 +21,9 @@ import net.sf.freecol.common.util.Predicate;
 
 import java.util.List;
 
+import promitech.colonization.screen.debug.BuyShipOrder;
+import promitech.colonization.screen.debug.BuyShipPlaner;
+
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.hasNotTransportUnitMission;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isAtShipLocation;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isFromEurope;
@@ -27,6 +31,11 @@ import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUni
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isTransportHasParentType;
 import static net.sf.freecol.common.util.PredicateUtil.and;
 
+/*
+   Zadaniem człowieka jest życie, nie zaś egzystencja.
+   Nie będę tracić dni na próbę ich przedłużenia.
+   Wykorzystam swój czas.
+ */
 public class EuropeanMissionPlaner {
 
 	private final TransportGoodsToSellMissionPlaner transportGoodsToSellMissionPlaner;
@@ -36,6 +45,7 @@ public class EuropeanMissionPlaner {
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final PathFinder pathFinder2;
+	private boolean avoidPurchasesAndCollectGold = false;
 
 	public EuropeanMissionPlaner(Game game, PathFinder pathFinder, PathFinder pathFinder2) {
 		this.transportGoodsToSellMissionPlaner = new TransportGoodsToSellMissionPlaner(game, pathFinder);
@@ -49,17 +59,12 @@ public class EuropeanMissionPlaner {
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
+		avoidPurchasesAndCollectGold = false;
+
 		scoutMissionPlaner.createMissionFromUnusedUnits(player, playerMissionContainer);
 		colonyWorkerRequestPlaner.createMissionFromUnusedUnits(player, playerMissionContainer);
 
-		ScoutBuyPlan scoutBuyPlan = scoutMissionPlaner.createBuyPlan(player, playerMissionContainer);
-		if (scoutBuyPlan != null) {
-			scoutMissionPlaner.handleBuyPlan(scoutBuyPlan, player, playerMissionContainer);
-		}
-		PioneerBuyPlan pioneerBuyPlan = pioneerMissionPlaner.createBuyPlan(player, playerMissionContainer);
-		if (pioneerBuyPlan != null) {
-			pioneerMissionPlaner.handlePioneerBuyPlan(pioneerBuyPlan, player, playerMissionContainer);
-		}
+		handlePurchases(player, playerMissionContainer);
 
 		for (Unit unit : player.units.copy()) {
 			if (unit.isNaval() && !unit.isDamaged()) {
@@ -69,7 +74,26 @@ public class EuropeanMissionPlaner {
 
 		ColonyProductionPlaner.createPlan(player, playerMissionContainer);
 	}
-	
+
+	private void handlePurchases(Player player, PlayerMissionsContainer playerMissionContainer) {
+		BuyShipPlaner buyShipPlaner = new BuyShipPlaner(player, Specification.instance, transportGoodsToSellMissionPlaner, playerMissionContainer);
+		BuyShipOrder buyShipPlan = buyShipPlaner.createBuyShipPlan();
+		if (buyShipPlan instanceof BuyShipOrder.CollectGoldAndBuy) {
+			avoidPurchasesAndCollectGold = true;
+			return;
+		}
+		buyShipPlaner.handleBuyOrders(buyShipPlan);
+
+		ScoutBuyPlan scoutBuyPlan = scoutMissionPlaner.createBuyPlan(player, playerMissionContainer);
+		if (scoutBuyPlan != null) {
+			scoutMissionPlaner.handleBuyPlan(scoutBuyPlan, player, playerMissionContainer);
+		}
+		PioneerBuyPlan pioneerBuyPlan = pioneerMissionPlaner.createBuyPlan(player, playerMissionContainer);
+		if (pioneerBuyPlan != null) {
+			pioneerMissionPlaner.handlePioneerBuyPlan(pioneerBuyPlan, player, playerMissionContainer);
+		}
+	}
+
 	protected void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		if (playerMissionContainer.isUnitBlockedForMission(navyUnit)) {
 			return;
@@ -81,45 +105,13 @@ public class EuropeanMissionPlaner {
 			if (status == MissionPlanStatus.MISSION_CREATED) {
 				return;
 			}
+			if (status == MissionPlanStatus.NO_MISSION) {
+				navyTransportPlanerNotDependLocation(navyUnit, playerMissionContainer);
+			}
 		}
 
 		if (navyUnit.isAtTileLocation()) {
-			status = prepareTransportForScoutUnits(navyUnit, playerMissionContainer);
-			if (status == MissionPlanStatus.MISSION_CREATED) {
-				return;
-			}
-
-			TransportUnitMission tum = null;
-			// scenario from beggining of game ship with colonist without transport mission, create colonyWorkerMission
-			// and then TransportMission
-			tum = createTransportMissionFromTransportRequest(
-				tum,
-				navyUnit,
-				playerMissionContainer,
-				and(hasNotTransportUnitMission, isAtShipLocation(navyUnit))
-			);
-			if (tum != null) {
-				playerMissionContainer.addMission(tum);
-				return;
-			}
-
-			tum = createTransportMissionFromTransportRequest(
-				tum,
-				navyUnit,
-				playerMissionContainer,
-				and(hasNotTransportUnitMission, isFromTileLocation)
-			);
-			if (tum != null) {
-				playerMissionContainer.addMission(tum);
-				return;
-			}
-
-			status = transportGoodsToSellMissionPlaner.plan(navyUnit);
-			if (status == MissionPlanStatus.MISSION_CREATED) {
-				return;
-			}
-
-			status = transportGoodsToSellMissionPlaner.planSellGoodsToBuyUnit(navyUnit);
+			status = navyTransportPlanerNotDependLocation(navyUnit, playerMissionContainer);
 			if (status == MissionPlanStatus.MISSION_CREATED) {
 				return;
 			}
@@ -132,6 +124,51 @@ public class EuropeanMissionPlaner {
 			// one turn mission
 			prepareExploreMissions(navyUnit, playerMissionContainer);
 		}
+	}
+
+	private MissionPlanStatus navyTransportPlanerNotDependLocation(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+		MissionPlanStatus status;
+
+		TransportUnitMission tum = null;
+		// scenario from beggining of game ship with colonist without transport mission, create colonyWorkerMission
+		// and then TransportMission
+		tum = createTransportMissionFromTransportRequest(
+			tum,
+			navyUnit,
+			playerMissionContainer,
+			and(hasNotTransportUnitMission, isAtShipLocation(navyUnit))
+		);
+		if (tum != null) {
+			playerMissionContainer.addMission(tum);
+			return MissionPlanStatus.MISSION_CREATED;
+		}
+
+		tum = createTransportMissionFromTransportRequest(
+			tum,
+			navyUnit,
+			playerMissionContainer,
+			and(hasNotTransportUnitMission, isFromTileLocation)
+		);
+		if (tum != null) {
+			playerMissionContainer.addMission(tum);
+			return MissionPlanStatus.MISSION_CREATED;
+		}
+
+		status = transportGoodsToSellMissionPlaner.plan(navyUnit);
+		if (status == MissionPlanStatus.MISSION_CREATED) {
+			return status;
+		}
+
+		status = transportGoodsToSellMissionPlaner.planSellGoodsToBuyUnit(navyUnit);
+		if (status == MissionPlanStatus.MISSION_CREATED) {
+			return status;
+		}
+
+		status = prepareTransportForScoutUnits(navyUnit, playerMissionContainer);
+		if (status == MissionPlanStatus.MISSION_CREATED) {
+			return status;
+		}
+		return status;
 	}
 
 	private MissionPlanStatus prepareTransportForScoutUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
@@ -148,7 +185,7 @@ public class EuropeanMissionPlaner {
 		return MissionPlanStatus.NO_MISSION;
 	}
 
-	private MissionPlanStatus transportUnitFromEurope(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
+	protected MissionPlanStatus transportUnitFromEurope(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		TransportUnitMission tum = null;
 
 		tum = createTransportMissionFromTransportRequest(
@@ -170,14 +207,15 @@ public class EuropeanMissionPlaner {
 			and(hasNotTransportUnitMission, isFromEurope)
 		);
 
-		colonyWorkerRequestPlaner.buyUnitsToNavyCapacity(playerMissionContainer.getPlayer(), playerMissionContainer, navyUnit);
-
-		tum = createTransportMissionFromTransportRequest(
-			tum,
-			navyUnit,
-			playerMissionContainer,
-			and(hasNotTransportUnitMission, isFromEurope)
-		);
+		if (!avoidPurchasesAndCollectGold) {
+			colonyWorkerRequestPlaner.buyUnitsToNavyCapacity(playerMissionContainer.getPlayer(), playerMissionContainer, navyUnit);
+			tum = createTransportMissionFromTransportRequest(
+				tum,
+				navyUnit,
+				playerMissionContainer,
+				and(hasNotTransportUnitMission, isFromEurope)
+			);
+		}
 
 		if (tum != null) {
 			playerMissionContainer.addMission(tum);
@@ -225,5 +263,9 @@ public class EuropeanMissionPlaner {
 
 	private boolean isAlreadyEmbarked(Unit navyUnit, Unit unit) {
 		return navyUnit.getUnitContainer().isContainUnit(unit);
+	}
+
+	protected void setAvoidPurchasesAndCollectGold() {
+		avoidPurchasesAndCollectGold = true;
 	}
 }

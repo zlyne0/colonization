@@ -1,9 +1,11 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import com.badlogic.gdx.math.GridPoint2;
+import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -21,6 +23,7 @@ import promitech.colonization.ai.score.ObjectScoreList;
 public class TransportGoodsToSellMissionPlaner {
 
 	public static final int MIN_SETTLEMENT_SCORE = 200;
+	private static final int CARGO_AMOUNT_WORTH_TO_SELL = 80;
 
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private final PathFinder pathFinder;
@@ -134,4 +137,33 @@ public class TransportGoodsToSellMissionPlaner {
 		}
 	}
 
+	public CargoAmountWaitingForTransport potentialCargoAmountWaitingForTransport(Player player) {
+		CargoAmountWaitingForTransport amount = new CargoAmountWaitingForTransport();
+
+		for (Settlement settlement : player.settlements) {
+			for (ObjectIntMap.Entry<String> goodsEntry : settlement.getGoodsContainer().entries()) {
+				if (goodsTypeToScore.containsId(goodsEntry.key)) {
+					amount.cargoValue += player.market().getSalePrice(goodsEntry.key, goodsEntry.value);
+
+					if (goodsEntry.value >= CARGO_AMOUNT_WORTH_TO_SELL) {
+						amount.cargoSlots += ProductionSummary.slotsForQuantity(goodsEntry.value);
+					}
+				}
+			}
+		}
+		return amount;
+	}
+
+	public static class CargoAmountWaitingForTransport {
+		int cargoSlots = 0;
+		int cargoValue = 0;
+
+		public int getCargoSlots() {
+			return cargoSlots;
+		}
+
+		public int getCargoValue() {
+			return cargoValue;
+		}
+	}
 }

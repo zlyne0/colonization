@@ -33,7 +33,6 @@ class EuropeanMissionPlanerTest : MissionHandlerBaseTestClass() {
     fun `should create transport unit mission from request transport unit mission when carrier is at europe`() {
         // given
         val missionContainer = game.aiContainer.missionContainer(dutch)
-        val planer = EuropeanMissionPlaner(game, di.pathFinder, di.pathFinder2)
 
         fortOrangeTile = fortOranje.tile
         galleon = UnitFactory.create(UnitType.GALLEON, dutch, dutch.getEurope())
@@ -45,8 +44,11 @@ class EuropeanMissionPlanerTest : MissionHandlerBaseTestClass() {
         val transportRequest2 = TransportUnitRequestMission(u2, fortOrangeTile)
         missionContainer.addMission(transportRequest2)
 
+        val planer = EuropeanMissionPlaner(game, di.pathFinder, di.pathFinder2)
+        planer.setAvoidPurchasesAndCollectGold()
+
         // when
-        planer.navyUnitPlaner(galleon, missionContainer)
+        planer.transportUnitFromEurope(galleon, missionContainer)
 
         // then
         assertThat(missionContainer).hasMission(TransportUnitMission::class.java, 1)
