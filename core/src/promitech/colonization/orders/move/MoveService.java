@@ -200,7 +200,7 @@ public class MoveService {
 	}
     
     private boolean isNotDiscoveredNewLand(Unit unit) {
-        return unit.getOwner().isEuropean() && unit.getOwner().getNewLandName() == null && unit.getTile().isNextToLand();
+        return unit.getOwner().isEuropean() && !unit.getOwner().hasGivenNewWorldName() && unit.getTile().isNextToLand();
     }
     
     private void discoverNewLand(Player player) {

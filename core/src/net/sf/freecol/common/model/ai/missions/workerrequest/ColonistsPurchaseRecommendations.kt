@@ -9,15 +9,9 @@ import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.*
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.Units
 import promitech.colonization.ai.score.ScoreableObjectsList
 import kotlin.math.log
 
-/*
-   Zadaniem człowieka jest życie, nie zaś egzystencja.
-   Nie będę tracić dni na próbę ich przedłużenia.
-   Wykorzystam swój czas.
- */
 class ColonistsPurchaseRecommendations(
     val player: Player,
     val playerMissionContainer: PlayerMissionsContainer
@@ -61,7 +55,7 @@ class ColonistsPurchaseRecommendations(
         var capacity: Int = transporter.freeUnitsSlots()
         playerMissionContainer.foreachMission(TransportUnitMission::class.java, { transportUnitMission ->
             if (transportUnitMission.isCarrier(transporter)) {
-                capacity = transportUnitMission.freeCarrierUnitCapacity()
+                capacity -= transportUnitMission.spaceTakenByUnits()
             }
         })
         return capacity

@@ -29,13 +29,9 @@ public class HighSeasUnitsPanel extends Table {
 		
 		ingoingUnits.changeLabel(Messages.message(st));
 		
-		String landName = player.getNewLandName();
-		if (landName == null) {
-			landName = Messages.msg("NewWorld");
-		}
 		st = StringTemplate.template("goingTo")
 		        .add("%type%", "ship")
-		        .add("%location%", landName);		
+		        .add("%location%", player.getNewLandName());
 		outgoingUnits.changeLabel(Messages.message(st));
 		
 		

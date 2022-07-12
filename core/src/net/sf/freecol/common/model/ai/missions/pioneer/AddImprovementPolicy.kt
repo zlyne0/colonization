@@ -22,6 +22,12 @@ class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<Tile
     fun firstImprovement(): TileImprovementPlan {
         return improvements.first()
     }
+
+    fun printToMap(mapTileDebugInfo: MapTileDebugInfo) {
+        for (plan in improvements) {
+            mapTileDebugInfo.str(plan.tile.x, plan.tile.y, plan.improvementType.toSmallIdStr())
+        }
+    }
 }
 
 sealed class AddImprovementPolicy {
@@ -99,7 +105,9 @@ sealed class AddImprovementPolicy {
 
     private inline fun findResourcesTiles(colony: Colony, consumer: (colonyTile: ColonyTile) -> Unit) {
         for (colonyTile in colony.colonyTiles) {
-            if (colonyTile.tile.type.isWater || colonyTile.tile.equalsCoordinates(colony.tile)) {
+            if (colonyTile.tile.type.isWater
+                || colonyTile.tile.hasSettlement()
+                || colonyTile.tile.equalsCoordinates(colony.tile)) {
                 continue
             }
             if (colonyTile.tile.hasTileResource() && colonyTile.hasWorker()) {
@@ -111,6 +119,7 @@ sealed class AddImprovementPolicy {
     private inline fun findCommonTiles(colony: Colony, consumer: (colonyTile: ColonyTile) -> Unit) {
         for (colonyTile in colony.colonyTiles) {
             if (colonyTile.tile.type.isWater
+                || colonyTile.tile.hasSettlement()
                 || colonyTile.tile.equalsCoordinates(colony.tile)
                 || colonyTile.tile.hasTileResource()) {
                 continue
@@ -128,6 +137,7 @@ sealed class AddImprovementPolicy {
 
         for (colonyTile in colony.colonyTiles) {
             if (colonyTile.tile.type.isWater
+                || colonyTile.tile.hasSettlement()
                 || colonyTile.tile.equalsCoordinates(colony.tile)
                 || colonyTile.hasWorker()) {
                 continue
@@ -162,12 +172,6 @@ sealed class AddImprovementPolicy {
     protected fun addIfAbsent(imprList: MutableList<TileImprovementPlan>, tile: Tile, imprType: TileImprovementType) {
         if (!tile.hasImprovementType(imprType.id)) {
             imprList.add(TileImprovementPlan(tile, imprType))
-        }
-    }
-
-    fun printToMap(mapTileDebugInfo: MapTileDebugInfo, improvementPlan: ColonyTilesImprovementPlan) {
-        for (plan in improvementPlan.improvements) {
-            mapTileDebugInfo.str(plan.tile.x, plan.tile.y, plan.improvementType.toSmallIdStr())
         }
     }
 }

@@ -642,9 +642,16 @@ public class Player extends ObjectWithId {
 	}
 	
 	public String getNewLandName() {
-		return newLandName;
+		if (newLandName != null) {
+			return newLandName;
+		}
+		return Messages.msg("NewWorld");
 	}
-	
+
+	public boolean hasGivenNewWorldName() {
+		return newLandName != null;
+	}
+
     public void setNewLandName(String newLandName) {
         this.newLandName = newLandName;
     }

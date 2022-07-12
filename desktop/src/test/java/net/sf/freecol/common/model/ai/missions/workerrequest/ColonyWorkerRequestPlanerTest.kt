@@ -7,7 +7,6 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.*
 import net.sf.freecol.common.model.map.path.PathFinder
 import org.junit.jupiter.api.Test
-import promitech.colonization.ai.Units
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
 

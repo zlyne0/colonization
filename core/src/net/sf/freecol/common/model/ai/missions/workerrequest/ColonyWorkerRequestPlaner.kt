@@ -8,7 +8,7 @@ import net.sf.freecol.common.model.ai.missions.hasMissionKt
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.Units
+import promitech.colonization.ai.findCarrier
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonyWorkerRequestPlaner(
@@ -23,7 +23,7 @@ class ColonyWorkerRequestPlaner(
     private lateinit var placeCalculator: ColonyWorkerRequestPlaceCalculator
 
     private fun init(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
-        this.hasTransporter = Units.findCarrier(player) != null
+        this.hasTransporter = player.findCarrier() != null
         this.player = player
         this.playerMissionsContainer = playerMissionsContainer
 

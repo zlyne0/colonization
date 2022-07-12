@@ -202,7 +202,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		SplitPane highSeasUnitsAndMarketSplitPane = new SplitPane(highSeasUnitsPanel, marketLog, false, gameResources.getUiSkin());
 
         Table rowGroup2 = new Table();
-		rowGroup2.add(highSeasUnitsAndMarketSplitPane).fillX();
+		rowGroup2.add(highSeasUnitsAndMarketSplitPane).expandX().fillX();
         rowGroup2.add(buttonsLayout).expandY().fillY();
         tableLayout.add(rowGroup2).expandX().fill().row();
         
