@@ -4,11 +4,11 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.map.path.PathFinder
 import org.junit.jupiter.api.Test
-import promitech.colonization.ai.Units
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
 
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq
+import promitech.colonization.ai.findCarrier
 
 class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
 
@@ -17,7 +17,7 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
         // given
         val pathFinder = PathFinder()
 
-        val transporter = Units.findCarrier(dutch)
+        val transporter = dutch.findCarrier()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, dutch, transporter)
         val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, entryPointTurnRange)
 

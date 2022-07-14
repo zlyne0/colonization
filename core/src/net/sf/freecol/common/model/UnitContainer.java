@@ -101,7 +101,11 @@ public class UnitContainer {
     public boolean isNotEmpty() {
     	return units.isNotEmpty();
     }
-    
+
+    public boolean isContainUnit(Unit unit) {
+    	return units.containsId(unit);
+	}
+
     public MapIdEntities<Unit> getUnits() {
         return units;
     }

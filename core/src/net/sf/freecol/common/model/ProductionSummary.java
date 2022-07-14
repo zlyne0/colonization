@@ -13,7 +13,18 @@ import net.sf.freecol.common.model.specification.GoodsType;
 
 public class ProductionSummary {
     public static final int CARRIER_SLOT_MAX_QUANTITY = 100;
-    
+
+	public static int slotsForQuantity(int quantity) {
+		if (quantity <= 0) {
+			return 0;
+		}
+		if (quantity % CARRIER_SLOT_MAX_QUANTITY > 0) {
+			return (quantity / CARRIER_SLOT_MAX_QUANTITY) + 1;
+		} else {
+			return (quantity / CARRIER_SLOT_MAX_QUANTITY);
+		}
+	}
+
 	private ObjectIntMap<String> goods = new ObjectIntMap<String>();
 
 	public static final ProductionSummary EMPTY = new ProductionSummary();
@@ -209,17 +220,6 @@ public class ProductionSummary {
     		return 0;
     	}
     	return Math.max(fs * CARRIER_SLOT_MAX_QUANTITY - goodsIdAmount, 0);
-    }
-    
-    private int slotsForQuantity(int quantity) {
-        if (quantity <= 0) {
-            return 0;
-        }
-        if (quantity % CARRIER_SLOT_MAX_QUANTITY > 0) {
-            return (quantity / CARRIER_SLOT_MAX_QUANTITY) + 1; 
-        } else {
-            return (quantity / CARRIER_SLOT_MAX_QUANTITY); 
-        }
     }
     
     public boolean hasMoreOrEquals(ProductionSummary base) {

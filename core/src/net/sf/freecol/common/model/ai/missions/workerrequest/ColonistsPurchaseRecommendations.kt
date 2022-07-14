@@ -1,11 +1,14 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.Europe
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.foreachMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.*
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.Units
 import promitech.colonization.ai.score.ScoreableObjectsList
 import kotlin.math.log
 
@@ -16,42 +19,46 @@ class ColonistsPurchaseRecommendations(
 
     fun buyRecommendations(
         workerPlaceCalculator: ColonyWorkerRequestPlaceCalculator,
-        entryPointTurnRange: EntryPointTurnRange
+        entryPointTurnRange: EntryPointTurnRange,
+        transporter: Unit
     ) {
-        val recommendations = generateRecommendations(workerPlaceCalculator, entryPointTurnRange)
+        val recommendations = generateRecommendations(workerPlaceCalculator, entryPointTurnRange, transporter)
         for (buyRecommendation in recommendations) {
             if (player.europe.canAiBuyUnit(buyRecommendation.workerType(), player.gold)) {
                 val newUnit = player.europe.buyUnitByAI(buyRecommendation.workerType())
+
                 val mission = ColonyWorkerMission(buyRecommendation.location, newUnit, buyRecommendation.goodsType)
                 playerMissionContainer.addMission(mission)
+                val transportUnitRequestMission = TransportUnitRequestMission(mission.unit, mission.tile)
+                playerMissionContainer.addMission(mission, transportUnitRequestMission)
             }
         }
     }
 
     fun generateRecommendations(
         workerPlaceCalculator: ColonyWorkerRequestPlaceCalculator,
-        entryPointTurnRange: EntryPointTurnRange
+        entryPointTurnRange: EntryPointTurnRange,
+        transporter: Unit
     ): ScoreableObjectsList<WorkerRequestScoreValue> {
         val tileScore = workerPlaceCalculator.score(playerMissionContainer)
 
         val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
         scorePolicy.calculateScore(tileScore)
 
-        val navyCapacity = Units.calculateNavyCapacity(player) - occupiedNavyCapacity()
+        val transporterCapacity = transporterCapacity(transporter)
 
-        val buyRecomendations = createList(player.gold, navyCapacity, tileScore)
+        val buyRecomendations = createList(player.gold, transporterCapacity, tileScore)
         return buyRecomendations
     }
 
-    private fun occupiedNavyCapacity(): Int {
-        val missions = playerMissionContainer.findMissions(ColonyWorkerMission::class.java)
-        var occupied = 0
-        for (mission in missions) {
-            if (mission.unit.isAtLocation(Europe::class.java) || mission.unit.isAtLocation(net.sf.freecol.common.model.Unit::class.java)) {
-                occupied++;
+    private fun transporterCapacity(transporter: Unit): Int {
+        var capacity: Int = transporter.freeUnitsSlots()
+        playerMissionContainer.foreachMission(TransportUnitMission::class.java, { transportUnitMission ->
+            if (transportUnitMission.isCarrier(transporter)) {
+                capacity -= transportUnitMission.spaceTakenByUnits()
             }
-        }
-        return occupied
+        })
+        return capacity
     }
 
     private fun createList(

@@ -10,13 +10,13 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import promitech.colonization.ai.Units;
 import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.score.ScoreableObjectsListAssert;
 import promitech.colonization.savegame.Savegame1600BaseClass;
 
 import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq;
 import static org.assertj.core.api.Assertions.assertThat;
+import static promitech.colonization.ai.UnitsKt.findCarrier;
 
 class WorkerReqScoreTest extends Savegame1600BaseClass {
 
@@ -25,7 +25,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 
 	@BeforeEach
 	public void beforeEach() {
-		entryPointTurnRange = new EntryPointTurnRange(game.map, new PathFinder(), dutch, Units.findCarrier(dutch));
+		entryPointTurnRange = new EntryPointTurnRange(game.map, new PathFinder(), dutch, findCarrier(dutch));
 		sut = new ColonyWorkerReqScore(dutch.market(), Specification.instance.goodsTypeToScoreByPrice);
 	}
 

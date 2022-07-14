@@ -1,28 +1,29 @@
 package net.sf.freecol.common.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-import static org.assertj.core.api.Assertions.fail;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
 
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+
 import promitech.colonization.Pair;
 import promitech.colonization.ai.Units;
 import promitech.colonization.savegame.SaveGameParser;
 
-public class UnitTest {
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.assertj.core.api.Assertions.fail;
+
+class UnitTest {
 
     Game game; 
     FoundingFather ferdinandMagellan;
@@ -41,7 +42,7 @@ public class UnitTest {
     }
 
     @Test
-    public void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
+    void canCalculateInitialMovesForNavyWithoutFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
         assertThat(player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN))
@@ -57,7 +58,7 @@ public class UnitTest {
     }
     
     @Test
-    public void canCalculateInitialMovesForNavyWithFerdinandMagellan() {
+    void canCalculateInitialMovesForNavyWithFerdinandMagellan() {
         // given
         Player player = game.players.getById("player:1");
         if (!player.foundingFathers.containsId(FoundingFather.FERDINAND_MAGELLAN)) {
@@ -73,7 +74,7 @@ public class UnitTest {
     }
 
     @Test
-	public void europeanCanNotExploreRuinsWhenThereIsEnemyUnitOnIt() throws Exception {
+	void europeanCanNotExploreRuinsWhenThereIsEnemyUnitOnIt() throws Exception {
 		// given
     	Player player = game.players.getById("player:1");
     	
@@ -92,7 +93,7 @@ public class UnitTest {
 	}
     
     @Test
-	public void indianShouldSimpleMoveToRuins() throws Exception {
+	void indianShouldSimpleMoveToRuins() throws Exception {
 		// given
     	Player indian = game.players.getById("player:22");
     	
@@ -112,7 +113,7 @@ public class UnitTest {
 	}
 
     @Test
-	public void canCalculateLineOfSightWithoutHernandoDeSoto() throws Exception {
+	void canCalculateLineOfSightWithoutHernandoDeSoto() throws Exception {
 		// given
     	Player dutch = game.players.getById("player:1");
         if (dutch.foundingFathers.containsId(hernandoDeSoto)) {
@@ -142,7 +143,7 @@ public class UnitTest {
 	}
     
     @Test
-	public void canCalculateLineOfSightWithHernandoDeSoto() throws Exception {
+	void canCalculateLineOfSightWithHernandoDeSoto() throws Exception {
 		// given
     	Player dutch = game.players.getById("player:1");
         if (!dutch.foundingFathers.containsId(hernandoDeSoto)) {
@@ -172,7 +173,7 @@ public class UnitTest {
 	}
     
     @Test
-	public void canDetermineHasMoreFreeCargoSpace() throws Exception {
+	void canDetermineHasMoreFreeCargoSpace() throws Exception {
 		// given
     	Player dutch = game.players.getById("player:1");
     	Tile seaTile = game.map.getTile(25,80);
@@ -199,7 +200,7 @@ public class UnitTest {
 	}
     
     @Test
-	public void canSetUnitsListInFreeCargoSpaceOrder() throws Exception {
+	void canSetUnitsListInFreeCargoSpaceOrder() throws Exception {
 		// given
     	Player dutch = game.players.getById("player:1");
     	Tile seaTile = game.map.getTile(25,80);
@@ -219,6 +220,7 @@ public class UnitTest {
 	    	galleonWithGoods,
 	    	galleon
 		);
+
 		// when
 		Collections.sort(units, Units.FREE_CARGO_SPACE_COMPARATOR);
 

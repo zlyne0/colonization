@@ -9,6 +9,7 @@ import java.util.Locale;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -150,6 +151,14 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	public boolean isAtEuropeLocation() {
         return isAtLocation(Europe.class);
     }
+
+    public boolean isAtHighSeasLocation() {
+    	return isAtLocation(HighSeas.class);
+	}
+
+	public boolean isAtColonyLocation() {
+    	return isAtLocation(Colony.class);
+	}
 
 	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
 	    return location != null && location.getClass().equals(unitLocationClass);

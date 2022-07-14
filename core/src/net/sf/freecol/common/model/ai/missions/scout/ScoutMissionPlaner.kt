@@ -14,6 +14,8 @@ import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.util.CollectionUtils
+import promitech.colonization.ai.findShipsTileLocations
+import promitech.colonization.ai.generateCivilizationSources
 import promitech.colonization.screen.debug.TileDebugView
 
 sealed class ScoutDestination {
@@ -23,6 +25,8 @@ sealed class ScoutDestination {
     class AlreadOnShip(val tile: Tile)
     class Lack : ScoutDestination()
 }
+
+data class ScoutBuyPlan(val price: Int, val otherIslandDestination: Tile)
 
 class ScoutMissionPlaner(
     private val game: Game,
@@ -83,9 +87,14 @@ class ScoutMissionPlaner(
     fun seaSideAsTransferLocation(scout: Unit): Path? {
         val scoutEmbarkGenerateRangeFlags = CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AllowEmbark)
         pathFinder.generateRangeMap(game.map, scout, scoutEmbarkGenerateRangeFlags)
+
+        val shipsTileLocations = scout.owner.findShipsTileLocations(game.map)
+        if (shipsTileLocations.isEmpty()) {
+            return null
+        }
         pathFinder2.generateRangeMap(
             game.map,
-            generateCivilizationSources(scout.owner),
+            shipsTileLocations,
             pathFinder2.createPathUnit(scout.owner, Specification.instance.unitTypes.getById(UnitType.CARAVEL)),
             CollectionUtils.enumSum(PathFinder.includeUnexploredTiles, PathFinder.FlagTypes.AvoidDisembark)
         )
@@ -98,21 +107,12 @@ class ScoutMissionPlaner(
 
     private fun findInOtherIsland(player: Player): Tile? {
         val influenceMap = InfluenceMap(game.map, maxRangeForScoutOnOtherIsland)
-        influenceMap.generate(generateCivilizationSources(player))
+        influenceMap.generate(player.generateCivilizationSources(game.map))
         val tileOnOtherIsland = findTheBestForRange(player) { tile -> influenceMap.range(tile) }
         if (tileOnOtherIsland == null) {
             return null
         }
         return tileOnOtherIsland
-    }
-
-    private fun generateCivilizationSources(player: Player): List<Tile> {
-        val sourceTiles = mutableListOf<Tile>()
-        sourceTiles.add(game.map.getSafeTile(player.entryLocation))
-        for (settlement in player.settlements) {
-            sourceTiles.add(settlement.tile)
-        }
-        return sourceTiles
     }
 
     private inline fun findTheBestForRange(player: Player, rangeFunction: (Tile) -> Int): Tile? {
@@ -166,7 +166,33 @@ class ScoutMissionPlaner(
         }
     }
 
-    fun prepareMission(player: Player, playerMissionContainer: PlayerMissionsContainer) {
+    fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): ScoutBuyPlan? {
+        if (playerMissionContainer.isMissionTypeExists(ScoutMission::class.java)) {
+            return null;
+        }
+        if (player.units.size() < 3) {
+            return null;
+        }
+        val scoutPrice = calculateScoutPrice(player)
+        if (player.hasNotGold(scoutPrice)) {
+            return null;
+        }
+        val otherIslandDestination: Tile? = findInOtherIsland(player)
+        if (otherIslandDestination == null) {
+            return null;
+        }
+        return ScoutBuyPlan(scoutPrice, otherIslandDestination)
+    }
+
+    fun handleBuyPlan(scoutBuyPlan: ScoutBuyPlan, player: Player, playerMissionContainer: PlayerMissionsContainer) {
+        val scout = buyScoutInEurope(player)
+        val scoutMission = ScoutMission(scout)
+        scoutMission.waitForTransport(scoutBuyPlan.otherIslandDestination)
+        playerMissionContainer.addMission(scoutMission)
+        playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scout, scoutBuyPlan.otherIslandDestination))
+    }
+
+    fun createMissionFromUnusedUnits(player: Player, playerMissionContainer: PlayerMissionsContainer) {
         if (playerMissionContainer.isMissionTypeExists(ScoutMission::class.java)) {
             return;
         }
@@ -174,29 +200,6 @@ class ScoutMissionPlaner(
             return;
         }
 
-        createMissionFromUnusedUnits(player, playerMissionContainer);
-        if (playerMissionContainer.isMissionTypeExists(ScoutMission::class.java)) {
-            return;
-        }
-
-        if (!canAffordForScout(player)) {
-            return;
-        }
-        val otherIslandDestination: Tile? = findInOtherIsland(player)
-        if (otherIslandDestination == null) {
-            return
-        }
-        val scout = buyScoutInEurope(player)
-        val scoutMission = ScoutMission(scout)
-        scoutMission.waitForTransport(otherIslandDestination)
-        playerMissionContainer.addMission(scoutMission)
-        playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scout, otherIslandDestination))
-    }
-
-    private fun createMissionFromUnusedUnits(
-        player: Player,
-        playerMissionContainer: PlayerMissionsContainer
-    ) {
         for (unit in player.units) {
             if (unit.unitRole.equalsId(UnitRole.SCOUT) && !playerMissionContainer.isUnitBlockedForMission(unit)) {
                 val scoutDestination = findScoutDestination(unit)
@@ -217,7 +220,7 @@ class ScoutMissionPlaner(
         }
     }
 
-    private fun canAffordForScout(player: Player): Boolean {
+    private fun calculateScoutPrice(player: Player): Int {
         val scoutRole = Specification.instance.unitRoles.getById(UnitRole.SCOUT)
         var goldSum = 0
         for (requiredGood in scoutRole.requiredGoods) {
@@ -225,7 +228,7 @@ class ScoutMissionPlaner(
         }
         val scoutType = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST)
         goldSum += player.europe.aiUnitPrice(scoutType)
-        return player.hasGold(goldSum)
+        return goldSum
     }
 
     private fun buyScoutInEurope(player: Player): Unit {

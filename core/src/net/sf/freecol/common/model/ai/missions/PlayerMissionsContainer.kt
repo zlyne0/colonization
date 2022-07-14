@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model.ai.missions
 
+fun PlayerMissionsContainer.hasMission(missionId: String): Boolean {
+    return missions.containsId(missionId)
+}
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
@@ -65,3 +68,27 @@ fun PlayerMissionsContainer.findDeepDependMissions(mission: AbstractMission): Li
     }
     return result
 }
+
+fun PlayerMissionsContainer.findMissionToExecute(parentMission: AbstractMission): List<AbstractMission> {
+    val dependMissions = findDeepDependMissions(parentMission)
+    if (dependMissions.isEmpty()) {
+        return emptyList()
+    }
+
+    var result = mutableListOf<AbstractMission>()
+    for (dependMission in dependMissions) {
+        if (dependMission.hasDependMission() || dependMission.isDone) {
+            continue
+        }
+        result.add(dependMission)
+    }
+    return result
+}
+
+fun PlayerMissionsContainer.findParentMission(childMission: AbstractMission): AbstractMission? {
+    if (childMission.parentMissionId == null) {
+        return null
+    }
+    return this.missions.getByIdOrNull(childMission.parentMissionId)
+}
+

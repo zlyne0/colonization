@@ -161,7 +161,7 @@ public class Specification {
 
         freeColonistUnitType = unitTypes.getById(UnitType.FREE_COLONIST);
         expertUnitTypeByGoodType.clear();
-        for (UnitType unitType : unitTypes.entities()) {
+        for (UnitType unitType : unitTypes) {
         	unitType.updateDefaultRoleReference();
         	
             if (unitType.getExpertProductionForGoodsId() != null) {
