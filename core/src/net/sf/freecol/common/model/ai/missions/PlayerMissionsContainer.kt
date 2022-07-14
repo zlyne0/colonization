@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model.ai.missions
 
+fun PlayerMissionsContainer.hasMission(missionId: String): Boolean {
+    return missions.containsId(missionId)
+}
 
 @Suppress("UNCHECKED_CAST")
 inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(

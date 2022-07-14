@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.util.Predicate
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
@@ -107,6 +108,12 @@ class TransportUnitRequestMission : AbstractMission {
     fun recalculateWorthEmbark(turnsCost: Int) {
         if (turnsCost <= worthEmbarkRange) {
             worthEmbark = false
+        }
+    }
+
+    fun resetTransportMissionIdWhenDoNotExists(playerMissionsContainer: PlayerMissionsContainer) {
+        if (transportUnitMissionId != null && !playerMissionsContainer.hasMission(transportUnitMissionId!!)) {
+            transportUnitMissionId = null
         }
     }
 

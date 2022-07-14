@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.findParentMission
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.util.CollectionUtils
@@ -39,6 +40,8 @@ class TransportUnitRequestMissionHandler(
             mission.setDone()
             return
         }
+
+        mission.resetTransportMissionIdWhenDoNotExists(playerMissionsContainer)
 
         // Do nothing. Transport request handled by transport unit handler and planer.
 
