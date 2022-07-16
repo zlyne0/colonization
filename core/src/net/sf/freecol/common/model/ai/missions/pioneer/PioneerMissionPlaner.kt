@@ -23,9 +23,12 @@ sealed class PioneerDestination {
 
 data class PioneerBuyPlan(val buyPioneerOrder: BuyPioneerOrder, val colony: Colony)
 
+/**
+ * Running up that hill.
+ */
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     private val minDistanceToUseShipTransport = 5
-
+    private val improvedAllTilesInColonyToAllColonyRatio: Double = 0.6
 
     fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): PioneerBuyPlan? {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
@@ -131,10 +134,10 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         var improvementDestination: ColonyTilesImprovementPlan? = null
         var destinationScore: Double = 0.0
         for (planScore in improvementsPlanDestinationsScore) {
-            if (planScore.score == 0 || colonyWithMissions.contains(planScore.obj.colony.id)) {
+            if (planScore.score() == 0 || colonyWithMissions.contains(planScore.obj.colony.id)) {
                 continue
             }
-            val dscore: Double = planScore.score.toDouble() / nextColonyDistanceValue(rangePathFinder, planScore.obj.colony)
+            val dscore: Double = planScore.score().toDouble() / nextColonyDistanceValue(rangePathFinder, planScore.obj.colony)
             if (improvementDestination == null || dscore > destinationScore) {
                 destinationScore = dscore
                 improvementDestination = planScore.obj
@@ -187,14 +190,37 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     }
 
     fun generateImprovementsPlanScore(player: Player, policy: AddImprovementPolicy): ObjectScoreList<ColonyTilesImprovementPlan> {
-        val objectScore = ObjectScoreList<ColonyTilesImprovementPlan>(player.settlements.size())
+        val improvementPlanScore = ObjectScoreList<ColonyTilesImprovementPlan>(player.settlements.size())
         for (settlement in player.settlements) {
             val colony = settlement.asColony()
             val improvementPlan = policy.generateImprovements(colony)
-            objectScore.add(improvementPlan, calculateScore(improvementPlan))
+            improvementPlanScore.add(improvementPlan, calculateScore(improvementPlan))
         }
-        objectScore.sortDescending()
-        return objectScore
+
+        val actualRatio = calculateImprovedToAllColoniesRatio(player, improvementPlanScore)
+        if (actualRatio >= improvedAllTilesInColonyToAllColonyRatio) {
+            for (scorePlan in improvementPlanScore) {
+                val plan = scorePlan.obj
+                policy.generateVacantForFood(plan)
+                scorePlan.updateScore(calculateScore(plan))
+            }
+        }
+
+        improvementPlanScore.sortDescending()
+        return improvementPlanScore
+    }
+
+    private fun calculateImprovedToAllColoniesRatio(
+        player: Player,
+        improvementPlanScore: ObjectScoreList<ColonyTilesImprovementPlan>
+    ): Double {
+        var allImprovementsCount = 0
+        for (scorePlan in improvementPlanScore) {
+            if (!scorePlan.obj.hasImprovements()) {
+                allImprovementsCount++
+            }
+        }
+        return allImprovementsCount.toDouble() / player.settlements.size()
     }
 
     fun generateImprovementsPlanForColony(player: Player, colonyId: String): ColonyTilesImprovementPlan {

@@ -625,8 +625,8 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val pathFinder = di.pathFinder
 		val missionContainer = game.aiContainer.missionContainer(player)
 
-//		val pioneer = Pioneer(di, guiGameModel, tileDebugView, mapActor!!)
-//		pioneer.showOnMapImprovementsDestinations()
+		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
+		pioneer.showImprovementsPlan()
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
         mapActor?.resetMapModel()
@@ -720,7 +720,7 @@ class Scout(
 
 }
 
-class Pioneer(
+class DebugPioneer(
 	val di: DI,
 	val guiGameModel: GUIGameModel,
 	val tileDebugView: TileDebugView,
@@ -770,7 +770,7 @@ class Pioneer(
 
 		println("generateImprovementsPlanScore.size = " + generateImprovementsPlanScore.size())
 		for (objectScore in generateImprovementsPlanScore) {
-			println("colony: " + objectScore.obj.colony.name + ", score: " + objectScore.score)
+			println("colony: " + objectScore.obj.colony.name + ", score: " + objectScore.score())
 			objectScore.obj.printToMap(tileDebugView)
 		}
 		mapActor.resetMapModel()

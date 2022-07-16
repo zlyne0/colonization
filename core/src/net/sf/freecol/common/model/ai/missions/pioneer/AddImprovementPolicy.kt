@@ -10,7 +10,7 @@ import net.sf.freecol.common.model.specification.GoodsType
 
 class TileImprovementPlan(val tile: Tile, val improvementType: TileImprovementType)
 
-class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<TileImprovementPlan>) {
+class ColonyTilesImprovementPlan(val colony: Colony, val improvements: MutableList<TileImprovementPlan>) {
     fun hasImprovements(): Boolean {
         return improvements.size > 0
     }
@@ -94,9 +94,11 @@ sealed class AddImprovementPolicy {
         findCommonTiles(colony) { colonyTile ->
             addImprovement(colonyTile, imprList)
         }
-        findVacantForFood(colony, imprList)
-
         return ColonyTilesImprovementPlan(colony, imprList)
+    }
+
+    fun generateVacantForFood(plan: ColonyTilesImprovementPlan) {
+        findVacantForFood(plan.colony, plan.improvements)
     }
 
     private inline fun findCenterTile(colony: Colony, consumer: (colonyTile: ColonyTile) -> Unit) {

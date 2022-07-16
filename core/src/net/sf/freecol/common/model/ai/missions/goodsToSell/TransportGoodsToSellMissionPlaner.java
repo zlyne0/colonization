@@ -80,7 +80,7 @@ public class TransportGoodsToSellMissionPlaner {
 		}
 
 		ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
-		if (theBestScore.getScore() >= MIN_SETTLEMENT_SCORE) {
+		if (theBestScore.score() >= MIN_SETTLEMENT_SCORE) {
 			Set<String> possibleSettlementsToVisit = createPossibleSettlementToVisit(score);
 
 			TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
@@ -130,7 +130,7 @@ public class TransportGoodsToSellMissionPlaner {
 		
 		mission.removeFirstSettlement();
 		for (ObjectScoreList.ObjectScore<Settlement> objectScore : score) {
-			if (objectScore.getScore() >= MIN_SETTLEMENT_SCORE && mission.isSettlementPossibleToVisit(objectScore.getObj())) {
+			if (objectScore.score() >= MIN_SETTLEMENT_SCORE && mission.isSettlementPossibleToVisit(objectScore.getObj())) {
 				mission.visitSettlementAsFirst(objectScore.getObj());
 				break;
 			}
