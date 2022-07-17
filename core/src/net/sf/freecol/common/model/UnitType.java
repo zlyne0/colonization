@@ -38,6 +38,7 @@ public class UnitType extends BuildableType {
 	public static final String GALLEON = "model.unit.galleon";
 	public static final String BRAVE = "model.unit.brave";
 	public static final String EXPERT_FISHERMAN = "model.unit.expertFisherman";
+	public static final String EXPERT_FARMER = "model.unit.expertFarmer";
 	public static final String EXPERT_ORE_MINER = "model.unit.expertOreMiner";
 	public static final String EXPERT_SILVER_MINER = "model.unit.expertSilverMiner";
 	public static final String EXPERT_FUR_TRAPPER = "model.unit.expertFurTrapper";

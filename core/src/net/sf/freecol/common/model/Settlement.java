@@ -92,6 +92,12 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	goodsContainer.decreaseGoodsQuantity(required);
     }
 
+    public void changeUnitRole(Unit unit, UnitRole newUnitRole, int roleCount) {
+		ProductionSummary requiredGoods = newUnitRole.requiredGoodsForRoleCount(roleCount);
+		unit.changeRole(newUnitRole, roleCount);
+		goodsContainer.decreaseGoodsQuantity(requiredGoods);
+	}
+
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }

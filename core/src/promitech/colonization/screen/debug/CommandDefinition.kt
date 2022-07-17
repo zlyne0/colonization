@@ -3,14 +3,12 @@ package promitech.colonization.screen.debug
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.IndianSettlement
-import net.sf.freecol.common.model.MoveType
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitFactory
-import net.sf.freecol.common.model.UnitMoveType
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -19,13 +17,13 @@ import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
-import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
+import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
@@ -37,11 +35,11 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
-import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
+import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.DI
 import promitech.colonization.Direction
 import promitech.colonization.ai.MissionExecutor
@@ -511,7 +509,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 				di.newTurnService.newTurn(player)
 
-				missionPlaner.planMissions(player)
+//				missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 //				missionExecutor.executeMissions(missionContainer, PioneerMission::class.java)
 //				missionExecutor.executeMissions(missionContainer, RequestGoodsMission::class.java)
@@ -591,6 +589,11 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			tileDebugView.appendStr(mission.destination.x, mission.destination.y, "TranUnitReq")
 		}
 
+		fun showOnMap(mission: ReplaceColonyWorkerMission) {
+			val tile = mission.colony().tile
+			tileDebugView.appendStr(tile.x, tile.y, "RplcWorker")
+		}
+
 		for (mission in missionContainer.missions.entities()) {
 			if (mission.isDone) {
 				continue
@@ -605,6 +608,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				is TransportGoodsToSellMission -> showOnMap(mission)
 				is ScoutMission -> showOnMap(mission)
 				is TransportUnitRequestMission -> showOnMap(mission)
+				is ReplaceColonyWorkerMission -> showOnMap(mission)
 				else -> println("Can not print mission on map for " + mission.javaClass.name)
 			}
 		}
@@ -651,14 +655,20 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //		val scout = Scout(di, guiGameModel, tileDebugView, mapActor!!)
 //		scout.createScoutMission()
 
-		val transportGoodsToSellMissionPlaner = TransportGoodsToSellMissionPlaner(guiGameModel.game, di.pathFinder)
-		val buyShipPlaner = BuyShipPlaner(
-			player,
-			Specification.instance,
-			transportGoodsToSellMissionPlaner,
-			missionContainer
-		)
-		buyShipPlaner.printDebugInfo()
+		missionContainer.clearAllMissions()
+
+		val nieuAmsterdamTile = game.map.getTile(24, 78)
+		val fortOrangeTile = game.map.getTile(25, 75)
+		val workerFreeColonist = player.units.getById("unit:6436")
+		// remove experience
+		workerFreeColonist.changeUnitType(workerFreeColonist.unitType)
+
+		fortOrangeTile.settlement.goodsContainer.decreaseGoodsQuantity(GoodsType.FOOD, 200)
+		val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, player, nieuAmsterdamTile)
+		expertFarmer.changeRole(Specification.instance.unitRoles.getById(UnitRole.PIONEER), 4);
+
+		val mission = ReplaceColonyWorkerMission(expertFarmer, fortOrangeTile.settlement.asColony(), workerFreeColonist)
+		missionContainer.addMission(mission)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()

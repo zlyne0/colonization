@@ -39,7 +39,11 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	public boolean hasWorker(Unit w) {
 	    return worker != null && worker.equalsId(w);
 	}
-	
+
+	public boolean hasWorker(String unitId) {
+	    return worker != null && worker.equalsId(unitId);
+	}
+
 	public boolean hasWorker() {
 	    return worker != null;
 	}

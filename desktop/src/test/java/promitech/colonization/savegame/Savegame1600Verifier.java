@@ -46,6 +46,7 @@ import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
@@ -216,6 +217,11 @@ public class Savegame1600Verifier {
         assertThat(requestGoodsMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
         assertThat(requestGoodsMission.amount(muskets)).isEqualTo(50);
         assertThat(requestGoodsMission.amount(tools)).isEqualTo(100);
+
+        ReplaceColonyWorkerMission replaceColonyWorkerMission = missions.getMission("replaceColonyWorkerMission:1");
+        assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
+        assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
+        assertThat(replaceColonyWorkerMission.getWorkerUnitId()).isEqualTo("unit:6436");
     }
 
     private void verifySpainMissions(Game game) {
