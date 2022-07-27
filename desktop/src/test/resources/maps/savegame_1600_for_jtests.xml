@@ -21058,6 +21058,11 @@
               <replaceColonyWorkerMission id="replaceColonyWorkerMission:1" unit="replaceWorker:6436" colony="colony:6554" worker="unit:6436" />
 
 	      </playerMissions>
+          <playerAiContainer player="player:1">
+              <supplyGoods colony="colony:6554" goodsType="model.goods.tools" amount="100"/>
+              <supplyGoods colony="colony:6554" goodsType="model.goods.muskets" amount="50"/>
+          </playerAiContainer>
+
   	      <playerMissions player="player:22">
 	          <wanderMission id="wanderMission:1" unit="unit:6706"/>
 	      </playerMissions>

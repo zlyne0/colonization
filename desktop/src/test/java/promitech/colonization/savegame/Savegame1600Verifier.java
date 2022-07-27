@@ -182,6 +182,7 @@ public class Savegame1600Verifier {
 		verifyTransportUnitMission(game);
 		verifyExploreMission(game);
 		verifyDutchMissions(game);
+		verifyDutchAiContainer(game);
 		verifyMissionRecursion(game);
 		verifySpainMissions(game);
 	}
@@ -222,6 +223,16 @@ public class Savegame1600Verifier {
         assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
         assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
         assertThat(replaceColonyWorkerMission.getWorkerUnitId()).isEqualTo("unit:6436");
+    }
+
+    private void verifyDutchAiContainer(Game game) {
+        PlayerAiContainer playerAiContainer = game.aiContainer.playerAiContainer(dutch);
+
+        assertThat(playerAiContainer.getSupplyGoods()).hasSize(2);
+        PlayerAiContainer.SupplyGoods one = playerAiContainer.getSupplyGoods().get(0);
+        assertThat(one.getColonyId()).isEqualTo("colony:6554");
+        assertThat(one.getGoodsType().isType(GoodsType.TOOLS)).isTrue();
+        assertThat(one.getAmount()).isEqualTo(100);
     }
 
     private void verifySpainMissions(Game game) {

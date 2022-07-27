@@ -17,6 +17,7 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.ai.PlayerAiContainer;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MonarchLogic;
 import net.sf.freecol.common.model.player.Player;
@@ -96,7 +97,10 @@ public class NewTurnService {
         if (player.isEuropean()) {
         	bombardEnemyShip(player);
         }
-        
+
+		PlayerAiContainer playerAiContainer = guiGameModel.game.aiContainer.playerAiContainer(player);
+        playerAiContainer.removeSupplyGoodsWhenNoColony();
+
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player);
 	}
 

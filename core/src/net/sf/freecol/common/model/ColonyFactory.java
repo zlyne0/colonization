@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.ai.PlayerAiContainer;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
@@ -18,8 +19,16 @@ public class ColonyFactory {
 
 	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
         String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
+
+        UnitRole unitRole = buildByUnit.unitRole;
+        int roleCount = buildByUnit.getRoleCount();
+
         Colony colony = buildColony(buildByUnit, tile, colonyName);
-        ColonyProductionPlaner.createPlan(colony);
+
+		PlayerAiContainer playerAiContainer = this.game.aiContainer.playerAiContainer(buildByUnit.getOwner());
+		playerAiContainer.addSupplyGoods(colony, unitRole, roleCount);
+
+		ColonyProductionPlaner.createPlan(colony);
         return colony;
 	}
 	
