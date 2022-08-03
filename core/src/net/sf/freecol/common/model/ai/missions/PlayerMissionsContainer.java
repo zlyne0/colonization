@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
@@ -330,6 +331,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			addNodeForMapIdEntities("missions", RequestGoodsMission.class);
 			addNodeForMapIdEntities("missions", TransportUnitRequestMission.class);
 			addNodeForMapIdEntities("missions", ReplaceColonyWorkerMission.class);
+			addNodeForMapIdEntities("missions", TakeRoleEquipmentMission.class);
         }
         
         @Override

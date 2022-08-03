@@ -2,10 +2,12 @@ package net.sf.freecol.common.model.colonyproduction
 
 import com.badlogic.gdx.utils.ObjectIntMap
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.specification.Goods
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 import promitech.colonization.savegame.XmlNodeParser
+import java.lang.IllegalStateException
 
 typealias GoodsEntry = ObjectIntMap.Entry<GoodsType>
 typealias GoodsEntries = ObjectIntMap.Entries<GoodsType>
@@ -20,7 +22,31 @@ inline fun GoodsEntry.amount(): Int {
 
 class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
 
-    private val goods : ObjectIntMap<GoodsType> = ObjectIntMap()
+    companion object {
+        @JvmField
+        val emptyReadOnly = GoodsCollection(object: ObjectIntMap<GoodsType>() {
+            override fun put(key: GoodsType, value: Int) {
+                throw IllegalStateException("readonly object")
+            }
+            override fun putAll(map: ObjectIntMap<out GoodsType>) {
+                throw IllegalStateException("readonly object")
+            }
+        })
+    }
+
+    private val goods : ObjectIntMap<GoodsType>
+
+    constructor() {
+        this.goods = ObjectIntMap()
+    }
+
+    private constructor(intMap: ObjectIntMap<GoodsType>) {
+        this.goods = intMap
+    }
+
+    fun isEmpty(): Boolean {
+        return goods.isEmpty
+    }
 
     fun amount(type: GoodsType) : Int {
         return goods.get(type, 0)
@@ -28,6 +54,12 @@ class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
 
     fun add(type: GoodsType, amount: Int) {
         this.goods.getAndIncrement(type, 0, amount)
+    }
+
+    fun add(goodsCollection: GoodsCollection) {
+        for (goods in goodsCollection.goods) {
+            this.goods.getAndIncrement(goods.type(), 0, goods.amount())
+        }
     }
 
     fun first() : GoodsEntry {

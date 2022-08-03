@@ -1,6 +1,8 @@
 package promitech.colonization.savegame;
 
 import static net.sf.freecol.common.model.EuropeAssert.assertThat;
+import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
+import static net.sf.freecol.common.model.colonyproduction.GoodsCollectionAssert.assertThat;
 import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +38,8 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.ColonySupplyGoods;
+import net.sf.freecol.common.model.ai.ColonySupplyGoodsReservation;
 import net.sf.freecol.common.model.ai.PlayerAiContainer;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -48,8 +52,10 @@ import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
+import net.sf.freecol.common.model.colonyproduction.GoodsCollectionAssert;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.FoundingFather;
@@ -223,16 +229,35 @@ public class Savegame1600Verifier {
         assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
         assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
         assertThat(replaceColonyWorkerMission.getWorkerUnitId()).isEqualTo("unit:6436");
+
+        TakeRoleEquipmentMission takeRoleEquipmentMission = missions.getMission("takeRoleEquipmentMission:1");
+        assertThat(takeRoleEquipmentMission.getColonyId()).isEqualTo(fortOranje.getId());
+        assertThat(takeRoleEquipmentMission.getUnit().getId()).isEqualTo("takeRole:6436");
+        assertThat(takeRoleEquipmentMission.getRole().getId()).isEqualTo(UnitRole.PIONEER);
+        assertThat(takeRoleEquipmentMission.getRoleCount()).isEqualTo(4);
     }
 
     private void verifyDutchAiContainer(Game game) {
         PlayerAiContainer playerAiContainer = game.aiContainer.playerAiContainer(dutch);
 
-        assertThat(playerAiContainer.getSupplyGoods()).hasSize(2);
-        PlayerAiContainer.SupplyGoods one = playerAiContainer.getSupplyGoods().get(0);
-        assertThat(one.getColonyId()).isEqualTo("colony:6554");
-        assertThat(one.getGoodsType().isType(GoodsType.TOOLS)).isTrue();
-        assertThat(one.getAmount()).isEqualTo(100);
+        MapIdEntitiesAssert.assertThat(playerAiContainer.getColonySupplyGoods())
+            .containsId(fortOranje.getId())
+            .containsId(nieuwAmsterdam.getId())
+        ;
+
+        ColonySupplyGoods colonySupplyGoods = playerAiContainer.getColonySupplyGoods().getById(fortOranje);
+        assertThat(colonySupplyGoods.getSupplyGoods())
+            .has(tools, 100)
+            .has(muskets, 50)
+        ;
+
+        MapIdEntitiesAssert.assertThat(colonySupplyGoods.getSupplyReservations()).hasSize(1);
+        ColonySupplyGoodsReservation reservation = colonySupplyGoods.getSupplyReservations().getById("notExistsMissionId:1");
+        assertThat(reservation.getMissionId()).isEqualTo("notExistsMissionId:1");
+        assertThat(reservation.getGoods())
+            .has(tools, 200)
+            .has(muskets, 150)
+        ;
     }
 
     private void verifySpainMissions(Game game) {

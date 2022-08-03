@@ -18352,6 +18352,7 @@
       <tile id="tile:3273" x="25" y="75" type="model.tile.grassland" owner="player:1" owningSettlement="colony:6554" style="0" region="region:5009" connected="7" contiguity="2">
         <unit id="unit:6894" unitType="model.unit.freeColonist" movesLeft="12" state="fortified" role="model.role.dragoon" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3273" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
         <unit id="replaceWorker:6436" unitType="model.unit.freeColonist" movesLeft="3" state="fortified" role="model.role.default" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3273" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
+        <unit id="takeRole:6436" unitType="model.unit.freeColonist" movesLeft="3" state="fortified" role="model.role.default" roleCount="1" owner="player:1" nationality="model.nation.dutch" ethnicity="model.nation.dutch" location="tile:3273" treasureAmount="0" turnsOfTraining="0" experience="0" workLeft="-1" hitPoints="0" attrition="0"/>
 
         <colony id="colony:6554" owner="player:1" tile="tile:3273" settlementType="model.settlement.colony" name="Fort Oranje" established="11" sonsOfLiberty="17" oldSonsOfLiberty="17" tories="4" oldTories="4" liberty="141" immigration="109" productionBonus="0">
           <goodsContainer id="goodsContainer:6555">
@@ -21056,11 +21057,26 @@
               </requestGoodsMission>
 
               <replaceColonyWorkerMission id="replaceColonyWorkerMission:1" unit="replaceWorker:6436" colony="colony:6554" worker="unit:6436" />
+              <takeRoleEquipmentMission id="takeRoleEquipmentMission:1" unit="takeRole:6436" colony="colony:6554" role="model.role.pioneer" roleCount="4" />
 
 	      </playerMissions>
           <playerAiContainer player="player:1">
-              <supplyGoods colony="colony:6554" goodsType="model.goods.tools" amount="100"/>
-              <supplyGoods colony="colony:6554" goodsType="model.goods.muskets" amount="50"/>
+              <colonySupplyGoods colony="colony:6554">
+                  <supplyGoods>
+                      <goods type="model.goods.muskets" amount="50"/>
+                      <goods type="model.goods.tools" amount="100"/>
+                  </supplyGoods>
+                  <colonySupplyGoodsReservation mission="notExistsMissionId:1">
+                      <goodsCollection>
+                          <goods type="model.goods.muskets" amount="150"/>
+                          <goods type="model.goods.tools" amount="200"/>
+                      </goodsCollection>
+                  </colonySupplyGoodsReservation>
+              </colonySupplyGoods>
+              <colonySupplyGoods colony="colony:6528">
+                  <supplyGoods>
+                  </supplyGoods>
+              </colonySupplyGoods>
           </playerAiContainer>
 
   	      <playerMissions player="player:22">

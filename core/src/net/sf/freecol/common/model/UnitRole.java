@@ -126,8 +126,12 @@ public class UnitRole extends ObjectWithFeatures {
 	}
 
 	public boolean isContainerHasRequiredGoods(GoodsContainer goodsContainer) {
+		return isContainerHasRequiredGoods(goodsContainer, maximumCount);
+	}
+
+	public boolean isContainerHasRequiredGoods(GoodsContainer goodsContainer, int roleCount) {
 		for (RequiredGoods requiredGood : requiredGoods) {
-			if (!goodsContainer.hasGoodsQuantity(requiredGood.goodsType, requiredGood.amount * maximumCount)) {
+			if (!goodsContainer.hasGoodsQuantity(requiredGood.goodsType, requiredGood.amount * roleCount)) {
 				return false;
 			}
 		}
@@ -156,10 +160,13 @@ public class UnitRole extends ObjectWithFeatures {
 		return maxRoleCount;
 	}
 
-	public ProductionSummary requiredGoodsForRoleCount(int roleCount) {
-		ProductionSummary required = new ProductionSummary();
+	public GoodsCollection requiredGoodsForRoleCount(int roleCount) {
+		if (requiredGoods.isEmpty()) {
+			return GoodsCollection.emptyReadOnly;
+		}
+		GoodsCollection required = new GoodsCollection();
 		for (RequiredGoods g : requiredGoods.entities()) {
-			required.addGoods(g.getId(), g.amount * roleCount);
+			required.add(g.goodsType, g.amount * roleCount);
 		}
 		return required;
 	}

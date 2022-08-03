@@ -49,16 +49,16 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
         nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
     }
 
-	public <T extends Identifiable> void addNode(String entityOverrideTagName, Class<? extends Identifiable> entityClass, ObjectFromNodeSetter<?,T> setter) {
+	public <T> void addNode(String entityOverrideTagName, Class<T> entityClass, ObjectFromNodeSetter<?,T> setter) {
 		XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityOverrideTagName, entityClass, setter);
 		nodeMetaData.put(entityOverrideTagName, xmlTagMetaData);
-	}	
-	
+	}
+
 	public <T> void addNode(Class<T> entityClass, ObjectFromNodeSetter<?,T> setter) {
 	    XmlTagMetaData xmlTagMetaData = new XmlTagMetaData(entityClass, setter);
 	    nodeMetaData.put(xmlTagMetaData.getTagName(), xmlTagMetaData);
 	}
-	
+
 	public void addNodeForMapIdEntities(String wrapperTag, String fieldName, Class<? extends Identifiable> entityClass) {
 	    XmlTagMapIdEntitiesMetaData xmlMetaData = new XmlTagMapIdEntitiesMetaData(
 	        wrapperTag, 
@@ -75,7 +75,7 @@ public abstract class XmlNodeParser<NODE_ENTITY_CLASS> {
         );
         nodeMetaData.put(xmlMetaData.getTagName(), xmlMetaData);
     }
-	
+
 	public void addAllNodes(XmlNodeParser node) {
 	    nodeMetaData.putAll(node.nodeMetaData);
 	    nodeParserByTagName.putAll(node.nodeParserByTagName);

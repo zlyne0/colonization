@@ -99,6 +99,7 @@ public class NewTurnService {
         }
 
 		PlayerAiContainer playerAiContainer = guiGameModel.game.aiContainer.playerAiContainer(player);
+        playerAiContainer.removeOutdatedReservations(guiGameModel.game.aiContainer.missionContainer(player));
         playerAiContainer.removeSupplyGoodsWhenNoColony();
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player);

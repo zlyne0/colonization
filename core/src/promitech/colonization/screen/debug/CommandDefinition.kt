@@ -24,6 +24,7 @@ import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
@@ -658,16 +659,13 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		missionContainer.clearAllMissions()
 
 		val nieuAmsterdamTile = game.map.getTile(24, 78)
-		val fortOrangeTile = game.map.getTile(25, 75)
-		val workerFreeColonist = player.units.getById("unit:6436")
-		// remove experience
-		workerFreeColonist.changeUnitType(workerFreeColonist.unitType)
+		val fortOrange = game.map.getTile(25, 75).settlement.asColony()
+		val pioneerUnitRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
 
-		fortOrangeTile.settlement.goodsContainer.decreaseGoodsQuantity(GoodsType.FOOD, 200)
-		val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, player, nieuAmsterdamTile)
-		expertFarmer.changeRole(Specification.instance.unitRoles.getById(UnitRole.PIONEER), 4);
+		fortOrange.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+		val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuAmsterdamTile)
 
-		val mission = ReplaceColonyWorkerMission(expertFarmer, fortOrangeTile.settlement.asColony(), workerFreeColonist)
+		val mission = TakeRoleEquipmentMission(freeColonist, fortOrange, pioneerUnitRole, 4)
 		missionContainer.addMission(mission)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
