@@ -1,12 +1,16 @@
 package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.findParentMission
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 
-class ReplaceColonyWorkerMissionHandler : MissionHandler<ReplaceColonyWorkerMission> {
+class ReplaceColonyWorkerMissionHandler(
+    private val missionExecutor: MissionExecutor
+) : MissionHandler<ReplaceColonyWorkerMission> {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: ReplaceColonyWorkerMission) {
 
@@ -25,7 +29,7 @@ class ReplaceColonyWorkerMissionHandler : MissionHandler<ReplaceColonyWorkerMiss
 
         if (mission.replaceByUnit.isAtTileLocation) {
             if (mission.replaceByUnit.isAtLocation(mission.colony().tile)) {
-                replaceUnits(mission)
+                replaceUnits(playerMissionsContainer, mission)
             } else {
                 createTransportRequest(playerMissionsContainer, mission)
             }
@@ -37,10 +41,28 @@ class ReplaceColonyWorkerMissionHandler : MissionHandler<ReplaceColonyWorkerMiss
         }
     }
 
-    private fun replaceUnits(mission: ReplaceColonyWorkerMission) {
+    private fun replaceUnits(playerMissionsContainer: PlayerMissionsContainer, mission: ReplaceColonyWorkerMission) {
         val colony = mission.colony()
-        colony.replaceWorker(mission.replaceByUnit, mission.workerUnitId)
+        colony.replaceWorker(mission.replaceByUnit, mission.colonyWorkerUnitId)
         mission.setDone()
+
+        notifyParentMissionAboutReplace(playerMissionsContainer, mission)
+    }
+
+    private fun notifyParentMissionAboutReplace(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: ReplaceColonyWorkerMission
+    ) {
+        val colonyWorkerUnit = playerMissionsContainer.player.units.getById(mission.colonyWorkerUnitId)
+
+        var parentMission = playerMissionsContainer.findParentMission(mission)
+        while (parentMission != null) {
+            val parentMissionHandler = missionExecutor.findMissionHandler(parentMission)
+            if (parentMissionHandler is ReplaceUnitInMissionHandler) {
+                parentMissionHandler.replaceUnitInMission(parentMission, mission.replaceByUnit, colonyWorkerUnit)
+            }
+            parentMission = playerMissionsContainer.findParentMission(parentMission)
+        }
     }
 
     private fun createTransportRequest(
@@ -57,6 +79,4 @@ class ReplaceColonyWorkerMissionHandler : MissionHandler<ReplaceColonyWorkerMiss
             )
         }
     }
-
-
 }

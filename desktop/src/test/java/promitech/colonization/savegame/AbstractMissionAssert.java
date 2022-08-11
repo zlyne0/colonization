@@ -21,4 +21,19 @@ public class AbstractMissionAssert extends AbstractAssert<AbstractMissionAssert,
 		}
 		return this;
 	}
+
+	public AbstractMissionAssert isNotDone() {
+		isNotNull();
+		if (actual.isDone()) {
+			failWithMessage("Expected mission id: %s is not done, but it's done", actual.getId());
+		}
+		return this;
+	}
+
+	public AbstractMissionAssert hasNotDependMission() {
+		if (actual.hasDependMission()) {
+			failWithMessage("Expected mission id: %s has not depend mission, but it has", actual.getId());
+		}
+		return this;
+	}
 }

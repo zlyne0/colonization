@@ -15,33 +15,33 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter
 
 class ReplaceColonyWorkerMission : AbstractMission {
 
-    val replaceByUnit: Unit
     val colonyId: ColonyId
-    val workerUnitId: UnitId
+    val colonyWorkerUnitId: UnitId
+    val replaceByUnit: Unit
 
-    constructor(replaceByUnit: Unit, colony: Colony, workerUnit: Unit) : super(Game.idGenerator.nextId(ReplaceColonyWorkerMission::class.java)) {
-        this.replaceByUnit = replaceByUnit
+    constructor(colony: Colony, colonyWorkerUnit: Unit, replaceByUnit: Unit) : super(Game.idGenerator.nextId(ReplaceColonyWorkerMission::class.java)) {
         this.colonyId = colony.id
-        this.workerUnitId = workerUnit.id
+        this.colonyWorkerUnitId = colonyWorkerUnit.id
+        this.replaceByUnit = replaceByUnit
     }
 
     private constructor(missionId: String, replaceByUnit: Unit, colonyId: ColonyId, workerUnitId: UnitId) : super(missionId) {
         this.replaceByUnit = replaceByUnit
         this.colonyId = colonyId
-        this.workerUnitId = workerUnitId
+        this.colonyWorkerUnitId = workerUnitId
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
         unitMissionsMapping.blockUnit(replaceByUnit, this)
-        unitMissionsMapping.blockUnit(workerUnitId, this)
+        unitMissionsMapping.blockUnit(colonyWorkerUnitId, this)
     }
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
         unitMissionsMapping.unblockUnitFromMission(replaceByUnit, this)
-        unitMissionsMapping.unblockUnitFromMission(workerUnitId, this)
+        unitMissionsMapping.unblockUnitFromMission(colonyWorkerUnitId, this)
     }
 
-    fun isUnitExists(player: Player): Boolean {
+    internal fun isUnitExists(player: Player): Boolean {
         return CommonMissionHandler.isUnitExists(player, replaceByUnit)
     }
 
@@ -49,16 +49,16 @@ class ReplaceColonyWorkerMission : AbstractMission {
         return replaceByUnit.owner.settlements.getById(colonyId).asColony()
     }
 
-    fun isWorkerExistsInColony(player: Player): Boolean {
+    internal fun isWorkerExistsInColony(player: Player): Boolean {
         val colony = player.settlements.getByIdOrNull(colonyId)
         if (colony == null) {
             return false
         }
-        return colony.asColony().isUnitInColony(workerUnitId)
+        return colony.asColony().isUnitInColony(colonyWorkerUnitId)
     }
 
     override fun toString(): String {
-        return "ReplaceColonyWorkerMission: missionId: ${id}, replaceByUnit: ${replaceByUnit.id}, colonyId: ${colonyId}, workerUnitId: ${workerUnitId}"
+        return "ReplaceColonyWorkerMission: missionId: ${id}, replaceByUnit: ${replaceByUnit.id}, colonyId: ${colonyId}, workerUnitId: ${colonyWorkerUnitId}"
     }
 
     class Xml : AbstractMission.Xml<ReplaceColonyWorkerMission>() {
@@ -82,7 +82,7 @@ class ReplaceColonyWorkerMission : AbstractMission {
             attr.setId(mission)
             attr.set(ATTR_UNIT, mission.replaceByUnit)
             attr.set(ATTR_COLONY, mission.colonyId)
-            attr.set(ATTR_WORKER, mission.workerUnitId)
+            attr.set(ATTR_WORKER, mission.colonyWorkerUnitId)
         }
 
         override fun getTagName(): String {

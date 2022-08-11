@@ -661,12 +661,20 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val nieuAmsterdamTile = game.map.getTile(24, 78)
 		val fortOrange = game.map.getTile(25, 75).settlement.asColony()
 		val pioneerUnitRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
+		val workerFreeColonist = dutch.units.getById("unit:6436")
+
 
 		fortOrange.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
-		val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuAmsterdamTile)
+		val freeColonist = UnitFactory.create(UnitType.EXPERT_FARMER, player, nieuAmsterdamTile)
 
-		val mission = TakeRoleEquipmentMission(freeColonist, fortOrange, pioneerUnitRole, 4)
-		missionContainer.addMission(mission)
+		val pioneerMission = PioneerMission(freeColonist, fortOrange)
+		missionContainer.addMission(pioneerMission)
+
+		val takeRoleMission = TakeRoleEquipmentMission(freeColonist, fortOrange, pioneerUnitRole, 4)
+		missionContainer.addMission(pioneerMission, takeRoleMission)
+
+		val replaceColonyWorkerMission = ReplaceColonyWorkerMission(fortOrange, workerFreeColonist, freeColonist)
+		missionContainer.addMission(takeRoleMission, replaceColonyWorkerMission)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()

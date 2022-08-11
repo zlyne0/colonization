@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.MissionId
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -10,7 +11,7 @@ import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitReques
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 
-class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEquipmentMission> {
+class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEquipmentMission>, ReplaceUnitInMissionHandler {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: TakeRoleEquipmentMission) {
         val player = playerMissionsContainer.player
@@ -73,4 +74,10 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
         }
     }
 
+    override fun replaceUnitInMission(mission: AbstractMission, unitToReplace: Unit, replaceBy: Unit) {
+        if (mission is TakeRoleEquipmentMission) {
+            val playerMissionsContainer = game.aiContainer.missionContainer(replaceBy.owner)
+            mission.changeUnit(unitToReplace, replaceBy, playerMissionsContainer)
+        }
+    }
 }

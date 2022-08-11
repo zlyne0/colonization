@@ -55,7 +55,6 @@ import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
-import net.sf.freecol.common.model.colonyproduction.GoodsCollectionAssert;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
 import net.sf.freecol.common.model.player.ArmyForceAbstractUnit;
 import net.sf.freecol.common.model.player.FoundingFather;
@@ -228,7 +227,7 @@ public class Savegame1600Verifier {
         ReplaceColonyWorkerMission replaceColonyWorkerMission = missions.getMission("replaceColonyWorkerMission:1");
         assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
         assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
-        assertThat(replaceColonyWorkerMission.getWorkerUnitId()).isEqualTo("unit:6436");
+        assertThat(replaceColonyWorkerMission.getColonyWorkerUnitId()).isEqualTo("unit:6436");
 
         TakeRoleEquipmentMission takeRoleEquipmentMission = missions.getMission("takeRoleEquipmentMission:1");
         assertThat(takeRoleEquipmentMission.getColonyId()).isEqualTo(fortOranje.getId());

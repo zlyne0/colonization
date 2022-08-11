@@ -16,7 +16,7 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter
 
 class TakeRoleEquipmentMission : AbstractMission {
 
-    val unit: Unit
+    var unit: Unit private set
     val colonyId: ColonyId
     val role: UnitRole
     val roleCount: Int
@@ -37,15 +37,15 @@ class TakeRoleEquipmentMission : AbstractMission {
         this.roleCount = roleCount
     }
 
-    fun isUnitExists(player: Player): Boolean {
+    internal fun isUnitExists(player: Player): Boolean {
         return CommonMissionHandler.isUnitExists(player, unit)
     }
 
-    fun isColonyExist(player: Player): Boolean {
+    internal fun isColonyExist(player: Player): Boolean {
         return player.settlements.containsId(colonyId)
     }
 
-    fun colony(): Colony = unit.owner.settlements.getById(colonyId).asColony()
+    internal fun colony(): Colony = unit.owner.settlements.getById(colonyId).asColony()
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
         unitMissionsMapping.blockUnit(unit, this)
@@ -53,6 +53,14 @@ class TakeRoleEquipmentMission : AbstractMission {
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
         unitMissionsMapping.unblockUnitFromMission(unit, this)
+    }
+
+    internal fun changeUnit(unitToReplace: Unit, replaceBy: Unit, playerMissionsContainer: PlayerMissionsContainer) {
+        if (unit.equalsId(unitToReplace)) {
+            playerMissionsContainer.unblockUnitFromMission(unit, this)
+            unit = replaceBy
+            playerMissionsContainer.blockUnitForMission(unit, this)
+        }
     }
 
     override fun toString(): String {

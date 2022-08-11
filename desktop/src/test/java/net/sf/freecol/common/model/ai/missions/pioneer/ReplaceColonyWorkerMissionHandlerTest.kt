@@ -1,32 +1,17 @@
 package net.sf.freecol.common.model.ai.missions.pioneer
 
-import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.ColonyAssert.assertThat
 import net.sf.freecol.common.model.ColonyTile
-import net.sf.freecol.common.model.Game
-import net.sf.freecol.common.model.SettlementAssert
-import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.TileAssert.assertThat
-import net.sf.freecol.common.model.TileImprovement
-import net.sf.freecol.common.model.TileImprovementType
+import net.sf.freecol.common.model.UnitAssert
 import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
-import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import net.sf.freecol.common.model.map.path.PathFinder
-import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
-import org.assertj.core.api.Assertions.assertThat
-import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.Assertions.assertFalse
-import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import promitech.colonization.Direction
 import promitech.colonization.savegame.AbstractMissionAssert.assertThat
 
 class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
@@ -51,7 +36,7 @@ class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
         val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, dutch, nieuwAmsterdam.tile)
 
-        val mission = ReplaceColonyWorkerMission(expertFarmer, fortOranje, workerFreeColonist)
+        val mission = ReplaceColonyWorkerMission(fortOranje, workerFreeColonist, expertFarmer)
         dutchMissionContainer.addMission(mission)
 
 
@@ -74,7 +59,7 @@ class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
         val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, dutch, nieuwAmsterdam.tile)
         expertFarmer.changeRole(unitRole(UnitRole.PIONEER), farmerRoleCount)
 
-        val mission = ReplaceColonyWorkerMission(expertFarmer, fortOranje, workerFreeColonist)
+        val mission = ReplaceColonyWorkerMission(fortOranje, workerFreeColonist, expertFarmer)
         dutchMissionContainer.addMission(mission)
 
 
@@ -102,7 +87,7 @@ class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
         val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, dutch, nieuwAmsterdam.tile)
         expertFarmer.changeRole(unitRole(UnitRole.DRAGOON))
 
-        val mission = ReplaceColonyWorkerMission(expertFarmer, fortOranje, workerFreeColonist)
+        val mission = ReplaceColonyWorkerMission(fortOranje, workerFreeColonist, expertFarmer)
         dutchMissionContainer.addMission(mission)
 
 
@@ -120,5 +105,41 @@ class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
             .hasGoods(GoodsType.HORSES, 0)
             .hasGoods(GoodsType.MUSKETS, 0)
         assertThat(mission).isDone
+    }
+
+    @Test
+    fun `should replace colony worker and notify parent missions`() {
+        // given
+        val colonyWorker = dutch.units.getById("unit:6436")
+        assertThat(colonyWorker).isAtLocation(ColonyTile::class.java)
+        fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+
+        val expertFarmer = UnitFactory.create(UnitType.EXPERT_FARMER, dutch, nieuwAmsterdam.tile)
+
+        val pioneerMission = PioneerMission(expertFarmer, fortOranje)
+        dutchMissionContainer.addMission(pioneerMission)
+
+        val takeRoleMission = TakeRoleEquipmentMission(expertFarmer, fortOranje, unitRole(UnitRole.PIONEER), 4)
+        dutchMissionContainer.addMission(pioneerMission, takeRoleMission)
+
+        val replaceColonyWorkerMission = ReplaceColonyWorkerMission(fortOranje, colonyWorker, expertFarmer)
+        dutchMissionContainer.addMission(takeRoleMission, replaceColonyWorkerMission)
+
+
+        // when
+        newTurnAndExecuteMission(dutch, 1)
+
+        // then
+        assertThat(expertFarmer).isAtLocation(ColonyTile::class.java)
+        assertThat(colonyWorker).isAtLocation(fortOranje.tile)
+        assertThat(replaceColonyWorkerMission).isDone
+
+        assertThat(takeRoleMission).isDone
+        assertThat(takeRoleMission.unit).isEqualsTo(colonyWorker)
+
+        assertThat(pioneerMission.pioneer).isEqualsTo(colonyWorker)
+        assertThat(pioneerMission)
+            .isNotDone()
+            .hasNotDependMission()
     }
 }

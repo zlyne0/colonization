@@ -4,7 +4,9 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
+import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
 import net.sf.freecol.common.model.map.path.Path
@@ -20,7 +22,7 @@ class PioneerMissionHandler(
     private val pioneerMissionPlaner: PioneerMissionPlaner,
     private val moveService: MoveService,
     private val pathFinder: PathFinder
-): MissionHandler<PioneerMission> {
+): MissionHandler<PioneerMission>, ReplaceUnitInMissionHandler {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
         val player = playerMissionsContainer.player
@@ -150,6 +152,13 @@ class PioneerMissionHandler(
                 mission,
                 TransportUnitRequestMission(mission.pioneer, mission.colony().tile)
             )
+        }
+    }
+
+    override fun replaceUnitInMission(mission: AbstractMission, unitToReplace: Unit, replaceBy: Unit) {
+        if (mission is PioneerMission) {
+            val playerMissionsContainer = game.aiContainer.missionContainer(replaceBy.owner)
+            mission.changeUnit(unitToReplace, replaceBy, playerMissionsContainer)
         }
     }
 }
