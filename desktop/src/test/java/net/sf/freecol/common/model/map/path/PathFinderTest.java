@@ -442,6 +442,20 @@ class PathFinderTest {
 		;
 	}
 
+	@Test
+	void shouldGenerateMaxRangePath() {
+		// given
+		Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, dutch, nieuwAmsterdam.tile);
+		int maxTurnsRange = 3;
+
+		// when
+		sut.generateRangeMap(game.map, nieuwAmsterdam.tile, unit, includeUnexploredTiles, maxTurnsRange);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(24, 68))).isEqualTo(3);
+		assertThat(sut.turnsCost(game.map.getTile(24, 67))).isEqualTo(INFINITY);
+	}
+
 	@Nested
 	class EnterSettlementsWithCarrierAndGoodsTest {
 

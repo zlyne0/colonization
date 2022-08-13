@@ -4,13 +4,13 @@ import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import promitech.colonization.Direction;
 
-class NavyCostDecider extends CostDecider {
+class NavyCostDecider extends DefaultCostDecider {
     
     private boolean moveToSeaside = false;
     protected boolean allowDisembark = true;
     
     @Override
-    boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
+    public boolean calculateAndImproveMove(Node currentNode, Node moveNode, MoveType moveType, Direction moveDirection) {
         moveToSeaside = false;
         if (allowDisembark && (moveType == MoveType.DISEMBARK || moveType == MoveType.MOVE_NO_ACCESS_LAND) && currentNode.tile.getType().isWater()) {
             moveType = MoveType.MOVE;
@@ -38,7 +38,7 @@ class NavyCostDecider extends CostDecider {
     }
 
     @Override
-	boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
+	public boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
 		if (moveType == MoveType.MOVE_NO_ACCESS_LAND && source.tile.hasSettlement() && dest.tile.getType().isLand()) {
 			return false;
 		}
