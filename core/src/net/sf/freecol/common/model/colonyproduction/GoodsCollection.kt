@@ -2,7 +2,6 @@ package net.sf.freecol.common.model.colonyproduction
 
 import com.badlogic.gdx.utils.ObjectIntMap
 import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.specification.Goods
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
@@ -32,6 +31,12 @@ class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
                 throw IllegalStateException("readonly object")
             }
         })
+
+        fun of(goodsType: GoodsType, amount: Int): GoodsCollection {
+            val goodsCollection = GoodsCollection()
+            goodsCollection.add(goodsType, amount)
+            return goodsCollection
+        }
     }
 
     private val goods : ObjectIntMap<GoodsType>
@@ -60,6 +65,15 @@ class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
         for (goods in goodsCollection.goods) {
             this.goods.getAndIncrement(goods.type(), 0, goods.amount())
         }
+    }
+
+    fun has(goodsCollection: GoodsCollection): Boolean {
+        for (goodsEntry in goodsCollection) {
+            if (this.goods.get(goodsEntry.type(), 0) < goodsEntry.amount()) {
+                return false
+            }
+        }
+        return true;
     }
 
     fun first() : GoodsEntry {

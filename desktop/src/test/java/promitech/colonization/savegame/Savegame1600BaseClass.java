@@ -31,6 +31,7 @@ public class Savegame1600BaseClass {
 	protected Colony fortOranje;
 	protected Colony fortNassau;
 	protected Colony fortMaurits;
+	protected Tile islandTile;
 
 	@BeforeAll
     public static void beforeClass() throws Exception {
@@ -49,7 +50,7 @@ public class Savegame1600BaseClass {
 		fortOranje = game.map.getTile(25, 75).getSettlement().asColony();
 		fortNassau = game.map.getTile(20, 79).getSettlement().asColony();
 		fortMaurits = game.map.getTile(21, 72).getSettlement().asColony();
-
+		islandTile = game.map.getTile(25, 86);
 	}
 
 	protected void setGold(Player player, int gold) {

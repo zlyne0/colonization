@@ -17,7 +17,7 @@ class ColonySupplyGoods(
     val colonyId: ColonyId
 ): ObjectWithId(colonyId) {
 
-    lateinit var supplyGoods: GoodsCollection
+    var supplyGoods: GoodsCollection = GoodsCollection()
         private set
 
     val supplyReservations: MapIdEntities<ColonySupplyGoodsReservation> = MapIdEntities()
@@ -35,6 +35,10 @@ class ColonySupplyGoods(
     fun addSupplyGoodsReservation(missionId: MissionId, goodsType: GoodsType, amount: Int) {
         supplyReservations.getByIdOrCreate(colonyId, { ColonySupplyGoodsReservation(missionId) } )
             .goods.add(goodsType, amount)
+    }
+
+    fun hasSupplyGoods(goodsCollection: GoodsCollection): Boolean {
+        return supplyGoods.has(goodsCollection)
     }
 
     class Xml : XmlNodeParser<ColonySupplyGoods>() {

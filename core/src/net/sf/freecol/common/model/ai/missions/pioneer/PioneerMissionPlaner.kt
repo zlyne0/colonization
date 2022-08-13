@@ -3,9 +3,11 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
+import net.sf.freecol.common.model.ai.PlayerAiContainer
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
@@ -23,10 +25,15 @@ sealed class PioneerDestination {
 
 data class PioneerBuyPlan(val buyPioneerOrder: BuyPioneerOrder, val colony: Colony)
 
+data class ColonyHardyPioneer(val colony: Colony, val hardyPioneer: Unit)
+
+
 /**
  * Running up that hill.
  */
 class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
+    private val pioneerSupplyLandRange = 3
+    private val pioneerSupplySeaRange = 2
     private val minDistanceToUseShipTransport = 5
     private val improvedAllTilesInColonyToAllColonyRatio: Double = 0.6
 
@@ -56,6 +63,98 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             return null
         }
         return PioneerBuyPlan(buyPionnierOrder, firstDestination.colony)
+    }
+
+    fun findColonyHardyPioneerInRange(
+        sourceTile: Tile,
+        unit: Unit,
+        playerMissionContainer: PlayerMissionsContainer
+    ): ColonyHardyPioneer? {
+        val player = unit.owner
+        pathFinder.generateRangeMap(game.map, sourceTile, unit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
+
+        val colonyHardyPioneer = findHardyPioneerInPathFindRange(playerMissionContainer, pathFinder, player)
+        if (colonyHardyPioneer != null) {
+            return colonyHardyPioneer
+        }
+        val pathUnit = pathFinder.createPathUnit(player, Specification.instance.unitTypes.getById(UnitType.CARAVEL))
+        pathFinder.generateRangeMap(game.map, sourceTile, pathUnit, PathFinder.includeUnexploredTiles, pioneerSupplySeaRange)
+        return findHardyPioneerInPathFindRange(playerMissionContainer, pathFinder, player)
+    }
+
+    private fun findHardyPioneerInPathFindRange(
+        playerMissionContainer: PlayerMissionsContainer,
+        rangePathFinder: PathFinder,
+        player: Player
+    ): ColonyHardyPioneer? {
+        var minDistance = Int.MAX_VALUE
+        var minDistanceColony: Colony? = null
+        var colonyHardyPioneer: Unit? = null
+
+        for (settlement in player.settlements) {
+            val distance = rangePathFinder.turnsCost(settlement.tile)
+            if (distance < minDistance) {
+                val colony = settlement.asColony()
+                val pioneer = findHardyPioneer(colony, playerMissionContainer)
+                if (pioneer != null) {
+                    minDistance = distance
+                    minDistanceColony = colony
+                    colonyHardyPioneer = pioneer
+                }
+            }
+        }
+        if (colonyHardyPioneer != null && minDistanceColony != null) {
+            return ColonyHardyPioneer(minDistanceColony, colonyHardyPioneer)
+        }
+        return null
+    }
+
+    private fun findHardyPioneer(colony: Colony, playerMissionContainer: PlayerMissionsContainer): Unit? {
+        for (unit in colony.units.entities()) {
+            if (unit.unitType.equalsId(UnitType.HARDY_PIONEER) && !playerMissionContainer.isUnitBlockedForMission(unit)) {
+                return unit
+            }
+        }
+        return null
+    }
+
+    fun findColonyToEquiptPioneerInRange(unit: Unit, sourceTile: Tile, playerAiContainer: PlayerAiContainer): Colony? {
+        val player = unit.owner
+        pathFinder.generateRangeMap(game.map, sourceTile, unit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
+
+        val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
+        val pioneerRoleRequiredGoods = pioneerRole.sumOfRequiredGoods()
+
+        val colonyWithToolsSupply = findToolsSupplyInPathRange(playerAiContainer, pathFinder, player, pioneerRoleRequiredGoods)
+        if (colonyWithToolsSupply != null) {
+            return colonyWithToolsSupply
+        }
+        val pathUnit = pathFinder.createPathUnit(player, Specification.instance.unitTypes.getById(UnitType.CARAVEL))
+        pathFinder.generateRangeMap(game.map, sourceTile, pathUnit, PathFinder.includeUnexploredTiles, pioneerSupplySeaRange)
+        return findToolsSupplyInPathRange(playerAiContainer, pathFinder, player, pioneerRoleRequiredGoods)
+    }
+
+    private fun findToolsSupplyInPathRange(
+        playerAiContainer: PlayerAiContainer,
+        rangePathFinder: PathFinder,
+        player: Player,
+        requiredGoods: GoodsCollection
+    ): Colony? {
+        var minDistance = Int.MAX_VALUE
+        var minDistanceColony: Colony? = null
+
+        for (settlement in player.settlements) {
+            val distance = rangePathFinder.turnsCost(settlement.tile)
+            if (distance < minDistance) {
+                val colony = settlement.asColony()
+                val colonySupplyGoods = playerAiContainer.findColonySupplyGoods(colony)
+                if (colonySupplyGoods != null && colonySupplyGoods.hasSupplyGoods(requiredGoods)) {
+                    minDistance = distance
+                    minDistanceColony = colony
+                }
+            }
+        }
+        return minDistanceColony
     }
 
     fun handlePioneerBuyPlan(pioneerBuyPlan: PioneerBuyPlan, player: Player, playerMissionContainer: PlayerMissionsContainer) {

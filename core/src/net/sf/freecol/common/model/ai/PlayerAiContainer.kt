@@ -69,6 +69,10 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
         return colonySupplyGoods.getByIdOrCreate(colony.id) { ColonySupplyGoods(colony.id) }
     }
 
+    fun findColonySupplyGoods(colony: Colony): ColonySupplyGoods? {
+        return colonySupplyGoods.getByIdOrNull(colony.id)
+    }
+
     fun addScoutBlockTile(tile: Tile) {
         this.scoutBlockTiles.add(tile)
     }
