@@ -90,7 +90,7 @@ public class EuropeanMissionPlaner {
 		}
 		PioneerBuyPlan pioneerBuyPlan = pioneerMissionPlaner.createBuyPlan(player, playerMissionContainer);
 		if (pioneerBuyPlan != null) {
-			pioneerMissionPlaner.handlePioneerBuyPlan(pioneerBuyPlan, player, playerMissionContainer);
+			pioneerMissionPlaner.handlePioneerBuyPlan(pioneerBuyPlan, playerMissionContainer);
 		}
 	}
 

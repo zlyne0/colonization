@@ -510,7 +510,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 				di.newTurnService.newTurn(player)
 
-//				missionPlaner.planMissions(player)
+				missionPlaner.planMissions(player)
 				missionExecutor.executeMissions(player)
 //				missionExecutor.executeMissions(missionContainer, PioneerMission::class.java)
 //				missionExecutor.executeMissions(missionContainer, RequestGoodsMission::class.java)

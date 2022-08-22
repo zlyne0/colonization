@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.ai
 
 import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.ColonyId
 import net.sf.freecol.common.model.MapIdEntities
 import net.sf.freecol.common.model.ObjectWithId
 import net.sf.freecol.common.model.Tile
@@ -25,10 +26,7 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
         }
 
         for (colonySupplyGood in colonySupplyGoods) {
-            val settlement = player.settlements.getByIdOrNull(colonySupplyGood.colonyId)
-            if (!settlement.goodsContainer.hasMoreOrEquals(colonySupplyGood.supplyGoods)) {
-                colonySupplyGood.supplyGoods.clear()
-            }
+            colonySupplyGood.clearWhenNoColonyGoods(player)
         }
         colonySupplyGoods.removeByPredicate { supplyEntry ->
             val settlement = player.settlements.getByIdOrNull(supplyEntry.colonyId)
@@ -38,23 +36,8 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
 
     fun removeOutdatedReservations(playerMissionsContainer: PlayerMissionsContainer) {
         // when mission has unit and unit die, mission end, and goods reservation should back to supply pool
-
         for (colonySupplyGood in colonySupplyGoods) {
-            var tmpToRemove: ArrayList<ColonySupplyGoodsReservation>? = null
-            for (supplyReservation in colonySupplyGood.supplyReservations) {
-                if (!playerMissionsContainer.hasMission(supplyReservation.missionId)) {
-                    if (tmpToRemove == null) {
-                        tmpToRemove = ArrayList<ColonySupplyGoodsReservation>()
-                    }
-                    tmpToRemove.add(supplyReservation)
-                }
-            }
-            if (tmpToRemove != null) {
-                for (colonySupplyGoodsReservation in tmpToRemove) {
-                    colonySupplyGood.addSupply(colonySupplyGoodsReservation.goods)
-                    colonySupplyGood.supplyReservations.removeId(colonySupplyGoodsReservation)
-                }
-            }
+            colonySupplyGood.removeOutdatedReservations(playerMissionsContainer)
         }
     }
 
@@ -67,6 +50,10 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
 
     fun findOrCreateColonySupplyGoods(colony: Colony): ColonySupplyGoods {
         return colonySupplyGoods.getByIdOrCreate(colony.id) { ColonySupplyGoods(colony.id) }
+    }
+
+    fun findOrCreateColonySupplyGoods(colonyId: ColonyId): ColonySupplyGoods {
+        return colonySupplyGoods.getByIdOrCreate(colonyId) { ColonySupplyGoods(colonyId) }
     }
 
     fun findColonySupplyGoods(colony: Colony): ColonySupplyGoods? {

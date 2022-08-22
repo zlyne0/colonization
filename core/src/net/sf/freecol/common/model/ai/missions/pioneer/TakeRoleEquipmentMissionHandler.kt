@@ -53,7 +53,7 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
 
     private fun removeSupplyGoodsReservation(colony: Colony, missionId: MissionId) {
         val playerAiContainer = game.aiContainer.playerAiContainer(colony.owner)
-        val colonySupplyGoods = playerAiContainer.colonySupplyGoods.getByIdOrNull(colony.id)
+        val colonySupplyGoods = playerAiContainer.findColonySupplyGoods(colony)
         if (colonySupplyGoods != null) {
             colonySupplyGoods.removeSupplyReservation(missionId)
         }

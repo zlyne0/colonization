@@ -19,7 +19,6 @@ import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
-import promitech.colonization.ColAssertDefinition
 import promitech.colonization.ColAssertDefinition.Companion.assertThat
 import promitech.colonization.Direction
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
@@ -119,7 +118,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         // when
         val buyPlan = pioneerMissionPlaner.createBuyPlan(dutch, playerMissionContainer)
         if (buyPlan != null) {
-            pioneerMissionPlaner.handlePioneerBuyPlan(buyPlan, dutch, playerMissionContainer)
+            pioneerMissionPlaner.handlePioneerBuyPlan(buyPlan, playerMissionContainer)
         }
 
         // then
@@ -234,11 +233,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         assertThat(fortOranje.units.containsId(workerFreeColonist))
         workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
 
-        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuwAmsterdam.tile)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(nieuwAmsterdam.tile, freeColonist, playerMissionContainer)
+        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(player, nieuwAmsterdam.tile)
 
         // then
         assertThat {
@@ -259,11 +257,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         assertThat(fortOranje.units.containsId(workerFreeColonist))
         workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
 
-        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuwAmsterdam.tile)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(islandTile, freeColonist, playerMissionContainer)
+        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(player, islandTile)
 
         // then
 
@@ -285,11 +282,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         playerAiContainer.addSupplyGoods(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
-        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuwAmsterdam.tile)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(freeColonist, nieuwAmsterdam.tile, playerAiContainer)
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, nieuwAmsterdam.tile)
 
         // then
         assertThat {
@@ -309,11 +305,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         playerAiContainer.addSupplyGoods(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
-        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, nieuwAmsterdam.tile)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(freeColonist, islandTile, playerAiContainer)
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, islandTile)
 
         // then
         assertThat {

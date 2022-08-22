@@ -5,13 +5,17 @@ import net.sf.freecol.common.model.ColonyId
 import net.sf.freecol.common.model.MapIdEntities
 import net.sf.freecol.common.model.ObjectWithId
 import net.sf.freecol.common.model.ai.missions.MissionId
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.getByIdOrCreate
+import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.savegame.ObjectFromNodeSetter
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 import promitech.colonization.savegame.XmlNodeParser
+import java.lang.IllegalStateException
 
 class ColonySupplyGoods(
     val colonyId: ColonyId
@@ -32,13 +36,51 @@ class ColonySupplyGoods(
 
     fun isEmpty(): Boolean = supplyGoods.isEmpty() && supplyReservations.isEmpty()
 
-    fun addSupplyGoodsReservation(missionId: MissionId, goodsType: GoodsType, amount: Int) {
-        supplyReservations.getByIdOrCreate(colonyId, { ColonySupplyGoodsReservation(missionId) } )
+    fun makeReservation(missionId: MissionId, goodsType: GoodsType, amount: Int) {
+        if (!supplyGoods.has(goodsType, amount)) {
+            throw IllegalStateException("not supply goods to make reservation: " + goodsType.id + ", amount: " + amount)
+        }
+        supplyGoods.remove(goodsType, amount)
+        supplyReservations.getByIdOrCreate(missionId, { ColonySupplyGoodsReservation(missionId) } )
             .goods.add(goodsType, amount)
+    }
+
+    fun makeReservation(missionId: MissionId, goodsCollection: GoodsCollection) {
+        if (!supplyGoods.has(goodsCollection)) {
+            throw IllegalStateException("not supply goods to make reservation: " + goodsCollection.toPrettyString())
+        }
+        supplyGoods.remove(goodsCollection)
+        supplyReservations.getByIdOrCreate(missionId, { ColonySupplyGoodsReservation(missionId) } )
+            .goods.add(goodsCollection)
     }
 
     fun hasSupplyGoods(goodsCollection: GoodsCollection): Boolean {
         return supplyGoods.has(goodsCollection)
+    }
+
+    fun removeOutdatedReservations(playerMissionsContainer: PlayerMissionsContainer) {
+        var tmpToRemove: ArrayList<ColonySupplyGoodsReservation>? = null
+        for (supplyReservation in supplyReservations) {
+            if (!playerMissionsContainer.hasMission(supplyReservation.missionId)) {
+                if (tmpToRemove == null) {
+                    tmpToRemove = ArrayList<ColonySupplyGoodsReservation>()
+                }
+                tmpToRemove.add(supplyReservation)
+            }
+        }
+        if (tmpToRemove != null) {
+            for (colonySupplyGoodsReservation in tmpToRemove) {
+                supplyGoods.add(colonySupplyGoodsReservation.goods)
+                supplyReservations.removeId(colonySupplyGoodsReservation)
+            }
+        }
+    }
+
+    fun clearWhenNoColonyGoods(player: Player) {
+        val settlement = player.settlements.getByIdOrNull(colonyId)
+        if (!settlement.goodsContainer.hasMoreOrEquals(supplyGoods)) {
+            supplyGoods.clear()
+        }
     }
 
     class Xml : XmlNodeParser<ColonySupplyGoods>() {

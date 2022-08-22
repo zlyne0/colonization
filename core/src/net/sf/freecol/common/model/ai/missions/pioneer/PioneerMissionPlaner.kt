@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.score.ObjectScoreList
 import java.util.HashSet
 
@@ -54,24 +53,29 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         }
         // simplification: existed pioneer units without mission should handled by default colony worker
 
-        val firstDestination : ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
+        val firstDestination: ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
         if (firstDestination == null) {
             return null
         }
-        val buyPionnierOrder = calculateBuyPioneerOrder(player, hasSpecialistOnMission)
-        if (buyPionnierOrder is BuyPioneerOrder.CanNotAfford) {
+
+        val colonyHardyPioneerInRange = findColonyHardyPioneerInRange(player, firstDestination.colony.tile)
+        val colonyToEquiptPioneer = findColonyToEquiptPioneerInRange(player, firstDestination.colony.tile)
+
+        val buyPioneerOrder = calculateBuyPioneerOrder(player, hasSpecialistOnMission, colonyHardyPioneerInRange, colonyToEquiptPioneer)
+        if (buyPioneerOrder is BuyPioneerOrder.CanNotAfford) {
             return null
         }
-        return PioneerBuyPlan(buyPionnierOrder, firstDestination.colony)
+        return PioneerBuyPlan(buyPioneerOrder, firstDestination.colony)
     }
 
     fun findColonyHardyPioneerInRange(
-        sourceTile: Tile,
-        unit: Unit,
-        playerMissionContainer: PlayerMissionsContainer
+        player: Player,
+        sourceTile: Tile
     ): ColonyHardyPioneer? {
-        val player = unit.owner
-        pathFinder.generateRangeMap(game.map, sourceTile, unit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
+        val playerMissionContainer = game.aiContainer.missionContainer(player)
+
+        val freeColonistPathUnit = pathFinder.createPathUnit(player, Specification.instance.freeColonistUnitType)
+        pathFinder.generateRangeMap(game.map, sourceTile, freeColonistPathUnit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
 
         val colonyHardyPioneer = findHardyPioneerInPathFindRange(playerMissionContainer, pathFinder, player)
         if (colonyHardyPioneer != null) {
@@ -118,9 +122,11 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return null
     }
 
-    fun findColonyToEquiptPioneerInRange(unit: Unit, sourceTile: Tile, playerAiContainer: PlayerAiContainer): Colony? {
-        val player = unit.owner
-        pathFinder.generateRangeMap(game.map, sourceTile, unit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
+    fun findColonyToEquiptPioneerInRange(player: Player, sourceTile: Tile): Colony? {
+        val playerAiContainer = game.aiContainer.playerAiContainer(player)
+
+        val freeColonistPathUnit = pathFinder.createPathUnit(player, Specification.instance.freeColonistUnitType)
+        pathFinder.generateRangeMap(game.map, sourceTile, freeColonistPathUnit, PathFinder.includeUnexploredTiles, pioneerSupplyLandRange)
 
         val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
         val pioneerRoleRequiredGoods = pioneerRole.sumOfRequiredGoods()
@@ -157,15 +163,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return minDistanceColony
     }
 
-    fun handlePioneerBuyPlan(pioneerBuyPlan: PioneerBuyPlan, player: Player, playerMissionContainer: PlayerMissionsContainer) {
-        val boughtPioneer : Unit = when (pioneerBuyPlan.buyPioneerOrder) {
-            is BuyPioneerOrder.BuySpecialistOrder -> pioneerBuyPlan.buyPioneerOrder.buy(player)
-            is BuyPioneerOrder.RecruitColonistOrder -> pioneerBuyPlan.buyPioneerOrder.buy(player, game)
-            else -> return
-        }
-        val pioneerMission = PioneerMission(boughtPioneer, pioneerBuyPlan.colony)
-        playerMissionContainer.addMission(pioneerMission)
-        playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, pioneerBuyPlan.colony.tile))
+    fun handlePioneerBuyPlan(pioneerBuyPlan: PioneerBuyPlan, playerMissionContainer: PlayerMissionsContainer) {
+        pioneerBuyPlan.buyPioneerOrder.buyAndPrepareMissions(playerMissionContainer, pioneerBuyPlan.colony, game)
     }
 
     private fun isReachMaxPioneerMissions(
@@ -269,20 +268,48 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return null
     }
 
-    fun calculateBuyPioneerOrder(player: Player, hasSpecialistOnMission: Boolean): BuyPioneerOrder {
+    fun calculateBuyPioneerOrder(
+        player: Player,
+        hasSpecialistOnMission: Boolean,
+        colonyHardyPioneerInRange: ColonyHardyPioneer? = null,
+        colonyToEquiptPioneer: Colony? = null
+    ): BuyPioneerOrder {
+        val freeColonistPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType)
+        val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
+
+        if (colonyHardyPioneerInRange != null) {
+            if (colonyToEquiptPioneer != null) {
+                if (player.hasGold(freeColonistPrice * 2)) {
+                    return BuyPioneerOrder.RecruitColonistWithToolsAndHardyPionnerLocation(colonyToEquiptPioneer, colonyHardyPioneerInRange)
+                }
+                return BuyPioneerOrder.CanNotAfford()
+            } else {
+                val pioneerSumOfRequiredGoods : GoodsCollection = pioneerRole.sumOfRequiredGoods()
+                val pionnerPrice = freeColonistPrice + player.market().aiBidPrice(pioneerSumOfRequiredGoods)
+
+                if (player.hasGold(pionnerPrice * 2)) {
+                    return BuyPioneerOrder.RecruitColonistWithHardyPioneerLocation(colonyHardyPioneerInRange)
+                }
+                return BuyPioneerOrder.CanNotAfford()
+            }
+        }
+
         val hardyPioneerUnitType = Specification.instance.unitTypes.getById(UnitType.HARDY_PIONEER)
         val hardyPioneerPrice = player.europe.aiUnitPrice(hardyPioneerUnitType)
+
         if (player.hasGold(hardyPioneerPrice * 2)) {
-            return BuyPioneerOrder.BuySpecialistOrder(hardyPioneerUnitType)
+            return BuyPioneerOrder.BuySpecialistOrder()
         } else if (!hasSpecialistOnMission) {
-            val colonistPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType)
-
-            val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
-            val pioneerSumOfRequiredGoods : GoodsCollection = pioneerRole.sumOfRequiredGoods()
-            val pionnerPrice = player.market().aiBidPrice(pioneerSumOfRequiredGoods) + colonistPrice
-
-            if (player.hasGold(pionnerPrice * 2)) {
-                return BuyPioneerOrder.RecruitColonistOrder(pioneerRole)
+            if (colonyToEquiptPioneer != null) {
+                if (player.hasGold(freeColonistPrice * 2)) {
+                    return BuyPioneerOrder.RecruitColonistWithToolsLocation(colonyToEquiptPioneer)
+                }
+            } else {
+                val pioneerSumOfRequiredGoods: GoodsCollection = pioneerRole.sumOfRequiredGoods()
+                val pionnerPrice = freeColonistPrice + player.market().aiBidPrice(pioneerSumOfRequiredGoods)
+                if (player.hasGold(pionnerPrice * 2)) {
+                    return BuyPioneerOrder.RecruitColonistOrder()
+                }
             }
         }
         return BuyPioneerOrder.CanNotAfford()

@@ -67,6 +67,20 @@ class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
         }
     }
 
+    fun remove(type: GoodsType, amount: Int) {
+        this.goods.getAndIncrement(type, 0, -amount);
+    }
+
+    fun remove(goodsCollection: GoodsCollection) {
+        for (goods in goodsCollection.goods) {
+            this.goods.getAndIncrement(goods.type(), 0, -goods.amount())
+        }
+    }
+
+    fun has(type: GoodsType, amount: Int): Boolean {
+        return this.goods.get(type, 0) >= amount
+    }
+
     fun has(goodsCollection: GoodsCollection): Boolean {
         for (goodsEntry in goodsCollection) {
             if (this.goods.get(goodsEntry.type(), 0) < goodsEntry.amount()) {

@@ -63,6 +63,13 @@ class TakeRoleEquipmentMission : AbstractMission {
         }
     }
 
+    fun makeReservation(game: Game, player: Player) {
+        val requiredGoods = role.requiredGoodsForRoleCount(roleCount)
+        val playerAiContainer = game.aiContainer.playerAiContainer(player)
+        val colonySupplyGoods = playerAiContainer.findOrCreateColonySupplyGoods(colonyId)
+        colonySupplyGoods.makeReservation(getId(), requiredGoods)
+    }
+
     override fun toString(): String {
         return "TakeRoleEquipmentMission unitId: ${unit.id}, colonyId: ${colonyId}, role: ${role.id}, roleCount: ${roleCount}"
     }
