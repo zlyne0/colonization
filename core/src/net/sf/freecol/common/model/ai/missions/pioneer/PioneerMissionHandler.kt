@@ -58,7 +58,14 @@ class PioneerMissionHandler(
             is PioneerDestination.TheSameIsland -> {
                 mission.changeColony(improvementDestination.plan.colony)
 
+                if (!mission.isSpecialist() && tryCreateHardyPioneerToReplaceMission(playerMissionsContainer, mission, improvementDestination.plan.colony.tile)) {
+                    return
+                }
+
                 if (mission.isPionnerWithoutTools()) {
+                    if (tryCreateTakeRoleEquipmentMission(playerMissionsContainer, mission, improvementDestination.plan.colony.tile)) {
+                        return
+                    }
                     gotoColonyAndWaitForTools(playerMissionsContainer, mission)
                     return
                 }
@@ -80,6 +87,45 @@ class PioneerMissionHandler(
                 }
             }
         }
+    }
+
+    private fun tryCreateTakeRoleEquipmentMission(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: PioneerMission,
+        improveDestTile: Tile
+    ): Boolean {
+        val colonyToEquiptPioneerInRange = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(
+            playerMissionsContainer.player,
+            improveDestTile
+        )
+        if (colonyToEquiptPioneerInRange != null) {
+            val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
+            val takeRoleEquipmentMission = TakeRoleEquipmentMission(mission.pioneer, colonyToEquiptPioneerInRange, pioneerRole)
+            playerMissionsContainer.addMission(mission, takeRoleEquipmentMission)
+            return true
+        }
+        return false
+    }
+
+    private fun tryCreateHardyPioneerToReplaceMission(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: PioneerMission,
+        improveDestTile: Tile
+    ): Boolean {
+        val colonyHardyPioneerInRange = pioneerMissionPlaner.findColonyHardyPioneerInRange(
+            playerMissionsContainer.player,
+            improveDestTile
+        )
+        if (colonyHardyPioneerInRange != null) {
+            val replaceColonyWorkerMission = ReplaceColonyWorkerMission(
+                colonyHardyPioneerInRange.colony,
+                colonyHardyPioneerInRange.hardyPioneer,
+                mission.pioneer
+            )
+            playerMissionsContainer.addMission(mission, replaceColonyWorkerMission)
+            return true
+        }
+        return false
     }
 
     private fun startImprove(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission, improvementDest: TileImprovementPlan) {
@@ -108,6 +154,7 @@ class PioneerMissionHandler(
     private fun equipTools(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission, colony: Colony) {
         val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
         if (colony.hasGoodsToEquipRole(pioneerRole)) {
+            // TODO: czy zdjac z supply chyba tak bo jak statek dostarczy to powstanie supply
             colony.changeUnitRole(mission.pioneer, pioneerRole)
         } else {
             val requestGoodsMissionExists = playerMissionsContainer.hasMissionKt(RequestGoodsMission::class.java, { playerMission ->

@@ -34,6 +34,7 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequest
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -41,6 +42,7 @@ import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.specification.GoodsType
+import net.sf.freecol.common.model.specification.GoodsTypeId
 import promitech.colonization.DI
 import promitech.colonization.Direction
 import promitech.colonization.ai.MissionExecutor
@@ -649,6 +651,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val player = game.playingPlayer
 		val dutch = game.playingPlayer
 		val missionContainer = game.aiContainer.missionContainer(player)
+		val playerAiContainer = game.aiContainer.playerAiContainer(player)
 		val pathFinder = di.pathFinder
 		val pathFinder2 = di.pathFinder2
 		val pathFinder3 = PathFinder()
@@ -665,16 +668,17 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 
 		fortOrange.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+		playerAiContainer.findOrCreateColonySupplyGoods(fortOrange).addSupply(GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
 		val freeColonist = UnitFactory.create(UnitType.EXPERT_FARMER, player, nieuAmsterdamTile)
 
 		val pioneerMission = PioneerMission(freeColonist, fortOrange)
 		missionContainer.addMission(pioneerMission)
 
-		val takeRoleMission = TakeRoleEquipmentMission(freeColonist, fortOrange, pioneerUnitRole, 4)
-		missionContainer.addMission(pioneerMission, takeRoleMission)
-
-		val replaceColonyWorkerMission = ReplaceColonyWorkerMission(fortOrange, workerFreeColonist, freeColonist)
-		missionContainer.addMission(takeRoleMission, replaceColonyWorkerMission)
+//		val takeRoleMission = TakeRoleEquipmentMission(freeColonist, fortOrange, pioneerUnitRole, 4)
+//		missionContainer.addMission(pioneerMission, takeRoleMission)
+//
+//		val replaceColonyWorkerMission = ReplaceColonyWorkerMission(fortOrange, workerFreeColonist, freeColonist)
+//		missionContainer.addMission(takeRoleMission, replaceColonyWorkerMission)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
@@ -687,6 +691,10 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 	fun unitRole(unitRoleId: String): UnitRole {
 		return Specification.instance.unitRoles.getById(unitRoleId)
+	}
+
+	fun goodsType(goodsTypeId: GoodsTypeId): GoodsType {
+		return Specification.instance.goodsTypes.getById(goodsTypeId)
 	}
 
 	fun resetDebug(tileDebugView: TileDebugView) {
