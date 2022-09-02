@@ -11,7 +11,6 @@ import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
-import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.specification.GoodsType
 import org.assertj.core.api.Assertions.assertThat
@@ -281,7 +280,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val playerMissionContainer = game.aiContainer.missionContainer(player)
         playerMissionContainer.clearAllMissions()
 
-        playerAiContainer.addSupplyGoods(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
+        fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
@@ -304,7 +303,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val playerMissionContainer = game.aiContainer.missionContainer(player)
         playerMissionContainer.clearAllMissions()
 
-        playerAiContainer.addSupplyGoods(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
+        fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when

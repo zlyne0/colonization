@@ -21062,10 +21062,6 @@
 	      </playerMissions>
           <playerAiContainer player="player:1">
               <colonySupplyGoods colony="colony:6554">
-                  <supplyGoods>
-                      <goods type="model.goods.muskets" amount="50"/>
-                      <goods type="model.goods.tools" amount="100"/>
-                  </supplyGoods>
                   <colonySupplyGoodsReservation mission="notExistsMissionId:1">
                       <goodsCollection>
                           <goods type="model.goods.muskets" amount="150"/>
@@ -21074,8 +21070,6 @@
                   </colonySupplyGoodsReservation>
               </colonySupplyGoods>
               <colonySupplyGoods colony="colony:6528">
-                  <supplyGoods>
-                  </supplyGoods>
               </colonySupplyGoods>
           </playerAiContainer>
 

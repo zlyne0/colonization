@@ -1,11 +1,10 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.ai.PlayerAiContainer;
-import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+
 import promitech.colonization.ai.ColonyProductionPlaner;
 
 public class ColonyFactory {
@@ -20,14 +19,7 @@ public class ColonyFactory {
 
 	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
         String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
-
-		GoodsCollection unitRoleEquipment = buildByUnit.unitRole.requiredGoodsForRoleCount(buildByUnit.roleCount);
-
         Colony colony = buildColony(buildByUnit, tile, colonyName);
-
-		PlayerAiContainer playerAiContainer = this.game.aiContainer.playerAiContainer(buildByUnit.getOwner());
-		playerAiContainer.addSupplyGoods(colony, unitRoleEquipment);
-
 		ColonyProductionPlaner.createPlan(colony);
         return colony;
 	}

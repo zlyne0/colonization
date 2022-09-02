@@ -245,10 +245,6 @@ public class Savegame1600Verifier {
         ;
 
         ColonySupplyGoods colonySupplyGoods = playerAiContainer.getColonySupplyGoods().getById(fortOranje);
-        assertThat(colonySupplyGoods.getSupplyGoods())
-            .has(tools, 100)
-            .has(muskets, 50)
-        ;
 
         MapIdEntitiesAssert.assertThat(colonySupplyGoods.getSupplyReservations()).hasSize(1);
         ColonySupplyGoodsReservation reservation = colonySupplyGoods.getSupplyReservations().getById("notExistsMissionId:1");

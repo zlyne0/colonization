@@ -39,9 +39,7 @@ class TakeRoleEquipmentMissionHandlerTest : MissionHandlerBaseTestClass() {
         fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
         val fortOranjeSupplyGoods = playerAiContainer.findOrCreateColonySupplyGoods(fortOranje)
         // colony should has supply
-        fortOranjeSupplyGoods.supplyGoods.clear()
         fortOranjeSupplyGoods.supplyReservations.clear()
-        fortOranjeSupplyGoods.supplyGoods.add(goodsType(GoodsType.TOOLS), 100)
 
         val mission = TakeRoleEquipmentMission(freeColonist, fortOranje, unitRole(UnitRole.PIONEER), 4)
         dutchMissionContainer.addMission(mission)
@@ -58,7 +56,6 @@ class TakeRoleEquipmentMissionHandlerTest : MissionHandlerBaseTestClass() {
         assertThat(fortOranje).hasGoods(GoodsType.TOOLS, 20)
         assertThat(mission).isDone
 
-        assertThat(fortOranjeSupplyGoods.supplyGoods).has(goodsType(GoodsType.TOOLS), 20)
         assertThat(fortOranjeSupplyGoods.supplyReservations).notContainsId(mission.id)
     }
 }

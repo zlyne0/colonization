@@ -668,7 +668,6 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 
 		fortOrange.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
-		playerAiContainer.findOrCreateColonySupplyGoods(fortOrange).addSupply(GoodsCollection.of(goodsType(GoodsType.TOOLS), 100))
 		val freeColonist = UnitFactory.create(UnitType.EXPERT_FARMER, player, nieuAmsterdamTile)
 
 		val pioneerMission = PioneerMission(freeColonist, fortOrange)

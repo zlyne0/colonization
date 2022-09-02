@@ -6,8 +6,6 @@ import net.sf.freecol.common.model.MapIdEntities
 import net.sf.freecol.common.model.ObjectWithId
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.hasMission
-import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.getByIdOrCreate
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.removeByPredicate
@@ -24,10 +22,6 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
         if (colonySupplyGoods.isEmpty()) {
             return
         }
-
-        for (colonySupplyGood in colonySupplyGoods) {
-            colonySupplyGood.clearWhenNoColonyGoods(player)
-        }
         colonySupplyGoods.removeByPredicate { supplyEntry ->
             val settlement = player.settlements.getByIdOrNull(supplyEntry.colonyId)
             settlement == null || supplyEntry.isEmpty()
@@ -38,13 +32,6 @@ class PlayerAiContainer(val player: Player) : ObjectWithId(player.id) {
         // when mission has unit and unit die, mission end, and goods reservation should back to supply pool
         for (colonySupplyGood in colonySupplyGoods) {
             colonySupplyGood.removeOutdatedReservations(playerMissionsContainer)
-        }
-    }
-
-    fun addSupplyGoods(colony: Colony, goodsCollection: GoodsCollection) {
-        if (!goodsCollection.isEmpty()) {
-            var colonySupply = colonySupplyGoods.getByIdOrCreate(colony.id) { ColonySupplyGoods(colony.id) }
-            colonySupply.addSupply(goodsCollection)
         }
     }
 
