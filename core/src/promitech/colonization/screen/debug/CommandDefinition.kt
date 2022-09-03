@@ -631,6 +631,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val dutch = game.playingPlayer
 		val pathFinder = di.pathFinder
 		val missionContainer = game.aiContainer.missionContainer(player)
+		//val fortNassau = game.map.getTile(20, 79).settlement.asColony()
 
 		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
 		pioneer.showImprovementsPlan()
