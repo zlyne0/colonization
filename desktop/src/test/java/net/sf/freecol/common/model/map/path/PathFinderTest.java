@@ -351,7 +351,7 @@ class PathFinderTest {
 		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, source);
 
 		// when
-		path = sut.findTheQuickestToTile(game.map, source, Arrays.asList(dest), caravel, includeUnexploredAndExcludeNavyThreatTiles);
+		path = sut.findTheQuickestPath(game.map, source, Arrays.asList(dest), caravel, includeUnexploredAndExcludeNavyThreatTiles);
 		//path = sut.findToTile(game.map, source, dest, caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
 
 		// then

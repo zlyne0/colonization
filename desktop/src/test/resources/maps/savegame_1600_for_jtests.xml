@@ -21038,6 +21038,7 @@
               <transportUnitRequestMission id="transportUnitRequestMission:1" unit="unit:7095" dest="24,78" tranMissionId="transportUnitMission:2" />
 	          <transportUnitMission id="transportUnitMission:2" carrier="unit:6437">
 	              <unitDest unit="unit:7095" tile="24,78" />
+                  <cargoDest tile="24,78" goodsType="model.goods.tools" amount="100" />
               </transportUnitMission>
               <explorerMission id="explorerMission:5" unit="unit:6437"/>
               <explorerMission parentMissionId="explorerMission:5" id="explorerMission:5:1" unit="unit:6437"/>

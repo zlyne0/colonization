@@ -2,24 +2,26 @@ package net.sf.freecol.common.model.ai.missions
 
 import net.sf.freecol.common.model.ColonyFactory
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.SettlementAssert
 import net.sf.freecol.common.model.SettlementFactory
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileAssert
 import net.sf.freecol.common.model.Unit
-import net.sf.freecol.common.model.UnitAssert
+import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.*
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
+import net.sf.freecol.common.model.specification.GoodsType
 import org.assertj.core.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
 import promitech.colonization.orders.move.MoveContext
-import promitech.colonization.savegame.AbstractMissionAssert.*
+import promitech.colonization.savegame.AbstractMissionAssert.assertThat
 
 class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
@@ -54,6 +56,68 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
     }
 
     @Nested
+    inner class DisembarkAndUnloadCargo {
+
+        @Test
+        fun disembarkToTheClosestColonyAndNextUnloadCargo() {
+            // given
+            val player = dutch
+            val sourceTile = game.map.getTile(29, 71)
+            val ship = UnitFactory.create(UnitType.CARAVEL, player, sourceTile)
+            ship.goodsContainer.increaseGoodsQuantity(GoodsType.SILVER, 100)
+            val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, ship)
+
+            clearAllMissions(player)
+            val transportMission = TransportUnitMission(ship)
+            transportMission.addUnitDest(freeColonist, fortOranje.tile)
+            transportMission.addCargoDest(nieuwAmsterdam.tile, goodsType(GoodsType.SILVER), 100)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+            // disembark
+            assertThat(freeColonist).isAtLocation(fortOranje.tile)
+            assertThat(ship).isAtLocation(fortOranje.tile).hasNoUnits()
+            Assertions.assertThat(transportMission.unitsDest).isEmpty()
+
+            newTurnAndExecuteMission(dutch, 1)
+            // unload cargo
+
+            // then
+            assertThat(transportMission).isDone
+            SettlementAssert.assertThat(nieuwAmsterdam).hasGoods(GoodsType.SILVER, 100)
+            assertThat(ship).hasNoGoods()
+        }
+
+        @Test
+        fun disembarkAndUnloadInTheSameDestination() {
+            // given
+            val player = dutch
+            val sourceTile = game.map.getTile(29, 71)
+            val ship = UnitFactory.create(UnitType.CARAVEL, player, sourceTile)
+            ship.goodsContainer.increaseGoodsQuantity(GoodsType.SILVER, 100)
+            val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, ship)
+
+            clearAllMissions(player)
+            val transportMission = TransportUnitMission(ship)
+            transportMission.addUnitDest(freeColonist, fortOranje.tile)
+            transportMission.addCargoDest(fortOranje.tile, goodsType(GoodsType.SILVER), 100)
+            game.aiContainer.missionContainer(dutch).addMission(transportMission)
+
+            // when
+            newTurnAndExecuteMission(dutch, 2)
+            // disembark and unload cargo
+
+            // then
+            Assertions.assertThat(transportMission.unitsDest).isEmpty()
+            assertThat(transportMission).isDone
+            SettlementAssert.assertThat(fortOranje).hasGoods(GoodsType.SILVER, 100)
+            assertThat(ship).isAtLocation(fortOranje.tile).hasNoGoods().hasNoUnits()
+            assertThat(freeColonist).isAtLocation(fortOranje.tile)
+        }
+    }
+
+    @Nested
     inner class Disembark {
 
         @Test
@@ -72,7 +136,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
             // then
             val transferLocation = game.map.getTile(27, 72)
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
@@ -96,7 +160,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
             // then
             val transferLocation = game.map.getTile(27, 72)
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
@@ -122,7 +186,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
             // then
             val transferLocation = game.map.getTile(27, 74)
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
@@ -147,7 +211,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
             // then
             val transferLocation = game.map.getTile(26, 70)
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
@@ -177,7 +241,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
 
             // then
             val transferLocation = game.map.getTile(24, 87)
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
@@ -201,10 +265,10 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch)
 
             // then
-            UnitAssert.assertThat(colonist)
+            assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(dest)
-            UnitAssert.assertThat(galleon)
+            assertThat(galleon)
                 .isAtLocation(dest)
             Assertions.assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
@@ -233,8 +297,8 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(scout).isAtLocation(caravel)
-            UnitAssert.assertThat(caravel).hasUnit(scout)
+            assertThat(scout).isAtLocation(caravel)
+            assertThat(caravel).hasUnit(scout)
         }
 
         @Test
@@ -256,8 +320,8 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(scout).isAtLocation(caravel)
-            UnitAssert.assertThat(caravel).hasUnit(scout)
+            assertThat(scout).isAtLocation(caravel)
+            assertThat(caravel).hasUnit(scout)
         }
 
         @Test
@@ -282,8 +346,8 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(scout).isAtLocation(caravel)
-            UnitAssert.assertThat(caravel).hasUnit(scout)
+            assertThat(scout).isAtLocation(caravel)
+            assertThat(caravel).hasUnit(scout)
         }
 
         fun createIsland(sourceTile: Tile, game: Game) {
@@ -374,15 +438,15 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(u1)
+            assertThat(u1)
                 .isAtLocation(galleon)
                 .isNotAtLocation(dutch.europe)
                 .isNotAtLocation(fortOrangeTile)
-            UnitAssert.assertThat(u2)
+            assertThat(u2)
                 .isNotAtLocation(galleon)
                 .isNotAtLocation(dutch.europe)
                 .isAtLocation(disembarkTile)
-            UnitAssert.assertThat(galleon)
+            assertThat(galleon)
                 .hasUnit(u1)
                 .isNextToLocation(fortOrangeTile)
         }
@@ -400,15 +464,15 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             newTurnAndExecuteMission(dutch, 2)
 
             // then
-            UnitAssert.assertThat(u1)
+            assertThat(u1)
                 .isAtLocation(fortOrangeTile)
                 .isNotAtLocation(dutch.europe)
                 .isNotAtLocation(disembarkTile)
-            UnitAssert.assertThat(u2)
+            assertThat(u2)
                 .isNextToLocation(disembarkTile)
                 .isNotAtLocation(dutch.europe)
                 .isNotAtLocation(disembarkTile)
-            UnitAssert.assertThat(galleon)
+            assertThat(galleon)
                 .hasNoUnits()
                 .isAtLocation(fortOrangeTile)
         }
@@ -422,15 +486,15 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
         }
 
         fun verifyUnitsAtDestination() {
-            UnitAssert.assertThat(u1)
+            assertThat(u1)
                 .isNotAtLocation(galleon)
                 .isNotAtLocation(dutch.getEurope())
                 .isAtLocation(fortOrangeTile)
-            UnitAssert.assertThat(u2)
+            assertThat(u2)
                 .isNotAtLocation(galleon)
                 .isNotAtLocation(dutch.getEurope())
                 .isAtLocation(disembarkTile)
-            UnitAssert.assertThat(galleon)
+            assertThat(galleon)
                 .hasNoUnits()
                 .isAtLocation(fortOrangeTile)
         }

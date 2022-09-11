@@ -5,18 +5,25 @@ import com.badlogic.gdx.utils.Disposable;
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MoveType;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission.CargoDest;
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission.UnitDest;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandler;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.util.CollectionUtils;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import promitech.colonization.orders.move.MoveContext;
@@ -66,39 +73,89 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	if (mission.getCarrier().isAtTileLocation() && !mission.getCarrier().hasMovesPoints()) {
 			return;
 		}
+		validateDestinations(mission);
 
-    	// order should be set by parent mission, parent mission should decide what destination is more important
-		TransportUnitMission.UnitDest firstUnitDest = mission.firstUnitToTransport();
-		if (firstUnitDest == null) {
+		TransportUnitMission.TransportDestination transportDestination = firstFirstDestinationToTransport(mission);
+    	if (transportDestination == null) {
 			logger.debug("player[%s].TransportUnitMissionHandler[%s] no units to transport", player.getId(), mission.getId());
 			mission.setDone();
 			return;
+		}
+
+		if (transportDestination instanceof CargoDest) {
+			CargoDest cargoDest = (CargoDest)transportDestination;
+			if (mission.getCarrier().isAtLocation(Europe.class)) {
+				// do nothing ship should be loaded already
+				mission.embarkColonistsInEurope();
+			}
+			if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
+			if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndUnloadCargo(mission, cargoDest); }
+		}
+
+		if (transportDestination instanceof UnitDest) {
+			UnitDest unitDest = (UnitDest)transportDestination;
+			if (unitDest.unit.isAtLocation(Europe.class)) {
+				if (mission.getCarrier().isAtLocation(Tile.class)) { moveToEurope(mission); }
+				if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
+				if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
+			} else if (unitDest.unit.isAtLocation(Unit.class)) {
+				if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
+				if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
+				if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(mission, unitDest); }
+			} else if (unitDest.unit.isAtLocation(Tile.class)) {
+				if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
+				if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
+				if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndEmbarkUnits(mission, unitDest); }
+			} else {
+				mission.removeUnit(unitDest);
+				logger.debug("player[%s].TransportUnitMissionHandler[%s] unrecognize dest unit destynation type", player.getId(), mission.getId());
+				mission.setDone();
+			}
     	}
 
-    	if (firstUnitDest.unit.isAtLocation(Europe.class)) {
-    		if (mission.getCarrier().isAtLocation(Tile.class)) { moveToEurope(mission); }
-    		if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
-    		if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
-    	} else if (firstUnitDest.unit.isAtLocation(Unit.class)) {
-    		if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
-    		if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
-    		if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(mission, firstUnitDest); }
-    	} else if (firstUnitDest.unit.isAtLocation(Tile.class)) {
-			if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
-			if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
-			if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndEmbarkUnits(mission, firstUnitDest); }
-		} else {
-			mission.removeUnit(firstUnitDest);
-			logger.debug("player[%s].TransportUnitMissionHandler[%s] unrecognize dest unit destynation type", player.getId(), mission.getId());
+		if (mission.isDestinationEmpty()) {
+			logger.debug("player[%s].TransportUnitMissionHandler.disembark all units, end mission", player.getId());
 			mission.setDone();
-    	}
+		}
     }
+
+	private void validateDestinations(TransportUnitMission mission) {
+    	mission.validateUnitDestination();
+		validateCargoDestinations(mission);
+	}
+
+    private void validateCargoDestinations(TransportUnitMission mission) {
+    	Player player = mission.getCarrier().getOwner();
+
+    	List<CargoDest> cargoToRemove = null;
+		for (CargoDest cargoDest : mission.getCargoDests()) {
+			if (!cargoDest.dest.hasSettlement() || !cargoDest.dest.getSettlement().getOwner().equalsId(player)) {
+				if (cargoToRemove == null) {
+					cargoToRemove = new ArrayList<CargoDest>();
+				}
+				if (player.settlements.isEmpty()) {
+					cargoToRemove.add(cargoDest);
+				} else {
+					Tile newDestination = theClosestSettlementTile(mission, cargoDest.dest);
+					if (newDestination == null) {
+						cargoToRemove.add(cargoDest);
+					} else {
+						cargoToRemove.add(cargoDest);
+						mission.addCargoDest(cargoDest, newDestination);
+					}
+				}
+			}
+		}
+		if (cargoToRemove != null) {
+			mission.getCargoDests().removeAll(cargoToRemove);
+		}
+	}
 
 	private void moveToEurope(TransportUnitMission mission) {
 		moveToEuropeStep.sail(mission.getCarrier(), mission);
 	}
 	
-	private void moveAndDisemberkUnits(TransportUnitMission mission, TransportUnitMission.UnitDest unitDest) {
+	private void moveAndDisemberkUnits(TransportUnitMission mission, UnitDest unitDest) {
     	Unit carrier = mission.getCarrier();
 		Path path = pathFinder.findToTile(game.map, carrier, unitDest.dest, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
 		MoveType lastMoveType = unitMoveType.calculateMoveType(carrier, carrier.getTileLocationOrNull(), path.endTile);
@@ -110,7 +167,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		}
 	}
 
-	private void moveToCloseToDestination(TransportUnitMission mission, TransportUnitMission.UnitDest unitDest) {
+	private void moveToCloseToDestination(TransportUnitMission mission, UnitDest unitDest) {
 		// Not generate rangeMap for carrier. Preview use of pathFinder should have generated
 		// pathFinder.generateRangeMap(game.map, carrier, unitDest, PathFinder.includeUnexplored...
 		pathFinder2.generateRangeMap(game.map, unitDest.dest, unitDest.unit, PathFinder.includeUnexploredTiles);
@@ -158,24 +215,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			|| MoveType.MOVE_HIGH_SEAS.equals(aiConfirmedMovePath)
 		) {
 			if (moveContext.destTile.equalsCoordinates(disembarkLocation)) {
-				List<Unit> unitsToDisembark = mission.unitsToDisembark(unitDestination);
-				// disembarkLocation should equals moveContext.destTile
-				boolean unitsDisembarked = moveService.disembarkUnits(
-					carrier,
-					unitsToDisembark,
-					carrier.getTile(),
-					moveContext.destTile
-				);
-				if (unitsDisembarked) {
-					List<TransportUnitMission.UnitDest> unitDests = mission.removeDisembarkedUnits(player, unitDestination, disembarkLocation);
-					endTransportRequestMissions(unitDests);
-				} else {
-					// ignore action, wait turn maybe something change, or next run disembark units co closest place
-				}
-				if (mission.isEmptyUnitsDest()) {
-					logger.debug("player[%s].TransportUnitMissionHandler.disembark all units, end mission", player.getId());
-					mission.setDone();
-				}
+				tryDisembarkUnits(mission, unitDestination, disembarkLocation);
+				tryUnloadCargo(mission, disembarkLocation);
 			}
 		} else {
 			if (logger.isDebug()) {
@@ -191,11 +232,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			notifyParentMissionAboutNoDisembarkAccess(mission, unitDestination, unitsToDisembark);
 
 			// planer should take case about unit and generate another destination
-			List<TransportUnitMission.UnitDest> unitDests = mission.removeNoAccessTileUnits(player, unitDestination);
+			List<UnitDest> unitDests = mission.removeNoAccessTileUnits(player, unitDestination);
 			endTransportRequestMissions(unitDests);
-			if (mission.isEmptyUnitsDest()) {
-				mission.setDone();
-			}
 		}
 	}
 
@@ -203,7 +241,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		// do nothing, move via high seas done in ... 
 	}
 
-	private void moveAndEmbarkUnits(TransportUnitMission mission, TransportUnitMission.UnitDest unitDest) {
+	private void moveAndEmbarkUnits(TransportUnitMission mission, UnitDest unitDest) {
 		Player player = mission.getCarrier().getOwner();
 
 		Path shipPath = pathFinder.findToTile(
@@ -258,7 +296,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
     	if (logger.isDebug()) {
 			String str = "";
-			for (TransportUnitMission.UnitDest unitDest : mission.getUnitsDest()) {
+			for (UnitDest unitDest : mission.getUnitsDest()) {
                 if (unitDest.unit.getTile().isStepNextTo(carrierLocation)
                     || unitDest.unit.getTile().equalsCoordinates(carrierLocation)) {
 					if (!str.isEmpty()) {
@@ -272,7 +310,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			}
 		}
 
-		for (TransportUnitMission.UnitDest unitDest : mission.getUnitsDest()) {
+		for (UnitDest unitDest : mission.getUnitsDest()) {
 			if (unitDest.unit.getTile().isStepNextTo(carrierLocation)) {
 				MoveContext moveContext = MoveContext.embarkUnit(unitDest.unit, carrier);
 				if (MoveType.EMBARK.equals(moveContext.moveType)) {
@@ -284,8 +322,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		}
 	}
 
-	private void endTransportRequestMissions(List<TransportUnitMission.UnitDest> unitDestList) {
-		for (TransportUnitMission.UnitDest unitDest : unitDestList) {
+	private void endTransportRequestMissions(List<UnitDest> unitDestList) {
+		for (UnitDest unitDest : unitDestList) {
 			if (unitDest.transportRequestMissionId == null) {
 				continue;
 			}
@@ -316,6 +354,96 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 					);
 				}
 			}
+		}
+	}
+
+	private TransportUnitMission.TransportDestination firstFirstDestinationToTransport(TransportUnitMission mission) {
+		// first looking for by path, path can not exist(next destination disembark), so take first from list
+		TransportUnitMission.TransportDestination theClosestTransportDestination = findTheClosestTransportDestination(mission);
+		if (theClosestTransportDestination != null) {
+			return theClosestTransportDestination;
+		}
+		return mission.firstTransportOrder();
+	}
+
+	private TransportUnitMission.TransportDestination findTheClosestTransportDestination(TransportUnitMission mission) {
+		Tile sourceTile = mission.carrierPosition(game.map);
+		if (sourceTile == null)	{
+			return null;
+		}
+		Collection<Tile> tiles = mission.destTiles();
+		Tile tile = pathFinder.findTheQuickestTile(game.map, sourceTile, tiles, mission.getCarrier(), PathFinder.includeUnexploredTiles);
+		if (tile != null) {
+			return mission.firstTransportDestinationForTile(tile);
+		}
+		return null;
+	}
+
+	private void moveAndUnloadCargo(TransportUnitMission mission, CargoDest cargoDest) {
+		Path path = pathFinder.findToTile(game.map, mission.getCarrier(), cargoDest.dest, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
+		if (path.isReachedDestination()) {
+			MoveContext moveContext = new MoveContext(mission.getCarrier(), path);
+			moveService.aiConfirmedMovePath(moveContext);
+
+			if (mission.getCarrier().getTile().equalsCoordinates(cargoDest.dest)) {
+				tryUnloadCargo(mission, cargoDest.dest);
+				tryDisembarkUnits(mission, cargoDest.dest, cargoDest.dest);
+			}
+		}
+	}
+
+	private Tile theClosestSettlementTile(TransportUnitMission mission, Tile sourceTile) {
+    	Player player = mission.getCarrier().getOwner();
+
+    	List<Tile> tiles = new ArrayList<Tile>(player.settlements.size());
+		for (Settlement settlement : player.settlements) {
+			tiles.add(settlement.tile);
+		}
+		return pathFinder.findTheQuickestTile(
+			game.map,
+			sourceTile,
+			tiles,
+			mission.getCarrier(),
+			PathFinder.excludeUnexploredTiles
+		);
+	}
+
+	private void tryUnloadCargo(TransportUnitMission mission, Tile unloadDestination) {
+		if (unloadDestination.hasSettlement() && mission.getCarrier().getTile().equalsCoordinates(unloadDestination)) {
+			List<CargoDest> unloadedCargo = mission.unloadCargo(unloadDestination);
+			if (!unloadedCargo.isEmpty()) {
+				RequestGoodsMissionHandler requestGoodsMissionHandler = (RequestGoodsMissionHandler)missionExecutor.findMissionHandler(RequestGoodsMission.class);
+
+				for (CargoDest cargo : unloadedCargo) {
+					if (cargo.requestGoodsMissionId != null) {
+						requestGoodsMissionHandler.handleUnloadCargoForGoodsRequest(cargo.requestGoodsMissionId);
+					}
+				}
+			}
+		}
+	}
+
+	private void tryDisembarkUnits(TransportUnitMission mission, Tile unitDestination, Tile disembarkLocation) {
+    	Player player = mission.getCarrier().getOwner();
+    	Unit carrier = mission.getCarrier();
+
+		List<Unit> unitsToDisembark = mission.unitsToDisembark(unitDestination);
+		if (unitsToDisembark.isEmpty()) {
+			return;
+		}
+
+		// disembarkLocation should equals moveContext.destTile
+		boolean unitsDisembarked = moveService.disembarkUnits(
+			carrier,
+			unitsToDisembark,
+			carrier.getTile(),
+			disembarkLocation
+		);
+		if (unitsDisembarked) {
+			List<UnitDest> unitDests = mission.removeDisembarkedUnits(player, unitDestination, disembarkLocation);
+			endTransportRequestMissions(unitDests);
+		} else {
+			// ignore action, wait turn maybe something change, or next run disembark units co closest place
 		}
 	}
 }

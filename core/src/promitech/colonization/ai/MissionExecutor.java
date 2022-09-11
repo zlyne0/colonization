@@ -161,6 +161,14 @@ public class MissionExecutor implements Disposable {
         return missionHandler;
     }
 
+    public <T extends AbstractMission> MissionHandler<T> findMissionHandler(Class<T> missionClass) {
+        MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(missionClass);
+        if (missionHandler == null) {
+            throw new IllegalStateException("can not find missionHandler for mission type " + missionClass);
+        }
+        return missionHandler;
+    }
+
     public Collection<MissionHandler<? extends AbstractMission>> allMissionHandlers() {
 	    return missionHandlerMapping.values();
     }

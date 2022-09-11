@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.map.path;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -169,18 +170,31 @@ public class PathFinder {
         return path;
     }
 
-	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
+	public Path findTheQuickestPath(final Map map, final Tile startTile, final Collection<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
+		Tile theQuickestTile = findTheQuickestTile(map, startTile, endTiles, unit, flags);
+		if (theQuickestTile != null) {
+			return createPath(theQuickestTile);
+		}
+		return null;
+	}
+
+	public Tile findTheQuickestTile(final Map map, final Tile startTile, final Collection<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
 		if (endTiles.isEmpty()) {
 			throw new IllegalArgumentException("endTiles can not be empty");
 		}
-		Path theBestPath = null;
-		for (Tile oneTile : endTiles) {
-			Path onePath = findToTile(map, startTile, oneTile, unit, flags);
-			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
-				theBestPath = onePath;
+		generateRangeMap(map, startTile, unit, flags);
+
+		Tile theBestTile = null;
+		int theBestCost = INFINITY;
+
+		for (Tile tile : endTiles) {
+			int cost = turnsCost(tile);
+			if (cost < theBestCost) {
+				theBestCost = cost;
+				theBestTile = tile;
 			}
 		}
-		return theBestPath;
+		return theBestTile;
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags) {
@@ -201,7 +215,7 @@ public class PathFinder {
 		generateRangeMap(map, createPathUnit(unit), flags, INFINITY);
 	}
 
-	public void generateRangeMap(final Map map, List<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
+	public void generateRangeMap(final Map map, Collection<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.addAll(startTiles);
 		generateRangeMap(map, pathUnit, flags, INFINITY);
