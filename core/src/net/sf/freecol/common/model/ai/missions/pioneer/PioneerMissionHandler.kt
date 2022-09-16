@@ -96,7 +96,8 @@ class PioneerMissionHandler(
     ): Boolean {
         val colonyToEquiptPioneerInRange = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(
             playerMissionsContainer.player,
-            improveDestTile
+            improveDestTile,
+            mission.id
         )
         if (colonyToEquiptPioneerInRange != null) {
             val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
@@ -152,13 +153,18 @@ class PioneerMissionHandler(
     }
 
     private fun equipTools(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission, colony: Colony) {
+        val playerAiContainer = game.aiContainer.playerAiContainer(playerMissionsContainer.player)
         val pioneerRole = Specification.instance.unitRoles.getById(UnitRole.PIONEER)
-        if (colony.hasGoodsToEquipRole(pioneerRole)) {
-            // TODO: czy zdjac z supply chyba tak bo jak statek dostarczy to powstanie supply
+
+        val colonySupplyGoods = playerAiContainer.findColonySupplyGoods(colony)
+        if (pioneerMissionPlaner.hasColonyRequiredGoods(colony, pioneerRole.sumOfRequiredGoods(), colonySupplyGoods, mission.id)) {
             colony.changeUnitRole(mission.pioneer, pioneerRole)
+            if (colonySupplyGoods != null) {
+                colonySupplyGoods.removeSupplyReservation(mission.id)
+            }
         } else {
-            val requestGoodsMissionExists = playerMissionsContainer.hasMissionKt(RequestGoodsMission::class.java, { playerMission ->
-                playerMission.purpose.equals(mission.id)
+            val requestGoodsMissionExists = playerMissionsContainer.hasMissionKt(RequestGoodsMission::class.java, { requestGoodsMission ->
+                requestGoodsMission.purpose.equals(mission.id)
             })
             if (!requestGoodsMissionExists) {
                 val requiredGoods = pioneerRole.sumOfRequiredGoods()

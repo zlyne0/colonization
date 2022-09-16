@@ -284,7 +284,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, nieuwAmsterdam.tile)
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, nieuwAmsterdam.tile, null)
 
         // then
         assertThat {
@@ -307,7 +307,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
 
         // when
-        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, islandTile)
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, islandTile, null)
 
         // then
         assertThat {

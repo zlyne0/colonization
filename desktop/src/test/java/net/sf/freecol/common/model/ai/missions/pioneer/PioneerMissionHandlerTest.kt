@@ -14,7 +14,9 @@ import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
@@ -157,6 +159,39 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
             .hasDependMission(pioneerMission, transportRequest.id, TransportUnitRequestMission::class.java)
     }
 
+    @Test
+    fun `should deliver tools for pioneer goods request`() {
+        // given
+        removeAllImprovements(fortOranje)
+
+        val player = dutch
+        val playerMissionContainer = game.aiContainer.missionContainer(dutch)
+        val seaTile = game.map.getTile(27, 80)
+
+        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, fortOranje.tile)
+        val pioneerMission = PioneerMission(freeColonist, fortOranje)
+        playerMissionContainer.addMission(pioneerMission)
+        val requestGoodsMission = RequestGoodsMission(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100), pioneerMission.id)
+        playerMissionContainer.addMission(pioneerMission, requestGoodsMission)
+
+        val ship = UnitFactory.create(UnitType.CARAVEL, player, seaTile)
+        ship.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+        val transportUnitMission = TransportUnitMission(ship)
+        transportUnitMission.addCargoDest(fortOranje.tile, goodsType(GoodsType.TOOLS), 100, requestGoodsMission.id)
+        playerMissionContainer.addMission(transportUnitMission)
+
+        // when
+        newTurnAndExecuteMission(player, 1)
+
+        // then
+        assertThat(transportUnitMission).isDone
+        assertThat(requestGoodsMission).isDone
+        assertThat(ship).hasNoGoods()
+        assertThat(freeColonist)
+            .isUnitRole(UnitRole.PIONEER)
+            .hasRoleCount(unitRole(UnitRole.PIONEER).maximumCount)
+    }
+
     fun addAllImprovements(player: Player) {
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
@@ -196,5 +231,14 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
     fun assertNoImprovementsPlan(colony: Colony) {
         assertEquals(0, balancedImprovementPolicy.generateImprovements(colony).improvements.size)
+    }
+
+    fun removeAllImprovements(colony: Colony) {
+        for (colonyTile in colony.colonyTiles) {
+            colonyTile.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+            if (!colonyTile.tile.equalsCoordinates(colony.tile)) {
+                colonyTile.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+            }
+        }
     }
 }

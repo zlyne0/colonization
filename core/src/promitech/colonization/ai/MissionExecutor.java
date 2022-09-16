@@ -103,7 +103,7 @@ public class MissionExecutor implements Disposable {
 		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
         missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
-        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
+        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler(game));
         missionHandlerMapping.put(TransportUnitRequestMission.class, transportUnitRequestMissionHandler);
         missionHandlerMapping.put(ReplaceColonyWorkerMission.class, new ReplaceColonyWorkerMissionHandler(this));
         missionHandlerMapping.put(TakeRoleEquipmentMission.class, new TakeRoleEquipmentMissionHandler(game));

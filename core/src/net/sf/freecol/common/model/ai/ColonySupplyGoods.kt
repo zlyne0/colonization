@@ -30,9 +30,12 @@ class ColonySupplyGoods(
             .goods.add(goodsCollection)
     }
 
-    fun reservationSum(goodsType: GoodsType): Int {
+    fun reservationSum(goodsType: GoodsType, ignoreReservationsForMission: MissionId?): Int {
         var reservationSum = 0
         for (supplyReservation in supplyReservations) {
+            if (ignoreReservationsForMission != null && supplyReservation.missionId.equals(ignoreReservationsForMission)) {
+                continue
+            }
             reservationSum += supplyReservation.goods.amount(goodsType)
         }
         return reservationSum

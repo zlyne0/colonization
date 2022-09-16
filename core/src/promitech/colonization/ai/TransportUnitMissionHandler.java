@@ -416,7 +416,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 
 				for (CargoDest cargo : unloadedCargo) {
 					if (cargo.requestGoodsMissionId != null) {
-						requestGoodsMissionHandler.handleUnloadCargoForGoodsRequest(cargo.requestGoodsMissionId);
+						requestGoodsMissionHandler.handleUnloadCargoForGoodsRequest(cargo.requestGoodsMissionId, playerMissionsContainer);
 					}
 				}
 			}

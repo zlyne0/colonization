@@ -19,7 +19,8 @@ class RequestGoodsMission : AbstractMission {
     var colonyId: String
         private set
 
-    private lateinit var goodsCollection: GoodsCollection
+    lateinit var goodsCollection: GoodsCollection
+        private set
 
     val purpose: String
 
@@ -56,6 +57,10 @@ class RequestGoodsMission : AbstractMission {
                 goodsCollection.toPrettyString()
             )
         }
+    }
+
+    override fun toString(): String {
+        return "id: " + getId() + ", colonyId: " + colonyId + ", purpose: " + purpose + ", goodsCollection: " + goodsCollection.toPrettyString()
     }
 
     class Xml : AbstractMission.Xml<RequestGoodsMission>() {
