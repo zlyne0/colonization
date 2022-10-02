@@ -40,10 +40,22 @@ sealed class AddImprovementPolicy {
                 if (tile.hasTileResource() || tile.hasRiver()) {
                     addIfAbsent(imprList, tile, roadType)
                 } else {
-                    if (colony.colonyUnitsCount <= 4 && hasClearNotPlowedTile || forestNumber == 1) {
-                        addIfAbsent(imprList, tile, roadType)
-                    } else {
+//                    if (colony.colonyUnitsCount <= 4 && hasClearNotPlowedTile || forestNumber == 1) {
+//                        addIfAbsent(imprList, tile, roadType)
+//                    } else {
+//                        addIfAbsent(imprList, tile, clearForestType)
+//                    }
+
+                    if (colonyTile.isCenterColonyTile()) {
                         addIfAbsent(imprList, tile, clearForestType)
+                    } else {
+                        if (hasNoForestNotWorkingTile) {
+                            addIfAbsent(imprList, tile, roadType)
+                        } else {
+                            if (colonyTile.hasFoodProduction()) {
+                                addIfAbsent(imprList, tile, clearForestType)
+                            }
+                        }
                     }
                 }
             } else {
@@ -78,8 +90,7 @@ sealed class AddImprovementPolicy {
     protected val roadType : TileImprovementType
     protected val clearForestType : TileImprovementType
 
-    protected var hasClearNotPlowedTile = false
-    protected var forestNumber = 1
+    protected var hasNoForestNotWorkingTile = false
 
     init {
         plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
@@ -92,8 +103,7 @@ sealed class AddImprovementPolicy {
     fun generateImprovements(colony: Colony): ColonyTilesImprovementPlan {
         val imprList = mutableListOf<TileImprovementPlan>()
 
-        hasClearNotPlowedTile = calculateClearNotPlowedTile(colony)
-        forestNumber = calculateForestNumber(colony)
+        hasNoForestNotWorkingTile = calculateHasNoForestNotWorkingTile(colony)
 
         findCenterTile(colony) { colonyTile ->
             addImprovement(colony, colonyTile, imprList)
@@ -201,6 +211,18 @@ sealed class AddImprovementPolicy {
         return false
     }
 
+    protected fun calculateHasNoForestNotWorkingTile(colony: Colony): Boolean {
+        for (colonyTile in colony.colonyTiles) {
+            if (colonyTile.tile.type.isWater || colonyTile.tile.hasSettlement() || colonyTile.isCenterColonyTile) {
+                continue
+            }
+            if (!colonyTile.tile.type.isForested && colonyTile.hasNotWorker()) {
+                return true
+            }
+        }
+        return false
+    }
+
     protected fun calculateForestNumber(colony: Colony): Int {
         var forestNumber = 0
         for (colonyTile in colony.colonyTiles) {
@@ -211,7 +233,7 @@ sealed class AddImprovementPolicy {
                 continue
             }
             if (colonyTile.tile.type.isForested) {
-                return forestNumber++
+                forestNumber++
             }
         }
         return forestNumber

@@ -100,15 +100,16 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         // then
         ScoreableObjectsListAssert.assertThat(planScore)
             .hasSize(4)
-            .hasScore(0, 60, eq(nieuwAmsterdam))
-            .hasScore(1, 50, eq(fortNassau))
-            .hasScore(2, 0, eq(fortMaurits))
-            .hasScore(3, 0, eq(fortOranje))
+            .hasScore(0, 50, eq(fortNassau))
+            .hasScore(1, 0, eq(fortMaurits))
+            .hasScore(2, 0, eq(fortOranje))
+            .hasScore(3, 0, eq(nieuwAmsterdam))
     }
 
     @Test
     fun `should create buy pioneer and create mission`() {
         // given
+        removeAllImprovements(nieuwAmsterdam)
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
         val playerMissionContainer = game.aiContainer.missionContainer(dutch)

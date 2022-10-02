@@ -127,6 +127,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     @Test
     fun `should change colony after all improvements`() {
         // given
+        removeAllImprovements(nieuwAmsterdam)
         val dutchMissionContainer = game.aiContainer.missionContainer(dutch)
         val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, tileFrom(fortOranje, Direction.W))
         val pioneerMission = PioneerMission(pioneer, fortOranje)

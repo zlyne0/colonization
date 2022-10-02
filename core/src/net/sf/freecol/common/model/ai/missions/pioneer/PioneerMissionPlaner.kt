@@ -236,7 +236,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             colonyWithMissions,
             mission
         )
-        if (improvementDestination == null) {
+        if (improvementDestination == null || improvementDestination.isEmpty()) {
             return PioneerDestination.Lack()
         }
         if (pathFinder.isTurnCostAbove(improvementDestination.colony.tile, minDistanceToUseShipTransport)) {
