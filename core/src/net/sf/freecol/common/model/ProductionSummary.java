@@ -47,7 +47,15 @@ public class ProductionSummary {
 	}
 	
 	public boolean isEmpty() {
-		return goods.size == 0;
+		if (goods.size == 0) {
+			return true;
+		}
+		for (Entry<String> goodsEntry : goods) {
+			if (goodsEntry.value > 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
     public boolean isNotEmpty() {
@@ -99,6 +107,12 @@ public class ProductionSummary {
             goods.getAndIncrement(psEntry.key, 0, psEntry.value);
         }
     }
+
+	public void addGoods(GoodsCollection goodsCollection) {
+		for (Entry<GoodsType> goodsTypeEntry : goodsCollection) {
+			goods.getAndIncrement(goodsTypeEntry.key.getId(), 0, goodsTypeEntry.value);
+		}
+	}
 
 	public void decreaseGoods(ProductionSummary goodsCollection) {
 		for (Entry<String> g : goodsCollection.goods.entries()) {

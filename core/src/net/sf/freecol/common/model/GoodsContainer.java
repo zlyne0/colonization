@@ -199,6 +199,10 @@ public class GoodsContainer {
         updateTakenCargoSlots();
     }
 
+    public boolean isEmpty() {
+        return goods.isEmpty();
+    }
+
     public static class Xml extends XmlNodeParser<GoodsContainer> {
         private static final String ATTR_AMOUNT = "amount";
 		private static final String ATTR_TYPE = "type";

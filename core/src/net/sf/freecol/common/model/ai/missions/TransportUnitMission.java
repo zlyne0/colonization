@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
+
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
@@ -7,6 +9,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -335,6 +338,15 @@ public class TransportUnitMission extends AbstractMission {
 		return newCargoDest;
 	}
 
+	public void addCargoDest(Player player, RequestGoodsMission transportRequestMission) {
+		for (ObjectIntMap.Entry<GoodsType> goodsEntry : transportRequestMission.getGoodsCollection()) {
+			Settlement settlement = player.settlements.getByIdOrNull(transportRequestMission.getColonyId());
+			if (settlement != null) {
+				cargoDests.add(new CargoDest(settlement.tile, goodsEntry.key, goodsEntry.value, transportRequestMission.getId()));
+			}
+		}
+	}
+
 	public Tile carrierPosition(Map map) {
 		Tile sourceTile = null;
 		if (carrier.isAtHighSeasLocation() || carrier.isAtEuropeLocation()) {
@@ -366,6 +378,15 @@ public class TransportUnitMission extends AbstractMission {
 
 	public List<CargoDest> getCargoDests() {
 		return cargoDests;
+	}
+
+	public boolean isNotLoaded(RequestGoodsMission transportRequestMission) {
+		for (CargoDest cargoDest : cargoDests) {
+			if (transportRequestMission.equalsId(cargoDest.requestGoodsMissionId)) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static class Xml extends AbstractMission.Xml<TransportUnitMission> {

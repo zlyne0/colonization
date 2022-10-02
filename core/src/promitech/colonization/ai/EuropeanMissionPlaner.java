@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerBuyPlan;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutBuyPlan;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
@@ -42,6 +43,7 @@ public class EuropeanMissionPlaner {
 	private final ScoutMissionPlaner scoutMissionPlaner;
 	private final PioneerMissionPlaner pioneerMissionPlaner;
 	private final ColonyWorkerRequestPlaner colonyWorkerRequestPlaner;
+	private final BuyGoodsPlaner buyGoodsPlaner;
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final PathFinder pathFinder2;
@@ -52,6 +54,7 @@ public class EuropeanMissionPlaner {
 		this.scoutMissionPlaner = new ScoutMissionPlaner(game, pathFinder, pathFinder2);
 		this.pioneerMissionPlaner = new PioneerMissionPlaner(game, pathFinder);
 		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game, pathFinder);
+		this.buyGoodsPlaner = new BuyGoodsPlaner(game);
 
 		this.game = game;
 		this.pathFinder = pathFinder;
@@ -92,6 +95,7 @@ public class EuropeanMissionPlaner {
 		if (pioneerBuyPlan != null) {
 			pioneerMissionPlaner.handlePioneerBuyPlan(pioneerBuyPlan, playerMissionContainer);
 		}
+		buyGoodsPlaner.handleBuyOrders(player, playerMissionContainer);
 	}
 
 	protected void navyUnitPlaner(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
@@ -188,6 +192,10 @@ public class EuropeanMissionPlaner {
 	protected MissionPlanStatus transportUnitFromEurope(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
 		TransportUnitMission tum = null;
 
+		if (navyUnit.isAtEuropeLocation()) {
+			tum = createTransportMissionFromRequestGoodsMission(tum, navyUnit, playerMissionContainer);
+		}
+
 		tum = createTransportMissionFromTransportRequest(
 			tum,
 			navyUnit,
@@ -222,6 +230,29 @@ public class EuropeanMissionPlaner {
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 		return MissionPlanStatus.NO_MISSION;
+	}
+
+	private TransportUnitMission createTransportMissionFromRequestGoodsMission(
+		TransportUnitMission tum,
+		final Unit navyUnit,
+		final PlayerMissionsContainer playerMissionContainer
+	) {
+		List<RequestGoodsMission> transportRequestMissions = playerMissionContainer.findMissions(
+			RequestGoodsMission.class,
+			RequestGoodsMission.isBoughtPredicate
+		);
+
+		for (RequestGoodsMission transportRequestMission : transportRequestMissions) {
+			if (navyUnit.hasSpaceForAdditionalCargo(transportRequestMission.getGoodsCollection())) {
+				if (tum == null) {
+					tum = new TransportUnitMission(navyUnit);
+				}
+				if (tum.isNotLoaded(transportRequestMission)) {
+					tum.addCargoDest(navyUnit.getOwner(), transportRequestMission);
+				}
+			}
+		}
+		return tum;
 	}
 
 	private void prepareExploreMissions(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {

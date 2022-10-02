@@ -50,6 +50,7 @@ import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
+import promitech.colonization.ai.UnitTypeId
 import promitech.colonization.ai.findCarrier
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.savegame.SaveGameList
@@ -597,6 +598,11 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			tileDebugView.appendStr(tile.x, tile.y, "RplcWorker")
 		}
 
+		fun showOnMap(mission: PioneerMission) {
+			val tile = mission.colony().tile
+			tileDebugView.appendStr(tile.x, tile.y, "Pioneer")
+		}
+
 		for (mission in missionContainer.missions.entities()) {
 			if (mission.isDone) {
 				continue
@@ -612,6 +618,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				is ScoutMission -> showOnMap(mission)
 				is TransportUnitRequestMission -> showOnMap(mission)
 				is ReplaceColonyWorkerMission -> showOnMap(mission)
+				is PioneerMission -> showOnMap(mission)
 				else -> println("Can not print mission on map for " + mission.javaClass.name)
 			}
 		}
@@ -632,10 +639,24 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val pathFinder = di.pathFinder
 		val missionContainer = game.aiContainer.missionContainer(player)
 		//val fortNassau = game.map.getTile(20, 79).settlement.asColony()
+		val fortOranjeTile = game.map.getTile(25, 75)
+		val nieuwAmsterdamTile = game.map.getTile(24, 78)
 
 		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
 		pioneer.showImprovementsPlan()
+/*
+		missionContainer.clearAllMissions()
 
+		val sourceTile = game.map.getTile(29, 71)
+		val ship = UnitFactory.create(UnitType.CARAVEL, player, player.europe)
+		ship.goodsContainer.increaseGoodsQuantity(GoodsType.SILVER, 100)
+		val freeColonist = UnitFactory.create(UnitType.ELDER_STATESMAN, player, ship)
+
+		val transportUnitMission = TransportUnitMission(ship)
+		transportUnitMission.addUnitDest(freeColonist, fortOranjeTile)
+		transportUnitMission.addCargoDest(nieuwAmsterdamTile, goodsType(GoodsType.SILVER), 100)
+		missionContainer.addMission(transportUnitMission)
+*/
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
         mapActor?.resetMapModel()
         mapActor?.resetUnexploredBorders()

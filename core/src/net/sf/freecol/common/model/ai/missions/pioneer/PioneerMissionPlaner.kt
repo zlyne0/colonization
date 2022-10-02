@@ -37,7 +37,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     private val pioneerSupplyLandRange = 3
     private val pioneerSupplySeaRange = 2
     private val minDistanceToUseShipTransport = 5
-    private val improvedAllTilesInColonyToAllColonyRatio: Double = 0.6
+    private val improvedAllTilesInColonyToAllColonyRatio: Double = 0.7
 
     fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): PioneerBuyPlan? {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
@@ -233,7 +233,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         var improvementDestination: ColonyTilesImprovementPlan? = findTheBestDestinationInRange(
             pathFinder,
             improvementsPlanDestinationsScore,
-            colonyWithMissions
+            colonyWithMissions,
+            mission
         )
         if (improvementDestination == null) {
             return PioneerDestination.Lack()
@@ -247,10 +248,17 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     private fun findTheBestDestinationInRange(
         rangePathFinder: PathFinder,
         improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
-        colonyWithMissions: Set<String>
+        colonyWithMissions: Set<String>,
+        actualPioneerMission: PioneerMission
     ): ColonyTilesImprovementPlan? {
         var improvementDestination: ColonyTilesImprovementPlan? = null
         var destinationScore: Double = 0.0
+        for (planScore in improvementsPlanDestinationsScore) {
+            if (planScore.obj.colony.equalsId(actualPioneerMission.colonyId)) {
+                improvementDestination = planScore.obj
+                destinationScore = planScore.score().toDouble() / nextColonyDistanceValue(rangePathFinder, planScore.obj.colony)
+            }
+        }
         for (planScore in improvementsPlanDestinationsScore) {
             if (planScore.score() == 0 || colonyWithMissions.contains(planScore.obj.colony.id)) {
                 continue
@@ -343,7 +351,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             improvementPlanScore.add(improvementPlan, calculateScore(improvementPlan))
         }
 
-        val actualRatio = calculateImprovedToAllColoniesRatio(player, improvementPlanScore)
+        // ratio of colonises without improvements to colonies with improvements
+        val actualRatio = calculateColoniesWithoutImprovementsToAllColoniesRatio(player, improvementPlanScore)
         if (actualRatio >= improvedAllTilesInColonyToAllColonyRatio) {
             for (scorePlan in improvementPlanScore) {
                 val plan = scorePlan.obj
@@ -356,7 +365,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return improvementPlanScore
     }
 
-    private fun calculateImprovedToAllColoniesRatio(
+    private fun calculateColoniesWithoutImprovementsToAllColoniesRatio(
         player: Player,
         improvementPlanScore: ObjectScoreList<ColonyTilesImprovementPlan>
     ): Double {

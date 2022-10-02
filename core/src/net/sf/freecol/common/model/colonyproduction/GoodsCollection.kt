@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.colonyproduction
 
 import com.badlogic.gdx.utils.ObjectIntMap
+import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.specification.GoodsType
 import promitech.colonization.savegame.XmlNodeAttributes
@@ -100,6 +101,14 @@ class GoodsCollection : Iterable<ObjectIntMap.Entry<GoodsType>> {
 
     fun clear() {
         goods.clear()
+    }
+
+    fun slotsAmount(): Int {
+        var slots = 0
+        for (goodsEntry in goods) {
+            slots += ProductionSummary.slotsForQuantity(goodsEntry.amount())
+        }
+        return slots
     }
 
     fun toPrettyString(): String {

@@ -9,12 +9,22 @@ import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.colonyproduction.amount
 import net.sf.freecol.common.model.colonyproduction.type
 import net.sf.freecol.common.model.specification.GoodsType
+import net.sf.freecol.common.util.Predicate
 import promitech.colonization.ai.MissionHandlerLogger.logger
 import promitech.colonization.savegame.ObjectFromNodeSetter
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 
 class RequestGoodsMission : AbstractMission {
+
+    companion object {
+        @JvmField
+        val isBoughtPredicate = object: Predicate<RequestGoodsMission> {
+            override fun test(mission: RequestGoodsMission): Boolean {
+                return mission.boughtInEurope
+            }
+        }
+    }
 
     var colonyId: String
         private set
@@ -23,20 +33,25 @@ class RequestGoodsMission : AbstractMission {
         private set
 
     val purpose: String
+    var boughtInEurope = false
+        private set
 
     constructor(
         colony: Colony,
         goodsCollection: GoodsCollection,
-        purpose: String = ""
+        purpose: String = "",
+        boughtInEurope: Boolean = false
     ) : super(Game.idGenerator.nextId(RequestGoodsMission::class.java)) {
         this.colonyId = colony.id
         this.goodsCollection = goodsCollection
         this.purpose = purpose
+        this.boughtInEurope = boughtInEurope
     }
 
-    private constructor(missionId: String, colonyId: String, purpose: String = "") : super(missionId) {
+    private constructor(missionId: String, colonyId: String, purpose: String = "", boughtInEurope: Boolean = false) : super(missionId) {
         this.colonyId = colonyId
         this.purpose = purpose
+        this.boughtInEurope = boughtInEurope
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) { }
@@ -63,9 +78,14 @@ class RequestGoodsMission : AbstractMission {
         return "id: " + getId() + ", colonyId: " + colonyId + ", purpose: " + purpose + ", goodsCollection: " + goodsCollection.toPrettyString()
     }
 
+    fun setAsBoughtInEurope() {
+        boughtInEurope = true
+    }
+
     class Xml : AbstractMission.Xml<RequestGoodsMission>() {
         private val ATTR_COLONY = "colony"
         private val ATTR_PURPOSE = "purpose"
+        private val ATTR_BOUGHT_IN_EUROPE = "bought"
 
         init {
             addNode(GoodsCollection::class.java, object: ObjectFromNodeSetter<RequestGoodsMission, GoodsCollection> {
@@ -82,9 +102,9 @@ class RequestGoodsMission : AbstractMission {
             nodeObject = RequestGoodsMission(
                 attr.id,
                 attr.getStrAttribute(ATTR_COLONY),
-                attr.getStrAttribute(ATTR_PURPOSE, "")
+                attr.getStrAttribute(ATTR_PURPOSE, ""),
+                attr.getBooleanAttribute(ATTR_BOUGHT_IN_EUROPE, false)
             )
-
             super.startElement(attr)
         }
 
@@ -94,6 +114,7 @@ class RequestGoodsMission : AbstractMission {
             attr.setId(mission)
             attr.set(ATTR_COLONY, mission.colonyId)
             attr.set(ATTR_PURPOSE, mission.purpose, "")
+            attr.set(ATTR_BOUGHT_IN_EUROPE, mission.boughtInEurope, false)
         }
 
         override fun getTagName(): String {

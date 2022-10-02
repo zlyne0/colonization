@@ -173,6 +173,16 @@ public class Market extends ObjectWithId {
 	
     private static TransactionEffectOnMarket TRANSACTION_EFFECT_ON_MARKET = new TransactionEffectOnMarket();
 
+	public void aiBuyGoods(Game game, Player player, GoodsCollection goodsCollection) {
+		for (Entry<GoodsType> goodsTypeEntry : goodsCollection) {
+			MarketData marketData = marketGoods.getById(goodsTypeEntry.key.getId());
+			if (marketData.hasArrears()) {
+				marketData.repayArrears();
+			}
+			buyGoods(game, player, goodsTypeEntry.key, goodsTypeEntry.value);
+		}
+	}
+
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
 		return buyGoods(game, player, goodsType, goodsAmount, marketGoodsPrice);
 	}

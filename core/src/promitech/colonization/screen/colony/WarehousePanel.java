@@ -69,8 +69,6 @@ public class WarehousePanel extends Container<ScrollPane> implements DragAndDrop
     		if (!goodsType.isStorable()) {
     			continue;
     		}
-    		System.out.println("goodsType: " + goodsType.getId() + ", " + goodsType.isStorable());
-    		
     		int goodsAmount = colony.getGoodsContainer().goodsAmount(goodsType);
     		setGoodQuantity(goodsType, goodsAmount, colony.exportInfo(goodsType).isExport());
     	}
