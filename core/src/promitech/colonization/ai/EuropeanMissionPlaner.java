@@ -147,6 +147,11 @@ public class EuropeanMissionPlaner {
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 
+		status = transportGoodsToSellMissionPlaner.plan(navyUnit);
+		if (status == MissionPlanStatus.MISSION_CREATED) {
+			return status;
+		}
+
 		tum = createTransportMissionFromTransportRequest(
 			tum,
 			navyUnit,
@@ -158,35 +163,11 @@ public class EuropeanMissionPlaner {
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 
-		status = transportGoodsToSellMissionPlaner.plan(navyUnit);
-		if (status == MissionPlanStatus.MISSION_CREATED) {
-			return status;
-		}
-
 		status = transportGoodsToSellMissionPlaner.planSellGoodsToBuyUnit(navyUnit);
 		if (status == MissionPlanStatus.MISSION_CREATED) {
 			return status;
 		}
-
-		status = prepareTransportForScoutUnits(navyUnit, playerMissionContainer);
-		if (status == MissionPlanStatus.MISSION_CREATED) {
-			return status;
-		}
 		return status;
-	}
-
-	private MissionPlanStatus prepareTransportForScoutUnits(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
-		ScoutMission scoutMission = playerMissionContainer.findFirstMission(ScoutMission.class);
-		if (scoutMission != null
-			&& scoutMission.isWaitingForTransport()
-			&& TransportUnitMission.isUnitExistsOnTransportMission(playerMissionContainer, scoutMission.getScout())
-		) {
-			TransportUnitMission transportUnitMission = new TransportUnitMission(navyUnit);
-			transportUnitMission.addUnitDest(scoutMission.getScout(), scoutMission.getScoutDistantDestination(), true);
-			playerMissionContainer.addMission(transportUnitMission);
-			return MissionPlanStatus.MISSION_CREATED;
-		}
-		return MissionPlanStatus.NO_MISSION;
 	}
 
 	protected MissionPlanStatus transportUnitFromEurope(Unit navyUnit, PlayerMissionsContainer playerMissionContainer) {
