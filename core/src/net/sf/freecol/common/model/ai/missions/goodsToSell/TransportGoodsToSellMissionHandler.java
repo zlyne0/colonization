@@ -83,6 +83,7 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 			
 			if (mission.isTransporterOnSettlement(firstSettlementToVisit)) {
 				mission.loadGoodsFrom(firstSettlementToVisit);
+				mission.addVisitedSettlement(firstSettlementToVisit);
 				
 				firstSettlementToVisit = determineNextSettlementToVisit(mission, player);
 				if (firstSettlementToVisit != null) {
@@ -92,7 +93,8 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 				moveToSettlement(mission.getTransporter(), firstSettlementToVisit);
 				if (mission.isTransporterOnSettlement(firstSettlementToVisit)) {
 					mission.loadGoodsFrom(firstSettlementToVisit);
-					// load cargo after move use all move points so wait for another turn 
+					mission.addVisitedSettlement(firstSettlementToVisit);
+					// load cargo after move use all move points so wait for another turn
 				}
 			}
 		}

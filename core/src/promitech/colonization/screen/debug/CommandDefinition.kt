@@ -140,10 +140,6 @@ fun createCommands(
 			generateWorkerReqBuyRecommendations(di, guiGameModel, tileDebugView)
 		}
 
-		command("ai_transport_goods_to_sell_mission_example") {
-			ai_transport_goods_to_sell_mission_example(guiGameModel, mapActor)
-		}
-		
 		command("ai_explore") {
 			aiExplore(di, tileDebugView)
 		} 
@@ -524,41 +520,6 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				player.setAi(false)
 			}
 		})
-	}
-
-	fun ai_transport_goods_to_sell_mission_example(guiGameModel: GUIGameModel, mapActor: MapActor?) {
-		val game = guiGameModel.game
-		
-		val dutch = game.players.getById("player:1")
-		val spain = game.players.getById("player:133")
-		val startLocation = game.map.getTile(26, 79)
-		val transporter = UnitFactory.create(UnitType.GALLEON, dutch, startLocation)
-		
-		val fortOranje = game.map.getTile(25, 75).getSettlement()
-		val nieuwAmsterdam = game.map.getTile(24, 78).getSettlement()
-		
-		fortOranje.getGoodsContainer().decreaseAllToZero()
-		fortOranje.getGoodsContainer()
-			.increaseGoodsQuantity("model.goods.rum", 100)
-		nieuwAmsterdam.getGoodsContainer()
-			.increaseGoodsQuantity("model.goods.cigars", 100)
-			.increaseGoodsQuantity("model.goods.silver", 100)
-			.increaseGoodsQuantity("model.goods.cloth", 100)
-
-		val mission = TransportGoodsToSellMission(
-			transporter,
-			fortOranje.asColony(),
-			setOf(fortOranje.getId(), nieuwAmsterdam.getId())
-		)
-		
-		val missionContainer = game.aiContainer.missionContainer(dutch)
-		missionContainer.addMission(mission)
-
-		fortOranje.owner = spain;
-
-		dutch.fogOfWar.resetFogOfWar(guiGameModel.game, dutch)
-		mapActor?.resetMapModel()
-		mapActor?.resetUnexploredBorders()
 	}
 
 	// key 9

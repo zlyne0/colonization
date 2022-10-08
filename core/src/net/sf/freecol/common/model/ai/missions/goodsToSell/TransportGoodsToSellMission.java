@@ -1,11 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import static promitech.colonization.ai.MissionHandlerLogger.logger;
-
-import java.io.IOException;
-import java.util.HashSet;
-import java.util.Set;
-
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Game;
@@ -20,10 +14,16 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.util.StringUtils;
 
+import java.io.IOException;
+import java.util.HashSet;
+import java.util.Set;
+
 import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
+
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class TransportGoodsToSellMission extends AbstractMission {
 	
@@ -34,15 +34,21 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	
 	private Unit transporter;
 	private String firstSettlementIdToVisit;
-	private final Set<String> possibleSettlementToVisit = new HashSet<String>();
+	private final Set<String> visitedSettlements = new HashSet<String>();
 	private Phase phase;
 
-	public TransportGoodsToSellMission(Unit transporter, Settlement firstToVisit, Set<String> possibleSettlementToVisit) {
+	public static TransportGoodsToSellMission sellTransportedCargoInEurope(Unit transporter) {
+		TransportGoodsToSellMission mission = new TransportGoodsToSellMission(Game.idGenerator.nextId(TransportGoodsToSellMission.class));
+		mission.transporter = transporter;
+		mission.phase = Phase.MOVE_TO_EUROPE;
+		return mission;
+	}
+
+	public TransportGoodsToSellMission(Unit transporter, Settlement firstToVisit) {
 		super(Game.idGenerator.nextId(TransportGoodsToSellMission.class));
 		
 		this.transporter = transporter;
 		this.firstSettlementIdToVisit = firstToVisit.getId();
-		this.possibleSettlementToVisit.addAll(possibleSettlementToVisit);
 		this.phase = Phase.MOVE_TO_COLONY;
 	}
 	
@@ -53,9 +59,13 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	public boolean isTransportUnitExists(Player player) {
 		return CommonMissionHandler.isUnitExists(player, transporter);
 	}
-	
+
+	public void addVisitedSettlement(Settlement settlement) {
+		visitedSettlements.add(settlement.getId());
+	}
+
 	public boolean isSettlementPossibleToVisit(Settlement settlement) {
-		return possibleSettlementToVisit.contains(settlement.getId());
+		return !visitedSettlements.contains(settlement.getId());
 	}
 	
 	public Settlement firstSettlementToVisit(Player player) {
@@ -71,13 +81,9 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	
 	public void visitSettlementAsFirst(Settlement settlement) {
 		firstSettlementIdToVisit = settlement.getId();
-		possibleSettlementToVisit.remove(settlement.getId());
 	}
 	
 	public void removeFirstSettlement() {
-		if (firstSettlementIdToVisit != null) {
-			possibleSettlementToVisit.remove(firstSettlementIdToVisit);
-		}
 		firstSettlementIdToVisit = null;
 	}
 	
@@ -116,8 +122,8 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		return transporter;
 	}
 
-	public Set<String> getPossibleSettlementToVisit() {
-		return possibleSettlementToVisit;
+	public Set<String> getVisitedSettlements() {
+		return visitedSettlements;
 	}
 
 	public Phase getPhase() {
@@ -163,7 +169,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		} else {
 			str += ", next: no";
 		}
-		str += ", to visit[" + StringUtils.join(", ", possibleSettlementToVisit) + "]";
+		str += ", visited[" + StringUtils.join(", ", visitedSettlements) + "]";
 		return str;
 	}
 
@@ -178,7 +184,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		public void startElement(XmlNodeAttributes attr) {
 			TransportGoodsToSellMission m = new TransportGoodsToSellMission(attr.getId());
 			m.transporter = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT));
-			m.firstSettlementIdToVisit = attr.getStrAttribute(ATTR_FIRST_TO_VISIT); 
+			m.firstSettlementIdToVisit = attr.getStrAttribute(ATTR_FIRST_TO_VISIT);
 			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE);
 			nodeObject = m;
 			super.startElement(attr);
@@ -187,7 +193,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		@Override
 		public void startReadChildren(XmlNodeAttributes attr) {
 			if (attr.isQNameEquals(ELEMENT_SETTLEMENT)) {
-				nodeObject.possibleSettlementToVisit.add(attr.getId());
+				nodeObject.visitedSettlements.add(attr.getId());
 			}
 		}
 		
@@ -199,7 +205,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 			attr.set(ATTR_FIRST_TO_VISIT, mission.firstSettlementIdToVisit);
 			attr.set(ATTR_PHASE, mission.phase);
 			
-			for (String settlementId : mission.possibleSettlementToVisit) {
+			for (String settlementId : mission.visitedSettlements) {
 				attr.xml.element(ELEMENT_SETTLEMENT);
                 attr.set(XmlNodeParser.ATTR_ID, settlementId);
                 attr.xml.pop();

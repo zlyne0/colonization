@@ -206,7 +206,7 @@ public class Savegame1600Verifier {
 
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
         UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
-        assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
+        assertThat(mission.getVisitedSettlements()).containsExactly(
             fortMaurits.getId(),
             fortOranje.getId()
 		);

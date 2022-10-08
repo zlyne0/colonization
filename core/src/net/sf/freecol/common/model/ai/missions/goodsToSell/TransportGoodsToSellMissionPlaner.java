@@ -14,9 +14,6 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
-import java.util.HashSet;
-import java.util.Set;
-
 import promitech.colonization.ai.MissionPlanStatus;
 import promitech.colonization.ai.score.ObjectScoreList;
 
@@ -36,8 +33,15 @@ public class TransportGoodsToSellMissionPlaner {
     	goodsTypeToScore = Specification.instance.goodsTypeToScoreByPrice;
 	}
 
+	/**
+	 * Early stage of game, sell goods to buy unit
+	 */
 	public MissionPlanStatus planSellGoodsToBuyUnit(Unit navyUnit) {
 		Player player = navyUnit.getOwner();
+
+		if (player.units.size() > 5) {
+			return MissionPlanStatus.NO_MISSION;
+		}
 
 		ColoniesProductionValue coloniesProductionValue = new ColoniesProductionValue(player);
 		Settlement firstSettlement = coloniesProductionValue.findSettlementWorthTakeGoodsToBuyUnit(navyUnit);
@@ -45,27 +49,21 @@ public class TransportGoodsToSellMissionPlaner {
 			return MissionPlanStatus.NO_MISSION;
 		}
 
-		Set<String> possibleSettlementsToVisit = new HashSet<String>(player.settlements.size());
-		for (Settlement settlement : player.settlements) {
-			possibleSettlementsToVisit.add(settlement.getId());
-		}
-		possibleSettlementsToVisit.remove(firstSettlement.getId());
-
 		TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
 			navyUnit,
-			firstSettlement,
-			possibleSettlementsToVisit
+			firstSettlement
 		);
 		game.aiContainer.missionContainer(player).addMission(mission);
 		return MissionPlanStatus.MISSION_CREATED;
 	}
 
 	public MissionPlanStatus plan(Unit navyUnit) {
-		if (!navyUnit.hasSpaceForAdditionalCargo()) {
-			// TODO: fix: has cargo and no mission?
-			return MissionPlanStatus.NO_MISSION;
-		}
 		Player player = navyUnit.getOwner();
+		if (!navyUnit.hasSpaceForAdditionalCargo()) {
+			TransportGoodsToSellMission mission = TransportGoodsToSellMission.sellTransportedCargoInEurope(navyUnit);
+			game.aiContainer.missionContainer(player).addMission(mission);
+			return MissionPlanStatus.MISSION_CREATED;
+		}
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
 			goodsTypeToScore, player, game.map, pathFinder
 		);
@@ -81,12 +79,9 @@ public class TransportGoodsToSellMissionPlaner {
 
 		ObjectScoreList.ObjectScore<Settlement> theBestScore = score.theBestScore();
 		if (theBestScore.score() >= MIN_SETTLEMENT_SCORE) {
-			Set<String> possibleSettlementsToVisit = createPossibleSettlementToVisit(score);
-
 			TransportGoodsToSellMission mission = new TransportGoodsToSellMission(
 				carrier,
-				theBestScore.getObj(),
-				possibleSettlementsToVisit
+				theBestScore.getObj()
 			);
 			game.aiContainer.missionContainer(player).addMission(mission);
 
@@ -96,15 +91,6 @@ public class TransportGoodsToSellMissionPlaner {
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 		return MissionPlanStatus.NO_MISSION;
-	}
-
-	private Set<String> createPossibleSettlementToVisit(ObjectScoreList<Settlement> score) {
-		Set<String> settlementIds = new HashSet<String>();
-		for (ObjectScoreList.ObjectScore<Settlement> settlementObjectScore : score) {
-			settlementIds.add(settlementObjectScore.getObj().getId());
-		}
-		settlementIds.remove(score.theBestScore().getObj().getId());
-		return settlementIds;
 	}
 
 	private Tile scoreColonyGoodsStartLocation(Unit carrier) {
