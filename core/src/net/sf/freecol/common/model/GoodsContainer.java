@@ -6,6 +6,7 @@ import java.util.List;
 import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -71,6 +72,10 @@ public class GoodsContainer {
     	return goods.hasMoreOrEquals(g);
     }
 
+    public boolean hasMoreOrEquals(GoodsCollection goodsCollection) {
+        return goods.hasMoreOrEquals(goodsCollection);
+    }
+
     public boolean hasPart(String goodsTypeId, int amount, float ratio) {
         return goods.hasPart(goodsTypeId, amount, ratio);
     }
@@ -129,7 +134,12 @@ public class GoodsContainer {
 		goods.decreaseGoods(required);
         updateTakenCargoSlots();
 	}
-	
+
+	public void decreaseGoodsQuantity(GoodsCollection goodsCollection) {
+		goods.decreaseGoods(goodsCollection);
+        updateTakenCargoSlots();
+	}
+
     public void decreaseGoodsToMinZero(ProductionSummary goods) {
         goods.decreaseToMinZero(goods);
         updateTakenCargoSlots();
@@ -187,6 +197,10 @@ public class GoodsContainer {
 	public void clear() {
         goods.clear();
         updateTakenCargoSlots();
+    }
+
+    public boolean isEmpty() {
+        return goods.isEmpty();
     }
 
     public static class Xml extends XmlNodeParser<GoodsContainer> {

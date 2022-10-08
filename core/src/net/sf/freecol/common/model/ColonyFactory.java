@@ -4,6 +4,7 @@ import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+
 import promitech.colonization.ai.ColonyProductionPlaner;
 
 public class ColonyFactory {
@@ -19,7 +20,7 @@ public class ColonyFactory {
 	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
         String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
         Colony colony = buildColony(buildByUnit, tile, colonyName);
-        ColonyProductionPlaner.createPlan(colony);
+		ColonyProductionPlaner.createPlan(colony);
         return colony;
 	}
 	

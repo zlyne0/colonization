@@ -12,11 +12,13 @@ import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.map.path.PathFinder
+import net.sf.freecol.common.model.specification.GoodsType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import promitech.colonization.ColAssertDefinition.Companion.assertThat
 import promitech.colonization.Direction
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
@@ -47,9 +49,8 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val tileImprovementPlan = balanced.generateImprovements(fortNassau)
 
         // then
-        assertEquals(5, tileImprovementPlan.improvements.size)
+        assertEquals(4, tileImprovementPlan.improvements.size)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.NW), roadType)
-        contains(tileImprovementPlan, tileFrom(fortNassau, Direction.W), plowedType)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.E), plowedType)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.NE), roadType)
         contains(tileImprovementPlan, fortNassau.tile, clearForestType)
@@ -65,10 +66,9 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val tileImprovementPlan = balanced.generateImprovements(fortMaurits)
 
         // then
-        assertEquals(3, tileImprovementPlan.improvements.size)
+        assertEquals(2, tileImprovementPlan.improvements.size)
         contains(tileImprovementPlan, tileFrom(fortMaurits, Direction.E), roadType)
         contains(tileImprovementPlan, tileFrom(fortMaurits, Direction.SE), plowedType)
-        contains(tileImprovementPlan, tileFrom(fortMaurits, Direction.S), plowedType)
     }
 
     @Test
@@ -100,15 +100,16 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         // then
         ScoreableObjectsListAssert.assertThat(planScore)
             .hasSize(4)
-            .hasScore(0, 60, eq(nieuwAmsterdam))
-            .hasScore(1, 50, eq(fortNassau))
-            .hasScore(2, 0, eq(fortMaurits))
-            .hasScore(3, 0, eq(fortOranje))
+            .hasScore(0, 50, eq(fortNassau))
+            .hasScore(1, 0, eq(fortMaurits))
+            .hasScore(2, 0, eq(fortOranje))
+            .hasScore(3, 0, eq(nieuwAmsterdam))
     }
 
     @Test
     fun `should create buy pioneer and create mission`() {
         // given
+        removeAllImprovements(nieuwAmsterdam)
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
         val playerMissionContainer = game.aiContainer.missionContainer(dutch)
@@ -117,7 +118,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         // when
         val buyPlan = pioneerMissionPlaner.createBuyPlan(dutch, playerMissionContainer)
         if (buyPlan != null) {
-            pioneerMissionPlaner.handlePioneerBuyPlan(buyPlan, dutch, playerMissionContainer)
+            pioneerMissionPlaner.handlePioneerBuyPlan(buyPlan, playerMissionContainer)
         }
 
         // then
@@ -218,6 +219,101 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
             .isInstanceOf(PioneerDestination.TheSameIsland::class.java)
         if (improveDestination is PioneerDestination.TheSameIsland) {
             assertThat(improveDestination.plan.colony.id).isEqualTo(fortNassau.id)
+        }
+    }
+
+    @Test
+    fun `should find colony hardy pioneer worker`() {
+        // given
+        val player = dutch
+        val playerMissionContainer = game.aiContainer.missionContainer(player)
+        playerMissionContainer.clearAllMissions()
+
+        val workerFreeColonist = dutch.units.getById("unit:6436")
+        assertThat(fortOranje.units.containsId(workerFreeColonist))
+        workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
+
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
+
+        // when
+        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(player, nieuwAmsterdam.tile)
+
+        // then
+        assertThat {
+            colonyHardyPioneer.isNotNull()
+            colonyHardyPioneer!!.colony eqId fortOranje
+            colonyHardyPioneer.hardyPioneer eqId workerFreeColonist
+        }
+    }
+
+    @Test
+    fun `should find colony hardy pioneer worker by the sea`() {
+        // given
+        val player = dutch
+        val playerMissionContainer = game.aiContainer.missionContainer(player)
+        playerMissionContainer.clearAllMissions()
+
+        val workerFreeColonist = dutch.units.getById("unit:6436")
+        assertThat(fortOranje.units.containsId(workerFreeColonist))
+        workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
+
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
+
+        // when
+        val colonyHardyPioneer = pioneerMissionPlaner.findColonyHardyPioneerInRange(player, islandTile)
+
+        // then
+
+        assertThat {
+            colonyHardyPioneer.isNotNull()
+            colonyHardyPioneer!!.colony eqId fortOranje
+            colonyHardyPioneer.hardyPioneer eqId workerFreeColonist
+        }
+    }
+
+    @Test
+    fun `should find colony to equipt pioneer with tools`() {
+        // given
+        val player = dutch
+        val playerAiContainer = game.aiContainer.playerAiContainer(player)
+        playerAiContainer.colonySupplyGoods.clear()
+
+        val playerMissionContainer = game.aiContainer.missionContainer(player)
+        playerMissionContainer.clearAllMissions()
+
+        fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
+
+        // when
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, nieuwAmsterdam.tile, null)
+
+        // then
+        assertThat {
+            colonyToEquiptPioneer.isNotNull()
+            colonyToEquiptPioneer!! eqId fortOranje
+        }
+    }
+
+    @Test
+    fun `should find colony to equipt pioneer with tools by sea path`() {
+        // given
+        val player = dutch
+        val playerAiContainer = game.aiContainer.playerAiContainer(player)
+        playerAiContainer.colonySupplyGoods.clear()
+
+        val playerMissionContainer = game.aiContainer.missionContainer(player)
+        playerMissionContainer.clearAllMissions()
+
+        fortOranje.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+        val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
+
+        // when
+        val colonyToEquiptPioneer = pioneerMissionPlaner.findColonyToEquiptPioneerInRange(player, islandTile, null)
+
+        // then
+        assertThat {
+            colonyToEquiptPioneer.isNotNull()
+            colonyToEquiptPioneer!! eqId fortOranje
         }
     }
 

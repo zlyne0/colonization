@@ -1,13 +1,14 @@
 package net.sf.freecol.common.model;
 
-import java.io.IOException;
-import java.util.Comparator;
-
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.util.StringUtils;
+
+import java.io.IOException;
+import java.util.Comparator;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -125,8 +126,12 @@ public class UnitRole extends ObjectWithFeatures {
 	}
 
 	public boolean isContainerHasRequiredGoods(GoodsContainer goodsContainer) {
+		return isContainerHasRequiredGoods(goodsContainer, maximumCount);
+	}
+
+	public boolean isContainerHasRequiredGoods(GoodsContainer goodsContainer, int roleCount) {
 		for (RequiredGoods requiredGood : requiredGoods) {
-			if (!goodsContainer.hasGoodsQuantity(requiredGood.goodsType, requiredGood.amount * maximumCount)) {
+			if (!goodsContainer.hasGoodsQuantity(requiredGood.goodsType, requiredGood.amount * roleCount)) {
 				return false;
 			}
 		}
@@ -153,6 +158,17 @@ public class UnitRole extends ObjectWithFeatures {
 			required.addGoods(g.getId(), -g.amount * unit.getRoleCount());
 		}
 		return maxRoleCount;
+	}
+
+	public GoodsCollection requiredGoodsForRoleCount(int roleCount) {
+		if (requiredGoods.isEmpty()) {
+			return GoodsCollection.emptyReadOnly;
+		}
+		GoodsCollection required = new GoodsCollection();
+		for (RequiredGoods g : requiredGoods.entities()) {
+			required.add(g.goodsType, g.amount * roleCount);
+		}
+		return required;
 	}
 
 	public ProductionSummary minimumRequiredGoodsToChangeRole(UnitRole newRole) {

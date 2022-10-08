@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.map.path;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.List;
@@ -98,9 +99,10 @@ public class PathFinder {
 	protected Object2dArray<Node> grid; 
 	private final TreeSet<Node> nodes = new TreeSet<Node>(NODE_WEIGHT_COMPARATOR);
 	
-	private final CostDecider baseCostDecider = new CostDecider();
+	private final DefaultCostDecider baseCostDecider = new DefaultCostDecider();
 	private final NavyCostDecider navyCostDecider = new NavyCostDecider();
 	private final NavyWithoutThreatCostDecider navyWithoutThreatCostDecider = new NavyWithoutThreatCostDecider();
+	private final MaxTurnRangeCostDecider maxTurnRangeCostDecider = new MaxTurnRangeCostDecider();
 	private CostDecider costDecider;
 	private GoalDecider goalDecider;
 
@@ -138,7 +140,7 @@ public class PathFinder {
         this.pathUnit = pathUnit;
 
 		setCostDeciderFlags(flags);
-        determineCostDecider(false);
+        determineCostDecider(false, INFINITY);
 
         Path path = find();
         path.toEurope = true;
@@ -161,52 +163,77 @@ public class PathFinder {
         this.pathUnit = pathUnit;
 
 		setCostDeciderFlags(flags);
-        determineCostDecider(flags.contains(FlagTypes.IncludeNavyThreatTiles));
+        determineCostDecider(flags.contains(FlagTypes.IncludeNavyThreatTiles), INFINITY);
 
         Path path = find();
         path.toEurope = false;
         return path;
     }
 
-	public Path findTheQuickestToTile(final Map map, final Tile startTile, final List<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
+	public Path findTheQuickestPath(final Map map, final Tile startTile, final Collection<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
+		Tile theQuickestTile = findTheQuickestTile(map, startTile, endTiles, unit, flags);
+		if (theQuickestTile != null) {
+			return createPath(theQuickestTile);
+		}
+		return null;
+	}
+
+	public Tile findTheQuickestTile(final Map map, final Tile startTile, final Collection<Tile> endTiles, final Unit unit, Set<FlagTypes> flags) {
 		if (endTiles.isEmpty()) {
 			throw new IllegalArgumentException("endTiles can not be empty");
 		}
-		Path theBestPath = null;
-		for (Tile oneTile : endTiles) {
-			Path onePath = findToTile(map, startTile, oneTile, unit, flags);
-			if (theBestPath == null || onePath.isQuickestThan(theBestPath)) {
-				theBestPath = onePath;
+		generateRangeMap(map, startTile, unit, flags);
+
+		Tile theBestTile = null;
+		int theBestCost = INFINITY;
+
+		for (Tile tile : endTiles) {
+			int cost = turnsCost(tile);
+			if (cost < theBestCost) {
+				theBestCost = cost;
+				theBestTile = tile;
 			}
 		}
-		return theBestPath;
+		return theBestTile;
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, createPathUnit(unit), flags);
+		generateRangeMap(map, createPathUnit(unit), flags, INFINITY);
+	}
+
+	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags, int maxTurnsRange) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, createPathUnit(unit), flags, maxTurnsRange);
 	}
 
 	public void generateRangeMap(final Map map, final Unit unit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(unit.getTile());
-		generateRangeMap(map, createPathUnit(unit), flags);
+		generateRangeMap(map, createPathUnit(unit), flags, INFINITY);
 	}
 
-	public void generateRangeMap(final Map map, List<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
+	public void generateRangeMap(final Map map, Collection<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.addAll(startTiles);
-		generateRangeMap(map, pathUnit, flags);
+		generateRangeMap(map, pathUnit, flags, INFINITY);
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, pathUnit, flags);
+		generateRangeMap(map, pathUnit, flags, INFINITY);
 	}
 
-	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags) {
+	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags, int maxTurnRange) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, pathUnit, flags, maxTurnRange);
+	}
+
+	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags, int maxTurnsRange) {
 	    this.goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.endTile = null;
@@ -214,7 +241,7 @@ public class PathFinder {
 		this.startTile = startTiles.get(0);
 
         setCostDeciderFlags(flags);
-        determineCostDecider(false);
+        determineCostDecider(false, maxTurnsRange);
 
 		calculatePaths();
 	}
@@ -233,7 +260,7 @@ public class PathFinder {
 		this.baseCostDecider.allowCarrierEnterWithGoods = flags.contains(FlagTypes.AllowCarrierEnterWithGoods);
 	}
 
-	private void determineCostDecider(boolean includeNavyThreat) {
+	private void determineCostDecider(boolean includeNavyThreat, int maxTurnsRange) {
 	    if (pathUnit.isNaval()) {
 	        if (includeNavyThreat) {
 	            costDecider = navyWithoutThreatCostDecider;
@@ -243,6 +270,10 @@ public class PathFinder {
 	    } else {
 	        costDecider = baseCostDecider;
 	    }
+	    if (maxTurnsRange != INFINITY) {
+	    	maxTurnRangeCostDecider.init(maxTurnsRange, costDecider);
+	    	costDecider = maxTurnRangeCostDecider;
+		}
 	}
 
 	private Path find() {
@@ -299,7 +330,7 @@ public class PathFinder {
 				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
 					if ((moveType != MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS && moveType != MoveType.MOVE_NO_ACCESS_GOODS)
-						|| costDecider.allowCarrierEnterWithGoods
+						|| costDecider.isAllowCarrierEnterWithGoods()
 					) {
 						reachedGoalNode = moveNode;
 						// change moveType to default move. Sometimes goal can be indian settlement

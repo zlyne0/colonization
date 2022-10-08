@@ -1,6 +1,8 @@
 package promitech.colonization.savegame;
 
 import static net.sf.freecol.common.model.EuropeAssert.assertThat;
+import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
+import static net.sf.freecol.common.model.colonyproduction.GoodsCollectionAssert.assertThat;
 import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
@@ -36,6 +38,8 @@ import net.sf.freecol.common.model.UnitAssert;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitRoleChange;
 import net.sf.freecol.common.model.UnitType;
+import net.sf.freecol.common.model.ai.ColonySupplyGoods;
+import net.sf.freecol.common.model.ai.ColonySupplyGoodsReservation;
 import net.sf.freecol.common.model.ai.PlayerAiContainer;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -46,7 +50,9 @@ import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission;
 import net.sf.freecol.common.model.map.generator.MapGeneratorOptions;
@@ -181,6 +187,7 @@ public class Savegame1600Verifier {
 		verifyTransportUnitMission(game);
 		verifyExploreMission(game);
 		verifyDutchMissions(game);
+		verifyDutchAiContainer(game);
 		verifyMissionRecursion(game);
 		verifySpainMissions(game);
 	}
@@ -199,7 +206,7 @@ public class Savegame1600Verifier {
 
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
         UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
-        assertThat(mission.getPossibleSettlementToVisit()).containsExactly(
+        assertThat(mission.getVisitedSettlements()).containsExactly(
             fortMaurits.getId(),
             fortOranje.getId()
 		);
@@ -216,6 +223,36 @@ public class Savegame1600Verifier {
         assertThat(requestGoodsMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
         assertThat(requestGoodsMission.amount(muskets)).isEqualTo(50);
         assertThat(requestGoodsMission.amount(tools)).isEqualTo(100);
+
+        ReplaceColonyWorkerMission replaceColonyWorkerMission = missions.getMission("replaceColonyWorkerMission:1");
+        assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
+        assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
+        assertThat(replaceColonyWorkerMission.getColonyWorkerUnitId()).isEqualTo("unit:6436");
+
+        TakeRoleEquipmentMission takeRoleEquipmentMission = missions.getMission("takeRoleEquipmentMission:1");
+        assertThat(takeRoleEquipmentMission.getColonyId()).isEqualTo(fortOranje.getId());
+        assertThat(takeRoleEquipmentMission.getUnit().getId()).isEqualTo("takeRole:6436");
+        assertThat(takeRoleEquipmentMission.getRole().getId()).isEqualTo(UnitRole.PIONEER);
+        assertThat(takeRoleEquipmentMission.getRoleCount()).isEqualTo(4);
+    }
+
+    private void verifyDutchAiContainer(Game game) {
+        PlayerAiContainer playerAiContainer = game.aiContainer.playerAiContainer(dutch);
+
+        MapIdEntitiesAssert.assertThat(playerAiContainer.getColonySupplyGoods())
+            .containsId(fortOranje.getId())
+            .containsId(nieuwAmsterdam.getId())
+        ;
+
+        ColonySupplyGoods colonySupplyGoods = playerAiContainer.getColonySupplyGoods().getById(fortOranje);
+
+        MapIdEntitiesAssert.assertThat(colonySupplyGoods.getSupplyReservations()).hasSize(1);
+        ColonySupplyGoodsReservation reservation = colonySupplyGoods.getSupplyReservations().getById("notExistsMissionId:1");
+        assertThat(reservation.getMissionId()).isEqualTo("notExistsMissionId:1");
+        assertThat(reservation.getGoods())
+            .has(tools, 200)
+            .has(muskets, 150)
+        ;
     }
 
     private void verifySpainMissions(Game game) {

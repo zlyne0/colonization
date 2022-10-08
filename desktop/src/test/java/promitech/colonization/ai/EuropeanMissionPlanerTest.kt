@@ -71,6 +71,10 @@ class EuropeanMissionPlanerTest : MissionHandlerBaseTestClass() {
     @Test
     fun `should create transport unit mission from request transport unit mission when carrier is at new world`() {
         // given
+        // clear because mission planer prioritize goods sell transport then unit move
+        for (settlement in dutch.settlements) {
+            settlement.goodsContainer.clear()
+        }
         val missionContainer = game.aiContainer.missionContainer(dutch)
 
         val islandTile = game.map.getSafeTile(25, 86)

@@ -10,7 +10,7 @@ import net.sf.freecol.common.model.specification.GoodsType
 
 class TileImprovementPlan(val tile: Tile, val improvementType: TileImprovementType)
 
-class ColonyTilesImprovementPlan(val colony: Colony, val improvements: List<TileImprovementPlan>) {
+class ColonyTilesImprovementPlan(val colony: Colony, val improvements: MutableList<TileImprovementPlan>) {
     fun hasImprovements(): Boolean {
         return improvements.size > 0
     }
@@ -34,13 +34,29 @@ sealed class AddImprovementPolicy {
 
     // balanced, leave forest resources
     class Balanced : AddImprovementPolicy() {
-        override fun addImprovement(colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>) {
+        override fun addImprovement(colony: Colony, colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>) {
             val tile = colonyTile.tile
             if (tile.type.isForested) {
                 if (tile.hasTileResource() || tile.hasRiver()) {
                     addIfAbsent(imprList, tile, roadType)
                 } else {
-                    addIfAbsent(imprList, tile, clearForestType)
+//                    if (colony.colonyUnitsCount <= 4 && hasClearNotPlowedTile || forestNumber == 1) {
+//                        addIfAbsent(imprList, tile, roadType)
+//                    } else {
+//                        addIfAbsent(imprList, tile, clearForestType)
+//                    }
+
+                    if (colonyTile.isCenterColonyTile()) {
+                        addIfAbsent(imprList, tile, clearForestType)
+                    } else {
+                        if (hasNoForestNotWorkingTile) {
+                            addIfAbsent(imprList, tile, roadType)
+                        } else {
+                            if (colonyTile.hasFoodProduction()) {
+                                addIfAbsent(imprList, tile, clearForestType)
+                            }
+                        }
+                    }
                 }
             } else {
                 if (tile.type.isTileImprovementAllowed(plowedType)) {
@@ -55,7 +71,7 @@ sealed class AddImprovementPolicy {
 
     // improvements for max food production, clear forest resources
     class MaxFood : AddImprovementPolicy() {
-        override fun addImprovement(colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>) {
+        override fun addImprovement(colony: Colony, colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>) {
             val tile = colonyTile.tile
             if (tile.type.isForested) {
                 addIfAbsent(imprList, tile, clearForestType)
@@ -74,29 +90,35 @@ sealed class AddImprovementPolicy {
     protected val roadType : TileImprovementType
     protected val clearForestType : TileImprovementType
 
+    protected var hasNoForestNotWorkingTile = false
+
     init {
         plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
         roadType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
         clearForestType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID)
     }
 
-    protected abstract fun addImprovement(colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>)
+    protected abstract fun addImprovement(colony: Colony, colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>)
 
     fun generateImprovements(colony: Colony): ColonyTilesImprovementPlan {
         val imprList = mutableListOf<TileImprovementPlan>()
 
+        hasNoForestNotWorkingTile = calculateHasNoForestNotWorkingTile(colony)
+
         findCenterTile(colony) { colonyTile ->
-            addImprovement(colonyTile, imprList)
+            addImprovement(colony, colonyTile, imprList)
         }
         findResourcesTiles(colony) { colonyTile ->
-            addImprovement(colonyTile, imprList)
+            addImprovement(colony, colonyTile, imprList)
         }
         findCommonTiles(colony) { colonyTile ->
-            addImprovement(colonyTile, imprList)
+            addImprovement(colony, colonyTile, imprList)
         }
-        findVacantForFood(colony, imprList)
-
         return ColonyTilesImprovementPlan(colony, imprList)
+    }
+
+    fun generateVacantForFood(plan: ColonyTilesImprovementPlan) {
+        findVacantForFood(plan.colony, plan.improvements)
     }
 
     private inline fun findCenterTile(colony: Colony, consumer: (colonyTile: ColonyTile) -> Unit) {
@@ -173,5 +195,47 @@ sealed class AddImprovementPolicy {
         if (!tile.hasImprovementType(imprType.id)) {
             imprList.add(TileImprovementPlan(tile, imprType))
         }
+    }
+
+    protected fun calculateClearNotPlowedTile(colony: Colony): Boolean {
+        for (colonyTile in colony.colonyTiles) {
+            if (colonyTile.tile.type.isWater
+                || colonyTile.tile.hasSettlement()
+                || colonyTile.tile.equalsCoordinates(colony.tile)) {
+                continue
+            }
+            if (!colonyTile.tile.type.isForested && !colonyTile.tile.hasImprovementType(plowedType.id)) {
+                return true
+            }
+        }
+        return false
+    }
+
+    protected fun calculateHasNoForestNotWorkingTile(colony: Colony): Boolean {
+        for (colonyTile in colony.colonyTiles) {
+            if (colonyTile.tile.type.isWater || colonyTile.tile.hasSettlement() || colonyTile.isCenterColonyTile) {
+                continue
+            }
+            if (!colonyTile.tile.type.isForested && colonyTile.hasNotWorker()) {
+                return true
+            }
+        }
+        return false
+    }
+
+    protected fun calculateForestNumber(colony: Colony): Int {
+        var forestNumber = 0
+        for (colonyTile in colony.colonyTiles) {
+            if (colonyTile.tile.type.isWater
+                || colonyTile.tile.hasSettlement()
+                || colonyTile.tile.equalsCoordinates(colony.tile)
+            ) {
+                continue
+            }
+            if (colonyTile.tile.type.isForested) {
+                forestNumber++
+            }
+        }
+        return forestNumber
     }
 }

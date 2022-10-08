@@ -18,8 +18,12 @@ import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionHandler;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
+import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMissionHandler;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandler;
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
+import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionHandler;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner;
@@ -99,8 +103,10 @@ public class MissionExecutor implements Disposable {
 		missionHandlerMapping.put(ColonyWorkerMission.class, colonyWorkerMissionHandler);
         missionHandlerMapping.put(ScoutMission.class, scoutMissionHandler);
         missionHandlerMapping.put(PioneerMission.class, pioneerMissionHandler);
-        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler());
+        missionHandlerMapping.put(RequestGoodsMission.class, new RequestGoodsMissionHandler(game));
         missionHandlerMapping.put(TransportUnitRequestMission.class, transportUnitRequestMissionHandler);
+        missionHandlerMapping.put(ReplaceColonyWorkerMission.class, new ReplaceColonyWorkerMissionHandler(this));
+        missionHandlerMapping.put(TakeRoleEquipmentMission.class, new TakeRoleEquipmentMissionHandler(game));
 	}
     
 	public void executeMissions(Player player) {
@@ -151,6 +157,14 @@ public class MissionExecutor implements Disposable {
         MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(abstractMission.getClass());
         if (missionHandler == null) {
             throw new IllegalStateException("can not find missionHandler for mission type " + abstractMission.getClass());
+        }
+        return missionHandler;
+    }
+
+    public <T extends AbstractMission> MissionHandler<T> findMissionHandler(Class<T> missionClass) {
+        MissionHandler<T> missionHandler = (MissionHandler<T>)missionHandlerMapping.get(missionClass);
+        if (missionHandler == null) {
+            throw new IllegalStateException("can not find missionHandler for mission type " + missionClass);
         }
         return missionHandler;
     }

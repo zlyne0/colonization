@@ -9,6 +9,7 @@ import java.util.Locale;
 import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
@@ -318,7 +319,22 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         }
         return space <= unitType.getSpace();
     }
-    
+
+    public boolean hasSpaceForAdditionalCargo(GoodsCollection goodsCollection) {
+		int space = 0;
+		if (unitContainer != null) {
+			space += unitContainer.getSpaceTakenByUnits();
+		}
+		if (goodsContainer.isEmpty()) {
+			space += goodsCollection.slotsAmount();
+		} else {
+			ProductionSummary tmpCargo = goodsContainer.cloneGoods();
+			tmpCargo.addGoods(goodsCollection);
+			space += tmpCargo.allCargoSlots();
+		}
+		return space <= unitType.getSpace();
+	}
+
 	public int maxGoodsAmountToFillFreeSlots(String goodsTypeId) {
 		int cargoSlots = allGoodsCargoSlots();
 		return goodsContainer.maxGoodsAmountToFillFreeSlots(goodsTypeId, cargoSlots);

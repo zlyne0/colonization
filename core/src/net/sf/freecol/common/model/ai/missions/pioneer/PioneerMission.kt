@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.UnitId
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -16,7 +17,8 @@ import java.lang.IllegalStateException
 
 class PioneerMission : AbstractMission {
 
-    val pioneer: Unit
+    var pioneer: Unit
+        private set
     var colonyId: String
         private set
 
@@ -40,35 +42,43 @@ class PioneerMission : AbstractMission {
         unitMissionsMapping.unblockUnitFromMission(pioneer, this)
     }
 
-    fun isPionnerWithoutTools(): Boolean {
+    internal fun isPionnerWithoutTools(): Boolean {
         return pioneer.unitRole.equalsId(UnitRole.DEFAULT_ROLE_ID)
     }
 
-    fun isSpecialist(): Boolean {
+    internal fun isSpecialist(): Boolean {
         return pioneer.unitType.isType(UnitType.HARDY_PIONEER)
     }
 
-    fun isPioneerExists(): Boolean {
+    internal fun isPioneerExists(): Boolean {
         return CommonMissionHandler.isUnitExists(pioneer.owner, pioneer)
     }
 
-    fun isColonyOwner(): Boolean {
+    internal fun isColonyOwner(): Boolean {
         return CommonMissionHandler.isColonyOwner(pioneer.owner, colonyId)
     }
 
-    fun colony(): Colony {
+    internal fun colony(): Colony {
         return pioneer.owner.settlements.getById(colonyId).asColony()
     }
 
-    fun waitOrResolveFreeColonistPionner(colony: Colony) {
+    internal fun waitOrResolveFreeColonistPionner(colony: Colony) {
         if (pioneer.unitType.equalsId(UnitType.FREE_COLONIST)) {
             colony.changeUnitRole(pioneer, Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID))
             setDone()
         } // else wait for new colony to improve
     }
 
-    fun changeColony(colony: Colony) {
+    internal fun changeColony(colony: Colony) {
         this.colonyId = colony.id
+    }
+
+    internal fun changeUnit(unitToReplace: Unit, replaceBy: Unit, playerMissionsContainer: PlayerMissionsContainer) {
+        if (pioneer.equalsId(unitToReplace)) {
+            playerMissionsContainer.unblockUnitFromMission(pioneer, this)
+            pioneer = replaceBy
+            playerMissionsContainer.blockUnitForMission(pioneer, this)
+        }
     }
 
     override fun toString(): String {

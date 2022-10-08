@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -80,7 +81,11 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     public boolean hasGoodsToEquipRole(UnitRole unitRole) {
 		return unitRole.isContainerHasRequiredGoods(goodsContainer);
     }
-    
+
+    public boolean hasGoodsToEquipRole(UnitRole unitRole, int roleCount) {
+		return unitRole.isContainerHasRequiredGoods(goodsContainer, roleCount);
+    }
+
     public void changeUnitRole(Unit unit, UnitRole newUnitRole, ObjectWithFeatures unitLocationFeatures) {
     	if (!newUnitRole.isAvailableTo(unit.unitType, unitLocationFeatures)) {
     		throw new IllegalStateException("can not change role for unit: " + unit + " from " + unit.unitRole + " to " + newUnitRole);
@@ -91,6 +96,12 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     	unit.changeRole(newUnitRole, maxAvailableRoleCount);
     	goodsContainer.decreaseGoodsQuantity(required);
     }
+
+    public void changeUnitRole(Unit unit, UnitRole newUnitRole, int roleCount) {
+		GoodsCollection requiredGoods = newUnitRole.requiredGoodsForRoleCount(roleCount);
+		unit.changeRole(newUnitRole, roleCount);
+		goodsContainer.decreaseGoodsQuantity(requiredGoods);
+	}
 
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;

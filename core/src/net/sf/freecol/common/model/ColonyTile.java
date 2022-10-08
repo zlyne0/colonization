@@ -2,8 +2,11 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
 
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -39,7 +42,11 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 	public boolean hasWorker(Unit w) {
 	    return worker != null && worker.equalsId(w);
 	}
-	
+
+	public boolean hasWorker(String unitId) {
+	    return worker != null && worker.equalsId(unitId);
+	}
+
 	public boolean hasWorker() {
 	    return worker != null;
 	}
@@ -116,8 +123,17 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		}
 	}
 
-	public boolean hasFoodGrainProduction() {
-		return this.production.containsOutputGoods(GoodsType.GRAIN);
+	public boolean hasFoodProduction() {
+		for (Map.Entry<GoodsType, Integer> outputEntry : this.production.outputEntries()) {
+			if (outputEntry.getKey().isFood() && outputEntry.getValue() > 0) {
+				return true;
+			}
+		}
+		return false;
+	}
+
+	public boolean isCenterColonyTile() {
+		return tile.hasSettlement();
 	}
 
 	public static class Xml extends XmlNodeParser<ColonyTile> {

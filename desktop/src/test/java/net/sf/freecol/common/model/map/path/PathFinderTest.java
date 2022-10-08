@@ -351,7 +351,7 @@ class PathFinderTest {
 		Unit caravel = UnitFactory.create(UnitType.CARAVEL, dutch, source);
 
 		// when
-		path = sut.findTheQuickestToTile(game.map, source, Arrays.asList(dest), caravel, includeUnexploredAndExcludeNavyThreatTiles);
+		path = sut.findTheQuickestPath(game.map, source, Arrays.asList(dest), caravel, includeUnexploredAndExcludeNavyThreatTiles);
 		//path = sut.findToTile(game.map, source, dest, caravel, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
 
 		// then
@@ -440,6 +440,20 @@ class PathFinderTest {
 			.assertPathStep(0, 0, 28, 81)
 			.assertPathStep(1, 0, 27, 81)
 		;
+	}
+
+	@Test
+	void shouldGenerateMaxRangePath() {
+		// given
+		Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, dutch, nieuwAmsterdam.tile);
+		int maxTurnsRange = 3;
+
+		// when
+		sut.generateRangeMap(game.map, nieuwAmsterdam.tile, unit, includeUnexploredTiles, maxTurnsRange);
+
+		// then
+		assertThat(sut.turnsCost(game.map.getTile(24, 68))).isEqualTo(3);
+		assertThat(sut.turnsCost(game.map.getTile(24, 67))).isEqualTo(INFINITY);
 	}
 
 	@Nested

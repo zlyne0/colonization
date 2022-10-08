@@ -14,7 +14,9 @@ import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
@@ -44,34 +46,6 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         balancedImprovementPolicy = AddImprovementPolicy.Balanced()
 
         clearAllMissions(dutch)
-    }
-
-    @Test
-    fun `should improve two tiles`() {
-        // given
-        givenImprovementsPlan()
-
-        val dutchMissionContainer = game.aiContainer.missionContainer(dutch)
-        val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, fortNassau.tile)
-        dutchMissionContainer.addMission(PioneerMission(pioneer, fortNassau))
-
-        // first improvement center tile
-        // clear forest and plow on center
-        newTurnAndExecuteMission(dutch, 4)
-        assertFalse(fortNassau.tile.type.isForested)
-        newTurnAndExecuteMission(dutch, 3)
-        assertThat(fortNassau.tile).hasImprovement(plowedType)
-
-        // second improvement on west
-        // move and wait, plow
-        newTurnAndExecuteMission(dutch, 3)
-        //
-        //newTurnAndExecuteMission(dutch, 3)
-
-        // then
-        assertNoImprovementsPlan(fortNassau)
-        assertThat(tileFrom(fortNassau, Direction.W)).hasImprovement(plowedType)
-        assertThat(pioneer).isAtLocation(game.map.getSafeTile(22,78))
     }
 
     @Test
@@ -153,6 +127,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     @Test
     fun `should change colony after all improvements`() {
         // given
+        removeAllImprovements(nieuwAmsterdam)
         val dutchMissionContainer = game.aiContainer.missionContainer(dutch)
         val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, tileFrom(fortOranje, Direction.W))
         val pioneerMission = PioneerMission(pioneer, fortOranje)
@@ -185,6 +160,39 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
             .hasDependMission(pioneerMission, transportRequest.id, TransportUnitRequestMission::class.java)
     }
 
+    @Test
+    fun `should deliver tools for pioneer goods request`() {
+        // given
+        removeAllImprovements(fortOranje)
+
+        val player = dutch
+        val playerMissionContainer = game.aiContainer.missionContainer(dutch)
+        val seaTile = game.map.getTile(27, 80)
+
+        val freeColonist = UnitFactory.create(UnitType.FREE_COLONIST, player, fortOranje.tile)
+        val pioneerMission = PioneerMission(freeColonist, fortOranje)
+        playerMissionContainer.addMission(pioneerMission)
+        val requestGoodsMission = RequestGoodsMission(fortOranje, GoodsCollection.of(goodsType(GoodsType.TOOLS), 100), pioneerMission.id)
+        playerMissionContainer.addMission(pioneerMission, requestGoodsMission)
+
+        val ship = UnitFactory.create(UnitType.CARAVEL, player, seaTile)
+        ship.goodsContainer.increaseGoodsQuantity(GoodsType.TOOLS, 100)
+        val transportUnitMission = TransportUnitMission(ship)
+        transportUnitMission.addCargoDest(fortOranje.tile, goodsType(GoodsType.TOOLS), 100, requestGoodsMission.id)
+        playerMissionContainer.addMission(transportUnitMission)
+
+        // when
+        newTurnAndExecuteMission(player, 1)
+
+        // then
+        assertThat(transportUnitMission).isDone
+        assertThat(requestGoodsMission).isDone
+        assertThat(ship).hasNoGoods()
+        assertThat(freeColonist)
+            .isUnitRole(UnitRole.PIONEER)
+            .hasRoleCount(unitRole(UnitRole.PIONEER).maximumCount)
+    }
+
     fun addAllImprovements(player: Player) {
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
@@ -208,13 +216,30 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertTrue(improvementPlan.tile.equalsCoordinates(fortNassau.tile))
             assertTrue(improvementPlan.improvementType.equalsId(clearForestType))
         }
-        tileImprovementPlan.improvements.get(1).let { improvementPlan ->
-            assertTrue(improvementPlan.tile.equalsCoordinates(tileFrom(fortNassau, Direction.W)))
-            assertTrue(improvementPlan.improvementType.equalsId(plowedType))
+//        tileImprovementPlan.improvements.get(1).let { improvementPlan ->
+//            assertTrue(improvementPlan.tile.equalsCoordinates(tileFrom(fortNassau, Direction.W)))
+//            assertTrue(improvementPlan.improvementType.equalsId(plowedType))
+//        }
+        printToStdout(tileImprovementPlan)
+    }
+
+    private fun printToStdout(tileImprovementPlan: ColonyTilesImprovementPlan) {
+        println("improvement.count: " + tileImprovementPlan.improvements.size)
+        for (improvement in tileImprovementPlan.improvements) {
+            println("improvementType: " + improvement.improvementType + ", tile: [" + improvement.tile.toStringCords() + "]")
         }
     }
 
     fun assertNoImprovementsPlan(colony: Colony) {
         assertEquals(0, balancedImprovementPolicy.generateImprovements(colony).improvements.size)
+    }
+
+    fun removeAllImprovements(colony: Colony) {
+        for (colonyTile in colony.colonyTiles) {
+            colonyTile.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+            if (!colonyTile.tile.equalsCoordinates(colony.tile)) {
+                colonyTile.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+            }
+        }
     }
 }

@@ -125,6 +125,20 @@ public class Colony extends Settlement {
 	    return unit.isAtLocation(ColonyTile.class);
 	}
 
+	public boolean isUnitInColony(String unitId) {
+		for (Building building : buildings) {
+			if (building.getUnits().containsId(unitId)) {
+				return true;
+			}
+		}
+		for (ColonyTile colonyTile : colonyTiles) {
+			if (colonyTile.hasWorker(unitId)) {
+				return true;
+			}
+		}
+		return false;
+	}
+
     public void updateColonyPopulation() {
     	colonyWorkers.clear();
     	for (Building building : buildings.entities()) {
@@ -243,6 +257,27 @@ public class Colony extends Settlement {
         return "model.settlement." + key + ".image";
     }
 
+    public void replaceWorker(Unit unit, String workerUnitId) {
+		int roleCount = unit.roleCount;
+		UnitRole unitRole = unit.unitRole;
+
+		UnitLocation unitLocation = findUnitLocationByUnitId(workerUnitId);
+		Unit worker = unitLocation.getUnits().getById(workerUnitId);
+
+		worker.setState(UnitState.ACTIVE);
+		worker.changeUnitLocation(tile);
+
+		addWorkerToColony(unit, unitLocation);
+		if (unitLocation instanceof ColonyTile) {
+			((ColonyTile)unitLocation).initMaxPossibleProductionOnTile();
+		}
+
+		if (!unitRole.equalsId(UnitRole.DEFAULT_ROLE_ID)) {
+			changeUnitRole(worker, unitRole, roleCount);
+		}
+		updateColonyPopulation();
+	}
+
     public void addWorkerToBuilding(Building building, Unit unit) {
         addWorkerToColony(unit, building);
     }
@@ -281,7 +316,7 @@ public class Colony extends Settlement {
         UnitRole defaultUnitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
         changeUnitRole(worker, defaultUnitRole);
         worker.changeUnitLocation(unitLocation);
-        
+
         updateModelOnWorkerAllocationOrGoodsTransfer();
     }
 
@@ -890,7 +925,21 @@ public class Colony extends Settlement {
 		}
 		return buildings.getByIdOrNull(unitLocationId);
 	}
-	
+
+	public UnitLocation findUnitLocationByUnitId(String unitId) {
+		for (Building building : buildings) {
+			if (building.getUnits().containsId(unitId)) {
+				return building;
+			}
+		}
+		for (ColonyTile colonyTile : colonyTiles) {
+			if (colonyTile.hasWorker(unitId)) {
+				return colonyTile;
+			}
+		}
+    	throw new IllegalStateException("can not find unit location for unitId: " + unitId + " in colonyId: " + getId());
+	}
+
 	public Building findBuildingByType(String buildingTypeId) {
 		Building building = findBuildingByTypeOrNull(buildingTypeId);
 		if (building == null) {

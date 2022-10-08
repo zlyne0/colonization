@@ -8,6 +8,7 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entries;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 
@@ -46,7 +47,15 @@ public class ProductionSummary {
 	}
 	
 	public boolean isEmpty() {
-		return goods.size == 0;
+		if (goods.size == 0) {
+			return true;
+		}
+		for (Entry<String> goodsEntry : goods) {
+			if (goodsEntry.value > 0) {
+				return false;
+			}
+		}
+		return true;
 	}
 	
     public boolean isNotEmpty() {
@@ -99,12 +108,24 @@ public class ProductionSummary {
         }
     }
 
+	public void addGoods(GoodsCollection goodsCollection) {
+		for (Entry<GoodsType> goodsTypeEntry : goodsCollection) {
+			goods.getAndIncrement(goodsTypeEntry.key.getId(), 0, goodsTypeEntry.value);
+		}
+	}
+
 	public void decreaseGoods(ProductionSummary goodsCollection) {
 		for (Entry<String> g : goodsCollection.goods.entries()) {
 			goods.getAndIncrement(g.key, 0, -g.value);
 		}
 	}
-	
+
+	public void decreaseGoods(GoodsCollection goodsCollection) {
+		for (Entry<GoodsType> goodsTypeEntry : goodsCollection) {
+			goods.getAndIncrement(goodsTypeEntry.key.getId(), 0, -goodsTypeEntry.value);
+		}
+	}
+
     public void decreaseToZero(AbstractGoods anAbstractGoods) {
         if (anAbstractGoods.getQuantity() != 0) {
             int i = goods.get(anAbstractGoods.getTypeId(), 0) - anAbstractGoods.getQuantity();
@@ -230,7 +251,16 @@ public class ProductionSummary {
         }
         return true;
     }
-    
+
+	public boolean hasMoreOrEquals(GoodsCollection base) {
+		for (Entry<GoodsType> baseEntry : base) {
+			if (goods.get(baseEntry.key.getId(), 0) < baseEntry.value) {
+				return false;
+			}
+		}
+		return true;
+	}
+
     /**
      * Check that has goods in base amount or in base amount ratio/
      * Ratio from 0 to 1

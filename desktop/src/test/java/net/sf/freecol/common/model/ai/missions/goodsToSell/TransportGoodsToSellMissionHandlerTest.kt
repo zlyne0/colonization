@@ -91,8 +91,7 @@ class TransportGoodsToSellMissionHandlerTest : MissionHandlerBaseTestClass() {
 
 		mission = TransportGoodsToSellMission(
 			transporter,
-			fortOranje.asColony(),
-			setOf(fortOranje.getId(), nieuwAmsterdam.getId())
+			fortOranje.asColony()
 		)
 		game.aiContainer.missionContainer(dutch).clearAllMissions()
 		game.aiContainer.missionContainer(dutch).addMission(mission)

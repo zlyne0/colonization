@@ -32,6 +32,14 @@ public class MapIdEntitiesAssert extends AbstractAssert<MapIdEntitiesAssert, Map
 		return this;
 	}
 
+	public MapIdEntitiesAssert notContainsId(String id) {
+		isNotNull();
+		if (actual.containsId(id)) {
+			failWithMessage("expected not contain entity id <%s>", id);
+		}
+		return this;
+	}
+
 	public MapIdEntitiesAssert containsId(Identifiable identifiable) {
 		isNotNull();
 		if (!actual.containsId(identifiable)) {
