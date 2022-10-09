@@ -86,7 +86,7 @@ class ScoutMissionHandler(
 
             if (mission.isScoutReadyToEmbark(scoutDestination.transferLocationPath.endTile)) {
                 mission.waitForTransport(scoutDestination.tile)
-                playerMissionsContainer.addMission(mission, TransportUnitRequestMission(mission.scout, scoutDestination.tile))
+                playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, mission.scout, scoutDestination.tile))
             }
         }
     }
@@ -97,7 +97,7 @@ class ScoutMissionHandler(
         scoutDestination: ScoutDestination.OtherIslandFromCarrier
     ) {
         mission.waitForTransport(scoutDestination.tile)
-        playerMissionsContainer.addMission(mission, TransportUnitRequestMission(mission.scout, scoutDestination.tile))
+        playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, mission.scout, scoutDestination.tile))
     }
 
     override fun noDisembarkAccessNotification(

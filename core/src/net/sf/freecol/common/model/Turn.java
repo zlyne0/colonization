@@ -4,7 +4,7 @@ import promitech.colonization.ui.resources.StringTemplate;
 
 public class Turn {
 
-    public static enum Season { YEAR, SPRING, AUTUMN }
+    public enum Season { YEAR, SPRING, AUTUMN }
 	
     /**
      * The first years of the "ages" of the game, which are only used
@@ -15,10 +15,10 @@ public class Turn {
     };
 
     /** The year in which the game starts. */
-    private static int startingYear = 1492;
+    private static final int STARTING_YEAR = 1492;
     
     /** The first year in which there are two seasons. */
-    private static int seasonYear = 1600;
+    private static final int SEASON_YEAR = 1600;
     
     /**
      * The number of ages.
@@ -26,22 +26,22 @@ public class Turn {
      */
     public static final int NUMBER_OF_AGES = AGES.length;
     
-    private int turn = 1;
+    private final int number;
     
     public Turn(int turn) {
-    	this.turn = turn;
+    	this.number = turn;
     }
     
     public Season getSeason() {
-        int year = turn - 1 + startingYear;
-        return (year < seasonYear) ? Season.YEAR
+        int year = number - 1 + STARTING_YEAR;
+        return (year < SEASON_YEAR) ? Season.YEAR
             : (year % 2 == 0) ? Season.SPRING
             : Season.AUTUMN;
     }
     
     public int getYear() {
-        int year = turn - 1 + startingYear;
-        return (year < seasonYear) ? year : seasonYear + (year - seasonYear)/2;
+        int year = number - 1 + STARTING_YEAR;
+        return (year < SEASON_YEAR) ? year : SEASON_YEAR + (year - SEASON_YEAR)/2;
     }
 
     public int getAges() {
@@ -55,15 +55,15 @@ public class Turn {
     }
     
 	public int getNumber() {
-		return turn;
+		return number;
 	}
 
 	public StringTemplate getTurnDateLabel() {
 		return StringTemplate.template("year." + getSeason()).addAmount("%year%", getYear());
 	}
 
-	public void increaseTurnNumber() {
-		turn += 1;
+	public Turn increaseTurnNumber() {
+        return new Turn(number + 1);
 	}
 	
 }

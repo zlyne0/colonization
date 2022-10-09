@@ -400,8 +400,8 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             // given
             val missionContainer = game.aiContainer.missionContainer(dutch)
 
-            val request1 = TransportUnitRequestMission(u1, fortOrangeTile)
-            val request2 = TransportUnitRequestMission(u2, disembarkTile)
+            val request1 = TransportUnitRequestMission(game.turn, u1, fortOrangeTile)
+            val request2 = TransportUnitRequestMission(game.turn, u2, disembarkTile)
 
             val transportMission = TransportUnitMission(galleon)
                 .addUnitDest(request2)

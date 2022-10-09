@@ -25,7 +25,7 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
         val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
 
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
 
         // when
         val recomendations = purchaseRecommendations.generateRecommendations(placeCalculator, entryPointTurnRange, transporter)
@@ -53,7 +53,7 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
         val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
 
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
 
         val previewUnitsInEurope = MapIdEntities(player.europe.units)
 

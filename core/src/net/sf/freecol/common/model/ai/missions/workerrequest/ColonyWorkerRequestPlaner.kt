@@ -37,7 +37,7 @@ class ColonyWorkerRequestPlaner(
 
     fun buyUnitsToNavyCapacity(player: Player, playerMissionContainer: PlayerMissionsContainer, transporter: Unit) {
         init(player, playerMissionContainer)
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
         purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange, transporter)
     }
 
@@ -68,7 +68,7 @@ class ColonyWorkerRequestPlaner(
                         val mission = ColonyWorkerMission(place.location(), unit, place.goodsType())
                         playerMissionsContainer.addMission(mission)
 
-                        val transportUnitRequestMission = TransportUnitRequestMission(unit, place.location())
+                        val transportUnitRequestMission = TransportUnitRequestMission(game.turn, unit, place.location())
                         playerMissionsContainer.addMission(mission, transportUnitRequestMission)
                     }
                 }

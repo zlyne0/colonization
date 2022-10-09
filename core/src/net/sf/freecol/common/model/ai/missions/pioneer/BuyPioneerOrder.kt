@@ -21,7 +21,7 @@ sealed class BuyPioneerOrder {
             val boughtPioneer = buy(playerMissionContainer.player)
             val pioneerMission = PioneerMission(boughtPioneer, pioneerDestination)
             playerMissionContainer.addMission(pioneerMission)
-            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, pioneerDestination.tile))
+            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile))
         }
 
         fun buy(player: Player): Unit {
@@ -36,7 +36,7 @@ sealed class BuyPioneerOrder {
             val boughtPioneer = buy(playerMissionContainer.player, game)
             val pioneerMission = PioneerMission(boughtPioneer, pioneerDestination)
             playerMissionContainer.addMission(pioneerMission)
-            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(boughtPioneer, pioneerDestination.tile))
+            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile))
         }
 
         fun buy(player: Player, game: Game): Unit {
@@ -60,7 +60,7 @@ sealed class BuyPioneerOrder {
             takeRoleMission.makeReservation(game, playerMissionContainer.player)
 
             val replaceColonyWorkerMission = ReplaceColonyWorkerMission(colonyHardyPioneer.colony, colonyHardyPioneer.hardyPioneer, boughtPioneer)
-            val transportRequest = TransportUnitRequestMission(boughtPioneer, colonyHardyPioneer.colony.tile)
+            val transportRequest = TransportUnitRequestMission(game.turn, boughtPioneer, colonyHardyPioneer.colony.tile)
 
             playerMissionContainer.addMission(pioneerMission)
             playerMissionContainer.addMission(pioneerMission, takeRoleMission)
@@ -81,7 +81,7 @@ sealed class BuyPioneerOrder {
 
             val pioneerMission = PioneerMission(boughtPioneer, pioneerDestination)
             val replaceColonyWorkerMission = ReplaceColonyWorkerMission(colonyHardyPioneer.colony, colonyHardyPioneer.hardyPioneer, boughtPioneer)
-            val transportRequest = TransportUnitRequestMission(boughtPioneer, colonyHardyPioneer.colony.tile)
+            val transportRequest = TransportUnitRequestMission(game.turn, boughtPioneer, colonyHardyPioneer.colony.tile)
 
             playerMissionContainer.addMission(pioneerMission)
             playerMissionContainer.addMission(pioneerMission, replaceColonyWorkerMission)
@@ -108,7 +108,7 @@ sealed class BuyPioneerOrder {
             val takeRoleMission = TakeRoleEquipmentMission(boughtPioneer, equiptLocation, pioneerRole)
             takeRoleMission.makeReservation(game, playerMissionContainer.player)
 
-            val transportRequest = TransportUnitRequestMission(boughtPioneer, equiptLocation.tile)
+            val transportRequest = TransportUnitRequestMission(game.turn, boughtPioneer, equiptLocation.tile)
 
             playerMissionContainer.addMission(pioneerMission)
             playerMissionContainer.addMission(pioneerMission, takeRoleMission)

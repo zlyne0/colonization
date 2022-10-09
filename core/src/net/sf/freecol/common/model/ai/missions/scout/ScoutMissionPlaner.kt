@@ -189,7 +189,7 @@ class ScoutMissionPlaner(
         val scoutMission = ScoutMission(scout)
         scoutMission.waitForTransport(scoutBuyPlan.otherIslandDestination)
         playerMissionContainer.addMission(scoutMission)
-        playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scout, scoutBuyPlan.otherIslandDestination))
+        playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(game.turn, scout, scoutBuyPlan.otherIslandDestination))
     }
 
     fun createMissionFromUnusedUnits(player: Player, playerMissionContainer: PlayerMissionsContainer) {
@@ -213,7 +213,7 @@ class ScoutMissionPlaner(
 
                 if (scoutDestination is ScoutDestination.OtherIslandFromCarrier) {
                     scoutMission.waitForTransport(scoutDestination.tile)
-                    playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(scoutMission.scout, scoutDestination.tile))
+                    playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(game.turn, scoutMission.scout, scoutDestination.tile))
                 }
                 // else ScoutMissionHandler should take care about mission and tile destination
             }

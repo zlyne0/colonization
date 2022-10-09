@@ -378,7 +378,7 @@ public class GUIGameController {
 		marketSnapshoot.comparePrices(guiGameModel.game.playingPlayer);
 		
 		newTurnService.newTurn(guiGameModel.game.playingPlayer);
-		guiGameModel.game.getTurn().increaseTurnNumber();
+		guiGameModel.game.increaseTurnNumber();
 		
 		mapActor.resetMapModel();
 		mapActor.resetUnexploredBorders();

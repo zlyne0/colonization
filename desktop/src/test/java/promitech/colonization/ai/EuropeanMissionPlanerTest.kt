@@ -39,9 +39,9 @@ class EuropeanMissionPlanerTest : MissionHandlerBaseTestClass() {
         u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
         u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, dutch.getEurope())
 
-        val transportRequest1 = TransportUnitRequestMission(u1, fortOrangeTile)
+        val transportRequest1 = TransportUnitRequestMission(game.turn, u1, fortOrangeTile)
         missionContainer.addMission(transportRequest1)
-        val transportRequest2 = TransportUnitRequestMission(u2, fortOrangeTile)
+        val transportRequest2 = TransportUnitRequestMission(game.turn, u2, fortOrangeTile)
         missionContainer.addMission(transportRequest2)
 
         val planer = EuropeanMissionPlaner(game, di.pathFinder, di.pathFinder2)
@@ -85,9 +85,9 @@ class EuropeanMissionPlanerTest : MissionHandlerBaseTestClass() {
         u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, islandTile)
         u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, islandTile)
 
-        val transportRequest1 = TransportUnitRequestMission(u1, fortOrangeTile)
+        val transportRequest1 = TransportUnitRequestMission(game.turn, u1, fortOrangeTile)
         missionContainer.addMission(transportRequest1)
-        val transportRequest2 = TransportUnitRequestMission(u2, fortOrangeTile)
+        val transportRequest2 = TransportUnitRequestMission(game.turn, u2, fortOrangeTile)
         missionContainer.addMission(transportRequest2)
 
         val planer = EuropeanMissionPlaner(game, di.pathFinder, di.pathFinder2)

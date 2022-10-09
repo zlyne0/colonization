@@ -37,7 +37,7 @@ class ColonyWorkerMissionHandler(
             }
         } else {
             val transportUnitRequestMission = TransportUnitRequestMission(
-                mission.unit, mission.tile, true, true, NOT_WORTH_EMBARK_RANGE
+                game.turn, mission.unit, mission.tile, true, true, NOT_WORTH_EMBARK_RANGE
             )
             playerMissionsContainer.addMission(mission, transportUnitRequestMission)
         }

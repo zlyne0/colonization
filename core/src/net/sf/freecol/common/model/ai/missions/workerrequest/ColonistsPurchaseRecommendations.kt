@@ -1,6 +1,7 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.Europe
+import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -13,6 +14,7 @@ import promitech.colonization.ai.score.ScoreableObjectsList
 import kotlin.math.log
 
 class ColonistsPurchaseRecommendations(
+    val game: Game,
     val player: Player,
     val playerMissionContainer: PlayerMissionsContainer
 ) {
@@ -29,7 +31,7 @@ class ColonistsPurchaseRecommendations(
 
                 val mission = ColonyWorkerMission(buyRecommendation.location, newUnit, buyRecommendation.goodsType)
                 playerMissionContainer.addMission(mission)
-                val transportUnitRequestMission = TransportUnitRequestMission(mission.unit, mission.tile)
+                val transportUnitRequestMission = TransportUnitRequestMission(game.turn, mission.unit, mission.tile)
                 playerMissionContainer.addMission(mission, transportUnitRequestMission)
             }
         }

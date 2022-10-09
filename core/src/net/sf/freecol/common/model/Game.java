@@ -47,6 +47,10 @@ public class Game {
 		return turn;
 	}
 
+	public void increaseTurnNumber() {
+		this.turn = turn.increaseTurnNumber();
+	}
+
 	public String uuid() {
 		return uuid;
 	}

@@ -341,7 +341,7 @@ fun generateWorkerReqBuyRecommendations(di: DI, guiGameModel: GUIGameModel, tile
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
-	val purchaseColonists = ColonistsPurchaseRecommendations(player, playerMissionContainer)
+	val purchaseColonists = ColonistsPurchaseRecommendations(guiGameModel.game, player, playerMissionContainer)
 	val buyRecomendations = purchaseColonists.generateRecommendations(workerPlaceCalculator, entryPointTurnRange, transportUnit!!)
 	purchaseColonists.printToLog(buyRecomendations, entryPointTurnRange)
 	purchaseColonists.printToMap(buyRecomendations, tileDebugView)
@@ -514,7 +514,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //				missionExecutor.executeMissions(missionContainer, PioneerMission::class.java)
 //				missionExecutor.executeMissions(missionContainer, RequestGoodsMission::class.java)
 
-				guiGameModel.game.turn.increaseTurnNumber()
+				guiGameModel.game.increaseTurnNumber()
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 				player.setAi(false)

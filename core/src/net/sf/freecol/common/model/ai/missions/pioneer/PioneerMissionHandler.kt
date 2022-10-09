@@ -203,7 +203,7 @@ class PioneerMissionHandler(
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(mission.pioneer, mission.colony().tile)
+                TransportUnitRequestMission(game.turn, mission.pioneer, mission.colony().tile)
             )
         }
     }

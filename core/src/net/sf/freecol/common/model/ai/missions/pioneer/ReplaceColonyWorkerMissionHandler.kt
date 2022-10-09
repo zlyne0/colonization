@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.ai.missions.pioneer
 
+import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.findParentMission
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
@@ -9,6 +10,7 @@ import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 
 class ReplaceColonyWorkerMissionHandler(
+    private val game: Game,
     private val missionExecutor: MissionExecutor
 ) : MissionHandler<ReplaceColonyWorkerMission> {
 
@@ -75,7 +77,7 @@ class ReplaceColonyWorkerMissionHandler(
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(mission.replaceByUnit, mission.colony().tile, true)
+                TransportUnitRequestMission(game.turn, mission.replaceByUnit, mission.colony().tile, true)
             )
         }
     }

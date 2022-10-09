@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.transportunit
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Tile
+import net.sf.freecol.common.model.Turn
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -58,6 +59,7 @@ class TransportUnitRequestMission : AbstractMission {
         }
     }
 
+    val createdTurn: Turn
     val unit: Unit
     val destination: Tile
     var transportUnitMissionId: String? = null
@@ -66,12 +68,14 @@ class TransportUnitRequestMission : AbstractMission {
     private var worthEmbarkRange: Int = 0
 
     constructor(
+        createdTurn: Turn,
         unit: Unit,
         destination: Tile,
         allowMoveToDestination: Boolean = false,
         worthEmbark: Boolean = true,
         worthEmbarkRange: Int = 0
     ) : super(Game.idGenerator.nextId(TransportUnitRequestMission::class.java)) {
+        this.createdTurn = createdTurn
         this.unit = unit
         this.destination = destination
         this.allowMoveToDestination = allowMoveToDestination
@@ -79,7 +83,8 @@ class TransportUnitRequestMission : AbstractMission {
         this.worthEmbarkRange = worthEmbarkRange
     }
 
-    private constructor(missionId: String, unit: Unit, destination: Tile) : super(missionId) {
+    private constructor(missionId: String, unit: Unit, destination: Tile, createdTurn: Turn) : super(missionId) {
+        this.createdTurn = createdTurn
         this.unit = unit
         this.destination = destination
     }
@@ -122,6 +127,7 @@ class TransportUnitRequestMission : AbstractMission {
         private val ATTR_DESTINATION = "dest"
         private val ATTR_TRANSPORT_MISSION_ID = "tranMissionId"
         private val ATTR_ALLOW_MOVE_TO_DEST_ID = "allowMoveToDest"
+        private val ATTR_TURN = "turn"
 
         private val ATTR_WORTH_EMBARK = "worthEmbark"
         private val ATTR_WORTH_EMBARK_RANGE = "worthEmbarkRange"
@@ -130,7 +136,7 @@ class TransportUnitRequestMission : AbstractMission {
             val unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
             val destination = game.map.getSafeTile(attr.getPoint(ATTR_DESTINATION))
 
-            nodeObject = TransportUnitRequestMission(attr.id, unit, destination)
+            nodeObject = TransportUnitRequestMission(attr.id, unit, destination, Turn(attr.getIntAttribute(ATTR_TURN)))
             nodeObject.transportUnitMissionId = attr.getStrAttribute(ATTR_TRANSPORT_MISSION_ID)
             nodeObject.allowMoveToDestination = attr.getBooleanAttribute(ATTR_ALLOW_MOVE_TO_DEST_ID, false)
             nodeObject.worthEmbark = attr.getBooleanAttribute(ATTR_WORTH_EMBARK, true)
@@ -151,6 +157,7 @@ class TransportUnitRequestMission : AbstractMission {
             attr.set(ATTR_ALLOW_MOVE_TO_DEST_ID, mission.allowMoveToDestination, false)
             attr.set(ATTR_WORTH_EMBARK, mission.worthEmbark, true)
             attr.set(ATTR_WORTH_EMBARK_RANGE, mission.worthEmbarkRange, 0)
+            attr.set(ATTR_TURN, mission.createdTurn.number)
         }
 
         override fun getTagName(): String {
