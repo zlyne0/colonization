@@ -117,6 +117,7 @@ public class SaveGameList {
 
 	private static final String QUICK_SAVE_NAME = "Quick save";
 	private static final String SAVE_GAME_LIST_FILE_NAME = "saveGameList";
+	private static final String SAVE_GAME_FOLDER = "savegames";
 
 	public String defaultSaveGameName(Game game) {
 		return Messages.message(game.playingPlayer.getNationName()) + " " + Messages.message(game.getTurn().getTurnDateLabel());
@@ -183,7 +184,7 @@ public class SaveGameList {
         SavedGame savedGameObj = new SavedGame();
         savedGameObj.game = game;
 		
-		FileHandle sgfh = Gdx.files.local(quickSaveElement.fileName);
+		FileHandle sgfh = Gdx.files.local(SAVE_GAME_FOLDER + "/" + quickSaveElement.fileName);
 		Writer writer = sgfh.writer(false);
 		try {
 			new SaveGameCreator(writer).generateXmlFrom(savedGameObj);
@@ -218,7 +219,7 @@ public class SaveGameList {
 
 	private Game loadGame(SaveGameElement saveGameElement) {
 		System.out.println("load save game file: " + saveGameElement.fileName + ", name: \"" + saveGameElement.name + "\"");
-		FileHandle sgfh = Gdx.files.local(saveGameElement.fileName);
+		FileHandle sgfh = Gdx.files.local(SAVE_GAME_FOLDER + "/" + saveGameElement.fileName);
 		try {
 			return SaveGameParser.loadGameFromFile(sgfh.file());
 		} catch (Exception e) {
@@ -227,7 +228,7 @@ public class SaveGameList {
 	}
 	
 	private SaveGameListData loadGameList() {
-		FileHandle fh = Gdx.files.local(SAVE_GAME_LIST_FILE_NAME);
+		FileHandle fh = Gdx.files.local(SAVE_GAME_FOLDER + "/" + SAVE_GAME_LIST_FILE_NAME);
 		System.out.println("load saves list file " + fh.file().getAbsolutePath());
 		if (fh.isDirectory()) {
 			throw new IllegalStateException("can not write to " + SAVE_GAME_LIST_FILE_NAME);
@@ -242,7 +243,7 @@ public class SaveGameList {
 	}
 	
 	private void saveGameList(SaveGameListData saveGameListData) {
-		FileHandle fh = Gdx.files.local(SAVE_GAME_LIST_FILE_NAME);
+		FileHandle fh = Gdx.files.local(SAVE_GAME_FOLDER + "/" + SAVE_GAME_LIST_FILE_NAME);
 		System.out.println("save list file " + fh.file().getAbsolutePath());
 		if (fh.isDirectory()) {
 			throw new IllegalStateException("can not write to " + SAVE_GAME_LIST_FILE_NAME);
