@@ -56,7 +56,11 @@ public class EventsNotifications {
     public LinkedList<Notification> getNotifications() {
         return notifications;
     }
-	
+
+    public void clearNotifications() {
+    	notifications.clear();
+	}
+
 	public static final class Xml extends XmlNodeParser<EventsNotifications> {
 
 		public Xml() {
