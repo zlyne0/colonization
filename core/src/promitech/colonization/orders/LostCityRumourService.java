@@ -249,7 +249,10 @@ public class LostCityRumourService {
             messageId = "model.unit.cashInTreasureTrain.independent";
     	}
     	treasureWagon.getOwner().addGold(cashInAmount);
-    	
+    	if (NewTurnLogger.logger.isDebug()) {
+			NewTurnLogger.logger.debug("player[%s].cashInTreasure.add.gold: %d", treasureWagon.getOwner().getId(), cashInAmount);
+		}
+
     	if (treasureWagon.getOwner().isHuman()) {
     		StringTemplate msgSt = StringTemplate.template(messageId)
 				.addAmount("%amount%", fullAmount)

@@ -131,6 +131,7 @@ public class MoveContext {
 		switch (moveType) {
 		    case MOVE_HIGH_SEAS:
 		    case EXPLORE_LOST_CITY_RUMOUR:
+			case MOVE_CASH_IN_TREASURE:
 			case MOVE:
 				if (path != null) {
 					path.removeFirst();

@@ -180,7 +180,11 @@ public class MoveService {
 
 	private void checkCashInTreasureInCarrier(Unit carrier, Tile tile) {
 		Unit treasureWagon = null;
-		
+
+        if (carrier.canCarryTreasure()) {
+		    treasureWagon = carrier;
+        }
+
 		// check treasure in unit carrier
 		if (carrier.getUnitContainer() != null) {
 			for (Unit unit : carrier.getUnitContainer().getUnits().entities()) {
