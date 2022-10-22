@@ -10,7 +10,7 @@ import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import promitech.colonization.savegame.SaveGameParser;
 import promitech.map.isometric.IsometricMapAssert;
@@ -22,7 +22,7 @@ public class MapTest {
     
     @BeforeAll
     public static void beforeClass() throws Exception {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
         
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     }

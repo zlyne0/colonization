@@ -1,7 +1,7 @@
 package promitech.colonization.desktop.measure;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
@@ -29,7 +29,7 @@ public class MeasureNavyPath implements MeasureTask {
     Unit moveUnit;
     
     public void before() throws Exception {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
         game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
 
         // init map

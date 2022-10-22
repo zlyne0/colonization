@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
@@ -22,7 +22,7 @@ public class ColonyAddFreeBuildingTest {
 	
     @BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
     }
 	
     @BeforeEach

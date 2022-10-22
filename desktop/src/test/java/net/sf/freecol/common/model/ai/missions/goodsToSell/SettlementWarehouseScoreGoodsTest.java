@@ -1,7 +1,7 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
@@ -36,7 +36,7 @@ class SettlementWarehouseScoreGoodsTest {
 	
     @BeforeAll
     public static void beforeClass() throws Exception {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
     }
 
     @BeforeEach

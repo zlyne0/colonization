@@ -8,7 +8,7 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.Building;
 import net.sf.freecol.common.model.Game;
@@ -28,7 +28,7 @@ public class LandCombatTest {
 	
     @BeforeAll
     public static void beforeClass() throws Exception {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
     }
 
     @BeforeEach

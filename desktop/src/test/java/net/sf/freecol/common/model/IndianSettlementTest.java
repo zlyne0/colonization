@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -32,7 +32,7 @@ class IndianSettlementTest {
 	
     @BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
         Messages.instance().load();
     }
     

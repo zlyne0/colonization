@@ -7,7 +7,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.player.Player;
 import promitech.colonization.savegame.SaveGameParser;
@@ -19,7 +19,7 @@ public class EuropeTest {
 	
     @BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
     }
     
     @BeforeEach

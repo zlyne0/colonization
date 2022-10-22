@@ -13,7 +13,7 @@ import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyFactory;
@@ -50,7 +50,7 @@ class PathFinderTest {
 
 	@BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
 		Locale.setDefault(Locale.US);
 		Messages.instance().load();
     }

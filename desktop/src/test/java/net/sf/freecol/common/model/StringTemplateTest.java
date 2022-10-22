@@ -13,13 +13,13 @@ import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 public class StringTemplateTest {
 
     @BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
         Locale.setDefault(Locale.US);
         Messages.instance().load();
     }

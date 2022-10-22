@@ -64,7 +64,7 @@ public class GoodsContainerTest {
 		assertThat(slotedGoods)
 			.hasSize(2)
 			.extracting(AbstractGoods::getTypeId, AbstractGoods::getQuantity)
-			.containsExactly(
+			.contains(
 				Tuple.tuple("tobacco", 50), 
 				Tuple.tuple("cloth", 30)
 			)

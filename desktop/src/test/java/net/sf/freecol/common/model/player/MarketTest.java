@@ -12,7 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.xml.sax.SAXException;
 
 import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl.LwjglFiles;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Specification;
@@ -26,7 +26,7 @@ public class MarketTest {
 	
     @BeforeAll
     public static void beforeClass() {
-        Gdx.files = new LwjglFiles();
+        Gdx.files = new Lwjgl3Files();
     }
 
     @BeforeEach

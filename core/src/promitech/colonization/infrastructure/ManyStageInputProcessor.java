@@ -82,9 +82,9 @@ public class ManyStageInputProcessor implements InputProcessor {
     }
 
     @Override
-    public boolean scrolled(int amount) {
+    public boolean scrolled(float amountX, float amountY) {
         for (i=0; i<stages.length; i++) {
-            if (stages[i].scrolled(amount)) {
+            if (stages[i].scrolled(amountX, amountY)) {
                 return true;
             }
         }
