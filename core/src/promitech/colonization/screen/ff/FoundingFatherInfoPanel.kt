@@ -26,7 +26,7 @@ internal class FoundingFatherInfoPanel(val panelSkin : Skin) : Table() {
 		nameLabel.setWrap(true)
 		description.setWrap(true)
 
-		add(nameLabel).colspan(1).align(Align.center).pad(10f).row()
+		add(nameLabel).colspan(2).align(Align.center).pad(10f).expandX().fillX().row()
 		add(ffImage).align(Align.left or Align.top).pad(10f)
 		add(description).top().pad(10f)
 	}
