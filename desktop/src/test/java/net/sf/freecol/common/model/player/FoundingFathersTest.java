@@ -1,24 +1,25 @@
 package net.sf.freecol.common.model.player;
 
-import static org.assertj.core.api.Assertions.*;
+import com.badlogic.gdx.Gdx;
+import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
-import java.io.IOException;
-
-import javax.xml.parsers.ParserConfigurationException;
+import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.Specification;
+import net.sf.freecol.common.model.UnitType;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.xml.sax.SAXException;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
+import java.io.IOException;
+import java.util.List;
 
-import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.MapIdEntities;
-import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.UnitType;
+import javax.xml.parsers.ParserConfigurationException;
+
 import promitech.colonization.savegame.SaveGameParser;
+
+import static org.assertj.core.api.Assertions.assertThat;
 
 class FoundingFathersTest {
 
@@ -39,9 +40,9 @@ class FoundingFathersTest {
     }
 	
     @Test
-	public void onlyColonistsAfterAddedWilliamBrewster() throws Exception {
+	void onlyColonistsAfterAddedWilliamBrewster() {
 		// given
-    	MapIdEntities<UnitType> recruitables = dutch.getEurope().getRecruitables();
+    	List<UnitType> recruitables = dutch.getEurope().getRecruitables();
     	recruitables.clear();
     	recruitables.add(Specification.instance.unitTypes.getById("model.unit.indenturedServant"));
     	recruitables.add(Specification.instance.unitTypes.getById("model.unit.pettyCriminal"));

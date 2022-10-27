@@ -42,7 +42,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     private int recruitPrice = RECRUIT_PRICE_INITIAL;
     private int recruitLowerCap = LOWER_CAP_INITIAL;
     private final MapIdEntities<Unit> units = new MapIdEntities<Unit>();
-    private final MapIdEntities<UnitType> recruitables = MapIdEntities.linkedMapIdEntities(MAX_RECRUITABLE_UNITS);
+    private final List<UnitType> recruitables = new ArrayList<>(MAX_RECRUITABLE_UNITS);
 	private final ObjectIntMap<UnitType> unitPrices = new ObjectIntMap<UnitType>();
 
     public static Europe newStartingEurope(IdGenerator idGenerator, Player player) {
@@ -82,7 +82,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
         units.removeId(unit);
     }
 	
-	public MapIdEntities<UnitType> getRecruitables() {
+	public List<UnitType> getRecruitables() {
 		return recruitables;
 	}
 	
@@ -120,9 +120,6 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	
     	owner.modifyImmigration(penalizedImmigration);
     	if (owner.shouldANewColonistEmigrate()) {
-    		owner.reduceImmigration();
-    		owner.updateImmigrationRequired();
-    		
     		if (owner.isAi()) {
     			emigrate();
     			return;
@@ -202,6 +199,8 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     
 	private Unit emigrate() {
 		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
+		owner.reduceImmigration();
+		owner.updateImmigrationRequired();
 		return recruitImmigrant(emigrateUnitType);
 	}
 
@@ -209,16 +208,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		owner.subtractGold(price);
 		recruitPrice += Specification.options.getIntValue(GameOptions.RECRUIT_PRICE_INCREASE);
 		recruitLowerCap += Specification.options.getIntValue(GameOptions.LOWER_CAP_INCREASE);
+		owner.reduceImmigration();
+		owner.updateImmigrationRequired();
 		return recruitImmigrant(unitType);
 	}
 
 	public Unit recruitImmigrant(final UnitType unitType) {
-		for (UnitType ut : recruitables.copy()) {
-			if (ut.equalsId(unitType)) {
-				recruitables.removeId(ut);
-				break;
-			}
-		}
+		recruitables.remove(unitType);
 		generateRecruitablesUnitList();
 		return createUnit(unitType);
 	}
@@ -254,9 +250,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	}
 	
 	public void replaceNotRecruitableUnits() {
-		for (UnitType unitType : recruitables.copy()) {
+		for (UnitType unitType : new ArrayList<>(recruitables)) {
 			if (!owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, unitType)) {
-				recruitables.removeId(unitType);
+				recruitables.remove(unitType);
 			}
 		}
 		generateRecruitablesUnitList();
@@ -326,14 +322,14 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 
 	public boolean isUnitAvailableToBuyByAI(UnitType unitType) {
 		return unitType.equalsId(UnitType.FREE_COLONIST)
-			|| recruitables.containsId(unitType)
+			|| recruitables.contains(unitType)
 			|| Specification.instance.unitTypesTrainedInEurope.containsId(unitType);
 	}
 
 	public Unit buyUnitByAI(UnitType unitType) {
     	int recruitImmigrantPrice = getRecruitImmigrantPrice();
     	
-    	if (recruitables.containsId(unitType)) {
+    	if (recruitables.contains(unitType)) {
     		return buyImmigrant(unitType, recruitImmigrantPrice);
     	}
     	// ai has advantage to buy colonist when they want
@@ -361,7 +357,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		}
 
 		int trainableUnitPrice = getUnitPrice(unitType);
-    	if (recruitables.containsId(unitType)) {
+    	if (recruitables.contains(unitType)) {
     		return Math.min(trainableUnitPrice, recruitImmigrantPrice);
 		}
     	return trainableUnitPrice;
