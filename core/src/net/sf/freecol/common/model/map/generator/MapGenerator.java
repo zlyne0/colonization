@@ -1,10 +1,5 @@
 package net.sf.freecol.common.model.map.generator;
 
-import java.util.ArrayList;
-import java.util.EnumMap;
-import java.util.HashMap;
-import java.util.List;
-
 import com.github.czyzby.noise4j.map.Grid;
 import com.github.czyzby.noise4j.map.generator.cellular.CellularAutomataGenerator;
 
@@ -27,6 +22,12 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.EuropeanNationType;
 import net.sf.freecol.common.model.specification.EuropeanStartingAbstractUnit;
 import net.sf.freecol.common.model.specification.GameOptions;
+
+import java.util.ArrayList;
+import java.util.EnumMap;
+import java.util.HashMap;
+import java.util.List;
+
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
 import promitech.colonization.SpiralIterator;
@@ -124,12 +125,13 @@ public class MapGenerator {
 	
 	private void generatePlayersStartPositions(Map map, MapIdEntities<Player> gamePlayers) {
 		List<Player> players = new ArrayList<Player>();
-		for (Player p : gamePlayers.entities()) {
+		for (Player p : gamePlayers) {
 			if (p.isLiveEuropeanPlayer()) {
 				players.add(p);
 			}
 		}
-		
+		Randomizer.instance().shuffle(players);
+
 		// generate entry location
 		int x = -1, i = 0;
 		int startY = Map.POLAR_HEIGHT;
