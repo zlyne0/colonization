@@ -7,14 +7,15 @@ import com.badlogic.gdx.scenes.scene2d.ui.Label.LabelStyle;
 import com.badlogic.gdx.scenes.scene2d.ui.Table;
 import com.badlogic.gdx.scenes.scene2d.utils.TextureRegionDrawable;
 import com.badlogic.gdx.utils.Align;
-import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.Scaling;
 
+import net.sf.freecol.common.model.BuildProgress;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.GoodsContainer;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
+
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.infrastructure.FontResource;
@@ -58,13 +59,12 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.add(buildItemNameLabel).left().row();
 		descriptionTableLayout.add(turnsToCompleteLabel).left().row();
 		
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
-		int turnsToComplete = colony.getTurnsToComplete(item, requiredTurnsForGoods);
-		
+		BuildProgress buildProgress = BuildProgress.calculateBuildProgress(colony, item);
+
 		for (RequiredGoods requiredGood : item.requiredGoods()) {
 			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
 			int productionAmount = production.getQuantity(requiredGood.getId());
-			int goodRequiredTurn = requiredTurnsForGoods.get(requiredGood.getId(), Colony.NEVER_COMPLETE_BUILD);
+			int goodRequiredTurn = buildProgress.get(requiredGood.getId());
 			
 			Image goodImage = new Image(textureById(requiredGood.getId() + ".image"), Scaling.none, Align.center);
 			goodImage.setAlign(Align.topLeft);
@@ -84,7 +84,7 @@ class ActualBuildableItemActor extends Table {
 		StringTemplate stringTemplate = StringTemplate.template(item.getId() + ".name");
 		buildItemNameLabel.setText(Messages.message(stringTemplate));
 		
-		updateTurnsToCompleteLabel(turnsToComplete);
+		updateTurnsToCompleteLabel(buildProgress);
 	}
 
 	private void cleanItem() {
@@ -94,21 +94,21 @@ class ActualBuildableItemActor extends Table {
 		descriptionTableLayout.clear();
 	}
 
-	private void updateTurnsToCompleteLabel(int requiredTurn) {
-		String trunsToCompleteStr;
-		if (requiredTurn == Colony.NEVER_COMPLETE_BUILD) {
-			trunsToCompleteStr = "> -1";
+	private void updateTurnsToCompleteLabel(BuildProgress buildProgress) {
+		String turnsToCompleteStr;
+		if (buildProgress.noComponentsInProduction()) {
+			turnsToCompleteStr = "unknown";
 		} else {
-			trunsToCompleteStr = Integer.toString(requiredTurn);
+			turnsToCompleteStr = Integer.toString(buildProgress.getTurnsToComplete());
 		}
 		StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.long")
-				.add("%number%", trunsToCompleteStr);
+				.add("%number%", turnsToCompleteStr);
 		turnsToCompleteLabel.setText(Messages.message(stringTemplate));
 	}
 
 	private String goodRequiredTurnsStr(int requiredGood, int warehouseAmount, int productionAmount, int requiredTurn) {
 		String label = "" + warehouseAmount + " + " + productionAmount + "/" + requiredGood;
-		if (requiredTurn == Colony.NEVER_COMPLETE_BUILD) {
+		if (requiredTurn == BuildProgress.LACK_OF_RESOURCES) {
 			StringTemplate stringTemplate = StringTemplate.template("turnsToComplete.short");
 			stringTemplate.addKey("%number%", "notApplicable.short");
 			label += " " + Messages.message(stringTemplate); 

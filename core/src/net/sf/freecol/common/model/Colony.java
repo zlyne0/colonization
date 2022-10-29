@@ -1,17 +1,10 @@
 package net.sf.freecol.common.model;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-
-import com.badlogic.gdx.utils.ObjectIntMap;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
-import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;
 import net.sf.freecol.common.model.player.FoundingFather;
 import net.sf.freecol.common.model.player.Market;
@@ -27,8 +20,14 @@ import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.Modifier.ModifierType;
 import net.sf.freecol.common.model.specification.RequiredGoods;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
-import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
 import net.sf.freecol.common.util.StringUtils;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.List;
+
 import promitech.colonization.Direction;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -38,7 +37,6 @@ import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
 
 public class Colony extends Settlement {
-	public static final int NEVER_COMPLETE_BUILD = -1;
     public static final int LIBERTY_PER_REBEL = 200;
 
 	private static final Comparator<Building> BUILDING_GOODS_OUTPUT_CHAIN_LEVEL = new Comparator<Building>() {
@@ -49,7 +47,7 @@ public class Colony extends Settlement {
 	};
 
     /** Reasons for not building a buildable. */
-    public static enum NoBuildReason {
+    public enum NoBuildReason {
         NONE,
         NOT_BUILDING,
         NOT_BUILDABLE,
@@ -791,13 +789,12 @@ public class Colony extends Settlement {
 		if (buildableType == null) {
 			return;
 		}
-		ObjectIntMap<String> requiredTurnsForGoods = new ObjectIntMap<String>(2);
-		int turnsToGatherResourcesForBuild = getTurnsToComplete(buildableType, requiredTurnsForGoods);
-		if (turnsToGatherResourcesForBuild == NEVER_COMPLETE_BUILD) {
-			neverFinishBuildingNotification(buildableType, requiredTurnsForGoods);
+		BuildProgress buildProgress = BuildProgress.calculateBuildProgress(this, buildableType);
+		if (buildProgress.isProgressStopedBecauseOfLackOfComponents()) {
+			buildProgress.neverFinishBuildingNotification(this, buildableType);
 			return;
 		} 
-		if (turnsToGatherResourcesForBuild == 0) {
+		if (buildProgress.isCompleted()) {
 			NoBuildReason noBuildReason = getNoBuildReason(buildableType);
 			if (NoBuildReason.NONE != noBuildReason) {
 				finishBuildingProblemNotification(buildableType, noBuildReason);
@@ -826,23 +823,6 @@ public class Colony extends Settlement {
         }
         System.out.println("" + buildableType + " no build reason '" + noBuildReason + "'");
         owner.eventsNotifications.addMessageNotification(st);
-    }
-
-    private void neverFinishBuildingNotification(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGoods) {
-        for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
-        	int turnsForGoodsType = requiredTurnsForGoods.get(requiredGood.getId(), -1);
-        	if (turnsForGoodsType == NEVER_COMPLETE_BUILD) {
-        		int amount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.getId());
-        		
-        		StringTemplate st = StringTemplate.template("model.colony.buildableNeedsGoods")
-        			.addName("%goodsType%", requiredGood.getId())
-        			.addAmount("%amount%", amount)
-        			.add("%colony%", getName())
-        			.addName("%buildable%", buildableType.getId());
-        		owner.eventsNotifications.addMessageNotification(st);
-        		break;
-        	}
-        }
     }
 
 	private void finishBuilding(BuildableType buildableType) {
@@ -1049,38 +1029,6 @@ public class Colony extends Settlement {
 			}
 		}
 		return NoBuildReason.NONE;
-	}
-	
-	public int getTurnsToComplete(BuildableType buildableType, ObjectIntMap<String> requiredTurnsForGood) {
-		ProductionSummary production = productionSummary();
-		GoodsContainer warehouse = goodsContainer;
-		
-		int requiredTurn = -1;
-		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
-			int warehouseAmount = warehouse.goodsAmount(requiredGood.getId());
-			int productionAmount = production.getQuantity(requiredGood.getId());
-			int goodRequiredTurn = NEVER_COMPLETE_BUILD;
-			
-			if (warehouseAmount < requiredGood.amount) {
-				if (productionAmount > 0) {
-					int reqToProduce = requiredGood.amount - warehouseAmount;
-					goodRequiredTurn = reqToProduce / productionAmount;
-					if (reqToProduce % productionAmount != 0) {
-						goodRequiredTurn++;
-					}
-				} else {
-					goodRequiredTurn = NEVER_COMPLETE_BUILD;
-				}
-			} else {
-				goodRequiredTurn = 0;
-			}
-			requiredTurnsForGood.put(requiredGood.getId(), goodRequiredTurn);
-			
-			if (goodRequiredTurn > requiredTurn || goodRequiredTurn == NEVER_COMPLETE_BUILD) {
-				requiredTurn = goodRequiredTurn;
-			}
-		}
-		return requiredTurn;
 	}
 	
 	protected void initDefaultBuildings() {
