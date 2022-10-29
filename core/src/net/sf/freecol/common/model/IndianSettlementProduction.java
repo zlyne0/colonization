@@ -218,9 +218,8 @@ public class IndianSettlementProduction {
 		
         for (Tile claimableTile : map.neighbourTiles(settlement.tile, settlement.settlementType.getClaimableRadius())) {
             // own tile or tile without owner
-            if (!claimableTile.isOccupiedForPlayer(settlement.getOwner()) && (
-                claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(settlement)
-                )
+            if (!claimableTile.isOccupiedForPlayer(settlement.getOwner())
+				&& (claimableTile.getOwningSettlementId() == null || claimableTile.isOwnBySettlement(settlement))
             ) {
                 claimableTile.getType().productionInfo.addUnattendedProductionToSummary(maxProduction);
                 productionTiles++;

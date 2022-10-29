@@ -647,7 +647,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     public UnitContainer getUnitContainer() {
         return unitContainer;
     }
-    
+
+	public boolean canCarryUnits() {
+		return unitContainer != null;
+	}
+
 	@Override
 	public MapIdEntitiesReadOnly<Unit> getUnits() {
 		return unitContainer.getUnits();

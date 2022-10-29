@@ -521,11 +521,16 @@ public class Tile implements UnitLocation, Identifiable {
     boolean isOccupiedForPlayer(Player player) {
         Unit tileUnit = units.first();
         if (tileUnit != null && tileUnit.getOwner().notEqualsId(player) && tileUnit.getOwner().atWarWith(player)) {
-            for (Unit unit : tileUnit.getUnits().entities()) {
-                if (Unit.isOffensiveUnit(unit)) {
-                    return true;
-                }
-            }
+			if (Unit.isOffensiveUnit(tileUnit)) {
+				return true;
+			}
+			if (tileUnit.canCarryUnits()) {
+				for (Unit unit : tileUnit.getUnits().entities()) {
+					if (Unit.isOffensiveUnit(unit)) {
+						return true;
+					}
+				}
+			}
         }
         return owningSettlement != null && owner != null && owner.notEqualsId(player);
     }
