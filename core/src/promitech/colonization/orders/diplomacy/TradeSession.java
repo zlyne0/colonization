@@ -256,15 +256,23 @@ public class TradeSession {
 		return isProd.goodsToSell(indianSettlement, unit);
 	}
 	
-	public boolean isCanBuy() {
+	public boolean canBuy() {
 		return canBuy && !atWar && unit.hasSpaceForAdditionalCargo();
 	}
 
-	public boolean isCanSell() {
+	public void markNoBuy() {
+		canBuy = false;
+	}
+
+	public boolean canSell() {
 		return canSell && !atWar && unit.hasGoodsCargo();
 	}
 
-	public boolean isCanGift() {
+	public void markNoSell() {
+		canSell = false;
+	}
+
+	public boolean canGift() {
 		return canGift && unit.hasGoodsCargo();
 	}
 	

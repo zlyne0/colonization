@@ -38,14 +38,21 @@ class TradeDialog(val tradeSession : TradeSession)
 		
 		val tradeGoodsType = Specification.instance.goodsTypes.getById(goodsTypeId)
 		var goodsOfferPrice = tradeSession.sellOffer(tradeGoodsType, amount)
-		
+
+		if (goodsOfferPrice <= 0) {
+			tradeSession.markNoSell()
+			addHaggleResultMessage(goodsOfferPrice)
+			showTradeChoices()
+			return
+		}
+
 		val sellLabel = Label(sellGoodsLabelStr(tradeGoodsType, amount, goodsOfferPrice), skin)
 		val acceptSellOffer = TextButton(Messages.msg("sell.takeOffer"), skin)
 		acceptSellOffer.addListener { ->
 			tradeSession.acceptSellOfferToIndianSettlement(tradeGoodsType, amount, goodsOfferPrice)
 			showTradeChoices()
 		}
-		
+
 		val askForMoreGold = TextButton(Messages.msg("sell.moreGold"), skin)
 		askForMoreGold.addListener { ->
 			goodsOfferPrice = tradeSession.haggleSellOffer(tradeGoodsType, amount, goodsOfferPrice)
@@ -97,7 +104,7 @@ class TradeDialog(val tradeSession : TradeSession)
 				.eval()
 			TradeSession.NO_TRADE_HAGGLE -> Messages.msg("trade.noTradeHaggle")
 			TradeSession.NO_TRADE_HOSTILE -> Messages.msg("trade.noTradeHostile")
-			else -> "" 
+			else -> ""
 		}
 		if (str.isNotBlank()) {
 			messages.add(str)
@@ -213,7 +220,13 @@ class TradeDialog(val tradeSession : TradeSession)
 		welcomeLabel()
 
 		var buyOfferPrice = tradeSession.buyOfferPrice(goodsType, amount)
-		
+		if (buyOfferPrice <= 0) {
+			tradeSession.markNoBuy()
+			addHaggleResultMessage(buyOfferPrice)
+			showTradeChoices()
+			return
+		}
+
 		val buyPriceLabel = Label(buyOfferPriceLabelStr(goodsType, amount, buyOfferPrice), skin)
 		layout.add(buyPriceLabel).fillX().padTop(10f).row()	
 		
@@ -262,21 +275,21 @@ class TradeDialog(val tradeSession : TradeSession)
 		layout.clear()
 		welcomeLabel()
 		
-		if (tradeSession.isCanBuy()) {
+		if (tradeSession.canBuy()) {
 			val buyButton = TextButton(Messages.msg("tradeProposition.toBuy"), skin)
 			buyButton.addListener { ->
 				showBuyChoices()
 			}
 			layout.add(buyButton).fillX().padTop(10f).row()
 		}
-		if (tradeSession.isCanSell()) {
+		if (tradeSession.canSell()) {
 			val sellButton = TextButton(Messages.msg("tradeProposition.toSell"), skin)
 			sellButton.addListener { ->
 				showSellChoices()
 			}
 			layout.add(sellButton).fillX().padTop(10f).row()
 		}
-		if (tradeSession.isCanGift()) {
+		if (tradeSession.canGift()) {
 			val giftButton = TextButton(Messages.msg("tradeProposition.toGift"), skin)
 			giftButton.addListener { ->
 				showDeliverGift()
