@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ScoreableObjectsList
 import promitech.colonization.screen.debug.TileDebugView
-import java.util.*
 
 class ColonyWorkerRequestPlaceCalculator(
     val player: Player,
@@ -16,29 +15,39 @@ class ColonyWorkerRequestPlaceCalculator(
     val entryPointTurnRange: EntryPointTurnRange
 ) {
 
-//	1col +0
-//	2col +5
-//	3col +7
-//	4col +10
-//	5col +12
-//	6col +15
-//    int [][] colNumberWeights = new int[][] {
-//        {0, 0},
-//        {1, 0},
-//        {2, 5},
-//        {3, 7},
-//        {4, 10},
-//        {5, 12},
-//        {6, 15}
-//    };
+    companion object {
+        const val smallPoxLimit = 4
+        const val colonyRebellionLimit = 50
+        const val denseColonyUnitCount = 6
+    }
 
     private val workerPriceToValueScorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
     private val tileScore = ScoreableObjectsList<WorkerRequestScoreValue>(20)
     private val goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice
     private val colonyWorkerReq = ColonyWorkerReqScore(player.market(), goodsTypeToScoreByPrice)
 
+    private fun allowBuildNewColonies(): Boolean {
+        var rebellionColony = 0
+        var denseColony = 0
+        for (settlement in player.settlements) {
+            val colony = settlement.asColony()
+            if (colony.sonsOfLiberty() >= colonyRebellionLimit) {
+                rebellionColony++
+            }
+            if (colony.colonyUnitsCount >= denseColonyUnitCount) {
+                denseColony++
+            }
+        }
+        val royalColonies = player.settlements.size() - rebellionColony
+        val smallColonies = player.settlements.size() - denseColony
+        if (rebellionColony > 0 && royalColonies >= smallPoxLimit || smallColonies >= smallPoxLimit) {
+            return false
+        }
+        return true
+    }
+
     fun score(playerMissionsContainer: PlayerMissionsContainer): ScoreableObjectsList<WorkerRequestScoreValue> {
-        var tilesWithCreateColony = tilesForCreateColony(playerMissionsContainer)
+        val tilesWithCreateColony = tilesForCreateColony(playerMissionsContainer)
 
         tileScore.clear()
         if (player.settlements.isEmpty()) {
@@ -46,7 +55,9 @@ class ColonyWorkerRequestPlaceCalculator(
             // tileScore already sorted
         } else {
             workerForColony(player, tileScore)
-            workerForCreateColony(player, tileScore, tilesWithCreateColony);
+            if (allowBuildNewColonies()) {
+                workerForCreateColony(player, tileScore, tilesWithCreateColony);
+            }
         }
         workerPriceToValueScorePolicy.calculateScore(tileScore)
         tileScore.sortDescending()
@@ -54,11 +65,11 @@ class ColonyWorkerRequestPlaceCalculator(
     }
 
     private fun tilesForCreateColony(playerMissionsContainer: PlayerMissionsContainer): List<Tile> {
-        var missions = playerMissionsContainer.findMissions(ColonyWorkerMission::class.java)
+        val missions = playerMissionsContainer.findMissions(ColonyWorkerMission::class.java)
         if (missions.isEmpty()) {
             return emptyList()
         }
-        var tiles = mutableListOf<Tile>()
+        val tiles = mutableListOf<Tile>()
         for (mission in missions) {
             tiles.add(mission.tile)
         }

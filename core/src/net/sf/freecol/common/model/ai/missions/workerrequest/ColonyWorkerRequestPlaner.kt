@@ -45,13 +45,10 @@ class ColonyWorkerRequestPlaner(
         init(player, playerMissionsContainer)
 
         for (unit in player.units) {
-            if (unit.isNaval) {
+            if (unit.isNaval || playerMissionsContainer.isUnitBlockedForMission(unit)) {
                 continue
             }
             if (unit.isAtTileLocation) {
-                if (playerMissionsContainer.isUnitBlockedForMission(unit)) {
-                    continue
-                }
                 val tileScore = placeCalculator.score(playerMissionsContainer)
 
                 findTheBestLocationDependsTransporter(unit, tileScore)?.let { place ->
@@ -59,9 +56,6 @@ class ColonyWorkerRequestPlaner(
                     playerMissionsContainer.addMission(mission)
                 }
             } else if (unit.isAtEuropeLocation || unit.isAtUnitLocation) {
-                if (playerMissionsContainer.isUnitBlockedForMission(unit)) {
-                    continue
-                }
                 if (Unit.isColonist(unit.unitType, unit.owner)) {
                     val tileScore = placeCalculator.score(playerMissionsContainer)
                     findTheBestLocationOnMap(unit, tileScore)?.let { place ->

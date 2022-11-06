@@ -1,6 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
-import net.sf.freecol.common.model.Europe
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
@@ -8,10 +7,9 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.*
+import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.logger
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ScoreableObjectsList
-import kotlin.math.log
 
 class ColonistsPurchaseRecommendations(
     val game: Game,
