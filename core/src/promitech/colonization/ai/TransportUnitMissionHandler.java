@@ -209,6 +209,12 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		Unit carrier = mission.getCarrier();
 		Player player = carrier.getOwner();
 
+		if (carrier.getTile().equalsCoordinates(unitDestination)) {
+			tryDisembarkUnits(mission, unitDestination, disembarkLocation);
+			tryUnloadCargo(mission, disembarkLocation);
+			return;
+		}
+
 		MoveContext moveContext = new MoveContext(carrier, path);
 		MoveType aiConfirmedMovePath = moveService.aiConfirmedMovePath(moveContext);
 
