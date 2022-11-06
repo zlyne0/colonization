@@ -182,6 +182,12 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			// TODO: no posibility to disembark, blocked?, stop mission, notify parent mission to change destination
 			return;
 		}
+		if (mission.getCarrier().getTile().equalsCoordinates(theClosestTileToDisembark)) {
+			tryDisembarkUnits(mission, unitDest.dest, theClosestTileToDisembark);
+			tryUnloadCargo(mission, theClosestTileToDisembark);
+			return;
+		}
+
 		Path pathToDisembark = pathFinder.createPath(theClosestTileToDisembark);
 		if (logger.isDebug()) {
 			logger.debug(
@@ -297,8 +303,9 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	if (logger.isDebug()) {
 			String str = "";
 			for (UnitDest unitDest : mission.getUnitsDest()) {
-                if (unitDest.unit.getTile().isStepNextTo(carrierLocation)
-                    || unitDest.unit.getTile().equalsCoordinates(carrierLocation)) {
+                if (unitDest.unit.isAtTileLocation() &&
+					(unitDest.unit.getTile().isStepNextTo(carrierLocation) || unitDest.unit.getTile().equalsCoordinates(carrierLocation))
+				) {
 					if (!str.isEmpty()) {
 						str += ", ";
 					}
@@ -311,6 +318,9 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		}
 
 		for (UnitDest unitDest : mission.getUnitsDest()) {
+			if (!unitDest.unit.isAtTileLocation()) {
+				continue;
+			}
 			if (unitDest.unit.getTile().isStepNextTo(carrierLocation)) {
 				MoveContext moveContext = MoveContext.embarkUnit(unitDest.unit, carrier);
 				if (MoveType.EMBARK.equals(moveContext.moveType)) {

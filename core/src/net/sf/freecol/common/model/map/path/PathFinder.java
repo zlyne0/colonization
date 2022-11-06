@@ -329,8 +329,10 @@ public class PathFinder {
 
 				MoveType moveType = pathUnit.unitMove.calculateMoveType(currentNode.tile, moveNode.tile);
 				if (goalDecider.hasGoalReached(moveNode)) {
-					if ((moveType != MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS && moveType != MoveType.MOVE_NO_ACCESS_GOODS)
-						|| costDecider.isAllowCarrierEnterWithGoods()
+					if (
+						((moveType != MoveType.ENTER_SETTLEMENT_WITH_CARRIER_AND_GOODS
+						&& moveType != MoveType.MOVE_NO_ACCESS_GOODS)
+						|| costDecider.isAllowCarrierEnterWithGoods()) && moveType != MoveType.MOVE_NO_ACCESS_LAND
 					) {
 						reachedGoalNode = moveNode;
 						// change moveType to default move. Sometimes goal can be indian settlement
