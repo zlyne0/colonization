@@ -38,7 +38,7 @@ public class Tile implements UnitLocation, Identifiable {
 	private TileType type;
 	private int style;
 	public final String id;
-	private boolean moveToEurope = false;
+	private final boolean moveToEurope;
 	private Player owner;
 	private String owningSettlement;
 	
@@ -54,6 +54,7 @@ public class Tile implements UnitLocation, Identifiable {
 		this.y = y;
 		this.type = type;
 		this.style = style;
+		this.moveToEurope = type.isDirectlyHighSeasConnected();
 	}
 	
 	@Override
@@ -273,11 +274,7 @@ public class Tile implements UnitLocation, Identifiable {
 	}
 	
     public boolean isDirectlyHighSeasConnected() {
-    	if (moveToEurope) {
-    		return true;
-    	} else {
-    		return type.isDirectlyHighSeasConnected();
-    	}
+		return moveToEurope;
     }
 	
     public int getMoveCost(Direction moveDirection, int basicMoveCost) {
@@ -567,7 +564,6 @@ public class Tile implements UnitLocation, Identifiable {
 		private static final String ELEMENT_CACHED_TILE = "cachedTile";
 		private static final String ATTR_OWNING_SETTLEMENT = "owningSettlement";
 		private static final String ATTR_OWNER = "owner";
-		private static final String ATTR_MOVE_TO_EUROPE = "moveToEurope";
 		private static final String ATTR_Y = "y";
 		private static final String ATTR_X = "x";
 		private static final String ATTR_TYPE = "type";
@@ -636,8 +632,7 @@ public class Tile implements UnitLocation, Identifiable {
 			
 			TileType tileType = Specification.instance.tileTypes.getById(tileTypeStr);
 			Tile tile = new Tile(idStr, x, y, tileType, tileStyle);
-			tile.moveToEurope = attr.getBooleanAttribute(ATTR_MOVE_TO_EUROPE, false);
-			
+
 			String ownerId = attr.getStrAttribute(ATTR_OWNER);
 			if (ownerId != null) {
 				tile.owner = game.players.getById(ownerId);
@@ -656,7 +651,6 @@ public class Tile implements UnitLocation, Identifiable {
 			attr.set(ATTR_TYPE, tile.type);
 			attr.set(ATTR_STYLE, tile.style);
 			
-			attr.set(ATTR_MOVE_TO_EUROPE, tile.moveToEurope);
 			attr.set(ATTR_OWNER, tile.owner);
 			attr.set(ATTR_OWNING_SETTLEMENT, tile.owningSettlement);
 			
