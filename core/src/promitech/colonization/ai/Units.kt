@@ -46,6 +46,7 @@ fun Player.findCarrier(): Unit? {
 class Units {
     companion object {
         @JvmField
+        // more free cargo first
         val FREE_CARGO_SPACE_COMPARATOR = java.util.Comparator<Unit> { o1, o2 ->
             if (o2.hasMoreFreeCargoSpace(o1)) {
                 1

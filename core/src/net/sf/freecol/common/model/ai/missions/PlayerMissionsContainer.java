@@ -159,11 +159,17 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Predicate<T> predicate) {
-		List<T> result = new ArrayList<T>();
+		List<T> result = null;
 		for (AbstractMission abstractMission : missions) {
 			if (abstractMission.is(clazz) && predicate.test((T)abstractMission)) {
+				if (result == null) {
+					result = new ArrayList<T>();
+				}
 				result.add((T)abstractMission);
 			}
+		}
+		if (result == null) {
+			return Collections.emptyList();
 		}
 		return result;
 	}
