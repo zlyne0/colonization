@@ -23,6 +23,14 @@ sealed class PioneerDestination {
     class TheSameIsland(val plan: ColonyTilesImprovementPlan) : PioneerDestination()
     class OtherIsland(val plan: ColonyTilesImprovementPlan) : PioneerDestination()
     class Lack : PioneerDestination()
+
+    fun extractColonyDestination(): Colony? {
+        return when (this) {
+            is TheSameIsland -> plan.colony
+            is OtherIsland -> plan.colony
+            is Lack -> null
+        }
+    }
 }
 
 data class PioneerBuyPlan(val buyPioneerOrder: BuyPioneerOrder, val colony: Colony)
@@ -228,9 +236,14 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         })
 
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(playerMissionContainer.player, AddImprovementPolicy.Balanced())
-        pathFinder.generateRangeMap(game.map, mission.pioneer, PathFinder.includeUnexploredTiles)
+        pathFinder.generateRangeMap(
+            game.map,
+            mission.pioneer.positionRelativeToMap(game.map),
+            mission.pioneer,
+            PathFinder.includeUnexploredTiles
+        )
 
-        var improvementDestination: ColonyTilesImprovementPlan? = findTheBestDestinationInRange(
+        val improvementDestination: ColonyTilesImprovementPlan? = findTheBestDestinationInRange(
             pathFinder,
             improvementsPlanDestinationsScore,
             colonyWithMissions,

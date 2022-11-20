@@ -1020,7 +1020,19 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		}
 		return false;
 	}
-	
+
+	public Tile positionRelativeToMap(Map map) {
+		Tile sourceTile = getTileLocationOrNull();
+		if (sourceTile == null && (isAtHighSeasLocation() || isAtEuropeLocation())) {
+			if (enterHighSea != null) {
+				sourceTile = map.getSafeTile(enterHighSea);
+			} else {
+				sourceTile = map.getSafeTile(owner.getEntryLocation());
+			}
+		}
+		return sourceTile;
+	}
+
     public static class Xml extends XmlNodeParser<Unit> {
         
     	private static final String ATTR_ENTER_HIGH_SEA = "enterHighSea";

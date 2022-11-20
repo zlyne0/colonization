@@ -66,6 +66,8 @@ class TransportUnitRequestMission : AbstractMission {
     var allowMoveToDestination: Boolean = false
     private var worthEmbark: Boolean = true
     private var worthEmbarkRange: Int = 0
+    var checkAvailability: Boolean = false
+        private set
 
     constructor(
         createdTurn: Turn,
@@ -73,7 +75,7 @@ class TransportUnitRequestMission : AbstractMission {
         destination: Tile,
         allowMoveToDestination: Boolean = false,
         worthEmbark: Boolean = true,
-        worthEmbarkRange: Int = 0
+        worthEmbarkRange: Int = 0,
     ) : super(Game.idGenerator.nextId(TransportUnitRequestMission::class.java)) {
         this.createdTurn = createdTurn
         this.unit = unit
@@ -87,6 +89,11 @@ class TransportUnitRequestMission : AbstractMission {
         this.createdTurn = createdTurn
         this.unit = unit
         this.destination = destination
+    }
+
+    fun withCheckAvailability(): TransportUnitRequestMission {
+        this.checkAvailability = true
+        return this
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
@@ -131,6 +138,7 @@ class TransportUnitRequestMission : AbstractMission {
 
         private val ATTR_WORTH_EMBARK = "worthEmbark"
         private val ATTR_WORTH_EMBARK_RANGE = "worthEmbarkRange"
+        private val ATTR_CHECK_AVAILABILITY = "checkAvailability"
 
         override fun startElement(attr: XmlNodeAttributes) {
             val unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
@@ -141,6 +149,7 @@ class TransportUnitRequestMission : AbstractMission {
             nodeObject.allowMoveToDestination = attr.getBooleanAttribute(ATTR_ALLOW_MOVE_TO_DEST_ID, false)
             nodeObject.worthEmbark = attr.getBooleanAttribute(ATTR_WORTH_EMBARK, true)
             nodeObject.worthEmbarkRange = attr.getIntAttribute(ATTR_WORTH_EMBARK_RANGE, 0)
+            nodeObject.checkAvailability = attr.getBooleanAttribute(ATTR_CHECK_AVAILABILITY, false)
             super.startElement(attr)
         }
 
@@ -158,6 +167,7 @@ class TransportUnitRequestMission : AbstractMission {
             attr.set(ATTR_WORTH_EMBARK, mission.worthEmbark, true)
             attr.set(ATTR_WORTH_EMBARK_RANGE, mission.worthEmbarkRange, 0)
             attr.set(ATTR_TURN, mission.createdTurn.number)
+            attr.set(ATTR_CHECK_AVAILABILITY, mission.checkAvailability, false)
         }
 
         override fun getTagName(): String {

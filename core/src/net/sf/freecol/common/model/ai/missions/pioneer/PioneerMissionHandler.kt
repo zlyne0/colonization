@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.transportunit.CheckAvailabilityMissionHandler
 import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.ai.MissionHandler
@@ -22,7 +23,7 @@ class PioneerMissionHandler(
     private val pioneerMissionPlaner: PioneerMissionPlaner,
     private val moveService: MoveService,
     private val pathFinder: PathFinder
-): MissionHandler<PioneerMission>, ReplaceUnitInMissionHandler {
+): MissionHandler<PioneerMission>, ReplaceUnitInMissionHandler, CheckAvailabilityMissionHandler {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
         val player = playerMissionsContainer.player
@@ -54,6 +55,14 @@ class PioneerMissionHandler(
         }
 
         val improvementDestination = pioneerMissionPlaner.findImprovementDestination(mission, playerMissionsContainer)
+        processImprovementDestination(playerMissionsContainer, mission, improvementDestination)
+    }
+
+    private fun processImprovementDestination(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: PioneerMission,
+        improvementDestination: PioneerDestination
+    ) {
         when (improvementDestination) {
             is PioneerDestination.TheSameIsland -> {
                 mission.changeColony(improvementDestination.plan.colony)
@@ -197,14 +206,13 @@ class PioneerMissionHandler(
         playerMissionsContainer: PlayerMissionsContainer,
         mission: PioneerMission
     ) {
-        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java, { requestMission ->
+        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java) { requestMission ->
             requestMission.unit.equalsId(mission.pioneer)
-        })
+        }
         if (!requestMissionExists) {
-            playerMissionsContainer.addMission(
-                mission,
-                TransportUnitRequestMission(game.turn, mission.pioneer, mission.colony().tile)
-            )
+            val transportRequestMission = TransportUnitRequestMission(game.turn, mission.pioneer, mission.colony().tile)
+                .withCheckAvailability()
+            playerMissionsContainer.addMission(mission, transportRequestMission)
         }
     }
 
@@ -212,6 +220,24 @@ class PioneerMissionHandler(
         if (mission is PioneerMission) {
             val playerMissionsContainer = game.aiContainer.missionContainer(replaceBy.owner)
             mission.changeUnit(unitToReplace, replaceBy, playerMissionsContainer)
+        }
+    }
+
+    override fun checkAvailability(
+        playerMissionsContainer: PlayerMissionsContainer,
+        parentMission: AbstractMission,
+        transportRequestMission: TransportUnitRequestMission
+    ) {
+        if (parentMission is PioneerMission) {
+            val improvementDestination = pioneerMissionPlaner.findNextColonyToImprove(
+                parentMission,
+                playerMissionsContainer
+            )
+            val nextColonyDestination: Colony? = improvementDestination.extractColonyDestination()
+            if (nextColonyDestination != null && !parentMission.isToColony(nextColonyDestination)) {
+                transportRequestMission.setDone()
+                processImprovementDestination(playerMissionsContainer, parentMission, improvementDestination)
+            }
         }
     }
 }

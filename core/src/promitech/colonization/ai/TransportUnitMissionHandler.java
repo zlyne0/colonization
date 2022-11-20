@@ -383,7 +383,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 	}
 
 	private TransportUnitMission.TransportDestination findTheClosestTransportDestination(TransportUnitMission mission) {
-		Tile sourceTile = mission.carrierPosition(game.map);
+		Tile sourceTile = mission.getCarrier().positionRelativeToMap(game.map);
 		if (sourceTile == null)	{
 			return null;
 		}

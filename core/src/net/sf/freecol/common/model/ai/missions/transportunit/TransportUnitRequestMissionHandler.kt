@@ -6,7 +6,6 @@ import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.findParentMission
-import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.util.CollectionUtils
@@ -55,6 +54,10 @@ class TransportUnitRequestMissionHandler(
                 moveToOtherIsland(mission)
             }
         }
+
+        if (mission.checkAvailability && !mission.hasTransportUnitMission()) {
+            checkAvailabilityOnParentMission(playerMissionsContainer, mission)
+        }
     }
 
     private fun moveToOtherIsland(mission: TransportUnitRequestMission) {
@@ -88,8 +91,7 @@ class TransportUnitRequestMissionHandler(
                 PathFinder.FlagTypes.AvoidDisembark
             )
         )
-        val embarkLocation =
-            pathFinder2.findFirstTheBestSumTurnCost(pathFinder, PathFinder.SumPolicy.PRIORITY_SUM)
+        val embarkLocation = pathFinder2.findFirstTheBestSumTurnCost(pathFinder, PathFinder.SumPolicy.PRIORITY_SUM)
         if (embarkLocation == null || mission.isUnitAt(embarkLocation)) {
             return null
         }
@@ -157,6 +159,19 @@ class TransportUnitRequestMissionHandler(
                 mission,
                 moveType
             )
+        }
+    }
+
+    private fun checkAvailabilityOnParentMission(
+        playerMissionsContainer: PlayerMissionsContainer,
+        transportRequestMission: TransportUnitRequestMission
+    ) {
+        val parentMission = playerMissionsContainer.findParentMission(transportRequestMission)
+        if (parentMission != null) {
+            val parentMissionHandler = missionExecutor.findMissionHandler(parentMission)
+            if (parentMissionHandler is CheckAvailabilityMissionHandler) {
+                parentMissionHandler.checkAvailability(playerMissionsContainer, parentMission, transportRequestMission)
+            }
         }
     }
 }

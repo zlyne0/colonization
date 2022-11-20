@@ -15,13 +15,15 @@ import net.sf.freecol.common.model.player.Player
  */
 sealed class BuyPioneerOrder {
 
-    class BuySpecialistOrder(): BuyPioneerOrder() {
+    class BuySpecialistOrder: BuyPioneerOrder() {
 
         override fun buyAndPrepareMissions(playerMissionContainer: PlayerMissionsContainer, pioneerDestination: Colony, game: Game) {
             val boughtPioneer = buy(playerMissionContainer.player)
             val pioneerMission = PioneerMission(boughtPioneer, pioneerDestination)
             playerMissionContainer.addMission(pioneerMission)
-            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile))
+            val transportUnitRequestMission = TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile)
+                .withCheckAvailability()
+            playerMissionContainer.addMission(pioneerMission, transportUnitRequestMission)
         }
 
         fun buy(player: Player): Unit {
@@ -30,13 +32,15 @@ sealed class BuyPioneerOrder {
         }
     }
 
-    class RecruitColonistOrder(): BuyPioneerOrder() {
+    class RecruitColonistOrder: BuyPioneerOrder() {
 
         override fun buyAndPrepareMissions(playerMissionContainer: PlayerMissionsContainer, pioneerDestination: Colony, game: Game) {
             val boughtPioneer = buy(playerMissionContainer.player, game)
             val pioneerMission = PioneerMission(boughtPioneer, pioneerDestination)
             playerMissionContainer.addMission(pioneerMission)
-            playerMissionContainer.addMission(pioneerMission, TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile))
+            val transportUnitRequestMission = TransportUnitRequestMission(game.turn, boughtPioneer, pioneerDestination.tile)
+                .withCheckAvailability()
+            playerMissionContainer.addMission(pioneerMission, transportUnitRequestMission)
         }
 
         fun buy(player: Player, game: Game): Unit {

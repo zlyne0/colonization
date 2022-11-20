@@ -1,6 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
-import com.badlogic.gdx.math.GridPoint2;
 import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Game;
@@ -94,15 +93,7 @@ public class TransportGoodsToSellMissionPlaner {
 	}
 
 	private Tile scoreColonyGoodsStartLocation(Unit carrier) {
-		Tile tileLocation = carrier.getTileLocationOrNull();
-		if (tileLocation != null) {
-			return tileLocation;
-		}
-		GridPoint2 enterHighSea = carrier.getEnterHighSea();
-		if (enterHighSea != null) {
-			return game.map.getSafeTile(enterHighSea);
-		}
-		return game.map.getSafeTile(carrier.getOwner().getEntryLocation());
+		return carrier.positionRelativeToMap(game.map);
 	}
 
 	public void determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {

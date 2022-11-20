@@ -4,7 +4,6 @@ import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Europe;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
@@ -34,7 +33,7 @@ public class TransportUnitMission extends AbstractMission {
 	public interface TransportDestination {
 	}
 
-	public class CargoDest implements TransportDestination {
+	public static class CargoDest implements TransportDestination {
 		public final Tile dest;
 		public final GoodsType goodsType;
 		public final int amount;
@@ -53,7 +52,7 @@ public class TransportUnitMission extends AbstractMission {
 		}
 	}
 
-    public class UnitDest implements TransportDestination {
+    public static class UnitDest implements TransportDestination {
         public final Unit unit;
         public final Tile dest;
         public final boolean allowUnitMove;
@@ -345,21 +344,6 @@ public class TransportUnitMission extends AbstractMission {
 				cargoDests.add(new CargoDest(settlement.tile, goodsEntry.key, goodsEntry.value, transportRequestMission.getId()));
 			}
 		}
-	}
-
-	public Tile carrierPosition(Map map) {
-		Tile sourceTile = null;
-		if (carrier.isAtHighSeasLocation() || carrier.isAtEuropeLocation()) {
-			if (carrier.getEnterHighSea() != null) {
-				sourceTile = map.getSafeTile(carrier.getEnterHighSea());
-			} else {
-				sourceTile = map.getSafeTile(carrier.getOwner().getEntryLocation());
-			}
-		}
-		if (carrier.isAtTileLocation()) {
-			sourceTile = carrier.getTile();
-		}
-		return sourceTile;
 	}
 
 	public TransportDestination firstTransportDestinationForTile(Tile tile) {
