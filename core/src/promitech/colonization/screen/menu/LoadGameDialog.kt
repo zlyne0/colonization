@@ -59,7 +59,8 @@ class LoadGameDialog(
 	}
 	
 	private fun createLayout() {
-		getContentTable().add(Label(Messages.msg("save.game.dialog.game.name.label"), skin))
+		val title = Messages.msg("load") + " " + Messages.msg("save.game.dialog.game.name.label")
+		getContentTable().add(Label(title, skin))
 			.align(Align.left)
 			.pad(10f, 10f, 0f, 10f)
 			.row()
