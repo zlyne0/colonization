@@ -150,8 +150,6 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
     
     public abstract int applyModifiers(String abilityCode, int val);
     
-	public abstract void updateProductionToMaxPossible(Tile tile);
-    
 	public abstract ProductionSummary productionSummary();
 
 	public abstract void addModifiersTo(ObjectWithFeatures mods, String modifierCode);

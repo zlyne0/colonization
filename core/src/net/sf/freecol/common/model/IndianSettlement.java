@@ -578,10 +578,6 @@ public class IndianSettlement extends Settlement {
 	}
 
 	@Override
-	public void updateProductionToMaxPossible(Tile tile) {
-	}
-	
-	@Override
 	public ProductionSummary productionSummary() {
 		throw new IllegalStateException("not implemented");
 	}

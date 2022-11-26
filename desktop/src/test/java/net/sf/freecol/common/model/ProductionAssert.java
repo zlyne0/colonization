@@ -14,7 +14,7 @@ public class ProductionAssert extends AbstractAssert<ProductionAssert, Productio
 
 	public ProductionAssert hasOutput(String goodsTypeId) {
 		isNotNull();
-		if (!actual.outputTypesEquals(goodsTypeId)) {
+		if (!actual.isOutputTypesEquals(goodsTypeId)) {
 			failWithMessage("can not find production goodsType <%s> but has <%s>", goodsTypeId, actual);
 		}
 		return this;
@@ -26,7 +26,7 @@ public class ProductionAssert extends AbstractAssert<ProductionAssert, Productio
 	
 	public ProductionAssert hasOutput(String goodsTypeId, int amount, boolean unattended) {
 		isNotNull();
-		if (!actual.outputTypesEquals(goodsTypeId, amount) && actual.isUnattended() == unattended) {
+		if (!actual.isOutputTypesEquals(goodsTypeId, amount) && actual.isUnattended() == unattended) {
 			failWithMessage("can not find production goodsType <%s> in amount <%d> but has <%s>", goodsTypeId, amount, actual);
 		}
 		return this;

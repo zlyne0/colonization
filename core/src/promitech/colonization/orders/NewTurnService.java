@@ -253,22 +253,22 @@ public class NewTurnService {
 					improvingTile.updateRoadConnections(guiGameModel.game.map);
 				}
 			}
-			
+
+			// does improvement expose resource
+			if (isExposedResourceAfterImprovement(improvingTile, improvementType)) {
+				ResourceType resourceType = improvingTile.getType().exposeResource();
+				int initQuantity = resourceType.initQuantity();
+				improvingTile.addResource(new TileResource(Game.idGenerator, resourceType, initQuantity));
+			}
+
 			for (Settlement settlement : neighbouringSettlements) {
-				settlement.updateProductionToMaxPossible(improvingTile);
+				settlement.asColony().updateProductionToMaxPossible(improvingTile);
 			}
 			
 			for (Unit u : improvingTile.getUnits().entities()) {
 				if (u.getState() == UnitState.IMPROVING && u.getTileImprovementType().equalsId(improvementType)) {
 					u.setState(UnitState.ACTIVE);
 				}
-			}
-			
-			// does improvement expose resource
-			if (isExposedResourceAfterImprovement(improvingTile, improvementType)) {
-				ResourceType resourceType = improvingTile.getType().exposeResource();
-				int initQuantity = resourceType.initQuantity();
-				improvingTile.addResource(new TileResource(Game.idGenerator, resourceType, initQuantity));
 			}
 			unit.setState(UnitState.ACTIVE);
 		}

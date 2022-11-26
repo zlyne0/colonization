@@ -104,7 +104,7 @@ public class ProductionInfo {
 		Production productionTypes = allowedProductions.maxProduction();
 		clear();
 		for (Production p : sourceProduction.productions) {
-			if (p.outputTypesEquals(productionTypes)) {
+			if (p.isOutputTypesEquals(productionTypes)) {
 				addProduction(new Production(p)); 
 			}
 		}
@@ -113,7 +113,7 @@ public class ProductionInfo {
 	public void initProductionType(ProductionInfo sourceProduction, GoodsType goodsType) {
 		clear();
 		for (Production p : sourceProduction.productions) {
-			if (p.outputTypesEquals(goodsType.getId())) {
+			if (p.isOutputTypesEquals(goodsType.getId())) {
 				addProduction(new Production(p));
 			}
 		}
@@ -147,7 +147,7 @@ public class ProductionInfo {
 
 	public Production firstAttendentProduction(GoodsType goodsType) {
 		for (Production prod : attendedProductions) {
-			if (prod.outputTypesEquals(goodsType.getId())) {
+			if (prod.isOutputTypesEquals(goodsType.getId())) {
 				return prod;
 			}
 		}
@@ -162,4 +162,12 @@ public class ProductionInfo {
         return attendedProductions;
     }
 
+	public Production findAttendedProductionContainsGoodsTypes(Production production) {
+		for (Production attendedProduction : attendedProductions) {
+			if (attendedProduction.isOutputTypesEquals(production)) {
+				return attendedProduction;
+			}
+		}
+		return null;
+	}
 }

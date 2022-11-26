@@ -167,7 +167,7 @@ public class Production {
 		return unattended;
 	}
 
-	public boolean outputTypesEquals(Production prod) {
+	public boolean isOutputTypesEquals(Production prod) {
 		if (this.output.size() != prod.output.size()) {
 			return false;
 		}
@@ -188,7 +188,7 @@ public class Production {
 		return null;
 	}
 	
-	public boolean outputTypesEquals(String goodsTypeId) {
+	public boolean isOutputTypesEquals(String goodsTypeId) {
 		if (this.output.size() != 1) {
 			return false;
 		}
@@ -200,7 +200,7 @@ public class Production {
 		return true;
 	}
 
-	public boolean outputTypesEquals(String goodsTypeId, int amount) {
+	public boolean isOutputTypesEquals(String goodsTypeId, int amount) {
 		if (this.output.size() == 0) {
 			return false;
 		}
@@ -226,12 +226,7 @@ public class Production {
 	}
 
 	public boolean containsOutputGoods(GoodsType goodsType) {
-		for (Entry<GoodsType, Integer> entry : output.entrySet()) {
-			if (entry.getKey().equalsId(goodsType)) {
-				return true;
-			}
-		}
-		return false;
+		return output.containsKey(goodsType);
 	}
 
 	public boolean containsOutputGoods(String goodsTypeId) {

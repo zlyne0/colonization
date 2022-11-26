@@ -306,7 +306,7 @@ public class Colony extends Settlement {
     public void addWorkerToTerrain(ColonyTile aColonyTile, Unit unit, GoodsType goodsType) {
         addWorkerToColony(unit, aColonyTile);
         aColonyTile.tile.changeOwner(owner, this);
-		aColonyTile.initProducitonType(goodsType);
+		aColonyTile.initProductionType(goodsType);
     }
     
     private void addWorkerToColony(Unit worker, UnitLocation unitLocation) {
@@ -523,24 +523,13 @@ public class Colony extends Settlement {
 			}
 		}
 	}
-	
-	@Override
+
 	public void updateProductionToMaxPossible(Tile tile) {
-		for (ColonyTile colonyTile : colonyTiles.entities()) {
+		for (ColonyTile colonyTile : colonyTiles) {
 			if (colonyTile.equalsId(tile)) {
-				if (Colony.this.tile.equalsCoordinates(tile)) {
-					// init for center colony tile
-	    		    colonyTile.initMaxPossibleProductionOnTile();
-	    			updateModelOnWorkerAllocationOrGoodsTransfer();
-				} else {
-					if (colonyTile.hasWorker()) {
-						// init for tile with worker
-		    		    colonyTile.initMaxPossibleProductionOnTile();
-		    			updateModelOnWorkerAllocationOrGoodsTransfer();
-					}
-					// no init for others tiles
-				}
-				return;
+				colonyTile.updateProductionAfterTileImprovement();
+				updateModelOnWorkerAllocationOrGoodsTransfer();
+				break;
 			}
 		}
 	}

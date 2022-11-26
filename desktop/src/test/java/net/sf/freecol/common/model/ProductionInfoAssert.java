@@ -17,7 +17,7 @@ public class ProductionInfoAssert extends AbstractAssert<ProductionInfoAssert, P
 		
 		boolean found = false;
 		for (Production production : actual.productions) {
-			if (production.outputTypesEquals(goodsTypeId)) {
+			if (production.isOutputTypesEquals(goodsTypeId)) {
 				found = true;
 			}
 		}
@@ -36,7 +36,7 @@ public class ProductionInfoAssert extends AbstractAssert<ProductionInfoAssert, P
 		
 		boolean found = false;
 		for (Production production : actual.productions) {
-			if (production.outputTypesEquals(goodsTypeId, amount) && production.isUnattended() == unattended) {
+			if (production.isOutputTypesEquals(goodsTypeId, amount) && production.isUnattended() == unattended) {
 				found = true;
 			}
 		}

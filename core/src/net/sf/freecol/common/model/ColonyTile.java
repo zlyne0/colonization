@@ -2,8 +2,6 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.specification.GoodsType;
 
-import org.jetbrains.annotations.NotNull;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
@@ -16,7 +14,7 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class ColonyTile extends ObjectWithId implements ProductionLocation, UnitLocation {
 
 	private Unit worker;
-	public Production production = Production.EMPTY_READONLY;
+	private Production production = Production.EMPTY_READONLY;
 
     public Tile tile;
 	
@@ -77,6 +75,19 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         production = Production.EMPTY_READONLY;
     }
 
+	public void updateProductionAfterTileImprovement() {
+		if (worker != null && production.isNotEmpty()) {
+			Production attendedProduction = tile.getType().productionInfo.findAttendedProductionContainsGoodsTypes(production);
+			if (attendedProduction != null) {
+				production = attendedProduction;
+			} else {
+				initMaxPossibleProductionOnTile();
+			}
+		} else {
+			initMaxPossibleProductionOnTile();
+		}
+	}
+
     public void initMaxPossibleProductionOnTile() {
 		List<Production> tileProductions;
 		if (worker != null) {
@@ -104,6 +115,9 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		if (maxProd == null) {
 			maxProd = new Production(worker == null);
 		}
+		// Real production amount does not mater. ColonyTileProduction calculate it.
+		// In this case amount is calculated to find max production for goodsType.
+		// Production from productionInfo is treated as initial setting.
 		this.production = maxProd;
 	}
 
@@ -115,9 +129,9 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 		this.production = production;
 	}
 
-	public void initProducitonType(GoodsType goodsType) {
+	public void initProductionType(GoodsType goodsType) {
 		for (Production p : tile.getType().productionInfo.productions) {
-			if (p.outputTypesEquals(goodsType.getId())) {
+			if (p.isOutputTypesEquals(goodsType.getId())) {
 				this.production = p;
 			}
 		}
