@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.colonyproduction
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Production
+import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
@@ -187,34 +188,39 @@ class ColonyPlan(val colony: Colony) {
         fun hasNextPlan(): Boolean = nextPlanIndex < planList.size
     }
 
-    sealed class Plan(goodsTypesIds: List<String>) {
-        class Food : Plan(listOf(GoodsType.GRAIN, GoodsType.FISH))
-        class Bell : Plan(listOf(GoodsType.BELLS))
-        class Building : Plan(listOf(GoodsType.HAMMERS))
-        class MostValuable : Plan(listOf())
-        class Tools : Plan(listOf(GoodsType.TOOLS))
-        class Muskets : Plan(listOf(GoodsType.MUSKETS))
+    enum class Plan(private val goodsTypesIds: List<String>) {
+        Food(listOf(GoodsType.GRAIN, GoodsType.FISH)),
+        Bell(listOf(GoodsType.BELLS)),
+        Building(listOf(GoodsType.HAMMERS)),
+        MostValuable(listOf()),
+        Tools(listOf(GoodsType.TOOLS)),
+        Muskets(listOf(GoodsType.MUSKETS)),
+        RawMaterials(listOf(GoodsType.FURS, GoodsType.COTTON, GoodsType.TOBACCO, GoodsType.SUGAR, GoodsType.ORE, GoodsType.SILVER)),
+        ProcessedMaterials(listOf(GoodsType.RUM, GoodsType.COAST, GoodsType.CLOTH, GoodsType.CIGARS));
 
-        companion object {
-            fun valueOf(planStr: String) : Plan {
-                return when (planStr.lowercase()) {
-                    "food" -> Food()
-                    "bell" -> Bell()
-                    "building" -> Building()
-                    "mostvaluable" -> MostValuable()
-                    "tools" -> Tools()
-                    "muskets" -> Muskets()
-                    else -> throw java.lang.IllegalArgumentException("can not recognize plan name $planStr");
+        val goodsTypes: List<GoodsType>
+            get() {
+                var goodsTypes = Specification.instance.goodsTypeGroups.get(name)
+                if (goodsTypes == null) {
+                    goodsTypes = toGoodsType()
+                    Specification.instance.goodsTypeGroups.add(name, goodsTypes)
                 }
+                return goodsTypes
             }
-        }
 
-        val goodsTypes : List<GoodsType>
-
-        init {
-            goodsTypes = ArrayList<GoodsType>(goodsTypesIds.size)
+        private fun toGoodsType(): List<GoodsType> {
+            val goodsTypes = ArrayList<GoodsType>(goodsTypesIds.size)
             for (goodsTypesId in goodsTypesIds) {
                 goodsTypes.add(Specification.instance.goodsTypes.getById(goodsTypesId))
+            }
+            return goodsTypes
+        }
+
+        companion object {
+            fun valueByName(planStr: String) : Plan {
+                val lowercaseName = planStr.lowercase()
+                return Plan.values().find { elementList -> elementList.name.lowercase() == lowercaseName }
+                    ?: throw java.lang.IllegalArgumentException("can not recognize plan name $planStr")
             }
         }
     }
@@ -229,7 +235,7 @@ class ColonyPlan(val colony: Colony) {
     private val ingredients = GoodsCollection()
 
     private val market : Market
-    private val foodPlan = Plan.Food()
+    private val foodPlan = Plan.Food
     private val colonySimulationSettingProvider : ColonySimulationSettingProvider
     private val colonyProduction : ColonyProduction
     private val productionSimulation : ProductionSimulation
@@ -255,6 +261,10 @@ class ColonyPlan(val colony: Colony) {
     fun executeMaximizationProduction(vararg plan: Plan) {
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
         colonySimulationSettingProvider.putWorkersToColonyViaAllocation();
+    }
+
+    fun execute2(vararg plan: Plan) {
+        createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
     }
 
     /**
@@ -321,7 +331,7 @@ class ColonyPlan(val colony: Colony) {
     ): AssignWorkerToProductionPriorityResult {
 
         if (productionPriority.isEmpty()) {
-            if (actualPlan is Plan.MostValuable) {
+            if (Plan.MostValuable == actualPlan) {
                 return assignToMostValuable(availableWorkers, productionPriority)
             }
             productionPriority.add(actualPlan.goodsTypes)
@@ -536,6 +546,16 @@ class ColonyPlan(val colony: Colony) {
             }
         }
         return true
+    }
+
+    fun addBuilding(buildingType: BuildingType): ColonyPlan {
+        colonySimulationSettingProvider.addBuilding(buildingType)
+        colonyProduction.updateRequest()
+        return this
+    }
+
+    fun productionConsumption(): ProductionSummary {
+        return colonyProduction.globalProductionConsumption()
     }
 
     fun withConsumeWarehouseResources(consumeWarehouseResources: Boolean): ColonyPlan {

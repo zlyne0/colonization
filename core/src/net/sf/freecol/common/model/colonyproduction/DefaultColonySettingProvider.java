@@ -21,8 +21,8 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
     protected final Colony colony;
     private final Warehouse warehouse = new Warehouse();
 
-	private final MapIdEntities<ColonyTileProduction> tiles;
-	private final MapIdEntities<BuildingProduction> buildings;
+    private final MapIdEntities<ColonyTileProduction> tiles;
+    private final MapIdEntities<BuildingProduction> buildings;
     private final List<Worker> workers = new ArrayList<Worker>();
 
     public DefaultColonySettingProvider(Colony colony) {
@@ -170,5 +170,20 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         }
         colony.updateModelOnWorkerAllocationOrGoodsTransfer();
         colony.updateColonyPopulation();
+    }
+
+    public void addBuilding(BuildingType buildingType) {
+        if (buildingType.getUpgradesFrom() != null) {
+            BuildingProduction upgradesFromProduction = buildings.getByIdOrNull(buildingType.getUpgradesFrom());
+            if (upgradesFromProduction != null) {
+                BuildingProduction newBuildingProduction = upgradesFromProduction.createUpgradeProduction(buildingType);
+                buildings.removeId(upgradesFromProduction);
+                buildings.add(newBuildingProduction);
+            } else {
+                buildings.add(new BuildingProduction(buildingType));
+            }
+        } else {
+            buildings.add(new BuildingProduction(buildingType));
+        }
     }
 }

@@ -31,6 +31,10 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         defaultColonySettingProvider.initProductionLocations();
     }
 
+    public void resetProductionLocations() {
+        defaultColonySettingProvider.initProductionLocations();
+    }
+
     @Override
     public void initProductionLocations() {
         if (!this.consumeWarehouseResources) {
@@ -105,8 +109,9 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         defaultColonySettingProvider.addWorker(buildingType, workerType);
     }
 
-    public void withConsumeWarehouseResources() {
+    public ColonySimulationSettingProvider withConsumeWarehouseResources() {
         this.consumeWarehouseResources = true;
+        return this;
     }
 
     public void clearAllProductionLocations() {
@@ -160,4 +165,10 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         }
     }
 
+    public void addBuilding(BuildingType buildingType) {
+        defaultColonySettingProvider.addBuilding(buildingType);
+        if (buildingTypeByAttendedOutputGoods != null) {
+            buildingTypeByAttendedOutputGoods.clear();
+        }
+    }
 }

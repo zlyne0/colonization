@@ -26,6 +26,8 @@ import net.sf.freecol.common.model.specification.options.PercentageOption;
 import net.sf.freecol.common.model.specification.options.RangeOption;
 import net.sf.freecol.common.model.specification.options.StringOption;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
+import net.sf.freecol.common.util.MapList;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -143,6 +145,7 @@ public class Specification {
     public final List<UnitRole> nativeMilitaryRoles = new ArrayList<UnitRole>();
     public final MapIdEntities<GoodsType> goodsTypeToScoreByPrice = new MapIdEntities<GoodsType>();
     public final List<GoodsType> foodsGoodsTypes = new ArrayList<GoodsType>();
+    public final MapList<String, GoodsType> goodsTypeGroups = new MapList<>();
     
     private String difficultyLevel;
     
@@ -339,6 +342,7 @@ public class Specification {
         militaryRoles.clear();
         goodsTypeToScoreByPrice.clear();
         foodsGoodsTypes.clear();
+        goodsTypeGroups.clear();
     }
     
 	public static class Xml extends XmlNodeParser<Specification> {

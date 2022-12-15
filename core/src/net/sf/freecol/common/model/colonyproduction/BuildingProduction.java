@@ -26,12 +26,18 @@ class BuildingProduction implements Identifiable {
 	BuildingProduction(BuildingType buildingType) {
 		this.buildingType = buildingType;
 	}
-	
+
 	@Override
 	public String getId() {
 		return buildingType.getId();
 	}
-	
+
+	BuildingProduction createUpgradeProduction(BuildingType buildingType) {
+		BuildingProduction buildingProduction = new BuildingProduction(buildingType);
+		buildingProduction.workers.addAll(this.workers);
+		return buildingProduction;
+	}
+
 	void initWorkers(MapIdEntitiesReadOnly<Unit> units, List<Worker> globalWorkers) {
 		this.workers.clear();
 		for (Unit unit : units.entities()) {

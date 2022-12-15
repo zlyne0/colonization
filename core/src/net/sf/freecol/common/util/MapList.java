@@ -8,7 +8,7 @@ import java.util.Set;
 
 public class MapList<K, V> {
 	private final Map<K, List<V>> map = new LinkedHashMap<K, List<V>>();
-	
+
 	public void add(K key, V value) {
 		List<V> list = map.get(key);
 		if (list == null) {
@@ -17,7 +17,16 @@ public class MapList<K, V> {
 		}
 		list.add(value);
 	}
-	
+
+	public void add(K key, List<V> values) {
+		List<V> list = map.get(key);
+		if (list == null) {
+			list = new ArrayList<>();
+			map.put(key, list);
+		}
+		list.addAll(values);
+	}
+
 	public Set<K> keySet() {
 		return map.keySet();
 	}
@@ -62,5 +71,9 @@ public class MapList<K, V> {
 		} else if (!map.equals(other.map))
 			return false;
 		return true;
+	}
+
+	public void clear() {
+		map.clear();
 	}
 }

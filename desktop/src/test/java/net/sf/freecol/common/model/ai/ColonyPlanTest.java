@@ -32,7 +32,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Food());
+		colonyPlan.execute(ColonyPlan.Plan.Food);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -55,7 +55,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Bell());
+		colonyPlan.execute(ColonyPlan.Plan.Bell);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -74,7 +74,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Bell());
+		colonyPlan.execute(ColonyPlan.Plan.Bell);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -91,7 +91,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Bell(), new ColonyPlan.Plan.Food());
+		colonyPlan.execute(ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -113,7 +113,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Building());
+		colonyPlan.execute(ColonyPlan.Plan.Building);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -133,7 +133,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Tools());
+		colonyPlan.execute(ColonyPlan.Plan.Tools);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -157,7 +157,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Tools());
+		colonyPlan.execute(ColonyPlan.Plan.Tools);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -176,7 +176,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Tools(), new ColonyPlan.Plan.Bell());
+		colonyPlan.execute(ColonyPlan.Plan.Tools, ColonyPlan.Plan.Bell);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -197,7 +197,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Muskets());
+		colonyPlan.execute(ColonyPlan.Plan.Muskets);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -241,7 +241,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Food());
+		colonyPlan.execute(ColonyPlan.Plan.Food);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -257,7 +257,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withIgnoreIndianOwner();
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.Food());
+		colonyPlan.execute(ColonyPlan.Plan.Food);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -300,7 +300,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(false);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		colonyPlan.execute(ColonyPlan.Plan.MostValuable);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -327,7 +327,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		colonyPlan.execute(ColonyPlan.Plan.MostValuable);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
@@ -354,7 +354,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		colonyPlan.execute(ColonyPlan.Plan.MostValuable);
 		//printColonyWorkers();
 
 		// then
@@ -374,7 +374,7 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		colonyPlan.withConsumeWarehouseResources(true);
 
 		// when
-		colonyPlan.execute(new ColonyPlan.Plan.MostValuable());
+		colonyPlan.execute(ColonyPlan.Plan.MostValuable);
 		//printColonyWorkers(fortMaurits);
 
 		// then
