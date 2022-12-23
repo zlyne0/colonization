@@ -20,7 +20,8 @@ public final class ColonyProductionPlaner {
 			new ColonyPlan(settlement.asColony())
 				.withIgnoreIndianOwner()
 				.withConsumeWarehouseResources(true)
-				.execute(new ColonyPlan.Plan.MostValuable());
+				.withMinimumProductionLimit(2)
+				.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 		}
 	}
 	
@@ -28,7 +29,8 @@ public final class ColonyProductionPlaner {
 		new ColonyPlan(colony)
 			.withIgnoreIndianOwner()
 			.withConsumeWarehouseResources(true)
-			.execute(new ColonyPlan.Plan.MostValuable());
+			.withMinimumProductionLimit(2)
+			.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
 	}
 
 	public static void initColonyBuilderUnit(Colony colony, Unit builder) {

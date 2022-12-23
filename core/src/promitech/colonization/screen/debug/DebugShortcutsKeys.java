@@ -56,6 +56,8 @@ public class DebugShortcutsKeys {
         commandByKeycode.put(Input.Keys.NUM_2, "colony_plan Bell");
         commandByKeycode.put(Input.Keys.NUM_3, "colony_plan Food");
         commandByKeycode.put(Input.Keys.NUM_4, "colony_plan Building");
+        commandByKeycode.put(Input.Keys.NUM_5, "testPlan");
+        commandByKeycode.put(Input.Keys.NUM_6, "colony_finish_building");
     }
     
     public DebugShortcutsKeys(Stage stage, DI di, MapActor mapActor) {

@@ -249,7 +249,7 @@ class ColonyPlan(val colony: Colony) {
         colonyProduction = ColonyProduction(colonySimulationSettingProvider)
         productionSimulation = colonyProduction.simulation()
 
-        colonySimulationSettingProvider.clearAllProductionLocations()
+        colonySimulationSettingProvider.clearWorkersAllocation()
         colonyProduction.updateRequest()
     }
 
@@ -264,6 +264,8 @@ class ColonyPlan(val colony: Colony) {
     }
 
     fun execute2(vararg plan: Plan) {
+        colonySimulationSettingProvider.clearWorkersAllocation()
+        colonyProduction.updateRequest()
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
     }
 
@@ -550,7 +552,6 @@ class ColonyPlan(val colony: Colony) {
 
     fun addBuilding(buildingType: BuildingType): ColonyPlan {
         colonySimulationSettingProvider.addBuilding(buildingType)
-        colonyProduction.updateRequest()
         return this
     }
 

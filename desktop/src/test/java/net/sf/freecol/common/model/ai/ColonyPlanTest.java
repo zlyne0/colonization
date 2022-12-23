@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
+import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
@@ -382,6 +383,30 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 			.hasSize(2)
 			.produce(GoodsType.TOBACCO, 0)
 		;
+	}
+
+	@Test
+	void shouldResetWorkersAllocationOnExecutePlan() {
+		// given
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+		colonyPlan.withConsumeWarehouseResources(true);
+
+		// when
+		colonyPlan.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Food);
+		ProductionSummary productionSummary1 = colonyPlan.productionConsumption().cloneGoods();
+
+		colonyPlan.execute2(ColonyPlan.Plan.Building, ColonyPlan.Plan.Food);
+		ProductionSummary buildingproductionSummary1 = colonyPlan.productionConsumption().cloneGoods();
+
+		colonyPlan.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Food);
+		ProductionSummary productionSummary2 = colonyPlan.productionConsumption().cloneGoods();
+
+		colonyPlan.execute2(ColonyPlan.Plan.Building, ColonyPlan.Plan.Food);
+		ProductionSummary buildingproductionSummary2 = colonyPlan.productionConsumption().cloneGoods();
+
+		// then
+		assertThat(buildingproductionSummary1).isEqualTo(buildingproductionSummary2);
+		assertThat(productionSummary1).isEqualTo(productionSummary2);
 	}
 
 	private void printColonyWorkers(Colony colony) {

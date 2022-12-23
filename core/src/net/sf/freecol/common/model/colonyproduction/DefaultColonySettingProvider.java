@@ -136,7 +136,7 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         tileProd.sumWorkers(workers);
     }
 
-    void clearAllProductionLocations() {
+    void clearWorkersAllocation() {
         for (ColonyTileProduction colonyTileProduction : tiles) {
             colonyTileProduction.clearWorkersAllocation();
         }

@@ -114,8 +114,8 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         return this;
     }
 
-    public void clearAllProductionLocations() {
-        defaultColonySettingProvider.clearAllProductionLocations();
+    public void clearWorkersAllocation() {
+        defaultColonySettingProvider.clearWorkersAllocation();
     }
 
     public void putWorkersToColonyViaAllocation() {

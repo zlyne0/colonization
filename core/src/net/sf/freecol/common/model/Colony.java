@@ -656,27 +656,27 @@ public class Colony extends Settlement {
     	}		
 		finishBuilding(buildingType);
 	}
-	
-    public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
-    	for (BuildingType bt : Specification.instance.buildingTypes.entities()) {
-    	    NoBuildReason noBuildReason = getNoBuildReason(bt);
-    	    if (noBuildReason != NoBuildReason.NONE) {
-    	        System.out.println("" + bt + ": " + noBuildReason);
-    	        continue;
-    	    }
-    		
-    		if (isOnBuildingQueue(bt)) {
-    		    System.out.println("" + bt + " already on building queue list");
-    		    continue;
-    		}
-    		
-    		if (isBuildingAlreadyBuilt(bt)) {
-    		    System.out.println("" + bt + " has already built");
-    		    continue;
-    		}
-    		items.add(new ColonyBuildingQueueItem(bt));
-    	}
-    }
+
+	public void buildableBuildings(List<ColonyBuildingQueueItem> items) {
+		for (BuildingType bt : Specification.instance.buildingTypes.entities()) {
+			NoBuildReason noBuildReason = getNoBuildReason(bt);
+			if (noBuildReason != NoBuildReason.NONE) {
+				System.out.println("" + bt + ": " + noBuildReason);
+				continue;
+			}
+
+			if (isOnBuildingQueue(bt)) {
+				System.out.println("" + bt + " already on building queue list");
+				continue;
+			}
+
+			if (isBuildingAlreadyBuilt(bt)) {
+				System.out.println("" + bt + " has already built");
+				continue;
+			}
+			items.add(new ColonyBuildingQueueItem(bt));
+		}
+	}
     
     public void buildableUnits(List<ColonyBuildingQueueItem> items) {
     	for (UnitType unitType : Specification.instance.unitTypes.entities()) {
@@ -729,6 +729,20 @@ public class Colony extends Settlement {
 			if (market.hasArrears(rg.goodsType)) {
 				return Integer.MAX_VALUE;
 			}
+			int warehouseGoodsAmount = goodsContainer.goodsAmount(rg.getId());
+			if (rg.amount > warehouseGoodsAmount) {
+				int requireGoods = rg.amount - warehouseGoodsAmount;
+				sum += market.buildingGoodsPrice(rg.goodsType, requireGoods);
+			}
+		}
+		return sum;
+	}
+
+	public int getAIPriceForBuilding(BuildableType buildableType) {
+		Market market = owner.market();
+
+		int sum = 0;
+		for (RequiredGoods rg : buildableType.requiredGoods()) {
 			int warehouseGoodsAmount = goodsContainer.goodsAmount(rg.getId());
 			if (rg.amount > warehouseGoodsAmount) {
 				int requireGoods = rg.amount - warehouseGoodsAmount;
