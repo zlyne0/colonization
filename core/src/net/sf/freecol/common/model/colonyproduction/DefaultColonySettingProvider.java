@@ -24,12 +24,14 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
     private final MapIdEntities<ColonyTileProduction> tiles;
     private final MapIdEntities<BuildingProduction> buildings;
     private final List<Worker> workers = new ArrayList<Worker>();
+    private final ColonyUpdatableFeatures colonyUpdatableFeatures;
 
     public DefaultColonySettingProvider(Colony colony) {
         this.colony = colony;
 
         tiles = new MapIdEntities<ColonyTileProduction>();
         buildings = MapIdEntities.linkedMapIdEntities(Specification.instance.buildingTypes.size());
+        colonyUpdatableFeatures = new ColonyUpdatableFeatures();
     }
 
     @Override
@@ -54,10 +56,7 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
 
     @Override
     public void initProductionLocations() {
-        warehouse.reset(colony);
-
         workers.clear();
-
         for (ColonyTile colonyTile : colony.colonyTiles) {
             ColonyTileProduction tileProd = colonyTileProduction(colonyTile.tile);
             if (colonyTile.getWorker() != null) {
@@ -74,6 +73,8 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
             buildingProduction.initWorkers(building.getUnits(), workers);
             buildings.add(buildingProduction);
         }
+        colonyUpdatableFeatures.updateColonyFeatures(colony, this);
+        warehouse.reset(colony, colonyUpdatableFeatures.warehouseCapacity());
     }
 
     private BuildingProduction buildingProduction(BuildingType buildingType) {
@@ -101,7 +102,7 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
 
     @Override
     public ObjectWithFeatures colonyUpdatableFeatures() {
-        return colony.colonyUpdatableFeatures;
+        return colonyUpdatableFeatures.getFeatures();
     }
 
     @Override
@@ -185,5 +186,7 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         } else {
             buildings.add(new BuildingProduction(buildingType));
         }
+        colonyUpdatableFeatures.updateColonyFeatures(colony, this);
+        warehouse.reset(colony, colonyUpdatableFeatures.warehouseCapacity());
     }
 }

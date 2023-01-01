@@ -100,7 +100,15 @@ public class Market extends ObjectWithId {
 		return sum;
 	}
 
-    public int getSalePrice(GoodsType type, int amount) {
+	public int getSalePrice(ProductionSummary goods) {
+		int goldSumValue = 0;
+		for (Entry<String> entry : goods.entries()) {
+			goldSumValue += getSalePrice(entry.key, entry.value);
+		}
+		return goldSumValue;
+	}
+
+	public int getSalePrice(GoodsType type, int amount) {
 		return getSalePrice(type.getId(), amount);
     }
 
@@ -208,13 +216,11 @@ public class Market extends ObjectWithId {
 		player.subtractGold(TRANSACTION_EFFECT_ON_MARKET.grossPrice);
 		
 		if (goodsType.isStorable()) {
-			int playerModifiedMarketAmount = goodsAmount;
-			
 		    MarketData marketData = marketGoods.getById(goodsType.getId());
 			if (marketData.hasArrears()) {
 				throw new IllegalStateException("can not buy goods: " + goodsType + " because of arrears");
 			}
-			playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
+			int playerModifiedMarketAmount = player.nationType().applyModifier(Modifier.TRADE_BONUS, goodsAmount);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
 			marketData.modifyOnBuyGoods(goodsAmount, TRANSACTION_EFFECT_ON_MARKET.grossPrice, playerModifiedMarketAmount);
 			TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);
@@ -236,7 +242,7 @@ public class Market extends ObjectWithId {
 		TRANSACTION_EFFECT_ON_MARKET.sell(goodsType, goodsAmount, marketData, player.getTax());
 		player.addGold(TRANSACTION_EFFECT_ON_MARKET.netPrice);
         
-        int playerModifiedMarketAmount = (int)player.nationType().applyModifier(Modifier.TRADE_BONUS, (float)goodsAmount);
+        int playerModifiedMarketAmount = player.nationType().applyModifier(Modifier.TRADE_BONUS, goodsAmount);
 		TRANSACTION_EFFECT_ON_MARKET.setPricesBeforeTransaction(marketData);
         marketData.modifyOnSellGoods(goodsAmount, TRANSACTION_EFFECT_ON_MARKET.grossPrice, TRANSACTION_EFFECT_ON_MARKET.netPrice, playerModifiedMarketAmount);
         TRANSACTION_EFFECT_ON_MARKET.setPricesAfterTransaction(marketData);

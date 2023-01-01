@@ -269,7 +269,19 @@ public class ObjectWithFeatures extends ObjectWithId implements ScopeAppliable {
         }
         return base;
     }
-    
+
+	public int applyModifier(String modifierName, int base) {
+		List<Modifier> list = modifiers.get(modifierName);
+		if (list == null || list.isEmpty()) {
+			return base;
+		}
+		for (int i=0; i<list.size(); i++) {
+			Modifier m = list.get(i);
+			base = m.apply(base);
+		}
+		return base;
+	}
+
     public float applyModifier(String modifierName, float base) {
         List<Modifier> list = modifiers.get(modifierName);
         if (list == null || list.isEmpty()) {

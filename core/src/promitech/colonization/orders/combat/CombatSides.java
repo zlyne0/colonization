@@ -76,7 +76,7 @@ class CombatSides {
 		if (defender == null || !defender.isNaval()) {
 			throw new IllegalStateException("no defender to bombard or it is not naval");
 		}
-		if (!colony.colonyUpdatableFeatures.hasAbility(Ability.BOMBARD_SHIPS)) {
+		if (!colony.canBombardEnemyShip()) {
 			throw new IllegalStateException("colony " + colony.getId() + " has no bombard ship ability");
 		}
 		this.bombardmentColony = colony;

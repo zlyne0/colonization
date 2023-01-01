@@ -378,6 +378,8 @@ class ColonyPlan(val colony: Colony) {
 
         max.resetScore()
 
+        val warehouse = colonySimulationSettingProvider.warehouse();
+
         // iterate over goods to find most valuable
         for (goodsType in Specification.instance.goodsTypes) {
             if (!goodsType.isStorable()) {
@@ -391,7 +393,7 @@ class ColonyPlan(val colony: Colony) {
             if (goodsType.isFarmed()) {
                 val maxProduction = productionSimulation.determineMaxProduction(goodsType, maxCandidate.worker.unitType, ignoreIndianOwner)
                 if (maxProduction != null && maxProduction.production >= minimumProductionLimit) {
-                    if (colony.goodsContainer.hasGoodsQuantity(maxProduction.goodsType, colony.warehouseCapacity())) {
+                    if (warehouse.hasGoodsQuantity(maxProduction.goodsType, warehouse.capacity())) {
                         continue;
                     }
                     maxCandidate.scoreForTile(maxProduction, market)
@@ -412,7 +414,7 @@ class ColonyPlan(val colony: Colony) {
                 productionSimulation.determineMaxPotentialProduction(buildingType, goodsType, maxCandidate.worker.unitType, prod, ingredients)
 
                 var productionAmount = prod.amount(goodsType)
-                productionAmount = colony.maxGoodsAmountToFillWarehouseCapacity(goodsType, productionAmount)
+                productionAmount = warehouse.maxGoodsAmountToFillWarehouseCapacity(goodsType, productionAmount)
                 maxCandidate.scoreForBuilding(buildingType, productionAmount, market)
 
                 if (maxCandidate.hasBetterScore(max)) {

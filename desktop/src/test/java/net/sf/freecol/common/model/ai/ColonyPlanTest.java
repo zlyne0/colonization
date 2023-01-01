@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai;
 
+import com.badlogic.gdx.utils.ObjectIntMap;
+
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyAssert;
 import net.sf.freecol.common.model.ProductionSummary;
@@ -11,6 +13,7 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan;
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.FoundingFather;
+import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -407,6 +410,42 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		// then
 		assertThat(buildingproductionSummary1).isEqualTo(buildingproductionSummary2);
 		assertThat(productionSummary1).isEqualTo(productionSummary2);
+	}
+
+	@Test
+	void shouldIncreaseProductionValueWhenWarehouseIsFullAndUpgradeWarehouse() {
+		// given
+		givenFullWarehouse(nieuwAmsterdam);
+
+		BuildingType warehouseExpansion = Specification.instance.buildingTypes.getById(BuildingType.WAREHOUSE_EXPANSION);
+
+		// when
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
+		colonyPlan.withConsumeWarehouseResources(true);
+		colonyPlan.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Food);
+		ProductionSummary productionSummary1 = colonyPlan.productionConsumption().cloneGoods();
+
+		ColonyPlan colonyPlan2 = new ColonyPlan(nieuwAmsterdam);
+		colonyPlan2.withConsumeWarehouseResources(true);
+		colonyPlan2.addBuilding(warehouseExpansion);
+		colonyPlan2.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Food);
+		ProductionSummary productionSummary2 = colonyPlan2.productionConsumption().cloneGoods();
+
+		// then
+		Market market = dutch.market();
+		int valueGold1 = market.getSalePrice(productionSummary1);
+		int valueGold2 = market.getSalePrice(productionSummary2);
+		assertThat(valueGold1).isEqualTo(112);
+		assertThat(valueGold2).isEqualTo(154);
+		assertThat(valueGold2 > valueGold1).isTrue();
+		assertThat(valueGold2 - valueGold1).isEqualTo(42);
+	}
+
+	void givenFullWarehouse(Colony colony) {
+		for (ObjectIntMap.Entry<String> entry : colony.getGoodsContainer().cloneGoods().entries()) {
+			colony.getGoodsContainer().decreaseToZero(entry.key);
+			colony.getGoodsContainer().increaseGoodsQuantity(entry.key, colony.warehouseCapacity());
+		}
 	}
 
 	private void printColonyWorkers(Colony colony) {

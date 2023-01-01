@@ -243,11 +243,6 @@ public class IndianSettlement extends Settlement {
 		}
     }
     
-    @Override
-    public boolean hasAbility(String abilityCode) {
-        return false;
-    }
-
 	@Override
 	public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
 		mods.addModifierFrom(settlementType, modifierCode);

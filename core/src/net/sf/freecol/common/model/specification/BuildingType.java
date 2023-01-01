@@ -17,7 +17,10 @@ import promitech.colonization.savegame.XmlNodeParser;
 public class BuildingType extends BuildableType {
 
 	public static final String TOWN_HALL = "model.building.townHall";
-	
+	public static final String DOCKS = "model.building.docks";
+	public static final String WAREHOUSE = "model.building.warehouse";
+	public static final String WAREHOUSE_EXPANSION = "model.building.warehouseExpansion";
+
     int level = 1;
     int workplaces = 3;
     private int goodsOutputChainLevel = 0;

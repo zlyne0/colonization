@@ -255,9 +255,9 @@ class BuildingProduction implements Identifiable {
     	Integer outputGoodsInitValue = goodsTypeProdAmount.getValue();
     	
     	int goodQuantity = 0;
-        goodQuantity += (int)workerUnitType.applyModifier(outputGoodsId, outputGoodsInitValue);
-        goodQuantity = (int)colonyFeatures.applyModifier(outputGoodsId, goodQuantity);
-        goodQuantity = (int)colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
+        goodQuantity += workerUnitType.applyModifier(outputGoodsId, outputGoodsInitValue);
+        goodQuantity = colonyFeatures.applyModifier(outputGoodsId, goodQuantity);
+        goodQuantity = colonyFeatures.applyModifier(Modifier.COLONY_PRODUCTION_BONUS, goodQuantity);
         return goodQuantity;
     }
 

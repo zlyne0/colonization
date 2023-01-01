@@ -114,6 +114,19 @@ public class Modifier implements Identifiable {
 		return id;
 	}
 
+	public int apply(int base) {
+		switch (modifierType) {
+			case ADDITIVE:
+				return base + (int)value;
+			case MULTIPLICATIVE:
+				return (int)(base * value);
+			case PERCENTAGE:
+				return (int)(base + (base * value) / 100);
+			default:
+				throw new IllegalArgumentException("can not recognize modifierType: " + modifierType);
+		}
+	}
+
 	public float apply(float base) {
         switch (modifierType) {
         case ADDITIVE:

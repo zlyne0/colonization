@@ -162,7 +162,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    
 	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {
 	        if (unit.hasAbility(Ability.CAN_BE_EQUIPPED)) {
-	            List<UnitRole> avaliableRoles = unit.avaliableRoles(colony.colonyUpdatableFeatures);
+	            List<UnitRole> avaliableRoles = unit.avaliableRoles(colony.getColonyUpdatableFeatures());
 	            
 	            System.out.println("avaliable roles size " + avaliableRoles.size());
 	            for (UnitRole aRole : avaliableRoles) {
@@ -462,7 +462,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
         populationPanel.update(colony);
         actualBuildableItemActor.updateBuildItem(colony);
         
-    	customHouseButton.setDisabled(!colony.hasAbility(Ability.EXPORT));
+    	customHouseButton.setDisabled(!colony.canExportGoods());
     }
 	
     public void setColonySpyMode() {

@@ -2,8 +2,8 @@ package net.sf.freecol.common.model;
 
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.player.Player;
-import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GoodsType;
+
 import promitech.colonization.ui.resources.StringTemplate;
 
 public abstract class Settlement extends ObjectWithId implements UnitLocation {
@@ -75,7 +75,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 	}
     
     public boolean canBombardEnemyShip() {
-        return isCoastland() && hasAbility(Ability.BOMBARD_SHIPS);
+		return false;
     }
 
     public boolean hasGoodsToEquipRole(UnitRole unitRole) {
@@ -133,20 +133,7 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
         }
     }
 	
-	public int maxGoodsAmountToFillWarehouseCapacity(GoodsType goodsType, int goodsAmount) {
-		int freeSpace = warehouseCapacity() - goodsContainer.goodsAmount(goodsType);
-		if (freeSpace < 0) {
-			freeSpace = 0;
-		}
-		if (freeSpace < goodsAmount) {
-			return freeSpace;
-		}
-		return goodsAmount;
-	}
-    
 	public abstract int warehouseCapacity();
-    
-    public abstract boolean hasAbility(String abilityCode);
     
     public abstract int applyModifiers(String abilityCode, int val);
     

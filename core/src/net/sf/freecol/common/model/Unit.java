@@ -906,7 +906,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	
 	public UnitLocation getRepairLocation() {
 	    for (Settlement settlement : getOwner().settlements.entities()) {
-	        if (settlement.asColony().colonyUpdatableFeatures.hasAbility(Ability.REPAIR_UNITS)) {
+	        if (settlement.asColony().canRepairUnits()) {
 	            return settlement;
 	        }
 	    }

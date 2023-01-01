@@ -306,13 +306,13 @@ public class ColonyProductionTest extends Savegame1600BaseClass {
         Colony fortOrange = (Colony)dutch.settlements.getById("colony:6554");
         fortOrange.updateColonyFeatures();
         
-        fortOrange.goodsContainer.increaseGoodsQuantity("model.goods.hammers", 52);
+        fortOrange.goodsContainer.increaseGoodsQuantity(GoodsType.HAMMERS, 52);
         //fortOrange.buildBuildings(game, new NewTurnContext());
         
-        BuildableType dock = Specification.instance.buildingTypes.getById("model.building.docks");
+        BuildableType dock = Specification.instance.buildingTypes.getById(BuildingType.DOCKS);
         
         // when
-        boolean hasAbilitiesRequiredFrom = fortOrange.colonyUpdatableFeatures.hasAbilitiesRequiredFrom(dock);
+        boolean hasAbilitiesRequiredFrom = fortOrange.getColonyUpdatableFeatures().hasAbilitiesRequiredFrom(dock);
         
         // then
         assertEquals(true, hasAbilitiesRequiredFrom);

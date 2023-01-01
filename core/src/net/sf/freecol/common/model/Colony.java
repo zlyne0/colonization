@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Unit.UnitState;
 import net.sf.freecol.common.model.colonyproduction.ColonyProduction;
+import net.sf.freecol.common.model.colonyproduction.ColonyUpdatableFeatures;
 import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider;
 import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;
 import net.sf.freecol.common.model.player.FoundingFather;
@@ -64,7 +65,7 @@ public class Colony extends Settlement {
     public final List<ColonyBuildingQueueItem> buildingQueue = new ArrayList<ColonyBuildingQueueItem>();
 	private MapIdEntities<ExportInfo> exportInfos = new MapIdEntities<ExportInfo>();
 
-    public final ObjectWithFeatures colonyUpdatableFeatures;
+	private final ColonyUpdatableFeatures colonyUpdatableFeatures;
     
     private final ColonyProduction colonyProduction;
 
@@ -76,7 +77,7 @@ public class Colony extends Settlement {
     
     private Colony(String id, SettlementType settlementType) {
     	super(id, settlementType);
-    	colonyUpdatableFeatures = new ObjectWithFeatures("tmp" + id);
+		colonyUpdatableFeatures = new ColonyUpdatableFeatures();
     	colonyProduction = new ColonyProduction(new DefaultColonySettingProvider(this));
     	// constructor used only by xml parser which create goodsContainer
     }
@@ -100,7 +101,7 @@ public class Colony extends Settlement {
     }
 
     public boolean canReducePopulation() {
-    	return getColonyUnitsCount() > colonyUpdatableFeatures.applyModifier(Modifier.MINIMUM_COLONY_SIZE, 0); 
+    	return getColonyUnitsCount() > colonyUpdatableFeatures.minimumColonySize();
     }
     
     public void updateModelOnWorkerAllocationOrGoodsTransfer() {
@@ -153,32 +154,21 @@ public class Colony extends Settlement {
     }
     
     public void updateColonyFeatures() {
-    	colonyUpdatableFeatures.clear();
-    	if (isCoastland()) {
-    		colonyUpdatableFeatures.addAbility(Ability.HAS_PORT_ABILITY);
-    	}
-    	for (Building b : buildings.entities()) {
-    		colonyUpdatableFeatures.addFeatures(b.buildingType);
-    	}
-    	for (FoundingFather ff : owner.foundingFathers.entities()) {
-    	    colonyUpdatableFeatures.addFeatures(ff);
-    	}
-    	colonyUpdatableFeatures.addFeatures(settlementType);
-    	colonyUpdatableFeatures.addModifier(productionBonus);
+		colonyUpdatableFeatures.updateColonyFeatures(this);
     }
-    
+
+	public boolean canExportGoods() {
+		return colonyUpdatableFeatures.canExportGoods();
+	}
+
+	@Override
     public void addModifiersTo(ObjectWithFeatures mods, String modifierCode) {
-    	mods.addModifierFrom(colonyUpdatableFeatures, modifierCode);
+		colonyUpdatableFeatures.addModifiersTo(mods, modifierCode);
     }
-    
-    @Override
-    public boolean hasAbility(String abilityCode) {
-        return colonyUpdatableFeatures.hasAbility(abilityCode);
-    }
-    
+
 	@Override
 	public int applyModifiers(String modifierCode, int val) {
-		return (int)colonyUpdatableFeatures.applyModifier(modifierCode, (float)val);
+		return colonyUpdatableFeatures.applyModifiers(modifierCode, val);
 	}
 
 	public boolean hasBurnableBuildings() {
@@ -355,7 +345,7 @@ public class Colony extends Settlement {
     }
     
     public void changeUnitRole(Unit unit, UnitRole newUnitRole) {
-    	super.changeUnitRole(unit, newUnitRole, colonyUpdatableFeatures);
+    	super.changeUnitRole(unit, newUnitRole, colonyUpdatableFeatures.getFeatures());
     }
     
     public void increaseWorkersExperience() {
@@ -536,7 +526,7 @@ public class Colony extends Settlement {
 	
 	@Override
     public int warehouseCapacity() {
-    	return (int)colonyUpdatableFeatures.applyModifier(Modifier.WAREHOUSE_STORAGE, 0);
+		return colonyUpdatableFeatures.warehouseCapacity();
     }
 
     public int sonsOfLiberty() {
@@ -1027,7 +1017,7 @@ public class Colony extends Settlement {
 					return NoBuildReason.LIMIT_EXCEEDED;
 				}
 			}
-			if (!colonyUpdatableFeatures.canApplyAbilityToObject(Ability.BUILD, item)) {
+			if (!colonyUpdatableFeatures.getFeatures().canApplyAbilityToObject(Ability.BUILD, item)) {
 				return NoBuildReason.MISSING_BUILD_ABILITY;
 			}
 		}
@@ -1054,10 +1044,7 @@ public class Colony extends Settlement {
     }
 	
 	public boolean isTileLockedBecauseNoDock(Tile tile) {
-		if (tile.getType().isWater() && !colonyUpdatableFeatures.hasAbility(Ability.PRODUCE_IN_WATER)) {
-			return true;
-		}
-		return false;
+		return tile.getType().isWater() && !colonyUpdatableFeatures.canProduceInWater();
 	}
 	
 	/**
@@ -1157,7 +1144,7 @@ public class Colony extends Settlement {
 	}
 
 	public void exportGoods(Game game) {
-		if (!hasAbility(Ability.EXPORT)) {
+		if (!colonyUpdatableFeatures.canExportGoods()) {
 			return;
 		}
 		
@@ -1181,6 +1168,19 @@ public class Colony extends Settlement {
 				+ " for price: " + transaction.netPrice
 			);
 		}
+	}
+
+	public boolean canRepairUnits() {
+		return colonyUpdatableFeatures.canRepairUnits();
+	}
+
+	@Override
+	public boolean canBombardEnemyShip() {
+		return isCoastland() && colonyUpdatableFeatures.canBombardEnemyShip();
+	}
+
+	public ObjectWithFeatures getColonyUpdatableFeatures() {
+		return colonyUpdatableFeatures.getFeatures();
 	}
 
 	public ProductionSimulation productionSimulation() {
