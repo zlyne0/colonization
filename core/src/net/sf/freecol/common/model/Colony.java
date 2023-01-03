@@ -605,7 +605,15 @@ public class Colony extends Settlement {
             }
         }
     }
-    
+
+	public void clearBuildingQueue() {
+		buildingQueue.clear();
+	}
+
+	public void addToBuildingQueue(BuildingType buildingType) {
+		buildingQueue.add(new ColonyBuildingQueueItem(buildingType));
+	}
+
     public void addItemToBuildingQueue(ColonyBuildingQueueItem item) {
     	buildingQueue.add(item);
     }

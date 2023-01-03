@@ -3,6 +3,8 @@ package net.sf.freecol.common.model;
 import org.assertj.core.api.AbstractAssert;
 import org.jetbrains.annotations.NotNull;
 
+import java.util.Arrays;
+
 public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 
 	public ColonyAssert(Colony actual, Class<?> selfType) {
@@ -169,4 +171,26 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
         return this;
     }
+
+	public ColonyAssert hasBuildingQueue(@NotNull String ... buildingTypeIds) {
+		if (actual.buildingQueue.size() != buildingTypeIds.length) {
+			failWithMessage(
+				"expected colony %s has %s building queue but is has %s",
+				actual.getId(),
+				Arrays.deepToString(buildingTypeIds),
+				actual.buildingQueue
+			);
+		}
+		for (int i=0; i<buildingTypeIds.length; i++) {
+			if (!actual.buildingQueue.get(i).getType().equalsId(buildingTypeIds[i])) {
+				failWithMessage(
+					"expected colony %s has %s building queue but is has %s",
+					actual.getId(),
+					Arrays.deepToString(buildingTypeIds),
+					actual.buildingQueue
+				);
+			}
+		}
+		return this;
+	}
 }

@@ -7,12 +7,51 @@ import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.BuildingType
 import net.sf.freecol.common.model.specification.GoodsType
-import promitech.colonization.ai.score.ObjectScoreList
+import promitech.colonization.ai.score.ScoreableObjectsList
+
+@JvmInline
+value class TurnRateOfReturn(private val value: Int) {
+    fun isLower(turnRateOfReturn: TurnRateOfReturn): Boolean {
+        return value < turnRateOfReturn.value
+    }
+}
+
+data class BuildingTypeScore(
+    val buildingType: BuildingType,
+    val profit: Int,
+    val colony: Colony,
+    val price: Int,
+    val turnRateOfReturn: TurnRateOfReturn
+) : ScoreableObjectsList.Scoreable {
+
+    override fun score(): Int {
+        return profit
+    }
+
+    fun maxProfit(score: BuildingTypeScore?): BuildingTypeScore {
+        if (score == null) {
+            return this
+        }
+        if (this.profit > score.profit) {
+            return this
+        }
+        if (this.profit == score.profit) {
+            if (this.turnRateOfReturn.isLower(score.turnRateOfReturn)) {
+                return this
+            } else {
+                return score
+            }
+        } else {
+            return score
+        }
+    }
+}
 
 class ColonyBuildingPlaner {
 
     private val mostValuableGoods: Set<GoodsType>
     private val hammersGoodsType: GoodsType
+    private val productionBuildingModifications: List<BuildingType>
 
     init {
         mostValuableGoods = HashSet()
@@ -20,36 +59,74 @@ class ColonyBuildingPlaner {
         mostValuableGoods.addAll(ColonyPlan.Plan.ProcessedMaterials.goodsTypes)
 
         hammersGoodsType = Specification.instance.goodsTypes.getById(GoodsType.HAMMERS)
+        productionBuildingModifications = mutableListOf<BuildingType>(
+            Specification.instance.buildingTypes.getById(BuildingType.DOCKS),
+            Specification.instance.buildingTypes.getById(BuildingType.WAREHOUSE),
+            Specification.instance.buildingTypes.getById(BuildingType.WAREHOUSE_EXPANSION),
+        )
     }
 
-    fun productionValueBuildingPlan(player: Player, colony: Colony): ObjectScoreList<BuildingType> {
+    fun generateBuildingQueue(player: Player) {
+        for (settlement in player.settlements) {
+            val colony = settlement.asColony()
+            colony.clearBuildingQueue()
+            productionValueBuildingPlan(player, colony).whenNotNull { bt -> colony.addToBuildingQueue(bt.buildingType) }
+        }
+    }
 
+    fun productionValueBuildingPlan(player: Player, colony: Colony): BuildingTypeScore? {
         val productionSummary = colony.productionSummary()
-        val colonyGoldProductionValue = goldValue(productionSummary, player)
+        val colonyGoldProductionValue = player.market().getSalePrice(productionSummary)
 
-        val buildingTypeScore = ObjectScoreList<BuildingType>(10)
+        var theBestProfit: BuildingTypeScore? = null
 
-        generateColonyBuildableBuildings(colony)
-            .filter { buildingType -> buildingProduceMostValuableGoods(buildingType) }
-            .filter { buildingType -> isBuildingTypeProduceTypeOnColonyProduction(buildingType, productionSummary) }
-            .forEach { buildingType ->
-
-                val virtualColony = ColonyPlan(colony).withConsumeWarehouseResources(true)
-                virtualColony.addBuilding(buildingType)
-                virtualColony.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
-                val virtualProductionConsumption = virtualColony.productionConsumption()
-                val virtualGold = goldValue(virtualProductionConsumption, player)
-
-                val gain = virtualGold - colonyGoldProductionValue
-
-                val priceForBuilding = colony.getAIPriceForBuilding(buildingType)
-                println("$buildingType actual: $colonyGoldProductionValue, upgrade: $virtualGold, gain: $gain, priceForBuilding: $priceForBuilding")
-
-                if (gain > 0) {
-                    buildingTypeScore.add(buildingType, gain)
-                }
+        for (buildingType in Specification.instance.buildingTypes) {
+            if (canAddBuildingToColony(colony, buildingType)
+                && buildingProduceMostValuableGoods(buildingType)
+                && isBuildingTypeProduceTypeOnColonyProduction(buildingType, productionSummary)
+            ) {
+                calculateGainWithBuildingType(player, colony, buildingType, colonyGoldProductionValue)
+                    .whenNotNull { buildingTypeScore ->
+                        theBestProfit = buildingTypeScore.maxProfit(theBestProfit)
+                    }
             }
-        return buildingTypeScore
+        }
+        for (buildingType in productionBuildingModifications) {
+            if (canAddBuildingToColony(colony, buildingType)) {
+                calculateGainWithBuildingType(player, colony, buildingType, colonyGoldProductionValue)
+                    .whenNotNull { buildingTypeScore ->
+                        theBestProfit = buildingTypeScore.maxProfit(theBestProfit)
+                    }
+            }
+        }
+        return theBestProfit
+    }
+
+    private fun calculateGainWithBuildingType(
+        player: Player,
+        colony: Colony,
+        buildingType: BuildingType,
+        colonyGoldProductionValue: Int
+    ): BuildingTypeScore? {
+        val virtualColony = ColonyPlan(colony)
+            .withConsumeWarehouseResources(true)
+            .withIgnoreIndianOwner()
+            .withMinimumProductionLimit(2)
+            .addBuilding(buildingType)
+        virtualColony.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+        val virtualProductionConsumption = virtualColony.productionConsumption()
+        val virtualGold = player.market().getSalePrice(virtualProductionConsumption)
+
+        val profit = virtualGold - colonyGoldProductionValue
+
+        val priceForBuilding = colony.getAIPriceForBuilding(buildingType)
+        //println("$buildingType actual: $colonyGoldProductionValue, upgrade: $virtualGold, profit: $profit, priceForBuilding: $priceForBuilding")
+
+        if (profit > 0) {
+            return BuildingTypeScore(buildingType, profit, colony, priceForBuilding, TurnRateOfReturn(priceForBuilding / profit))
+        } else {
+            return null
+        }
     }
 
     fun buildingValue(player: Player, colony: Colony) {
@@ -61,7 +138,7 @@ class ColonyBuildingPlaner {
 
         virtualColony.execute2(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Food)
         val mostValuableProductionConsumption = virtualColony.productionConsumption()
-        val mostValuableGoodsGoldValue = goldValue(mostValuableProductionConsumption, player)
+        val mostValuableGoodsGoldValue = player.market().getSalePrice(mostValuableProductionConsumption)
 
 
         println("buildable value, hammersGoldValue: $hammersGoldValue, mostValuableGoodsGoldValue: $mostValuableGoodsGoldValue")
@@ -90,14 +167,6 @@ class ColonyBuildingPlaner {
         return false
     }
 
-    private fun goldValue(productionSummary: ProductionSummary, player: Player): Int {
-        var goldSumValue = 0
-        for (entry in productionSummary.entries()) {
-            goldSumValue += player.market().getSalePrice(entry.key, entry.value)
-        }
-        return goldSumValue
-    }
-
     private fun hammersProductionGoldValue(productionSummary: ProductionSummary, player: Player): Int {
         return player.market().buildingGoodsPrice(
             hammersGoodsType,
@@ -105,10 +174,15 @@ class ColonyBuildingPlaner {
         )
     }
 
-    private fun generateColonyBuildableBuildings(colony: Colony): Sequence<BuildingType> {
-        return Specification.instance.buildingTypes.asSequence()
-            .filter { buildingType -> colony.getNoBuildReason(buildingType) == Colony.NoBuildReason.NONE }
-            .filter { buildingType -> !colony.isBuildingAlreadyBuilt(buildingType) }
+    private fun canAddBuildingToColony(colony: Colony, buildingType: BuildingType): Boolean {
+        return colony.getNoBuildReason(buildingType) == Colony.NoBuildReason.NONE
+            && !colony.isBuildingAlreadyBuilt(buildingType)
     }
 
+}
+
+inline fun <T : Any> T?.whenNotNull(action: (T) -> Unit) {
+    if (this != null) {
+        action.invoke(this)
+    }
 }
