@@ -253,20 +253,26 @@ class ColonyPlan(val colony: Colony) {
         colonyProduction.updateRequest()
     }
 
-    fun execute(vararg plan: Plan) {
+    fun execute(vararg plan: Plan): ColonyPlan {
         createBalancedProductionAllocationPlan(PlanSequence(plan.asList()))
-        colonySimulationSettingProvider.putWorkersToColonyViaAllocation();
+        return this
     }
 
-    fun executeMaximizationProduction(vararg plan: Plan) {
+    fun executeMaximizationProduction(vararg plan: Plan): ColonyPlan {
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
-        colonySimulationSettingProvider.putWorkersToColonyViaAllocation();
+        return this
     }
 
-    fun execute2(vararg plan: Plan) {
+    fun execute2(vararg plan: Plan): ColonyPlan {
         colonySimulationSettingProvider.clearWorkersAllocation()
         colonyProduction.updateRequest()
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
+        return this
+    }
+
+    fun allocateWorkers(): ColonyPlan {
+        colonySimulationSettingProvider.putWorkersToColonyViaAllocation()
+        return this
     }
 
     /**

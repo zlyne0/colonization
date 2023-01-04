@@ -21,7 +21,8 @@ public final class ColonyProductionPlaner {
 				.withIgnoreIndianOwner()
 				.withConsumeWarehouseResources(true)
 				.withMinimumProductionLimit(2)
-				.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
+				.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+				.allocateWorkers();
 		}
 	}
 	
@@ -30,7 +31,8 @@ public final class ColonyProductionPlaner {
 			.withIgnoreIndianOwner()
 			.withConsumeWarehouseResources(true)
 			.withMinimumProductionLimit(2)
-			.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food);
+			.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+			.allocateWorkers();
 	}
 
 	public static void initColonyBuilderUnit(Colony colony, Unit builder) {
