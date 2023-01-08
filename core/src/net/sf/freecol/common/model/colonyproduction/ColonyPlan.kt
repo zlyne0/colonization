@@ -188,6 +188,32 @@ class ColonyPlan(val colony: Colony) {
         fun hasNextPlan(): Boolean = nextPlanIndex < planList.size
     }
 
+    class ProductionProfile(val name: String, val plan: PlanSequence) {
+        companion object {
+            val MostValuable = ProductionProfile("MostValuable", PlanSequence(listOf(Plan.MostValuable, Plan.Bell, Plan.Food)))
+            val Building = ProductionProfile("Building", PlanSequence(listOf(Plan.Building, Plan.Bell, Plan.Food)))
+        }
+
+        override fun toString(): String {
+            return name
+        }
+
+        override fun equals(other: Any?): Boolean {
+            if (this === other) return true
+            if (javaClass != other?.javaClass) return false
+
+            other as ProductionProfile
+
+            if (name != other.name) return false
+
+            return true
+        }
+
+        override fun hashCode(): Int {
+            return name.hashCode()
+        }
+    }
+
     enum class Plan(private val goodsTypesIds: List<String>) {
         Food(listOf(GoodsType.GRAIN, GoodsType.FISH)),
         Bell(listOf(GoodsType.BELLS)),
@@ -263,10 +289,22 @@ class ColonyPlan(val colony: Colony) {
         return this
     }
 
+    fun executeMaximizationProduction(productionProfile: ProductionProfile): ColonyPlan {
+        createMaximizationProductionAllocationPlan(productionProfile.plan)
+        return this
+    }
+
     fun execute2(vararg plan: Plan): ColonyPlan {
         colonySimulationSettingProvider.clearWorkersAllocation()
         colonyProduction.updateRequest()
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
+        return this
+    }
+
+    fun execute2(productionProfile: ProductionProfile): ColonyPlan {
+        colonySimulationSettingProvider.clearWorkersAllocation()
+        colonyProduction.updateRequest()
+        createMaximizationProductionAllocationPlan(productionProfile.plan)
         return this
     }
 
