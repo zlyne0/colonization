@@ -46,7 +46,6 @@ class ColonyWorkerMissionHandler(
     private fun addWorkerToColony(mission: ColonyWorkerMission) {
         val colony = mission.tile.settlement.asColony()
         ColonyProductionPlaner.initColonyBuilderUnit(colony, mission.unit)
-        ColonyProductionPlaner.createPlan(colony)
         mission.setDone()
     }
 

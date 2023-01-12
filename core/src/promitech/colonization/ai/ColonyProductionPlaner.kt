@@ -4,9 +4,13 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.ProductionSummary
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan.ProductionProfile.Companion.Building
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan.ProductionProfile.Companion.MostValuable
+import net.sf.freecol.common.model.colonyproduction.ColonyProductionLogger
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.BuildingType
 import net.sf.freecol.common.model.specification.GoodsType
+import net.sf.freecol.common.util.whenNotNull
 import java.util.*
 
 @JvmInline
@@ -61,9 +65,13 @@ class ProductionPlanSummary(
     }
 }
 
-data class ColonyPlanProductionRecommendation(val colony: Colony, val productionProfile: ColonyPlan.ProductionProfile)
+data class ColonyPlanProductionRecommendation(
+    val colony: Colony,
+    val productionProfile: ColonyPlan.ProductionProfile,
+    val buildingTypeScore: BuildingTypeScore? = null
+)
 
-class ColonyBuildingPlaner {
+class ColonyProductionPlaner {
 
     private val mostValuableGoods: Set<GoodsType>
     private val hammersGoodsType: GoodsType
@@ -84,14 +92,47 @@ class ColonyBuildingPlaner {
         )
     }
 
-//    fun generateBuildingQueue(player: Player) {
-//        val buildingTypeScoreList = findBuildingTypeToProduce(player)
-//
-//        for (buildingTypeScore in buildingTypeScoreList) {
-//            buildingTypeScore.colony.clearBuildingQueue()
-//            buildingTypeScore.colony.addToBuildingQueue(buildingTypeScore.buildingType)
-//        }
-//    }
+    fun generateAndSetColonyProductionPlan(player: Player) {
+        val colonyPlanProduction = generateColonyPlanProductionRecommendations(player)
+
+        for (colonyPlanRecommendation: ColonyPlanProductionRecommendation in colonyPlanProduction) {
+            val colony = colonyPlanRecommendation.colony
+            if (ColonyProductionLogger.logger.isDebug) {
+                logProductionRecommendation(colonyPlanRecommendation, player)
+            }
+
+            if (colonyPlanRecommendation.buildingTypeScore != null) {
+                colony.clearBuildingQueue()
+                colony.addToBuildingQueue(colonyPlanRecommendation.buildingTypeScore.buildingType)
+            }
+            ColonyPlan(colony)
+                .withIgnoreIndianOwner()
+                .withConsumeWarehouseResources(true)
+                .withMinimumProductionLimit(2)
+                .executeMaximizationProduction(colonyPlanRecommendation.productionProfile)
+                .allocateWorkers()
+        }
+
+    }
+
+    private fun logProductionRecommendation(colonyPlanRecommendation: ColonyPlanProductionRecommendation, player: Player) {
+        if (colonyPlanRecommendation.productionProfile == Building) {
+            ColonyProductionLogger.logger.debug(
+                "player[%s].colony[%s].setProductionProfile[%s].building[%s]",
+                player.id,
+                colonyPlanRecommendation.colony.name,
+                colonyPlanRecommendation.productionProfile.name,
+                colonyPlanRecommendation.buildingTypeScore!!.buildingType
+            )
+        } else {
+            ColonyProductionLogger.logger.debug(
+                "player[%s].colony[%s].setProductionProfile[%s]",
+                player.id,
+                colonyPlanRecommendation.colony.name,
+                colonyPlanRecommendation.productionProfile.name
+            )
+        }
+    }
 
     fun generateColonyPlanProductionRecommendations(player: Player): List<ColonyPlanProductionRecommendation> {
         val summaryList: List<ProductionPlanSummary> = calculateSettlementsBuildingValue(player)
@@ -103,15 +144,17 @@ class ColonyBuildingPlaner {
 
         var noProduceGoldValue = 0
         for (productionPlanSummary in summaryList) {
-            var plan = ColonyPlan.ProductionProfile.MostValuable
             if (productionPlanSummary.buildingTypeScore != null) {
                 val colonyNoProduceGoldValue = noProduceGoldValue + productionPlanSummary.mostValuableGoldValue
                 if (colonyNoProduceGoldValue <= profitabilityLimit) {
                     noProduceGoldValue += productionPlanSummary.mostValuableGoldValue
-                    plan = ColonyPlan.ProductionProfile.Building
+                    recommendations.add(ColonyPlanProductionRecommendation(productionPlanSummary.colony, Building, productionPlanSummary.buildingTypeScore))
+                } else {
+                    recommendations.add(ColonyPlanProductionRecommendation(productionPlanSummary.colony, MostValuable))
                 }
+            } else {
+                recommendations.add(ColonyPlanProductionRecommendation(productionPlanSummary.colony, MostValuable))
             }
-            recommendations.add(ColonyPlanProductionRecommendation(productionPlanSummary.colony, plan))
         }
         return recommendations
     }
@@ -126,14 +169,14 @@ class ColonyBuildingPlaner {
             println("colony: " + productionPlanSummary.colony.name)
             println("   noProduceGoldValue: " + noProduceGoldValue)
             println("   mostValuableGoldValue: " + productionPlanSummary.mostValuableGoldValue)
-            var productionProfile = ColonyPlan.ProductionProfile.MostValuable
+            var productionProfile = MostValuable
             if (productionPlanSummary.buildingTypeScore != null) {
                 println("   buildingType: " + productionPlanSummary.buildingTypeScore.buildingType)
                 println("   profit: " + productionPlanSummary.buildingTypeScore.profit)
                 val colonyNoProduceGoldValue = noProduceGoldValue + productionPlanSummary.mostValuableGoldValue
                 if (colonyNoProduceGoldValue <= profitabilityLimit) {
                     noProduceGoldValue += productionPlanSummary.mostValuableGoldValue
-                    productionProfile = ColonyPlan.ProductionProfile.Building
+                    productionProfile = Building
                 }
             }
             println("   profil: $productionProfile")
@@ -158,7 +201,7 @@ class ColonyBuildingPlaner {
             .withIgnoreIndianOwner()
             .withMinimumProductionLimit(2)
 
-        virtualColony.execute2(ColonyPlan.ProductionProfile.MostValuable)
+        virtualColony.execute2(MostValuable)
         val mostValuableProductionConsumption = virtualColony.productionConsumption()
         val mostValuableGoodsGoldValue = player.market().getSalePrice(mostValuableProductionConsumption)
 
@@ -170,7 +213,7 @@ class ColonyBuildingPlaner {
             )
         }
 
-        virtualColony.execute2(ColonyPlan.ProductionProfile.Building)
+        virtualColony.execute2(Building)
         val hammersProductionConsumption = virtualColony.productionConsumption()
         val hammersGoldValue = hammersProductionGoldValue(hammersProductionConsumption, player)
         val besidesHammersGoldValue = player.market().getSalePrice(hammersProductionConsumption)
@@ -277,10 +320,43 @@ class ColonyBuildingPlaner {
             && !colony.isBuildingAlreadyBuilt(buildingType)
     }
 
-}
+    companion object {
 
-inline fun <T : Any> T?.whenNotNull(action: (T) -> Unit) {
-    if (this != null) {
-        action.invoke(this)
+        @JvmStatic
+        fun createPlanForNewColony(colony: Colony) {
+            ColonyPlan(colony)
+                .withIgnoreIndianOwner()
+                .withConsumeWarehouseResources(true)
+                .withMinimumProductionLimit(2)
+                .executeMaximizationProduction(ColonyPlan.ProductionProfile.MostValuable)
+                .allocateWorkers()
+        }
+
+        @JvmStatic
+        fun initColonyBuilderUnit(colony: Colony, builder: net.sf.freecol.common.model.Unit) {
+            colony.updateModelOnWorkerAllocationOrGoodsTransfer()
+            val maxProd = colony.productionSimulation().determinePotentialMaxTilesProduction(builder.unitType, false)
+            if (maxProd != null) {
+                colony.addWorkerToTerrain(maxProd.colonyTile, builder)
+            } else {
+                addUnitToRandomBuilding(colony, builder)
+            }
+            colony.updateColonyPopulation()
+        }
+
+        private fun addUnitToRandomBuilding(colony: Colony, unit: net.sf.freecol.common.model.Unit) {
+            val townHall = colony.findBuildingByType(BuildingType.TOWN_HALL)
+            if (townHall.canAddWorker(unit.unitType)) {
+                colony.addWorkerToBuilding(townHall, unit)
+            } else {
+                for (building in colony.buildings) {
+                    if (building.canAddWorker(unit.unitType)) {
+                        colony.addWorkerToBuilding(building, unit)
+                        break
+                    }
+                }
+            }
+        }
+
     }
 }

@@ -20,7 +20,7 @@ public class ColonyFactory {
 	public Colony buildColonyByAI(Unit buildByUnit, Tile tile) {
         String colonyName = SettlementFactory.generateSettlmentName(buildByUnit.getOwner());
         Colony colony = buildColony(buildByUnit, tile, colonyName);
-		ColonyProductionPlaner.createPlan(colony);
+		ColonyProductionPlaner.createPlanForNewColony(colony);
         return colony;
 	}
 	
@@ -58,7 +58,7 @@ public class ColonyFactory {
     	colony.initDefaultBuildings();
     	colony.updateColonyFeatures();
 
-    	ColonyProductionPlaner.initColonyBuilderUnit(colony, buildByUnit);
+		ColonyProductionPlaner.initColonyBuilderUnit(colony, buildByUnit);
 
     	TileImprovementType roadImprovement = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
     	TileImprovement tileImprovement = new TileImprovement(Game.idGenerator, roadImprovement);

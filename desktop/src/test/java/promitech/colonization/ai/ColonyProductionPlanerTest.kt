@@ -13,11 +13,11 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
     @Test
     fun `should generete building recomendation and calculate profit`() {
         // given
-        val colonyBuildingPlaner = ColonyBuildingPlaner()
+        val colonyProductionPlaner = ColonyProductionPlaner()
         val player = dutch
 
         // when
-        val settlementsBuildingValue = colonyBuildingPlaner.calculateSettlementsBuildingValue(player)
+        val settlementsBuildingValue = colonyProductionPlaner.calculateSettlementsBuildingValue(player)
 
         // then
         assertThat(settlementsBuildingValue).hasSize(4)
@@ -45,11 +45,11 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
     @Test
     fun `should generate colony plan profil`() {
         // given
-        val colonyBuildingPlaner = ColonyBuildingPlaner()
+        val colonyProductionPlaner = ColonyProductionPlaner()
         val player = dutch
 
         // when
-        val coloniesProductionProfile = colonyBuildingPlaner.generateColonyPlanProductionRecommendations(player)
+        val coloniesProductionProfile = colonyProductionPlaner.generateColonyPlanProductionRecommendations(player)
 
         //colonyBuildingPlaner.prettyPrintSettlementsBuildingValue(colonyBuildingPlaner.calculateSettlementsBuildingValue(player))
 
