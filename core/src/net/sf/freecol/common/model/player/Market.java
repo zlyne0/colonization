@@ -191,6 +191,16 @@ public class Market extends ObjectWithId {
 		}
 	}
 
+	public void aiBuyGoodsForBuilding(Game game, Player player, GoodsType goodsType, int goodsAmount) {
+		if (goodsType.isStorable()) {
+			MarketData marketData = marketGoods.getById(goodsType.getId());
+			if (marketData.hasArrears()) {
+				marketData.repayArrears();
+			}
+		}
+		buyGoods(game, player, goodsType, goodsAmount, buildingGoodsPrice);
+	}
+
 	public TransactionEffectOnMarket buyGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
 		return buyGoods(game, player, goodsType, goodsAmount, marketGoodsPrice);
 	}

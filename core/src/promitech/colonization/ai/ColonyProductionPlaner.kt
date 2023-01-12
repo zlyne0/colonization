@@ -78,6 +78,7 @@ class ColonyProductionPlaner {
     private val productionBuildingModifications: List<BuildingType>
 
     private val buildingToMostValuableProfileRatio = 0.25f
+    private val minimumProfitFromBuilding = 30
 
     init {
         mostValuableGoods = HashSet()
@@ -146,7 +147,7 @@ class ColonyProductionPlaner {
         for (productionPlanSummary in summaryList) {
             if (productionPlanSummary.buildingTypeScore != null) {
                 val colonyNoProduceGoldValue = noProduceGoldValue + productionPlanSummary.mostValuableGoldValue
-                if (colonyNoProduceGoldValue <= profitabilityLimit) {
+                if (colonyNoProduceGoldValue <= profitabilityLimit && minimumProfitFromBuilding <= productionPlanSummary.buildingTypeScore.profit) {
                     noProduceGoldValue += productionPlanSummary.mostValuableGoldValue
                     recommendations.add(ColonyPlanProductionRecommendation(productionPlanSummary.colony, Building, productionPlanSummary.buildingTypeScore))
                 } else {
@@ -173,13 +174,14 @@ class ColonyProductionPlaner {
             if (productionPlanSummary.buildingTypeScore != null) {
                 println("   buildingType: " + productionPlanSummary.buildingTypeScore.buildingType)
                 println("   profit: " + productionPlanSummary.buildingTypeScore.profit)
+                println("   turnRateOfReturn: " + productionPlanSummary.buildingTypeScore.turnRateOfReturn)
                 val colonyNoProduceGoldValue = noProduceGoldValue + productionPlanSummary.mostValuableGoldValue
-                if (colonyNoProduceGoldValue <= profitabilityLimit) {
+                if (colonyNoProduceGoldValue <= profitabilityLimit && minimumProfitFromBuilding <= productionPlanSummary.buildingTypeScore.profit) {
                     noProduceGoldValue += productionPlanSummary.mostValuableGoldValue
                     productionProfile = Building
                 }
             }
-            println("   profil: $productionProfile")
+            println("   profile: $productionProfile")
         }
     }
 

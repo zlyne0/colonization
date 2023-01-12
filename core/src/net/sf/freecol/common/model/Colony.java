@@ -750,6 +750,18 @@ public class Colony extends Settlement {
 		return sum;
 	}
 
+	public void aiPayForBuilding(BuildableType buildableType, Game game) {
+		Market ownerMarket = owner.market();
+		for (RequiredGoods requiredGood : buildableType.requiredGoods()) {
+			int reqDiffAmount = requiredGood.amount - goodsContainer.goodsAmount(requiredGood.goodsType);
+			if (reqDiffAmount <= 0) {
+				continue;
+			}
+			ownerMarket.aiBuyGoodsForBuilding(game, owner, requiredGood.goodsType, reqDiffAmount);
+			goodsContainer.increaseGoodsQuantity(requiredGood.goodsType, reqDiffAmount);
+		}
+	}
+
 	public void payForBuilding(BuildableType buildableType, Game game) {
 		if (!Specification.options.getBoolean(GameOptions.PAY_FOR_BUILDING)) {
 			throw new IllegalStateException("Pay for building is disabled");
