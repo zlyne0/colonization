@@ -19,8 +19,9 @@ import net.sf.freecol.common.model.player.Player;
 
 import java.util.List;
 
-import promitech.colonization.screen.debug.BuyShipOrder;
-import promitech.colonization.screen.debug.BuyShipPlaner;
+import promitech.colonization.ai.purchase.BuyShipOrder;
+import promitech.colonization.ai.purchase.BuyShipPlaner;
+import promitech.colonization.ai.purchase.PurchasePlaner;
 
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.hasNotTransportUnitMission;
 import static net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission.isAtShipLocation;
@@ -44,7 +45,7 @@ public class EuropeanMissionPlaner {
 	private final Game game;
 	private final PathFinder pathFinder;
 	private final PathFinder pathFinder2;
-	private boolean avoidPurchasesAndCollectGold = false;
+	private final PurchasePlaner purchasePlaner;
 
 	private final NavyMissionPlaner navyMissionPlaner = new NavyMissionPlaner();
 
@@ -54,6 +55,7 @@ public class EuropeanMissionPlaner {
 		this.pioneerMissionPlaner = new PioneerMissionPlaner(game, pathFinder);
 		this.colonyWorkerRequestPlaner = new ColonyWorkerRequestPlaner(game, pathFinder);
 		this.buyGoodsPlaner = new BuyGoodsPlaner(game);
+		this.purchasePlaner = new PurchasePlaner(game);
 
 		this.game = game;
 		this.pathFinder = pathFinder;
@@ -61,7 +63,9 @@ public class EuropeanMissionPlaner {
 	}
 
 	public void prepareMissions(Player player, PlayerMissionsContainer playerMissionContainer) {
-		avoidPurchasesAndCollectGold = false;
+		ColonyProductionPlaner colonyProductionPlaner = new ColonyProductionPlaner(player);
+
+		purchasePlaner.init(player, colonyProductionPlaner);
 
 		scoutMissionPlaner.createMissionFromUnusedUnits(player, playerMissionContainer);
 		colonyWorkerRequestPlaner.createMissionFromUnusedUnits(player, playerMissionContainer);
@@ -73,14 +77,15 @@ public class EuropeanMissionPlaner {
 			navyUnitPlaner(unit, playerMissionContainer);
 		}
 
-		new ColonyProductionPlaner().generateAndSetColonyProductionPlan(player);
+		colonyProductionPlaner.generateAndSetColonyProductionPlan();
+		purchasePlaner.buyBuildings();
 	}
 
 	private void handlePurchases(Player player, PlayerMissionsContainer playerMissionContainer) {
 		BuyShipPlaner buyShipPlaner = new BuyShipPlaner(player, Specification.instance, transportGoodsToSellMissionPlaner, playerMissionContainer);
 		BuyShipOrder buyShipPlan = buyShipPlaner.createBuyShipPlan();
 		if (buyShipPlan instanceof BuyShipOrder.CollectGoldAndBuy) {
-			avoidPurchasesAndCollectGold = true;
+			purchasePlaner.avoidPurchasesAndCollectGold();
 			return;
 		}
 		buyShipPlaner.handleBuyOrders(buyShipPlan);
@@ -199,7 +204,7 @@ public class EuropeanMissionPlaner {
 			and(hasNotTransportUnitMission, isFromEurope)
 		);
 
-		if (!avoidPurchasesAndCollectGold) {
+		if (!purchasePlaner.getAvoidPurchasesAndCollectGold()) {
 			colonyWorkerRequestPlaner.buyUnitsToNavyCapacity(playerMissionContainer.getPlayer(), playerMissionContainer, navyUnit);
 			tum = navyMissionPlaner.createTransportMissionFromTransportRequest(
 				tum,
@@ -240,6 +245,6 @@ public class EuropeanMissionPlaner {
 	}
 
 	protected void setAvoidPurchasesAndCollectGold() {
-		avoidPurchasesAndCollectGold = true;
+		purchasePlaner.avoidPurchasesAndCollectGold();
 	}
 }

@@ -4,6 +4,9 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.player.Player
 
 typealias UnitTypeId = String
@@ -53,6 +56,16 @@ class Units {
             } else {
                 -1
             }
+        }
+
+        fun transporterCapacity(transporter: Unit, playerMissionContainer: PlayerMissionsContainer): Int {
+            var capacity: Int = transporter.freeUnitsSlots()
+            playerMissionContainer.foreachMission(TransportUnitMission::class.java, { transportUnitMission ->
+                if (transportUnitMission.isCarrier(transporter)) {
+                    capacity -= transportUnitMission.spaceTakenByUnits()
+                }
+            })
+            return capacity
         }
     }
 }

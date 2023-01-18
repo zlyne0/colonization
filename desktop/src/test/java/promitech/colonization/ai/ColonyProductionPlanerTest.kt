@@ -13,11 +13,11 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
     @Test
     fun `should generete building recomendation and calculate profit`() {
         // given
-        val colonyProductionPlaner = ColonyProductionPlaner()
         val player = dutch
+        val colonyProductionPlaner = ColonyProductionPlaner(player)
 
         // when
-        val settlementsBuildingValue = colonyProductionPlaner.calculateSettlementsBuildingValue(player)
+        val settlementsBuildingValue = colonyProductionPlaner.buildRecommendations()
 
         // then
         assertThat(settlementsBuildingValue).hasSize(4)
@@ -45,11 +45,11 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
     @Test
     fun `should generate colony plan profile`() {
         // given
-        val colonyProductionPlaner = ColonyProductionPlaner()
         val player = dutch
+        val colonyProductionPlaner = ColonyProductionPlaner(player)
 
         // when
-        val coloniesProductionProfile = colonyProductionPlaner.generateColonyPlanProductionRecommendations(player)
+        val coloniesProductionProfile = colonyProductionPlaner.generateColonyPlanProductionRecommendations()
 
         //colonyProductionPlaner.prettyPrintSettlementsBuildingValue(colonyProductionPlaner.calculateSettlementsBuildingValue(player))
 
@@ -79,14 +79,14 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
         val warehouse = Specification.instance.buildingTypes.getById(BuildingType.WAREHOUSE)
 
         val list = listOf(
-            ProductionPlanSummary(nieuwAmsterdam, 101, null),
-            ProductionPlanSummary(fortNassau, 101, BuildingTypeScore(warehouse, 50, fortNassau, 1500, TurnRateOfReturn(10))),
-            ProductionPlanSummary(fortOranje, 100, BuildingTypeScore(warehouse, 54, fortOranje, 1500, TurnRateOfReturn(5))),
-            ProductionPlanSummary(fortMaurits, 100, BuildingTypeScore(warehouse, 54, fortMaurits, 1500, TurnRateOfReturn(4)))
+            BuildRecommendation(nieuwAmsterdam, 101, null),
+            BuildRecommendation(fortNassau, 101, BuildingTypeScore(warehouse, 50, fortNassau, 1500, TurnRateOfReturn(10))),
+            BuildRecommendation(fortOranje, 100, BuildingTypeScore(warehouse, 54, fortOranje, 1500, TurnRateOfReturn(5))),
+            BuildRecommendation(fortMaurits, 100, BuildingTypeScore(warehouse, 54, fortMaurits, 1500, TurnRateOfReturn(4)))
         )
 
         // when
-        val sortedList = list.sortedWith(ProductionPlanSummary.firstHigherBuildingTypeProfit)
+        val sortedList = list.sortedWith(BuildRecommendation.firstHigherBuildingTypeProfit)
 
         // then
         assertThat(sortedList)

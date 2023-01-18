@@ -11,6 +11,8 @@ import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
 
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq
+import promitech.colonization.ai.Units
+import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 
 class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
 
@@ -21,14 +23,15 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         val playerMissionContainer = game.aiContainer.missionContainer(player)
 
         val transporter = UnitFactory.create(UnitType.GALLEON, player, nieuwAmsterdam.tile)
+        val transporterCapacity = Units.transporterCapacity(transporter, playerMissionContainer)
         val pathFinder = PathFinder()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
         val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
 
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
 
         // when
-        val recomendations = purchaseRecommendations.generateRecommendations(placeCalculator, entryPointTurnRange, transporter)
+        val recomendations = purchaseRecommendations.generateRecommendations(transporterCapacity)
         purchaseRecommendations.printToLog(recomendations, entryPointTurnRange)
 
         // then
@@ -49,16 +52,18 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         val playerMissionContainer = game.aiContainer.missionContainer(player)
 
         val transporter = UnitFactory.create(UnitType.FRIGATE, player, player.europe)
+        val workersNumber = Units.transporterCapacity(transporter, playerMissionContainer)
+
         val pathFinder = PathFinder()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
         val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
 
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
 
         val previewUnitsInEurope = MapIdEntities(player.europe.units)
 
         // when
-        purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange, transporter)
+        purchaseRecommendations.buyRecommendations(workersNumber)
 
         // then
         val newUnits = MapIdEntities(player.europe.units).reduceBy(previewUnitsInEurope)

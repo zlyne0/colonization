@@ -27,7 +27,7 @@ import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMissio
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import net.sf.freecol.common.model.ai.missions.workerrequest.ColonistsPurchaseRecommendations
+import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
@@ -39,16 +39,19 @@ import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
+import net.sf.freecol.common.model.specification.BuildableType
+import net.sf.freecol.common.model.specification.BuildingType
 import net.sf.freecol.common.model.specification.GoodsType
 import net.sf.freecol.common.model.specification.GoodsTypeId
 import promitech.colonization.DI
 import promitech.colonization.Direction
-import promitech.colonization.ai.ColonyBuildingPlaner
+import promitech.colonization.ai.ColonyProductionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
+import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.savegame.SaveGameList
@@ -217,12 +220,46 @@ fun createCommands(
 				val colony = colonyApplicationScreen.getColony()
 				colony.updateProductionToMaxPossible(colony.tile)
 
-				val plan = ColonyPlan.Plan.valueByName(args[1])
+				val plan = Array<ColonyPlan.Plan>(args.size - 1) { index ->
+					ColonyPlan.Plan.valueByName(args[index+1])
+				}
+
 				ColonyPlan(colonyApplicationScreen.colony)
 					.withConsumeWarehouseResources(true)
 					.withIgnoreIndianOwner()
 					.withMinimumProductionLimit(2)
-					.execute(plan)
+					.execute(*plan)
+					.allocateWorkers()
+
+				colonyApplicationScreen.initColony(colony)
+			}
+		}.addParams {
+			listOf<String>(
+				"food",
+				"bell",
+				"building",
+				"mostvaluable",
+				"tools",
+				"muskets"
+			)
+		}
+
+		commandArg("colony_plan2") { args ->
+			if (colonyApplicationScreen == null) {
+				console.keepOpen().out("no colony selected")
+			} else {
+				val colony = colonyApplicationScreen.getColony()
+				colony.updateProductionToMaxPossible(colony.tile)
+
+				val plan = Array<ColonyPlan.Plan>(args.size - 1) { index ->
+					ColonyPlan.Plan.valueByName(args[index+1])
+				}
+				ColonyPlan(colonyApplicationScreen.colony)
+					.withConsumeWarehouseResources(true)
+					.withIgnoreIndianOwner()
+					.withMinimumProductionLimit(2)
+					.execute2(*plan)
+					.allocateWorkers()
 
 				colonyApplicationScreen.initColony(colony)
 			}
@@ -240,7 +277,11 @@ fun createCommands(
 		commandArg("testPlan") { args ->
 			if (colonyApplicationScreen != null) {
 				val colony = colonyApplicationScreen.getColony()
-				colony.updateProductionToMaxPossible(colony.tile)
+				//colony.updateProductionToMaxPossible(colony.tile)
+
+				val warehouseBuildingType = Specification.instance.buildingTypes.getById(BuildingType.WAREHOUSE)
+				colony.addBuilding(warehouseBuildingType)
+				colony.updateColonyFeatures()
 
 				ColonyPlan(colonyApplicationScreen.colony)
 					.withConsumeWarehouseResources(true)
@@ -248,7 +289,8 @@ fun createCommands(
 					.withMinimumProductionLimit(2)
 					//.execute(ColonyPlan.Plan.Food(), ColonyPlan.Plan.Bell())
 					//.execute(ColonyPlan.Plan.Bell(), ColonyPlan.Plan.Food())
-					.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Building, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+					.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+					.allocateWorkers()
 					//.execute(ColonyPlan.Plan(listOf(GoodsType.BELLS, GoodsType.GRAIN)))
 				colonyApplicationScreen.initColony(colony)
 			}
@@ -361,11 +403,12 @@ fun generateWorkerReqBuyRecommendations(di: DI, guiGameModel: GUIGameModel, tile
 	val player = guiGameModel.game.playingPlayer
 	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = player.findCarrier()
+	val transporterCapacity = Units.transporterCapacity(transportUnit!!, playerMissionContainer)
 	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
 	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange)
 
-	val purchaseColonists = ColonistsPurchaseRecommendations(guiGameModel.game, player, playerMissionContainer)
-	val buyRecomendations = purchaseColonists.generateRecommendations(workerPlaceCalculator, entryPointTurnRange, transportUnit!!)
+	val purchaseColonists = ColonistsPurchaseRecommendations(guiGameModel.game, player, playerMissionContainer, entryPointTurnRange, workerPlaceCalculator)
+	val buyRecomendations = purchaseColonists.generateRecommendations(transporterCapacity)
 	purchaseColonists.printToLog(buyRecomendations, entryPointTurnRange)
 	purchaseColonists.printToMap(buyRecomendations, tileDebugView)
 }
@@ -657,14 +700,9 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //		val scout = player.units.getById("unit:967")
 //		val unitMoveType = UnitMoveType()
 
-		val colonyBuildingPlaner = ColonyBuildingPlaner()
-		for (settlement in player.settlements) {
-			val colony = settlement.asColony()
-			println("colony: " + colony.name)
-			val buildingTypePlanScore = colonyBuildingPlaner.productionValueBuildingPlan(player, colony)
-			//buildingTypePlanScore.prettyPrint()
-			colonyBuildingPlaner.buildingValue(player, colony)
-		}
+		val debugColonyProduction = DebugColonyProduction(di, guiGameModel, tileDebugView, mapActor!!)
+		//debugColonyProduction.provideResourcesToFinishAllStartedBuildings(player)
+		debugColonyProduction.displayColoniesBuildingsRecommendations(player)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
@@ -811,3 +849,29 @@ class DebugPioneer(
 	}
 }
 
+class DebugColonyProduction(
+	val di: DI,
+	val guiGameModel: GUIGameModel,
+	val tileDebugView: TileDebugView,
+	val mapActor: MapActor
+) {
+
+	fun provideResourcesToFinishAllStartedBuildings(player: Player) {
+		for (settlement in player.settlements) {
+			val colony = settlement.asColony()
+			val buildingType: BuildableType? = colony.firstItemInBuildingQueue
+			if (buildingType != null) {
+				val price = colony.getAIPriceForBuilding(buildingType)
+				println("colony: ${colony.name} buy buildingType: $buildingType for price $price")
+				player.addGold(price)
+				colony.aiPayForBuilding(buildingType, guiGameModel.game)
+			}
+		}
+	}
+
+	fun displayColoniesBuildingsRecommendations(player: Player) {
+		val colonyProductionPlaner = ColonyProductionPlaner(player)
+		val buildingsRecommendations = colonyProductionPlaner.buildRecommendations()
+		colonyProductionPlaner.prettyPrintSettlementsBuildingValue(buildingsRecommendations)
+	}
+}

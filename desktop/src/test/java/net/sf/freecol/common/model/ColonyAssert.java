@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import net.sf.freecol.common.model.specification.BuildableType;
+
 import org.assertj.core.api.AbstractAssert;
 import org.jetbrains.annotations.NotNull;
 
@@ -193,4 +195,12 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
 		return this;
 	}
+
+    public ColonyAssert hasCompletedBuilding(@NotNull BuildableType buildableType) {
+		BuildProgress buildProgress = BuildProgress.calculateBuildProgress(actual, buildableType);
+		if (!buildProgress.isCompleted()) {
+			failWithMessage("expected colony <%s> completed build <%s> but it is not", actual.getId(), buildableType);
+		}
+		return this;
+    }
 }

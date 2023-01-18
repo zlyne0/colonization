@@ -8,7 +8,9 @@ import net.sf.freecol.common.model.ai.missions.hasMissionKt
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
+import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonyWorkerRequestPlaner(
@@ -37,8 +39,9 @@ class ColonyWorkerRequestPlaner(
 
     fun buyUnitsToNavyCapacity(player: Player, playerMissionContainer: PlayerMissionsContainer, transporter: Unit) {
         init(player, playerMissionContainer)
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer)
-        purchaseRecommendations.buyRecommendations(placeCalculator, entryPointTurnRange, transporter)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
+        val workersNumber = Units.transporterCapacity(transporter, playerMissionContainer)
+        purchaseRecommendations.buyRecommendations(workersNumber)
     }
 
     fun createMissionFromUnusedUnits(player: Player, playerMissionsContainer: PlayerMissionsContainer) {

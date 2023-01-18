@@ -1,4 +1,4 @@
-package promitech.colonization.screen.debug
+package promitech.colonization.ai.purchase
 
 import com.badlogic.gdx.utils.ObjectIntMap
 import net.sf.freecol.common.model.Specification
