@@ -1,35 +1,17 @@
 package net.sf.freecol.common.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
+import net.sf.freecol.common.model.player.Player;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 
-import net.sf.freecol.common.model.player.Player;
-import promitech.colonization.savegame.SaveGameParser;
+import static org.assertj.core.api.Assertions.assertThat;
 
-public class EuropeTest {
+class EuropeTest extends Savegame1600BaseClass {
 
-	Game game;
-	Player dutch;
-	
-    @BeforeAll
-    public static void beforeClass() {
-        Gdx.files = new Lwjgl3Files();
-    }
-    
-    @BeforeEach
-    public void setup() throws Exception {
-    	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-    	dutch = game.players.getById("player:1");
-    }
-	
     @Test
-	public void canNotBuyBecauseNoBudget() throws Exception {
+	void canNotBuyBecauseNoBudget() throws Exception {
 		// given
     	UnitType freeColonist = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
     	int budget = 100;
@@ -42,7 +24,7 @@ public class EuropeTest {
 	}
 
     @Test
-	public void canBuy() throws Exception {
+	void canBuy() throws Exception {
 		// given
     	UnitType freeColonist = Specification.instance.unitTypes.getById(UnitType.FREE_COLONIST);
     	int budget = 1000;
@@ -55,7 +37,7 @@ public class EuropeTest {
 	}
     
     @Test
-    public void canNotBuyUnitBecauseOnlyNewWorldTrainable() throws Exception {
+    void canNotBuyUnitBecauseOnlyNewWorldTrainable() throws Exception {
     	// given
     	UnitType tabaccoPlanter = Specification.instance.unitTypes.getById(UnitType.MASTER_TOBACCO_PLANTER);
     	int budget = 10000;
@@ -68,7 +50,7 @@ public class EuropeTest {
     }
     
     @Test
-	public void canRecruitImmigrant() throws Exception {
+	void canRecruitImmigrant() throws Exception {
 		// given
     	int gold = dutch.getGold();
     	int immigrantPrice = dutch.getEurope().getRecruitImmigrantPrice();
@@ -86,7 +68,7 @@ public class EuropeTest {
 	}
     
     @Test
-	public void canTrain() throws Exception {
+	void canTrain() throws Exception {
 		// given
     	int gold = dutch.getGold();
     	UnitType furTrader = Specification.instance.unitTypes.getById(UnitType.MASTER_FUR_TRADER);
@@ -100,5 +82,25 @@ public class EuropeTest {
 			.isAtLocation(dutch.getEurope());
 		
 		assertThat(dutch.getGold()).isEqualTo(gold - furTrader.getPrice());
+	}
+
+	@Test
+	void shouldIncreasePriceAfterBuyImmigrant() {
+		// given
+		Player player = spain;
+		player.addGold(10000);
+
+		int priceBeforePurchase = player.getEurope().getRecruitImmigrantPrice();
+
+		// when
+		player.getEurope().buyImmigrant(unitType(UnitType.FREE_COLONIST), 100);
+		player.getEurope().buyImmigrant(unitType(UnitType.FREE_COLONIST), 100);
+		player.getEurope().buyImmigrant(unitType(UnitType.FREE_COLONIST), 100);
+		player.getEurope().buyImmigrant(unitType(UnitType.FREE_COLONIST), 100);
+
+		// then
+		int priceAfterPurchase = player.getEurope().getRecruitImmigrantPrice();
+		assertThat(priceBeforePurchase).isEqualTo(188);
+		assertThat(priceAfterPurchase).isEqualTo(320);
 	}
 }

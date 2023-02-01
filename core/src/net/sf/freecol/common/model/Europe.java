@@ -111,8 +111,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	int immigrationProduction = owner.getImmigrationProduction();
     	int penalizedImmigration = penalizedImmigration(immigrationProduction);
     	
-    	System.out.println("immigration " + 
-			"playerImmigration: " + owner.getImmigration() + 
+    	System.out.println("player[" + owner.id + "].playerImmigration: " + owner.getImmigration() +
 			", prod: " + immigrationProduction + 
 			", penalized: " + penalizedImmigration +
 			", playerReqImmigration: " + owner.getImmigrationRequired()
@@ -197,7 +196,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	}
 	}
     
-	private Unit emigrate() {
+	public Unit emigrate() {
 		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
 		owner.reduceImmigration();
 		owner.updateImmigrationRequired();
@@ -239,6 +238,9 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		List<WithProbability<UnitType>> recruitProbabilities = new ArrayList<WithProbability<UnitType>>(Specification.instance.unitTypeRecruitProbabilities.size());
 		for (WithProbability<UnitType> recruitProbability : Specification.instance.unitTypeRecruitProbabilities) { 
 			if (owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, recruitProbability.probabilityObject())) {
+				if (aiAdvantageForIgnoreCertainUnitType(recruitProbability.probabilityObject())) {
+					continue;
+				}
 				recruitProbabilities.add(recruitProbability);
 			}
 		}
@@ -248,7 +250,11 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 			recruitables.add(randomOne.probabilityObject());
 		}
 	}
-	
+
+	private boolean aiAdvantageForIgnoreCertainUnitType(UnitType unitType) {
+		return owner.isAi() && (unitType.isType(UnitType.PETTY_CRIMINAL) || unitType.isType(UnitType.INDENTURED_SERVANT));
+	}
+
 	public void replaceNotRecruitableUnits() {
 		for (UnitType unitType : new ArrayList<>(recruitables)) {
 			if (!owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, unitType)) {

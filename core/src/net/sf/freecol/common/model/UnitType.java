@@ -26,7 +26,10 @@ public class UnitType extends BuildableType {
 			return o1.getPrice() - o2.getPrice();
 		}
 	};
-	
+
+	public static final String PETTY_CRIMINAL = "model.unit.pettyCriminal";
+	public static final String INDENTURED_SERVANT = "model.unit.indenturedServant";
+
 	public static final String FREE_COLONIST = "model.unit.freeColonist";
 	public static final String WAGON_TRAIN = "model.unit.wagonTrain";
 	public static final String ARTILLERY = "model.unit.artillery";
