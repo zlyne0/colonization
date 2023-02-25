@@ -22,6 +22,7 @@ import net.sf.freecol.common.model.specification.WithProbability;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
 import net.sf.freecol.common.model.specification.options.UnitOption;
 import promitech.colonization.Randomizer;
+import promitech.colonization.orders.NewTurnLogger;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -200,6 +201,13 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		UnitType emigrateUnitType = Randomizer.instance().randomMember(recruitables);
 		owner.reduceImmigration();
 		owner.updateImmigrationRequired();
+		if (aiAdvantageForIgnoreCertainUnitType(emigrateUnitType)) {
+			recruitables.remove(emigrateUnitType);
+			emigrateUnitType = Specification.instance.freeColonistUnitType;
+		}
+		if (NewTurnLogger.logger.isDebug()) {
+			NewTurnLogger.logger.debug("player[%s].emigrate[%s]", owner.id, emigrateUnitType);
+		}
 		return recruitImmigrant(emigrateUnitType);
 	}
 
@@ -266,7 +274,10 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 	
 	public void emigrantsFountainOfYoung(int colNumber) {
 		List<WithProbability<UnitType>> recruitProbabilities = new ArrayList<WithProbability<UnitType>>(Specification.instance.unitTypeRecruitProbabilities.size());
-		for (WithProbability<UnitType> recruitProbability : Specification.instance.unitTypeRecruitProbabilities) { 
+		for (WithProbability<UnitType> recruitProbability : Specification.instance.unitTypeRecruitProbabilities) {
+			if (aiAdvantageForIgnoreCertainUnitType(recruitProbability.probabilityObject())) {
+				continue;
+			}
 			if (owner.getFeatures().canApplyAbilityToObject(Ability.CAN_RECRUIT_UNIT, recruitProbability.probabilityObject())) {
 				recruitProbabilities.add(recruitProbability);
 			}
