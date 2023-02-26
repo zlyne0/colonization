@@ -7,7 +7,7 @@ import org.junit.jupiter.api.Test;
 class ProductionSummaryTest {
 
 	@Test
-	public void canCalculateMaxGoodsAmountToFillFreeSlots() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots() {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("one", 10);
@@ -21,7 +21,7 @@ class ProductionSummaryTest {
 	}
 
 	@Test
-	public void canCalculateMaxGoodsAmountToFillFreeSlots2() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots2() {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("one", 10);
@@ -35,7 +35,7 @@ class ProductionSummaryTest {
 	}
 
 	@Test
-	public void canCalculateMaxGoodsAmountToFillFreeSlots3() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots3() {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("two", 10);
@@ -48,7 +48,7 @@ class ProductionSummaryTest {
 	}
 
 	@Test
-	public void canCalculateMaxGoodsAmountToFillFreeSlots4() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots4() throws Exception {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("two", 10);
@@ -61,7 +61,7 @@ class ProductionSummaryTest {
 	}
 
 	@Test
-	public void canCalculateMaxGoodsAmountToFillFreeSlots5() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots5() {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("two", 10);
@@ -73,10 +73,51 @@ class ProductionSummaryTest {
 		// then
 		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(100);
 	}
-	
-	
+
 	@Test
-	public void canVerifyHasPartOfGoods() throws Exception {
+	void canCalculateMaxGoodsAmountToFillFreeSlots6() {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 10);
+		sut.addGoods("three", 10);
+
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("two", 2);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(90);
+	}
+
+	@Test
+	void canCalculateMaxGoodsAmountToFillFreeSlots7() {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 110);
+		sut.addGoods("three", 10);
+
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("two", 3);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(90);
+	}
+
+	@Test
+	void canCalculateMaxGoodsAmountToFillFreeSlots8() {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 10);
+		sut.addGoods("three", 10);
+
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("two", 3);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(190);
+	}
+
+	@Test
+	void canVerifyHasPartOfGoods() {
 		// given
 		ProductionSummary sut = new ProductionSummary();
 		sut.addGoods("one", 6);
@@ -94,7 +135,7 @@ class ProductionSummaryTest {
 	}
 	
     @Test
-    public void canVerifyHasPartOfGoodsForSingleGoods() throws Exception {
+	void canVerifyHasPartOfGoodsForSingleGoods() {
         // given
         ProductionSummary sut = new ProductionSummary();
         sut.addGoods("one", 6);
@@ -112,7 +153,7 @@ class ProductionSummaryTest {
     }
 	
 	@Test
-    void canDecreaseToMinZero() throws Exception {
+    void canDecreaseToMinZero() {
         // given
         ProductionSummary sut = new ProductionSummary();
         sut.addGoods("one", 6);

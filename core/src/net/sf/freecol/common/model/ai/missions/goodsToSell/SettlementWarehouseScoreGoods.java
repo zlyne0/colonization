@@ -13,7 +13,9 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import promitech.colonization.ai.score.ObjectScoreList;
 
@@ -62,26 +64,32 @@ class SettlementWarehouseScoreGoods {
 	private final List<SettlementGoods> settlementsGoods;
 	
 	SettlementWarehouseScoreGoods(MapIdEntities<GoodsType> goodsType, Player player) {
-		this(goodsType, player, null, null);
+		this(goodsType, player, null, null, Collections.<String>emptySet());
 	}
 	
-	SettlementWarehouseScoreGoods(MapIdEntities<GoodsType> goodsType, Player player, Map map, PathFinder rangeCalculator) {
+	SettlementWarehouseScoreGoods(
+		MapIdEntities<GoodsType> goodsType,
+		Player player,
+		Map map,
+		PathFinder rangeCalculator,
+		Set<String> excludeSettlementsIds
+	) {
 		this.goodsType = goodsType;
 		this.map = map;
 		this.rangeCalculator = rangeCalculator;
 		this.market = player.market();
 		
-		settlementsGoods = createSettlementsGoods(player);
+		settlementsGoods = createSettlementsGoods(player, excludeSettlementsIds);
 		
 		settlementGoodsScore = new ObjectScoreList<GoodsType>(Specification.instance.goodsTypes.size());
 		settlementsScore = new ObjectScoreList<Settlement>(player.settlements.size());
 	}
 	
-	private List<SettlementGoods> createSettlementsGoods(Player player) {
+	private List<SettlementGoods> createSettlementsGoods(Player player, Set<String> excludeSettlementsIds) {
 		List<SettlementGoods> sGoods = new ArrayList<SettlementGoods>(player.settlements.size());
 		for (Settlement settlement : player.settlements) {
 			// score for transport, can transport only form coastland
-			if (!settlement.isCoastland()) {
+			if (!settlement.isCoastland() || excludeSettlementsIds.contains(settlement.getId())) {
 				continue;
 			}
 			sGoods.add(new SettlementGoods(
@@ -125,14 +133,14 @@ class SettlementWarehouseScoreGoods {
 	private int scoreSettlementGoods(SettlementGoods settlementGoods, Unit carrier) {
 		settlementGoods.score(settlementGoodsScore);
 		
-		int carierGoodsTotalSlots = carrier.freeCargoSlots();
+		int carrierGoodsTotalSlots = carrier.allCargoSlotsAndFreeSlots();
 
 		carrier.getGoodsContainer().cloneTo(tmpCarrierGoodsContainer);
 		int score = 0;
 		
 		for (int i = 0; i < settlementGoodsScore.size(); i++) {
 			GoodsType gt = settlementGoodsScore.get(i).getObj();
-			int maxGoodsForContainer = tmpCarrierGoodsContainer.maxGoodsAmountToFillFreeSlots(gt.getId(), carierGoodsTotalSlots);
+			int maxGoodsForContainer = tmpCarrierGoodsContainer.maxGoodsAmountToFillFreeSlots(gt.getId(), carrierGoodsTotalSlots);
 			int goodsToScore = Math.min(maxGoodsForContainer, settlementGoods.amount(gt));
 			if (goodsToScore > 0) {
 				score += market.getSalePrice(gt, goodsToScore);

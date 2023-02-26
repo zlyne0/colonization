@@ -285,7 +285,15 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     public int freeCargoSlots() {
     	return unitType.getSpace() - getSpaceTaken();
     }
-    
+
+	public int allCargoSlotsAndFreeSlots() {
+		int space = 0;
+		if (unitContainer != null) {
+			space += unitContainer.getSpaceTakenByUnits();
+		}
+		return unitType.getSpace() - space;
+	}
+
     private int getSpaceTaken() {
         int space = 0;
         if (unitContainer != null) {

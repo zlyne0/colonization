@@ -221,26 +221,16 @@ public class ProductionSummary {
         return slots;
     }
     
-    public int maxGoodsAmountToFillFreeSlots(String goodsId, final int freeSlots) {
-    	int fs = freeSlots;
-    	if (fs <= 0) {
-    		return 0;
-    	}
-    	int goodsIdAmount = 0;
+    public int maxGoodsAmountToFillFreeSlots(String goodsId, final int cargoSlots) {
+		int usedCargoSlots = 0;
     	for (Entry<String> gsEntry : goods.entries()) {
-    		if (goodsId.equals(gsEntry.key)) {
-    			goodsIdAmount = gsEntry.value;
-    		} else {
-    			fs -= slotsForQuantity(gsEntry.value);
-    		}
-    		if (fs <= 0) {
-    			return 0;
-    		}
+			usedCargoSlots += slotsForQuantity(gsEntry.value);
     	}
-    	if (fs <= 0) {
-    		return 0;
-    	}
-    	return Math.max(fs * CARRIER_SLOT_MAX_QUANTITY - goodsIdAmount, 0);
+		int goodsIdAmount = goods.get(goodsId, 0);
+		if (goodsIdAmount == 0) {
+			return (cargoSlots - usedCargoSlots) * CARRIER_SLOT_MAX_QUANTITY;
+		}
+		return (cargoSlots - usedCargoSlots) * CARRIER_SLOT_MAX_QUANTITY + (CARRIER_SLOT_MAX_QUANTITY - (goodsIdAmount % CARRIER_SLOT_MAX_QUANTITY));
     }
     
     public boolean hasMoreOrEquals(ProductionSummary base) {

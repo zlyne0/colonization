@@ -10,28 +10,16 @@ open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: In
 
     val objects = ArrayList<T>(capacity)
 
-    private val scorableDescendingComparator = object : Comparator<Scoreable> {
-        override fun compare(p0: Scoreable, p1: Scoreable): Int {
-            return MyInteger.compare(p1.score(), p0.score());
-        }
-    }
-
-    private val scorableAscendingComparator = object : Comparator<Scoreable> {
-        override fun compare(p0: Scoreable, p1: Scoreable): Int {
-            return MyInteger.compare(p0.score(), p1.score());
-        }
-    }
-
     fun add(obj: T) {
         objects.add(obj)
     }
 
     fun sortDescending() {
-        objects.sortWith(scorableDescendingComparator)
+        objects.sortWith(scoreableDescendingComparator)
     }
 
     fun sortAscending() {
-        objects.sortWith(scorableAscendingComparator)
+        objects.sortWith(scoreableAscendingComparator)
     }
 
     override fun iterator(): Iterator<T> {
@@ -65,6 +53,16 @@ open class ScoreableObjectsList<T : ScoreableObjectsList.Scoreable>(capacity: In
         println("size = " + this.objects.size + ", sumScore = " + sumScore())
         for (obj in this.objects) {
             println(obj)
+        }
+    }
+
+    companion object {
+        private val scoreableDescendingComparator = Comparator<Scoreable> { p0, p1 ->
+            MyInteger.compare(p1.score(), p0.score());
+        }
+
+        private val scoreableAscendingComparator = Comparator<Scoreable> { p0, p1 ->
+            MyInteger.compare(p0.score(), p1.score());
         }
     }
 }

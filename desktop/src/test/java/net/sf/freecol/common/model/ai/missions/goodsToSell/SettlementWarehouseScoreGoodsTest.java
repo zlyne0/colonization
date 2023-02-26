@@ -20,6 +20,7 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 
+import java.util.Collections;
 import java.util.function.Predicate;
 
 import promitech.colonization.ai.score.ObjectScoreList;
@@ -130,7 +131,7 @@ class SettlementWarehouseScoreGoodsTest {
 			game.map.getSafeTile(30,68)
 		);
     	PathFinder pathFinder = new PathFinder();
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder, Collections.emptySet());
     	
 		// when
     	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());
@@ -155,7 +156,7 @@ class SettlementWarehouseScoreGoodsTest {
 			game.map.getSafeTile(15, 89)
 		);
     	PathFinder pathFinder = new PathFinder();
-    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder);
+    	SettlementWarehouseScoreGoods sut = new SettlementWarehouseScoreGoods(goodsTypeToScore, dutch, game.map, pathFinder, Collections.emptySet());
     	
 		// when
     	ObjectScoreList<Settlement> settlementsScore = sut.score(galleon, galleon.getTile());

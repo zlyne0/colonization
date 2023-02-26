@@ -13,6 +13,8 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import java.util.Collections;
+
 import promitech.colonization.ai.MissionPlanStatus;
 import promitech.colonization.ai.score.ObjectScoreList;
 
@@ -64,7 +66,7 @@ public class TransportGoodsToSellMissionPlaner {
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
-			goodsTypeToScore, player, game.map, pathFinder
+			goodsTypeToScore, player, game.map, pathFinder, Collections.<String>emptySet()
 		);
 		return singleUnitPlaner(player, scoreGoodsCalculator, navyUnit);
 	}
@@ -98,7 +100,7 @@ public class TransportGoodsToSellMissionPlaner {
 
 	public void determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
-			Specification.instance.goodsTypeToScoreByPrice, player, game.map, pathFinder
+			Specification.instance.goodsTypeToScoreByPrice, player, game.map, pathFinder, mission.getVisitedSettlements()
 		);
 		ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(
 			mission.getTransporter(), 

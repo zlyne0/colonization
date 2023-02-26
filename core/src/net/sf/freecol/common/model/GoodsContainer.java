@@ -186,7 +186,7 @@ public class GoodsContainer {
 	public void cloneTo(GoodsContainer gc) {
 		gc.decreaseAllToZero();
 		goods.cloneTo(gc.goods);
-		updateTakenCargoSlots();
+		gc.updateTakenCargoSlots();
 	}
 	
 	@Override
