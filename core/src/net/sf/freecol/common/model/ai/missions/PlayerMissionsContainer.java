@@ -52,6 +52,12 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		this.player = player;
 	}
 
+	public void addMissionWhenNotAdded(AbstractMission m) {
+		if (!missions.containsId(m)) {
+			addMission(m);
+		}
+	}
+
 	public void addMission(AbstractMission m) {
 		if (logger.isDebug()) {
 			logger.debug("player[%s] add mission[%s] %s", player.getId(), m.getId(), m.toString());

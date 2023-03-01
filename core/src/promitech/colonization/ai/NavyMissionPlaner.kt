@@ -40,7 +40,6 @@ class NavyMissionPlaner {
             )
         )
         if (tum != null) {
-            playerMissionsContainer.addMission(tum)
             return MissionPlanStatus.MISSION_CREATED
         }
         return MissionPlanStatus.NO_MISSION
@@ -83,6 +82,9 @@ class NavyMissionPlaner {
                 tum.addUnitDest(transportRequestMission)
                 transportRequestMission.transportUnitMissionId = tum.id
             }
+        }
+        if (tum != null) {
+            playerMissionContainer.addMissionWhenNotAdded(tum)
         }
         return tum
     }

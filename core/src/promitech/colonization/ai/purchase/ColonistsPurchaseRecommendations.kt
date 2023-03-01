@@ -26,6 +26,7 @@ class ColonistsPurchaseRecommendations(
         for (buyRecommendation in recommendations) {
             if (player.europe.canAiBuyUnit(buyRecommendation.workerType(), player.gold)) {
                 val newUnit = player.europe.buyUnitByAI(buyRecommendation.workerType())
+                logger.debug("player[%s].buyUnit[%s]", player.id, buyRecommendation.workerType())
 
                 val mission = ColonyWorkerMission(buyRecommendation.location, newUnit, buyRecommendation.goodsType)
                 playerMissionContainer.addMission(mission)

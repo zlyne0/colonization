@@ -151,7 +151,6 @@ public class EuropeanMissionPlaner {
 			and(hasNotTransportUnitMission, isAtShipLocation(navyUnit))
 		);
 		if (tum != null) {
-			playerMissionContainer.addMission(tum);
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 
@@ -167,7 +166,6 @@ public class EuropeanMissionPlaner {
 			and(hasNotTransportUnitMission, isFromTileLocation)
 		);
 		if (tum != null) {
-			playerMissionContainer.addMission(tum);
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 
@@ -205,6 +203,12 @@ public class EuropeanMissionPlaner {
 		);
 
 		if (!purchasePlaner.getAvoidPurchasesAndCollectGold()) {
+			tum = navyMissionPlaner.createTransportMissionFromTransportRequest(
+				tum,
+				navyUnit,
+				playerMissionContainer,
+				and(hasNotTransportUnitMission, isFromEurope)
+			);
 			colonyWorkerRequestPlaner.buyUnitsToNavyCapacity(playerMissionContainer.getPlayer(), playerMissionContainer, navyUnit);
 			tum = navyMissionPlaner.createTransportMissionFromTransportRequest(
 				tum,
@@ -215,7 +219,6 @@ public class EuropeanMissionPlaner {
 		}
 
 		if (tum != null) {
-			playerMissionContainer.addMission(tum);
 			return MissionPlanStatus.MISSION_CREATED;
 		}
 		return MissionPlanStatus.NO_MISSION;
@@ -240,6 +243,9 @@ public class EuropeanMissionPlaner {
 					tum.addCargoDest(navyUnit.getOwner(), transportRequestMission);
 				}
 			}
+		}
+		if (tum != null) {
+			playerMissionContainer.addMissionWhenNotAdded(tum);
 		}
 		return tum;
 	}
