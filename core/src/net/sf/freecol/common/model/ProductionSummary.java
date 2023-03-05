@@ -227,7 +227,7 @@ public class ProductionSummary {
 			usedCargoSlots += slotsForQuantity(gsEntry.value);
     	}
 		int goodsIdAmount = goods.get(goodsId, 0);
-		if (goodsIdAmount == 0) {
+		if (goodsIdAmount == 0 || goodsIdAmount % CARRIER_SLOT_MAX_QUANTITY == 0) {
 			return (cargoSlots - usedCargoSlots) * CARRIER_SLOT_MAX_QUANTITY;
 		}
 		return (cargoSlots - usedCargoSlots) * CARRIER_SLOT_MAX_QUANTITY + (CARRIER_SLOT_MAX_QUANTITY - (goodsIdAmount % CARRIER_SLOT_MAX_QUANTITY));

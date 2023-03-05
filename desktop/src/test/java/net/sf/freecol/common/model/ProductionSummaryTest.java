@@ -117,6 +117,20 @@ class ProductionSummaryTest {
 	}
 
 	@Test
+	void canCalculateMaxGoodsAmountToFillFreeSlots9() {
+		// given
+		ProductionSummary sut = new ProductionSummary();
+		sut.addGoods("two", 75);
+		sut.addGoods("three", 100);
+
+		// when
+		int maxGoodsAmountToFillFreeSlots = sut.maxGoodsAmountToFillFreeSlots("three", 2);
+
+		// then
+		assertThat(maxGoodsAmountToFillFreeSlots).isEqualTo(0);
+	}
+
+	@Test
 	void canVerifyHasPartOfGoods() {
 		// given
 		ProductionSummary sut = new ProductionSummary();

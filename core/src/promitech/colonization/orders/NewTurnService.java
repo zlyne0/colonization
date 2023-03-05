@@ -262,7 +262,9 @@ public class NewTurnService {
 			}
 
 			for (Settlement settlement : neighbouringSettlements) {
-				settlement.asColony().updateProductionToMaxPossible(improvingTile);
+				if (settlement.isColony()) {
+					settlement.asColony().updateProductionToMaxPossible(improvingTile);
+				}
 			}
 			
 			for (Unit u : improvingTile.getUnits().entities()) {
