@@ -515,11 +515,13 @@ public class Colony extends Settlement {
 	}
 
 	public void updateProductionToMaxPossible(Tile tile) {
-		for (ColonyTile colonyTile : colonyTiles) {
-			if (colonyTile.equalsId(tile)) {
-				colonyTile.updateProductionAfterTileImprovement();
-				updateModelOnWorkerAllocationOrGoodsTransfer();
-				break;
+		if (tile.isOwnBySettlement(this)) {
+			for (ColonyTile colonyTile : colonyTiles) {
+				if (colonyTile.equalsId(tile)) {
+					colonyTile.updateProductionAfterTileImprovement();
+					updateModelOnWorkerAllocationOrGoodsTransfer();
+					break;
+				}
 			}
 		}
 	}
@@ -1093,6 +1095,13 @@ public class Colony extends Settlement {
 					}
 				} 
 			}
+		}
+		return false;
+	}
+
+	public boolean isTileOwner(Tile tile) {
+		if (tile.getOwningSettlementId() != null) {
+			return getId().equals(tile.getOwningSettlementId());
 		}
 		return false;
 	}
