@@ -41,7 +41,7 @@ class MultipleWorkerRequestScoreValue(
         if (location.hasSettlement()) {
             settlementName = location.settlement.name
         }
-        return "${score}, ${workerType} (${goodsType} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName, [range: $range]"
+        return "${score}, ${workerType} (${goodsType}:${productionAmount} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName, [range: $range]"
     }
 
     override fun toString(): String {
@@ -80,7 +80,7 @@ class SingleWorkerRequestScoreValue(
         if (location.hasSettlement()) {
             settlementName = location.settlement.name
         }
-        return "${score}, ${workerType} (${goodsType} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName, [range: $range]"
+        return "${score}, ${workerType} (${goodsType}:${productionAmount} $unitPrice / ${productionValue}), [${location.x},${location.y}] $settlementName, [range: $range]"
     }
 
     override fun toString(): String {
