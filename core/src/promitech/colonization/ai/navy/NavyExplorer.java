@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package promitech.colonization.ai.navy;
 
 import com.badlogic.gdx.utils.IntArray;
 

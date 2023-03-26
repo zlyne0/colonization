@@ -1,4 +1,4 @@
-package promitech.colonization.ai;
+package promitech.colonization.ai.navy;
 
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Tile;
@@ -6,7 +6,9 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
+
 import promitech.colonization.Direction;
+import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
 

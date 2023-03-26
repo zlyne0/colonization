@@ -49,7 +49,7 @@ import promitech.colonization.ai.ColonyProductionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.MissionPlaner
-import promitech.colonization.ai.NavyExplorer
+import promitech.colonization.ai.navy.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
