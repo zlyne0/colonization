@@ -1,5 +1,6 @@
 package promitech.colonization.screen.ui;
 
+import com.badlogic.gdx.graphics.Color;
 import com.badlogic.gdx.graphics.g2d.Batch;
 import com.badlogic.gdx.graphics.g2d.BitmapFont;
 import com.badlogic.gdx.graphics.g2d.Sprite;
@@ -117,6 +118,7 @@ public class FrameWithCornersDrawableSkin extends BaseDrawable {
 		}
 		
 		if (title != null) {
+			titleFont.setColor(Color.BLACK);
 			titleFont.draw(batch, title, 
 				x + leftTop.getWidth() + TITLE_INTENT, 
 				y + height + (titleFont.getXHeight()/2f) - titleDy
