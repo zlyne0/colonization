@@ -19,7 +19,8 @@ import net.sf.freecol.common.util.Predicate
 import net.sf.freecol.common.util.PredicateUtil.and
 import promitech.colonization.ai.navy.PlanNavyUnitContext
 import promitech.colonization.ai.navy.scenario1
-import promitech.colonization.ai.navy.scenario1TransportFromEurope
+import promitech.colonization.ai.navy.scenarioPriorityTransportFromTile
+import promitech.colonization.ai.navy.scenarioTransportFromEurope
 import promitech.colonization.ai.purchase.PurchasePlaner
 
 class NavyMissionPlaner(
@@ -35,7 +36,11 @@ class NavyMissionPlaner(
             val navyUnit = navyUnits.removeFirst()
             val context = PlanNavyUnitContext(navyUnit, playerMissionsContainer)
 
-            scenario1(context)
+            if (navyUnits.size % 2 == 0) {
+                scenario1(context)
+            } else {
+                scenarioPriorityTransportFromTile(context)
+            }
         }
     }
 
@@ -46,7 +51,7 @@ class NavyMissionPlaner(
 
     fun transportFromEurope(navyUnit: Unit, playerMissionsContainer: PlayerMissionsContainer) {
         val context = PlanNavyUnitContext(navyUnit, playerMissionsContainer)
-        scenario1TransportFromEurope(context)
+        scenarioTransportFromEurope(context)
     }
 
     internal fun avoidPurchasesAndCollectGold() = purchasePlaner.avoidPurchasesAndCollectGold

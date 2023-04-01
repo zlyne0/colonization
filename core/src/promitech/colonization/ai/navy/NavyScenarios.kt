@@ -5,18 +5,34 @@ import promitech.colonization.ai.NavyMissionPlaner
 
 internal fun NavyMissionPlaner.scenario1(context: PlanNavyUnitContext) {
     if (context.unit.isAtEuropeLocation) {
-        scenario1TransportFromEurope(context)
+        scenarioTransportFromEurope(context)
             .whenNoMission { scenario1TransportNotDependLocation(context) }
     }
     if (context.unit.isAtTileLocation) {
         transportPioneerFromTileToTile(context)
             .whenNoMission { scenario1TransportNotDependLocation(context) }
-            .whenNoMission { scenario1TransportFromEurope(context) }
+            .whenNoMission { scenarioTransportFromEurope(context) }
             .whenNoMission { prepareExploreMissions(context) }
     }
 }
 
-internal fun NavyMissionPlaner.scenario1TransportFromEurope(context: PlanNavyUnitContext): MissionPlanStatus {
+internal fun NavyMissionPlaner.scenarioPriorityTransportFromTile(context: PlanNavyUnitContext) {
+    if (context.unit.isAtEuropeLocation) {
+        scenarioTransportFromEurope(context)
+            .whenNoMission { scenario1TransportNotDependLocation(context) }
+    }
+    if (context.unit.isAtTileLocation) {
+        transportPioneerFromTileToTile(context)
+            .whenNoMission { createTransportMissionFromTransportRequestFromSourceTileLocation(context) }
+            .whenNoMission { createTransportMissionFromAtShipLocation(context) }
+            .whenNoMission { transportGoodsToSell(context) }
+            .whenNoMission { planSellGoodsToBuyUnit(context) }
+            .whenNoMission { scenarioTransportFromEurope(context) }
+            .whenNoMission { prepareExploreMissions(context) }
+    }
+}
+
+internal fun NavyMissionPlaner.scenarioTransportFromEurope(context: PlanNavyUnitContext): MissionPlanStatus {
     transportMissionFromBoughtRequestGoodsMission(context)
     createTransportFromScoutMission(context)
     createTransportFromPioneerMission(context)
