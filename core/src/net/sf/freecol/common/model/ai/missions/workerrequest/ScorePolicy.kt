@@ -6,7 +6,7 @@ import promitech.colonization.ai.score.ScoreableObjectsList
 /*
 Two policies.
 One policy worker price to production value(gold). Used when looking for worker to buy to produce something.
-Secound policy, worker production value(gold). Used when has worker and looking for place to work.
+Second policy, worker production value(gold). Used when has worker and looking for place to work.
  */
 interface ScorePolicy {
 
@@ -36,20 +36,28 @@ interface ScorePolicy {
         override fun scoreMultiple(obj: MultipleWorkerRequestScoreValue) {
             var unitPriceSum = 0
             var productionValueSum = 0
+            var smallColonyModifier = 0
             val range = entryPointTurnRange.trunsCost(obj.location)
 
             for (workerScore in obj.workersScores) {
                 unitPriceSum += player.europe.aiUnitPrice(workerScore.workerType)
                 productionValueSum += workerScore.productionValue
+                if (smallColonyDisadvantageForFirstFoodProduction(obj, productionValueSum)) {
+                    smallColonyModifier = 10
+                }
                 if (workerScore.productionValue != 0) {
                     break
                 }
             }
             if (productionValueSum != 0) {
-                obj.score = (unitPriceSum / productionValueSum) + range * 2
+                obj.score = (unitPriceSum / productionValueSum) + range * 2 + smallColonyModifier
             } else {
                 obj.score = 10000
             }
+        }
+
+        private fun smallColonyDisadvantageForFirstFoodProduction(obj: MultipleWorkerRequestScoreValue, productionValueSum: Int): Boolean {
+            return obj.location.hasSettlement() && obj.location.settlement.units.size() <= 3 && productionValueSum == 0
         }
     }
 
