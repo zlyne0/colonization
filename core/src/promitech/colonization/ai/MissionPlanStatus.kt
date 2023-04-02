@@ -8,6 +8,6 @@ enum class MissionPlanStatus {
         if (this == NO_MISSION) {
             return action()
         }
-        return NO_MISSION
+        return MISSION_CREATED
     }
 }
