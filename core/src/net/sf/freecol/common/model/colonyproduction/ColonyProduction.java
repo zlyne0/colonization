@@ -151,4 +151,10 @@ public class ColonyProduction {
 		Validation.notNull(productionConsumption, "can not find producer/consumer by id: " + location.productionLocationId());
 		return productionConsumption;
 	}
+
+	public boolean isNegativeProductionBonus() {
+		update();
+		return colonyProductionBonus.asInt() < 0;
+	}
+
 }

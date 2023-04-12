@@ -62,13 +62,13 @@ class ColonyWorkerReqScore {
 		while (reqUnits.size() < MAX_UNITS_TYPES) {
 			if (!colonyProduction.canSustainNewWorker()) {
 				SingleWorkerRequestScoreValue scoreValue = tryFindFoodProducer(unitTypeByGoodsTypePolicy);
-				if (scoreValue == null) {
+				if (scoreValue == null || colonyProduction.isNegativeProductionBonus()) {
 					break;
 				}
 				reqUnits.add(scoreValue);
 			} else {
 				SingleWorkerRequestScoreValue scoreValue = tryFindMaxValuableProducer(unitTypeByGoodsTypePolicy);
-				if (scoreValue == null) {
+				if (scoreValue == null || colonyProduction.isNegativeProductionBonus()) {
 					break;
 				}
 				reqUnits.add(scoreValue);
