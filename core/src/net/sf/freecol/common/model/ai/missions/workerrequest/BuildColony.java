@@ -149,6 +149,7 @@ class BuildColony {
 		public double stealLand;
 		
 		public double nearby;
+		public int nearbySettlementCount;
 		public double europe;
 		public double prod;
 		public double adjacent;
@@ -166,6 +167,7 @@ class BuildColony {
 			override = 1;
 			stealLand = 1;
 			nearby = 1;
+			nearbySettlementCount = 0;
 			europe = 1;
 			prod = 1;
 			adjacent = 1;
@@ -386,6 +388,9 @@ class BuildColony {
 			while (spiralIterator.hasNext()) {
 				Tile nTile = map.getSafeTile(spiralIterator.getX(), spiralIterator.getY());
 				if (nTile.hasSettlement()) {
+					if (radius == 2) {
+						values.nearbySettlementCount++;
+					}
 					if (nTile.getSettlement().getOwner().equalsId(player)) {
 						if (!supportingColony) {
 							supportingColony = true;
@@ -407,6 +412,9 @@ class BuildColony {
 				}
 				spiralIterator.next();
 			}
+		}
+		if (values.nearbySettlementCount >= 2) {
+			values.nearby = 0;
 		}
 	}
 	
