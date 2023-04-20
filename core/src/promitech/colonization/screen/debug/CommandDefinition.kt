@@ -220,27 +220,21 @@ fun createCommands(
 				val colony = colonyApplicationScreen.getColony()
 				colony.updateProductionToMaxPossible(colony.tile)
 
-				val plan = Array<ColonyPlan.Plan>(args.size - 1) { index ->
-					ColonyPlan.Plan.valueByName(args[index+1])
-				}
+				val productionProfile = ColonyPlan.ProductionProfile.byName(args[1])
 
 				ColonyPlan(colonyApplicationScreen.colony)
-					.withConsumeWarehouseResources(true)
 					.withIgnoreIndianOwner()
+					.withConsumeWarehouseResources(true)
 					.withMinimumProductionLimit(2)
-					.execute(*plan)
+					.executeMaximizationProduction(productionProfile)
 					.allocateWorkers()
 
 				colonyApplicationScreen.initColony(colony)
 			}
 		}.addParams {
 			listOf<String>(
-				"food",
-				"bell",
-				"building",
 				"mostvaluable",
-				"tools",
-				"muskets"
+				"building",
 			)
 		}
 

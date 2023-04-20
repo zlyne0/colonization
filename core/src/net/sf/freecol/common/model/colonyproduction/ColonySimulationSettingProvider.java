@@ -109,6 +109,14 @@ public class ColonySimulationSettingProvider implements ColonySettingProvider {
         defaultColonySettingProvider.addWorker(buildingType, workerType);
     }
 
+    public void removeWorker(Tile colonyTile) {
+        defaultColonySettingProvider.removeWorker(colonyTile);
+    }
+
+    public void removeWorker(BuildingType buildingType, Unit worker) {
+        defaultColonySettingProvider.removeWorker(buildingType, worker);
+    }
+
     public ColonySimulationSettingProvider withConsumeWarehouseResources() {
         this.consumeWarehouseResources = true;
         return this;

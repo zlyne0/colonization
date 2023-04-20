@@ -120,6 +120,11 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         buildingProduction.addWorker(workerType, workers);
     }
 
+    void removeWorker(BuildingType buildingType, Unit worker) {
+        BuildingProduction buildingProduction = buildingProduction(buildingType);
+        buildingProduction.removeWorker(worker);
+    }
+
     void addWorker(BuildingType buildingType, Unit worker) {
         BuildingProduction buildingProduction = buildingProduction(buildingType);
         buildingProduction.addWorker(worker, workers);
@@ -135,6 +140,11 @@ public class DefaultColonySettingProvider implements ColonySettingProvider {
         ColonyTileProduction tileProd = colonyTileProduction(tile);
         tileProd.init(production, worker);
         tileProd.sumWorkers(workers);
+    }
+
+    void removeWorker(Tile tile) {
+        ColonyTileProduction tileProd = colonyTileProduction(tile);
+        tileProd.clearWorkersAllocation();
     }
 
     void clearWorkersAllocation() {

@@ -287,6 +287,10 @@ public class UnitType extends BuildableType {
         return maximumExperience;
     }
 
+	public boolean isExpert() {
+		return maximumExperience == 0;
+	}
+
 	public int getPrice() {
 		return price;
 	}

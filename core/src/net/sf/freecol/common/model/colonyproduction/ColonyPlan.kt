@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan.AssignWorkerToProductionPriorityResult.Assigned
+import net.sf.freecol.common.model.colonyproduction.ColonyPlan.AssignWorkerToProductionPriorityResult.NegativeProductionBonus
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan.AssignWorkerToProductionPriorityResult.LackOfIngredients
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan.AssignWorkerToProductionPriorityResult.LackOfLocations
 import net.sf.freecol.common.model.player.Market
@@ -83,78 +84,6 @@ class GoodsMaxProductionLocationWithUnit {
 }
 
 
-class AvailableWorkers(initWorkers: Collection<Unit>) {
-    private val availableWorkers = mutableListOf<Unit>()
-
-    init {
-        availableWorkers.addAll(initWorkers)
-    }
-
-    fun theBestCandidateForProduction(goodsType: GoodsType) : Unit {
-        if (availableWorkers.isEmpty()) {
-            throw IllegalArgumentException("no available workers")
-        }
-        val workerProdCal: (Unit) -> Float = { unit ->
-            unit.unitType.applyModifier(goodsType.id, 10f)
-        }
-        return theBest(availableWorkers, workerProdCal)
-    }
-
-    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, withoutUnit: Unit): Unit {
-        if (availableWorkers.isEmpty()) {
-            throw IllegalArgumentException("no available workers")
-        }
-        val workerProdCal: (Unit) -> Float = { unit ->
-            var workerProd = 0f
-            for (goodsType in goodsTypes) {
-                workerProd += unit.unitType.applyModifier(goodsType.id, 10f)
-            }
-            workerProd
-        }
-        return theBest(availableWorkers.minusElement(withoutUnit), workerProdCal)
-    }
-
-    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>) : Unit {
-        if (availableWorkers.isEmpty()) {
-            throw IllegalArgumentException("no available workers")
-        }
-
-        val workerProdCal: (Unit) -> Float = { unit ->
-            var workerProd = 0f
-            for (goodsType in goodsTypes) {
-                workerProd += unit.unitType.applyModifier(goodsType.id, 10f)
-            }
-            workerProd
-        }
-        return theBest(availableWorkers, workerProdCal)
-    }
-
-    private fun theBest(units: List<Unit>, workerProdCal: (unit: Unit) -> Float): Unit {
-        lateinit var theBestUnit: Unit
-        var theBestUnitProd: Float = -100f
-        for (availableWorker in units) {
-            val workerProd = workerProdCal.invoke(availableWorker)
-            if (workerProd > theBestUnitProd) {
-                theBestUnit = availableWorker
-                theBestUnitProd = workerProd
-            }
-        }
-        return theBestUnit
-    }
-
-    fun size() = availableWorkers.size
-    fun isNotEmpty() = availableWorkers.isNotEmpty()
-    fun isEmpty() = availableWorkers.isEmpty()
-
-    fun remove(unit: Unit) {
-        availableWorkers.remove(unit)
-    }
-
-    fun without(excludeUnit: Unit): AvailableWorkers {
-        return AvailableWorkers(availableWorkers.minusElement(excludeUnit))
-    }
-}
-
 class ColonyPlan(val colony: Colony) {
 
     class PlanSequence(private val planList: List<Plan>) {
@@ -188,10 +117,18 @@ class ColonyPlan(val colony: Colony) {
         fun hasNextPlan(): Boolean = nextPlanIndex < planList.size
     }
 
-    class ProductionProfile(val name: String, val plan: PlanSequence) {
+    class ProductionProfile(val name: String, val plans: List<Plan>) {
         companion object {
-            val MostValuable = ProductionProfile("MostValuable", PlanSequence(listOf(Plan.MostValuable, Plan.Bell, Plan.Food)))
-            val Building = ProductionProfile("Building", PlanSequence(listOf(Plan.Building, Plan.Bell, Plan.Food)))
+            val MostValuable = ProductionProfile("MostValuable", listOf(Plan.MostValuable, Plan.Bell, Plan.Food))
+            val Building = ProductionProfile("Building", listOf(Plan.Building, Plan.Bell, Plan.Food))
+
+            val all = listOf(MostValuable, Building)
+
+            fun byName(name: String): ProductionProfile {
+                return all.asSequence()
+                    .filter { profile -> profile.name.lowercase().equals(name.lowercase()) }
+                    .first()
+            }
         }
 
         override fun toString(): String {
@@ -254,7 +191,8 @@ class ColonyPlan(val colony: Colony) {
     enum class AssignWorkerToProductionPriorityResult {
         LackOfIngredients,
         LackOfLocations,
-        Assigned
+        Assigned,
+        NegativeProductionBonus
     }
 
     private val prod = GoodsCollection()
@@ -290,7 +228,7 @@ class ColonyPlan(val colony: Colony) {
     }
 
     fun executeMaximizationProduction(productionProfile: ProductionProfile): ColonyPlan {
-        createMaximizationProductionAllocationPlan(productionProfile.plan)
+        createMaximizationProductionAllocationPlan(PlanSequence(productionProfile.plans))
         return this
     }
 
@@ -304,7 +242,7 @@ class ColonyPlan(val colony: Colony) {
     fun execute2(productionProfile: ProductionProfile): ColonyPlan {
         colonySimulationSettingProvider.clearWorkersAllocation()
         colonyProduction.updateRequest()
-        createMaximizationProductionAllocationPlan(productionProfile.plan)
+        createMaximizationProductionAllocationPlan(PlanSequence(productionProfile.plans))
         return this
     }
 
@@ -317,7 +255,7 @@ class ColonyPlan(val colony: Colony) {
      * plan list means that assign one colonist per plan
      */
     private fun createBalancedProductionAllocationPlan(planSequence: PlanSequence) {
-        val availableWorkers = AvailableWorkers(colony.settlementWorkers())
+        val availableWorkers = AvailableWorkers.createFrom(colony)
         val productionPriority = LinkedList<List<GoodsType>>()
         var actualPlan = planSequence.first()
 
@@ -328,6 +266,9 @@ class ColonyPlan(val colony: Colony) {
             }
 
             val assignResult = assignWorkerToProductionPriority(productionPriority, availableWorkers, actualPlan)
+            if (assignResult == NegativeProductionBonus) {
+                return
+            }
             if (assignResult == Assigned) {
                 infiniteLoopProtection = 0
             } else {
@@ -340,7 +281,8 @@ class ColonyPlan(val colony: Colony) {
      * take plan and assign to them colonist to end of place or resources
      */
     private fun createMaximizationProductionAllocationPlan(planSequence: PlanSequence) {
-        val availableWorkers = AvailableWorkers(colony.settlementWorkers())
+        val availableWorkers = AvailableWorkers.createFrom(colony)
+
         val productionPriority = LinkedList<List<GoodsType>>()
         var actualPlan = planSequence.first()
 
@@ -366,6 +308,7 @@ class ColonyPlan(val colony: Colony) {
                         return
                     }
                 }
+                NegativeProductionBonus -> return
             }
         }
     }
@@ -401,6 +344,10 @@ class ColonyPlan(val colony: Colony) {
 
         if (colonyProduction.canSustainNewWorker(candidate.unitType, productionLocation.goodsType, productionLocation.production)) {
             addWorkerToProductionLocation(candidate, productionLocation, availableWorkers)
+            if (colonyProduction.isNegativeProductionBonus()) {
+                removeWorkerFromProductionLocation(candidate, productionLocation, availableWorkers)
+                return NegativeProductionBonus
+            }
             return Assigned
         } else {
             productionPriority.add(foodPlan.goodsTypes)
@@ -558,6 +505,17 @@ class ColonyPlan(val colony: Colony) {
         }
         if (productionLocation.buildingType != null) {
             colonySimulationSettingProvider.addWorker(productionLocation.buildingType, worker)
+        }
+        colonyProduction.updateRequest()
+    }
+
+    private fun removeWorkerFromProductionLocation(worker: Unit, productionLocation: MaxGoodsProductionLocation, availableWorkers: AvailableWorkers) {
+        availableWorkers.add(worker)
+        if (productionLocation.colonyTile != null) {
+            colonySimulationSettingProvider.removeWorker(productionLocation.colonyTile)
+        }
+        if (productionLocation.buildingType != null) {
+            colonySimulationSettingProvider.removeWorker(productionLocation.buildingType, worker)
         }
         colonyProduction.updateRequest()
     }

@@ -2,6 +2,7 @@ package net.sf.freecol.common.model;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -25,6 +26,22 @@ import promitech.colonization.savegame.XmlNodeParser;
 import promitech.map.isometric.IterableSpiral;
 
 public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
+
+	public static final Comparator<Unit> EXPERTS_LAST_COMPARATOR = new Comparator<Unit>() {
+		@Override
+		public int compare(Unit unit1, Unit unit2) {
+			if (unit1.isExpert() && unit2.isExpert()) {
+				return 0;
+			}
+			if (unit1.isExpert() && !unit2.isExpert()) {
+				return 1;
+			}
+			if (!unit1.isExpert() && unit2.isExpert()) {
+				return -1;
+			}
+			return 0;
+		}
+	};
 
     /** A state a Unit can have. */
     public static enum UnitState {
@@ -697,7 +714,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     }
     
 	public boolean isExpert() {
-		return unitType.getMaximumExperience() == 0;
+		return unitType.isExpert();
 	}
 
 	public void changeRole(UnitRole newUnitRole) {

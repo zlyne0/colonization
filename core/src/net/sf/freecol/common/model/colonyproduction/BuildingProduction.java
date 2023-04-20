@@ -67,6 +67,15 @@ class BuildingProduction implements Identifiable {
 		}
 	}
 
+	public void removeWorker(Unit unit) {
+		for (Worker worker : workers) {
+			if (worker.unit.equalsId(unit)) {
+				workers.remove(worker);
+				break;
+			}
+		}
+	}
+
 	public void removeWorkers() {
 		workers.clear();
 	}

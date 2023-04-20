@@ -233,4 +233,24 @@ class UnitTest {
 			freeColonist
 		);
 	}
+
+	@Test
+	void shouldSortUnitsByExpertType() {
+		// given
+		Player dutch = game.players.getById("player:1");
+		Tile landTile = game.map.getTile(24, 72);
+
+		List<Unit> units = new ArrayList<>();
+		units.add(UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile));
+		units.add(UnitFactory.create(UnitType.EXPERT_FARMER, dutch, landTile));
+		units.add(UnitFactory.create(UnitType.FREE_COLONIST, dutch, landTile));
+
+		// when
+		Collections.sort(units, Unit.EXPERTS_LAST_COMPARATOR);
+
+		// then
+		UnitAssert.assertThat(units.get(0)).isUnitType(UnitType.FREE_COLONIST);
+		UnitAssert.assertThat(units.get(1)).isUnitType(UnitType.FREE_COLONIST);
+		UnitAssert.assertThat(units.get(2)).isUnitType(UnitType.EXPERT_FARMER);
+	}
 }
