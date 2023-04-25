@@ -16,7 +16,6 @@ class AvailableWorkers() {
                 .asSequence()
                 .filter { unit -> unit.state == Unit.UnitState.IN_COLONY }
                 .forEach { unit -> aw.availableWorkers.add(unit) }
-            aw.sortExpertLast()
             return aw
         }
     }
@@ -25,17 +24,17 @@ class AvailableWorkers() {
         availableWorkers.add(unit)
     }
 
-    fun theBestCandidateForProduction(goodsType: GoodsType) : Unit {
+    fun theBestCandidateForProduction(goodsType: GoodsType, colonySettingProvider: ColonySettingProvider): Unit {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
         val workerProdCal: (Unit) -> Float = { unit ->
             unit.unitType.applyModifier(goodsType.id, 10f)
         }
-        return theBest(availableWorkers, workerProdCal)
+        return theBest(availableWorkers, colonySettingProvider, workerProdCal)
     }
 
-    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, withoutUnit: Unit): Unit {
+    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, withoutUnit: Unit, colonySettingProvider: ColonySettingProvider): Unit {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
@@ -46,10 +45,10 @@ class AvailableWorkers() {
             }
             workerProd
         }
-        return theBest(availableWorkers.minusElement(withoutUnit), workerProdCal)
+        return theBest(availableWorkers.minusElement(withoutUnit), colonySettingProvider, workerProdCal)
     }
 
-    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>) : Unit {
+    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, colonySettingProvider: ColonySettingProvider) : Unit {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
@@ -61,26 +60,38 @@ class AvailableWorkers() {
             }
             workerProd
         }
-        return theBest(availableWorkers, workerProdCal)
+        return theBest(availableWorkers, colonySettingProvider, workerProdCal)
     }
 
-    private fun theBest(units: List<Unit>, workerProdCal: (unit: Unit) -> Float): Unit {
+    private fun theBest(units: List<Unit>, colonySettingProvider: ColonySettingProvider, workerProdCal: (unit: Unit) -> Float): Unit {
         lateinit var theBestUnit: Unit
         var theBestUnitProd: Float = -100f
         for (availableWorker in units) {
-            val workerProd = workerProdCal.invoke(availableWorker)
+            val workerProd = workerProdCal(availableWorker)
             if (workerProd > theBestUnitProd) {
                 theBestUnit = availableWorker
                 theBestUnitProd = workerProd
             }
         }
-        return theBestUnit
-    }
 
-    fun sortExpertLast() {
-        // because theBest method take first unit with best production
-        // and to avoid take experts to not their work
-        availableWorkers.sortWith(Unit.EXPERTS_LAST_COMPARATOR)
+        var workerPlaceInColony: Worker? = null
+        for (worker in colonySettingProvider.workers()) {
+            if (worker.unit != null) {
+                val workerProd = workerProdCal(worker.unit)
+                if (workerProd > theBestUnitProd) {
+                    theBestUnit = worker.unit
+                    theBestUnitProd = workerProd
+                    workerPlaceInColony = worker
+                }
+            }
+        }
+        if (workerPlaceInColony != null) {
+            val firstToReplace = availableWorkers.removeFirst()
+            workerPlaceInColony.unit = firstToReplace
+            workerPlaceInColony.unitType = firstToReplace.unitType
+            availableWorkers.add(theBestUnit)
+        }
+        return theBestUnit
     }
 
     fun size() = availableWorkers.size

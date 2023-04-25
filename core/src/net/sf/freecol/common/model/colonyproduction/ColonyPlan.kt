@@ -327,7 +327,7 @@ class ColonyPlan(val colony: Colony) {
         }
 
         val productionGoodsTypes = productionPriority.pop()
-        val candidate = availableWorkers.theBestCandidateForProduction(productionGoodsTypes)
+        val candidate = availableWorkers.theBestCandidateForProduction(productionGoodsTypes, colonySimulationSettingProvider)
 
         if (lackOfIngredients(productionGoodsTypes, candidate.unitType, productionPriority)) {
             // when lack of ingredients modify productionPriority list and try found new worker and location
@@ -379,7 +379,7 @@ class ColonyPlan(val colony: Colony) {
             prod.clear()
             ingredients.clear()
 
-            maxCandidate.reset(goodsType, availableWorkers.theBestCandidateForProduction(goodsType))
+            maxCandidate.reset(goodsType, availableWorkers.theBestCandidateForProduction(goodsType, colonySimulationSettingProvider))
 
             if (goodsType.isFarmed()) {
                 val maxProduction = productionSimulation.determineMaxProduction(goodsType, maxCandidate.worker.unitType, ignoreIndianOwner)
@@ -440,7 +440,7 @@ class ColonyPlan(val colony: Colony) {
                 if (availableWorkers.isEmpty()) {
                     return false
                 }
-                val foodProductionCandidate = availableWorkers.theBestCandidateForProduction(foodPlan.goodsTypes)
+                val foodProductionCandidate = availableWorkers.theBestCandidateForProduction(foodPlan.goodsTypes, colonySimulationSettingProvider)
                 val foodMaxGoodsProduction = productionSimulation.determineMaxProduction(
                     foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
                 )
@@ -457,7 +457,7 @@ class ColonyPlan(val colony: Colony) {
         }
 
         val ingredient = ingredients.first()
-        val worker2 = availableWorkers.theBestCandidateForProduction(ingredient.type())
+        val worker2 = availableWorkers.theBestCandidateForProduction(ingredient.type(), colonySimulationSettingProvider)
         val maxGoodsProduction2 = productionSimulation.determineMaxProduction(
             ingredient.type(), worker2.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
         )
@@ -475,7 +475,7 @@ class ColonyPlan(val colony: Colony) {
             return false
         }
         val availableWorkers2 = availableWorkers.without(worker2)
-        val foodProductionCandidate = availableWorkers2.theBestCandidateForProduction(foodPlan.goodsTypes)
+        val foodProductionCandidate = availableWorkers2.theBestCandidateForProduction(foodPlan.goodsTypes, colonySimulationSettingProvider)
         val foodMaxGoodsProduction = productionSimulation.determineMaxProduction(
             foodPlan.goodsTypes, foodProductionCandidate.unitType, ignoreIndianOwner, maxCandidate.excludeLocationsIds
         )
