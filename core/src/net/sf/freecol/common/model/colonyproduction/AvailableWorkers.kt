@@ -20,6 +20,8 @@ class AvailableWorkers() {
         }
     }
 
+    private val singleGoodsTypeHolder = mutableListOf<GoodsType>()
+
     fun add(unit: Unit) {
         availableWorkers.add(unit)
     }
@@ -28,83 +30,94 @@ class AvailableWorkers() {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
-        val workerProdCal: (Unit) -> Float = { unit ->
-            unit.unitType.applyModifier(goodsType.id, 10f)
-        }
-        return theBest(availableWorkers, colonySettingProvider, workerProdCal)
-    }
-
-    fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, withoutUnit: Unit, colonySettingProvider: ColonySettingProvider): Unit {
-        if (availableWorkers.isEmpty()) {
-            throw IllegalArgumentException("no available workers")
-        }
-        val workerProdCal: (Unit) -> Float = { unit ->
-            var workerProd = 0f
-            for (goodsType in goodsTypes) {
-                workerProd += unit.unitType.applyModifier(goodsType.id, 10f)
-            }
-            workerProd
-        }
-        return theBest(availableWorkers.minusElement(withoutUnit), colonySettingProvider, workerProdCal)
+        singleGoodsTypeHolder.clear()
+        singleGoodsTypeHolder.add(goodsType)
+        return theBest(availableWorkers, colonySettingProvider, singleGoodsTypeHolder)
     }
 
     fun theBestCandidateForProduction(goodsTypes: List<GoodsType>, colonySettingProvider: ColonySettingProvider) : Unit {
         if (availableWorkers.isEmpty()) {
             throw IllegalArgumentException("no available workers")
         }
-
-        val workerProdCal: (Unit) -> Float = { unit ->
-            var workerProd = 0f
-            for (goodsType in goodsTypes) {
-                workerProd += unit.unitType.applyModifier(goodsType.id, 10f)
-            }
-            workerProd
-        }
-        return theBest(availableWorkers, colonySettingProvider, workerProdCal)
+        return theBest(availableWorkers, colonySettingProvider, goodsTypes)
     }
 
-    private fun theBest(units: List<Unit>, colonySettingProvider: ColonySettingProvider, workerProdCal: (unit: Unit) -> Float): Unit {
+    private fun theBest(units: List<Unit>, colonySettingProvider: ColonySettingProvider, goodsTypes: List<GoodsType>): Unit {
         lateinit var theBestUnit: Unit
         var theBestUnitProd: Float = -100f
         for (availableWorker in units) {
-            val workerProd = workerProdCal(availableWorker)
+            val workerProd = workerProdCal(availableWorker, goodsTypes)
             if (workerProd > theBestUnitProd) {
                 theBestUnit = availableWorker
                 theBestUnitProd = workerProd
             }
         }
 
-        var workerPlaceInColony: Worker? = null
-        for (worker in colonySettingProvider.workers()) {
-            if (worker.unit != null) {
-                val workerProd = workerProdCal(worker.unit)
+        for (tile: ColonyTileProduction in colonySettingProvider.tiles()) {
+            if (tile.worker != null && tile.worker.unit != null) {
+                if (tile.isExpertAndWorkingInItsProfession) {
+                    continue
+                }
+                val worker = tile.worker
+                val workerProd = workerProdCal(worker.unit, goodsTypes)
                 if (workerProd > theBestUnitProd) {
                     theBestUnit = worker.unit
                     theBestUnitProd = workerProd
-                    workerPlaceInColony = worker
                 }
             }
         }
-        if (workerPlaceInColony != null) {
-            val firstToReplace = availableWorkers.removeFirst()
-            workerPlaceInColony.unit = firstToReplace
-            workerPlaceInColony.unitType = firstToReplace.unitType
-            availableWorkers.add(theBestUnit)
+
+        for (building: BuildingProduction in colonySettingProvider.buildings()) {
+            for (worker in building.workers) {
+                if (worker.unit != null) {
+                    if (building.isExpertAndWorkingInItsProfession(worker.unit)) {
+                        continue
+                    }
+                    val workerProd = workerProdCal(worker.unit, goodsTypes)
+                    if (workerProd > theBestUnitProd) {
+                        theBestUnit = worker.unit
+                        theBestUnitProd = workerProd
+                    }
+                }
+            }
         }
         return theBestUnit
+    }
+
+    private fun workerProdCal(unit: Unit, goodsTypes: List<GoodsType>): Float {
+        var workerProd = 0f
+        for (goodsType in goodsTypes) {
+            workerProd += unit.unitType.applyModifier(goodsType.id, 10f)
+        }
+        return workerProd
     }
 
     fun size() = availableWorkers.size
     fun isNotEmpty() = availableWorkers.isNotEmpty()
     fun isEmpty() = availableWorkers.isEmpty()
 
-    fun remove(unit: Unit) {
-        availableWorkers.remove(unit)
+    fun remove(unit: Unit, colonySettingProvider: ColonySettingProvider) {
+        if (availableWorkers.contains(unit)) {
+            availableWorkers.remove(unit)
+        } else {
+            for (worker in colonySettingProvider.workers()) {
+                if (worker.unit != null && worker.unit.equals(unit)) {
+                    val firstVacant = availableWorkers.removeFirst()
+                    worker.unit = firstVacant
+                    worker.unitType = firstVacant.unitType
+                    break
+                }
+            }
+        }
     }
 
     fun without(excludeUnit: Unit): AvailableWorkers {
         val aw = AvailableWorkers()
-        aw.availableWorkers.addAll(this.availableWorkers.minusElement(excludeUnit))
+        for (availableWorker in this.availableWorkers) {
+            if (!availableWorker.equalsId(excludeUnit)) {
+                aw.availableWorkers.add(availableWorker)
+            }
+        }
         return aw
     }
 }

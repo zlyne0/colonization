@@ -27,7 +27,6 @@ import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMissio
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
@@ -49,10 +48,11 @@ import promitech.colonization.ai.ColonyProductionPlaner
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionExecutorDebugRun
 import promitech.colonization.ai.MissionPlaner
-import promitech.colonization.ai.navy.NavyExplorer
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
+import promitech.colonization.ai.navy.NavyExplorer
+import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import promitech.colonization.infrastructure.ThreadsResources
 import promitech.colonization.savegame.SaveGameList
 import promitech.colonization.screen.colony.ColonyApplicationScreen
@@ -283,7 +283,7 @@ fun createCommands(
 					.withMinimumProductionLimit(2)
 					//.execute(ColonyPlan.Plan.Food(), ColonyPlan.Plan.Bell())
 					//.execute(ColonyPlan.Plan.Bell(), ColonyPlan.Plan.Food())
-					.executeMaximizationProduction(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
+					.execute(ColonyPlan.Plan.MostValuable, ColonyPlan.Plan.Bell, ColonyPlan.Plan.Food)
 					.allocateWorkers()
 					//.execute(ColonyPlan.Plan(listOf(GoodsType.BELLS, GoodsType.GRAIN)))
 				colonyApplicationScreen.initColony(colony)
@@ -694,10 +694,32 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //		val scout = player.units.getById("unit:967")
 //		val unitMoveType = UnitMoveType()
 
-		val debugColonyProduction = DebugColonyProduction(di, guiGameModel, tileDebugView, mapActor!!)
+		//val debugColonyProduction = DebugColonyProduction(di, guiGameModel, tileDebugView, mapActor!!)
 		//debugColonyProduction.provideResourcesToFinishAllStartedBuildings(player)
-		debugColonyProduction.displayColoniesBuildingsRecommendations(player)
+		//debugColonyProduction.displayColoniesBuildingsRecommendations(player)
 
+
+		// given
+		val nieuwAmsterdam = game.map.getTile(24, 78).settlement.asColony()
+//		nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+//		nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+//		nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"))
+//		nieuwAmsterdam.updateProductionToMaxPossible(nieuwAmsterdam.tile)
+
+//		nieuwAmsterdam.resetLiberty()
+
+		// given
+
+		// given
+		//nieuwAmsterdam.goodsContainer.clear()
+		nieuwAmsterdam.goodsContainer.increaseGoodsQuantity(GoodsType.COAST, nieuwAmsterdam.warehouseCapacity())
+
+		val colonyPlan = ColonyPlan(nieuwAmsterdam)
+			.withConsumeWarehouseResources(true)
+			.execute(ColonyPlan.Plan.MostValuable)
+			.allocateWorkers()
+
+		// when
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
 		mapActor?.resetUnexploredBorders()

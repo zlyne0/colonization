@@ -23,6 +23,7 @@ public class BuildingType extends BuildableType {
 	public static final String WAREHOUSE_EXPANSION = "model.building.warehouseExpansion";
 	public static final String WEAVER_SHOP = "model.building.weaverShop";
 	public static final String FUR_TRADING_POST = "model.building.furTradingPost";
+	public static final String FUR_TRADER_HOUSE = "model.building.furTraderHouse";
 
     int level = 1;
     int workplaces = 3;

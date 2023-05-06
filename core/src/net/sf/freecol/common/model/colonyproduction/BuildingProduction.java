@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
+import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
@@ -74,6 +76,10 @@ class BuildingProduction implements Identifiable {
 				break;
 			}
 		}
+	}
+
+	public List<Worker> getWorkers() {
+		return workers;
 	}
 
 	public void removeWorkers() {
@@ -274,6 +280,22 @@ class BuildingProduction implements Identifiable {
 		for (Worker worker : workers) {
 			colony.addWorkerToBuilding(buildingType, worker.unit);
 		}
+	}
+
+	public boolean isExpertAndWorkingInItsProfession(@NotNull Unit unit) {
+		if (!unit.isExpert()) {
+			return false;
+		}
+		String expertProductionForGoodsId = unit.unitType.getExpertProductionForGoodsId();
+		if (expertProductionForGoodsId == null) {
+			return false;
+		}
+		for (Production attendedProduction : buildingType.productionInfo.getAttendedProductions()) {
+			if (attendedProduction.isOutputTypesEquals(expertProductionForGoodsId)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

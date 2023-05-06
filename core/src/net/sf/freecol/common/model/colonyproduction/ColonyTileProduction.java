@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 
 import java.util.List;
+import java.util.Map;
 
 class ColonyTileProduction implements Identifiable {
 	
@@ -162,6 +163,26 @@ class ColonyTileProduction implements Identifiable {
 		if (worker != null) {
 			colony.addWorkerToTerrain(tile, worker.unit, tileProduction);
 		}
+	}
+
+	public Worker getWorker() {
+		return worker;
+	}
+
+	public boolean isExpertAndWorkingInItsProfession() {
+		if (worker == null || worker.unit == null || !worker.unit.isExpert()) {
+			return false;
+		}
+		String workerExpertGoodsTypeId = worker.unit.unitType.getExpertProductionForGoodsId();
+		if (workerExpertGoodsTypeId == null) {
+			return false;
+		}
+		for (Map.Entry<GoodsType, Integer> outputEntry : tileProduction.outputEntries()) {
+			if (outputEntry.getKey().equalsId(workerExpertGoodsTypeId)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override

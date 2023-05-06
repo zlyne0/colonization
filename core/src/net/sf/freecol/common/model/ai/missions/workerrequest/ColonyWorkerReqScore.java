@@ -23,6 +23,7 @@ class ColonyWorkerReqScore {
 	private final Market market;
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
+	private boolean allowNegativeProductionBonus = false;
 	
 	private Colony colony;
 	private ColonyProduction colonyProduction;
@@ -62,13 +63,13 @@ class ColonyWorkerReqScore {
 		while (reqUnits.size() < MAX_UNITS_TYPES) {
 			if (!colonyProduction.canSustainNewWorker()) {
 				SingleWorkerRequestScoreValue scoreValue = tryFindFoodProducer(unitTypeByGoodsTypePolicy);
-				if (scoreValue == null || colonyProduction.isNegativeProductionBonus()) {
+				if (scoreValue == null || (!allowNegativeProductionBonus && colonyProduction.isNegativeProductionBonus())) {
 					break;
 				}
 				reqUnits.add(scoreValue);
 			} else {
 				SingleWorkerRequestScoreValue scoreValue = tryFindMaxValuableProducer(unitTypeByGoodsTypePolicy);
-				if (scoreValue == null || colonyProduction.isNegativeProductionBonus()) {
+				if (scoreValue == null || (!allowNegativeProductionBonus && colonyProduction.isNegativeProductionBonus())) {
 					break;
 				}
 				reqUnits.add(scoreValue);
@@ -159,6 +160,11 @@ class ColonyWorkerReqScore {
 
 	public ColonyWorkerReqScore withConsumeWarehouseResources() {
 		this.consumeWarehouseResources = true;
+		return this;
+	}
+
+	public ColonyWorkerReqScore withAllowNegativeProductionBonus() {
+		this.allowNegativeProductionBonus = true;
 		return this;
 	}
 }

@@ -1,14 +1,12 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.UnitType
-import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
+import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq
 import net.sf.freecol.common.model.map.path.PathFinder
 import org.junit.jupiter.api.Test
+import promitech.colonization.ai.findCarrier
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
-
-import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq
-import promitech.colonization.ai.findCarrier
 
 class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
 
@@ -32,8 +30,8 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
         ScoreableObjectsListAssert.assertThat(scores)
             .hasScore(0, 4, eq(game.map.getSafeTile(27, 74), UnitType.EXPERT_FUR_TRAPPER))
             .hasScore(1, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
-            .hasScore(2, 20, eq(nieuwAmsterdam.tile, UnitType.FREE_COLONIST))
-            .hasScore(3, 23, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
-            .hasScore(4, 25, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
+            .hasScore(2, 23, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
+            .hasScore(3, 25, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
+            .hasScore(4, 25, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
     }
 }

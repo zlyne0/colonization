@@ -218,11 +218,6 @@ class ColonyPlan(val colony: Colony) {
     }
 
     fun execute(vararg plan: Plan): ColonyPlan {
-        createBalancedProductionAllocationPlan(PlanSequence(plan.asList()))
-        return this
-    }
-
-    fun executeMaximizationProduction(vararg plan: Plan): ColonyPlan {
         createMaximizationProductionAllocationPlan(PlanSequence(plan.asList()))
         return this
     }
@@ -488,7 +483,7 @@ class ColonyPlan(val colony: Colony) {
     }
 
     private fun addWorkerToProductionLocation(worker: Unit, productionLocation: GoodsMaxProductionLocationWithUnit, availableWorkers: AvailableWorkers) {
-        availableWorkers.remove(worker)
+        availableWorkers.remove(worker, colonySimulationSettingProvider)
         if (productionLocation.colonyTile != null) {
             colonySimulationSettingProvider.addWorker(productionLocation.colonyTile, worker, productionLocation.production)
         }
@@ -499,7 +494,7 @@ class ColonyPlan(val colony: Colony) {
     }
 
     private fun addWorkerToProductionLocation(worker: Unit, productionLocation: MaxGoodsProductionLocation, availableWorkers: AvailableWorkers) {
-        availableWorkers.remove(worker)
+        availableWorkers.remove(worker, colonySimulationSettingProvider)
         if (productionLocation.colonyTile != null) {
             colonySimulationSettingProvider.addWorker(productionLocation.colonyTile, worker, productionLocation.tileTypeInitProduction)
         }

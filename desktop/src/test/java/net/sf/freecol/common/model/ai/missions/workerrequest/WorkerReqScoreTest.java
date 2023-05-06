@@ -36,6 +36,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.withAllowNegativeProductionBonus();
 		sut.simulate(fortNassau, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
@@ -65,12 +66,33 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 	}
 
 	@Test
+	void shouldNotGenerateRequiredColonistsWhenNotAllowedNegativeProductionBonus() {
+		// given
+		ColonySnapshot snapshotBefore = new ColonySnapshot(fortNassau);
+
+		// when
+		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.simulate(fortNassau, colonyScore);
+
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		workerProductionValueScorePolicy.calculateScore(colonyScore);
+		colonyScore.prettyPrint();
+
+		// then
+		ScoreableObjectsListAssert.assertThat(colonyScore)
+			.hasSumScore(0)
+			.hasSize(0);
+		assertThat(new ColonySnapshot(fortNassau)).isEqualTo(snapshotBefore);
+	}
+
+	@Test
 	void canGenerateRequiredColonistsNieuwAmsterdam() throws Exception {
 		// given
 		ColonySnapshot snapshotBefore = new ColonySnapshot(nieuwAmsterdam);
 
 		// when
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
+		sut.withAllowNegativeProductionBonus();
 		sut.simulate(nieuwAmsterdam, colonyScore);
 
 		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);

@@ -11,7 +11,7 @@ import java.util.function.Function
 class ColonyProductionPlanerTest : Savegame1600BaseClass() {
 
     @Test
-    fun `should generete building recomendation and calculate profit`() {
+    fun `should generate building recommendation and calculate profit`() {
         // given
         val player = dutch
         val colonyProductionPlaner = ColonyProductionPlaner(player)
@@ -34,7 +34,7 @@ class ColonyProductionPlanerTest : Savegame1600BaseClass() {
         with(settlementsBuildingValue.get(2)) {
             assertThat(colony.equalsId(fortNassau))
             assertThat(buildingTypeScore!!.buildingType.equalsId(BuildingType.FUR_TRADING_POST))
-            assertThat(buildingTypeScore!!.profit).isEqualTo(66)
+            assertThat(buildingTypeScore!!.profit).isEqualTo(81)
         }
         with(settlementsBuildingValue.get(3)) {
             assertThat(colony.equalsId(fortMaurits))

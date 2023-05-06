@@ -22,6 +22,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
+import promitech.colonization.Direction;
 import promitech.colonization.savegame.Savegame1600BaseClass;
 import promitech.map.isometric.NeighbourIterableTile;
 
@@ -300,8 +301,9 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		addForestOnColonyCenterTile();
 		nieuwAmsterdam.resetLiberty();
 
-		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-		colonyPlan.withConsumeWarehouseResources(false);
+		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam)
+			.withConsumeWarehouseResources(false)
+		;
 
 		// when
 		colonyPlan.execute(ColonyPlan.Plan.MostValuable).allocateWorkers();
@@ -309,9 +311,9 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)
 			.hasSize(6)
-			.hasWorkerInBuildingType("model.building.furTraderHouse", "model.unit.masterFurTrader")
-			.hasWorkerInBuildingType("model.building.furTraderHouse", 3)
-			.hasWorkerInLocation("tile:3352", "model.unit.expertFurTrapper")
+			.hasWorkerInBuildingType(BuildingType.FUR_TRADER_HOUSE, UnitType.MASTER_FUR_TRADER)
+			.hasWorkerInBuildingType(BuildingType.FUR_TRADER_HOUSE, 3)
+			.hasWorkerInLocation(tileFrom(nieuwAmsterdam, Direction.NE).id, UnitType.EXPERT_FUR_TRAPPER)
 			.produce("model.goods.coats", 12)
 			.produce("model.goods.furs", 2)
 			.produce("model.goods.food", 0)
@@ -354,12 +356,12 @@ class ColonyPlanTest extends Savegame1600BaseClass {
 		// given
 		nieuwAmsterdam.getGoodsContainer().increaseGoodsQuantity(GoodsType.COAST, nieuwAmsterdam.warehouseCapacity());
 
-		ColonyPlan colonyPlan = new ColonyPlan(nieuwAmsterdam);
-		colonyPlan.withConsumeWarehouseResources(true);
-
 		// when
-		colonyPlan.execute(ColonyPlan.Plan.MostValuable).allocateWorkers();
-		//printColonyWorkers();
+		new ColonyPlan(nieuwAmsterdam)
+			.withConsumeWarehouseResources(true)
+			.execute(ColonyPlan.Plan.MostValuable)
+			.allocateWorkers();
+		printColonyWorkers(nieuwAmsterdam);
 
 		// then
 		ColonyAssert.assertThat(nieuwAmsterdam)

@@ -38,11 +38,11 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         ScoreableObjectsListAssert.assertThat(recomendations)
             .hasSize(6)
             .hasScore(0, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
-            .hasScore(1, 20, eq(nieuwAmsterdam.tile, UnitType.FREE_COLONIST))
-            .hasScore(2, 25, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
-            .hasScore(3, 27, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
-            .hasScore(4, 29, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
-            .hasScore(5, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
+            .hasScore(1, 25, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
+            .hasScore(2, 27, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
+            .hasScore(3, 29, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
+            .hasScore(4, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
+            .hasScore(5, 40, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
     }
 
     @Test
