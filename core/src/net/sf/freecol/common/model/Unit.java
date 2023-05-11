@@ -578,6 +578,7 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         	switch (newState) {
 				case FORTIFYING:
 					workLeft = 1;
+					clearDestination();
 					break;
 				case FORTIFIED:
 					workLeft = -1;
@@ -585,9 +586,14 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 					break;
 				case ACTIVE:
 					workLeft = -1;
+					clearDestination();
 					break;
 				case IN_COLONY:
 					movesLeft = 0;
+					clearDestination();
+					break;
+				case SENTRY:
+					clearDestination();
 					break;
 				default:
 					break;

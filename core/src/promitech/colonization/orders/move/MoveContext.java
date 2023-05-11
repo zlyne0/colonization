@@ -85,6 +85,11 @@ public class MoveContext {
 	public void initNextPathStep() {
 		if (path.hasNotTilesToMove()) {
 			endOfPath = true;
+			if (path.isStartEqualsEnd()) {
+				sourceTile = path.endTile;
+				destTile = path.endTile;
+				initMoveCostAndType();
+			}
 			return;
 		}
 		sourceTile = path.moveStepSource();

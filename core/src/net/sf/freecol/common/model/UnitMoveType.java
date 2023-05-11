@@ -292,6 +292,9 @@ public class UnitMoveType {
      * @return The cost of moving this unit onto the given <code>Tile</code>.
      */
     public int caclulateMoveCost(Tile from, Tile target, Direction moveDirection, int actualMovesLeft, int unitInitialMoves) {
+        if (from.equalsCoordinates(target)) {
+            return 0;
+        }
         int cost = target.getType().getBasicMoveCost();
         if (target.getType().isLand() && !unitType.isNaval()) {
             cost = target.getMoveCost(moveDirection, cost);

@@ -91,4 +91,8 @@ public class Path {
 	public boolean isPathToEurope() {
 		return toEurope;
 	}
+
+	public boolean isStartEqualsEnd() {
+		return startTile.equalsCoordinates(endTile);
+	}
 }
