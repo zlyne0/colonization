@@ -437,6 +437,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 			}
 		};
         QuestionDialog questionDialog = new QuestionDialog();
+		questionDialog.withHideWithoutFadeOut();
         questionDialog.addDialogActor(new SettlementImageLabel(colony)).align(Align.center).row();
 		questionDialog.addQuestion(StringTemplate.template("abandonColony.text"));
 		questionDialog.addAnswer("abandonColony.yes", abandonColony, colony);

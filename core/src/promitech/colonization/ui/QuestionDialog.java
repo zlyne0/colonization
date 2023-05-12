@@ -29,12 +29,17 @@ public class QuestionDialog extends Dialog {
     private final Map<TextButton, OptionAction<? extends Object>> actionByButton = new HashMap<TextButton, OptionAction<? extends Object>>();
     private final Map<TextButton, Object> payloadByButton = new HashMap<TextButton, Object>();
     private final List<Runnable> onCloseListeners = new ArrayList<Runnable>();
+    private boolean hideWithoutFadeOut = false;
     
     private final ChangeListener buttonChangeListener = new ChangeListener() {
         @Override
         public void changed(ChangeEvent event, Actor actor) {
             OptionAction<Object> optionAction = (OptionAction<Object>) actionByButton.get(event.getListenerActor());
-            hide();
+            if (hideWithoutFadeOut) {
+                hide(null);
+            } else {
+                hide();
+            }
             if (optionAction != null) {
                 optionAction.executeAction(payloadByButton.get(event.getListenerActor()));
             }
@@ -98,7 +103,11 @@ public class QuestionDialog extends Dialog {
     public void addOnCloseListener(Runnable listener) {
     	onCloseListeners.add(listener);
     }
-    
+
+    public void withHideWithoutFadeOut() {
+        hideWithoutFadeOut = true;
+    }
+
     @Override
     public Dialog show(Stage stage) {
         getContentTable().add(dialogLayout).fillX();
