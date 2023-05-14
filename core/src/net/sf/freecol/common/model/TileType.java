@@ -5,6 +5,9 @@ import java.io.IOException;
 import net.sf.freecol.common.model.map.GenerationValues;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
+
+import org.xml.sax.SAXException;
+
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.ObjectFromNodeSetter;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -24,6 +27,7 @@ public final class TileType extends ObjectWithFeatures implements ObjectWithInse
 	
 	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
+	private boolean isDirectlyHighSeasConnected = false;
 	private final boolean land;
 	private final boolean water;
 	private boolean canSettle;
@@ -75,7 +79,7 @@ public final class TileType extends ObjectWithFeatures implements ObjectWithInse
 	}
 	
     public boolean isDirectlyHighSeasConnected() {
-        return hasAbility(Ability.MOVE_TO_EUROPE);
+        return isDirectlyHighSeasConnected;
     }
 	
     public boolean isTileImprovementAllowed(TileImprovementType impType) {
@@ -114,7 +118,11 @@ public final class TileType extends ObjectWithFeatures implements ObjectWithInse
     public void setInsertOrder(int insertOrder) {
         this.insertOrder = insertOrder;
     }
-	
+
+	private void refreshCacheValues() {
+		this.isDirectlyHighSeasConnected = hasAbility(Ability.MOVE_TO_EUROPE);
+	}
+
 	public static class Xml extends XmlNodeParser<TileType> {
 		private static final String IS_FOREST = "is-forest";
 		private static final String CAN_SETTLE = "can-settle";
@@ -162,7 +170,14 @@ public final class TileType extends ObjectWithFeatures implements ObjectWithInse
 			attr.set(IS_ELEVATION, node.elevation);
 			attr.set(CAN_SETTLE, node.canSettle);
 		}
-		
+
+		@Override
+		public void endElement(String uri, String localName, String qName) throws SAXException {
+			if (qName.equals(getTagName())) {
+				nodeObject.refreshCacheValues();
+			}
+		}
+
 		@Override
 		public String getTagName() {
 			return tagName();

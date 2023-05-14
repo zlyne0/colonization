@@ -38,7 +38,6 @@ public class Tile implements UnitLocation, Identifiable {
 	private TileType type;
 	private int style;
 	public final String id;
-	private final boolean moveToEurope;
 	private Player owner;
 	private String owningSettlement;
 	
@@ -54,7 +53,6 @@ public class Tile implements UnitLocation, Identifiable {
 		this.y = y;
 		this.type = type;
 		this.style = style;
-		this.moveToEurope = type.isDirectlyHighSeasConnected();
 	}
 	
 	@Override
@@ -274,7 +272,7 @@ public class Tile implements UnitLocation, Identifiable {
 	}
 	
     public boolean isDirectlyHighSeasConnected() {
-		return moveToEurope;
+		return type.isDirectlyHighSeasConnected();
     }
 	
     public int getMoveCost(Direction moveDirection, int basicMoveCost) {

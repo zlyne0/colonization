@@ -31,7 +31,7 @@ public class CommonMissionHandler {
 
 			if (unit.isAtLocation(Tile.class)) {
 				if (logger.isDebug()) {
-					logger.debug("%s[%s] move to highseas", mission.getClass().getSimpleName(), mission.getId());
+					logger.debug("player[%s].moveToHighSeas.%s[%s]", unit.getOwner().getId(), mission.getClass().getSimpleName(), mission.getId());
 				}
 				
 				Path pathEurope = pathFinder.findToEurope(
