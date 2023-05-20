@@ -563,7 +563,27 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     public boolean isBeached() {
     	return Unit.isBeached(this.getTileLocationOrNull(), unitType);
     }
-    
+
+	public void fortify() {
+		setState(UnitState.FORTIFYING);
+		clearDestination();
+	}
+
+	public void clearOrders() {
+		setState(UnitState.ACTIVE);
+		clearDestination();
+	}
+
+	public void sentry() {
+		setState(UnitState.SENTRY);
+		clearDestination();
+	}
+
+	public void activate() {
+		setState(UnitState.ACTIVE);
+		clearDestination();
+	}
+
     public void setState(UnitState newState) {
         if (state == newState) {
             // No need to do anything when the state is unchanged
@@ -578,7 +598,6 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         	switch (newState) {
 				case FORTIFYING:
 					workLeft = 1;
-					clearDestination();
 					break;
 				case FORTIFIED:
 					workLeft = -1;
@@ -586,14 +605,11 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 					break;
 				case ACTIVE:
 					workLeft = -1;
-					clearDestination();
 					break;
 				case IN_COLONY:
 					movesLeft = 0;
-					clearDestination();
 					break;
 				case SENTRY:
-					clearDestination();
 					break;
 				default:
 					break;

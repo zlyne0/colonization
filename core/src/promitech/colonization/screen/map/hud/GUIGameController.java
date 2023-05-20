@@ -313,7 +313,6 @@ public class GUIGameController {
 
 	public void closeColonyViewAndActiveUnit(Colony colony, Unit unit) {
 		closeColonyView(colony);
-		unit.setState(UnitState.ACTIVE);
 		changeActiveUnit(unit);
 	}
 	
@@ -363,7 +362,7 @@ public class GUIGameController {
 		MissionPlaner missionPlaner = new MissionPlaner(guiGameModel.game, pathFinder, missionExecutor, pathFinder2);
 		
 		List<Player> players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer);
-		for (Player player : players) {			
+		for (Player player : players) {
 			endOfTurnPhaseListener.nextAIturn(player);
 			System.out.println("new turn for player " + player);
 			

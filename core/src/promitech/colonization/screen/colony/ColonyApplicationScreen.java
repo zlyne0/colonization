@@ -94,17 +94,18 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    		outsideUnitsPanel.putPayload(unitActor, -1, -1);
 	    	}
 	    	if (ActionTypes.FORTIFY.equals(item.actionType)) {
-	    		unit.setState(UnitState.FORTIFYING);
+				unit.fortify();
 	    		guiGameController.nextActiveUnitWhenActive(unit);
 	    	}
 	    	if (ActionTypes.CLEAR_ORDERS.equals(item.actionType)) {
-	    		unit.setState(UnitState.ACTIVE);
+				unit.clearOrders();
 	    	}
 	    	if (ActionTypes.SENTRY.equals(item.actionType)) {
-	    		unit.setState(UnitState.SENTRY);
+				unit.sentry();
 	    		guiGameController.nextActiveUnitWhenActive(unit);
 	    	}
 	    	if (ActionTypes.ACTIVATE.equals(item.actionType)) {
+				unit.activate();
 	    		guiGameController.closeColonyViewAndActiveUnit(colony, unit);
 	    	}
 	    	if (ActionTypes.ASSIGN_TO_PRODUCTION.equals(item.actionType)) {
