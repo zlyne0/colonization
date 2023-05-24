@@ -155,7 +155,16 @@ public class ProductionSummary {
             }
         }
     }
-    
+
+	public void decreaseToMinZero(String goodsTypeId, int quantity) {
+		int q = goods.get(goodsTypeId, 0);
+		if (q >= quantity) {
+			goods.put(goodsTypeId, q - quantity);
+		} else {
+			goods.put(goodsTypeId, 0);
+		}
+	}
+
     public boolean decreaseIfHas(String goodsId, int quantity) {
     	int q = goods.get(goodsId, 0);
     	if (q < quantity) {
@@ -177,7 +186,15 @@ public class ProductionSummary {
             goods.put(goodsTypeId, (int)Math.round(amount * ratio));
         }
     }
-	
+
+	public void removeAbove(int capacity) {
+		for (Entry<String> entry : goods.entries()) {
+			if (entry.value > capacity) {
+				goods.put(entry.key, capacity);
+			}
+		}
+	}
+
     public List<AbstractGoods> slotedGoods() {
         List<AbstractGoods> goodsList = new ArrayList<AbstractGoods>();
         for (Entry<String> gsEntry : goods.entries()) {

@@ -105,7 +105,7 @@ public class LostCityRumourService {
 		} break;
 		
 		case COLONIST: {
-			List<UnitType> unitTypes = Specification.instance.getUnitTypesWithAbility(Ability.FOUND_IN_LOST_CITY);
+			List<UnitType> unitTypes = Specification.instance.findUnitTypesWithAbility(Ability.FOUND_IN_LOST_CITY);
 			UnitType unitType = Randomizer.instance().randomMember(unitTypes);
             UnitFactory.create(unitType, unit.getOwner(), destTile);
 

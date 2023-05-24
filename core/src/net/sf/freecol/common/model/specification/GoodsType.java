@@ -35,6 +35,7 @@ public class GoodsType extends ObjectWithFeatures {
     public static final String COTTON = "model.goods.cotton";
     public static final String TOBACCO = "model.goods.tobacco";
     public static final String SUGAR = "model.goods.sugar";
+    public static final String TRADE_GOODS = "model.goods.tradeGoods";
 
     private static final float DEFAULT_PRODUCTION_WEIGHT = 1.0f;
     private static final float DEFAULT_LOW_PRODUCTION_THRESHOLD = 0.0f;

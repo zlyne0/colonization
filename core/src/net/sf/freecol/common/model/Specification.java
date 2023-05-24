@@ -280,7 +280,7 @@ public class Specification {
     	return types;
     }
 
-    public List<UnitType> getUnitTypesWithAbility(String abilityCode) {
+    public List<UnitType> findUnitTypesWithAbility(String abilityCode) {
     	List<UnitType> types = new ArrayList<UnitType>();
     	for (UnitType ut : unitTypes.entities()) {
     		if (ut.hasAbility(abilityCode)) {

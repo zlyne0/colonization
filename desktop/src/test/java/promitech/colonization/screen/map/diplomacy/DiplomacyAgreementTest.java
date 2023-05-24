@@ -78,7 +78,7 @@ public class DiplomacyAgreementTest {
 
 		// then
 		PlayerAssert.assertThat(spanish)
-			.hasNotColony(santoDomingo)
+			.hasNotSettlement(santoDomingo)
 			.notContainsUnits(santoDomingoUnits);
 		PlayerAssert.assertThat(dutch)
 			.hasColony(santoDomingo)

@@ -4,8 +4,8 @@ import org.assertj.core.api.AbstractAssert;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.MapIdEntities;
+import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
-import net.sf.freecol.common.model.player.Player;
 
 public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 
@@ -60,9 +60,9 @@ public class PlayerAssert extends AbstractAssert<PlayerAssert, Player> {
 		return this;
 	}
 	
-	public PlayerAssert hasNotColony(Colony colony) {
-	    if (actual.settlements.containsId(colony)) {
-	        failWithMessage("expected player <%s> has not colony <%s>", actual.getId(), colony.getId());
+	public PlayerAssert hasNotSettlement(Settlement settlement) {
+	    if (actual.settlements.containsId(settlement)) {
+	        failWithMessage("expected player <%s> has not settlement <%s>", actual.getId(), settlement.getId());
 	    }
 	    return this;
 	}

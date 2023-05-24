@@ -10,7 +10,7 @@ import promitech.colonization.Randomizer;
 public class UnitFactory {
 
 	public static Unit createTreasureTrain(Player owner, UnitLocation location, int gold) {
-		List<UnitType> carryTreasureUnitTypes = Specification.instance.getUnitTypesWithAbility(Ability.CARRY_TREASURE);
+		List<UnitType> carryTreasureUnitTypes = Specification.instance.findUnitTypesWithAbility(Ability.CARRY_TREASURE);
 		UnitType carryTreasureUnitType = Randomizer.instance().randomMember(carryTreasureUnitTypes);
 		Unit unit = new Unit(
 			Game.idGenerator.nextId(Unit.class), 

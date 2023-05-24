@@ -7,6 +7,7 @@ import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
+import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -14,7 +15,7 @@ import promitech.colonization.Randomizer;
 
 public class IndianSettlementProduction {
 
-    class GoodsAmountPrice extends AbstractGoods {
+    static class GoodsAmountPrice extends AbstractGoods {
     	private final GoodsType type;
 		private int price;
 		
@@ -37,7 +38,13 @@ public class IndianSettlementProduction {
 			return price;
 		}
     }
-	
+
+	/**
+	 * The amount of raw material that should be available before
+	 * producing manufactured goods.
+	 */
+	public static final int KEEP_RAW_MATERIAL = 50;
+
     /** The production fudge factor. */
     public static final double NATIVE_PRODUCTION_EFFICIENCY = 0.67;
     
@@ -325,7 +332,7 @@ public class IndianSettlementProduction {
         //System.out.println("" + logStr);
 	}
 
-	public void updateSettlementGoodsContainer(IndianSettlement is) {
+	public void updateSettlementGoodsProduction(IndianSettlement is) {
 	    ProductionSummary prod = maxProduction.cloneGoods();
 	    
 	    for (Entry<String> goodsEntry : prod.entries()) {
@@ -341,11 +348,59 @@ public class IndianSettlementProduction {
         }
 	    is.tile.getType().productionInfo.addUnattendedProductionToSummary(prod);
 	    
-        for (Entry<String> goodsEntry : prod.entries()) {
+		for (Entry<String> goodsEntry : prod.entries()) {
             GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsEntry.key);
             is.getGoodsContainer().increaseGoodsQuantity(goodsType.getStoredAs(), goodsEntry.value);
         }
-	    is.getGoodsContainer().decreaseGoodsToMinZero(consumptionGoods);
+		is.getGoodsContainer().decreaseGoodsToMinZero(consumptionGoods);
+		is.getGoodsContainer().removeAbove(is.warehouseCapacity());
 	}
-	
+
+	public void updateSettlementPopulationGrowth(Game game, IndianSettlement settlement) {
+		int foodAmount = settlement.getGoodsContainer().goodsAmount(GoodsType.FOOD);
+		boolean reduced = reducePopulation(game, settlement, foodAmount);
+		if (reduced) {
+			return;
+		}
+		increasePopulation(settlement, foodAmount);
+	}
+
+	private void increasePopulation(IndianSettlement settlement, int foodAmount) {
+		if (settlement.getUnits().size() >= settlement.settlementType.getMaximumSize()) {
+			return;
+		}
+		int rumAmount = settlement.getGoodsContainer().goodsAmount(GoodsType.RUM);
+		if (foodAmount + 4 * rumAmount < Settlement.FOOD_PER_COLONIST + KEEP_RAW_MATERIAL) {
+			return;
+		}
+		List<UnitType> unitTypes = Specification.instance.findUnitTypesWithAbility(Ability.BORN_IN_INDIAN_SETTLEMENT);
+		if (unitTypes.isEmpty()) {
+			return;
+		}
+
+		UnitType brave = Randomizer.instance().randomMember(unitTypes);
+		Unit unit = new Unit(Game.idGenerator.nextId(Unit.class), brave, brave.getDefaultRole(), settlement.owner);
+		settlement.owner.units.add(unit);
+		unit.setIndianSettlement(settlement);
+		unit.changeUnitLocation(settlement);
+
+		settlement.consume(GoodsType.FOOD, Settlement.FOOD_PER_COLONIST);
+		settlement.consume(GoodsType.RUM, KEEP_RAW_MATERIAL);
+	}
+
+	private boolean reducePopulation(Game game, IndianSettlement settlement, int foodAmount) {
+		if (foodAmount > 0) {
+			return false;
+		}
+		if (settlement.getUnits().isNotEmpty()) {
+			Unit first = settlement.getUnits().first();
+			first.removeFromLocation();
+			settlement.owner.removeUnit(first);
+		}
+		if (settlement.getUnits().isEmpty()) {
+			settlement.removeFromMap(game);
+			settlement.removeFromPlayer();
+		}
+		return true;
+	}
 }

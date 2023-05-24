@@ -1,49 +1,31 @@
 package net.sf.freecol.common.model;
 
-import static org.assertj.core.api.Assertions.assertThat;
-
-import java.io.IOException;
-import java.util.List;
-
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-import org.xml.sax.SAXException;
-
-import com.badlogic.gdx.Gdx;
-import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
-
-import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import net.sf.freecol.common.model.specification.GoodsType;
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+
+import java.util.List;
+
 import promitech.colonization.orders.diplomacy.TradeSession;
-import promitech.colonization.savegame.SaveGameParser;
-import promitech.colonization.ui.resources.Messages;
+import promitech.colonization.savegame.Savegame1600BaseClass;
 
-class IndianSettlementTest {
+import static org.assertj.core.api.Assertions.assertThat;
 
-	Game game;
+class IndianSettlementTest extends Savegame1600BaseClass {
+
 	GoodsType tradeGoods;
 	GoodsType furs;
 	Tile nieuwAmsterdamTile;
-	Player dutch;
-	
-    @BeforeAll
-    public static void beforeClass() {
-        Gdx.files = new Lwjgl3Files();
-        Messages.instance().load();
-    }
-    
+
     @BeforeEach
-    public void setup() throws IOException, ParserConfigurationException, SAXException {
-        game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
-        tradeGoods = Specification.instance.goodsTypes.getById("model.goods.tradeGoods");
-        furs = Specification.instance.goodsTypes.getById("model.goods.furs");
+    public void setup() throws Exception {
+		super.setup();
+        tradeGoods = goodsType(GoodsType.TRADE_GOODS);
+        furs = goodsType(GoodsType.FURS);
         
-		nieuwAmsterdamTile = game.map.getSafeTile(24, 78);
-		dutch = game.players.getById("player:1");
+		nieuwAmsterdamTile = nieuwAmsterdam.tile;
     }
 	
 	@Test
@@ -216,17 +198,17 @@ class IndianSettlementTest {
         isp.init(game.map, is);
         
         // when
-        isp.updateSettlementGoodsContainer(is);
+        isp.updateSettlementGoodsProduction(is);
 
         // then
-        System.out.println("is.getGoodsContainer() " + is.getGoodsContainer().cloneGoods());
+        //System.out.println("is.getGoodsContainer() " + is.getGoodsContainer().cloneGoods());
         ProductionSummaryAssert.assertThat(is.getGoodsContainer().cloneGoods())
             .has("model.goods.ore", 1) 
-            .has("model.goods.cotton", 376) 
-            .has("model.goods.furs", 407) 
+            .has("model.goods.cotton", 200)
+            .has("model.goods.furs", 200)
             .has("model.goods.tradeGoods", 16) 
-            .has("model.goods.food", 266) 
-            .has("model.goods.tobacco", 339) 
+            .has("model.goods.food", 200)
+            .has("model.goods.tobacco", 200)
             .has("model.goods.lumber", 76)
         ;
         

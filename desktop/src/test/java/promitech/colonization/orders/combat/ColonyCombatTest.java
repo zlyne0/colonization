@@ -608,7 +608,7 @@ public class ColonyCombatTest {
         ColonyAssert.assertThat(trinidadColony)
         	.notContainsUnit(colonyUnit);
         PlayerAssert.assertThat(spanish)
-            .hasNotColony(trinidadColony);
+            .hasNotSettlement(trinidadColony);
         TileAssert.assertThat(trinidadTile)
             .hasNotSettlement();
 	}

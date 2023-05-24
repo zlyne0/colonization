@@ -158,4 +158,8 @@ public abstract class Settlement extends ObjectWithId implements UnitLocation {
 		owner.settlements.removeId(this);
 		owner = null;
 	}
+
+	public void consume(String goodsTypeId, int consumeAmount)	{
+		goodsContainer.decreaseGoodsToMinZero(goodsTypeId, consumeAmount);
+	}
 }

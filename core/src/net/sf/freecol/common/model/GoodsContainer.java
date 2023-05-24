@@ -144,7 +144,12 @@ public class GoodsContainer {
         goods.decreaseToMinZero(goods);
         updateTakenCargoSlots();
     }
-	
+
+    public void decreaseGoodsToMinZero(String goodsTypeId, int quantity) {
+        goods.decreaseToMinZero(goodsTypeId, quantity);
+        updateTakenCargoSlots();
+    }
+
 	public void decreaseToZero(String goodsTypeId) {
 		goods.setZero(goodsTypeId);
 		updateTakenCargoSlots();
@@ -201,6 +206,11 @@ public class GoodsContainer {
 
     public boolean isEmpty() {
         return goods.isEmpty();
+    }
+
+    public void removeAbove(int capacity) {
+        goods.removeAbove(capacity);
+        updateTakenCargoSlots();
     }
 
     public static class Xml extends XmlNodeParser<GoodsContainer> {

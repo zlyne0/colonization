@@ -105,4 +105,11 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 		}
 		return this;
 	}
+
+	public IndianSettlementAssert hasUnitsCount(int unitsNumber) {
+		if (actual.getUnits().size() != unitsNumber) {
+			failWithMessage("expected indian settlement <%s> has %d units, but it has %d", actual.getId(), unitsNumber, actual.getUnits().size());
+		}
+		return this;
+	}
 }
