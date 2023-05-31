@@ -130,10 +130,9 @@ public class TradeSession {
 		indianSettlement.modifyTensionWithOwnerTension(unit.getOwner(), -amount / 500);
 		unit.reduceMovesLeftToZero();
 		canSell = false;
-		
-		IndianSettlementWantedGoods wg = new IndianSettlementWantedGoods();
-		wg.updateWantedGoods(map, indianSettlement);
-		
+
+		IndianSettlementWantedGoods.updateWantedGoods(map, indianSettlement);
+
 		System.out.println(
 			"tradeSession[" + unit.getOwner().getId() + "]"
 			+ ".sellGoodsTo[" + indianSettlement.getId() + "]"
@@ -148,9 +147,8 @@ public class TradeSession {
 		canGift = false;
 		
 		indianSettlement.modifyTensionWithOwnerTension(unit.getOwner(), -price / 50);
-		
-		IndianSettlementWantedGoods wg = new IndianSettlementWantedGoods();
-		wg.updateWantedGoods(map, indianSettlement);
+
+		IndianSettlementWantedGoods.updateWantedGoods(map, indianSettlement);
 		
 		System.out.println(
 			"tradeSession[" + unit.getOwner().getId() + "]"
@@ -226,9 +224,8 @@ public class TradeSession {
 		indianSettlement.modifyTensionWithOwnerTension(unit.getOwner(), -price / 50);
 		unit.reduceMovesLeftToZero();
 		canSell = false;
-		
-		IndianSettlementWantedGoods wg = new IndianSettlementWantedGoods();
-		wg.updateWantedGoods(map, indianSettlement);
+
+		IndianSettlementWantedGoods.updateWantedGoods(map, indianSettlement);
 		
 		System.out.println(
 			"tradeSession[" + unit.getOwner().getId() + "]"

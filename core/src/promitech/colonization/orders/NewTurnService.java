@@ -35,15 +35,20 @@ public class NewTurnService {
 	private final GUIGameModel guiGameModel;
 	private final CombatService combatService;
 	private final MoveService moveService;
-	private final IndianSettlementWantedGoods indianWantedGoods = new IndianSettlementWantedGoods();
-	
+
 	private final List<Unit> playerUnits = new ArrayList<Unit>();
 	private final IterableSpiral<Tile> spiralIterator = new IterableSpiral<Tile>();
-	
+
+	private final NewTurnIndianSettlement newTurnIndianSettlement;
+	private final NewTurnColony newTurnColony;
+
 	public NewTurnService(GUIGameModel guiGameModel, CombatService combatService, MoveService moveService) {
 		this.guiGameModel = guiGameModel;
 		this.combatService = combatService;
 		this.moveService = moveService;
+
+		this.newTurnIndianSettlement = new NewTurnIndianSettlement(guiGameModel);
+		this.newTurnColony = new NewTurnColony(guiGameModel);
 	}
 
 	public void newTurn(Player player) {
@@ -58,36 +63,11 @@ public class NewTurnService {
 		}
 		
         for (Settlement settlement : player.settlements.entities()) {
-        	if (settlement.isIndianSettlement()) {
-        		IndianSettlement indianSettlement = settlement.asIndianSettlement();
-        		indianSettlement.generateTension(guiGameModel.game);
-        		indianSettlement.conversion(guiGameModel.game.map);
-        		indianWantedGoods.updateWantedGoods(guiGameModel.game.map, indianSettlement);
-        		indianSettlement.spreadMilitaryGoods();
-        		indianSettlement.equipMilitaryRoles();
-        	}
-			if (!settlement.isColony()) {
-				continue;
+			if (settlement.isIndianSettlement()) {
+				newTurnIndianSettlement.newTurn(settlement.asIndianSettlement());
+        	} else if (settlement.isColony()) {
+				newTurnColony.newTurn(settlement.asColony());
 			}
-			Colony colony = (Colony)settlement;
-			if (logger.isDebug()) {
-				logger.debug("player[%s].colony[%s].newTurn.name[%s]", colony.getOwner().getId(), colony.getId(), colony.getName());
-			}
-			
-			colony.ifPossibleAddFreeBuildings();
-			colony.updateColonyFeatures();
-			colony.increaseWarehouseByProduction();
-			colony.reduceTileResourceQuantity();
-			
-			colony.increaseColonySize();
-			colony.buildBuildings();
-			
-			colony.exportGoods(guiGameModel.game);
-			colony.removeExcessedStorableGoods();
-			colony.handleLackOfResources(guiGameModel.game);
-			colony.calculateSonsOfLiberty();
-			
-			colony.increaseWorkersExperience();
 		}
         
         if (player.isColonial()) {

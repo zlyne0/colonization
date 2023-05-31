@@ -18,7 +18,7 @@ public class IndianSettlementWantedGoods {
 
 	private final List<GoodsType> goodsTypeOrder;
 	private final ObjectIntMap<GoodsType> prices;
-	private final IndianSettlementProduction production = new IndianSettlementProduction();
+	private final IndianSettlementProduction production;
 
 	private final Comparator<GoodsType> goodsTypePriceComparator = new Comparator<GoodsType>() {
 		@Override
@@ -26,15 +26,21 @@ public class IndianSettlementWantedGoods {
 			return prices.get(goodsType2, 0) - prices.get(goodsType1, 0);
 		}
 	};
-	
-	public IndianSettlementWantedGoods() {
-		goodsTypeOrder = new ArrayList<GoodsType>(Specification.instance.goodsTypes.size());
-		prices = new ObjectIntMap<GoodsType>(goodsTypeOrder.size());
+
+	public static void updateWantedGoods(Map map, IndianSettlement settlement) {
+		IndianSettlementProduction production = new IndianSettlementProduction();
+		production.init(map, settlement);
+		IndianSettlementWantedGoods wg = new IndianSettlementWantedGoods(production);
+		wg.updateWantedGoods(settlement);
+	}
+
+	public IndianSettlementWantedGoods(IndianSettlementProduction production) {
+		this.production = production;
+		this.goodsTypeOrder = new ArrayList<GoodsType>(Specification.instance.goodsTypes.size());
+		this.prices = new ObjectIntMap<GoodsType>(goodsTypeOrder.size());
 	}
 	
-	public void updateWantedGoods(Map map, IndianSettlement settlement) {
-		production.init(map, settlement);
-		
+	public void updateWantedGoods(IndianSettlement settlement) {
 		goodsTypeOrder.clear();
 		prices.clear();
 		
