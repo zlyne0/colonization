@@ -83,8 +83,12 @@ public abstract class NationType extends ObjectWithFeatures {
 	public SettlementNumber getSettlementNumber() {
 		return settlementNumber;
 	}
-    
-    public abstract boolean isREF();
+
+	public AggressionLevel getAggressionLevel() {
+		return aggressionLevel;
+	}
+
+	public abstract boolean isREF();
     
 	public Set<String> getRegionNames() {
 		return Collections.emptySet();

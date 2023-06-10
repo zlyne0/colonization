@@ -21,8 +21,6 @@ import promitech.colonization.orders.combat.OffencePower;
 // In Freecol: EuropeanAIPlayer.acceptDiplomaticTrade
 public class ScoreService {
 
-	private OffencePower offencePower = new OffencePower();
-	
 	/**
 	 * Method score Colony from player point of view
 	 * @param colony
@@ -86,26 +84,9 @@ public class ScoreService {
 		return unitMarket.getUnitPrice(unit.unitType);
 	}
 
-	void scoreOffencePower(Player player, NationSummary nationSummary) {
-		nationSummary.navyPower = 0;
-		nationSummary.militaryPower = 0;
-		
-		for (Unit unit : player.units.entities()) {
-			if (unit.isNaval()) {
-				nationSummary.navyPower += offencePower.calculateUnitOffencePower(unit);
-			} else {
-				nationSummary.militaryPower += offencePower.calculateUnitOffencePower(unit);
-			}
-		}
-	}
-	
 	public double strengthRatio(Player p1, Player p2) {
-		NationSummary ns1 = new NationSummary();
-		NationSummary ns2 = new NationSummary();
-		
-		scoreOffencePower(p1, ns1);
-		scoreOffencePower(p2, ns2);
-		
+		NationSummary ns1 = OffencePower.calculatePlayerUnitsOffencePower(p1);
+		NationSummary ns2 = OffencePower.calculatePlayerUnitsOffencePower(p2);
 		return (double)ns1.militaryPower / ((double)ns1.militaryPower + ns2.militaryPower);
 	}
 }

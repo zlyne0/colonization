@@ -181,7 +181,7 @@ public class Savegame1600Verifier {
 		assertThat(playerMissionsContainer).isNotNull();
 		WanderMission wm = playerMissionsContainer.getMission("wanderMission:1");
 		
-		assertThat(wm.unit.getId()).isEqualTo("unit:6706");
+		assertThat(wm.getUnit().getId()).isEqualTo("unit:6706");
 
 		verifyColonyWorkerMission(game);
 		verifyTransportUnitMission(game);

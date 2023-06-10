@@ -529,7 +529,18 @@ public class Tile implements UnitLocation, Identifiable {
         }
         return owningSettlement != null && owner != null && owner.notEqualsId(player);
     }
-	
+
+	public Player unitOccupierOwner() {
+		if (settlement != null) {
+			return settlement.owner;
+		}
+		Unit first = units.first();
+		if (first != null) {
+			return first.getOwner();
+		}
+		return null;
+	}
+
 	public boolean hasWorkerOnTile() {
 		if (owner == null || owningSettlement == null) {
 			return false;

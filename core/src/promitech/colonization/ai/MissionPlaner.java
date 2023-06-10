@@ -18,14 +18,14 @@ public class MissionPlaner {
 		this.game = game;
 		this.missionExecutor = missionExecutor;
 
-		nativeMissionPlaner = new NativeMissionPlaner(pathFinder);
+		nativeMissionPlaner = new NativeMissionPlaner(game, pathFinder);
         europeanMissionPlaner = new EuropeanMissionPlaner(game, pathFinder, pathFinder2);
 	}
 	
 	public void planMissions(Player player) {
 		if (player.isIndian()) {
 			PlayerMissionsContainer playerMissionContainer = game.aiContainer.missionContainer(player);
-			nativeMissionPlaner.prepareIndianWanderMissions(player, playerMissionContainer);
+			nativeMissionPlaner.plan(player, playerMissionContainer);
 		}
 		
 		if (player.isLiveEuropeanPlayer()) {

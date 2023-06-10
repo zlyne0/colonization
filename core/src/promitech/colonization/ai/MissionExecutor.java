@@ -54,9 +54,6 @@ public class MissionExecutor implements Disposable {
 
 	private final Game game;
 
-	private final ExplorerMissionHandler explorerMissionHandler;
-	private final WanderMissionHandler wanderMissionHandler;
-
 	public MissionExecutor(
 		Game game, 
 		MoveService moveService, 
@@ -67,8 +64,8 @@ public class MissionExecutor implements Disposable {
 	) {
 		this.game = game;
 
-		explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
-		wanderMissionHandler = new WanderMissionHandler(game, moveService);
+        ExplorerMissionHandler explorerMissionHandler = new ExplorerMissionHandler(game, pathFinder, moveService);
+        WanderMissionHandler wanderMissionHandler = new WanderMissionHandler(game, moveService, pathFinder, combatService);
 
         IndianBringGiftMissionHandler indianBringGiftMission = new IndianBringGiftMissionHandler(
     		game, pathFinder, moveService, guiGameController
