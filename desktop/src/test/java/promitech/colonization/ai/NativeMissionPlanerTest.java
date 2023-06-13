@@ -37,7 +37,7 @@ class NativeMissionPlanerTest {
     	game = SaveGameParser.loadGameFormClassPath("maps/savegame_1600_for_jtests.xml");
     	inca = game.players.getById("player:154");
     	
-    	sut = new NativeMissionPlaner(pathFinder);
+    	sut = new NativeMissionPlaner(game, pathFinder);
     }
 	
 	@Test
@@ -50,7 +50,7 @@ class NativeMissionPlanerTest {
         );
 		
 		// when
-		sut.prepareBringGiftsMission(game.map, inca, missionsContainer);
+		sut.prepareBringGiftsMission(inca, missionsContainer);
 
 		// then
 		boolean missionExists = sut.isMissionFromSettlementExists(
@@ -71,7 +71,7 @@ class NativeMissionPlanerTest {
         );
 		
 		// when
-		sut.prepareDemandTributeMission(game.map, inca, missionsContainer);
+		sut.prepareDemandTributeMission(inca, missionsContainer);
 
 		// then
 		boolean missionExists = sut.isMissionFromSettlementExists(

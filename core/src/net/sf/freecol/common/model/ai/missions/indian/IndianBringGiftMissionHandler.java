@@ -35,10 +35,10 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 	public void handle(PlayerMissionsContainer playerMissionsContainer, IndianBringGiftMission mission) {
 		Player indianPlayer = playerMissionsContainer.getPlayer();
 		
-		logger.debug("IndianBringGiftMission[%s] start execute", indianPlayer.getId());
+		logger.debug("player[%s].IndianBringGiftMission start execute", indianPlayer.getId());
 		
 		if (!mission.canExecuteMission(indianPlayer)) {
-			logger.debug("IndianBringGiftMission[%s] done: can not execute mission", indianPlayer.getId());
+			logger.debug("player[%s].IndianBringGiftMission done: can not execute mission", indianPlayer.getId());
 			mission.setDone();
 			return;
 		}
@@ -49,7 +49,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		
 		if (!mission.correctTransportUnitLocation()) {
 			logger.debug(
-				"IndianBringGiftMission[%s] done: incorrect transport unit[%s] location", 
+				"player[%s].IndianBringGiftMission done: incorrect transport unit[%s] location",
 				indianPlayer.getId(), 
 				mission.getTransportUnit().getId()
 			);
@@ -82,7 +82,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			return;
 		}
 		logger.debug(
-			"IndianBringGiftMission[%s] move to settlement[%s] take goods", 
+			"player[%s].IndianBringGiftMission move to settlement[%s] take goods",
 			mission.getTransportUnit().getOwner().getId(), 
 			mission.getIndianSettlement().getId()
 		);
@@ -105,7 +105,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		Tile unitActualLocation = mission.getTransportUnit().getTile();
 		
 		logger.debug(
-			"IndianBringGiftMission[%s] move to colony[%s]", 
+			"player[%s].IndianBringGiftMission move to colony[%s]",
 			mission.getTransportUnit().getOwner().getId(), 
 			mission.getDestinationColony().getId()
 		);
@@ -122,9 +122,9 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				mission.transferGoods();
+				mission.transferGoodsToColony();
 				
-				logger.debug("IndianBringGiftMission[%s] deliver gift[%s:%s] to colony[%s]", 
+				logger.debug("player[%s].IndianBringGiftMission deliver gift[%s:%s] to colony[%s]",
 					mission.getIndianSettlement().getOwner().getId(),
 					mission.getGift().getTypeId(),
 					mission.getGift().getQuantity(),

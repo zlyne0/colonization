@@ -10,7 +10,6 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer.Xml;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 import promitech.colonization.savegame.XmlNodeAttributes;
@@ -100,13 +99,18 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 	}
 	
 	public void backUnitToSettlement() {
+		if (gift.getQuantity() > 0) {
+			indianSettlement.getGoodsContainer().increaseGoodsQuantity(gift);
+		}
 		transportUnit.changeUnitLocation(indianSettlement);
 	}
 	
-	public void transferGoods() {
+	public void transferGoodsToColony() {
 		transportUnit.reduceMovesLeftToZero();
 		destinationColony.getGoodsContainer().increaseGoodsQuantity(gift);
+		gift.setQuantity(0);
 		changePhase(Phase.BACK_TO_SETTLEMENT);
+		transportUnit.changeUnitLocation(indianSettlement);
 	}
 	
 	@Override

@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
+import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.Settlement;
@@ -35,15 +36,23 @@ public class NativeMissionPlaner {
     private final int maxDistanceToMakeDemands = 5;
 	
 	private final List<Unit> units = new ArrayList<Unit>();
-	
+
+	private final Game game;
 	private final PathFinder pathFinder;
 
-	public NativeMissionPlaner(PathFinder pathFinder) {
+	public NativeMissionPlaner(Game game, PathFinder pathFinder) {
+		this.game = game;
 		this.pathFinder = pathFinder;
 	}
-	
-	public void prepareIndianWanderMissions(Player player, PlayerMissionsContainer missionsContainer) {
-		for (Settlement settlement : player.settlements.entities()) {
+
+	public void plan(Player player, PlayerMissionsContainer playerMissionContainer) {
+		prepareIndianWanderMissions(player, playerMissionContainer);
+		prepareDemandTributeMission(player, playerMissionContainer);
+		prepareBringGiftsMission(player, playerMissionContainer);
+	}
+
+	private void prepareIndianWanderMissions(Player player, PlayerMissionsContainer missionsContainer) {
+		for (Settlement settlement : player.settlements) {
 			IndianSettlement tribe = (IndianSettlement)settlement;
 			
 			units.clear();
@@ -64,10 +73,10 @@ public class NativeMissionPlaner {
 		}
 	}
 
-	public void prepareDemandTributeMission(Map map, Player player, PlayerMissionsContainer missionsContainer) {
+	public void prepareDemandTributeMission(Player player, PlayerMissionsContainer missionsContainer) {
 		final int tributeProbability = Specification.options.getIntValue(GameOptions.DEMAND_PROBABILITY);
 		
-		for (Settlement settlement : player.settlements.entities()) {
+		for (Settlement settlement : player.settlements) {
 			if (!Randomizer.instance().isHappen(tributeProbability)) {
 				continue;
 			}
@@ -79,7 +88,7 @@ public class NativeMissionPlaner {
 			if (unitToDemandTribute == null) {
 				continue;
 			}
-			Colony colony = chooseColonyToDemandTribute(map, indianSettlement, unitToDemandTribute);
+			Colony colony = chooseColonyToDemandTribute(indianSettlement, unitToDemandTribute);
 			if (colony == null) {
 				continue;
 			}
@@ -97,14 +106,14 @@ public class NativeMissionPlaner {
 		}
 	}
 	
-	public Colony chooseColonyToDemandTribute(Map map, IndianSettlement indianSettlement, Unit unitToDemandTribute) {
+	private Colony chooseColonyToDemandTribute(IndianSettlement indianSettlement, Unit unitToDemandTribute) {
 		List<RandomChoice<Colony>> colonies = new ArrayList<RandomChoice<Colony>>();
 		
-		for (Tile tile : map.neighbourTiles(indianSettlement.tile, maxDistanceToMakeDemands)) {
+		for (Tile tile : game.map.neighbourTiles(indianSettlement.tile, maxDistanceToMakeDemands)) {
 			if (tile.hasSettlement() && tile.getSettlement().isColony()) {
 				Colony colony = tile.getSettlement().asColony();
 				if (indianSettlement.getOwner().hasContacted(colony.getOwner())) {
-					Path path = pathFinder.findToTile(map, indianSettlement.tile, colony.tile, unitToDemandTribute, PathFinder.includeUnexploredTiles);
+					Path path = pathFinder.findToTile(game.map, indianSettlement.tile, colony.tile, unitToDemandTribute, PathFinder.includeUnexploredTiles);
 					if (path.isReachedDestination()) {
 						int totalTurnDistance = path.totalTurns();
 						if (totalTurnDistance == 0) {
@@ -126,7 +135,7 @@ public class NativeMissionPlaner {
 		return randomColony.probabilityObject();
 	}
 	
-	public void prepareBringGiftsMission(Map map, Player player, PlayerMissionsContainer missionsContainer) {
+	public void prepareBringGiftsMission(Player player, PlayerMissionsContainer missionsContainer) {
         final int giftProbability = Specification.options.getIntValue(GameOptions.GIFT_PROBABILITY);
         
         for (Settlement settlement : player.settlements.entities()) {
@@ -146,7 +155,7 @@ public class NativeMissionPlaner {
 			if (unitToBringGift == null) {
 				continue;
 			}
-			Colony colony = chooseColonyToBringGift(map, settlement.asIndianSettlement(), unitToBringGift);
+			Colony colony = chooseColonyToBringGift(game.map, settlement.asIndianSettlement(), unitToBringGift);
 			if (colony == null) {
 				continue;
 			}

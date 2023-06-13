@@ -19,6 +19,7 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionVal
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
+import net.sf.freecol.common.model.ai.missions.indian.WanderMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
@@ -36,6 +37,7 @@ import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.specification.BuildableType
@@ -582,6 +584,25 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		})
 	}
 
+	fun executeAiPlayerMissions(player: Player, di: DI, guiGameModel: GUIGameModel) {
+		di.newTurnService.newTurn(player)
+
+		val pathFinder2 = PathFinder()
+		val missionExecutor = MissionExecutor(
+			guiGameModel.game,
+			di.moveService,
+			di.combatService,
+			di.guiGameController,
+			di.pathFinder,
+			pathFinder2
+		)
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				missionExecutor.executeMissions(player)
+			}
+		})
+	}
+
 	// key 9
 	fun showMissions(guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 		tileDebugView.reset()
@@ -663,8 +684,29 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val fortOranjeTile = game.map.getTile(25, 75)
 		val nieuwAmsterdamTile = game.map.getTile(24, 78)
 
-		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
-		pioneer.showImprovementsPlan()
+//		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
+//		pioneer.showImprovementsPlan()
+
+		var tile = game.map.getTile(21, 74)
+
+
+		val indian = game.players.getById("player:154")
+
+
+		val indianMissionContainer = game.aiContainer.missionContainer(indian)
+		if (indianMissionContainer.missions.size() != 1) {
+			indianMissionContainer.clearAllMissions()
+		}
+		if (!indianMissionContainer.hasMission(WanderMission::class.java)) {
+			val brave = indian.units.getById("unit:6181")
+			indianMissionContainer.addMission(WanderMission(brave))
+
+			indian.changeStance(player, Stance.WAR)
+			indian.settlements.getById(brave.indianSettlementId)
+				.asIndianSettlement()
+				.setTension(player, Tension.Level.HATEFUL.limit)
+		}
+		executeAiPlayerMissions(indian, di, guiGameModel)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
         mapActor?.resetMapModel()
