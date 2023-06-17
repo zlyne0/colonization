@@ -545,7 +545,7 @@ public class Player extends ObjectWithId {
         int production = 0;
         for (Settlement settlement : settlements.entities()) {
             ProductionSummary productionSummary = settlement.productionSummary();
-            for (GoodsType goodsType : Specification.instance.immigrationGoodsTypeList.entities()) {
+            for (GoodsType goodsType : Specification.instance.immigrationGoodsTypeList) {
                 production += productionSummary.getQuantity(goodsType.getId());
             }
         }
@@ -579,7 +579,11 @@ public class Player extends ObjectWithId {
 	
 	public void reduceImmigration() {
 		if (Specification.options.getBoolean(GameOptions.SAVE_PRODUCTION_OVERFLOW)) {
-			immigration = immigrationRequired - immigration;
+			if (immigration > immigrationRequired) {
+				immigration = immigration - immigrationRequired;
+			} else {
+				immigration = 0;
+			}
 		} else {
 			immigration = 0;
 		}
