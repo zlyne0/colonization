@@ -245,6 +245,8 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		);
 		if (tension.isWorst(Level.CONTENT)) {
 			phase = Phase.ATTACK;
+		} else {
+			phase = Phase.BACK_TO_SETTLEMENT;
 		}
 		rejectDemandsLogMsg(goods, goldAmount);
 	}
@@ -278,7 +280,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return phase;
 	}
 	
-	public void backToSettlementAfterSuccessfulAtack() {
+	public void backToSettlementAfterSuccessfulAttack() {
     	if (!unitToDemandTribute.isDisposed()) {
     		unitToDemandTribute.reduceMovesLeftToZero();
     		changePhase(Phase.BACK_TO_SETTLEMENT);

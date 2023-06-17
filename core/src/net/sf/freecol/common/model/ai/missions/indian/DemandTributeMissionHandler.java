@@ -75,7 +75,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
         		)
     		) {
 	        	combatService.doCombat(moveContext);
-	        	mission.backToSettlementAfterSuccessfulAtack();
+	        	mission.backToSettlementAfterSuccessfulAttack();
 	        	return;
             }
 		}

@@ -56,6 +56,10 @@ public class AbstractGoods implements Identifiable {
     	return "type[" + typeId + "], quantity[" + quantity + "]";
     }
 
+	public AbstractGoods clone() {
+		return new AbstractGoods(typeId, quantity);
+	}
+
 	public void setQuantity(int quantity) {
 		this.quantity = quantity;
 	}

@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.indian;
 import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
@@ -10,6 +11,8 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission.Pha
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.AbstractGoods;
+
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
@@ -122,30 +125,30 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				mission.transferGoodsToColony();
+				AbstractGoods gift = mission.transferGoodsToColony();
 				
 				logger.debug("player[%s].IndianBringGiftMission deliver gift[%s:%s] to colony[%s]",
 					mission.getIndianSettlement().getOwner().getId(),
-					mission.getGift().getTypeId(),
-					mission.getGift().getQuantity(),
+					gift.getTypeId(),
+					gift.getQuantity(),
 					mission.getDestinationColony().getId()
 				);
-				showGiftConfirmation(mission);
+				showGiftConfirmation(mission, gift);
 			} else {
 				moveService.aiConfirmedMovePath(moveContext);
 			}
 		}
 	}
 	
-	private void showGiftConfirmation(IndianBringGiftMission mission) {
+	private void showGiftConfirmation(IndianBringGiftMission mission, AbstractGoods gift) {
 		if (mission.getDestinationColony().getOwner().isAi()) {
 			return;
 		}
 				
     	StringTemplate st =  StringTemplate.template("model.unit.gift")
     		.addStringTemplate("%player%", mission.getTransportUnit().getOwner().getNationName())
-    		.addAmount("%amount%", mission.getGift().getQuantity())
-    		.addName("%type%", Specification.instance.goodsTypes.getById(mission.getGift().getTypeId()))
+    		.addAmount("%amount%", gift.getQuantity())
+    		.addName("%type%", Specification.instance.goodsTypes.getById(gift.getTypeId()))
     		.add("%settlement%", mission.getDestinationColony().getName());
 		
 		guiGameController.showDialogBlocked(new SimpleMessageDialog()
@@ -155,6 +158,10 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 	}
 	
 	private void executeBackToSettlementPhase(IndianBringGiftMission mission) {
+		if (mission.getTransportUnit().isAtLocation(IndianSettlement.class)) {
+			mission.setDone();
+			return;
+		}
 		Tile unitActualLocation = mission.getTransportUnit().getTile();
 		
 		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
