@@ -37,7 +37,15 @@ public class MoveController {
 	private GUIGameController guiGameController;
 
 	private PathFinder finder;
-	
+
+	private boolean pressDirectionKeyLock = false;
+	private Runnable pressDirectionKeyLockReleaser = new Runnable() {
+		@Override
+		public void run() {
+			pressDirectionKeyLock = false;
+		}
+	};
+
 	public MoveController() {
 	}
 	
@@ -56,6 +64,9 @@ public class MoveController {
 	}
 	
 	public void pressDirectionKey(Direction direction) {
+		if (pressDirectionKeyLock) {
+			return;
+		}
 		if (guiGameModel.isViewMode()) {
 			// no cursor move by direction key in view mode
 			return;
@@ -72,13 +83,15 @@ public class MoveController {
 		if (destTile == null) {
 			return;
 		}
+		pressDirectionKeyLock = true;
+
 		MoveContext moveContext = new MoveContext(sourceTile, destTile, selectedUnit, direction);
 		
 		mapActor.mapDrawModel().unitPath = null;
 		selectedUnit.clearDestination();
 		System.out.println("moveContext.pressDirectionKey = " + moveContext);
-		
-		moveInThreadService.executeMove(moveContext, guiGameController.ifRequiredNextActiveUnit());
+
+		moveInThreadService.executeMove(moveContext, guiGameController.ifRequiredNextActiveUnit(), pressDirectionKeyLockReleaser);
 	}
 	
 	public void disembarkUnitToLocation(Unit carrier, Unit unitToDisembark, Tile destTile) {

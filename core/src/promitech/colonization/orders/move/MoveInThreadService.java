@@ -41,6 +41,16 @@ public class MoveInThreadService {
 		});
 	}
 
+	public void executeMove(final MoveContext moveContext, final AfterMoveProcessor afterMoveProcessor, final Runnable onEnd) {
+		ThreadsResources.instance.execute(new Runnable() {
+			@Override
+			public void run() {
+				moveService.preMoveProcessor(moveContext, afterMoveProcessor);
+				onEnd.run();
+			}
+		});
+	}
+
 	public void processMultipleMoves(final List<MoveContext> moveContextList, final AfterMoveProcessor afterMoveProcessor) {
 		ThreadsResources.instance.executeMovement(new Runnable() {
 			@Override
