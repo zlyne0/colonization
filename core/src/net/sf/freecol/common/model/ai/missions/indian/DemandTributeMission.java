@@ -118,7 +118,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		if (Level.CONTENT.isWorstOrEquals(tensionLevel) 
 			&& colony.getGoodsContainer().hasGoodsQuantity(food, CARGO_SIZE)
 		) {
-			goods = new Goods(food, cappacityAmount(
+			goods = new Goods(food, capacityAmount(
 				colony.getGoodsContainer().goodsAmount(food), 
 				demandModifier
 			));
@@ -146,7 +146,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			if (goodsType.isMilitary()) {
 				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
 				if (amount > 0) {
-					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+					return new Goods(goodsType, capacityAmount(amount, demandModifier));
 				}
 			}
 		}
@@ -154,7 +154,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			if (goodsType.isRawBuildingMaterial() && goodsType.isStorable()) {
 				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
 				if (amount > 0) {
-					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+					return new Goods(goodsType, capacityAmount(amount, demandModifier));
 				}
 			}
 		}
@@ -162,7 +162,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			if (goodsType.isTradeGoods()) {
 				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
 				if (amount > 0) {
-					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+					return new Goods(goodsType, capacityAmount(amount, demandModifier));
 				}
 			}
 		}
@@ -170,7 +170,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			if (goodsType.isRefined() && goodsType.isStorable()) {
 				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
 				if (amount > 0) {
-					return new Goods(goodsType, cappacityAmount(amount, demandModifier));
+					return new Goods(goodsType, capacityAmount(amount, demandModifier));
 				}
 			}
 		}
@@ -195,13 +195,16 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			}
 		}
 		if (maxGoodsType != null) {
-			return new Goods(maxGoodsType, cappacityAmount(maxGoodsAmount, demandModifier));
+			return new Goods(maxGoodsType, capacityAmount(maxGoodsAmount, demandModifier));
 		}
 		return null;
 	}
 	
-    private int cappacityAmount(int amount, int difficulty) {
-        return Math.min(Math.max(amount * difficulty / 6, 30), CARGO_SIZE);
+    private int capacityAmount(int amount, int difficulty) {
+		return Math.min(
+			Math.min(Math.max(amount * difficulty / 6, 30), CARGO_SIZE),
+			amount
+		);
     }
 	
 	public void acceptDemands(Goods goods, int goldAmount) {
