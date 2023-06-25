@@ -117,10 +117,10 @@ public class MoveService {
         if (moveContext.isMoveViaPath()) {
             boolean requireUserInteraction = handlePathMoveContext(moveContext);
             if (!requireUserInteraction) {
-                if (moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
-            		moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
+                if (moveContext.unit.isAtLocation(moveContext.destTile) && moveContext.destTile.hasSettlementOwnedBy(moveContext.unit.getOwner())) {
+                    moveContext.unit.disembarkUnitsToLocation(moveContext.destTile);
                 }
-            	afterMoveProcessor.afterMove(moveContext);
+                afterMoveProcessor.afterMove(moveContext);
             }
         } else {
             if (moveContext.isRequireUserInteraction()) {
