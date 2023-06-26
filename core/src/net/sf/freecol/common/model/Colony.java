@@ -518,7 +518,7 @@ public class Colony extends Settlement {
 		if (tile.isOwnBySettlement(this)) {
 			for (ColonyTile colonyTile : colonyTiles) {
 				if (colonyTile.equalsId(tile)) {
-					colonyTile.updateProductionAfterTileImprovement();
+					colonyTile.updateProductionAfterTileImprovement(this.tile);
 					updateModelOnWorkerAllocationOrGoodsTransfer();
 					break;
 				}

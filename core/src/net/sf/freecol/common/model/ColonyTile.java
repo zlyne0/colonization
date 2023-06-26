@@ -75,7 +75,7 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
         production = Production.EMPTY_READONLY;
     }
 
-	public void updateProductionAfterTileImprovement() {
+	public void updateProductionAfterTileImprovement(Tile colonyCenterTile) {
 		if (worker != null && production.isNotEmpty()) {
 			Production attendedProduction = tile.getType().productionInfo.findAttendedProductionContainsGoodsTypes(production);
 			if (attendedProduction != null) {
@@ -84,7 +84,9 @@ public class ColonyTile extends ObjectWithId implements ProductionLocation, Unit
 				initMaxPossibleProductionOnTile();
 			}
 		} else {
-			initMaxPossibleProductionOnTile();
+			if (tile.equalsCoordinates(colonyCenterTile)) {
+				initMaxPossibleProductionOnTile();
+			}
 		}
 	}
 
