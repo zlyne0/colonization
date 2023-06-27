@@ -37,7 +37,7 @@ class ScoutMissionPlaner(
     private val maxRangeForScoutOnOtherIsland = 12
 
     fun findScoutDestination(scout: Unit): ScoutDestination {
-        if (scout.isAtUnitLocation) {
+        if (scout.isAtUnitLocation || scout.isAtEuropeLocation) {
             val theBestTile = findInOtherIsland(scout.owner)
             if (theBestTile == null) {
                 return ScoutDestination.Lack()
