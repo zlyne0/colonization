@@ -1,7 +1,5 @@
 package promitech.colonization.screen.colony;
 
-import java.util.List;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.graphics.GL20;
 import com.badlogic.gdx.scenes.scene2d.Actor;
@@ -22,6 +20,7 @@ import com.badlogic.gdx.utils.viewport.FitViewport;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.ColonyTile;
 import net.sf.freecol.common.model.ProductionSummary;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.Unit;
@@ -32,6 +31,10 @@ import net.sf.freecol.common.model.colonyproduction.DefaultColonySettingProvider
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.UnitTypeChange;
+
+import java.util.List;
+
 import promitech.colonization.GameResources;
 import promitech.colonization.gdx.Frame;
 import promitech.colonization.screen.ApplicationScreen;
@@ -124,6 +127,12 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	    		// from terrain location to terrain location but diffrent goods type
 	    		terrainPanel.changeWorkerProduction(item.prodLocation.getColonyTile(), item.prodLocation.getTileTypeInitProduction());
 	    	}
+			if (ActionTypes.CLEAR_SPECIALITY.equals(item.actionType)) {
+				unit.changeUnitType(UnitTypeChange.ChangeType.CLEAR_SKILL);
+				unitActor.updateTexture();
+				colony.updateModelOnWorkerAllocationOrGoodsTransfer();
+				changeColonyStateListener.changeUnitAllocation();
+			}
 	    	return true;
 		}
 	    
@@ -147,6 +156,14 @@ public class ColonyApplicationScreen extends ApplicationScreen {
             	dialog.addCommandItemSeparator();
 	            addCommands(unit, dialog);
 	        }
+
+			if (unit.isPerson() && unit.unitType.canBeUpgraded(
+				Specification.instance.freeColonistUnitType,
+				UnitTypeChange.ChangeType.CLEAR_SKILL
+			)) {
+				dialog.addCommandItemSeparator();
+				dialog.addCommandItem(new UnitActionOrderItem("clearSpeciality", ActionTypes.CLEAR_SPECIALITY));
+			}
 	    }
 	    
 	    private void addCommands(Unit unit, UnitActionOrdersDialog dialog) {

@@ -20,6 +20,7 @@ import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.player.Notification;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.UnitTypeChange;
 
 import java.util.List;
 
@@ -67,6 +68,10 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 			case SENTRY: 
 				unitActor.unit.setState(UnitState.SENTRY);
 				break;
+			case CLEAR_SPECIALITY:
+				unitActor.unit.changeUnitType(UnitTypeChange.ChangeType.CLEAR_SKILL);
+				unitActor.updateTexture();
+				break;
 			}
 			return true;
 		}
@@ -84,6 +89,13 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 	        if (unit.canChangeState(UnitState.SENTRY)) {
 	        	dialog.addCommandItem(new UnitActionOrderItem("sentryUnit", ActionTypes.SENTRY));
 	        }
+			if (unit.isPerson() && unit.unitType.canBeUpgraded(
+				Specification.instance.freeColonistUnitType,
+				UnitTypeChange.ChangeType.CLEAR_SKILL
+			)) {
+				dialog.addCommandItemSeparator();
+				dialog.addCommandItem(new UnitActionOrderItem("clearSpeciality", ActionTypes.CLEAR_SPECIALITY));
+			}
 		}
 		
 	    private void addEquippedRoles(Unit unit, UnitActionOrdersDialog dialog) {

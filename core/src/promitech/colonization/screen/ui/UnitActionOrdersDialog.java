@@ -14,7 +14,6 @@ import com.badlogic.gdx.utils.Align;
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import com.badlogic.gdx.utils.Scaling;
 
-import net.sf.freecol.common.model.GoodMaxProductionLocation;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
@@ -48,7 +47,8 @@ public class UnitActionOrdersDialog extends ClosableDialog<UnitActionOrdersDialo
         FORTIFY,
         CLEAR_ORDERS,
         SENTRY,
-        SAIL_TO_NEW_WORLD
+        SAIL_TO_NEW_WORLD,
+        CLEAR_SPECIALITY
     }
     
     public static class UnitActionOrderItem {
