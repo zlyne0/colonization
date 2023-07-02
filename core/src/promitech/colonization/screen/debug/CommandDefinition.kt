@@ -3,6 +3,7 @@ package promitech.colonization.screen.debug
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.IndianSettlement
+import net.sf.freecol.common.model.IndianSettlementProduction
 import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
@@ -33,6 +34,7 @@ import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequest
 import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
+import net.sf.freecol.common.model.forEachTile
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -931,5 +933,30 @@ class DebugColonyProduction(
 		val colonyProductionPlaner = ColonyProductionPlaner(player)
 		val buildingsRecommendations = colonyProductionPlaner.buildRecommendations()
 		colonyProductionPlaner.prettyPrintSettlementsBuildingValue(buildingsRecommendations)
+	}
+}
+
+class DebugIndianSettlementProduction(
+	val di: DI,
+	val guiGameModel: GUIGameModel,
+	val tileDebugView: TileDebugView,
+	val mapActor: MapActor
+) {
+
+	fun print() {
+		tileDebugView.reset()
+		val indianSettlementProduction = IndianSettlementProduction()
+		guiGameModel.game.map.forEachTile { tile  ->
+			if (tile.hasSettlement() && tile.settlement.owner.isIndian) {
+				val indianSettlement = tile.settlement.asIndianSettlement()
+				indianSettlementProduction.init(guiGameModel.game.map, indianSettlement)
+
+				val prod = indianSettlementProduction.maxProduction.getQuantity(GoodsType.GRAIN) +
+					indianSettlementProduction.maxProduction.getQuantity(GoodsType.FISH)
+				val cons = indianSettlementProduction.consumptionGoods.getQuantity(GoodsType.FOOD)
+
+				tileDebugView.appendStr(tile.x, tile.y, "food: $cons/$prod")
+			}
+		}
 	}
 }

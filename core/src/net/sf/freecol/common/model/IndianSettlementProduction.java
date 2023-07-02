@@ -403,4 +403,12 @@ public class IndianSettlementProduction {
 		}
 		return true;
 	}
+
+	public ProductionSummary getMaxProduction() {
+		return maxProduction;
+	}
+
+	public ProductionSummary getConsumptionGoods() {
+		return consumptionGoods;
+	}
 }
