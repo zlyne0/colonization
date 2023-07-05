@@ -145,7 +145,7 @@ public class MapActor extends Widget implements Map {
 			needResetUnexploredBorders = false;
 			mapDrawModel.resetUnexploredBorders(initializer);
 		}
-        if (mapCentered == false) {
+        if (!mapCentered) {
 			mapCentered = true;
 			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
 		}
@@ -154,7 +154,7 @@ public class MapActor extends Widget implements Map {
                 unitAnimationsToStart.get(i).initMapPos(mapRenderer);
                 getStage().addAction((Action)unitAnimationsToStart.get(i));
             }
-            mapDrawModel.unitTileAnimation = unitAnimationsToStart.get(0);
+			mapDrawModel.addUnitTileAnimation(unitAnimationsToStart.get(0));
             unitAnimationsToStart.clear();
         }
         mapRenderer.render(batch);
@@ -212,7 +212,7 @@ public class MapActor extends Widget implements Map {
 		mapRenderer.hideTileOwners();
 	}
 	
-	public void showTileDebugStrings(String strings[][]) {
+	public void showTileDebugStrings(String[][] strings) {
 		mapRenderer.showTileDebugStrings(strings);
 	}
 	

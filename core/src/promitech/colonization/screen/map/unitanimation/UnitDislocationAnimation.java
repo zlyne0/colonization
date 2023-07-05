@@ -2,6 +2,7 @@ package promitech.colonization.screen.map.unitanimation;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.TemporalAction;
+import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -18,8 +19,8 @@ class UnitDislocationAnimation extends TemporalAction implements UnitTileAnimati
 	private final Vector2 source = new Vector2();
 	private final Vector2 dest = new Vector2();
 	private final Vector2 v = new Vector2();
-	
-	private Runnable endActionListener;
+
+	private final Array<Runnable> animationEndListeners = new Array<>(2);
 	
 	UnitDislocationAnimation() {
 	}
@@ -33,8 +34,9 @@ class UnitDislocationAnimation extends TemporalAction implements UnitTileAnimati
 		this.unit = unit;
 		this.sourceTile = sourceTile;
 		this.destTile = destTile;
-		this.endActionListener = endActionListener;
-		
+		this.animationEndListeners.clear();
+		this.animationEndListeners.add(endActionListener);
+
 		restart();
 		setDuration(UPDATE_DURATION);
 	}
@@ -55,10 +57,11 @@ class UnitDislocationAnimation extends TemporalAction implements UnitTileAnimati
 		unit = null;
 		sourceTile = null;
 		destTile = null;
-		
-		if (endActionListener != null) {
-			endActionListener.run();
+
+		for (Runnable animationEndListener : animationEndListeners) {
+			animationEndListener.run();
 		}
+		animationEndListeners.clear();
 	}
 	
 	@Override
@@ -79,5 +82,9 @@ class UnitDislocationAnimation extends TemporalAction implements UnitTileAnimati
 		}
 	}
 
+	@Override
+	public void addEndListener(Runnable listener) {
+		this.animationEndListeners.add(listener);
+	}
 }
 

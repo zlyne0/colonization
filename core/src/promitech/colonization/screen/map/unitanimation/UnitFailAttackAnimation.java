@@ -1,6 +1,7 @@
 package promitech.colonization.screen.map.unitanimation;
 
 import com.badlogic.gdx.scenes.scene2d.actions.SequenceAction;
+import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -21,15 +22,15 @@ class UnitFailAttackAnimation extends SequenceAction implements UnitTileAnimatio
 		@Override
 		public void run() {
 			actualAnimationPart = UnitTileAnimation.NoAnimation;
-			if (animationEndListener != null) {
+			for (Runnable animationEndListener : animationEndListeners) {
 				animationEndListener.run();
-				animationEndListener = null;
 			}
+			animationEndListeners.clear();
 		}
 	};
 	
 	private UnitTileAnimation actualAnimationPart = UnitTileAnimation.NoAnimation;
-	private Runnable animationEndListener;
+	private final Array<Runnable> animationEndListeners = new Array<>(2);
 	
 	@Override
 	public void initMapPos(MapRenderer mapRenderer) {
@@ -48,7 +49,8 @@ class UnitFailAttackAnimation extends SequenceAction implements UnitTileAnimatio
 	}
 	
 	public void init(Unit unit, Tile sourceTile, Tile destTile, Runnable animationEndListener) {
-		this.animationEndListener = animationEndListener;
+		animationEndListeners.clear();
+		animationEndListeners.add(animationEndListener);
 		
 		addAction(attack);
 		addAction(disappear);
@@ -58,4 +60,8 @@ class UnitFailAttackAnimation extends SequenceAction implements UnitTileAnimatio
         actualAnimationPart = attack;
 	}
 
+	@Override
+	public void addEndListener(Runnable listener) {
+		this.animationEndListeners.add(listener);
+	}
 }

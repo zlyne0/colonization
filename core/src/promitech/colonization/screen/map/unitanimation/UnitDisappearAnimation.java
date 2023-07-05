@@ -2,6 +2,7 @@ package promitech.colonization.screen.map.unitanimation;
 
 import com.badlogic.gdx.math.Vector2;
 import com.badlogic.gdx.scenes.scene2d.actions.TemporalAction;
+import com.badlogic.gdx.utils.Array;
 
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -15,8 +16,8 @@ class UnitDisappearAnimation extends TemporalAction implements UnitTileAnimation
 	private Tile tile;
 	private final Vector2 pos = new Vector2();
 	private float alpha = 1.0f;
-	
-	private Runnable endActionListener;
+
+	private final Array<Runnable> animationEndListeners = new Array<>(2);
 	
 	UnitDisappearAnimation() {
 	}
@@ -29,7 +30,8 @@ class UnitDisappearAnimation extends TemporalAction implements UnitTileAnimation
 	void init(Unit unit, Tile tile, Runnable endActionListener) {
 		this.unit = unit;
 		this.tile = tile;
-		this.endActionListener = endActionListener;
+		this.animationEndListeners.clear();
+		this.animationEndListeners.add(endActionListener);
 		this.alpha = 1.0f;
 		
 		restart();
@@ -49,9 +51,10 @@ class UnitDisappearAnimation extends TemporalAction implements UnitTileAnimation
 	protected void end() {
 		unit = null;
 		tile = null;
-		if (endActionListener != null) {
-			endActionListener.run();
+		for (Runnable animationEndListener : animationEndListeners) {
+			animationEndListener.run();
 		}
+		animationEndListeners.clear();
 	}
 	
 	@Override
@@ -69,6 +72,11 @@ class UnitDisappearAnimation extends TemporalAction implements UnitTileAnimation
 		if (unit != null) {
 			unitDrawer.drawUnit(unit, pos, alpha);
 		}
+	}
+
+	@Override
+	public void addEndListener(Runnable listener) {
+		this.animationEndListeners.add(listener);
 	}
 }
 

@@ -42,7 +42,7 @@ public class ObjectsTileDrawer extends TileDrawer {
 			return;
 		}
 		
-		Unit animatedUnit = mapDrawModel.unitTileAnimation.getUnit();
+		Unit animatedUnit = mapDrawModel.getUnitTileAnimation().getUnit();
 		if (animatedUnit != null) {
 			// tile is animated so take first unit as background
 			if (!tile.hasSettlement()) {

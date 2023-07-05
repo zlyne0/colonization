@@ -14,6 +14,11 @@ public interface UnitTileAnimation {
 		public Unit getUnit() {
 			return null;
 		}
+
+		@Override
+		public void addEndListener(Runnable listener) {
+		}
+
 		@Override
 		public void drawUnit(ObjectsTileDrawer drawer) {
 		}
@@ -24,4 +29,6 @@ public interface UnitTileAnimation {
     void drawUnit(ObjectsTileDrawer drawer);
     
     Unit getUnit();
+
+	void addEndListener(Runnable listener);
 }

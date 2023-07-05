@@ -29,14 +29,25 @@ public class MapDrawModel {
 	private Unit selectedUnit;
 	public Player playingPlayer;
 	protected Map map;
-	
-	protected UnitTileAnimation unitTileAnimation = UnitTileAnimation.NoAnimation;
-	
+
+	private UnitTileAnimation unitTileAnimation = UnitTileAnimation.NoAnimation;
+	private final Runnable endAnimationListener = new Runnable() {
+		@Override
+		public void run() {
+			unitTileAnimation = UnitTileAnimation.NoAnimation;
+		}
+	};
+
 	public Path unitPath;
 	
 	public MapDrawModel() {
 	}
-	
+
+	void addUnitTileAnimation(UnitTileAnimation animation) {
+		animation.addEndListener(endAnimationListener);
+		this.unitTileAnimation = animation;
+	}
+
 	protected void initialize(TileDrawModelInitializer initializer, Game game) {
 		this.map = game.map;
 		this.playingPlayer = game.playingPlayer;
@@ -96,7 +107,11 @@ public class MapDrawModel {
 	public Unit getSelectedUnit() {
 		return selectedUnit;
 	}
-	
+
+	public UnitTileAnimation getUnitTileAnimation() {
+		return unitTileAnimation;
+	}
+
 	public void setSelectedUnit(Unit selectedUnit) {
 		this.selectedUnit = selectedUnit;
 		for (ChangeSelectedUnitListener l : changeSelectedUnitListeners) {

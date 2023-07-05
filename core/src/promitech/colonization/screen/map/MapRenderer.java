@@ -178,7 +178,7 @@ public class MapRenderer {
     }
 
     private void drawMoveUnitAnimation(Batch batch) {
-		mapDrawModel.unitTileAnimation.drawUnit(objectsTileDrawer);
+		mapDrawModel.getUnitTileAnimation().drawUnit(objectsTileDrawer);
 	}
 
 	private void drawPathLayer(Batch batch) {
