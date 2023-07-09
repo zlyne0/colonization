@@ -136,8 +136,8 @@ public class UnitActor extends Widget implements
 		System.out.println("carrierPanel: carrierId[" + unit.getId() + "] put goods " + anAbstractGood);
 		
 		if (anAbstractGood.isNotEmpty()) {
-			unit.getGoodsContainer().increaseGoodsQuantity(anAbstractGood);
-			
+			unit.loadCargo(anAbstractGood);
+
 			cargoPanel.updateCargoPanelData();
 			changeColonyStateListener.transfereGoods();
 		}

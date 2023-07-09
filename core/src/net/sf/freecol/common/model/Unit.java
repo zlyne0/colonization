@@ -229,6 +229,20 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return unitContainer.canAdd(this, unit.owner, unit.unitType);
 	}
 
+	public void loadCargo(AbstractGoods anAbstractGood) {
+		goodsContainer.increaseGoodsQuantity(anAbstractGood);
+		if (!hasFullMovesPoints()) {
+			reduceMovesLeftToZero();
+		}
+	}
+
+	public void unloadCargo(AbstractGoods anAbstractGood) {
+		goodsContainer.decreaseGoodsQuantity(anAbstractGood);
+		if (!hasFullMovesPoints()) {
+			reduceMovesLeftToZero();
+		}
+	}
+
     public GoodsContainer getGoodsContainer() {
         return goodsContainer;
     }

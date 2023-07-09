@@ -90,7 +90,7 @@ class CargoPanel extends Table implements
 	public void takePayload(AbstractGoods anAbstractGood, float x, float y) {
 		System.out.println("carrierPanel: carrierId[" + unitActor.unit.getId() + "] take goods " + anAbstractGood);
 
-		unitActor.unit.getGoodsContainer().decreaseGoodsQuantity(anAbstractGood);
+		unitActor.unit.unloadCargo(anAbstractGood);
 		updateCargoPanelData();
 		changeColonyStateListener.transfereGoods();
 	}
