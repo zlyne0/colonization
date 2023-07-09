@@ -220,7 +220,11 @@ public class MarketData extends ObjectWithId {
 	protected GoodsType getGoodsType() {
 		return goodsType;
 	}
-    
+
+	public int getSales() {
+		return sales;
+	}
+
 	public static class Xml extends XmlNodeParser<MarketData> {
 
 		private static final String ATTR_TRADED = "traded";

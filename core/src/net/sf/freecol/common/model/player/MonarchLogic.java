@@ -35,17 +35,7 @@ public class MonarchLogic {
                 break;
             case RAISE_TAX_ACT:
             case RAISE_TAX_WAR:
-                man = new MonarchActionNotification(action);
-                
-                player.market().findMostValuableGoods(player, man);
-                if (man.getGoodsType() == null) {
-                    System.out.println("Ignoring tax raise, no goods to boycott.");
-                    return;
-                }
-                man.setTax(monarch.potentialTaxRaiseValue(game));
-                
-                player.eventsNotifications.addMessageNotificationAsFirst(man);
-                
+                RaiseTaxMonarchDecisionKt.generateRiseTaxNotification(game, player, action);
                 break;
             case LOWER_TAX_WAR:
             case LOWER_TAX_OTHER:

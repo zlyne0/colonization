@@ -135,7 +135,7 @@ public class Monarch implements Identifiable {
             return true;
         case RAISE_TAX_ACT: 
         case RAISE_TAX_WAR:
-            return player.getTax() < getMaximumTaxInGame();
+            return player.getTax() < RaiseTaxMonarchDecisionKt.maximumTaxInGame();
         case FORCE_TAX:
             return false;
         case LOWER_TAX_WAR: 
@@ -216,19 +216,6 @@ public class Monarch implements Identifiable {
 		}
 		return friends;
 	}
-    
-    private int getMaximumTaxInGame() {
-        return Specification.options.getIntValue(GameOptions.MAXIMUM_TAX);
-    }
-
-    public int potentialTaxRaiseValue(Game game) {
-        int taxAdjustment = Specification.options.getIntValue(GameOptions.TAX_ADJUSTMENT);
-        int turn = game.getTurn().getNumber();
-        int oldTax = player.getTax();
-        int adjust = Math.max(1, (6 - taxAdjustment) * 10); // 20-60
-        adjust = 1 + Randomizer.instance().randomInt(5 + turn/adjust);
-        return Math.min(oldTax + adjust, getMaximumTaxInGame());
-    }
     
     public int generateLowerTaxValue() {
         int taxAdjustment = Specification.options.getIntValue(GameOptions.TAX_ADJUSTMENT);

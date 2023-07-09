@@ -44,8 +44,8 @@ class CustomHouseDialog(
 		scrollPane.setOverscroll(true, true)
 		scrollPane.setScrollBarPositions(false, true)
 		scrollPane.setScrollingDisabled(true, false)
-		
-		getContentTable().add(scrollPane).pad(20f).expandX().fillX().row()		
+
+		getContentTable().add(scrollPane).pad(20f).expandX().fillX().row()
 		
 		buttonTableLayoutExtendX()
 		getButtonTable().add(okButton()).padTop(20f)
@@ -78,9 +78,9 @@ class CustomHouseDialog(
 				exportInfo.setExportLevel(exportLevel.getText().toInt())
 			}
 		})
-		
+
 		goodsListTable.defaults().pad(5f, 0f, 5f, 10f)
-		goodsListTable.add(Image(img.texture))
+		goodsListTable.add(Image(img.texture)).padLeft(10f).minWidth(img.texture.texture.width.toFloat())
 		goodsListTable.add(Label(label, skin))
 		goodsListTable.add(exportCheckBox)
 		goodsListTable.add(exportLevel)

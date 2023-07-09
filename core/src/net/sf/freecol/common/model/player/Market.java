@@ -243,10 +243,6 @@ public class Market extends ObjectWithId {
 
 	public TransactionEffectOnMarket sellGoods(Game game, Player player, GoodsType goodsType, int goodsAmount) {
 	    MarketData marketData = marketGoods.getByIdOrNull(goodsType.getId());
-		if (marketData.hasArrears()) {
-			throw new IllegalStateException("can not sell goods: " + goodsType + " because of arrears");
-		}
-		
 		TRANSACTION_EFFECT_ON_MARKET.reset();
 		
 		TRANSACTION_EFFECT_ON_MARKET.sell(goodsType, goodsAmount, marketData, player.getTax());
@@ -295,10 +291,7 @@ public class Market extends ObjectWithId {
 	
 	public boolean canTradeInEurope(String goodsTypeId) {
 		MarketData marketData = marketGoods.getByIdOrNull(goodsTypeId);
-		if (marketData == null || marketData.hasNotArrears()) {
-			return true;
-		}
-		return false;
+		return marketData == null || marketData.hasNotArrears();
 	}
 	
 	public boolean canTradeInCustomHouse(Game game, Player player, String goodsTypeId) {
@@ -316,45 +309,6 @@ public class Market extends ObjectWithId {
         }
 		return false;
 	}
-	
-    /**
-     * Get the most valuable goods available in one of the player's
-     * colonies for the purposes of choosing a threat-to-boycott.  The
-     * goods must not currently be boycotted, the player must have
-     * traded in it, and the amount to be discarded will not exceed
-     * GoodsContainer.CARGO_SIZE.
-     * @param man 
-     *
-     * @return A goods object, or null if nothing suitable found.
-     */
-    public void findMostValuableGoods(Player player, MonarchActionNotification man) {
-        if (!player.isEuropean()) {
-        	man.setGoodsType(null);
-        	return;
-        }
-        int value = 0;
-        
-        for (Settlement settlement : player.settlements.entities()) {
-        	Colony colony = settlement.asColony();
-        	for (MarketData md : marketGoods.entities()) {
-        		if (md.hasArrears()) {
-        			continue;
-        		}
-        		int a = colony.getGoodsContainer().goodsAmount(md.getGoodsType());
-        		a = Math.min(a, ProductionSummary.CARRIER_SLOT_MAX_QUANTITY);
-        		if (a <= 0) {
-        			continue;
-        		}
-        		int sellPrice = md.getCostToSell(a);
-        		if (sellPrice > value) {
-        			value = sellPrice;
-        			man.setGoodsAmount(a);
-        			man.setGoodsType(md.getGoodsType());
-        			man.setColonyId(colony.getId());
-        		}
-        	}
-        }
-    }
 
     public void initGoods() {
         for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
