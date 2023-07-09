@@ -18,6 +18,7 @@ import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
 import net.sf.freecol.common.model.specification.NationType.SettlementNumber;
+import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.options.UnitListOption;
 
 public class LoadSpecificationTest {
@@ -65,6 +66,16 @@ public class LoadSpecificationTest {
     	UnitType freeColonist = specification.unitTypes.getById(UnitType.FREE_COLONIST);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.FOOD).getQuantity()).isEqualTo(2);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.BELLS).getQuantity()).isEqualTo(1);
+		assertThat(freeColonist.canBeUpgraded(UnitTypeChange.ChangeType.CLEAR_SKILL)).isFalse();
+
+		UnitType expertFisherman = specification.unitTypes.getById(UnitType.EXPERT_FISHERMAN);
+		assertThat(expertFisherman.canBeUpgraded(UnitTypeChange.ChangeType.CLEAR_SKILL)).isTrue();
+
+		UnitType indenturedServant = specification.unitTypes.getById(UnitType.INDENTURED_SERVANT);
+		assertThat(indenturedServant.canBeUpgraded(UnitTypeChange.ChangeType.CLEAR_SKILL)).isFalse();
+
+		UnitType pettyCriminal = specification.unitTypes.getById(UnitType.PETTY_CRIMINAL);
+		assertThat(pettyCriminal.canBeUpgraded(UnitTypeChange.ChangeType.CLEAR_SKILL)).isFalse();
 	}
 
 	private void verifyNationType(Specification specification) {

@@ -562,7 +562,10 @@ public class Savegame1600Verifier {
     	UnitType freeColonist = specification.unitTypes.getById(UnitType.FREE_COLONIST);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.FOOD).getQuantity()).isEqualTo(2);
     	assertThat(freeColonist.unitConsumption.getById(GoodsType.BELLS).getQuantity()).isEqualTo(1);
-    	
+
+        UnitType expertFisherman = specification.unitTypes.getById(UnitType.EXPERT_FISHERMAN);
+        assertThat(expertFisherman.canBeUpgraded(ChangeType.CLEAR_SKILL)).isTrue();
+
     	UnitType artillery = specification.unitTypes.getById("model.unit.artillery");
     	Player player = game.players.getById("player:1");
     	UnitType damagedArtillery = artillery.upgradeByChangeType(ChangeType.DEMOTION, player);

@@ -1248,6 +1248,7 @@
       <modifier id="model.modifier.conversionAlarmRate" type="percentage" value="2"/>
       <downgrade unit="model.unit.undead" undead="100"/>
       <downgrade unit="model.unit.freeColonist" clearSkill="100"/>
+      <upgrade unit="model.unit.freeColonist" clearSkill="100"/>
       <consumes id="model.goods.food" value="2" />
       <consumes id="model.goods.bells" value="1" />
     </unit-type>
@@ -1257,6 +1258,7 @@
       <ability id="model.ability.foundInLostCity" value="true"/>
       <required-goods id="model.goods.food" value="200"/>
       <downgrade unit="model.unit.freeColonist" delete="true" />
+      <upgrade unit="model.unit.freeColonist"/>
       <upgrade unit="model.unit.expertFarmer" turnsToLearn="4" learnFromNatives="100" learnFromExperience="4"/>
       <upgrade unit="model.unit.expertFisherman" turnsToLearn="4" learnFromNatives="100" learnFromExperience="4"/>
       <upgrade unit="model.unit.expertFurTrapper" turnsToLearn="4" learnFromNatives="100" learnFromExperience="4"/>
@@ -1462,6 +1464,7 @@
                skill="-2"
                recruitProbability="20" scoreValue="1">
       <downgrade unit="model.unit.freeColonist" delete="true" />
+      <upgrade unit="model.unit.freeColonist"/>
       <upgrade unit="model.unit.indenturedServant" turnsToLearn="4" promotion="100"/>
       <upgrade unit="model.unit.seasonedScout" learnInLostCity="100" learnInSchool="0"/>
       <modifier id="model.goods.rum" index="30"

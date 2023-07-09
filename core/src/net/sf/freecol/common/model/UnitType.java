@@ -371,6 +371,7 @@ public class UnitType extends BuildableType {
             	UnitType parent = Specification.instance.unitTypes.getById(ut.extendsId);
             	ut.addFeatures(parent);
             	ut.unitConsumption.addAll(parent.unitConsumption);
+				ut.unitTypeChanges.addAll(parent.unitTypeChanges);
             }
             nodeObject = ut;
         }
