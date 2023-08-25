@@ -45,3 +45,12 @@ inline fun Map.forEachTileInRange(sourceTile: Tile, radius: Int, action: (Tile) 
         }
     }
 }
+
+inline fun Map.forEachNeighbourTile(sourceTile: Tile, action: (Tile) -> kotlin.Unit) {
+    for (direction in Direction.allDirections) {
+        val neighbourTile: Tile? = getTile(sourceTile, direction!!)
+        if (neighbourTile != null) {
+            action(neighbourTile)
+        }
+    }
+}
