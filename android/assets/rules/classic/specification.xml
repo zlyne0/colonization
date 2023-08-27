@@ -943,7 +943,7 @@
       <ability id="model.ability.armed" value="true"/>
       <ability id="model.ability.canBeCaptured" value="false"/>
       <ability id="model.ability.captureUnits" value="true"/>
-      <ability id="model.ability.demandTribue" value="true"/>
+      <ability id="model.ability.demandTribute" value="true"/>
       <ability id="model.ability.mounted" value="true"/>
       <modifier id="model.modifier.defence"
                 type="additive" value="2" index="30"/>
