@@ -3,10 +3,19 @@ package promitech.map;
 public class IntIntArray extends AbstractArray2D {
 
     protected final int[][] array;
+    private final int unknownValue;
 
     public IntIntArray(final int width, final int height) {
         super(width, height);
         array = new int[height][width];
+        unknownValue = 0;
+    }
+
+    public IntIntArray(final int width, final int height, final int unknownValue) {
+        super(width, height);
+        array = new int[height][width];
+        this.unknownValue = unknownValue;
+        set(unknownValue);
     }
 
     public int get(final int x, final int y) {
@@ -30,5 +39,19 @@ public class IntIntArray extends AbstractArray2D {
 
     public int size() {
         return width * height;
+    }
+
+    public int getUnknownValue() {
+        return unknownValue;
+    }
+
+    public void addValue(final int x, final int y, final int value) {
+        int v = get(x, y);
+        if (v == unknownValue) {
+            v = value;
+        } else {
+            v = v + value;
+        }
+        set(x, y, v);
     }
 }
