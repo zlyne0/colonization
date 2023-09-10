@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitRole;
+import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.Modifier;
@@ -63,7 +64,7 @@ class CombatSides {
 		this.defender = defender;
 		this.combatType = CombatType.ATTACK;
 		this.combatAmphibious = this.isCombatAmphibious(attacker, defender);
-		offencePower = getOffencePower(attacker, defender);
+		offencePower = calculateOffencePower(attacker, defender);
 		defencePower = getDefencePower(attacker, defender, defenderTile);
 
 		winPropability = offencePower / (offencePower + defencePower);
@@ -129,11 +130,29 @@ class CombatSides {
 		combatModifiersNames.put(Modifier.AMPHIBIOUS_ATTACK, AMPHIBIOUS_ATTACK_PENALTY);
 	}
 
-	float getOffencePower(Unit unit) {
-		return getOffencePower(unit, null);
+	float calculateOffencePower(Unit unit) {
+		return calculateOffencePower(unit, null);
 	}
-	
-	private float getOffencePower(Unit attacker, Unit defender) {
+
+	float calculateOffencePower(UnitType unitType, UnitRole unitRole) {
+		offenceModifers.clearLists();
+		if (unitType.getBaseOffence() != 0) {
+			offenceModifers.addModifier(new Modifier(
+				Modifier.OFFENCE,
+				Modifier.ModifierType.ADDITIVE,
+				unitType.getBaseOffence()
+			));
+		}
+		offenceModifers.addModifierFrom(unitType, Modifier.OFFENCE);
+		offenceModifers.addModifierFrom(unitRole, Modifier.OFFENCE);
+		// Attack bonus
+		offenceModifers.addModifier(
+			Specification.instance.modifiers.getById(Modifier.ATTACK_BONUS)
+		);
+		return offenceModifers.applyModifiers(0);
+	}
+
+	private float calculateOffencePower(Unit attacker, Unit defender) {
 		offenceModifers.clearLists();
 		
 		if (attacker.unitType.getBaseOffence() != 0) {
@@ -174,7 +193,19 @@ class CombatSides {
     	
 		return offenceModifers.applyModifiers(0);
 	}
-	
+
+	public float calculateDefencePower(UnitType unitType, UnitRole unitRole) {
+		defenceModifiers.clearLists();
+		defenceModifiers.addModifier(new Modifier(
+			Modifier.DEFENCE,
+			Modifier.ModifierType.ADDITIVE,
+			unitType.getBaseDefence()
+		));
+		defenceModifiers.addModifierFrom(unitType, Modifier.DEFENCE);
+		defenceModifiers.addModifierFrom(unitRole, Modifier.DEFENCE);
+		return defenceModifiers.applyModifiers(0);
+	}
+
 	private float getDefencePower(Unit attacker, Unit defender, Tile tileDefender) {
 		defenceModifiers.clearLists();
 

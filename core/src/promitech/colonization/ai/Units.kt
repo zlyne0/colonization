@@ -10,6 +10,7 @@ import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.player.Player
 
 typealias UnitTypeId = String
+typealias UnitRoleId = String
 
 fun Player.findShipsTileLocations(map: Map): List<Tile> {
     val sourceTiles = mutableListOf<Tile>()

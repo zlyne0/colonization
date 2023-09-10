@@ -1,10 +1,5 @@
 package promitech.colonization.savegame;
 
-import java.util.Locale;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
 
@@ -16,10 +11,15 @@ import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.specification.BuildingType;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+
+import java.util.Locale;
+
 import promitech.colonization.Direction;
-import promitech.colonization.savegame.SaveGameParser;
 import promitech.colonization.ui.resources.Messages;
 
 public class Savegame1600BaseClass {
@@ -68,6 +68,10 @@ public class Savegame1600BaseClass {
 
 	protected GoodsType goodsType(String goodsTypeId) {
 		return Specification.instance.goodsTypes.getById(goodsTypeId);
+	}
+
+	protected BuildingType buildingType(String buildingTypeId) {
+		return Specification.instance.buildingTypes.getById(buildingTypeId);
 	}
 
 	protected Tile tileFrom(Settlement settlement, Direction direction) {

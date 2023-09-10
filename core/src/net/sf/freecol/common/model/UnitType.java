@@ -124,7 +124,11 @@ public class UnitType extends BuildableType {
     	super(id);
     }
 
-    public String resourceImageKey() {
+	public int getScoreValue() {
+		return scoreValue;
+	}
+
+	public String resourceImageKey() {
     	return getId() + ".image";
     }
     

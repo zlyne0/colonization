@@ -1,21 +1,22 @@
 package net.sf.freecol.common.model.player;
 
-import java.io.IOException;
-
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
-import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.specification.Ability;
+import net.sf.freecol.common.model.specification.BuildableType;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
+import net.sf.freecol.common.model.specification.RequiredGoods;
+
+import java.io.IOException;
+
 import promitech.colonization.Randomizer;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
@@ -77,7 +78,15 @@ public class Market extends ObjectWithId {
 			throw new IllegalStateException("can not buy not storable goods(" + goodsType.getId() + ") on market");
 		}
 	};
-	
+
+	public int buildingGoodsPrice(BuildableType buildableType) {
+		int price = 0;
+		for (RequiredGoods rg : buildableType.requiredGoods()) {
+			price += buildingGoodsPrice(rg.goodsType, rg.amount);
+		}
+		return price;
+	}
+
 	public int buildingGoodsPrice(GoodsType goodsType, int amount) {
 		return buildingGoodsPrice.price(goodsType, amount);
 	}
@@ -86,14 +95,23 @@ public class Market extends ObjectWithId {
     	return marketGoodsPrice.price(goodsType, amount);
     }
 
+	public int aiBidPrice(MapIdEntities<RequiredGoods> requiredGoods, int count) {
+		int sum = 0;
+		for (RequiredGoods requiredGood : requiredGoods) {
+			MarketData data = marketGoods.getById(requiredGood.goodsType);
+			sum += data.getCostToBuy(requiredGood.amount * count);
+		}
+		return sum;
+	}
+
 	/**
 	 * ai ignore arrears
 	 */
 	public int aiBidPrice(GoodsCollection goods) {
 		int sum = 0;
 		for (Entry<GoodsType> goodsTypeEntry : goods.entries()) {
-			MarketData data = marketGoods.getById(goodsTypeEntry.key);
 			if (goodsTypeEntry.value > 0) {
+				MarketData data = marketGoods.getById(goodsTypeEntry.key);
 				sum += data.getCostToBuy(goodsTypeEntry.value);
 			}
 		}
