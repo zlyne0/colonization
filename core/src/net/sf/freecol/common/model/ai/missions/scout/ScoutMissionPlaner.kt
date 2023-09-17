@@ -9,7 +9,7 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import net.sf.freecol.common.model.map.InfluenceRangeMap
+import net.sf.freecol.common.model.map.InfluenceRangeMapBuilder
 import net.sf.freecol.common.model.map.path.Path
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
@@ -106,8 +106,10 @@ class ScoutMissionPlaner(
     }
 
     private fun findInOtherIsland(player: Player): Tile? {
-        val influenceMap = InfluenceRangeMap(game.map, maxRangeForScoutOnOtherIsland)
-        influenceMap.generate(player.generateCivilizationSources(game.map))
+        val influenceMap = InfluenceRangeMapBuilder()
+        influenceMap.init(game.map)
+        influenceMap.addRangeSource(player.generateCivilizationSources(game.map))
+        influenceMap.generateRange(maxRangeForScoutOnOtherIsland)
         val tileOnOtherIsland = findTheBestForRange(player) { tile -> influenceMap.range(tile) }
         if (tileOnOtherIsland == null) {
             return null

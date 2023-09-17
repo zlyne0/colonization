@@ -1,88 +1,64 @@
 package net.sf.freecol.common.model.map
 
-import com.badlogic.gdx.utils.Array
 import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
-import net.sf.freecol.common.model.forEachNeighbourTile
+import promitech.map.FloatFloatArray
 import promitech.map.IntIntArray
 import promitech.map.forEach
 
 class PowerInfluenceMap(
     private val map: Map,
-    private val decreaseValue: Int = 1,
-    private val tileFilter: (Tile) -> Boolean = InfluenceRangeMap.ALLOW_ALL_TILES_FILTER
+    private val tileFilter: (Tile) -> Boolean,
+    private val influenceRangeMapBuilder: InfluenceRangeMapBuilder
 ) {
-    val resetValue = Integer.MIN_VALUE
 
-    private val powerMap = IntIntArray(map.width, map.height)
-    private val rangeMap = IntIntArray(map.width, map.height)
-    private val tilePool = Array<Tile>(false, rangeMap.size())
+    // sum power for all sources
+    private val sumSourcePower = FloatFloatArray(map.width, map.height, FLOAT_UNKNOWN_VALUE)
+    // range from source
+    private val influencePowerMap = IntIntArray(map.width, map.height, INT_UNKNOWN_VALUE)
 
-    init {
-        powerMap.set(resetValue)
-    }
+    fun addSourceLayer(tile: Tile, startPowerProjection: Int, power: Float) {
+        influenceRangeMapBuilder.init(map, tileFilter)
+        influenceRangeMapBuilder.addPowerSource(tile, startPowerProjection)
+        influenceRangeMapBuilder.generateSpreadPower()
 
-    fun addSource(tile: Tile, startValue: Int) {
-        rangeMap.set(resetValue)
-        tilePool.clear()
-
-        rangeMap.set(tile.x, tile.y, startValue)
-        tilePool.add(tile)
-
-        generate()
-    }
-
-    private fun generate() {
-        expand()
-        increasePowerMap()
-    }
-
-    private fun expand() {
-        var range: Int
-        var tmpTile: Tile
-        while (tilePool.size != 0) {
-            tmpTile = tilePool.removeIndex(0)
-            range = rangeMap.get(tmpTile.x, tmpTile.y)
-            if (range <= 0) {
-                continue
-            }
-            range -= decreaseValue
-            map.forEachNeighbourTile(tmpTile) { nTile ->
-                if (tileFilter(nTile) && rangeMap.get(nTile.x, nTile.y) < range) {
-                    rangeMap.set(nTile.x, nTile.y, range)
-                    tilePool.add(nTile)
-                }
-            }
+        val rangeMap = influenceRangeMapBuilder.getRangeMap()
+        rangeMap.forEach { x, y, rangeMapValue ->
+            sumSourcePower.addValue(x, y, power)
+            influencePowerMap.addValue(x, y, rangeMapValue)
         }
     }
 
-    private fun increasePowerMap() {
-        var powerValue: Int
-        rangeMap.forEach { x, y, value ->
-            if (value != resetValue) {
-                powerValue = powerMap.get(x, y)
-                if (powerValue == resetValue) {
-                    powerValue = 0
-                }
-                powerMap.set(x, y, value + powerValue)
-            }
+    fun powerSum(tile: Tile): Float {
+        return sumSourcePower.get(tile.x, tile.y)
+    }
+
+    fun powerSum(x: Int, y: Int): Float {
+        return sumSourcePower.get(x, y)
+    }
+
+    fun powerProjectionRange(tile: Tile): Int {
+        return influencePowerMap.get(tile.x, tile.y)
+    }
+
+    fun powerProjectionRange(x: Int, y: Int): Int {
+        return influencePowerMap.get(x, y)
+    }
+
+    fun printInfluencePower(mapDebugInfo: MapTileDebugInfo) {
+        influencePowerMap.forEach { x, y, powerValue ->
+            mapDebugInfo.str(x, y, "${sumSourcePower.get(x, y)}/$powerValue")
         }
     }
 
-    fun power(x: Int, y: Int): Int {
-        return powerMap.get(x, y)
+    fun isUnknownValue(v: Float): Boolean {
+        return v == FLOAT_UNKNOWN_VALUE
     }
 
-    fun power(tile: Tile): Int {
-        return powerMap.get(tile.x, tile.y)
+    companion object {
+        val FLOAT_UNKNOWN_VALUE = Float.MIN_VALUE
+        val INT_UNKNOWN_VALUE = Integer.MIN_VALUE
     }
 
-    fun printTo(mapDebugInfo: MapTileDebugInfo) {
-        powerMap.forEach { x, y, value ->
-            if (value != resetValue) {
-                mapDebugInfo.str(x, y, value.toString())
-            }
-        }
-    }
 }

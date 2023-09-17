@@ -20,7 +20,6 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionVal
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
-import net.sf.freecol.common.model.ai.missions.indian.WanderMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
@@ -39,7 +38,6 @@ import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
-import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
 import net.sf.freecol.common.model.specification.BuildableType
@@ -55,6 +53,9 @@ import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
+import promitech.colonization.ai.military.DefencePlaner
+import promitech.colonization.ai.military.printColonyDefencePriority
+import promitech.colonization.ai.military.printSingleTileDefence
 import promitech.colonization.ai.navy.NavyExplorer
 import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import promitech.colonization.infrastructure.ThreadsResources
@@ -320,6 +321,10 @@ fun createCommands(
 
 		commandArg("reset_debug") {
 			resetDebug(tileDebugView)
+		}
+
+		command("simpleTest0") {
+			key6(di, guiGameModel, tileDebugView, mapActor)
 		}
 
 		command("simpleTest") {
@@ -668,6 +673,37 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		}
 	}
 
+	// key 6
+	fun key6(
+		di: DI,
+		guiGameModel: GUIGameModel,
+		tileDebugView: TileDebugView,
+		mapActor: MapActor?
+	) {
+		tileDebugView.reset()
+
+		val game = guiGameModel.game
+		val player = game.playingPlayer
+
+//		val indianOwner = game.map.getTile(28, 35).units.first().owner
+//		player.changeStance(indianOwner, Stance.WAR)
+
+//		for (unit in game.map.getTile(28, 35).units.copy()) {
+//			unit.remove()
+//		}
+
+//		game.map.getTile(31, 36).units.clear()
+//		game.map.getTile(31, 32).units.clear()
+
+//		val playerDefencePlaner = DefencePlaner(game, player)
+//		playerDefencePlaner.printWarRange(tileDebugView)
+		//playerDefencePlaner.printPowerBalance(tileDebugView)
+
+		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+		mapActor?.resetMapModel()
+		mapActor?.resetUnexploredBorders()
+	}
+
 	// key 7
 	fun key7(
 		di: DI,
@@ -686,29 +722,15 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val fortOranjeTile = game.map.getTile(25, 75)
 		val nieuwAmsterdamTile = game.map.getTile(24, 78)
 
-//		val pioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
-//		pioneer.showImprovementsPlan()
 
-		var tile = game.map.getTile(21, 74)
+//		val tile = game.map.getTile(29, 32)
+//		if (tile.units.isEmpty) {
+//			UnitFactory.createDragoon(player, tile)
+//		}
 
-
-		val indian = game.players.getById("player:154")
-
-
-		val indianMissionContainer = game.aiContainer.missionContainer(indian)
-		if (indianMissionContainer.missions.size() != 1) {
-			indianMissionContainer.clearAllMissions()
-		}
-		if (!indianMissionContainer.hasMission(WanderMission::class.java)) {
-			val brave = indian.units.getById("unit:6181")
-			indianMissionContainer.addMission(WanderMission(brave))
-
-			indian.changeStance(player, Stance.WAR)
-			indian.settlements.getById(brave.indianSettlementId)
-				.asIndianSettlement()
-				.setTension(player, Tension.Level.HATEFUL.limit)
-		}
-		executeAiPlayerMissions(indian, di, guiGameModel)
+		val playerDefencePlaner = DefencePlaner(game, player)
+		//playerDefencePlaner.scoreColoniesToDefend(tileDebugView)
+		playerDefencePlaner.printSingleTileDefence(tileDebugView)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
         mapActor?.resetMapModel()
@@ -731,37 +753,26 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val pathFinder2 = di.pathFinder2
 		val pathFinder3 = PathFinder()
 
-//		val carrier = player.units.getById("unit:895")
-//		val scoutTransportDest = game.map.getSafeTile(33, 19)
-//		val stJohnDest = game.map.getSafeTile(33, 17)
-//		val onSouth = game.map.getTile(33, 20)
-//		val scout = player.units.getById("unit:967")
-//		val unitMoveType = UnitMoveType()
+		//val england = game.players.getById("player:13")
 
-		//val debugColonyProduction = DebugColonyProduction(di, guiGameModel, tileDebugView, mapActor!!)
-		//debugColonyProduction.provideResourcesToFinishAllStartedBuildings(player)
-		//debugColonyProduction.displayColoniesBuildingsRecommendations(player)
+		//val playerDefencePlaner = DefencePlaner(game, player)
+		//playerDefencePlaner.scoreColoniesToDefend(tileDebugView)
+		//playerDefencePlaner.printColonyDefencePriority(tileDebugView)
 
+//		val englandDefencePlaner = DefencePlaner(game, england)
+//		englandDefencePlaner.scoreColoniesToDefend(tileDebugView)
+//		englandDefencePlaner.print(tileDebugView)
 
-		// given
-		val nieuwAmsterdam = game.map.getTile(24, 78).settlement.asColony()
-//		nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
-//		nieuwAmsterdam.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
-//		nieuwAmsterdam.tile.changeTileType(Specification.instance.tileTypes.getById("model.tile.broadleafForest"))
-//		nieuwAmsterdam.updateProductionToMaxPossible(nieuwAmsterdam.tile)
+//		val defencePrice = DefencePrice()
+//		defencePrice.price(dutch)
 
-//		nieuwAmsterdam.resetLiberty()
+//		val dangerRange = DangerRange(game, player)
+//		dangerRange.print(tileDebugView)
 
-		// given
+//		val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
 
-		// given
-		//nieuwAmsterdam.goodsContainer.clear()
-		nieuwAmsterdam.goodsContainer.increaseGoodsQuantity(GoodsType.COAST, nieuwAmsterdam.warehouseCapacity())
-
-		val colonyPlan = ColonyPlan(nieuwAmsterdam)
-			.withConsumeWarehouseResources(true)
-			.execute(ColonyPlan.Plan.MostValuable)
-			.allocateWorkers()
+		val playerDefencePlaner = DefencePlaner(game, player)
+		playerDefencePlaner.printColonyDefencePriority(tileDebugView)
 
 		// when
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)

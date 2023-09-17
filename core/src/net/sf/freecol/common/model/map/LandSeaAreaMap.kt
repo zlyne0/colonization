@@ -4,9 +4,10 @@ import com.badlogic.gdx.utils.Array
 import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
+import net.sf.freecol.common.model.forEachTile
 import promitech.colonization.Direction
-import promitech.map.Int2dArray
 import promitech.map.IntIntArray
+import promitech.map.forEachCords
 
 class LandSeaAreaMap(private val width: Int, private val height: Int) {
 
@@ -17,12 +18,9 @@ class LandSeaAreaMap(private val width: Int, private val height: Int) {
 
     fun generate(map: Map) {
         val poolIndex = Array<Tile>(false, map.width * map.height)
-        for (y in 0 .. map.height - 1) {
-            for (x in 0 .. map.width - 1) {
-                val tile = map.getSafeTile(x, y)
-                if (isAreaNotCreated(tile)) {
-                    createArea(poolIndex, tile, map)
-                }
+        map.forEachTile { tile ->
+            if (isAreaNotCreated(tile)) {
+                createArea(poolIndex, tile, map)
             }
         }
     }
@@ -56,10 +54,8 @@ class LandSeaAreaMap(private val width: Int, private val height: Int) {
     }
 
     fun printTo(mapDebugInfo: MapTileDebugInfo) {
-        for (y in 0 .. areas.height - 1) {
-            for (x in 0 .. areas.width - 1) {
-                mapDebugInfo.str(x, y, areas.get(x, y).toString())
-            }
+        areas.forEachCords { x, y ->
+            mapDebugInfo.str(x, y, areas.get(x, y).toString())
         }
     }
 
