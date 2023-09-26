@@ -3,6 +3,7 @@ package net.sf.freecol.common.model;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
 
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
@@ -267,10 +268,13 @@ public class IndianSettlementProduction {
     }
     
 	public List<? extends AbstractGoods> goodsToSell(IndianSettlement settlement, Unit carrier) {
-		List<GoodsAmountPrice> goodsTypeOrder = new ArrayList<GoodsAmountPrice>();
-		
+		java.util.Map<String, GoodsAmountPrice> goodsTypeOrders = new HashMap<>();
+
 		for (Entry<String> goodsEntry : settlement.getGoodsContainer().entries()) {
 			GoodsType goodsType = Specification.instance.goodsTypes.getById(goodsEntry.key);
+			if (goodsType.isFood() && !goodsType.equalsId(GoodsType.FOOD)) {
+				goodsType = Specification.instance.goodsTypes.getById(GoodsType.FOOD);
+			}
 			if (goodsType.isTradeGoods()) {
 				continue;
 			}
@@ -290,8 +294,9 @@ public class IndianSettlementProduction {
 				continue;			
 			}
 			int price = goodsPriceToSell(settlement, goodsType, amount);
-			goodsTypeOrder.add(new GoodsAmountPrice(goodsType, amount, price));
+			goodsTypeOrders.put(goodsType.getId(), new GoodsAmountPrice(goodsType, amount, price));
 		}
+		List<GoodsAmountPrice> goodsTypeOrder = new ArrayList<GoodsAmountPrice>(goodsTypeOrders.values());
 		Collections.sort(goodsTypeOrder, exportGoodsComparator);
 		return goodsTypeOrder.subList(0, Math.min(MAX_GOODS_TYPE_TO_SELL, goodsTypeOrder.size()));
 	}
