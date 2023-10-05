@@ -211,7 +211,11 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
 
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
         // when
-        val improveDestination = pioneerMissionPlaner.findNextColonyToImprove(pioneerMission, playerMissionContainer)
+        val improveDestination = pioneerMissionPlaner.findNextColonyToImprove(
+            pioneerMission.pioneer,
+            pioneerMission.colonyId,
+            playerMissionContainer
+        )
 
         // then
         assertThat(improveDestination)

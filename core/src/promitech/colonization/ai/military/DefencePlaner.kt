@@ -153,7 +153,7 @@ class DefencePlaner(val game: Game, val player: Player) {
         return offencePower
     }
 
-    fun scoreColoniesToDefend(colony: Colony): Int {
+    private fun scoreColoniesToDefend(colony: Colony): Int {
         var score = 0
         for (unit in colony.units.entities()) {
             score += unit.unitType.scoreValue * 250

@@ -26,7 +26,7 @@ class EuropeanMissionPlaner(
     private val transportGoodsToSellMissionPlaner: TransportGoodsToSellMissionPlaner = TransportGoodsToSellMissionPlaner(game, pathFinder)
     private val scoutMissionPlaner: ScoutMissionPlaner = ScoutMissionPlaner(game, pathFinder, pathFinder2)
     private val pioneerMissionPlaner: PioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
-    private val colonyWorkerRequestPlaner: ColonyWorkerRequestPlaner = ColonyWorkerRequestPlaner(game, pathFinder)
+    private val colonyWorkerRequestPlaner: ColonyWorkerRequestPlaner = ColonyWorkerRequestPlaner(game, pathFinder, pioneerMissionPlaner)
     private val buyGoodsPlaner: BuyGoodsPlaner = BuyGoodsPlaner(game)
     private val purchasePlaner: PurchasePlaner = PurchasePlaner(game)
     private val navyMissionPlaner: NavyMissionPlaner = NavyMissionPlaner(purchasePlaner, colonyWorkerRequestPlaner, transportGoodsToSellMissionPlaner)

@@ -1084,11 +1084,16 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 
 	public Tile positionRelativeToMap(Map map) {
 		Tile sourceTile = getTileLocationOrNull();
-		if (sourceTile == null && (isAtHighSeasLocation() || isAtEuropeLocation())) {
-			if (enterHighSea != null) {
-				sourceTile = map.getSafeTile(enterHighSea);
-			} else {
-				sourceTile = map.getSafeTile(owner.getEntryLocation());
+		if (sourceTile == null) {
+			if (isAtHighSeasLocation() || isAtEuropeLocation()) {
+				if (enterHighSea != null) {
+					sourceTile = map.getSafeTile(enterHighSea);
+				} else {
+					sourceTile = map.getSafeTile(owner.getEntryLocation());
+				}
+			} else if (isAtUnitLocation()) {
+				Unit carrier = getLocationOrNull(Unit.class);
+				return carrier.positionRelativeToMap(map);
 			}
 		}
 		return sourceTile;

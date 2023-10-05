@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
 import org.assertj.core.api.Assertions.assertThat
@@ -34,7 +35,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         purchasePlaner.avoidPurchasesAndCollectGold()
         planer = NavyMissionPlaner(
             purchasePlaner,
-            ColonyWorkerRequestPlaner(game, di.pathFinder),
+            ColonyWorkerRequestPlaner(game, di.pathFinder, PioneerMissionPlaner(game, di.pathFinder)),
             TransportGoodsToSellMissionPlaner(game, di.pathFinder)
         )
 

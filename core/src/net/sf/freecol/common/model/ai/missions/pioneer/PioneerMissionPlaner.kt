@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ai.ColonySupplyGoods
 import net.sf.freecol.common.model.ai.missions.MissionId
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.foreachMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.colonyproduction.amount
 import net.sf.freecol.common.model.colonyproduction.type
@@ -47,6 +48,36 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     private val minDistanceToUseShipTransport = 5
     private val improvedAllTilesInColonyToAllColonyRatio: Double = 0.7
 
+    fun createMissionFromUnusedUnit(unit: Unit, playerMissionContainer: PlayerMissionsContainer): PioneerMission? {
+        if (!isPioneerUnit(unit)) {
+            return null
+        }
+
+        val pioneerDestination = findNextColonyToImprove(unit, null, playerMissionContainer)
+        when (pioneerDestination) {
+            is PioneerDestination.TheSameIsland -> {
+                val pioneerMission = PioneerMission(unit, pioneerDestination.plan.colony)
+                playerMissionContainer.addMission(pioneerMission)
+                return pioneerMission
+            }
+            is PioneerDestination.OtherIsland -> {
+                val pioneerMission = PioneerMission(unit, pioneerDestination.plan.colony)
+                playerMissionContainer.addMission(pioneerMission)
+                val transportUnitRequestMission = TransportUnitRequestMission(game.turn, unit, pioneerDestination.plan.colony.tile)
+                    .withCheckAvailability()
+                playerMissionContainer.addMission(pioneerMission, transportUnitRequestMission)
+                return pioneerMission
+            }
+            is PioneerDestination.Lack -> {
+                return null
+            }
+        }
+    }
+
+    private fun isPioneerUnit(unit: Unit): Boolean {
+        return unit.unitRole.equalsId(UnitRole.PIONEER) && unit.roleCount > 0
+    }
+
     fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): PioneerBuyPlan? {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
         var hasSpecialistOnMission = false
@@ -64,7 +95,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         }
         // simplification: existed pioneer units without mission should handled by default colony worker
 
-        val firstDestination: ColonyTilesImprovementPlan? = firstImprovmentColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
+        val firstDestination: ColonyTilesImprovementPlan? = firstImprovementColonyDestination(improvementsPlanDestinationsScore, colonyWithMissions)
         if (firstDestination == null) {
             return null
         }
@@ -225,21 +256,25 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             }
             return PioneerDestination.TheSameIsland(improvementsPlan)
         } else {
-            return findNextColonyToImprove(mission, playerMissionContainer)
+            return findNextColonyToImprove(
+                mission.pioneer,
+                mission.colonyId,
+                playerMissionContainer
+            )
         }
     }
 
-    fun findNextColonyToImprove(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
+    fun findNextColonyToImprove(pioneer: Unit, actualPioneerColonyId: String?, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
-        playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
+        playerMissionContainer.foreachMission(PioneerMission::class.java) { pioneerMission ->
             colonyWithMissions.add(pioneerMission.colonyId)
-        })
+        }
 
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(playerMissionContainer.player, AddImprovementPolicy.Balanced())
         pathFinder.generateRangeMap(
             game.map,
-            mission.pioneer.positionRelativeToMap(game.map),
-            mission.pioneer,
+            pioneer.positionRelativeToMap(game.map),
+            pioneer,
             PathFinder.includeUnexploredTiles
         )
 
@@ -247,7 +282,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             pathFinder,
             improvementsPlanDestinationsScore,
             colonyWithMissions,
-            mission
+            actualPioneerColonyId
         )
         if (improvementDestination == null || improvementDestination.isEmpty()) {
             return PioneerDestination.Lack()
@@ -262,12 +297,12 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         rangePathFinder: PathFinder,
         improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
         colonyWithMissions: Set<String>,
-        actualPioneerMission: PioneerMission
+        actualPioneerColonyId: String?
     ): ColonyTilesImprovementPlan? {
         var improvementDestination: ColonyTilesImprovementPlan? = null
         var destinationScore: Double = 0.0
         for (planScore in improvementsPlanDestinationsScore) {
-            if (planScore.obj.colony.equalsId(actualPioneerMission.colonyId)) {
+            if (actualPioneerColonyId != null && planScore.obj.colony.equalsId(actualPioneerColonyId)) {
                 improvementDestination = planScore.obj
                 destinationScore = planScore.score().toDouble() / nextColonyDistanceValue(rangePathFinder, planScore.obj.colony)
             }
@@ -297,7 +332,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return distance
     }
 
-    private fun firstImprovmentColonyDestination(
+    private fun firstImprovementColonyDestination(
         improvementsPlanDestinationsScore: ObjectScoreList<ColonyTilesImprovementPlan>,
         colonyWithMissions: Set<String>
     ): ColonyTilesImprovementPlan? {

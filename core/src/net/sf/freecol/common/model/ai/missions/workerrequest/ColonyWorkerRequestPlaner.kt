@@ -5,6 +5,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
@@ -15,7 +16,8 @@ import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonyWorkerRequestPlaner(
     private val game: Game,
-    private val pathFinder: PathFinder
+    private val pathFinder: PathFinder,
+    private val pioneerMissionPlaner: PioneerMissionPlaner
 ) {
 
     private var hasTransporter: Boolean = false
@@ -52,6 +54,10 @@ class ColonyWorkerRequestPlaner(
                 continue
             }
             if (unit.isAtTileLocation) {
+                if (pioneerMissionPlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
+                    continue
+                }
+
                 val tileScore = placeCalculator.score(playerMissionsContainer)
 
                 findTheBestLocationDependsTransporter(unit, tileScore)?.let { place ->
@@ -59,6 +65,10 @@ class ColonyWorkerRequestPlaner(
                     playerMissionsContainer.addMission(mission)
                 }
             } else if (unit.isAtEuropeLocation || unit.isAtUnitLocation) {
+                if (pioneerMissionPlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
+                    continue
+                }
+
                 if (Unit.isColonist(unit.unitType, unit.owner)) {
                     val tileScore = placeCalculator.score(playerMissionsContainer)
                     findTheBestLocationOnMap(unit, tileScore)?.let { place ->

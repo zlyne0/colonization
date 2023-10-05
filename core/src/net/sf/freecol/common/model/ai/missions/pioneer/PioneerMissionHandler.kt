@@ -230,7 +230,8 @@ class PioneerMissionHandler(
     ) {
         if (parentMission is PioneerMission) {
             val improvementDestination = pioneerMissionPlaner.findNextColonyToImprove(
-                parentMission,
+                parentMission.pioneer,
+                parentMission.colonyId,
                 playerMissionsContainer
             )
             val nextColonyDestination: Colony? = improvementDestination.extractColonyDestination()
