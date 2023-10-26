@@ -5,17 +5,19 @@ import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.forEachTile
 import net.sf.freecol.common.model.map.InfluenceRangeMapBuilder
 import net.sf.freecol.common.model.map.PowerInfluenceMap
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
+import promitech.colonization.orders.combat.DefencePower.calculatePaperDefencePower
 import promitech.colonization.orders.combat.OffencePower
 import promitech.map.FloatFloatArray
 import promitech.map.IntIntArray
 import promitech.map.forEachCords
 
-class DefencePlaner(val game: Game, val player: Player) {
+class ThreatModel(val game: Game, val player: Player) {
 
     val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
 
@@ -84,7 +86,6 @@ class DefencePlaner(val game: Game, val player: Player) {
 
     private fun generateWarRange(): IntIntArray {
         influenceRangeMapBuilder.init(game.map, ALLOW_ONLY_LAND_TILES)
-        val rangeMap = IntIntArray(game.map.width, game.map.height, Integer.MIN_VALUE)
 
         for (gamePlayer in game.players) {
             if (player.notEqualsId(gamePlayer) && player.getStance(gamePlayer) == Stance.WAR) {
@@ -99,6 +100,8 @@ class DefencePlaner(val game: Game, val player: Player) {
                 }
             }
         }
+
+        val rangeMap = IntIntArray(game.map.width, game.map.height, Int.MAX_VALUE)
         influenceRangeMapBuilder.generateRange(rangeMap, powerProjectionRange)
         return rangeMap
     }
@@ -106,13 +109,10 @@ class DefencePlaner(val game: Game, val player: Player) {
     private fun createTileDefenceMap(game: Game, player: Player): FloatFloatArray {
         val powerValues = FloatFloatArray(game.map.width, game.map.height, FLOAT_UNKNOWN_VALUE)
 
-        for (unit in player.units) {
-            val tile = unit.tileLocationOrNull
-            if (tile != null && tile.type.isLand) {
-                val power = offencePower(unit)
-                if (power > 0) {
-                    powerValues.addValue(tile.x, tile.y, power)
-                }
+        game.map.forEachTile { tile ->
+            val power = calculatePaperDefencePower(player, tile)
+            if (power > 0) {
+                powerValues.set(tile.x, tile.y, power)
             }
         }
         return powerValues

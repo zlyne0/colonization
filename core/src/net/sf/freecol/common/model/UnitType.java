@@ -10,6 +10,7 @@ import org.xml.sax.SAXException;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.BuildableType;
+import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.UnitTypeChange;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
 import net.sf.freecol.common.model.specification.WithProbability;
@@ -19,7 +20,8 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class UnitType extends BuildableType {
-	
+	private static final Modifier DEFENCE_ADDITIVE_ZERO = new Modifier(Modifier.DEFENCE, Modifier.ModifierType.ADDITIVE, 0);
+
     public static final Comparator<UnitType> UNIT_TYPE_PRICE_COMPARATOR = new Comparator<UnitType>() {
 		@Override
 		public int compare(UnitType o1, UnitType o2) {
@@ -70,6 +72,7 @@ public class UnitType extends BuildableType {
 
     /** The defence of this UnitType. */
     private int defence = DEFAULT_DEFENCE;
+	private Modifier defenceAsModifier = DEFENCE_ADDITIVE_ZERO;
 
     /** The capacity of this UnitType. */
     private int space = 0;
@@ -191,7 +194,11 @@ public class UnitType extends BuildableType {
 	public int getBaseDefence() {
 		return defence;
 	}
-    
+
+	public Modifier baseDefenceAsModifier() {
+		return defenceAsModifier;
+	}
+
     public boolean canBeUpgraded(ChangeType changeType) {
     	return canBeUpgraded(null, changeType);
     }
@@ -326,7 +333,7 @@ public class UnitType extends BuildableType {
     }
 
     public static class Xml extends XmlNodeParser<UnitType> {
-        private static final String ELEMENT_DEFAULT_ROLE = "default-role";
+		private static final String ELEMENT_DEFAULT_ROLE = "default-role";
 		private static final String ATTR_EXTENDS = "extends";
 		private static final String ATTR_PRICE = "price";
 		private static final String ATTR_SKILL = "skill";
@@ -357,6 +364,9 @@ public class UnitType extends BuildableType {
             
             ut.offence = attr.getIntAttribute(ATTR_OFFENCE, DEFAULT_OFFENCE);
             ut.defence = attr.getIntAttribute(ATTR_DEFENCE, DEFAULT_DEFENCE);
+			if (ut.defence != 0) {
+				ut.defenceAsModifier = new Modifier(Modifier.DEFENCE, Modifier.ModifierType.ADDITIVE, ut.defence);
+			}
             ut.movement = attr.getIntAttribute(ATTR_MOVEMENT, DEFAULT_MOVEMENT);
             ut.lineOfSight = attr.getIntAttribute(ATTR_LINE_OF_SIGHT, DEFAULT_LINE_OF_SIGHT);
             ut.scoreValue = attr.getIntAttribute(ATTR_SCORE_VALUE, 0);

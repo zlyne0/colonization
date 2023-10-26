@@ -53,7 +53,7 @@ import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
-import promitech.colonization.ai.military.DefencePlaner
+import promitech.colonization.ai.military.ThreatModel
 import promitech.colonization.ai.military.printColonyDefencePriority
 import promitech.colonization.ai.military.printSingleTileDefence
 import promitech.colonization.ai.navy.NavyExplorer
@@ -728,9 +728,9 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //			UnitFactory.createDragoon(player, tile)
 //		}
 
-		val playerDefencePlaner = DefencePlaner(game, player)
+		val playerThreatModel = ThreatModel(game, player)
 		//playerDefencePlaner.scoreColoniesToDefend(tileDebugView)
-		playerDefencePlaner.printSingleTileDefence(tileDebugView)
+		playerThreatModel.printSingleTileDefence(tileDebugView)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
         mapActor?.resetMapModel()
@@ -771,8 +771,8 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 //		val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
 
-		val playerDefencePlaner = DefencePlaner(game, player)
-		playerDefencePlaner.printColonyDefencePriority(tileDebugView)
+		val playerThreatModel = ThreatModel(game, player)
+		playerThreatModel.printColonyDefencePriority(tileDebugView)
 
 		// when
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)

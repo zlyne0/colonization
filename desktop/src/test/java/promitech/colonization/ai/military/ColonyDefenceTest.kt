@@ -2,8 +2,8 @@ package promitech.colonization.ai.military
 
 import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.Test
-import promitech.colonization.ai.military.DefencePlaner.Companion.FLOAT_UNKNOWN_VALUE
-import promitech.colonization.ai.military.DefencePlaner.Companion.UNKNOWN_VALUE
+import promitech.colonization.ai.military.ThreatModel.Companion.FLOAT_UNKNOWN_VALUE
+import promitech.colonization.ai.military.ThreatModel.Companion.UNKNOWN_VALUE
 import promitech.colonization.savegame.Savegame1600BaseClass
 import java.util.Collections.sort
 

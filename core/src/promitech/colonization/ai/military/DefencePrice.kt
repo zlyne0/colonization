@@ -12,9 +12,51 @@ import promitech.colonization.ai.UnitRoleId
 import promitech.colonization.ai.UnitTypeId
 import promitech.colonization.ai.military.DefencePrice.DefencePurchase.ColonyBuildingPurchase
 import promitech.colonization.ai.military.DefencePrice.DefencePurchase.UnitPurchase
-import promitech.colonization.orders.combat.OffencePower
+import promitech.colonization.orders.combat.DefencePower
+import promitech.colonization.orders.combat.DefencePower.calculatePaperDefencePower
 
-class DefencePrice {
+class ColonyDefenceSimulation(
+    private val colonyDefenceSnapshot: DefencePower.ColonyDefenceSnapshot
+) {
+    val purchases = ArrayList<DefencePrice.DefencePurchase>()
+
+    private var colonyBuildingPurchase: ColonyBuildingPurchase? = null
+    private var unitsPower = 0f
+
+    fun hasBuilding(): Boolean = colonyBuildingPurchase != null
+
+    fun addPurchase(purchase: DefencePrice.DefencePurchase) {
+        purchases.add(purchase)
+        if (purchase is ColonyBuildingPurchase) {
+            colonyBuildingPurchase = purchase
+        }
+        if (purchase is UnitPurchase) {
+            unitsPower += purchase.defencePower
+        }
+    }
+
+    fun power(): Float {
+        if (colonyBuildingPurchase != null) {
+            return colonyDefenceSnapshot.unitsPowerWithBuilding(unitsPower, colonyBuildingPurchase!!.buildingType)
+        } else {
+            return colonyDefenceSnapshot.unitsPowerWithBuilding(unitsPower)
+        }
+    }
+
+    fun powerWith(purchase: ColonyBuildingPurchase): Float {
+        return colonyDefenceSnapshot.unitsPowerWithBuilding(unitsPower, purchase.buildingType)
+    }
+
+    fun powerWith(purchase: UnitPurchase): Float {
+        if (colonyBuildingPurchase != null) {
+            return colonyDefenceSnapshot.unitsPowerWithBuilding(unitsPower + purchase.defencePower, colonyBuildingPurchase!!.buildingType)
+        } else {
+            return colonyDefenceSnapshot.unitsPowerWithBuilding(unitsPower + purchase.defencePower)
+        }
+    }
+}
+
+object DefencePrice {
 
     internal enum class DefenceUnitType(val unitTypeId: UnitTypeId, val unitRoleId: UnitRoleId) {
         Artillery(UnitType.ARTILLERY, UnitRole.DEFAULT_ROLE_ID),
@@ -26,39 +68,50 @@ class DefencePrice {
 
     sealed class DefencePurchase(
         open val price: Int,
-        open val tileDefenceAfterPurchase: Float
     ) {
+        abstract fun powerAfterPurchase(defenceSimulation: ColonyDefenceSimulation): Float
+
+        fun isBetterDefencePower(purchase: DefencePurchase, defenceSimulation: ColonyDefenceSimulation): Boolean {
+            return powerAfterPurchase(defenceSimulation) > purchase.powerAfterPurchase(defenceSimulation)
+        }
 
         class ColonyBuildingPurchase(
             override val price: Int,
-            override val tileDefenceAfterPurchase: Float,
             val buildingType: BuildingType,
-        ): DefencePurchase(price, tileDefenceAfterPurchase) {
+        ): DefencePurchase(price) {
+
+            override fun powerAfterPurchase(defenceSimulation: ColonyDefenceSimulation): Float {
+                return defenceSimulation.powerWith(this)
+            }
 
             override fun toString(): String {
-                return "ColonyBuildingPurchase buildingType = $buildingType, price = $price, defence = $tileDefenceAfterPurchase"
+                return "ColonyBuildingPurchase buildingType = $buildingType, price = $price"
             }
         }
 
         class UnitPurchase(
             override val price: Int,
-            override val tileDefenceAfterPurchase: Float,
             val unitType: UnitType,
             val unitRole: UnitRole,
             val defencePower: Float
-        ): DefencePurchase(price, tileDefenceAfterPurchase) {
+        ): DefencePurchase(price) {
+
+            override fun powerAfterPurchase(defenceSimulation: ColonyDefenceSimulation): Float {
+                return defenceSimulation.powerWith(this)
+            }
+
             override fun toString(): String {
-                return "UnitPurchase type = $unitType, role = $unitRole, price = $price, defenceAfter = $tileDefenceAfterPurchase, defencePower = $defencePower"
+                return "UnitPurchase type = $unitType, role = $unitRole, price = $price, defencePower = $defencePower"
             }
         }
     }
 
-    fun generateRequests(actualDefenceStrength: Float, colony: Colony): List<DefencePurchase> {
+    fun generateRequests(colony: Colony): List<DefencePurchase> {
         val defencePurchases = mutableListOf<DefencePurchase>()
 
         for (buildingType in Specification.instance.buildingTypes) {
             if (buildingType.hasModifier(Modifier.DEFENCE)) {
-                checkBuildingType(buildingType, colony, actualDefenceStrength)
+                checkBuildingType(buildingType, colony)
                     .whenNotNull {
                         defencePurchases.add(it)
                     }
@@ -69,10 +122,9 @@ class DefencePrice {
             val unitType = Specification.instance.unitTypes.getById(defenceUnitType.unitTypeId)
             val unitRole = Specification.instance.unitRoles.getById(defenceUnitType.unitRoleId)
 
-            val defencePower = OffencePower.calculatePaperDefencePower(unitType, unitRole)
+            val defencePower = calculatePaperDefencePower(unitType, unitRole)
             defencePurchases.add(UnitPurchase(
                 priceInEurope(colony.owner, unitType, unitRole),
-                actualDefenceStrength + defencePower,
                 unitType,
                 unitRole,
                 defencePower
@@ -82,7 +134,7 @@ class DefencePrice {
         return defencePurchases
     }
 
-    private fun checkBuildingType(buildingType: BuildingType, colony: Colony, actualDefenceStrength: Float): ColonyBuildingPurchase? {
+    private fun checkBuildingType(buildingType: BuildingType, colony: Colony): ColonyBuildingPurchase? {
         val noBuildReason = colony.getNoBuildReason(buildingType)
         if (noBuildReason != Colony.NoBuildReason.NONE) {
             return null
@@ -90,7 +142,6 @@ class DefencePrice {
         val price = colony.getAIPriceForBuilding(buildingType)
         return ColonyBuildingPurchase(
             price,
-            buildingType.applyModifier(Modifier.DEFENCE, actualDefenceStrength),
             buildingType
         )
     }

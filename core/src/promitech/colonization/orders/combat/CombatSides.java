@@ -196,25 +196,27 @@ class CombatSides {
 
 	public float calculateDefencePower(UnitType unitType, UnitRole unitRole) {
 		defenceModifiers.clearLists();
-		defenceModifiers.addModifier(new Modifier(
-			Modifier.DEFENCE,
-			Modifier.ModifierType.ADDITIVE,
-			unitType.getBaseDefence()
-		));
+		defenceModifiers.addModifier(unitType.baseDefenceAsModifier());
 		defenceModifiers.addModifierFrom(unitType, Modifier.DEFENCE);
 		defenceModifiers.addModifierFrom(unitRole, Modifier.DEFENCE);
 		return defenceModifiers.applyModifiers(0);
 	}
 
+	public float calculateDefencePower(UnitType unitType, UnitRole unitRole, Tile tile) {
+		defenceModifiers.clearLists();
+		defenceModifiers.addModifier(unitType.baseDefenceAsModifier());
+		defenceModifiers.addModifierFrom(unitType, Modifier.DEFENCE);
+		defenceModifiers.addModifierFrom(unitRole, Modifier.DEFENCE);
+		if (tile.hasSettlement()) {
+			Settlement settlement = tile.getSettlement();
+			settlement.addModifiersTo(defenceModifiers, Modifier.DEFENCE);
+		}
+		return defenceModifiers.applyModifiers(0);
+	}
+
 	private float getDefencePower(Unit attacker, Unit defender, Tile tileDefender) {
 		defenceModifiers.clearLists();
-
-		defenceModifiers.addModifier(new Modifier(
-			Modifier.DEFENCE, 
-			Modifier.ModifierType.ADDITIVE, 
-			defender.unitType.getBaseDefence()
-		));
-		
+		defenceModifiers.addModifier(defender.unitType.baseDefenceAsModifier());
 		defenceModifiers.addModifierFrom(defender.unitType, Modifier.DEFENCE);
 		defenceModifiers.addModifierFrom(
 			defender.getOwner().getFeatures(), 
