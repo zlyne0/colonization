@@ -147,11 +147,6 @@ object DefencePrice {
     }
 
     private fun priceInEurope(player: Player, unitType: UnitType, unitRole: UnitRole): Int {
-        if (unitType.equalsId(UnitType.ARTILLERY)) {
-            return player.europe.aiUnitPrice(unitType)
-        }
-        val unitTypePrice = player.europe.aiUnitPrice(unitType)
-        val rolePrice = player.market().aiBidPrice(unitRole.requiredGoods, unitRole.maximumCount);
-        return unitTypePrice + rolePrice
+        return player.europe.aiUnitPrice(unitType, unitRole);
     }
 }

@@ -171,13 +171,13 @@ public class UnitRole extends ObjectWithFeatures {
 		return required;
 	}
 
-	public ProductionSummary minimumRequiredGoodsToChangeRole(UnitRole newRole) {
+	public ProductionSummary requiredGoodsToChangeRole(UnitRole newRole) {
 		ProductionSummary required = new ProductionSummary();
-		for (RequiredGoods g : newRole.requiredGoods.entities()) {
-			required.addGoods(g.getId(), g.amount * DEFAULT_UNIT_ROLE_COUNT);
+		for (RequiredGoods g : newRole.requiredGoods) {
+			required.addGoods(g.getId(), g.amount * newRole.maximumCount);
 		}
-		for (RequiredGoods g : requiredGoods.entities()) {
-			required.addGoods(g.getId(), -g.amount * DEFAULT_UNIT_ROLE_COUNT);
+		for (RequiredGoods g : requiredGoods) {
+			required.addGoods(g.getId(), -g.amount * maximumCount);
 		}
 		return required;
 	}

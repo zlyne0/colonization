@@ -316,7 +316,7 @@ public class Monarch implements Identifiable {
 			unitsRoleCount -= unitsCount;
 
 			ArmyForceAbstractUnit af = new ArmyForceAbstractUnit(unitType, unitRole, 0);
-			int oneUnitPrice = player.getEurope().getUnitPrice(unitType, unitRole, 1) * mercPrice / 100;
+			int oneUnitPrice = player.getEurope().getUnitPrice(unitType, unitRole) * mercPrice / 100;
 			for (int i=0; i<unitsCount; i++) {
 				if (player.hasGold(price + oneUnitPrice)) {
 					price += oneUnitPrice;

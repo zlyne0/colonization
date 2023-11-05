@@ -362,6 +362,23 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	return buyUnit(unitType, unitType.getPrice());
     }
 
+	public Unit aiBuyUnit(Game game, UnitType unitType, UnitRole unitRole) {
+		Unit unit = buyUnitByAI(unitType);
+		if (!unitRole.equalsId(unitType.getDefaultRole())) {
+			changeUnitRole(game, unit, unitRole);
+		}
+		return unit;
+	}
+
+	public int aiUnitPrice(UnitType unitType, UnitRole unitRole) {
+		int price = aiUnitPrice(unitType);
+		if (!unitRole.equalsId(unitType.getDefaultRole())) {
+			ProductionSummary productionSummary = unitType.getDefaultRole().requiredGoodsToChangeRole(unitRole);
+			price += owner.market().aiBidPrice(productionSummary);
+		}
+		return price;
+	}
+
     public int aiUnitPrice(UnitType unitType) {
 		int recruitImmigrantPrice = getRecruitImmigrantPrice();
 
@@ -401,7 +418,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
     	return unitType.getPrice();
     }
     
-	public int getUnitPrice(UnitType unitType, UnitRole unitRole, int amount) {
+	public int getUnitPrice(UnitType unitType, UnitRole unitRole) {
 		if (!unitType.hasPrice()) {
 			return Integer.MAX_VALUE;
 		}
@@ -409,7 +426,7 @@ public class Europe extends ObjectWithFeatures implements UnitLocation {
 		for (RequiredGoods goods : unitRole.requiredGoods.entities()) {
 			price += owner.market().getBidPrice(goods.goodsType, goods.amount * unitRole.getMaximumCount());
 		}
-		return price * amount;
+		return price;
 	}
 
     public static class Xml extends XmlNodeParser<Europe> {

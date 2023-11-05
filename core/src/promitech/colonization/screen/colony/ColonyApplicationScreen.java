@@ -188,7 +188,7 @@ public class ColonyApplicationScreen extends ApplicationScreen {
 	                if (unit.getUnitRole().equalsId(aRole)) {
 	                    continue;
 	                }
-	                ProductionSummary required = unit.getUnitRole().minimumRequiredGoodsToChangeRole(aRole);
+					ProductionSummary required = UnitRole.requiredGoodsToChangeRole(unit, aRole);
 	                if (colony.getGoodsContainer().hasGoodsQuantity(required)) {
 	                	dialog.addCommandItem(new UnitActionOrderItem(unit, aRole, required, ActionTypes.EQUIPPED));
 	                }

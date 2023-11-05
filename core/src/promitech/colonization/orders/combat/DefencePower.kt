@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.BuildingType
 import net.sf.freecol.common.model.specification.Modifier
-import promitech.colonization.orders.combat.CombatSidesPool.combatSidesPool
 
 object DefencePower {
 
@@ -37,12 +36,12 @@ object DefencePower {
 
     @JvmStatic
     fun calculateColonyDefenceSnapshot(colony: Colony): ColonyDefenceSnapshot {
-        val combatSides: CombatSides = combatSidesPool.obtain()
         var power = 0f
-        for (singleUnit in colony.tile.units.entities()) {
-            power += combatSides.calculateDefencePower(singleUnit.unitType, singleUnit.unitRole)
+        CombatSidesPool.use { combatSides ->
+            for (singleUnit in colony.tile.units.entities()) {
+                power += combatSides.calculateDefencePower(singleUnit.unitType, singleUnit.unitRole)
+            }
         }
-        combatSidesPool.free(combatSides)
 
         var defenceBuildingType: BuildingType? = null
         for (building in colony.buildings) {
@@ -55,10 +54,11 @@ object DefencePower {
 
     @JvmStatic
     fun calculatePaperDefencePower(unitType: UnitType, unitRole: UnitRole): Float {
-        val combatSides = combatSidesPool.obtain()
-        val offencePower = combatSides.calculateDefencePower(unitType, unitRole)
-        combatSidesPool.free(combatSides)
-        return offencePower
+        var power = 0f
+        CombatSidesPool.use { combatSides ->
+            power = combatSides.calculateDefencePower(unitType, unitRole)
+        }
+        return power
     }
 
     @JvmStatic
@@ -78,23 +78,24 @@ object DefencePower {
             return 0f
         }
         var offencePower = 0f
-        val combatSides = combatSidesPool.obtain()
-        for (singleUnit in tile.units.entities()) {
-            offencePower += combatSides.calculateDefencePower(
-                singleUnit.unitType,
-                singleUnit.unitRole,
-                tile
-            )
+        CombatSidesPool.use { combatSides ->
+            for (singleUnit in tile.units.entities()) {
+                offencePower += combatSides.calculateDefencePower(
+                    singleUnit.unitType,
+                    singleUnit.unitRole,
+                    tile
+                )
+            }
         }
-        combatSidesPool.free(combatSides)
         return offencePower
     }
 
     @JvmStatic
     private fun calculatePaperDefencePower(unitType: UnitType, unitRole: UnitRole, tile: Tile): Float {
-        val combatSides = combatSidesPool.obtain()
-        val offencePower = combatSides.calculateDefencePower(unitType, unitRole, tile)
-        combatSidesPool.free(combatSides)
-        return offencePower
+        var power = 0f
+        CombatSidesPool.use { combatSides ->
+            power = combatSides.calculateDefencePower(unitType, unitRole, tile)
+        }
+        return power
     }
 }

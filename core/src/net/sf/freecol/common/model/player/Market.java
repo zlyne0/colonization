@@ -118,6 +118,17 @@ public class Market extends ObjectWithId {
 		return sum;
 	}
 
+	public int aiBidPrice(ProductionSummary productionSummary) {
+		int sum = 0;
+		for (Entry<String> goodsTypeEntry : productionSummary.entries()) {
+			if (goodsTypeEntry.value > 0) {
+				MarketData data = marketGoods.getById(goodsTypeEntry.key);
+				sum += data.getCostToBuy(goodsTypeEntry.value);
+			}
+		}
+		return sum;
+	}
+
 	public int getSalePrice(ProductionSummary goods) {
 		int goldSumValue = 0;
 		for (Entry<String> entry : goods.entries()) {

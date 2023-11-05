@@ -46,6 +46,25 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
             assertThat(price).isEqualTo(750)
             assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(5.0f)
         }
+
+        with((defencePurchases[3] as DefencePurchase.UnitPurchase)) {
+            assertThat(unitType.id).isEqualTo(UnitType.FREE_COLONIST)
+            assertThat(unitRole.id).isEqualTo(UnitRole.DRAGOON)
+            assertThat(price).isEqualTo(900)
+            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(6.0f)
+        }
+        with((defencePurchases[4] as DefencePurchase.UnitPurchase)) {
+            assertThat(unitType.id).isEqualTo(UnitType.VETERAN_SOLDIER)
+            assertThat(unitRole.id).isEqualTo(UnitRole.SOLDIER)
+            assertThat(price).isEqualTo(2000)
+            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(5.5f)
+        }
+        with((defencePurchases[5] as DefencePurchase.UnitPurchase)) {
+            assertThat(unitType.id).isEqualTo(UnitType.VETERAN_SOLDIER)
+            assertThat(unitRole.id).isEqualTo(UnitRole.DRAGOON)
+            assertThat(price).isEqualTo(2150)
+            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(6.5f)
+        }
     }
 
     @Test

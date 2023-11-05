@@ -573,6 +573,10 @@ public class Savegame1600Verifier {
 	}
 
 	private void verifySpecificationUnitRoles(Specification specification, Game game) {
+        UnitRole soldierUnitRole = specification.unitRoles.getById(UnitRole.SOLDIER);
+        assertEquals(1, soldierUnitRole.requiredGoods.size());
+        assertEquals(50, soldierUnitRole.requiredGoods.getById(GoodsType.MUSKETS).amount);
+
         UnitRole dragoonUnitRole = specification.unitRoles.getById("model.role.dragoon");
         
         assertEquals(5, dragoonUnitRole.abilitiesAmount());
