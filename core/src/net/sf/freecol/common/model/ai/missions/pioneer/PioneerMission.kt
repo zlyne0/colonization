@@ -8,12 +8,10 @@ import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 import net.sf.freecol.common.model.Unit
-import net.sf.freecol.common.model.UnitId
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import promitech.colonization.ai.CommonMissionHandler
-import java.lang.IllegalStateException
 
 class PioneerMission : AbstractMission {
 
@@ -42,7 +40,7 @@ class PioneerMission : AbstractMission {
         unitMissionsMapping.unblockUnitFromMission(pioneer, this)
     }
 
-    internal fun isPionnerWithoutTools(): Boolean {
+    internal fun isPioneerWithoutTools(): Boolean {
         return pioneer.unitRole.equalsId(UnitRole.DEFAULT_ROLE_ID)
     }
 

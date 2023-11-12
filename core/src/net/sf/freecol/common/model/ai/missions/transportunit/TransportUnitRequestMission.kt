@@ -64,6 +64,7 @@ class TransportUnitRequestMission : AbstractMission {
     val destination: Tile
     var transportUnitMissionId: String? = null
     var allowMoveToDestination: Boolean = false
+        private set
     private var worthEmbark: Boolean = true
     private var worthEmbarkRange: Int = 0
     var checkAvailability: Boolean = false
@@ -73,14 +74,12 @@ class TransportUnitRequestMission : AbstractMission {
         createdTurn: Turn,
         unit: Unit,
         destination: Tile,
-        allowMoveToDestination: Boolean = false,
         worthEmbark: Boolean = true,
         worthEmbarkRange: Int = 0,
     ) : super(Game.idGenerator.nextId(TransportUnitRequestMission::class.java)) {
         this.createdTurn = createdTurn
         this.unit = unit
         this.destination = destination
-        this.allowMoveToDestination = allowMoveToDestination
         this.worthEmbark = worthEmbark
         this.worthEmbarkRange = worthEmbarkRange
     }
@@ -93,6 +92,11 @@ class TransportUnitRequestMission : AbstractMission {
 
     fun withCheckAvailability(): TransportUnitRequestMission {
         this.checkAvailability = true
+        return this
+    }
+
+    fun withAllowMoveToDestination(): TransportUnitRequestMission {
+        this.allowMoveToDestination = true
         return this
     }
 

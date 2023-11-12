@@ -70,7 +70,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     	}
 
     	// small optimization, transport mission can be executed several times on different parent missions
-    	if (mission.getCarrier().isAtTileLocation() && !mission.getCarrier().hasMovesPoints()) {
+		if (mission.getCarrier().isAtTileLocation() && !mission.getCarrier().hasMovesPoints()) {
 			return;
 		}
 		validateDestinations(mission);
@@ -355,8 +355,8 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		Tile unitDestination,
 		List<Unit> unitsToDisembark
 	) {
-		Player player = playerMissionsContainer.getPlayer();
 		if (logger.isDebug()) {
+			Player player = playerMissionsContainer.getPlayer();
 			logger.debug("player[%s].TransportUnitMissionHandler notify parent mission about no disembark access", player.getId());
 		}
 		for (MissionHandler<? extends AbstractMission> missionHandler : missionExecutor.allMissionHandlers()) {

@@ -360,10 +360,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
                 }
                 return BuyPioneerOrder.CanNotAfford()
             } else {
-                val pioneerSumOfRequiredGoods : GoodsCollection = pioneerRole.sumOfRequiredGoods()
-                val pionnerPrice = freeColonistPrice + player.market().aiBidPrice(pioneerSumOfRequiredGoods)
-
-                if (player.hasGold(pionnerPrice * 2)) {
+                val pioneerPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType, pioneerRole)
+                if (player.hasGold(pioneerPrice * 2)) {
                     return BuyPioneerOrder.RecruitColonistWithHardyPioneerLocation(colonyHardyPioneerInRange)
                 }
                 return BuyPioneerOrder.CanNotAfford()
@@ -381,9 +379,8 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
                     return BuyPioneerOrder.RecruitColonistWithToolsLocation(colonyToEquiptPioneer)
                 }
             } else {
-                val pioneerSumOfRequiredGoods: GoodsCollection = pioneerRole.sumOfRequiredGoods()
-                val pionnerPrice = freeColonistPrice + player.market().aiBidPrice(pioneerSumOfRequiredGoods)
-                if (player.hasGold(pionnerPrice * 2)) {
+                val pioneerPrice = player.europe.aiUnitPrice(Specification.instance.freeColonistUnitType, pioneerRole)
+                if (player.hasGold(pioneerPrice * 2)) {
                     return BuyPioneerOrder.RecruitColonistOrder()
                 }
             }

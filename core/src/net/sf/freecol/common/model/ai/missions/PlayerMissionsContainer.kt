@@ -18,6 +18,19 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
 }
 
 @Suppress("UNCHECKED_CAST")
+inline fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(
+    missionClass: Class<T>,
+    predicate: (T) -> Boolean
+): T? {
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
+            return playerMission
+        }
+    }
+    return null
+}
+
+@Suppress("UNCHECKED_CAST")
 inline fun <T : AbstractMission> PlayerMissionsContainer.foreachMission(
     missionClass: Class<T>,
     consumer: (T) -> Unit

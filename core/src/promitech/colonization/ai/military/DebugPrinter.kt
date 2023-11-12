@@ -33,6 +33,7 @@ fun ThreatModel.printColonyDefencePriority(mapTileDebugInfo: MapTileDebugInfo) {
     val df = DecimalFormat("#.##")
     df.roundingMode = RoundingMode.DOWN
 
+    println("ColonyThreat.size = ${calculateColonyDefencePriority.size}")
     calculateColonyDefencePriority.forEachIndexed { index, colonyThreat ->
         println("$index ${colonyThreat.colony.name}, " +
                 "war = ${colonyThreat.war}, " +

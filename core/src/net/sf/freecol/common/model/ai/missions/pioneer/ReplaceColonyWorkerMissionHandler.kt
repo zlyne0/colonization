@@ -77,7 +77,8 @@ class ReplaceColonyWorkerMissionHandler(
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(game.turn, mission.replaceByUnit, mission.colony().tile, true)
+                TransportUnitRequestMission(game.turn, mission.replaceByUnit, mission.colony().tile)
+                    .withAllowMoveToDestination()
             )
         }
     }

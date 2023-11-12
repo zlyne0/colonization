@@ -10,12 +10,12 @@ import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.hasMissionKt
 import net.sf.freecol.common.model.ai.missions.transportunit.CheckAvailabilityMissionHandler
-import net.sf.freecol.common.model.map.path.Path
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
-import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import promitech.colonization.orders.move.MoveContext
+import promitech.colonization.ai.createTransportRequest
+import promitech.colonization.ai.moveToDestination
 import promitech.colonization.orders.move.MoveService
 
 class PioneerMissionHandler(
@@ -45,7 +45,7 @@ class PioneerMissionHandler(
             // do nothing, wait for transport
             return
         } else if (mission.pioneer.isAtEuropeLocation) {
-            createTransportRequest(playerMissionsContainer, mission)
+            createTransportRequest(game, playerMissionsContainer, mission, mission.pioneer, mission.colony().tile)
         }
     }
 
@@ -71,7 +71,7 @@ class PioneerMissionHandler(
                     return
                 }
 
-                if (mission.isPionnerWithoutTools()) {
+                if (mission.isPioneerWithoutTools()) {
                     if (tryCreateTakeRoleEquipmentMission(playerMissionsContainer, mission, improvementDestination.plan.colony.tile)) {
                         return
                     }
@@ -80,18 +80,18 @@ class PioneerMissionHandler(
                 }
 
                 val firstImprovement = improvementDestination.plan.firstImprovement()
-                moveToDestination(mission, firstImprovement.tile) {
+                moveToDestination(game, moveService, pathFinder, mission.pioneer, firstImprovement.tile) {
                     startImprove(playerMissionsContainer, mission, firstImprovement)
                 }
             }
 
             is PioneerDestination.OtherIsland -> {
                 mission.changeColony(improvementDestination.plan.colony)
-                createTransportRequest(playerMissionsContainer, mission)
+                createTransportRequest(game, playerMissionsContainer, mission, mission.pioneer, mission.colony().tile)
             }
             is PioneerDestination.Lack -> {
                 val colony = mission.colony()
-                moveToDestination(mission, colony.tile) {
+                moveToDestination(game, moveService, pathFinder, mission.pioneer, colony.tile) {
                     mission.waitOrResolveFreeColonistPionner(colony)
                 }
             }
@@ -156,7 +156,7 @@ class PioneerMissionHandler(
 
     private fun gotoColonyAndWaitForTools(playerMissionsContainer: PlayerMissionsContainer, mission: PioneerMission) {
         val colony = mission.colony()
-        moveToDestination(mission, colony.tile) {
+        moveToDestination(game, moveService, pathFinder, mission.pioneer, colony.tile) {
             equipTools(playerMissionsContainer, mission, colony)
         }
     }
@@ -179,40 +179,6 @@ class PioneerMissionHandler(
                 val requiredGoods = pioneerRole.sumOfRequiredGoods()
                 playerMissionsContainer.addMission(mission, RequestGoodsMission(colony, requiredGoods, mission.id))
             }
-        }
-    }
-
-    private inline fun moveToDestination(mission: PioneerMission, destTile: Tile, action: () -> kotlin.Unit = {}) {
-        if (mission.pioneer.isAtLocation(destTile)) {
-            action()
-        } else {
-            val path: Path = pathFinder.findToTile(
-                game.map,
-                mission.pioneer,
-                destTile,
-                PathFinder.includeUnexploredTiles
-            )
-            if (path.reachTile(destTile)) {
-                val moveContext = MoveContext(mission.pioneer, path)
-                moveService.aiConfirmedMovePath(moveContext)
-            }
-            if (mission.pioneer.isAtLocation(destTile)) {
-                action()
-            }
-        }
-    }
-
-    private fun createTransportRequest(
-        playerMissionsContainer: PlayerMissionsContainer,
-        mission: PioneerMission
-    ) {
-        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java) { requestMission ->
-            requestMission.unit.equalsId(mission.pioneer)
-        }
-        if (!requestMissionExists) {
-            val transportRequestMission = TransportUnitRequestMission(game.turn, mission.pioneer, mission.colony().tile)
-                .withCheckAvailability()
-            playerMissionsContainer.addMission(mission, transportRequestMission)
         }
     }
 

@@ -69,7 +69,8 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(game.turn, mission.unit, mission.colony().tile, true)
+                TransportUnitRequestMission(game.turn, mission.unit, mission.colony().tile)
+                    .withAllowMoveToDestination()
             )
         }
     }
