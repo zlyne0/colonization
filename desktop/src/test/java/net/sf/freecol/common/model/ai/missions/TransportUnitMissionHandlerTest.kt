@@ -16,7 +16,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.ass
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.specification.GoodsType
-import org.assertj.core.api.Assertions
+import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Nested
 import org.junit.jupiter.api.Test
@@ -78,7 +78,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             // disembark
             assertThat(freeColonist).isAtLocation(fortOranje.tile)
             assertThat(ship).isAtLocation(fortOranje.tile).hasNoUnits()
-            Assertions.assertThat(transportMission.unitsDest).isEmpty()
+            assertThat(transportMission.unitsDest).isEmpty()
 
             newTurnAndExecuteMission(dutch, 1)
             // unload cargo
@@ -109,7 +109,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             // disembark and unload cargo
 
             // then
-            Assertions.assertThat(transportMission.unitsDest).isEmpty()
+            assertThat(transportMission.unitsDest).isEmpty()
             assertThat(transportMission).isDone
             SettlementAssert.assertThat(fortOranje).hasGoods(GoodsType.SILVER, 100)
             assertThat(ship).isAtLocation(fortOranje.tile).hasNoGoods().hasNoUnits()
@@ -139,7 +139,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
                 .isDone
         }
@@ -163,7 +163,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
                 .isDone
         }
@@ -189,7 +189,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
                 .isDone
         }
@@ -214,7 +214,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
                 .isDone
         }
@@ -244,7 +244,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
             assertThat(colonist)
                 .isNotAtLocation(galleon)
                 .isAtLocation(transferLocation)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission).isDone
         }
 
@@ -270,7 +270,7 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isAtLocation(dest)
             assertThat(galleon)
                 .isAtLocation(dest)
-            Assertions.assertThat(transportMission.destTiles()).isEmpty()
+            assertThat(transportMission.destTiles()).isEmpty()
             assertThat(transportMission)
                 .isDone
         }
@@ -499,4 +499,41 @@ class TransportUnitMissionHandlerTest : MissionHandlerBaseTestClass() {
                 .isAtLocation(fortOrangeTile)
         }
     }
+
+    @Test
+    fun `should handle unhandled carried units destinations`() {
+        // given
+        val missionContainer = game.aiContainer.missionContainer(dutch)
+        val twoTurnsAwayFromFortOrange = game.map.getTile(29, 89)
+
+        val galleon = UnitFactory.create(UnitType.GALLEON, dutch, twoTurnsAwayFromFortOrange)
+        val u1 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+        val u2 = UnitFactory.create(UnitType.FREE_COLONIST, dutch, galleon)
+
+        val request1 = TransportUnitRequestMission(game.turn, u1, fortOranje.tile)
+        val request2 = TransportUnitRequestMission(game.turn, u2, fortOranje.tile)
+        missionContainer.addMission(request1)
+        missionContainer.addMission(request2)
+
+        val transportMission = TransportUnitMission(galleon)
+        missionContainer.addMission(transportMission)
+
+        //printMissions(dutch)
+
+        assertThat(transportMission.isCarriedUnitTransportDestinationSet(u1)).isFalse()
+        assertThat(transportMission.isCarriedUnitTransportDestinationSet(u2)).isFalse()
+        assertThat(request1.transportUnitMissionId).isNull()
+        assertThat(request2.transportUnitMissionId).isNull()
+
+        // when
+        newTurnAndExecuteMission(dutch, 1)
+
+        // then
+        //printMissions(dutch)
+        assertThat(transportMission.isCarriedUnitTransportDestinationSet(u1)).isTrue()
+        assertThat(transportMission.isCarriedUnitTransportDestinationSet(u2)).isTrue()
+        assertThat(request1.transportUnitMissionId).isEqualTo(transportMission.id)
+        assertThat(request2.transportUnitMissionId).isEqualTo(transportMission.id)
+    }
+
 }

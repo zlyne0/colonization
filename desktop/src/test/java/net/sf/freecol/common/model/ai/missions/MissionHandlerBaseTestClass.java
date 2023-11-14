@@ -84,4 +84,12 @@ public class MissionHandlerBaseTestClass extends Savegame1600BaseClass {
 	protected void clearAllMissions(Player player) {
 		game.aiContainer.missionContainer(player).clearAllMissions();
 	}
+
+	protected void printMissions(Player player) {
+		PlayerMissionsContainer missionsContainer = game.aiContainer.missionContainer(player);
+		System.out.println("mission.count = " + missionsContainer.getMissions().size());
+		for (AbstractMission mission : missionsContainer.getMissions().entities()) {
+			System.out.println(mission.getClass().getSimpleName() + " => " + mission);
+		}
+	}
 }

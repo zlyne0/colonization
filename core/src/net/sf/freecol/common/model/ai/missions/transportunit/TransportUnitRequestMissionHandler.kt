@@ -40,6 +40,11 @@ class TransportUnitRequestMissionHandler(
             return
         }
 
+        if (mission.isUnitAtDestination()) {
+            mission.setDone()
+            return
+        }
+
         mission.resetTransportMissionIdWhenDoNotExists(playerMissionsContainer)
 
         // Do nothing. Transport request handled by transport unit handler and planer.

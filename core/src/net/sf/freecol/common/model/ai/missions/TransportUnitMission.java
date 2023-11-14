@@ -75,7 +75,7 @@ public class TransportUnitMission extends AbstractMission {
 		return playerMissionContainer.hasMission(TransportUnitMission.class, new Predicate<TransportUnitMission>() {
 			@Override
 			public boolean test(TransportUnitMission mission) {
-				return mission.isTransportedUnit(unit);
+				return mission.isCarriedUnitTransportDestinationSet(unit);
 			}
 		});
 	}
@@ -142,7 +142,7 @@ public class TransportUnitMission extends AbstractMission {
 		return CommonMissionHandler.isUnitExists(player, carrier);
 	}
 	
-	public boolean isTransportedUnit(Unit unit) {
+	public boolean isCarriedUnitTransportDestinationSet(Unit unit) {
 		for (UnitDest unitDest : unitsDest) {
 			if (unitDest.unit.equalsId(unit)) {
 				return true;
@@ -371,6 +371,18 @@ public class TransportUnitMission extends AbstractMission {
 			}
 		}
 		return true;
+	}
+
+	public void addUnitDestForCarriedUnits(PlayerMissionsContainer missionsContainer) {
+		for (Unit unit : carrier.getUnitContainer().getUnits()) {
+			if (!isCarriedUnitTransportDestinationSet(unit)) {
+				TransportUnitRequestMission transportRequest = missionsContainer.findFirstMission(TransportUnitRequestMission.class, unit);
+				if (transportRequest != null) {
+					transportRequest.setTransportUnitMissionId(this.getId());
+					addUnitDest(transportRequest);
+				}
+			}
+		}
 	}
 
 	public static class Xml extends AbstractMission.Xml<TransportUnitMission> {

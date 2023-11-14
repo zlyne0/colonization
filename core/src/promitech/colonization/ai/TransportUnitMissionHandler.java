@@ -74,6 +74,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			return;
 		}
 		validateDestinations(mission);
+		mission.addUnitDestForCarriedUnits(playerMissionsContainer);
 
 		TransportUnitMission.TransportDestination transportDestination = firstFirstDestinationToTransport(mission);
     	if (transportDestination == null) {
@@ -120,7 +121,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
     }
 
 	private void validateDestinations(TransportUnitMission mission) {
-    	mission.validateUnitDestination();
+		mission.validateUnitDestination();
 		validateCargoDestinations(mission);
 	}
 
