@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.transportunit
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.MoveType
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.findParentMission
@@ -178,5 +179,25 @@ class TransportUnitRequestMissionHandler(
                 parentMissionHandler.checkAvailability(playerMissionsContainer, parentMission, transportRequestMission)
             }
         }
+    }
+
+    fun moveNoAccessAndGenerateNextDestination(
+        playerMissionsContainer: PlayerMissionsContainer,
+        transportRequestMission: TransportUnitRequestMission
+    ): Tile? {
+        val parentMission = playerMissionsContainer.findParentMission(transportRequestMission)
+        if (parentMission != null) {
+            val parentMissionHandler = missionExecutor.findMissionHandler(parentMission)
+            if (parentMissionHandler is NextDestinationWhenNoMoveAccessMissionHandler) {
+                val dest = parentMissionHandler.nextDestination(playerMissionsContainer, parentMission, transportRequestMission)
+                if (dest != null) {
+                    transportRequestMission.destination = dest
+                } else {
+                    transportRequestMission.setDone()
+                }
+                return dest;
+            }
+        }
+        return null
     }
 }

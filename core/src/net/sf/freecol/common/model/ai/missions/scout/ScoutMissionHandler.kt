@@ -5,6 +5,8 @@ import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.Path
 import promitech.colonization.ai.MissionHandler
@@ -32,7 +34,7 @@ class ScoutMissionHandler(
         }
 
         if (mission.isWaitingForTransport()) {
-            if (TransportUnitMission.isUnitExistsOnTransportMission(playerMissionsContainer, mission.scout)) {
+            if (isUnitExistsOnTransportMission(playerMissionsContainer, mission)) {
                 return
             }
             if (mission.scout.isAtUnitLocation) {
@@ -55,6 +57,12 @@ class ScoutMissionHandler(
             // scout could die, remove mission
             MissionHandlerLogger.logger.debug("player[%s].ScoutMissionHandler scout does not exists", player.getId())
             mission.setDone()
+        }
+    }
+
+    private fun isUnitExistsOnTransportMission(playerMissionsContainer: PlayerMissionsContainer, scoutMission: ScoutMission): Boolean {
+        return playerMissionsContainer.hasMission(TransportUnitMission::class.java) { transportMission ->
+            transportMission.isCarriedUnitTransportDestinationSet(scoutMission.scout)
         }
     }
 
@@ -106,7 +114,7 @@ class ScoutMissionHandler(
         unitDestination: Tile,
         unit: Unit
     ) {
-        val scoutMission = playerMissionsContainer.findFirstMission(ScoutMission::class.java, unit)
+        val scoutMission = playerMissionsContainer.findFirstMissionKt(ScoutMission::class.java, unit)
         if (scoutMission != null) {
             val playerAiContainer = game.aiContainer.playerAiContainer(scoutMission.scout.owner)
             playerAiContainer.addScoutBlockTile(unitDestination)

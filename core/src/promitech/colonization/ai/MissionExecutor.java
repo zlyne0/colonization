@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMissionHandler;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMissionHandler;
+import net.sf.freecol.common.model.ai.missions.military.DefenceMission;
+import net.sf.freecol.common.model.ai.missions.military.DefenceMissionHandler;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionHandler;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner;
@@ -39,6 +41,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import promitech.colonization.ai.military.DefencePlaner;
 import promitech.colonization.ai.navy.ExplorerMissionHandler;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveService;
@@ -91,6 +94,9 @@ public class MissionExecutor implements Disposable {
         TransportUnitRequestMissionHandler transportUnitRequestMissionHandler = new TransportUnitRequestMissionHandler(
             game, moveService, pathFinder, pathFinder2, this
         );
+        DefenceMissionHandler defenceMissionHandler = new DefenceMissionHandler(
+            game, new DefencePlaner(game), moveService, pathFinder
+        );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);
         missionHandlerMapping.put(ExplorerMission.class, explorerMissionHandler);
@@ -105,6 +111,7 @@ public class MissionExecutor implements Disposable {
         missionHandlerMapping.put(TransportUnitRequestMission.class, transportUnitRequestMissionHandler);
         missionHandlerMapping.put(ReplaceColonyWorkerMission.class, new ReplaceColonyWorkerMissionHandler(game, this));
         missionHandlerMapping.put(TakeRoleEquipmentMission.class, new TakeRoleEquipmentMissionHandler(game));
+        missionHandlerMapping.put(DefenceMission.class, defenceMissionHandler);
 	}
     
 	public void executeMissions(Player player) {

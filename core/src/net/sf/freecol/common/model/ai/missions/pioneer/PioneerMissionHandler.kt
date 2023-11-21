@@ -8,7 +8,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.CheckAvailabilityMissionHandler
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -172,9 +172,9 @@ class PioneerMissionHandler(
                 colonySupplyGoods.removeSupplyReservation(mission.id)
             }
         } else {
-            val requestGoodsMissionExists = playerMissionsContainer.hasMissionKt(RequestGoodsMission::class.java, { requestGoodsMission ->
+            val requestGoodsMissionExists = playerMissionsContainer.hasMission(RequestGoodsMission::class.java) { requestGoodsMission ->
                 requestGoodsMission.purpose.equals(mission.id)
-            })
+            }
             if (!requestGoodsMissionExists) {
                 val requiredGoods = pioneerRole.sumOfRequiredGoods()
                 playerMissionsContainer.addMission(mission, RequestGoodsMission(colony, requiredGoods, mission.id))

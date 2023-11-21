@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMissionPlaner
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
@@ -63,7 +64,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         // then
         PlayerMissionsContainerAssert.assertThat(missionContainer).hasMission(TransportUnitMission::class.java, 1)
 
-        val transportUnitMission = missionContainer.findFirstMission(TransportUnitMission::class.java)
+        val transportUnitMission = missionContainer.findFirstMissionKt(TransportUnitMission::class.java)!!
         assertThat(transportUnitMission.carrier).isEqualsTo(galleon)
         assertThat(transportUnitMission.unitsDest).hasSize(2)
 
@@ -106,7 +107,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         // then
         PlayerMissionsContainerAssert.assertThat(missionContainer).hasMission(TransportUnitMission::class.java, 1)
 
-        val transportUnitMission = missionContainer.findFirstMission(TransportUnitMission::class.java)
+        val transportUnitMission = missionContainer.findFirstMissionKt(TransportUnitMission::class.java)!!
         assertThat(transportUnitMission.carrier).isEqualsTo(galleon)
 
         assertThat(transportUnitMission.unitsDest).hasSize(2)

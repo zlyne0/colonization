@@ -61,7 +61,7 @@ class TransportUnitRequestMission : AbstractMission {
 
     val createdTurn: Turn
     val unit: Unit
-    val destination: Tile
+    var destination: Tile
     var transportUnitMissionId: String? = null
     var allowMoveToDestination: Boolean = false
         private set

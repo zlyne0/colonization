@@ -2,7 +2,7 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.colonyproduction.GoodsCollection
+import net.sf.freecol.common.model.ai.missions.hasMission
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger.logger
 
@@ -19,11 +19,11 @@ class RequestGoodsMissionHandler(val game: Game) : MissionHandler<RequestGoodsMi
     }
 
     fun handleUnloadCargoForGoodsRequest(requestGoodsMissionId: String, playerMissionsContainer: PlayerMissionsContainer) {
-        val requestGoodsMission = playerMissionsContainer.findMission(requestGoodsMissionId)
-        if (requestGoodsMission != null && requestGoodsMission is RequestGoodsMission) {
+        val requestGoodsMission: RequestGoodsMission? = playerMissionsContainer.findMission(requestGoodsMissionId)
+        if (requestGoodsMission != null) {
             requestGoodsMission.setDone()
 
-            if (playerMissionsContainer.findMission(requestGoodsMission.purpose) != null) {
+            if (playerMissionsContainer.hasMission(requestGoodsMission.purpose)) {
                 val playerAiContainer = game.aiContainer.playerAiContainer(playerMissionsContainer.player)
 
                 val colonySupplyGoods = playerAiContainer.findOrCreateColonySupplyGoods(requestGoodsMission.colonyId)

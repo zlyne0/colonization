@@ -16,6 +16,8 @@ import net.sf.freecol.common.model.ai.missions.TransportUnitMission.CargoDest;
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission.UnitDest;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMissionHandler;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMissionHandler;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.HighSeas;
@@ -102,7 +104,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			} else if (unitDest.unit.isAtLocation(Unit.class)) {
 				if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
 				if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
-				if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisemberkUnits(mission, unitDest); }
+				if (mission.getCarrier().isAtLocation(Tile.class)) { moveAndDisembarkUnits(mission, unitDest); }
 			} else if (unitDest.unit.isAtLocation(Tile.class)) {
 				if (mission.getCarrier().isAtLocation(Europe.class)) { mission.embarkColonistsInEurope(); }
 				if (mission.getCarrier().isAtLocation(HighSeas.class)) { moveViaHighSeas(); }
@@ -156,7 +158,7 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 		moveToEuropeStep.sail(mission.getCarrier(), mission);
 	}
 	
-	private void moveAndDisemberkUnits(TransportUnitMission mission, UnitDest unitDest) {
+	private void moveAndDisembarkUnits(TransportUnitMission mission, UnitDest unitDest) {
     	Unit carrier = mission.getCarrier();
 		Path path = pathFinder.findToTile(game.map, carrier, unitDest.dest, PathFinder.includeUnexploredAndExcludeNavyThreatTiles);
 		MoveType lastMoveType = unitMoveType.calculateMoveType(carrier, carrier.getTileLocationOrNull(), path.endTile);
@@ -164,8 +166,46 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			// disembark on seaside and move to colony
 			moveViaPathToReachableDestination(mission, path, unitDest.dest, unitDest.dest);
 		} else {
+			boolean foundNewDestination = whenNoAccessGenerateNextDestinationForAllMissionUnitDest(mission, unitDest.dest);
+			if (foundNewDestination) {
+				return;
+			}
 			moveToCloseToDestination(mission, unitDest);
 		}
+	}
+
+	private boolean whenNoAccessGenerateNextDestinationForAllMissionUnitDest(
+		TransportUnitMission mission,
+		Tile noAccessDest
+	) {
+		boolean foundNewDestination = false;
+		for (UnitDest du : mission.getUnitsDest()) {
+			if (du.dest.equalsCoordinates(noAccessDest)) {
+				Tile nextDestination = whenNoAccessGenerateNextDestinationForSingleUnitDest(du);
+				if (nextDestination != null) {
+					du.dest = nextDestination;
+					foundNewDestination = true;
+				}
+			}
+		}
+		return foundNewDestination;
+	}
+
+	private Tile whenNoAccessGenerateNextDestinationForSingleUnitDest(UnitDest unitDest) {
+		if (unitDest.transportRequestMissionId != null) {
+			TransportUnitRequestMission transportRequest = playerMissionsContainer.findMission(unitDest.transportRequestMissionId);
+			if (transportRequest != null) {
+				MissionHandler<TransportUnitRequestMission> missionHandler = missionExecutor.findMissionHandler(TransportUnitRequestMission.class);
+				if (missionHandler instanceof TransportUnitRequestMissionHandler) {
+					TransportUnitRequestMissionHandler transportRequestMissionHandler = (TransportUnitRequestMissionHandler) missionHandler;
+					return transportRequestMissionHandler.moveNoAccessAndGenerateNextDestination(
+							playerMissionsContainer,
+							transportRequest
+					);
+				}
+			}
+		}
+		return null;
 	}
 
 	private void moveToCloseToDestination(TransportUnitMission mission, UnitDest unitDest) {
@@ -389,9 +429,11 @@ class TransportUnitMissionHandler implements MissionHandler<TransportUnitMission
 			return null;
 		}
 		Collection<Tile> tiles = mission.destTiles();
-		Tile tile = pathFinder.findTheQuickestTile(game.map, sourceTile, tiles, mission.getCarrier(), PathFinder.includeUnexploredTiles);
-		if (tile != null) {
-			return mission.firstTransportDestinationForTile(tile);
+		if (!tiles.isEmpty()) {
+			Tile tile = pathFinder.findTheQuickestTile(game.map, sourceTile, tiles, mission.getCarrier(), PathFinder.includeUnexploredTiles);
+			if (tile != null) {
+				return mission.firstTransportDestinationForTile(tile);
+			}
 		}
 		return null;
 	}

@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.assertThat
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -155,9 +156,9 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         newTurnAndExecuteMission(dutch, 1)
 
         // then
-        val transportRequest = dutchMissionContainer.findFirstMission(TransportUnitRequestMission::class.java)
+        val transportRequest = dutchMissionContainer.findFirstMissionKt(TransportUnitRequestMission::class.java)
         assertThat(dutchMissionContainer)
-            .hasDependMission(pioneerMission, transportRequest.id, TransportUnitRequestMission::class.java)
+            .hasDependMission(pioneerMission, transportRequest!!.id, TransportUnitRequestMission::class.java)
     }
 
     @Test

@@ -3,7 +3,7 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.findParentMission
-import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionHandler
@@ -71,9 +71,9 @@ class ReplaceColonyWorkerMissionHandler(
         playerMissionsContainer: PlayerMissionsContainer,
         mission: ReplaceColonyWorkerMission
     ) {
-        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java, { requestMission ->
+        val requestMissionExists = playerMissionsContainer.hasMission(TransportUnitRequestMission::class.java) { requestMission ->
             requestMission.unit.equalsId(mission.replaceByUnit)
-        })
+        }
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,

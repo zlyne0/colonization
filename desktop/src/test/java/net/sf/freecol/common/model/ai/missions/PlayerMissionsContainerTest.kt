@@ -4,7 +4,6 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert.ass
 import net.sf.freecol.common.model.player.Player
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
-import promitech.colonization.savegame.Savegame1600BaseClass
 
 class PlayerMissionsContainerTest {
 
@@ -25,8 +24,8 @@ class PlayerMissionsContainerTest {
         playerMissionsContainer.addMission(MissionB("B"))
 
         // when
-        val testingMission = playerMissionsContainer.findFirstMission(TestingMission::class.java)
-        val testingMissionB = playerMissionsContainer.findFirstMission(MissionB::class.java)
+        val testingMission = playerMissionsContainer.findFirstMissionKt(TestingMission::class.java)
+        val testingMissionB = playerMissionsContainer.findFirstMissionKt(MissionB::class.java)
 
         // then
         assertThat(testingMission).isNotNull

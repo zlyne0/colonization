@@ -6,7 +6,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.MissionId
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
@@ -63,9 +63,9 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
         playerMissionsContainer: PlayerMissionsContainer,
         mission: TakeRoleEquipmentMission
     ) {
-        val requestMissionExists = playerMissionsContainer.hasMissionKt(TransportUnitRequestMission::class.java, { requestMission ->
+        val requestMissionExists = playerMissionsContainer.hasMission(TransportUnitRequestMission::class.java) { requestMission ->
             requestMission.unit.equalsId(mission.unit)
-        })
+        }
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,

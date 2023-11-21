@@ -1,5 +1,8 @@
 package net.sf.freecol.common.model.ai.missions;
 
+import static net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerKt.findFirstMissionKt;
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
+
 import com.badlogic.gdx.utils.ObjectIntMap;
 
 import net.sf.freecol.common.model.Europe;
@@ -12,7 +15,6 @@ import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
-import net.sf.freecol.common.util.Predicate;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -25,8 +27,6 @@ import java.util.Set;
 import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
-
-import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class TransportUnitMission extends AbstractMission {
 
@@ -54,7 +54,7 @@ public class TransportUnitMission extends AbstractMission {
 
     public static class UnitDest implements TransportDestination {
         public final Unit unit;
-        public final Tile dest;
+        public Tile dest;
         public final boolean allowUnitMove;
         public final String transportRequestMissionId;
 
@@ -69,15 +69,6 @@ public class TransportUnitMission extends AbstractMission {
 		public String toString() {
 			return "[" + unit.getId() + " " + unit.unitType.toSmallIdStr() + " to " + dest.toPrettyString() + "]";
 		}
-	}
-
-	public static boolean isUnitExistsOnTransportMission(final PlayerMissionsContainer playerMissionContainer, final Unit unit) {
-		return playerMissionContainer.hasMission(TransportUnitMission.class, new Predicate<TransportUnitMission>() {
-			@Override
-			public boolean test(TransportUnitMission mission) {
-				return mission.isCarriedUnitTransportDestinationSet(unit);
-			}
-		});
 	}
 
 	private Unit carrier;
@@ -376,7 +367,7 @@ public class TransportUnitMission extends AbstractMission {
 	public void addUnitDestForCarriedUnits(PlayerMissionsContainer missionsContainer) {
 		for (Unit unit : carrier.getUnitContainer().getUnits()) {
 			if (!isCarriedUnitTransportDestinationSet(unit)) {
-				TransportUnitRequestMission transportRequest = missionsContainer.findFirstMission(TransportUnitRequestMission.class, unit);
+				TransportUnitRequestMission transportRequest = findFirstMissionKt(missionsContainer, TransportUnitRequestMission.class, unit);
 				if (transportRequest != null) {
 					transportRequest.setTransportUnitMissionId(this.getId());
 					addUnitDest(transportRequest);

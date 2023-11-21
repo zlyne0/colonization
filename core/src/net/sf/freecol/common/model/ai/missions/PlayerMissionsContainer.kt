@@ -4,13 +4,34 @@ fun PlayerMissionsContainer.hasMission(missionId: String): Boolean {
     return missions.containsId(missionId)
 }
 
+fun PlayerMissionsContainer.hasMission(clazz: Class<out AbstractMission>): Boolean {
+    for (playerMission in missions.entities()) {
+        if (playerMission.`is`(clazz)) {
+            return true
+        }
+    }
+    return false
+}
+
 @Suppress("UNCHECKED_CAST")
-inline fun <T : AbstractMission> PlayerMissionsContainer.hasMissionKt(
+inline fun <T : AbstractMission> PlayerMissionsContainer.hasMission(
     missionClass: Class<T>,
     predicate: (T) -> Boolean
 ): Boolean {
     for (playerMission in this.missions.entities()) {
         if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
+            return true
+        }
+    }
+    return false
+}
+
+fun <T : AbstractMission> PlayerMissionsContainer.hasMission(
+    clazz: Class<T>,
+    unit: net.sf.freecol.common.model.Unit
+): Boolean {
+    for (abstractMission in this.unitMissionsMapping.getUnitMission(unit)) {
+        if (abstractMission.`is`(clazz)) {
             return true
         }
     }
@@ -25,6 +46,29 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(
     for (playerMission in this.missions.entities()) {
         if (playerMission.`is`(missionClass) && predicate(playerMission as T)) {
             return playerMission
+        }
+    }
+    return null
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(missionClazz: Class<T>): T? {
+    for (playerMission in this.missions.entities()) {
+        if (playerMission.`is`(missionClazz)) {
+            return playerMission as T?
+        }
+    }
+    return null
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(
+    clazz: Class<T>,
+    unit: net.sf.freecol.common.model.Unit
+): T? {
+    for (abstractMission in this.unitMissionsMapping.getUnitMission(unit)) {
+        if (abstractMission.`is`(clazz)) {
+            return abstractMission as T?
         }
     }
     return null

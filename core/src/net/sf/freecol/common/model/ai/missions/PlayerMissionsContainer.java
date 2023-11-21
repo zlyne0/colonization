@@ -11,6 +11,7 @@ import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellM
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
+import net.sf.freecol.common.model.ai.missions.military.DefenceMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
@@ -155,15 +156,6 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		}
 	}
 
-	public <T extends AbstractMission> boolean hasMission(Class<? extends AbstractMission> clazz, Predicate<T> predicate) {
-		for (AbstractMission abstractMission : missions) {
-			if (abstractMission.is(clazz) && predicate.test((T)abstractMission)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
 	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz, Predicate<T> predicate) {
 		List<T> result = null;
 		for (AbstractMission abstractMission : missions) {
@@ -180,15 +172,6 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return result;
 	}
 
-	public boolean hasMission(Class<? extends AbstractMission> clazz) {
-		for (AbstractMission am : missions.entities()) {
-			if (am.getClass() == clazz) {
-				return true;
-			}
-		}
-		return false;
-	}
-	
 	@SuppressWarnings("unchecked")
 	public <T extends AbstractMission> T firstMissionByType(Class<T> clazz) {
 		for (AbstractMission abstractMission : missions.entities()) {
@@ -240,22 +223,8 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return filteredMissions;
 	}
 
-	public <T extends AbstractMission> T findFirstMission(Class<T> clazz, Unit unit) {
-		for (AbstractMission abstractMission : unitMissionsMapping.getUnitMission(unit)) {
-			if (abstractMission.is(clazz)) {
-				return (T)abstractMission;
-			}
-		}
-		return null;
-	}
-
-	public <T extends AbstractMission> T findFirstMission(Class<T> clazz) {
-		for (AbstractMission abstractMission : missions) {
-			if (abstractMission.is(clazz)) {
-				return (T)abstractMission;
-			}
-		}
-		return null;
+	protected UnitMissionsMapping getUnitMissionsMapping() {
+		return unitMissionsMapping;
 	}
 
 	public <T extends AbstractMission> List<T> findMissions(Class<T> clazz) {
@@ -301,8 +270,9 @@ public class PlayerMissionsContainer extends ObjectWithId {
 		return (T)missions.getById(id);
 	}
 
-	public AbstractMission findMission(String id) {
-		return missions.getByIdOrNull(id);
+	@SuppressWarnings("unchecked")
+	public <T extends AbstractMission> T findMission(String id) {
+		return (T)missions.getByIdOrNull(id);
 	}
 
 	public Player getPlayer() {
@@ -351,6 +321,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			addNodeForMapIdEntities("missions", TransportUnitRequestMission.class);
 			addNodeForMapIdEntities("missions", ReplaceColonyWorkerMission.class);
 			addNodeForMapIdEntities("missions", TakeRoleEquipmentMission.class);
+			addNodeForMapIdEntities("missions", DefenceMission.class);
         }
         
         @Override

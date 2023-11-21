@@ -11,6 +11,8 @@ class TransportUnitRequestMissionTest : MissionHandlerBaseTestClass() {
     @Test
     fun `transport request should end when its on destination`() {
         // given
+        clearAllMissions(dutch)
+
         val fortOrangeTile = fortOranje.tile
 
         val missionContainer = game.aiContainer.missionContainer(dutch)
