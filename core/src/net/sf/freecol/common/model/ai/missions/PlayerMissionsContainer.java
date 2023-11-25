@@ -72,10 +72,10 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			logger.debug("player[%s].mission[%s] add child mission[%s] %s", player.getId(), parentMission.getId(), childMission.getId(), childMission.toString());
 		}
 
-		if (parentMission.dependMissions2.isEmpty()) {
-			parentMission.dependMissions2 = new HashSet<String>();
+		if (parentMission.dependMissions.isEmpty()) {
+			parentMission.dependMissions = new HashSet<String>();
 		}
-		parentMission.dependMissions2.add(childMission.getId());
+		parentMission.dependMissions.add(childMission.getId());
 
 		childMission.parentMissionId = parentMission.getId();
 
@@ -92,7 +92,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 			if (mission.isDone()) {
 				continue;
 			}
-			if (mission.dependMissions2.isEmpty() || isAllDependMissionDone(mission)) {
+			if (mission.dependMissions.isEmpty() || isAllDependMissionDone(mission)) {
 				toExecute.add(mission);
 			}
 		}
@@ -125,7 +125,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public boolean isAllDependMissionDone(AbstractMission mission) {
-		for (String missionId : mission.dependMissions2) {
+		for (String missionId : mission.dependMissions) {
 			AbstractMission childMission = missions.getByIdOrNull(missionId);
 			if (childMission != null && !childMission.isDone()) {
 				return false;
@@ -149,7 +149,7 @@ public class PlayerMissionsContainer extends ObjectWithId {
 				if (am.parentMissionId != null) {
 					AbstractMission parentMission = missions.getByIdOrNull(am.parentMissionId);
 					if (parentMission != null) {
-						parentMission.dependMissions2.remove(am.getId());
+						parentMission.dependMissions.remove(am.getId());
 					}
 				}
 			}
@@ -358,10 +358,10 @@ public class PlayerMissionsContainer extends ObjectWithId {
 				if (mission.parentMissionId != null) {
 					AbstractMission parentMission = missionContainer.missions.getByIdOrNull(mission.parentMissionId);
 					if (parentMission != null) {
-						if (parentMission.dependMissions2.isEmpty()) {
-							parentMission.dependMissions2 = new HashSet<String>();
+						if (parentMission.dependMissions.isEmpty()) {
+							parentMission.dependMissions = new HashSet<String>();
 						}
-						parentMission.dependMissions2.add(mission.getId());
+						parentMission.dependMissions.add(mission.getId());
 					}
 				}
 			}

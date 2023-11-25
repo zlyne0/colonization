@@ -116,7 +116,7 @@ fun PlayerMissionsContainer.findDeepDependMissions(mission: AbstractMission): Li
         if (m.notEqualsId(mission)) {
             result.add(m)
         }
-        for (dependMissionId in m.dependMissions2) {
+        for (dependMissionId in m.dependMissions) {
             val dependMission = this.missions.getByIdOrNull(dependMissionId)
             if (dependMission != null) {
                 buf.add(dependMission)

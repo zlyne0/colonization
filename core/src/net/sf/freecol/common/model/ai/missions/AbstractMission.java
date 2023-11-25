@@ -14,7 +14,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	private boolean done = false;
 
 	protected String parentMissionId;
-	protected Set<String> dependMissions2 = Collections.emptySet();
+	protected Set<String> dependMissions = Collections.emptySet();
 
 	protected AbstractMission(String id) {
 		super(id);
@@ -26,7 +26,7 @@ public abstract class AbstractMission extends ObjectWithId {
 	
 	public abstract void blockUnits(UnitMissionsMapping unitMissionsMapping);
 	public abstract void unblockUnits(UnitMissionsMapping unitMissionsMapping);
-	
+
 	public void setDone() {
 		done = true;
 	}
@@ -36,11 +36,11 @@ public abstract class AbstractMission extends ObjectWithId {
 	}
 
 	public boolean hasDependMission(String missionId) {
-		return dependMissions2.contains(missionId);
+		return dependMissions.contains(missionId);
 	}
 
 	public boolean hasDependMission() {
-		return !dependMissions2.isEmpty();
+		return !dependMissions.isEmpty();
 	}
 
 	@Override
