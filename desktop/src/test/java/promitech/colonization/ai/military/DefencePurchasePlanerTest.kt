@@ -3,6 +3,7 @@ package promitech.colonization.ai.military
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.emptyMapTileDebugInfo
+import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.specification.BuildingType
@@ -105,14 +106,14 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
         // given
         warWithAll(dutch)
 
-        val threatModel = ThreatModel(game, dutch)
-        val defencePurchasePlaner = DefencePurchasePlaner(dutch, threatModel)
+        val defencePlaner = DefencePlaner(game, PathFinder())
+        val defencePurchasePlaner = DefencePurchasePlaner(game, dutch, defencePlaner)
 
         // when
         val defencePurchases: List<ColonyDefencePurchase> = defencePurchasePlaner.generateOrders()
 
         // then
-        printDefenceOrders(threatModel, defencePurchases)
+        printDefenceOrders(defencePlaner.generateThreatModel(dutch), defencePurchases)
 
         assertThat(defencePurchases).hasSize(3)
         assertThat(defencePurchases.get(0))
@@ -129,14 +130,14 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
     @Test
     fun `should generate purchase orders on peace`() {
         // given
-        val threatModel = ThreatModel(game, dutch)
-        val defencePurchasePlaner = DefencePurchasePlaner(dutch, threatModel)
+        val defencePlaner = DefencePlaner(game, PathFinder())
+        val defencePurchasePlaner = DefencePurchasePlaner(game, dutch, defencePlaner)
 
         // when
         val defencePurchases: List<ColonyDefencePurchase> = defencePurchasePlaner.generateOrders()
 
         // then
-        printDefenceOrders(threatModel, defencePurchases)
+        printDefenceOrders(defencePlaner.generateThreatModel(dutch), defencePurchases)
 
         assertThat(defencePurchases).hasSize(3)
         assertThat(defencePurchases.get(0))

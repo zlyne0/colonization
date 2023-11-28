@@ -4,7 +4,12 @@ import com.badlogic.gdx.utils.ObjectFloatMap
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Tile
+import net.sf.freecol.common.model.Turn
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.UnitId
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.foreachMission
+import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.forEachTile
 import net.sf.freecol.common.model.map.InfluenceRangeMapBuilder
 import net.sf.freecol.common.model.map.PowerInfluenceMap
@@ -17,7 +22,7 @@ import promitech.map.FloatFloatArray
 import promitech.map.IntIntArray
 import promitech.map.forEachCords
 
-class ThreatModel(val game: Game, val player: Player) {
+class ThreatModel(val game: Game, var player: Player) {
 
     val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
 
@@ -29,12 +34,34 @@ class ThreatModel(val game: Game, val player: Player) {
 
     private val powerProjectionRange = 5
     private val offencePowerCache = ObjectFloatMap<String>()
+    var createTurn: Turn
 
     init {
-        threatInfluenceMap = createThreatInfluenceMap()
-        singleTileDefence = createTileDefenceMap(game, player)
-        powerBalance = createPowerBalanceMap(singleTileDefence, threatInfluenceMap)
-        warRange = generateWarRange()
+        createTurn = game.turn
+
+        threatInfluenceMap = PowerInfluenceMap(game.map, ALLOW_ONLY_LAND_TILES, influenceRangeMapBuilder)
+        singleTileDefence = FloatFloatArray(game.map.width, game.map.height, FLOAT_UNKNOWN_VALUE)
+        powerBalance = FloatFloatArray(game.map.width, game.map.height, FLOAT_UNKNOWN_VALUE)
+        warRange = IntIntArray(game.map.width, game.map.height, Int.MAX_VALUE)
+
+        calculateThreatInfluenceMap()
+        calculateTileDefenceMap()
+        calculatePowerBalanceMap(singleTileDefence, threatInfluenceMap)
+        generateWarRange()
+    }
+
+    fun recalculate(p: Player) {
+        this.player = p
+
+        threatInfluenceMap.reset()
+        singleTileDefence.resetToUnknown()
+        powerBalance.resetToUnknown()
+        warRange.resetToUnknown()
+
+        calculateThreatInfluenceMap()
+        calculateTileDefenceMap()
+        calculatePowerBalanceMap(singleTileDefence, threatInfluenceMap)
+        generateWarRange()
     }
 
     internal fun calculateColonyDefencePriority(): List<ColonyThreat> {
@@ -58,16 +85,14 @@ class ThreatModel(val game: Game, val player: Player) {
         return colonyThreats
     }
 
-    private fun createThreatInfluenceMap(): PowerInfluenceMap {
-        val threatMap = PowerInfluenceMap(game.map, ALLOW_ONLY_LAND_TILES, influenceRangeMapBuilder)
-
+    private fun calculateThreatInfluenceMap() {
         for (gamePlayer in game.players) {
             if (player.notEqualsId(gamePlayer) && player.getStance(gamePlayer) != Stance.UNCONTACTED) {
                 for (unit in gamePlayer.units) {
                     if (unit.isAtTileLocation) {
                         val power = offencePower(unit)
                         if (power > 0) {
-                            threatMap.addSourceLayer(unit.tile, powerProjectionRange, power)
+                            threatInfluenceMap.addSourceLayer(unit.tile, powerProjectionRange, power)
                         }
                     }
                 }
@@ -75,16 +100,15 @@ class ThreatModel(val game: Game, val player: Player) {
                     for (settlement in gamePlayer.settlements) {
                         val indianSettlement = settlement.asIndianSettlement()
                         if (gamePlayer.getStance(player) == Stance.WAR || indianSettlement.getTension(player).isWorst(Tension.Level.CONTENT)) {
-                            threatMap.addSourceLayer(settlement.tile, powerProjectionRange, 1f)
+                            threatInfluenceMap.addSourceLayer(settlement.tile, powerProjectionRange, 1f)
                         }
                     }
                 }
             }
         }
-        return threatMap
     }
 
-    private fun generateWarRange(): IntIntArray {
+    private fun generateWarRange() {
         influenceRangeMapBuilder.init(game.map, ALLOW_ONLY_LAND_TILES)
 
         for (gamePlayer in game.players) {
@@ -101,26 +125,30 @@ class ThreatModel(val game: Game, val player: Player) {
             }
         }
 
-        val rangeMap = IntIntArray(game.map.width, game.map.height, Int.MAX_VALUE)
-        influenceRangeMapBuilder.generateRange(rangeMap, powerProjectionRange)
-        return rangeMap
+        influenceRangeMapBuilder.generateRange(warRange, powerProjectionRange)
     }
 
-    private fun createTileDefenceMap(game: Game, player: Player): FloatFloatArray {
-        val powerValues = FloatFloatArray(game.map.width, game.map.height, FLOAT_UNKNOWN_VALUE)
+    private fun calculateTileDefenceMap() {
+        val missionsContainer: PlayerMissionsContainer = game.aiContainer.missionContainer(player)
+        val defenceMissionUnits = mutableSetOf<UnitId>()
+        missionsContainer.foreachMission(DefenceMission::class.java) { defenceMission ->
+            defenceMissionUnits.add(defenceMission.unit.id)
+            val defTile = defenceMission.tile
+            singleTileDefence.addValue(
+                defTile.x, defTile.y,
+                calculatePaperDefencePower(defenceMission.unit.unitType, defenceMission.unit.unitRole)
+            )
+        }
 
         game.map.forEachTile { tile ->
-            val power = calculatePaperDefencePower(player, tile)
+            val power = calculatePaperDefencePower(player, tile, defenceMissionUnits)
             if (power > 0) {
-                powerValues.set(tile.x, tile.y, power)
+                singleTileDefence.addValue(tile.x, tile.y, power)
             }
         }
-        return powerValues
     }
 
-    private fun createPowerBalanceMap(playerDefenceMap: FloatFloatArray, threatMap: PowerInfluenceMap): FloatFloatArray {
-        val powerBalance = FloatFloatArray(game.map.width, game.map.height, FLOAT_UNKNOWN_VALUE)
-
+    private fun calculatePowerBalanceMap(playerDefenceMap: FloatFloatArray, threatMap: PowerInfluenceMap): FloatFloatArray {
         var threadValue: Float
         var playerPowerValue: Float
         var powerBalanceValue: Float

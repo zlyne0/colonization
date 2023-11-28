@@ -9,6 +9,8 @@ import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaner
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import promitech.colonization.ai.military.DefencePlaner
+import promitech.colonization.ai.military.DefencePurchasePlaner
 import promitech.colonization.ai.purchase.BuyShipOrder.CollectGoldAndBuy
 import promitech.colonization.ai.purchase.BuyShipPlaner
 import promitech.colonization.ai.purchase.PurchasePlaner
@@ -26,7 +28,10 @@ class EuropeanMissionPlaner(
     private val transportGoodsToSellMissionPlaner: TransportGoodsToSellMissionPlaner = TransportGoodsToSellMissionPlaner(game, pathFinder)
     private val scoutMissionPlaner: ScoutMissionPlaner = ScoutMissionPlaner(game, pathFinder, pathFinder2)
     private val pioneerMissionPlaner: PioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
-    private val colonyWorkerRequestPlaner: ColonyWorkerRequestPlaner = ColonyWorkerRequestPlaner(game, pathFinder, pioneerMissionPlaner)
+    private val defencePlaner = DefencePlaner(game, pathFinder)
+    private val colonyWorkerRequestPlaner: ColonyWorkerRequestPlaner = ColonyWorkerRequestPlaner(
+        game, pathFinder, pioneerMissionPlaner, defencePlaner
+    )
     private val buyGoodsPlaner: BuyGoodsPlaner = BuyGoodsPlaner(game)
     private val purchasePlaner: PurchasePlaner = PurchasePlaner(game)
     private val navyMissionPlaner: NavyMissionPlaner = NavyMissionPlaner(purchasePlaner, colonyWorkerRequestPlaner, transportGoodsToSellMissionPlaner)
@@ -53,6 +58,11 @@ class EuropeanMissionPlaner(
             return
         }
         buyShipPlaner.handleBuyOrders(buyShipPlan)
+
+        val defencePurchasePlaner = DefencePurchasePlaner(game, player, defencePlaner)
+        val defencePurchaseOrders = defencePurchasePlaner.generateOrders()
+        defencePurchasePlaner.handlePurchaseOrders(defencePurchaseOrders, playerMissionContainer)
+
         val scoutBuyPlan = scoutMissionPlaner.createBuyPlan(player, playerMissionContainer)
         if (scoutBuyPlan != null) {
             scoutMissionPlaner.handleBuyPlan(scoutBuyPlan, player, playerMissionContainer)

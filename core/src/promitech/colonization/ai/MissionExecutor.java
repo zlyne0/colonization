@@ -95,7 +95,7 @@ public class MissionExecutor implements Disposable {
             game, moveService, pathFinder, pathFinder2, this
         );
         DefenceMissionHandler defenceMissionHandler = new DefenceMissionHandler(
-            game, new DefencePlaner(game), moveService, pathFinder
+            game, new DefencePlaner(game, pathFinder), moveService, pathFinder
         );
 
         missionHandlerMapping.put(WanderMission.class, wanderMissionHandler);

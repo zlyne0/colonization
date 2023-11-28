@@ -18,6 +18,10 @@ public class FloatFloatArray extends AbstractArray2D {
         set(unknownValue);
     }
 
+    public void resetToUnknown() {
+        set(unknownValue);
+    }
+
     public float get(final int x, final int y) {
         return array[y][x];
     }

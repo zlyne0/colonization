@@ -17,6 +17,7 @@ import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import promitech.colonization.ai.NavyMissionPlaner
+import promitech.colonization.ai.military.DefencePlaner
 import promitech.colonization.ai.purchase.PurchasePlaner
 
 class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
@@ -36,7 +37,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         purchasePlaner.avoidPurchasesAndCollectGold()
         planer = NavyMissionPlaner(
             purchasePlaner,
-            ColonyWorkerRequestPlaner(game, di.pathFinder, PioneerMissionPlaner(game, di.pathFinder)),
+            ColonyWorkerRequestPlaner(game, di.pathFinder, PioneerMissionPlaner(game, di.pathFinder), DefencePlaner(game, di.pathFinder)),
             TransportGoodsToSellMissionPlaner(game, di.pathFinder)
         )
 

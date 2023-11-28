@@ -18,6 +18,10 @@ public class IntIntArray extends AbstractArray2D {
         set(unknownValue);
     }
 
+    public void resetToUnknown() {
+        set(unknownValue);
+    }
+
     public boolean isUnknownValue(int x, int y) {
         return get(x, y) == unknownValue;
     }

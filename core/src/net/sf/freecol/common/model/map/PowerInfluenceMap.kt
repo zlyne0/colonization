@@ -30,6 +30,11 @@ class PowerInfluenceMap(
         }
     }
 
+    fun reset() {
+        sumSourcePower.resetToUnknown()
+        influencePowerMap.resetToUnknown()
+    }
+
     fun powerSum(tile: Tile): Float {
         return sumSourcePower.get(tile.x, tile.y)
     }

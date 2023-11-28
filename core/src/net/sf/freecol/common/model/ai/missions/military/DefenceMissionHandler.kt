@@ -40,7 +40,7 @@ class DefenceMissionHandler(
             return
         }
 
-        if (!mission.isColonyOwner()) {
+        if (!mission.isTileAccessible()) {
             MissionHandlerLogger.logger.debug("player[%s].DefenceMissionHandler no colony to protect", player.getId())
 
             val colony = defencePlaner.findColonyToProtect(mission.unit)
@@ -50,20 +50,19 @@ class DefenceMissionHandler(
                 return
             } else {
                 MissionHandlerLogger.logger.debug("player[%s].DefenceMissionHandler change colony: %s", player.getId(), colony.toString())
-                mission.changeColony(colony)
+                mission.changeDefenceDestination(colony)
             }
         }
 
         if (mission.unit.isAtTileLocation) {
-            val colony = mission.colony()
-            if (mission.unit.isAtLocation(colony.tile)) {
+            if (mission.unit.isAtLocation(mission.tile)) {
                 mission.ifNotThenFortified()
                 return
             }
             relocateUnit(playerMissionsContainer, mission)
         } else if (mission.unit.isAtUnitLocation) {
             if (!playerMissionsContainer.hasMission(TransportUnitRequestMission::class.java, mission.unit)) {
-                val transportRequest = TransportUnitRequestMission(game.turn, mission.unit, mission.colony().tile)
+                val transportRequest = TransportUnitRequestMission(game.turn, mission.unit, mission.tile)
                 playerMissionsContainer.addMission(mission, transportRequest)
             }
             // else do nothing, wait for transport
@@ -74,9 +73,8 @@ class DefenceMissionHandler(
     }
 
     private fun relocateUnit(playerMissionsContainer: PlayerMissionsContainer, mission: DefenceMission) {
-        val colony = mission.colony()
         if (mission.isDestinationOnTheSameIsland(game.map)) {
-            moveToDestination(game, moveService, pathFinder, mission.unit, colony.tile) {
+            moveToDestination(game, moveService, pathFinder, mission.unit, mission.tile) {
                 mission.ifNotThenFortified()
             }
         } else {
@@ -90,7 +88,7 @@ class DefenceMissionHandler(
             playerMissionsContainer,
             mission,
             mission.unit,
-            mission.colony().tile
+            mission.tile
         )
         if (mission.unit.unitRole.equalsId(UnitRole.DRAGOON)) {
             transportRequest.withAllowMoveToDestination()
@@ -107,7 +105,7 @@ class DefenceMissionHandler(
         if (defenceMission != null) {
             val colony = defencePlaner.findColonyToProtect(unit)
             if (colony != null) {
-                defenceMission.changeColony(colony)
+                defenceMission.changeDefenceDestination(colony)
                 createDefenceTransportRequest(playerMissionsContainer, defenceMission)
             } else {
                 MissionHandlerLogger.logger.debug("player[%s].DefenceMissionHandler no colony to defence", unit.owner.id)
@@ -129,7 +127,7 @@ class DefenceMissionHandler(
                     mission.unit.owner.id,
                     colony.toString()
                 )
-                mission.changeColony(colony)
+                mission.changeDefenceDestination(colony)
                 return colony.tile
             }
         }

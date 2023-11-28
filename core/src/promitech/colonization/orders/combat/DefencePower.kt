@@ -3,6 +3,7 @@ package promitech.colonization.orders.combat
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
+import net.sf.freecol.common.model.UnitId
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.player.Player
@@ -62,7 +63,7 @@ object DefencePower {
     }
 
     @JvmStatic
-    fun calculatePaperDefencePower(player: Player, tile: Tile): Float {
+    fun calculatePaperDefencePower(player: Player, tile: Tile, excludeUnits: Set<UnitId>): Float {
         val firstUnit = tile.units.first()
         if (firstUnit == null) {
             if (tile.hasSettlement() && tile.settlement.owner.equalsId(player)) {
@@ -80,11 +81,13 @@ object DefencePower {
         var offencePower = 0f
         CombatSidesPool.use { combatSides ->
             for (singleUnit in tile.units.entities()) {
-                offencePower += combatSides.calculateDefencePower(
-                    singleUnit.unitType,
-                    singleUnit.unitRole,
-                    tile
-                )
+                if (!excludeUnits.contains(singleUnit.id)) {
+                    offencePower += combatSides.calculateDefencePower(
+                        singleUnit.unitType,
+                        singleUnit.unitRole,
+                        tile
+                    )
+                }
             }
         }
         return offencePower

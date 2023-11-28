@@ -15,11 +15,14 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
+import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.foreachMission
 import net.sf.freecol.common.model.ai.missions.goodsToSell.ColoniesProductionValue
 import net.sf.freecol.common.model.ai.missions.goodsToSell.TransportGoodsToSellMission
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
+import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
@@ -53,9 +56,12 @@ import promitech.colonization.ai.MissionPlaner
 import promitech.colonization.ai.SeekAndDestroyMissionHandler
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
+import promitech.colonization.ai.military.DefencePlaner
+import promitech.colonization.ai.military.DefencePurchasePlaner
 import promitech.colonization.ai.military.ThreatModel
 import promitech.colonization.ai.military.printColonyDefencePriority
 import promitech.colonization.ai.military.printSingleTileDefence
+import promitech.colonization.ai.military.printThreat
 import promitech.colonization.ai.navy.NavyExplorer
 import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import promitech.colonization.infrastructure.ThreadsResources
@@ -124,6 +130,16 @@ fun createCommands(
 			} else {
 				mapTurnRange(di, mapActor, tileDebugView)
 			}			 
+		}
+
+		command("map_show_threat") {
+			val debugMilitary = DebugMilitary(di, tileDebugView, di.guiGameModel.game, di.guiGameModel.game.playingPlayer)
+			debugMilitary.printThreat()
+		}
+
+		command("map_show_single_tile_defence") {
+			val debugMilitary = DebugMilitary(di, tileDebugView, di.guiGameModel.game, di.guiGameModel.game.playingPlayer)
+			debugMilitary.printSingleTileDefence()
 		}
 
 		command("ai_generateTileScoresForNewColony") {
@@ -340,6 +356,7 @@ fun createCommands(
 	}
 }
 
+// key 3
 fun generateTheBestPlaceToBuildColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 
@@ -363,6 +380,7 @@ fun generateTileScoresForNewColony(di: DI, guiGameModel: GUIGameModel, tileDebug
 	sut.debugGenerateTileScoresForNewColony(tileDebugView)
 }
 
+// key 4
 fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 
@@ -383,6 +401,7 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	sut.debug(tileDebugView)
 }
 
+// key 5
 fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
 
@@ -652,6 +671,10 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			tileDebugView.appendStr(tile.x, tile.y, "Pioneer")
 		}
 
+		fun showOnMap(mission: DefenceMission) {
+			tileDebugView.appendStr(mission.tile.x, mission.tile.y, "Def")
+		}
+
 		for (mission in missionContainer.missions.entities()) {
 			if (mission.isDone) {
 				continue
@@ -668,6 +691,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				is TransportUnitRequestMission -> showOnMap(mission)
 				is ReplaceColonyWorkerMission -> showOnMap(mission)
 				is PioneerMission -> showOnMap(mission)
+				is DefenceMission -> showOnMap(mission)
 				else -> println("Can not print mission on map for " + mission.javaClass.name)
 			}
 		}
@@ -771,8 +795,9 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 //		val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
 
-		val playerThreatModel = ThreatModel(game, player)
-		playerThreatModel.printColonyDefencePriority(tileDebugView)
+		val debugMilitary = DebugMilitary(di, tileDebugView, game, player)
+		debugMilitary.printColonyDefencePriority()
+		debugMilitary.generateOrders()
 
 		// when
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
@@ -807,7 +832,7 @@ class DebugScout(
 	val missionContainer = game.aiContainer.missionContainer(player)
 
 	fun createScoutMission() {
-		val mission = missionContainer.findFirstMission(ScoutMission::class.java)
+		val mission = missionContainer.findFirstMissionKt(ScoutMission::class.java)
 		if (mission == null) {
 			var scout: Unit? = null
 			for (unit in player.units) {
@@ -855,7 +880,7 @@ class DebugPioneer(
 	val missionContainer = game.aiContainer.missionContainer(player)
 
 	fun createPioneerMission() {
-		var pioneerMission = missionContainer.findFirstMission(PioneerMission::class.java)
+		var pioneerMission = missionContainer.findFirstMissionKt(PioneerMission::class.java)
 		if (pioneerMission == null) {
 			missionContainer.clearAllMissions()
 
@@ -968,6 +993,35 @@ class DebugIndianSettlementProduction(
 
 				tileDebugView.appendStr(tile.x, tile.y, "food: $cons/$prod")
 			}
+		}
+	}
+}
+
+class DebugMilitary(
+	private val di: DI,
+	private val tileDebugView: TileDebugView,
+	private val game: Game,
+	private val player: Player
+) {
+	private val threatModel = ThreatModel(game, player)
+
+	fun printColonyDefencePriority() {
+		threatModel.printColonyDefencePriority(tileDebugView)
+	}
+
+	fun printThreat() {
+		threatModel.printThreat(tileDebugView)
+	}
+
+	fun printSingleTileDefence() {
+		threatModel.printSingleTileDefence(tileDebugView)
+	}
+
+	fun generateOrders() {
+		val orders = DefencePurchasePlaner(game, player, DefencePlaner(game, di.pathFinder)).generateOrders()
+		println("DefencePurchaseOrders.size " + orders.size)
+		for (order in orders) {
+			println("colony ${order.colony.name}, threatPower = ${order.colonyThreat.colonyThreatWeights.threatPower} purchase = ${order.purchase}")
 		}
 	}
 }

@@ -1,20 +1,26 @@
 package promitech.colonization.ai.military
 
 import net.sf.freecol.common.model.Colony
+import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.military.DefenceMission
+import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.military.DefencePrice.DefencePurchase
 import promitech.colonization.ai.military.DefencePrice.generateRequests
+import promitech.colonization.ai.military.MilitaryLogger.logger
 import promitech.colonization.orders.combat.DefencePower
 
 class DefencePurchasePlaner(
-    player: Player,
-    private val threatModel: ThreatModel
+    private val game: Game,
+    private val player: Player,
+    private val defencePlaner: DefencePlaner
 ) {
 
     private var budget = player.gold
 
     fun generateOrders(): List<ColonyDefencePurchase> {
-        val colonyDefencePriority = threatModel.calculateColonyDefencePriority()
+        val colonyDefencePriority = defencePlaner.generateThreatModel(player).calculateColonyDefencePriority()
 
         var requestPurchaseCount = 0
         for (colonyThreat in colonyDefencePriority) {
@@ -22,7 +28,6 @@ class DefencePurchasePlaner(
                 requestPurchaseCount++
             }
         }
-
 
         val purchases = ArrayList<ColonyDefencePurchase>()
         for (colonyThreat in colonyDefencePriority) {
@@ -50,6 +55,14 @@ class DefencePurchasePlaner(
             if (theBestPurchase == null) {
                 break
             }
+            if (logger.isDebug) {
+                logger.debug(
+                    "player[${colonyThreat.colony.owner.id}].defencePurchase"
+                    + " colony[${colonyThreat.colony.name}], war: ${colonyThreat.war}"
+                    + " power [${defenceSimulation.power()} < ${expectedDefencePower}], budget: ${budget}, price: ${theBestPurchase.price}"
+                )
+            }
+
             defenceSimulation.addPurchase(theBestPurchase)
             budget -= theBestPurchase.price
         }
@@ -76,6 +89,41 @@ class DefencePurchasePlaner(
             }
         }
         return purchase
+    }
+
+    fun handlePurchaseOrders(
+        defencePurchaseOrders: List<ColonyDefencePurchase>,
+        playerMissionContainer: PlayerMissionsContainer
+    ) {
+        val player = playerMissionContainer.player
+        var bought = false
+        for (order in defencePurchaseOrders) {
+            when (order.purchase) {
+                is DefencePurchase.ColonyBuildingPurchase -> {
+                    if (player.hasGold(order.colony.getAIPriceForBuilding(order.purchase.buildingType))) {
+                        order.colony.aiPayForBuilding(order.purchase.buildingType, game)
+                        bought = true
+                    }
+                }
+                is DefencePurchase.UnitPurchase -> {
+                    val price = player.europe.aiUnitPrice(order.purchase.unitType, order.purchase.unitRole)
+                    if (player.hasGold(price)) {
+                        val unit = player.europe.aiBuyUnit(game, order.purchase.unitType, order.purchase.unitRole)
+
+                        val defenceMission = DefenceMission(order.colony.tile, unit)
+                        playerMissionContainer.addMission(defenceMission)
+
+                        val transportRequest = TransportUnitRequestMission(game.turn, unit, order.colony.tile)
+                        playerMissionContainer.addMission(defenceMission, transportRequest)
+                        bought = true
+                    }
+                }
+            }
+        }
+
+        if (bought) {
+            defencePlaner.recalculateThreat(player)
+        }
     }
 
     data class ColonyDefencePurchase(

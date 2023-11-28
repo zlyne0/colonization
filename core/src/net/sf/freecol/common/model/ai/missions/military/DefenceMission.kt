@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.military
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Map
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
@@ -15,26 +16,35 @@ class DefenceMission: AbstractMission {
 
     var unit: Unit
         private set
-    var colonyId: String
+    var tile: Tile
         private set
 
-    constructor(colony: Colony, unit: Unit) : super(Game.idGenerator.nextId(DefenceMission::class.java)) {
-        this.colonyId = colony.id
+    constructor(tile: Tile, unit: Unit) : super(Game.idGenerator.nextId(DefenceMission::class.java)) {
+        this.tile = tile
         this.unit = unit
     }
 
-    private constructor(missionId: String, unit: Unit, colonyId: String) : super(missionId) {
+    private constructor(missionId: String, unit: Unit, tile: Tile) : super(missionId) {
         this.unit = unit
-        this.colonyId = colonyId
+        this.tile = tile
     }
 
     internal fun isDefenceUnitExists(): Boolean = CommonMissionHandler.isUnitExists(unit.owner, unit)
-    internal fun isColonyOwner(): Boolean = CommonMissionHandler.isColonyOwner(unit.owner, colonyId)
-    internal fun colony(): Colony = unit.owner.settlements.getById(colonyId).asColony()
-    internal fun isDestinationOnTheSameIsland(map: Map): Boolean = map.isTheSameArea(colony().tile, unit.tile)
 
-    internal fun changeColony(colony: Colony) {
-        this.colonyId = colony.id
+    internal fun isTileAccessible(): Boolean {
+        if (tile.hasSettlement()) {
+            return tile.settlement.owner.equals(unit.owner)
+        }
+        if (tile.units.isEmpty) {
+            return true
+        }
+        return tile.units.first().owner.equalsId(unit.owner)
+    }
+
+    internal fun isDestinationOnTheSameIsland(map: Map): Boolean = map.isTheSameArea(tile, unit.tile)
+
+    internal fun changeDefenceDestination(colony: Colony) {
+        this.tile = colony.tile
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
@@ -46,7 +56,7 @@ class DefenceMission: AbstractMission {
     }
 
     override fun toString(): String {
-        return "defenceMission: ${unit}, colonyId: ${colonyId}"
+        return "defenceMission: ${unit}, tile: [${tile.toStringCords()}]"
     }
 
     fun ifNotThenFortified() {
@@ -58,11 +68,12 @@ class DefenceMission: AbstractMission {
 
     class Xml : AbstractMission.Xml<DefenceMission>() {
         private val ATTR_UNIT = "unit"
-        private val ATTR_COLONY = "colony"
+        private val ATTR_TILE = "tile"
 
         override fun startElement(attr: XmlNodeAttributes) {
             val unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
-            nodeObject = DefenceMission(attr.id, unit, attr.getStrAttribute(ATTR_COLONY))
+            val tile = game.map.getSafeTile(attr.getPoint(ATTR_TILE))
+            nodeObject = DefenceMission(attr.id, unit, tile)
             super.startElement(attr)
         }
 
@@ -70,7 +81,7 @@ class DefenceMission: AbstractMission {
             super.startWriteAttr(mission, attr)
             attr.setId(mission)
             attr.set(ATTR_UNIT, mission.unit)
-            attr.set(ATTR_COLONY, mission.colonyId)
+            attr.setPoint(ATTR_TILE, mission.tile.x, mission.tile.y)
         }
 
         override fun getTagName(): String {

@@ -1,6 +1,6 @@
 package net.sf.freecol.common.model.ai.missions.military
 
-import net.sf.freecol.common.model.TileAssert
+import net.sf.freecol.common.model.TileAssert.assertThat
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
@@ -9,7 +9,6 @@ import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainerAssert
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
-import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import promitech.colonization.savegame.AbstractMissionAssert.assertThat
@@ -36,8 +35,8 @@ class DefenceMissionHandlerTest : MissionHandlerBaseTestClass() {
         u1 = UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, dutch, galleon)
         u2 = UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, dutch, galleon)
 
-        val defence1 = DefenceMission(fortOranje, u1)
-        val defence2 = DefenceMission(fortOranje, u2)
+        val defence1 = DefenceMission(fortOranje.tile, u1)
+        val defence2 = DefenceMission(fortOranje.tile, u2)
         missionContainer.addMission(defence1)
         missionContainer.addMission(defence2)
 
@@ -63,8 +62,8 @@ class DefenceMissionHandlerTest : MissionHandlerBaseTestClass() {
         u2 = UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, dutch, galleon)
 
         // given defence mission and transport
-        val defence1 = DefenceMission(fortOranje, u1)
-        val defence2 = DefenceMission(fortOranje, u2)
+        val defence1 = DefenceMission(fortOranje.tile, u1)
+        val defence2 = DefenceMission(fortOranje.tile, u2)
         missionContainer.addMission(defence1)
         missionContainer.addMission(defence2)
 
@@ -88,13 +87,13 @@ class DefenceMissionHandlerTest : MissionHandlerBaseTestClass() {
         // then
 
         // should change defence destination
-        assertThat(defence1.colonyId).isEqualTo(fortNassau.id)
-        assertThat(defence2.colonyId).isEqualTo(fortNassau.id)
-        TileAssert.assertThat(request1.destination).isEquals(fortNassau.tile)
-        TileAssert.assertThat(request2.destination).isEquals(fortNassau.tile)
+        assertThat(defence1.tile).isEquals(fortNassau.tile)
+        assertThat(defence2.tile).isEquals(fortNassau.tile)
+        assertThat(request1.destination).isEquals(fortNassau.tile)
+        assertThat(request2.destination).isEquals(fortNassau.tile)
 
-        TileAssert.assertThat(transportMission.unitsDest.get(0).dest).isEquals(fortNassau.tile)
-        TileAssert.assertThat(transportMission.unitsDest.get(1).dest).isEquals(fortNassau.tile)
+        assertThat(transportMission.unitsDest.get(0).dest).isEquals(fortNassau.tile)
+        assertThat(transportMission.unitsDest.get(1).dest).isEquals(fortNassau.tile)
 
         assertThat(defence1).isNotDone
         assertThat(defence2).isNotDone
