@@ -18,7 +18,12 @@ public class PathAssert {
 	public PathAssert(Path path) {
 		this.path = path;
 	}
-	
+
+	public PathAssert assertPathStep(int stepIndex, int turns, Tile tile) {
+		assertPathStep(stepIndex, turns, tile.x, tile.y);
+		return this;
+	}
+
 	public PathAssert assertPathStep(int stepIndex, int turns, int x, int y) {
 	    assertEquals(turns, path.turns.get(stepIndex));
 	    assertTrue(path.tiles.get(stepIndex).equalsCoordinates(x, y));

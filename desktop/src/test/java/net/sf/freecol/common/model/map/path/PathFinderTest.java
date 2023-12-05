@@ -1,16 +1,17 @@
 package net.sf.freecol.common.model.map.path;
 
-import static net.sf.freecol.common.model.map.path.PathFinder.*;
-import static net.sf.freecol.common.model.map.path.PathFinder.FlagTypes.*;
+import static net.sf.freecol.common.model.map.path.PathFinder.FlagTypes;
+import static net.sf.freecol.common.model.map.path.PathFinder.FlagTypes.AllowCarrierEnterWithGoods;
+import static net.sf.freecol.common.model.map.path.PathFinder.FlagTypes.AllowEmbark;
+import static net.sf.freecol.common.model.map.path.PathFinder.FlagTypes.AvoidDisembark;
+import static net.sf.freecol.common.model.map.path.PathFinder.INFINITY;
+import static net.sf.freecol.common.model.map.path.PathFinder.excludeUnexploredTiles;
+import static net.sf.freecol.common.model.map.path.PathFinder.includeUnexploredAndExcludeNavyThreatTiles;
+import static net.sf.freecol.common.model.map.path.PathFinder.includeUnexploredTiles;
 import static net.sf.freecol.common.util.CollectionUtils.enumSum;
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.assertj.core.api.Assertions.assertThat;
-
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Nested;
-import org.junit.jupiter.api.Test;
 
 import com.badlogic.gdx.Gdx;
 import com.badlogic.gdx.backends.lwjgl3.Lwjgl3Files;
@@ -22,6 +23,8 @@ import net.sf.freecol.common.model.SettlementFactory;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TileAssert;
+import net.sf.freecol.common.model.TileImprovement;
+import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitAssert;
@@ -29,6 +32,11 @@ import net.sf.freecol.common.model.UnitFactory;
 import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
+
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.Test;
 
 import java.util.Arrays;
 import java.util.Locale;
@@ -503,6 +511,93 @@ class PathFinderTest {
 			// then
 			PathAssert.assertThat(path)
 				.notReachedDestination();
+		}
+	}
+
+	@Nested
+	class ShortPathByRoad {
+		Tile t1;
+		Tile t2;
+		Tile t3;
+		Tile t4;
+		Tile t5;
+		Tile t6;
+
+		@BeforeEach
+		void setup() {
+//    56
+//   4  3
+//	  12
+			t1 = game.map.getTile(28, 90);
+			t2 = game.map.getTile(28, 89);
+			t3 = game.map.getTile(28, 87);
+			t4 = game.map.getTile(27, 90);
+			t5 = game.map.getTile(27, 88);
+			t6 = game.map.getTile(27, 87);
+			generateLand();
+		}
+
+		@Test
+		void should_generate_the_shorter_path_without_road() {
+			// given
+			Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, dutch, t1);
+
+			// when
+			Path path = sut.findToTile(game.map, unit, t3, includeUnexploredTiles);
+
+			// then
+			PathAssert.assertThat(path)
+					.reachedDestination()
+					.assertPathStep(0, 0, t1)
+					.assertPathStep(1, 0, t2)
+					.assertPathStep(2, 1, t3);
+			assertThat(sut.totalCost(t3)).isEqualTo(106);
+		}
+
+		@Test
+		void should_generate_the_shorter_path_with_road() {
+			// given
+			generateRoad();
+			Unit unit = UnitFactory.create(UnitType.FREE_COLONIST, dutch, t1);
+
+			// when
+			Path path = sut.findToTile(game.map, unit, t3, includeUnexploredTiles);
+
+			// then
+			PathAssert.assertThat(path)
+					.reachedDestination()
+					.assertPathStep(0, 0, t1)
+					.assertPathStep(1, 0, t4)
+					.assertPathStep(2, 0, t5)
+					.assertPathStep(3, 0, t6)
+					.assertPathStep(4, 1, t3)
+			;
+			assertThat(sut.totalCost(t3)).isEqualTo(104);
+		}
+
+		void generateLand() {
+			t1.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+			t2.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+			t3.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+			t4.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+			t5.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+			t6.changeTileType(Specification.instance.tileTypes.getById(TileType.PLAINS));
+		}
+
+		void generateRoad() {
+			TileImprovementType road = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID);
+			t1.addImprovement(new TileImprovement(Game.idGenerator, road));
+			t4.addImprovement(new TileImprovement(Game.idGenerator, road));
+			t5.addImprovement(new TileImprovement(Game.idGenerator, road));
+			t6.addImprovement(new TileImprovement(Game.idGenerator, road));
+			t3.addImprovement(new TileImprovement(Game.idGenerator, road));
+
+			t1.updateRoadConnections(game.map);
+			t2.updateRoadConnections(game.map);
+			t3.updateRoadConnections(game.map);
+			t4.updateRoadConnections(game.map);
+			t5.updateRoadConnections(game.map);
+			t6.updateRoadConnections(game.map);
 		}
 	}
 

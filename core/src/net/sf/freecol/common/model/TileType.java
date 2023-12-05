@@ -24,7 +24,8 @@ public final class TileType extends ObjectWithFeatures implements ObjectWithInse
 	public static final String ARCTIC = "model.tile.arctic";
 	public static final String HILLS = "model.tile.hills";
     public static final String MOUNTAINS = "model.tile.mountains";
-	
+    public static final String PLAINS = "model.tile.plains";
+
 	public final MapIdEntities<TileTypeAllowedResource> allowedResourceTypes = new MapIdEntities<TileTypeAllowedResource>();
 	boolean isForest;
 	private boolean isDirectlyHighSeasConnected = false;
