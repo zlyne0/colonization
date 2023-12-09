@@ -27,14 +27,18 @@ public class Map2DArray<TILE_TYPE> extends AbstractArray2D {
     public TILE_TYPE getSafeTile(int x, int y) {
         return tiles[y][x];
     }
-    
+
+    public TILE_TYPE getSafeTile(int index) {
+        return tiles[toY(index)][toX(index)];
+    }
+
     public void runOnAllTiles(Consumer<TILE_TYPE> tileConsumer) {
         int x, y;
+        TILE_TYPE[] row;
         for (y = 0; y < height; y++) {
-            TILE_TYPE row[] = tiles[y];
+            row = tiles[y];
             for (x = 0; x < width; x++) {
-                TILE_TYPE t = row[x];
-                tileConsumer.consume(t);
+                tileConsumer.consume(row[x]);
             }
         }
     }

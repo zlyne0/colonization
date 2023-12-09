@@ -16,4 +16,5 @@ interface CostDecider {
 
     boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType);
 
+    boolean isMoveImproved();
 }

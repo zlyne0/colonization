@@ -11,8 +11,12 @@ class ColAssertDefinition {
         assertThat(this).isNotNull
     }
 
-    infix fun ObjectWithId.eqId(obj: Identifiable) {
-        assert(this.equalsId(obj))
+    infix fun Int.eq(value: Int) {
+        assert(this == value)
+    }
+
+    infix fun Identifiable.eqId(obj: Identifiable) {
+        assert(this.id.equals(obj.id))
     }
 
     infix fun ObjectWithId.eqId(id: String) {

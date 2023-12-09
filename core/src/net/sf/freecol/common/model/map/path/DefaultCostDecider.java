@@ -19,11 +19,11 @@ class DefaultCostDecider implements CostDecider {
 	protected int unitInitialMoves;
 	protected boolean moveUnitPiracy = false;
 
+	protected boolean moveImproved = false;
 	protected int costNewTurns;
 	protected int costMovesLeft;
-	
+
 	protected int moveCost;
-	private int newTotalPathCost;
 	protected boolean avoidUnexploredTiles = true;
 	protected boolean allowEmbark = false;
 	protected boolean allowCarrierEnterWithGoods = false;
@@ -60,33 +60,22 @@ class DefaultCostDecider implements CostDecider {
         	return false;
         }
 		getCost(currentNode.tile, moveNode.tile, currentNode.unitMovesLeft, moveType, moveDirection);
-		return improveMove(currentNode, moveNode);
+		improveMove(currentNode, moveNode);
+		return isMoveImproved();
 	}
 	
-	protected boolean improveMove(Node currentNode, Node moveNode) {
-	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost + currentNode.totalCost;
+	protected void improveMove(Node currentNode, Node moveNode) {
+	    int newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns) + moveCost + currentNode.totalCost;
 	    
 	    if (moveNode.totalCost > newTotalPathCost) {
 		    moveNode.totalCost = newTotalPathCost;
 	        moveNode.unitMovesLeft = costMovesLeft;
 	        moveNode.turns = currentNode.turns + costNewTurns;
             moveNode.preview = currentNode;
-	        return true;
-	    }
-	    return false;
-	}
-
-	protected boolean improveMove(Node currentNode, Node moveNode, int additionalCost, int additionalTurnsCost) {
-	    newTotalPathCost = TURN_FACTOR * (currentNode.turns + costNewTurns + additionalTurnsCost) + moveCost + currentNode.totalCost + additionalCost;
-	    
-	    if (moveNode.totalCost > newTotalPathCost) {
-		    moveNode.totalCost = newTotalPathCost;
-	        moveNode.unitMovesLeft = costMovesLeft;
-	        moveNode.turns = currentNode.turns + costNewTurns + additionalTurnsCost;
-            moveNode.preview = currentNode;
-	        return true;
-	    }
-	    return false;
+	        moveImproved = true;
+	    } else {
+			moveImproved = false;
+		}
 	}
 
 	@Override
@@ -131,5 +120,10 @@ class DefaultCostDecider implements CostDecider {
 	        return true;
 	    }
 	    return false;
+	}
+
+	@Override
+	public boolean isMoveImproved() {
+		return moveImproved;
 	}
 }

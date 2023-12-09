@@ -125,7 +125,11 @@ public class Map extends ObjectWithId {
 	public Tile getSafeTile(int x, int y) {
 	    return tiles.getSafeTile(x, y);
 	}
-	
+
+	public Tile getSafeTile(int index) {
+		return tiles.getSafeTile(index);
+	}
+
 	public Tile getSafeTile(GridPoint2 p) {
 	    return tiles.getSafeTile(p.x, p.y);
 	}

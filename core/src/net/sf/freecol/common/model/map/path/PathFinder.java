@@ -21,6 +21,9 @@ import promitech.map.Object2dArray;
 
 import static java.util.Collections.*;
 
+/**
+ * Welcome to hell
+ */
 public class PathFinder {
 
 	public interface SumPolicy {
@@ -105,6 +108,7 @@ public class PathFinder {
 	private final MaxTurnRangeCostDecider maxTurnRangeCostDecider = new MaxTurnRangeCostDecider();
 	private CostDecider costDecider;
 	private GoalDecider goalDecider;
+	private TileConsumer tileConsumer = TileConsumer.EMPTY;
 
 	private final PathUnitFactory pathUnitFactory = new PathUnitFactory();
 
@@ -200,45 +204,52 @@ public class PathFinder {
 	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, createPathUnit(unit), flags, INFINITY);
+		generateRangeMap(map, createPathUnit(unit), flags, INFINITY, TileConsumer.EMPTY);
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final Unit unit, Set<FlagTypes> flags, int maxTurnsRange) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, createPathUnit(unit), flags, maxTurnsRange);
+		generateRangeMap(map, createPathUnit(unit), flags, maxTurnsRange, TileConsumer.EMPTY);
 	}
 
 	public void generateRangeMap(final Map map, final Unit unit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(unit.getTile());
-		generateRangeMap(map, createPathUnit(unit), flags, INFINITY);
+		generateRangeMap(map, createPathUnit(unit), flags, INFINITY, TileConsumer.EMPTY);
 	}
 
 	public void generateRangeMap(final Map map, Collection<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.addAll(startTiles);
-		generateRangeMap(map, pathUnit, flags, INFINITY);
+		generateRangeMap(map, pathUnit, flags, INFINITY, TileConsumer.EMPTY);
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, pathUnit, flags, INFINITY);
+		generateRangeMap(map, pathUnit, flags, INFINITY, TileConsumer.EMPTY);
 	}
 
 	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags, int maxTurnRange) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);
-		generateRangeMap(map, pathUnit, flags, maxTurnRange);
+		generateRangeMap(map, pathUnit, flags, maxTurnRange, TileConsumer.EMPTY);
 	}
 
-	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags, int maxTurnsRange) {
+	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags, TileConsumer tileConsumer) {
+		this.startTiles.clear();
+		this.startTiles.add(aStartTile);
+		generateRangeMap(map, pathUnit, flags, INFINITY, tileConsumer);
+	}
+
+	private void generateRangeMap(final Map map, final PathUnit pathUnit, Set<FlagTypes> flags, int maxTurnsRange, TileConsumer tileConsumer) {
 	    this.goalDecider = rangeMapGoalDecider;
         this.map = map;
         this.endTile = null;
         this.pathUnit = pathUnit;
 		this.startTile = startTiles.get(0);
+		this.tileConsumer = tileConsumer;
 
         setCostDeciderFlags(flags);
         determineCostDecider(false, maxTurnsRange);
@@ -347,7 +358,17 @@ public class PathFinder {
 						oneOfTheBest = moveNode;
 					}
 					nodes.add(moveNode);
+					if (tileConsumer.consume(moveNode.tile, moveNode.turns) == TileConsumer.Status.END) {
+						nodes.clear();
+						break;
+					}
 				} else {
+					if (!moveType.isProgress() && costDecider.isMoveImproved()) {
+						if (tileConsumer.consume(moveNode.tile, moveNode.turns) == TileConsumer.Status.END) {
+							nodes.clear();
+							break;
+						}
+					}
 					if (costDecider.isMarkDestTileAsUnaccessible(currentNode, moveNode, moveType)) {
 						moveNode.noMove = true;
 					}
@@ -428,7 +449,11 @@ public class PathFinder {
 	public int totalCost(int cellIndex) {
 		return grid.get(cellIndex).totalCost;
 	}
-	
+
+	public int totalCost(Tile tile) {
+		return grid.get(tile.x, tile.y).totalCost;
+	}
+
 	public int turnsCost(int cellIndex) {
 	    return grid.get(cellIndex).turns;
 	}

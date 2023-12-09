@@ -39,4 +39,9 @@ class MaxTurnRangeCostDecider implements CostDecider {
     public boolean isMarkDestTileAsUnaccessible(Node source, Node dest, MoveType moveType) {
         return costDecider.isMarkDestTileAsUnaccessible(source, dest, moveType);
     }
+
+    @Override
+    public boolean isMoveImproved() {
+        return costDecider.isMoveImproved();
+    }
 }
