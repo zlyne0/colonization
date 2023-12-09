@@ -14,10 +14,11 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
     fun `can generate worker request score`() {
         // given
         val pathFinder = PathFinder()
+        val pathFinder2 = PathFinder()
 
         val transporter = dutch.findCarrier()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, dutch, transporter)
-        val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, entryPointTurnRange)
+        val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, entryPointTurnRange, pathFinder2)
 
         // when
         val scores = sut.score(game.aiContainer.missionContainer(dutch))
@@ -28,10 +29,10 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
 
         // then
         ScoreableObjectsListAssert.assertThat(scores)
-            .hasScore(0, 4, eq(game.map.getSafeTile(27, 74), UnitType.EXPERT_FUR_TRAPPER))
+            .hasScore(0, 4, eq(game.map.getSafeTile(27, 75), UnitType.EXPERT_FUR_TRAPPER))
             .hasScore(1, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
             .hasScore(2, 23, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
             .hasScore(3, 25, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
-            .hasScore(4, 25, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
+            .hasScore(4, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
     }
 }

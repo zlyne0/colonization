@@ -4,20 +4,23 @@ import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.hasMissionKt
+import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
+import promitech.colonization.ai.military.DefencePlaner
 import promitech.colonization.ai.purchase.ColonistsPurchaseRecommendations
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonyWorkerRequestPlaner(
     private val game: Game,
     private val pathFinder: PathFinder,
-    private val pioneerMissionPlaner: PioneerMissionPlaner
+    private val pathFinder2: PathFinder,
+    private val pioneerMissionPlaner: PioneerMissionPlaner,
+    private val defencePlaner: DefencePlaner
 ) {
 
     private var hasTransporter: Boolean = false
@@ -35,7 +38,8 @@ class ColonyWorkerRequestPlaner(
         placeCalculator = ColonyWorkerRequestPlaceCalculator(
             player,
             game.map,
-            entryPointTurnRange
+            entryPointTurnRange,
+            pathFinder2
         )
     }
 
@@ -57,6 +61,9 @@ class ColonyWorkerRequestPlaner(
                 if (pioneerMissionPlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
                     continue
                 }
+                if (defencePlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
+                    continue
+                }
 
                 val tileScore = placeCalculator.score(playerMissionsContainer)
 
@@ -66,6 +73,9 @@ class ColonyWorkerRequestPlaner(
                 }
             } else if (unit.isAtEuropeLocation || unit.isAtUnitLocation) {
                 if (pioneerMissionPlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
+                    continue
+                }
+                if (defencePlaner.createMissionFromUnusedUnit(unit, playerMissionsContainer) != null) {
                     continue
                 }
 
@@ -134,9 +144,9 @@ class ColonyWorkerRequestPlaner(
     }
 
     private fun hasMissionToWorkerRequestPlace(workerRequestScore: WorkerRequestScoreValue): Boolean {
-        return playerMissionsContainer.hasMissionKt(ColonyWorkerMission::class.java, { mission ->
+        return playerMissionsContainer.hasMission(ColonyWorkerMission::class.java) { mission ->
             mission.getTile().equalsCoordinates(workerRequestScore.location)
                 && mission.getGoodsType().equalsId(workerRequestScore.goodsType)
-        })
+        }
     }
 }

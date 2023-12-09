@@ -26,7 +26,7 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         val transporterCapacity = Units.transporterCapacity(transporter, playerMissionContainer)
         val pathFinder = PathFinder()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
-        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
+        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange, PathFinder())
 
         val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
 
@@ -38,11 +38,11 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         ScoreableObjectsListAssert.assertThat(recomendations)
             .hasSize(6)
             .hasScore(0, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
-            .hasScore(1, 25, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
-            .hasScore(2, 27, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
-            .hasScore(3, 29, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
-            .hasScore(4, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
-            .hasScore(5, 40, eq(game.map.getSafeTile(27, 74), UnitType.FREE_COLONIST))
+            .hasScore(1, 27, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
+            .hasScore(2, 29, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
+            .hasScore(3, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
+            .hasScore(4, 30, eq(game.map.getSafeTile(27, 75), UnitType.FREE_COLONIST))
+            .hasScore(5, 46, eq(game.map.getSafeTile(27, 75), UnitType.FREE_COLONIST))
     }
 
     @Test
@@ -56,7 +56,7 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
 
         val pathFinder = PathFinder()
         val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
-        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange)
+        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange, PathFinder())
 
         val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
 

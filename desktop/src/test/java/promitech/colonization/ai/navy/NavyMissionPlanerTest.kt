@@ -37,7 +37,13 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         purchasePlaner.avoidPurchasesAndCollectGold()
         planer = NavyMissionPlaner(
             purchasePlaner,
-            ColonyWorkerRequestPlaner(game, di.pathFinder, PioneerMissionPlaner(game, di.pathFinder), DefencePlaner(game, di.pathFinder)),
+            ColonyWorkerRequestPlaner(
+                game,
+                di.pathFinder,
+                di.pathFinder2,
+                PioneerMissionPlaner(game, di.pathFinder),
+                DefencePlaner(game, di.pathFinder)
+            ),
             TransportGoodsToSellMissionPlaner(game, di.pathFinder)
         )
 

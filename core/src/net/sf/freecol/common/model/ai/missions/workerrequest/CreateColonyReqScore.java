@@ -32,19 +32,6 @@ class CreateColonyReqScore {
 		this.goodsType = goodsType;
 	}
 
-	public void score(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Tile[] tiles) {
-		Tile firstTheBest = null;
-		for (Tile tile : tiles) {
-			if (tile != null) {
-				firstTheBest = tile;
-				break;
-			}
-		}
-		if (firstTheBest != null) {
-			score(tileScore, firstTheBest);
-		}
-	}
-
     public void score(ScoreableObjectsList<WorkerRequestScoreValue> tileScore, Tile tile) {
     	int unattendedScore = 0;
     	

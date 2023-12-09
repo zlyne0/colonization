@@ -105,7 +105,7 @@ class TilePlayer {
     
 }
 
-class BuildColony {
+class TheBestColonyTilesWeights {
 
     public static enum TileSelection {
         WITHOUT_UNEXPLORED,
@@ -264,7 +264,7 @@ class BuildColony {
 	private final SpiralIterator spiralIterator;
 	
 
-	public BuildColony(Map map) {
+	public TheBestColonyTilesWeights(Map map) {
 		this.map = map;
 		
 		tileWeights = new Int2dArray(map.width, map.height);
@@ -566,8 +566,12 @@ class BuildColony {
         }
 	}
 
-	public Int2dArray getTileWeights() {
-		return tileWeights;
+	public int weight(Tile tile) {
+		return tileWeights.get(tile.x, tile.y);
+	}
+
+	public void setZeroWeight(Tile tile) {
+		tileWeights.set(tile.x, tile.y, 0);
 	}
 
 }
