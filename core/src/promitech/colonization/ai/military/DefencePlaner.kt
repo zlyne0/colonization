@@ -81,7 +81,12 @@ class DefencePlaner(
         if (colonyDefencePriority.isEmpty()) {
             return null
         }
-        return colonyDefencePriority.first().colony
+        for (colonyThreat in colonyDefencePriority) {
+            if (colonyThreat.war || colonyThreat.colonyDefencePower < 0) {
+                return colonyThreat.colony
+            }
+        }
+        return null
     }
 
     private fun findTheClosestDisembarkLocation(sourceTile: Tile, unit: Unit): Tile? {
