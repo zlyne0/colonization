@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.util.whenNotNull
 import promitech.colonization.ai.Units
 import promitech.colonization.ai.findCarrier
 import promitech.colonization.ai.military.DefencePlaner
@@ -18,7 +19,6 @@ import promitech.colonization.ai.score.ScoreableObjectsList
 class ColonyWorkerRequestPlaner(
     private val game: Game,
     private val pathFinder: PathFinder,
-    private val pathFinder2: PathFinder,
     private val pioneerMissionPlaner: PioneerMissionPlaner,
     private val defencePlaner: DefencePlaner
 ) {
@@ -26,7 +26,6 @@ class ColonyWorkerRequestPlaner(
     private var hasTransporter: Boolean = false
     private lateinit var player: Player
     private lateinit var playerMissionsContainer: PlayerMissionsContainer
-    private lateinit var entryPointTurnRange: EntryPointTurnRange
     private lateinit var placeCalculator: ColonyWorkerRequestPlaceCalculator
 
     private fun init(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
@@ -34,18 +33,16 @@ class ColonyWorkerRequestPlaner(
         this.player = player
         this.playerMissionsContainer = playerMissionsContainer
 
-        entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player)
         placeCalculator = ColonyWorkerRequestPlaceCalculator(
             player,
             game.map,
-            entryPointTurnRange,
-            pathFinder2
+            pathFinder
         )
     }
 
     fun buyUnitsToNavyCapacity(player: Player, playerMissionContainer: PlayerMissionsContainer, transporter: Unit) {
         init(player, playerMissionContainer)
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, placeCalculator)
         val workersNumber = Units.transporterCapacity(transporter, playerMissionContainer)
         purchaseRecommendations.buyRecommendations(workersNumber)
     }
@@ -81,7 +78,7 @@ class ColonyWorkerRequestPlaner(
 
                 if (Unit.isColonist(unit.unitType, unit.owner)) {
                     val tileScore = placeCalculator.score(playerMissionsContainer)
-                    findTheBestLocationOnMap(unit, tileScore)?.let { place ->
+                    findTheBestLocationOnMap(unit, tileScore).whenNotNull { place ->
                         val mission = ColonyWorkerMission(place.location(), unit, place.goodsType())
                         playerMissionsContainer.addMission(mission)
 
@@ -101,14 +98,14 @@ class ColonyWorkerRequestPlaner(
         if (!hasTransporter) {
             return null
         }
-        return findTheBestLocation(unit, tileScore, { _ -> true})
+        return findTheBestLocationOnMap(unit, tileScore)
     }
 
     private fun findTheBestLocationOnTheSameIsland(unit: Unit, tileScore: ScoreableObjectsList<WorkerRequestScoreValue>): WorkerRequestScoreValue? {
         val unitTile = unit.tile
-        val place = findTheBestLocation(unit, tileScore, { workerRequestScoreValue ->
+        val place = findTheBestLocation(unit, tileScore) { workerRequestScoreValue ->
             game.map.isTheSameArea(unitTile, workerRequestScoreValue.location)
-        })
+        }
         return place
     }
 

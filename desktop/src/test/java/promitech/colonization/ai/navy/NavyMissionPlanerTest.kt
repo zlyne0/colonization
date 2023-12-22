@@ -40,7 +40,6 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
             ColonyWorkerRequestPlaner(
                 game,
                 di.pathFinder,
-                di.pathFinder2,
                 PioneerMissionPlaner(game, di.pathFinder),
                 DefencePlaner(game, di.pathFinder)
             ),

@@ -21,28 +21,27 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
         // given
         val player = dutch
         val playerMissionContainer = game.aiContainer.missionContainer(player)
+        val pathFinder = PathFinder()
 
         val transporter = UnitFactory.create(UnitType.GALLEON, player, nieuwAmsterdam.tile)
         val transporterCapacity = Units.transporterCapacity(transporter, playerMissionContainer)
-        val pathFinder = PathFinder()
-        val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
-        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange, PathFinder())
+        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, pathFinder)
 
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, placeCalculator)
 
         // when
-        val recomendations = purchaseRecommendations.generateRecommendations(transporterCapacity)
-        purchaseRecommendations.printToLog(recomendations, entryPointTurnRange)
+        val recommendations = purchaseRecommendations.generateRecommendations(transporterCapacity)
+        purchaseRecommendations.printToLog(recommendations)
 
         // then
-        ScoreableObjectsListAssert.assertThat(recomendations)
+        ScoreableObjectsListAssert.assertThat(recommendations)
             .hasSize(6)
-            .hasScore(0, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
-            .hasScore(1, 27, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
-            .hasScore(2, 29, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
-            .hasScore(3, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
-            .hasScore(4, 30, eq(game.map.getSafeTile(27, 75), UnitType.FREE_COLONIST))
-            .hasScore(5, 46, eq(game.map.getSafeTile(27, 75), UnitType.FREE_COLONIST))
+            .hasScore(0, 13, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
+            .hasScore(1, 15, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
+            .hasScore(2, 16, eq(game.map.getSafeTile(19, 76), UnitType.EXPERT_ORE_MINER))
+            .hasScore(3, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
+            .hasScore(4, 27, eq(game.map.getSafeTile(19, 76), UnitType.FREE_COLONIST))
+            .hasScore(5, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
     }
 
     @Test
@@ -53,12 +52,9 @@ class ColonyWorkerRequestPlanerTest : Savegame1600BaseClass() {
 
         val transporter = UnitFactory.create(UnitType.FRIGATE, player, player.europe)
         val workersNumber = Units.transporterCapacity(transporter, playerMissionContainer)
+        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, PathFinder())
 
-        val pathFinder = PathFinder()
-        val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, player, transporter)
-        val placeCalculator = ColonyWorkerRequestPlaceCalculator(player, game.map, entryPointTurnRange, PathFinder())
-
-        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, entryPointTurnRange, placeCalculator)
+        val purchaseRecommendations = ColonistsPurchaseRecommendations(game, player, playerMissionContainer, placeCalculator)
 
         val previewUnitsInEurope = MapIdEntities(player.europe.units)
 

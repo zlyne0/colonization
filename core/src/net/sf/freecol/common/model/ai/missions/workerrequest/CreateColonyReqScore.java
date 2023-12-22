@@ -98,6 +98,7 @@ class CreateColonyReqScore {
 			ps.get(buildingOutput.getKey(), 0),
 			sum,
 			unitType,
+			player.getEurope().aiUnitPrice(unitType),
 			tile
 		);
     }
@@ -159,6 +160,7 @@ class CreateColonyReqScore {
 				colonistProdAmount,
 				score,
 				colonistUnitType,
+				player.getEurope().aiUnitPrice(colonistUnitType),
 				tile
 			));
     	}
@@ -169,6 +171,7 @@ class CreateColonyReqScore {
 				expertProdAmount,
 				score,
 				theBestExpertType,
+				player.getEurope().aiUnitPrice(colonistUnitType),
 				tile
 			));
     	}

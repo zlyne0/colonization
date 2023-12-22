@@ -1,10 +1,12 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest;
 
+import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq;
+import static org.assertj.core.api.Assertions.assertThat;
+
 import net.sf.freecol.common.model.MapIdEntities;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.UnitType;
-import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import org.junit.jupiter.api.BeforeEach;
@@ -14,19 +16,13 @@ import promitech.colonization.ai.score.ScoreableObjectsList;
 import promitech.colonization.ai.score.ScoreableObjectsListAssert;
 import promitech.colonization.savegame.Savegame1600BaseClass;
 
-import static net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq;
-import static org.assertj.core.api.Assertions.assertThat;
-import static promitech.colonization.ai.UnitsKt.findCarrier;
-
 class WorkerReqScoreTest extends Savegame1600BaseClass {
 
-	EntryPointTurnRange entryPointTurnRange;
 	ColonyWorkerReqScore sut;
 
 	@BeforeEach
 	public void beforeEach() {
-		entryPointTurnRange = new EntryPointTurnRange(game.map, new PathFinder(), dutch, findCarrier(dutch));
-		sut = new ColonyWorkerReqScore(dutch.market(), Specification.instance.goodsTypeToScoreByPrice);
+		sut = new ColonyWorkerReqScore(dutch, Specification.instance.goodsTypeToScoreByPrice);
 	}
 
 	@Test
@@ -39,15 +35,15 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		sut.withAllowNegativeProductionBonus();
 		sut.simulate(fortNassau, colonyScore);
 
-		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue();
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
 		colonyScore.prettyPrint();
 
 		// then
 		ScoreableObjectsListAssert.assertThat(colonyScore)
-			.hasSumScore(61)
-			.hasScore(0, 35, eq(UnitType.EXPERT_FISHERMAN))
-			.hasScore(1, 26, eq(UnitType.FREE_COLONIST))
+			.hasSumScore(63)
+			.hasScore(0, 36, eq(UnitType.EXPERT_FISHERMAN))
+			.hasScore(1, 27, eq(UnitType.FREE_COLONIST))
 		;
 		ScoreableObjectsListAssert.assertThat(((MultipleWorkerRequestScoreValue)colonyScore.get(0)).getWorkersScores())
 			.hasSumScore(84)
@@ -74,7 +70,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
 		sut.simulate(fortNassau, colonyScore);
 
-		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue();
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
 		colonyScore.prettyPrint();
 
@@ -95,7 +91,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		sut.withAllowNegativeProductionBonus();
 		sut.simulate(nieuwAmsterdam, colonyScore);
 
-		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue();
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
 		colonyScore.prettyPrint();
 
@@ -127,7 +123,7 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
 		sut.simulate(fortOranje, colonyScore);
 
-		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue();
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
 		colonyScore.prettyPrint();
 
@@ -149,15 +145,15 @@ class WorkerReqScoreTest extends Savegame1600BaseClass {
 		ScoreableObjectsList<WorkerRequestScoreValue> colonyScore = new ScoreableObjectsList<>(20);
 		sut.simulate(fortMaurits, colonyScore);
 
-		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue(entryPointTurnRange);
+		ScorePolicy.WorkerProductionValue workerProductionValueScorePolicy = new ScorePolicy.WorkerProductionValue();
 		workerProductionValueScorePolicy.calculateScore(colonyScore);
 		colonyScore.prettyPrint();
 
 		// then
 		ScoreableObjectsListAssert.assertThat(colonyScore)
-			.hasSumScore(102)
-			.hasScore(0, 67, eq(UnitType.MASTER_FUR_TRADER))
-			.hasScore(1, 35, eq(UnitType.FREE_COLONIST))
+			.hasSumScore(112)
+			.hasScore(0, 72, eq(UnitType.MASTER_FUR_TRADER))
+			.hasScore(1, 40, eq(UnitType.FREE_COLONIST))
 		;
 		assertThat(new ColonySnapshot(fortMaurits)).isEqualTo(snapshotBefore);
 	}

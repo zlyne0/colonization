@@ -4,7 +4,6 @@ import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValueComparator.eq
 import net.sf.freecol.common.model.map.path.PathFinder
 import org.junit.jupiter.api.Test
-import promitech.colonization.ai.findCarrier
 import promitech.colonization.ai.score.ScoreableObjectsListAssert
 import promitech.colonization.savegame.Savegame1600BaseClass
 
@@ -14,25 +13,23 @@ class ColonyWorkerRequestPlaceCalculatorTest : Savegame1600BaseClass() {
     fun `can generate worker request score`() {
         // given
         val pathFinder = PathFinder()
-        val pathFinder2 = PathFinder()
-
-        val transporter = dutch.findCarrier()
-        val entryPointTurnRange = EntryPointTurnRange(game.map, pathFinder, dutch, transporter)
-        val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, entryPointTurnRange, pathFinder2)
+        val sut = ColonyWorkerRequestPlaceCalculator(dutch, game.map, pathFinder)
 
         // when
         val scores = sut.score(game.aiContainer.missionContainer(dutch))
-        val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, dutch)
+        val scorePolicy = ScorePolicy.WorkerPriceToValue()
         scorePolicy.calculateScore(scores)
-        //scores.prettyPrint();
-        //sut.debugToConsole()
+        scores.prettyPrint();
 
         // then
         ScoreableObjectsListAssert.assertThat(scores)
-            .hasScore(0, 4, eq(game.map.getSafeTile(27, 75), UnitType.EXPERT_FUR_TRAPPER))
-            .hasScore(1, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
-            .hasScore(2, 23, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
-            .hasScore(3, 25, eq(fortMaurits.tile, UnitType.FREE_COLONIST))
-            .hasScore(4, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
+            .hasSize(8)
+            .hasSumScore(216)
+            .hasScore(0, 13, eq(fortMaurits.tile, UnitType.MASTER_FUR_TRADER))
+            .hasScore(1, 15, eq(game.map.getSafeTile(21, 72), UnitType.FREE_COLONIST))
+            .hasScore(2, 16, eq(game.map.getSafeTile(19, 76), UnitType.EXPERT_ORE_MINER))
+            .hasScore(3, 20, eq(fortOranje.tile, UnitType.FREE_COLONIST))
+            .hasScore(4, 27, eq(game.map.getSafeTile(19, 76), UnitType.FREE_COLONIST))
+            .hasScore(5, 30, eq(fortOranje.tile, UnitType.MASTER_TOBACCONIST))
     }
 }

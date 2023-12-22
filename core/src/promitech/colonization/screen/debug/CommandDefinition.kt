@@ -40,7 +40,6 @@ import net.sf.freecol.common.model.forEachTile
 import net.sf.freecol.common.model.map.generator.MapGenerator
 import net.sf.freecol.common.model.map.generator.SmoothingTileTypes
 import net.sf.freecol.common.model.map.path.PathFinder
-import net.sf.freecol.common.model.map.path.TileConsumer
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Tension
 import net.sf.freecol.common.model.specification.AbstractGoods
@@ -357,17 +356,13 @@ fun createCommands(
 // key 3
 fun generateTheBestPlaceToBuildColony(di: DI, guiGameModel: GUIGameModel, tileDebugView: TileDebugView) {
 	tileDebugView.reset()
-
 	val player = guiGameModel.game.playingPlayer
 	val missionContainer = guiGameModel.game.aiContainer.missionContainer(player)
-	val transportUnit = player.findCarrier()
 	val sut = ColonyWorkerRequestPlaceCalculator(
 		player,
 		guiGameModel.game.map,
-		EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit),
 		PathFinder()
 	)
-
 	sut.debugTheBestPlaceToBuildColony(tileDebugView, missionContainer)
 }
 
@@ -376,20 +371,18 @@ fun generateWorkerReqScoreByValue(di: DI, guiGameModel: GUIGameModel, tileDebugV
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
-	val transportUnit = player.findCarrier()
-	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
-
-	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange, di.pathFinder2)
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, di.pathFinder)
 	val colonyWorkerRequestScores = sut.score(PlayerMissionsContainer(player))
 
-	colonyWorkerRequestScores.prettyPrint()
-
-	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
-	scorePolicy.calculateScore(colonyWorkerRequestScores)
-
-	colonyWorkerRequestScores.prettyPrint()
-
+	//colonyWorkerRequestScores.prettyPrint()
 	sut.debug(tileDebugView)
+
+//	val scorePolicy = ScorePolicy.WorkerProductionValue(entryPointTurnRange)
+//	scorePolicy.calculateScore(colonyWorkerRequestScores)
+//
+//	colonyWorkerRequestScores.prettyPrint()
+//
+//	sut.debug(tileDebugView)
 }
 
 // key 5
@@ -397,14 +390,12 @@ fun generateWorkerReqScoreByPriceToValue(di: DI, guiGameModel: GUIGameModel, til
 	tileDebugView.reset()
 
 	val player = guiGameModel.game.playingPlayer
-	val transportUnit = player.findCarrier()
-	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
-	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange, di.pathFinder2)
+	val sut = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, di.pathFinder)
 
 	// create new player mission container to ignore actual mission destination
 	val colonyWorkerRequestScores = sut.score(PlayerMissionsContainer(player))
 
-	val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
+	val scorePolicy = ScorePolicy.WorkerPriceToValue()
 	scorePolicy.calculateScore(colonyWorkerRequestScores)
 
 	sut.debug(tileDebugView)
@@ -417,13 +408,12 @@ fun generateWorkerReqBuyRecommendations(di: DI, guiGameModel: GUIGameModel, tile
 	val playerMissionContainer = guiGameModel.game.aiContainer.missionContainer(player)
 	val transportUnit = player.findCarrier()
 	val transporterCapacity = Units.transporterCapacity(transportUnit!!, playerMissionContainer)
-	val entryPointTurnRange = EntryPointTurnRange(guiGameModel.game.map, di.pathFinder, player, transportUnit)
-	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, entryPointTurnRange, di.pathFinder2)
+	val workerPlaceCalculator = ColonyWorkerRequestPlaceCalculator(player, guiGameModel.game.map, di.pathFinder)
 
-	val purchaseColonists = ColonistsPurchaseRecommendations(guiGameModel.game, player, playerMissionContainer, entryPointTurnRange, workerPlaceCalculator)
-	val buyRecomendations = purchaseColonists.generateRecommendations(transporterCapacity)
-	purchaseColonists.printToLog(buyRecomendations, entryPointTurnRange)
-	purchaseColonists.printToMap(buyRecomendations, tileDebugView)
+	val purchaseColonists = ColonistsPurchaseRecommendations(guiGameModel.game, player, playerMissionContainer, workerPlaceCalculator)
+	val buyRecommendations = purchaseColonists.generateRecommendations(transporterCapacity)
+	purchaseColonists.printToLog(buyRecommendations)
+	purchaseColonists.printToMap(buyRecommendations, tileDebugView)
 }
 
 fun aiExplore(di: DI, tileDebugView: TileDebugView) {
@@ -700,19 +690,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val game = guiGameModel.game
 		val player = game.playingPlayer
 
-//		val indianOwner = game.map.getTile(28, 35).units.first().owner
-//		player.changeStance(indianOwner, Stance.WAR)
-
-//		for (unit in game.map.getTile(28, 35).units.copy()) {
-//			unit.remove()
-//		}
-
-//		game.map.getTile(31, 36).units.clear()
-//		game.map.getTile(31, 32).units.clear()
-
-//		val playerDefencePlaner = DefencePlaner(game, player)
-//		playerDefencePlaner.printWarRange(tileDebugView)
-		//playerDefencePlaner.printPowerBalance(tileDebugView)
+		UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, player, player.europe)
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
@@ -769,44 +747,9 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val pathFinder3 = PathFinder()
 
 
-		val tileConsumer = TileConsumer { tile, turns ->
-			tileDebugView.appendStr(tile.x, tile.y, turns.toString())
-			if (turns <= 1) {
-				TileConsumer.Status.PROCESS
-			} else {
-				TileConsumer.Status.END
-			}
-		}
-
-		pathFinder.generateRangeMap(
-			game.map,
-			game.map.getSafeTile(player.entryLocation),
-			pathFinder.createPathUnit(player, unitType(UnitType.CARAVEL)),
-			PathFinder.includeUnexploredTiles,
-			tileConsumer
-		)
-
-		//val england = game.players.getById("player:13")
-
-		//val playerDefencePlaner = DefencePlaner(game, player)
-		//playerDefencePlaner.scoreColoniesToDefend(tileDebugView)
-		//playerDefencePlaner.printColonyDefencePriority(tileDebugView)
-
-//		val englandDefencePlaner = DefencePlaner(game, england)
-//		englandDefencePlaner.scoreColoniesToDefend(tileDebugView)
-//		englandDefencePlaner.print(tileDebugView)
-
-//		val defencePrice = DefencePrice()
-//		defencePrice.price(dutch)
-
-//		val dangerRange = DangerRange(game, player)
-//		dangerRange.print(tileDebugView)
-
-//		val ALLOW_ONLY_LAND_TILES = { tile: Tile -> tile.type.isLand }
-
-//		val debugMilitary = DebugMilitary(di, tileDebugView, game, player)
-//		debugMilitary.printColonyDefencePriority()
-//		debugMilitary.generateOrders()
+		val debugMilitary = DebugMilitary(di, tileDebugView, game, player)
+		debugMilitary.printColonyDefencePriority()
+		debugMilitary.generateOrders()
 
 		// when
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)

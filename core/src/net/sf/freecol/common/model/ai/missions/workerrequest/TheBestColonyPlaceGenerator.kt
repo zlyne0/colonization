@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai.missions.workerrequest
 
 import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Specification
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.foreachMission
@@ -36,9 +37,13 @@ class TheBestColonyPlaceGenerator(
             return@TileConsumer TileConsumer.Status.PROCESS
         }
 
+        val sourceTiles = mutableListOf<Tile>()
+        sourceTiles.add(map.getSafeTile(player.entryLocation))
+        player.settlements.forEach { settlement -> sourceTiles.add(settlement.tile) }
+
         pathFinder.generateRangeMap(
             map,
-            map.getSafeTile(player.entryLocation),
+            sourceTiles,
             pathFinder.createPathUnit(player, caravelUnitType),
             PathFinder.includeUnexploredTiles,
             tileConsumer

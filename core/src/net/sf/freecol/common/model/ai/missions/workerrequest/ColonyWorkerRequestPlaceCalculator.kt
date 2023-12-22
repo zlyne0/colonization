@@ -13,7 +13,6 @@ import promitech.colonization.screen.debug.TileDebugView
 class ColonyWorkerRequestPlaceCalculator(
     val player: Player,
     val map: Map,
-    val entryPointTurnRange: EntryPointTurnRange,
     val pathFinder: PathFinder
 ) {
 
@@ -23,10 +22,10 @@ class ColonyWorkerRequestPlaceCalculator(
         const val denseColonyUnitCount = 6
     }
 
-    private val workerPriceToValueScorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
+    private val workerPriceToValueScorePolicy = ScorePolicy.WorkerPriceToValue()
     private val tileScore = ScoreableObjectsList<WorkerRequestScoreValue>(20)
     private val goodsTypeToScoreByPrice = Specification.instance.goodsTypeToScoreByPrice
-    private val colonyWorkerReq = ColonyWorkerReqScore(player.market(), goodsTypeToScoreByPrice)
+    private val colonyWorkerReq = ColonyWorkerReqScore(player, goodsTypeToScoreByPrice)
 
     private fun allowBuildNewColonies(): Boolean {
         var rebellionColony = 0
@@ -60,7 +59,7 @@ class ColonyWorkerRequestPlaceCalculator(
             }
         }
         workerPriceToValueScorePolicy.calculateScore(tileScore)
-        tileScore.sortDescending()
+        tileScore.sortAscending()
         return tileScore
     }
 
@@ -92,8 +91,9 @@ class ColonyWorkerRequestPlaceCalculator(
     }
 
     private fun printTileScores(tileScore: ScoreableObjectsList<WorkerRequestScoreValue>) {
+        println("tileScore.size = ${tileScore.size()}")
         for (objectScore in tileScore) {
-            println(objectScore.toPrettyString(player, entryPointTurnRange))
+            println(objectScore)
         }
     }
 

@@ -30,7 +30,7 @@ class EuropeanMissionPlaner(
     private val pioneerMissionPlaner: PioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
     private val defencePlaner = DefencePlaner(game, pathFinder)
     private val colonyWorkerRequestPlaner: ColonyWorkerRequestPlaner = ColonyWorkerRequestPlaner(
-        game, pathFinder, pathFinder2, pioneerMissionPlaner, defencePlaner
+        game, pathFinder, pioneerMissionPlaner, defencePlaner
     )
     private val buyGoodsPlaner: BuyGoodsPlaner = BuyGoodsPlaner(game)
     private val purchasePlaner: PurchasePlaner = PurchasePlaner(game)

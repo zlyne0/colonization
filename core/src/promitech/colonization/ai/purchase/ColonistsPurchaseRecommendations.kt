@@ -6,7 +6,6 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
-import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestLogger.logger
 import net.sf.freecol.common.model.ai.missions.workerrequest.WorkerRequestScoreValue
@@ -14,11 +13,10 @@ import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 class ColonistsPurchaseRecommendations(
-    val game: Game,
-    val player: Player,
-    val playerMissionContainer: PlayerMissionsContainer,
-    val entryPointTurnRange: EntryPointTurnRange,
-    val workerPlaceCalculator: ColonyWorkerRequestPlaceCalculator
+    private val game: Game,
+    private val player: Player,
+    private val playerMissionContainer: PlayerMissionsContainer,
+    private val workerPlaceCalculator: ColonyWorkerRequestPlaceCalculator
 ) {
 
     fun buyRecommendations(workersNumber: Int) {
@@ -38,7 +36,7 @@ class ColonistsPurchaseRecommendations(
 
     fun generateRecommendations(workersNumber: Int): ScoreableObjectsList<WorkerRequestScoreValue> {
         val tileScore = workerPlaceCalculator.score(playerMissionContainer)
-        val scorePolicy = ScorePolicy.WorkerPriceToValue(entryPointTurnRange, player)
+        val scorePolicy = ScorePolicy.WorkerPriceToValue()
         scorePolicy.calculateScore(tileScore)
         val buyRecomendations = createList(player.gold, workersNumber, tileScore)
         return buyRecomendations
@@ -76,18 +74,18 @@ class ColonistsPurchaseRecommendations(
         return list
     }
 
-    fun printToLog(workers: ScoreableObjectsList<WorkerRequestScoreValue>, entryPointTurnRange: EntryPointTurnRange) {
+    fun printToLog(workers: ScoreableObjectsList<WorkerRequestScoreValue>) {
         if (logger.isDebug) {
-            var str = "worker recomendations size: ${workers.size()}\n"
+            var str = "worker recommendations size: ${workers.size()}\n"
             for (worker in workers) {
-                str += worker.toPrettyString(player, entryPointTurnRange) + "\n"
+                str += worker.toString() + "\n"
             }
             logger.debug(str)
         }
     }
 
-    fun printToMap(buyRecomendations: ScoreableObjectsList<WorkerRequestScoreValue>, mapDebugView: MapTileDebugInfo) {
-        for (worker in buyRecomendations) {
+    fun printToMap(buyRecommendations: ScoreableObjectsList<WorkerRequestScoreValue>, mapDebugView: MapTileDebugInfo) {
+        for (worker in buyRecommendations) {
             mapDebugView.strIfNull(worker.location.x, worker.location.y, worker.score.toString())
         }
     }

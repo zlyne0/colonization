@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.colonyproduction.ColonySimulationSettingProvi
 import net.sf.freecol.common.model.colonyproduction.MaxGoodsProductionLocation;
 import net.sf.freecol.common.model.colonyproduction.ProductionSimulation;
 import net.sf.freecol.common.model.player.Market;
+import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
 import java.util.List;
@@ -24,14 +25,16 @@ class ColonyWorkerReqScore {
 	private final MapIdEntities<GoodsType> goodsTypeToScore;
 	private boolean consumeWarehouseResources = false;
 	private boolean allowNegativeProductionBonus = false;
-	
+
+	private Player player;
 	private Colony colony;
 	private ColonyProduction colonyProduction;
 	private ProductionSimulation productionSimulation;
 	private ColonySimulationSettingProvider colonyProvider;
 
-	public ColonyWorkerReqScore(Market market, MapIdEntities<GoodsType> goodsTypeToScore) {
-		this.market = market;
+	public ColonyWorkerReqScore(Player player, MapIdEntities<GoodsType> goodsTypeToScore) {
+		this.player = player;
+		this.market = player.market();
 		this.goodsTypeToScore = goodsTypeToScore;
 	}
 
@@ -113,6 +116,7 @@ class ColonyWorkerReqScore {
 			return new SingleWorkerRequestScoreValue(
 				foodTheBestLocation.getGoodsType(),
 				foodTheBestLocation.getProduction(), 0, unitType,
+				player.getEurope().aiUnitPrice(unitType),
 				colony.tile
 			);
 		}
@@ -148,6 +152,7 @@ class ColonyWorkerReqScore {
 				theBestScoreLoc.getGoodsType(),
 				theBestScoreLoc.getProduction(),
 				theBestScore, unitType,
+				player.getEurope().aiUnitPrice(unitType),
 				colony.tile
 			);
 		}

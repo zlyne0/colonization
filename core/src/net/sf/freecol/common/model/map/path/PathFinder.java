@@ -225,6 +225,12 @@ public class PathFinder {
 		generateRangeMap(map, pathUnit, flags, INFINITY, TileConsumer.EMPTY);
 	}
 
+	public void generateRangeMap(final Map map, Collection<Tile> startTiles, final PathUnit pathUnit, Set<FlagTypes> flags, TileConsumer tileConsumer) {
+		this.startTiles.clear();
+		this.startTiles.addAll(startTiles);
+		generateRangeMap(map, pathUnit, flags, INFINITY, tileConsumer);
+	}
+
 	public void generateRangeMap(final Map map, final Tile aStartTile, final PathUnit pathUnit, Set<FlagTypes> flags) {
 		this.startTiles.clear();
 		this.startTiles.add(aStartTile);

@@ -1,6 +1,5 @@
 package net.sf.freecol.common.model.ai.missions.workerrequest
 
-import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.score.ScoreableObjectsList
 
 /*
@@ -10,7 +9,7 @@ Second policy, worker production value(gold). Used when has worker and looking f
  */
 interface ScorePolicy {
 
-    class WorkerPriceToValue(val entryPointTurnRange: EntryPointTurnRange, val player: Player) : ScorePolicy {
+    class WorkerPriceToValue: ScorePolicy {
 
         override fun calculateScore(scores: ScoreableObjectsList<WorkerRequestScoreValue>) {
             for (obj in scores) {
@@ -23,11 +22,8 @@ interface ScorePolicy {
         }
 
         override fun scoreSingle(obj: SingleWorkerRequestScoreValue) {
-            val range = entryPointTurnRange.trunsCost(obj.location)
-            val unitPrice = player.europe.aiUnitPrice(obj.workerType)
-
             if (obj.productionValue != 0) {
-                obj.score = (unitPrice / obj.productionValue) + range * 2
+                obj.score = (obj.unitPrice / obj.productionValue)
             } else {
                 obj.score = 10000
             }
@@ -36,32 +32,23 @@ interface ScorePolicy {
         override fun scoreMultiple(obj: MultipleWorkerRequestScoreValue) {
             var unitPriceSum = 0
             var productionValueSum = 0
-            var smallColonyModifier = 0
-            val range = entryPointTurnRange.trunsCost(obj.location)
 
             for (workerScore in obj.workersScores) {
-                unitPriceSum += player.europe.aiUnitPrice(workerScore.workerType)
+                unitPriceSum += workerScore.unitPrice
                 productionValueSum += workerScore.productionValue
-                if (smallColonyDisadvantageForFirstFoodProduction(obj, productionValueSum)) {
-                    smallColonyModifier = 10
-                }
                 if (workerScore.productionValue != 0) {
                     break
                 }
             }
             if (productionValueSum != 0) {
-                obj.score = (unitPriceSum / productionValueSum) + range * 2 + smallColonyModifier
+                obj.score = (unitPriceSum / productionValueSum)
             } else {
                 obj.score = 10000
             }
         }
-
-        private fun smallColonyDisadvantageForFirstFoodProduction(obj: MultipleWorkerRequestScoreValue, productionValueSum: Int): Boolean {
-            return obj.location.hasSettlement() && obj.location.settlement.units.size() <= 3 && productionValueSum == 0
-        }
     }
 
-    class WorkerProductionValue(val entryPointTurnRange: EntryPointTurnRange) : ScorePolicy {
+    class WorkerProductionValue: ScorePolicy {
 
         override fun calculateScore(scores: ScoreableObjectsList<WorkerRequestScoreValue>) {
             for (obj in scores) {
@@ -74,17 +61,16 @@ interface ScorePolicy {
         }
 
         override fun scoreSingle(obj: SingleWorkerRequestScoreValue) {
-            val range = entryPointTurnRange.trunsCost(obj.location)
-            obj.score = obj.productionValue - range
+            obj.score = obj.productionValue
         }
+
         override fun scoreMultiple(obj: MultipleWorkerRequestScoreValue) {
-            val range = entryPointTurnRange.trunsCost(obj.location)
             obj.score = 0
 
             var levelWeight : Float = 1.0f
             for (workersScore in obj.workersScores) {
                 if (workersScore.productionValue != 0) {
-                    obj.score = (workersScore.productionValue * levelWeight).toInt() - range
+                    obj.score = (workersScore.productionValue * levelWeight).toInt()
                     break
                 }
                 levelWeight -= 0.25f
