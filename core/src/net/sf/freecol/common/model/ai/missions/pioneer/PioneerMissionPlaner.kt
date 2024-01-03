@@ -81,13 +81,13 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
     fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): PioneerBuyPlan? {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
         var hasSpecialistOnMission = false
-        playerMissionContainer.foreachMission(PioneerMission::class.java, { pioneerMission ->
+        playerMissionContainer.foreachMission(PioneerMission::class.java) { pioneerMission ->
             colonyWithMissions.add(pioneerMission.colonyId)
             if (pioneerMission.isSpecialist()) {
                 hasSpecialistOnMission = true
             }
-        })
-        val improvementsPlanDestinationsScore = generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced())
+        }
+        val improvementsPlanDestinationsScore = generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced(player))
 
         if (isReachMaxPioneerMissions(improvementsPlanDestinationsScore, colonyWithMissions)) {
             // no missions
@@ -270,7 +270,10 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
             colonyWithMissions.add(pioneerMission.colonyId)
         }
 
-        val improvementsPlanDestinationsScore = generateImprovementsPlanScore(playerMissionContainer.player, AddImprovementPolicy.Balanced())
+        val improvementsPlanDestinationsScore = generateImprovementsPlanScore(
+            playerMissionContainer.player,
+            AddImprovementPolicy.Balanced(playerMissionContainer.player)
+        )
         pathFinder.generateRangeMap(
             game.map,
             pioneer.positionRelativeToMap(game.map),
@@ -425,7 +428,7 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
 
     fun generateImprovementsPlanForColony(player: Player, colonyId: String): ColonyTilesImprovementPlan {
         val colony = player.settlements.getById(colonyId).asColony()
-        val improvementPolicy = AddImprovementPolicy.Balanced()
+        val improvementPolicy = AddImprovementPolicy.Balanced(player)
         return improvementPolicy.generateImprovements(colony)
     }
 

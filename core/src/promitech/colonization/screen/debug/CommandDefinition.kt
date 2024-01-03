@@ -8,6 +8,7 @@ import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
+import net.sf.freecol.common.model.TileType
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
@@ -24,6 +25,7 @@ import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
+import net.sf.freecol.common.model.ai.missions.pioneer.CenterTilesImprovementRecommendations
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
@@ -33,7 +35,6 @@ import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.workerrequest.ColonyWorkerRequestPlaceCalculator
-import net.sf.freecol.common.model.ai.missions.workerrequest.EntryPointTurnRange
 import net.sf.freecol.common.model.ai.missions.workerrequest.ScorePolicy
 import net.sf.freecol.common.model.colonyproduction.ColonyPlan
 import net.sf.freecol.common.model.forEachTile
@@ -690,7 +691,10 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val game = guiGameModel.game
 		val player = game.playingPlayer
 
-		UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, player, player.europe)
+		//UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, player, player.europe)
+
+		val debugPioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
+		debugPioneer.showImprovementsPlan()
 
 		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
 		mapActor?.resetMapModel()
@@ -852,10 +856,10 @@ class DebugPioneer(
 	fun showImprovementsPlan() {
 		val game = guiGameModel.game
 		val player = game.playingPlayer
-		val balanced = AddImprovementPolicy.Balanced()
+		val balanced = AddImprovementPolicy.Balanced(player)
 
-		val pionierMissionPlaner = PioneerMissionPlaner(game, di.pathFinder)
-		val generateImprovementsPlanScore = pionierMissionPlaner.generateImprovementsPlanScore(
+		val pioneerMissionPlaner = PioneerMissionPlaner(game, di.pathFinder)
+		val generateImprovementsPlanScore = pioneerMissionPlaner.generateImprovementsPlanScore(
 			player,
 			balanced
 		)

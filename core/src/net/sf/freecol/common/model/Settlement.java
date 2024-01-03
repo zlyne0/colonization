@@ -4,10 +4,19 @@ import net.sf.freecol.common.model.colonyproduction.GoodsCollection;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.GoodsType;
 
+import java.util.Comparator;
+
 import promitech.colonization.ui.resources.StringTemplate;
 
 public abstract class Settlement extends ObjectWithId implements UnitLocation {
-    
+
+	public static final Comparator<Settlement> ID_LOW_FIRST_COMPARATOR = new Comparator<Settlement>() {
+		@Override
+		public int compare(Settlement t0, Settlement t1) {
+			return t0.getId().compareTo(t1.getId());
+		}
+	};
+
     public static final int FOOD_PER_COLONIST = 200;
     
 	protected String name;

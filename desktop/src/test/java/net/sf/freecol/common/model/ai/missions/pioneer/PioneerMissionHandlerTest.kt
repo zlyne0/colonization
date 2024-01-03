@@ -35,7 +35,6 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     lateinit var plowedType : TileImprovementType
     lateinit var roadType : TileImprovementType
     lateinit var clearForestType : TileImprovementType
-    lateinit var balancedImprovementPolicy : AddImprovementPolicy
 
     @BeforeEach
     override fun setup() {
@@ -44,7 +43,6 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
         roadType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
         clearForestType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID)
-        balancedImprovementPolicy = AddImprovementPolicy.Balanced()
 
         clearAllMissions(dutch)
     }
@@ -197,13 +195,13 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     fun addAllImprovements(player: Player) {
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
-        var planScore = pioneerMissionPlaner.generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced())
+        var planScore = pioneerMissionPlaner.generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced(player))
         for (objectScore in planScore) {
             for (improvement in objectScore.obj.improvements) {
                 improvement.tile.addImprovement(TileImprovement(Game.idGenerator, improvement.improvementType))
             }
         }
-        planScore = pioneerMissionPlaner.generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced())
+        planScore = pioneerMissionPlaner.generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced(player))
         for (objectScore in planScore) {
             for (improvement in objectScore.obj.improvements) {
                 improvement.tile.addImprovement(TileImprovement(Game.idGenerator, improvement.improvementType))
@@ -212,7 +210,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     }
 
     fun givenImprovementsPlan() {
-        val tileImprovementPlan = balancedImprovementPolicy.generateImprovements(fortNassau)
+        val tileImprovementPlan = AddImprovementPolicy.Balanced(fortNassau.owner).generateImprovements(fortNassau)
         tileImprovementPlan.improvements.get(0).let { improvementPlan ->
             assertTrue(improvementPlan.tile.equalsCoordinates(fortNassau.tile))
             assertTrue(improvementPlan.improvementType.equalsId(clearForestType))
@@ -232,7 +230,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     }
 
     fun assertNoImprovementsPlan(colony: Colony) {
-        assertEquals(0, balancedImprovementPolicy.generateImprovements(colony).improvements.size)
+        assertEquals(0, AddImprovementPolicy.Balanced(colony.owner).generateImprovements(colony).improvements.size)
     }
 
     fun removeAllImprovements(colony: Colony) {

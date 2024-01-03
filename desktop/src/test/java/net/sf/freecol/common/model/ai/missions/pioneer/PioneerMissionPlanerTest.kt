@@ -45,7 +45,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         removeAllImprovements(fortNassau)
 
         // when
-        val balanced = AddImprovementPolicy.Balanced()
+        val balanced = AddImprovementPolicy.Balanced(fortNassau.owner)
         val tileImprovementPlan = balanced.generateImprovements(fortNassau)
 
         // then
@@ -62,7 +62,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         removeAllImprovements(fortMaurits)
 
         // when
-        val balanced = AddImprovementPolicy.Balanced()
+        val balanced = AddImprovementPolicy.Balanced(fortMaurits.owner)
         val tileImprovementPlan = balanced.generateImprovements(fortMaurits)
 
         // then
@@ -80,7 +80,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         tileFrom(fortMaurits, Direction.S).addImprovement(TileImprovement(Game.idGenerator, plowedType))
 
         // when
-        val balanced = AddImprovementPolicy.Balanced()
+        val balanced = AddImprovementPolicy.Balanced(fortMaurits.owner)
         val tileImprovementPlan = balanced.generateImprovements(fortMaurits)
 
         // then
@@ -92,7 +92,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         // given
         val pathFinder = PathFinder()
         val pioneerMissionPlaner = PioneerMissionPlaner(game, pathFinder)
-        val policy = AddImprovementPolicy.Balanced()
+        val policy = AddImprovementPolicy.Balanced(dutch)
 
         // when
         val planScore = pioneerMissionPlaner.generateImprovementsPlanScore(dutch, policy)
@@ -234,7 +234,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         val workerFreeColonist = dutch.units.getById("unit:6436")
-        assertThat(fortOranje.units.containsId(workerFreeColonist))
+        assertThat(fortOranje.units.containsId(workerFreeColonist)).isTrue()
         workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
 
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
@@ -258,7 +258,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         playerMissionContainer.clearAllMissions()
 
         val workerFreeColonist = dutch.units.getById("unit:6436")
-        assertThat(fortOranje.units.containsId(workerFreeColonist))
+        assertThat(fortOranje.units.containsId(workerFreeColonist)).isTrue()
         workerFreeColonist.changeUnitType(unitType(UnitType.HARDY_PIONEER))
 
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())

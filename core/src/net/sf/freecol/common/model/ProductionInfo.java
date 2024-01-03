@@ -145,6 +145,20 @@ public class ProductionInfo {
 		return production.singleFilteredOutputTypeEquals(goodsType);
 	}
 
+	public Entry<GoodsType, Integer> findFirstNotFoodUnattendedProduction() {
+		if (unattendedProductions.isEmpty()) {
+			return null;
+		}
+		for (Production unattendedProduction : unattendedProductions) {
+			for (Entry<GoodsType, Integer> outputEntry : unattendedProduction.outputEntries()) {
+				if (!outputEntry.getKey().isFood()) {
+					return outputEntry;
+				}
+			}
+		}
+		return null;
+	}
+
 	public Production firstAttendentProduction(GoodsType goodsType) {
 		for (Production prod : attendedProductions) {
 			if (prod.isOutputTypesEquals(goodsType.getId())) {

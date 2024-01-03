@@ -5,7 +5,9 @@ import net.sf.freecol.common.model.ColonyTile
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
+import net.sf.freecol.common.model.TileType
 import net.sf.freecol.common.model.ai.MapTileDebugInfo
+import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.specification.GoodsType
 
 class TileImprovementPlan(val tile: Tile, val improvementType: TileImprovementType)
@@ -33,7 +35,10 @@ class ColonyTilesImprovementPlan(val colony: Colony, val improvements: MutableLi
 sealed class AddImprovementPolicy {
 
     // balanced, leave forest resources
-    class Balanced : AddImprovementPolicy() {
+    class Balanced(player: Player) : AddImprovementPolicy() {
+
+        private val centerTilesImprovementRecommendations = CenterTilesImprovementRecommendations(player)
+
         override fun addImprovement(colony: Colony, colonyTile: ColonyTile, imprList: MutableList<TileImprovementPlan>) {
             val tile = colonyTile.tile
             if (tile.type.isForested) {
@@ -47,7 +52,9 @@ sealed class AddImprovementPolicy {
 //                    }
 
                     if (colonyTile.isCenterColonyTile()) {
-                        addIfAbsent(imprList, tile, clearForestType)
+                        if (canClearForestOnCenterTile(colony, tile.type)) {
+                            addIfAbsent(imprList, tile, clearForestType)
+                        }
                     } else {
                         if (hasNoForestNotWorkingTile) {
                             addIfAbsent(imprList, tile, roadType)
@@ -67,6 +74,30 @@ sealed class AddImprovementPolicy {
                 }
             }
         }
+
+        private fun canClearForestOnCenterTile(colony: Colony, colonyCenterTileType: TileType): Boolean {
+            val newTileType = tileTypeAfterImprovement(colonyCenterTileType, clearForestType)
+            if (newTileType != null) {
+                val prod = newTileType.productionInfo.findFirstNotFoodUnattendedProduction()
+                val actualProd = colonyCenterTileType.productionInfo.findFirstNotFoodUnattendedProduction()
+                if (prod != null && actualProd != null) {
+                    val transformationRecommendation = centerTilesImprovementRecommendations.recommend(colony, actualProd.key.id, prod.key.id)
+                    return transformationRecommendation != CenterTilesImprovementRecommendations.BenefitResult.NO
+                }
+            }
+            return false
+        }
+
+        private fun tileTypeAfterImprovement(tileType: TileType, improvementType: TileImprovementType): TileType? {
+            if (tileType.isTileImprovementAllowed(improvementType)) {
+                val tileTypeTransformation = improvementType.changedTileType(tileType)
+                if (tileTypeTransformation != null) {
+                    return tileTypeTransformation.toType
+                }
+            }
+            return null
+        }
+
     }
 
     // improvements for max food production, clear forest resources
@@ -238,4 +269,5 @@ sealed class AddImprovementPolicy {
         }
         return forestNumber
     }
+
 }
