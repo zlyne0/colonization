@@ -61,8 +61,8 @@ class DefenceMission: AbstractMission {
 
     fun ifNotThenFortified() {
         val state = unit.state
-        if (!(state == Unit.UnitState.FORTIFIED || state == Unit.UnitState.FORTIFYING)) {
-            unit.state = Unit.UnitState.FORTIFIED
+        if (state != Unit.UnitState.FORTIFIED && state != Unit.UnitState.FORTIFYING && unit.canChangeState(Unit.UnitState.FORTIFYING)) {
+            unit.state = Unit.UnitState.FORTIFYING
         }
     }
 

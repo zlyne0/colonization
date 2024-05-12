@@ -648,9 +648,9 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
         case IMPROVING: 
         	return true;
         case FORTIFIED:
-            return getState() == UnitState.FORTIFYING;
+            return state == UnitState.FORTIFYING;
         case FORTIFYING:
-            return getMovesLeft() > 0 && getState() != UnitState.FORTIFIED;
+            return getMovesLeft() > 0 && state != UnitState.FORTIFIED;
         case IN_COLONY:
             return !isNaval();
         case SENTRY:
