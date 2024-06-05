@@ -34,7 +34,7 @@ class ScoutMissionPlaner(
     private val pathFinder2: PathFinder
 ) {
 
-    private val maxRangeForScoutOnOtherIsland = 12
+    private val maxRangeForScoutOnOtherIsland = 10
 
     fun findScoutDestination(scout: Unit): ScoutDestination {
         if (scout.isAtUnitLocation || scout.isAtEuropeLocation) {
@@ -157,7 +157,7 @@ class ScoutMissionPlaner(
         }
     }
 
-    fun printFirstDestination(scout: Unit, mapTileDebugInfo: MapTileDebugInfo) {
+    fun printFirstDestination(scout: Unit, mapTileDebugInfo: MapTileDebugInfo): ScoutDestination {
         val destination = findScoutDestination(scout)
         when (destination) {
             is ScoutDestination.TheSameIsland -> mapTileDebugInfo.appendStr(destination.tile.x, destination.tile.y, "First")
@@ -166,6 +166,7 @@ class ScoutMissionPlaner(
                 mapTileDebugInfo.appendStr(destination.transferLocationPath.endTile.x, destination.transferLocationPath.endTile.y, "Transfer")
             }
         }
+        return destination
     }
 
     fun createBuyPlan(player: Player, playerMissionContainer: PlayerMissionsContainer): ScoutBuyPlan? {

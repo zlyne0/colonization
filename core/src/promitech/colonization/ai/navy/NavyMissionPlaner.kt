@@ -29,19 +29,35 @@ class NavyMissionPlaner(
     private val transportGoodsToSellMissionPlaner: TransportGoodsToSellMissionPlaner
 ) {
 
-    fun plan(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
-        val navyUnits = createNavyUnitsList(player, playerMissionsContainer)
+    private var activeUnits = 0
 
-        while (navyUnits.isNotEmpty()) {
-            val navyUnit = navyUnits.removeFirst()
+    fun plan(player: Player, playerMissionsContainer: PlayerMissionsContainer) {
+        val vacantNavyUnits = findVacantNavyUnits(player, playerMissionsContainer)
+
+        while (vacantNavyUnits.isNotEmpty()) {
+            val navyUnit = vacantNavyUnits.removeFirst()
             val context = PlanNavyUnitContext(navyUnit, playerMissionsContainer)
 
-            if (navyUnits.size % 2 == 0) {
+            if ((activeUnits - vacantNavyUnits.size + 1) % 2 == 0) {
                 scenario1(context)
             } else {
                 scenarioPriorityTransportFromTile(context)
             }
         }
+    }
+
+    private fun findVacantNavyUnits(player: Player, playerMissionsContainer: PlayerMissionsContainer): MutableList<Unit> {
+        val navyUnits = mutableListOf<Unit>()
+        for (unit in player.units) {
+            if (unit.isNaval && !unit.isDamaged) {
+                activeUnits++
+                if (!playerMissionsContainer.isUnitBlockedForMission(unit)) {
+                    navyUnits.add(unit)
+                }
+            }
+        }
+        navyUnits.sortWith(Units.FREE_CARGO_SPACE_COMPARATOR)
+        return navyUnits
     }
 
     fun plan(navyUnit: Unit, playerMissionsContainer: PlayerMissionsContainer) {
@@ -172,17 +188,6 @@ class NavyMissionPlaner(
             return navyUnit.hasSpaceForAdditionalUnit(unit.unitType)
         }
         return mission.canEmbarkUnit(unit)
-    }
-
-    private fun createNavyUnitsList(player: Player, playerMissionsContainer: PlayerMissionsContainer): MutableList<Unit> {
-        val navyUnits = mutableListOf<Unit>()
-        for (unit in player.units) {
-            if (unit.isNaval && !unit.isDamaged && !playerMissionsContainer.isUnitBlockedForMission(unit)) {
-                navyUnits.add(unit)
-            }
-        }
-        navyUnits.sortWith(Units.FREE_CARGO_SPACE_COMPARATOR)
-        return navyUnits
     }
 
 }

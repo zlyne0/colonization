@@ -752,7 +752,8 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 
 
 		val debugMilitary = DebugMilitary(di, tileDebugView, game, player)
-		debugMilitary.printColonyDefencePriority()
+		//debugMilitary.printColonyDefencePriority()
+		debugMilitary.printThreat()
 		debugMilitary.generateOrders()
 
 		// when
@@ -812,6 +813,16 @@ class DebugScout(
 		)
 		scoutMissionPlaner.printAllCandidates(player, tileDebugView)
 		//printFirstDestination
+	}
+
+	fun printFirstDestination(scout: Unit) {
+		val scoutMissionPlaner = ScoutMissionPlaner(
+			guiGameModel.game,
+			di.pathFinder,
+			di.pathFinder2
+		)
+		val destination = scoutMissionPlaner.printFirstDestination(scout, tileDebugView)
+		println("FirstDestination: $destination")
 	}
 
 }
