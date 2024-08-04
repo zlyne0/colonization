@@ -6,8 +6,8 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.military.DefencePrice.DefencePurchase
-import promitech.colonization.ai.military.DefencePrice.generateRequests
+import promitech.colonization.ai.military.DefencePurchaseGenerator.DefencePurchase
+import promitech.colonization.ai.military.DefencePurchaseGenerator.generateRequests
 import promitech.colonization.ai.military.MilitaryLogger.logger
 import promitech.colonization.orders.combat.DefencePower
 

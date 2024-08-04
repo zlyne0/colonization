@@ -3,6 +3,7 @@ package promitech.colonization.ai.military
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.specification.BuildingTypeId
 import org.assertj.core.api.AbstractAssert
+import promitech.colonization.ai.UnitRoleId
 import promitech.colonization.ai.UnitTypeId
 import promitech.colonization.ai.military.DefencePurchasePlaner.ColonyDefencePurchase
 
@@ -21,8 +22,8 @@ class ColonyDefencePurchaseAssert(
     }
 
     fun isBuilding(buildingTypeId: BuildingTypeId): ColonyDefencePurchaseAssert {
-        if (actual.purchase is DefencePrice.DefencePurchase.ColonyBuildingPurchase) {
-            val colonyBuildingPurchase = actual.purchase as DefencePrice.DefencePurchase.ColonyBuildingPurchase
+        if (actual.purchase is DefencePurchaseGenerator.DefencePurchase.ColonyBuildingPurchase) {
+            val colonyBuildingPurchase = actual.purchase as DefencePurchaseGenerator.DefencePurchase.ColonyBuildingPurchase
             if (!colonyBuildingPurchase.buildingType.equalsId(buildingTypeId)) {
                 failWithMessage("expected building type ${buildingTypeId} but got ${colonyBuildingPurchase.buildingType.id}")
             }
@@ -33,10 +34,22 @@ class ColonyDefencePurchaseAssert(
     }
 
     fun isUnitType(unitTypeId: UnitTypeId): ColonyDefencePurchaseAssert {
-        if (actual.purchase is DefencePrice.DefencePurchase.UnitPurchase) {
-            val unitPurchase = actual.purchase as DefencePrice.DefencePurchase.UnitPurchase
+        if (actual.purchase is DefencePurchaseGenerator.DefencePurchase.UnitPurchase) {
+            val unitPurchase = actual.purchase as DefencePurchaseGenerator.DefencePurchase.UnitPurchase
             if (!unitPurchase.unitType.equalsId(unitTypeId)) {
                 failWithMessage("expected unitType purchase ${unitTypeId} but got ${unitPurchase.unitType.id}")
+            }
+        } else {
+            failWithMessage("expected UnitPurchase type but got ${actual.purchase.javaClass.name}")
+        }
+        return this
+    }
+
+    fun isUnitRole(unitRoleId: UnitRoleId): ColonyDefencePurchaseAssert {
+        if (actual.purchase is DefencePurchaseGenerator.DefencePurchase.UnitPurchase) {
+            val unitPurchase = actual.purchase as DefencePurchaseGenerator.DefencePurchase.UnitPurchase
+            if (!unitPurchase.unitRole.equalsId(unitRoleId)) {
+                failWithMessage("expected unitRole purchase ${unitRoleId} but got ${unitPurchase.unitRole.id}")
             }
         } else {
             failWithMessage("expected UnitPurchase type but got ${actual.purchase.javaClass.name}")

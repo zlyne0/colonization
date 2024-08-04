@@ -10,8 +10,8 @@ import net.sf.freecol.common.model.specification.BuildingType
 import org.assertj.core.api.Assertions.assertThat
 import org.junit.jupiter.api.Test
 import promitech.colonization.ai.military.ColonyDefencePurchaseAssert.Companion.assertThat
-import promitech.colonization.ai.military.DefencePrice.DefencePurchase
-import promitech.colonization.ai.military.DefencePrice.generateRequests
+import promitech.colonization.ai.military.DefencePurchaseGenerator.DefencePurchase
+import promitech.colonization.ai.military.DefencePurchaseGenerator.generateRequests
 import promitech.colonization.ai.military.DefencePurchasePlaner.ColonyDefencePurchase
 import promitech.colonization.ai.military.DefencePurchasePlaner.Companion.calculateExpectedDefencePower
 import promitech.colonization.orders.combat.DefencePower
@@ -37,34 +37,16 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
             assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(6f)
         }
         with((defencePurchases[1] as DefencePurchase.UnitPurchase)) {
-            assertThat(unitType.id).isEqualTo(UnitType.ARTILLERY)
-            assertThat(price).isEqualTo(500)
-            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(8f)
-        }
-        with((defencePurchases[2] as DefencePurchase.UnitPurchase)) {
             assertThat(unitType.id).isEqualTo(UnitType.FREE_COLONIST)
             assertThat(unitRole.id).isEqualTo(UnitRole.SOLDIER)
             assertThat(price).isEqualTo(750)
             assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(5.0f)
         }
-
-        with((defencePurchases[3] as DefencePurchase.UnitPurchase)) {
+        with((defencePurchases[2] as DefencePurchase.UnitPurchase)) {
             assertThat(unitType.id).isEqualTo(UnitType.FREE_COLONIST)
             assertThat(unitRole.id).isEqualTo(UnitRole.DRAGOON)
             assertThat(price).isEqualTo(900)
             assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(6.0f)
-        }
-        with((defencePurchases[4] as DefencePurchase.UnitPurchase)) {
-            assertThat(unitType.id).isEqualTo(UnitType.VETERAN_SOLDIER)
-            assertThat(unitRole.id).isEqualTo(UnitRole.SOLDIER)
-            assertThat(price).isEqualTo(2000)
-            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(5.5f)
-        }
-        with((defencePurchases[5] as DefencePurchase.UnitPurchase)) {
-            assertThat(unitType.id).isEqualTo(UnitType.VETERAN_SOLDIER)
-            assertThat(unitRole.id).isEqualTo(UnitRole.DRAGOON)
-            assertThat(price).isEqualTo(2150)
-            assertThat(powerAfterPurchase(actualDefenceStrength)).isEqualTo(6.5f)
         }
     }
 
@@ -115,16 +97,22 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
         // then
         printDefenceOrders(defencePlaner.generateThreatModel(dutch), defencePurchases)
 
-        assertThat(defencePurchases).hasSize(3)
+        assertThat(defencePurchases).hasSize(4)
         assertThat(defencePurchases.get(0))
             .isColony(fortNassau)
-            .isUnitType(UnitType.ARTILLERY)
+            .isUnitType(UnitType.FREE_COLONIST)
+            .isUnitRole(UnitRole.DRAGOON)
         assertThat(defencePurchases.get(1))
             .isColony(fortNassau)
             .isBuilding(BuildingType.STOCKADE)
         assertThat(defencePurchases.get(2))
             .isColony(fortNassau)
-            .isUnitType(UnitType.ARTILLERY)
+            .isUnitType(UnitType.FREE_COLONIST)
+            .isUnitRole(UnitRole.DRAGOON)
+        assertThat(defencePurchases.get(3))
+            .isColony(fortNassau)
+            .isUnitType(UnitType.FREE_COLONIST)
+            .isUnitRole(UnitRole.DRAGOON)
     }
 
     @Test
@@ -142,7 +130,8 @@ class DefencePurchasePlanerTest : Savegame1600BaseClass() {
         assertThat(defencePurchases).hasSize(3)
         assertThat(defencePurchases.get(0))
             .isColony(fortNassau)
-            .isUnitType(UnitType.ARTILLERY)
+            .isUnitType(UnitType.FREE_COLONIST)
+            .isUnitRole(UnitRole.DRAGOON)
         assertThat(defencePurchases.get(1))
             .isColony(fortNassau)
             .isBuilding(BuildingType.STOCKADE)
