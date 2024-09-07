@@ -35,6 +35,7 @@ class ThreatModel(val game: Game, var player: Player) {
     private val powerProjectionRange = 5
     private val offencePowerCache = ObjectFloatMap<String>()
     var createTurn: Turn
+        private set
 
     init {
         createTurn = game.turn
@@ -77,12 +78,20 @@ class ThreatModel(val game: Game, var player: Player) {
                     threatProjection = threatInfluenceMap.powerProjectionRange(settlement.tile),
                     colonyWealth = scoreColoniesToDefend(colony)
                 ),
-                !warRange.isUnknownValue(colonyTile.x, colonyTile.y),
+                isInWarRange(colonyTile),
                 singleTileDefence.get(colonyTile.x, colonyTile.y)
             ))
         }
         colonyThreats.sortWith(ColonyThreat.REQUIRE_MORE_DEFENCE_COMPARATOR)
         return colonyThreats
+    }
+
+    fun isDefencePowerBelowThreatPower(tile: Tile): Boolean {
+        return singleTileDefence.get(tile.x, tile.y) < threatInfluenceMap.powerProjectionRange(tile)
+    }
+
+    fun isInWarRange(tile: Tile): Boolean {
+        return !warRange.isUnknownValue(tile.x, tile.y);
     }
 
     private fun calculateThreatInfluenceMap() {

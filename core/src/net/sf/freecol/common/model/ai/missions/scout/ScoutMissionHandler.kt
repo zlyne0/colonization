@@ -114,7 +114,7 @@ class ScoutMissionHandler(
         unitDestination: Tile,
         unit: Unit
     ) {
-        val scoutMission = playerMissionsContainer.findFirstMissionKt(ScoutMission::class.java, unit)
+        val scoutMission = playerMissionsContainer.findFirstMissionKt(unit, ScoutMission::class.java)
         if (scoutMission != null) {
             val playerAiContainer = game.aiContainer.playerAiContainer(scoutMission.scout.owner)
             playerAiContainer.addScoutBlockTile(unitDestination)

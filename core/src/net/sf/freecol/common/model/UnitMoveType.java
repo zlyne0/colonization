@@ -38,10 +38,10 @@ public class UnitMoveType {
         return this;
     }
 
-    public UnitMoveType init(Player owner, UnitType unitType) {
+    public UnitMoveType init(Player owner, UnitType unitType, UnitRole unitRole) {
         this.owner = owner;
         this.unitType = unitType;
-        this.unitRole = Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID);
+        this.unitRole = unitRole;
         this.hitPoints = unitType.getHitPoints();
 
         if (unitType.canCarryUnits()) {

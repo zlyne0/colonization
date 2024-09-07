@@ -63,8 +63,8 @@ fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(missionClaz
 
 @Suppress("UNCHECKED_CAST")
 fun <T : AbstractMission> PlayerMissionsContainer.findFirstMissionKt(
+    unit: net.sf.freecol.common.model.Unit,
     clazz: Class<T>,
-    unit: net.sf.freecol.common.model.Unit
 ): T? {
     for (abstractMission in this.unitMissionsMapping.getUnitMission(unit)) {
         if (abstractMission.`is`(clazz)) {
@@ -84,6 +84,12 @@ inline fun <T : AbstractMission> PlayerMissionsContainer.foreachMission(
             consumer(playerMission as T)
         }
     }
+}
+
+@Suppress("UNCHECKED_CAST")
+fun <T: AbstractMission > PlayerMissionsContainer.eachAsSequence(missionClass: Class<T>): Sequence<T> {
+    return this.missions.entities().asSequence()
+        .filter { mission -> mission.`is`(missionClass) } as Sequence<T>
 }
 
 @Suppress("UNCHECKED_CAST")

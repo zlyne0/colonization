@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.hasMission
+import net.sf.freecol.common.model.ai.missions.ReplaceUnitInMissionHandler
 import net.sf.freecol.common.model.ai.missions.transportunit.NextDestinationWhenNoMoveAccessMissionHandler
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.PathFinder
@@ -28,7 +29,8 @@ class DefenceMissionHandler(
 ):
     MissionHandler<DefenceMission>,
     TransportUnitNoDisembarkAccessNotification,
-    NextDestinationWhenNoMoveAccessMissionHandler
+    NextDestinationWhenNoMoveAccessMissionHandler,
+    ReplaceUnitInMissionHandler
 {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: DefenceMission) {
@@ -55,7 +57,7 @@ class DefenceMissionHandler(
         }
 
         if (mission.unit.isAtTileLocation) {
-            if (mission.unit.isAtLocation(mission.tile)) {
+            if (mission.isAtDefenceLocation()) {
                 mission.ifNotThenFortified()
                 return
             }
@@ -101,7 +103,7 @@ class DefenceMissionHandler(
         unitDestination: Tile,
         unit: Unit
     ) {
-        val defenceMission = playerMissionsContainer.findFirstMissionKt(DefenceMission::class.java, unit)
+        val defenceMission = playerMissionsContainer.findFirstMissionKt(unit, DefenceMission::class.java)
         if (defenceMission != null) {
             val colony = defencePlaner.findColonyToProtect(unit)
             if (colony != null) {
@@ -132,5 +134,12 @@ class DefenceMissionHandler(
             }
         }
         return null
+    }
+
+    override fun replaceUnitInMission(mission: AbstractMission, unitToReplace: Unit, replaceBy: Unit) {
+        if (mission is DefenceMission) {
+            val playerMissionsContainer = game.aiContainer.missionContainer(replaceBy.owner)
+            mission.changeUnit(unitToReplace, replaceBy, playerMissionsContainer)
+        }
     }
 }

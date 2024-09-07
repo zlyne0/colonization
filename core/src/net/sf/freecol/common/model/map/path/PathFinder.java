@@ -10,8 +10,10 @@ import java.util.TreeSet;
 
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
+import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.player.Player;
@@ -129,7 +131,11 @@ public class PathFinder {
 	}
 
 	public PathUnit createPathUnit(Player owner, UnitType unitType) {
-		return pathUnitFactory.obtain(owner, unitType);
+		return pathUnitFactory.obtain(owner, unitType, Specification.instance.unitRoles.getById(UnitRole.DEFAULT_ROLE_ID));
+	}
+
+	public PathUnit createPathUnit(Player owner, UnitType unitType, UnitRole unitRole) {
+		return pathUnitFactory.obtain(owner, unitType, unitRole	);
 	}
 
 	public Path findToEurope(Map map, Tile startTile, Unit unit, Set<FlagTypes> flags) {

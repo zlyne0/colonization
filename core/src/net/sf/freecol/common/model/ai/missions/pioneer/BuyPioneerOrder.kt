@@ -7,6 +7,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.player.Player
 

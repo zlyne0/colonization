@@ -48,6 +48,8 @@ class EuropeanMissionPlaner(
 
         colonyProductionPlaner.generateAndSetColonyProductionPlan()
         purchasePlaner.buyBuildings()
+
+        defencePlaner.equipColonyVeteranWorker(player, playerMissionContainer)
     }
 
     private fun handlePurchases(player: Player, playerMissionContainer: PlayerMissionsContainer) {

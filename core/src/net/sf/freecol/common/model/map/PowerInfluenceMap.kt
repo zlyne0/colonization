@@ -35,21 +35,10 @@ class PowerInfluenceMap(
         influencePowerMap.resetToUnknown()
     }
 
-    fun powerSum(tile: Tile): Float {
-        return sumSourcePower.get(tile.x, tile.y)
-    }
-
-    fun powerSum(x: Int, y: Int): Float {
-        return sumSourcePower.get(x, y)
-    }
-
-    fun powerProjectionRange(tile: Tile): Int {
-        return influencePowerMap.get(tile.x, tile.y)
-    }
-
-    fun powerProjectionRange(x: Int, y: Int): Int {
-        return influencePowerMap.get(x, y)
-    }
+    fun powerSum(tile: Tile): Float = sumSourcePower.get(tile.x, tile.y)
+    fun powerSum(x: Int, y: Int): Float = sumSourcePower.get(x, y)
+    fun powerProjectionRange(tile: Tile): Int = influencePowerMap.get(tile.x, tile.y)
+    fun powerProjectionRange(x: Int, y: Int): Int = influencePowerMap.get(x, y)
 
     fun printInfluencePower(mapDebugInfo: MapTileDebugInfo) {
         influencePowerMap.forEach { x, y, powerValue ->

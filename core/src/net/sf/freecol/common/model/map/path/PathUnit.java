@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Pool;
 
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitMoveType;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 
@@ -17,8 +18,8 @@ public class PathUnit implements Pool.Poolable {
         return this;
     }
 
-    public PathUnit init(Player player, UnitType unitType) {
-        this.unitMove.init(player, unitType);
+    public PathUnit init(Player player, UnitType unitType, UnitRole unitRole) {
+        this.unitMove.init(player, unitType, unitRole);
         this.movesLeft = unitMove.initialMoves();
         return this;
     }

@@ -1,9 +1,6 @@
-package net.sf.freecol.common.model.ai.missions.pioneer
+package net.sf.freecol.common.model.ai.missions
 
 import net.sf.freecol.common.model.Game
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.findParentMission
-import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionHandler

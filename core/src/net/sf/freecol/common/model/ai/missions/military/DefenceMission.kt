@@ -29,6 +29,8 @@ class DefenceMission: AbstractMission {
         this.tile = tile
     }
 
+    fun isAtDefenceLocation(): Boolean = unit.isAtLocation(tile)
+
     internal fun isDefenceUnitExists(): Boolean = CommonMissionHandler.isUnitExists(unit.owner, unit)
 
     internal fun isTileAccessible(): Boolean {
@@ -63,6 +65,18 @@ class DefenceMission: AbstractMission {
         val state = unit.state
         if (state != Unit.UnitState.FORTIFIED && state != Unit.UnitState.FORTIFYING && unit.canChangeState(Unit.UnitState.FORTIFYING)) {
             unit.state = Unit.UnitState.FORTIFYING
+        }
+    }
+
+    internal fun changeUnit(
+        unitToReplace: Unit,
+        replaceBy: Unit,
+        playerMissionsContainer: PlayerMissionsContainer
+    ) {
+        if (unit.equalsId(unitToReplace)) {
+            playerMissionsContainer.unblockUnitFromMission(unit, this)
+            unit = replaceBy
+            playerMissionsContainer.blockUnitForMission(unit, this)
         }
     }
 

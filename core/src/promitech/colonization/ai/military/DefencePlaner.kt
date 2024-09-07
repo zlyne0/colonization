@@ -24,11 +24,11 @@ class DefencePlaner(
 
     fun generateThreatModel(player: Player): ThreatModel {
         if (localThreatModel == null) {
-            return ThreatModel(game, player)
+            localThreatModel = ThreatModel(game, player)
+            return localThreatModel!!
         }
         localThreatModel.whenNotNull { lth ->
-            lth.recalculate(player)
-            if (recalculateThreatRequest != null || !lth.player.equalsId(player) || !lth.createTurn.equals(game.turn)) {
+            if (recalculateThreatRequest != null || !lth.player.equalsId(player) || lth.createTurn != game.turn) {
                 lth.recalculate(player)
             }
         }
@@ -36,8 +36,8 @@ class DefencePlaner(
         return localThreatModel!!
     }
 
-    fun recalculateThreat(player: Player) {
-        recalculateThreatRequest = player
+    fun invalidateThreatModel() {
+        recalculateThreatRequest = null
     }
 
     fun createMissionFromUnusedUnit(unit: Unit, playerMissionContainer: PlayerMissionsContainer): AbstractMission? {
@@ -106,5 +106,10 @@ class DefencePlaner(
             }
         }
         return theClosesLandTile
+    }
+
+    fun equipColonyVeteranWorker(player: Player, playerMissionContainer: PlayerMissionsContainer) {
+        ColonyVeteranWorkerEquipment(game, player, playerMissionContainer, pathFinder, generateThreatModel(player))
+            .equip()
     }
 }

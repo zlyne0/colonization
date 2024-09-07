@@ -13,7 +13,6 @@ import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission;
 import net.sf.freecol.common.model.ai.missions.indian.WanderMission;
 import net.sf.freecol.common.model.ai.missions.military.DefenceMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission;
-import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.RequestGoodsMission;
 import net.sf.freecol.common.model.ai.missions.pioneer.TakeRoleEquipmentMission;
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission;

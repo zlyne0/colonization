@@ -1,13 +1,10 @@
-package net.sf.freecol.common.model.ai.missions.pioneer
+package net.sf.freecol.common.model.ai.missions
 
 import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.ColonyId
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitId
-import net.sf.freecol.common.model.ai.missions.AbstractMission
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
 import net.sf.freecol.common.model.player.Player
 import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.savegame.XmlNodeAttributes

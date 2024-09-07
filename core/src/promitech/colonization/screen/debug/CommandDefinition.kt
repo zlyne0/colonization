@@ -25,11 +25,10 @@ import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission
 import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
-import net.sf.freecol.common.model.ai.missions.pioneer.CenterTilesImprovementRecommendations
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
-import net.sf.freecol.common.model.ai.missions.pioneer.ReplaceColonyWorkerMission
+import net.sf.freecol.common.model.ai.missions.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission

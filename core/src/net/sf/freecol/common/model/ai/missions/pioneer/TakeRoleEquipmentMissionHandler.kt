@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.MissionId
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.ReplaceUnitInMissionHandler
 import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import promitech.colonization.ai.MissionHandler

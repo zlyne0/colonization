@@ -4,6 +4,7 @@ import com.badlogic.gdx.utils.Pool;
 import com.badlogic.gdx.utils.Pools;
 
 import net.sf.freecol.common.model.Unit;
+import net.sf.freecol.common.model.UnitRole;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.player.Player;
 
@@ -20,9 +21,9 @@ class PathUnitFactory {
         return pathUnit;
     }
 
-    PathUnit obtain(Player player, UnitType unitType) {
+    PathUnit obtain(Player player, UnitType unitType, UnitRole unitRole) {
         PathUnit pathUnit = pathUnitPool.obtain();
-        pathUnit.init(player, unitType);
+        pathUnit.init(player, unitType, unitRole);
         return pathUnit;
     }
 

@@ -367,7 +367,7 @@ public class TransportUnitMission extends AbstractMission {
 	public void addUnitDestForCarriedUnits(PlayerMissionsContainer missionsContainer) {
 		for (Unit unit : carrier.getUnitContainer().getUnits()) {
 			if (!isCarriedUnitTransportDestinationSet(unit)) {
-				TransportUnitRequestMission transportRequest = findFirstMissionKt(missionsContainer, TransportUnitRequestMission.class, unit);
+				TransportUnitRequestMission transportRequest = findFirstMissionKt(missionsContainer, unit, TransportUnitRequestMission.class);
 				if (transportRequest != null) {
 					transportRequest.setTransportUnitMissionId(this.getId());
 					addUnitDest(transportRequest);

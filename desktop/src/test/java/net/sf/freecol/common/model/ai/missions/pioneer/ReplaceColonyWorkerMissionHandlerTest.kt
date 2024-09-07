@@ -2,13 +2,13 @@ package net.sf.freecol.common.model.ai.missions.pioneer
 
 import net.sf.freecol.common.model.ColonyAssert.assertThat
 import net.sf.freecol.common.model.ColonyTile
-import net.sf.freecol.common.model.UnitAssert
 import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.MissionHandlerBaseTestClass
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.specification.GoodsType
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test

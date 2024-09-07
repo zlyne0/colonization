@@ -122,7 +122,7 @@ class DefencePurchasePlaner(
         }
 
         if (bought) {
-            defencePlaner.recalculateThreat(player)
+            defencePlaner.invalidateThreatModel()
         }
     }
 
