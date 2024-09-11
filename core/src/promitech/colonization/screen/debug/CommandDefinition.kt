@@ -8,12 +8,12 @@ import net.sf.freecol.common.model.Settlement
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovementType
-import net.sf.freecol.common.model.TileType
 import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.UnitType
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
+import net.sf.freecol.common.model.ai.missions.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
@@ -28,7 +28,6 @@ import net.sf.freecol.common.model.ai.missions.pioneer.AddImprovementPolicy
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerDestination
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMission
 import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionPlaner
-import net.sf.freecol.common.model.ai.missions.ReplaceColonyWorkerMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMission
 import net.sf.freecol.common.model.ai.missions.scout.ScoutMissionPlaner
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
@@ -167,6 +166,10 @@ fun createCommands(
 			if (mapActor != null) {
 				playerTurnAsAi(di, guiGameModel, mapActor)
 			}
+		}
+
+		command("all_players_move_as_ai") {
+			allPlayersAsAiMove(di, guiGameModel, mapActor!!)
 		}
 		
 		command("pools") {
@@ -587,6 +590,50 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 				player.setAi(false)
+			}
+		})
+	}
+
+	fun allPlayersAsAiMove(di: DI, guiGameModel: GUIGameModel, mapActor: MapActor) {
+		val pathFinder2 = PathFinder()
+		val missionExecutor = MissionExecutor(
+			guiGameModel.game,
+			di.moveService,
+			di.combatService,
+			di.guiGameController,
+			di.pathFinder,
+			pathFinder2
+		)
+		val missionPlaner = MissionPlaner(guiGameModel.game, di.pathFinder, missionExecutor, pathFinder2)
+		val player = guiGameModel.game.playingPlayer
+
+		guiGameModel.setActiveUnit(null)
+		mapActor.mapDrawModel().setSelectedUnit(null)
+
+
+		ThreadsResources.instance.executeMovement(object : Runnable {
+			override fun run() {
+				player.setAi(true)
+				SaveGameList().saveAsAutosave(guiGameModel.game)
+				di.newTurnService.newTurn(player)
+				missionPlaner.planMissions(player)
+				missionExecutor.executeMissions(player)
+				player.setAi(false)
+
+
+				val players = guiGameModel.game.players.allToProcessedOrder(guiGameModel.game.playingPlayer)
+				for (aiPlayer in players) {
+					println("new turn for aiPlayer $aiPlayer")
+					di.newTurnService.newTurn(aiPlayer)
+					missionPlaner.planMissions(aiPlayer)
+					missionExecutor.executeMissions(aiPlayer)
+					println("end turn for aiPlayer $aiPlayer")
+				}
+				missionExecutor.dispose()
+
+				guiGameModel.game.increaseTurnNumber()
+				mapActor.resetMapModel()
+				mapActor.resetUnexploredBorders()
 			}
 		})
 	}

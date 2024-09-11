@@ -67,7 +67,7 @@ public class DebugShortcutsKeys {
         commands = CommandDefinitionKt.createCommands(di, routeOutput, mapActor, null);
 
         commandByKeycode.put(Input.Keys.NUM_1, "player_turn_as_ai");
-        commandByKeycode.put(Input.Keys.NUM_2, "clear_all_missions");
+        commandByKeycode.put(Input.Keys.NUM_2, "all_players_move_as_ai");
         commandByKeycode.put(Input.Keys.NUM_3, "ai_generateTheBestPlaceToBuildColony");
         commandByKeycode.put(Input.Keys.NUM_4, "ai_generateWorkerReqScoreByValue");
         commandByKeycode.put(Input.Keys.NUM_5, "ai_generateWorkerReqScoreByPriceToValue");
