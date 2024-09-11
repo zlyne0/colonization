@@ -52,14 +52,7 @@ public class CommonMissionHandler {
 	}
 	
 	public static boolean isUnitExists(Player player, Unit unit) {
-		if (player.isDead()) {
-			return false;
-		}
-		if (unit == null || unit.isDisposed() || unit.isDamaged() || !player.units.containsId(unit) 
-				|| !unit.isOwner(player)) {
-			return false;
-		}
-		return true;
+		return !(player.isDead() || unit == null || unit.isDisposed() || unit.isDamaged() || !player.units.containsId(unit) || !unit.isOwner(player));
 	}
 
 	public static boolean isColonyOwner(Player player, String settlementId) {

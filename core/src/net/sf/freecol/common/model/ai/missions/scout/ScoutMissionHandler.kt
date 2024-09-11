@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.Path
+import promitech.colonization.ai.CommonMissionHandler.isUnitExists
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 import promitech.colonization.ai.TransportUnitNoDisembarkAccessNotification
@@ -23,7 +24,9 @@ class ScoutMissionHandler(
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: ScoutMission) {
         val player = playerMissionsContainer.player
-        if (!mission.isScoutExists()) {
+        val scout: Unit? = player.units.getByIdOrNull(mission.scoutId)
+
+        if (scout == null || !isUnitExists(player, scout)) {
             MissionHandlerLogger.logger.debug("player[%s].ScoutMissionHandler scout does not exists", player.getId())
             mission.setDone()
             return
@@ -34,51 +37,51 @@ class ScoutMissionHandler(
         }
 
         if (mission.isWaitingForTransport()) {
-            if (isUnitExistsOnTransportMission(playerMissionsContainer, mission)) {
+            if (isUnitExistsOnTransportMission(playerMissionsContainer, scout)) {
                 return
             }
-            if (mission.scout.isAtUnitLocation) {
-                findAndHandleDestination(playerMissionsContainer, mission)
+            if (scout.isAtUnitLocation) {
+                findAndHandleDestination(playerMissionsContainer, mission, scout)
             }
-            if (mission.scout.isAtTileLocation) {
+            if (scout.isAtTileLocation) {
                 // when on the same island, start scout, else do nothing and wait for transport mission
-                mission.startScoutAfterTransport(game)
+                mission.startScoutAfterTransport(game, scout)
             }
         }
-        if (mission.scout.isAtEuropeLocation && !mission.isWaitingForTransport()) {
-            findAndHandleDestination(playerMissionsContainer, mission)
+        if (scout.isAtEuropeLocation && !mission.isWaitingForTransport()) {
+            findAndHandleDestination(playerMissionsContainer, mission, scout)
         }
 
-        if (mission.phase == ScoutMission.Phase.SCOUT && mission.scout.isAtTileLocation) {
-            findAndHandleDestination(playerMissionsContainer, mission)
+        if (mission.phase == ScoutMission.Phase.SCOUT && scout.isAtTileLocation) {
+            findAndHandleDestination(playerMissionsContainer, mission, scout)
         }
 
-        if (!mission.isScoutExists()) {
+        if (!isUnitExists(player, scout)) {
             // scout could die, remove mission
             MissionHandlerLogger.logger.debug("player[%s].ScoutMissionHandler scout does not exists", player.getId())
             mission.setDone()
         }
     }
 
-    private fun isUnitExistsOnTransportMission(playerMissionsContainer: PlayerMissionsContainer, scoutMission: ScoutMission): Boolean {
+    private fun isUnitExistsOnTransportMission(playerMissionsContainer: PlayerMissionsContainer, scout: Unit): Boolean {
         return playerMissionsContainer.hasMission(TransportUnitMission::class.java) { transportMission ->
-            transportMission.isCarriedUnitTransportDestinationSet(scoutMission.scout)
+            transportMission.isCarriedUnitTransportDestinationSet(scout)
         }
     }
 
-    private fun findAndHandleDestination(playerMissionsContainer: PlayerMissionsContainer, mission: ScoutMission) {
-        val scoutDestination = scoutMissionPlaner.findScoutDestination(mission.scout)
+    private fun findAndHandleDestination(playerMissionsContainer: PlayerMissionsContainer, mission: ScoutMission, scout: Unit) {
+        val scoutDestination = scoutMissionPlaner.findScoutDestination(scout)
         when (scoutDestination) {
-            is ScoutDestination.TheSameIsland -> moveToDestination(mission, scoutDestination.path)
-            is ScoutDestination.OtherIsland -> moveToOtherIsland(playerMissionsContainer, scoutDestination, mission)
-            is ScoutDestination.OtherIslandFromCarrier -> moveToOtherIslandFromCarrier(playerMissionsContainer, mission, scoutDestination)
+            is ScoutDestination.TheSameIsland -> moveToDestination(scoutDestination.path, scout)
+            is ScoutDestination.OtherIsland -> moveToOtherIsland(playerMissionsContainer, scoutDestination, mission, scout)
+            is ScoutDestination.OtherIslandFromCarrier -> moveToOtherIslandFromCarrier(playerMissionsContainer, mission, scout, scoutDestination)
             is ScoutDestination.Lack -> doNothing(mission)
         }
     }
 
-    private fun moveToDestination(mission: ScoutMission, path: Path) {
+    private fun moveToDestination(path: Path, scout: Unit) {
         if (path.isReachedDestination()) {
-            val moveContext = MoveContext(mission.scout, path)
+            val moveContext = MoveContext(scout, path)
             moveService.aiConfirmedMovePath(moveContext)
         }
     }
@@ -86,26 +89,33 @@ class ScoutMissionHandler(
     private fun moveToOtherIsland(
         playerMissionsContainer: PlayerMissionsContainer,
         scoutDestination: ScoutDestination.OtherIsland,
-        mission: ScoutMission
+        mission: ScoutMission,
+        scout: Unit
     ) {
         if (scoutDestination.transferLocationPath.isReachedDestination()) {
-            val moveContext = MoveContext(mission.scout, scoutDestination.transferLocationPath)
+            val moveContext = MoveContext(scout, scoutDestination.transferLocationPath)
             moveService.aiConfirmedMovePath(moveContext)
 
-            if (mission.isScoutReadyToEmbark(scoutDestination.transferLocationPath.endTile)) {
+            if (isScoutReadyToEmbark(scout, scoutDestination.transferLocationPath.endTile)) {
                 mission.waitForTransport(scoutDestination.tile)
-                playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, mission.scout, scoutDestination.tile))
+                playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, scout, scoutDestination.tile))
             }
         }
+    }
+
+    private fun isScoutReadyToEmbark(scout: Unit, embarkLocation: Tile): Boolean {
+        val scoutLocation = scout.tile
+        return scoutLocation.equalsCoordinates(embarkLocation) || scoutLocation.isStepNextTo(embarkLocation)
     }
 
     private fun moveToOtherIslandFromCarrier(
         playerMissionsContainer: PlayerMissionsContainer,
         mission: ScoutMission,
+        scout: Unit,
         scoutDestination: ScoutDestination.OtherIslandFromCarrier
     ) {
         mission.waitForTransport(scoutDestination.tile)
-        playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, mission.scout, scoutDestination.tile))
+        playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, scout, scoutDestination.tile))
     }
 
     override fun noDisembarkAccessNotification(
@@ -116,9 +126,12 @@ class ScoutMissionHandler(
     ) {
         val scoutMission = playerMissionsContainer.findFirstMissionKt(unit, ScoutMission::class.java)
         if (scoutMission != null) {
-            val playerAiContainer = game.aiContainer.playerAiContainer(scoutMission.scout.owner)
-            playerAiContainer.addScoutBlockTile(unitDestination)
-            findAndHandleDestination(playerMissionsContainer, scoutMission)
+            val scout = playerMissionsContainer.player.units.getByIdOrNull(scoutMission.scoutId)
+            if (scout != null) {
+                val playerAiContainer = game.aiContainer.playerAiContainer(playerMissionsContainer.player)
+                playerAiContainer.addScoutBlockTile(unitDestination)
+                findAndHandleDestination(playerMissionsContainer, scoutMission, scout)
+            }
         }
     }
 

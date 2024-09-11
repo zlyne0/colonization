@@ -216,7 +216,7 @@ class ScoutMissionPlaner(
 
                 if (scoutDestination is ScoutDestination.OtherIslandFromCarrier) {
                     scoutMission.waitForTransport(scoutDestination.tile)
-                    playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(game.turn, scoutMission.scout, scoutDestination.tile))
+                    playerMissionContainer.addMission(scoutMission, TransportUnitRequestMission(game.turn, unit, scoutDestination.tile))
                 }
                 // else ScoutMissionHandler should take care about mission and tile destination
             }

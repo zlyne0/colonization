@@ -3,21 +3,19 @@ package net.sf.freecol.common.model.ai.missions.scout
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.UnitId
 import net.sf.freecol.common.model.ai.missions.AbstractMission
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
-import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
-import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 
 class ScoutMission : AbstractMission {
 
-    public enum class Phase {
+    enum class Phase {
         SCOUT, WAIT_FOR_TRANSPORT, NOTHING
     }
 
-    val scout : Unit
+    val scoutId: UnitId
     var phase: Phase = Phase.SCOUT
         private set
 
@@ -26,46 +24,37 @@ class ScoutMission : AbstractMission {
         private set
 
     constructor(scout: Unit) : super(Game.idGenerator.nextId(ScoutMission::class.java)) {
-        this.scout = scout
+        this.scoutId = scout.id
     }
 
-    private constructor(scout: Unit, missionId: String) : super(missionId) {
-        this.scout = scout
+    private constructor(missionId: String, scoutId: UnitId) : super(missionId) {
+        this.scoutId = scoutId
     }
 
     override fun toString(): String {
-        return "scout: " + scout.id + ", phase: " + phase
+        return "scout: " + scoutId + ", phase: " + phase
     }
 
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.blockUnit(scout, this)
+        unitMissionsMapping.blockUnit(scoutId, this)
     }
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.unblockUnitFromMission(scout, this)
-    }
-
-    fun isScoutExists(): Boolean {
-        return CommonMissionHandler.isUnitExists(scout.owner, scout)
+        unitMissionsMapping.unblockUnitFromMission(scoutId, this)
     }
 
     fun waitForTransport(scoutDistantDestination: Tile) {
-        this.phase = ScoutMission.Phase.WAIT_FOR_TRANSPORT
+        this.phase = Phase.WAIT_FOR_TRANSPORT
         this.scoutDistantDestination = scoutDistantDestination
     }
 
     fun isWaitingForTransport(): Boolean {
-        return this.phase == ScoutMission.Phase.WAIT_FOR_TRANSPORT
+        return this.phase == Phase.WAIT_FOR_TRANSPORT
     }
 
-    fun isScoutReadyToEmbark(embarkLocation: Tile): Boolean {
-        val scoutLocation = scout.tile
-        return scoutLocation.equalsCoordinates(embarkLocation) || scoutLocation.isStepNextTo(embarkLocation)
-    }
-
-    fun startScoutAfterTransport(game: Game) {
+    fun startScoutAfterTransport(game: Game, scout: Unit) {
         if (game.map.isTheSameArea(scoutDistantDestination, scout.tile)) {
-            phase = ScoutMission.Phase.SCOUT
+            phase = Phase.SCOUT
             scoutDistantDestination = null
         }
     }
@@ -80,8 +69,7 @@ class ScoutMission : AbstractMission {
         private val ATTR_DESTINATION = "dest"
 
         override fun startElement(attr: XmlNodeAttributes) {
-            val scout = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
-            nodeObject = ScoutMission(scout, attr.id)
+            nodeObject = ScoutMission(attr.id, attr.getStrAttribute(ATTR_UNIT))
             nodeObject.phase = attr.getEnumAttribute(Phase::class.java, ATTR_PHASE)
             if (attr.hasAttr(ATTR_DESTINATION)) {
                 nodeObject.scoutDistantDestination = game.map.getSafeTile(attr.getPoint(ATTR_DESTINATION))
@@ -93,7 +81,7 @@ class ScoutMission : AbstractMission {
             super.startWriteAttr(mission, attr)
 
             attr.setId(mission)
-            attr.set(ATTR_UNIT, mission.scout)
+            attr.set(ATTR_UNIT, mission.scoutId)
             attr.set(ATTR_PHASE, mission.phase)
             mission.scoutDistantDestination?.let {
                 tile -> attr.setPoint(ATTR_DESTINATION, tile.x, tile.y)
