@@ -14,6 +14,7 @@ import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.military.DefenceMission
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.util.whenNotNull
 
 class ColonyVeteranWorkerEquipment(
     private val game: Game,
@@ -34,12 +35,14 @@ class ColonyVeteranWorkerEquipment(
 
             val theBestMissionToReplaceUnit = findDefenceMission(colony.tile)
             if (theBestMissionToReplaceUnit != null) {
-                val replaceColonyWorkerMission = ReplaceColonyWorkerMission(
-                    colony,
-                    colonyWorker,
-                    theBestMissionToReplaceUnit.unit
-                )
-                playerMissionContainer.addMission(theBestMissionToReplaceUnit, replaceColonyWorkerMission)
+                player.units.getByIdOrNull(theBestMissionToReplaceUnit.unitId).whenNotNull { defenceMissionUnit ->
+                    val replaceColonyWorkerMission = ReplaceColonyWorkerMission(
+                        colony,
+                        colonyWorker,
+                        defenceMissionUnit
+                    )
+                    playerMissionContainer.addMission(theBestMissionToReplaceUnit, replaceColonyWorkerMission)
+                }
             }
         }
     }
@@ -64,7 +67,8 @@ class ColonyVeteranWorkerEquipment(
         val maxTurnDistance = 1
         return playerMissionContainer.eachAsSequence(DefenceMission::class.java)
             .filter { mission ->
-                mission.unit.unitType.isType(UnitType.FREE_COLONIST)
+                val defenceMissionUnit: Unit? = playerMissionContainer.player.units.getByIdOrNull(mission.unitId)
+                defenceMissionUnit != null && defenceMissionUnit.unitType.isType(UnitType.FREE_COLONIST)
                         && playerMissionContainer.isAllDependMissionDone(mission)
                         && pathFinder.turnsCost(mission.tile) <= maxTurnDistance
                         && (mission.tile.equalsCoordinates(veteranWorkerTile) || !isDirectThreat(mission.tile))
@@ -80,7 +84,7 @@ class ColonyVeteranWorkerEquipment(
         var count = 0
         for (unit in tile.units.entities()) {
             val defMission = playerMissionContainer.findFirstMissionKt(unit, DefenceMission::class.java)
-            if (defMission != null && defMission.isAtDefenceLocation()) {
+            if (defMission != null && defMission.isAtDefenceLocation(unit)) {
                 count++
             }
         }

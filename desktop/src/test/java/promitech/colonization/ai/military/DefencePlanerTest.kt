@@ -17,7 +17,7 @@ class DefencePlanerTest : Savegame1600BaseClass() {
         val dragoon = UnitFactory.create(UnitType.VETERAN_SOLDIER, UnitRole.DRAGOON, dutch, dutch.europe)
 
         // when
-        val colonyToProtect = defencePlaner.findColonyToProtect(dragoon)
+        val colonyToProtect = defencePlaner.findColonyToProtect(dragoon.owner)
 
         // then
         assertThat(colonyToProtect!!.id).isEqualTo(fortNassau.id)

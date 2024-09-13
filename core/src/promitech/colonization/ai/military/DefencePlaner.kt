@@ -44,7 +44,7 @@ class DefencePlaner(
         if (!isMilitaryUnit(unit)) {
             return null
         }
-        val colony = findColonyToProtect(unit)
+        val colony = findColonyToProtect(unit.owner)
         if (colony != null) {
             val defenceMission = DefenceMission(colony.tile, unit)
             playerMissionContainer.addMission(defenceMission)
@@ -75,8 +75,8 @@ class DefencePlaner(
         return unit.unitType.equalsId(UnitType.ARTILLERY) || unit.isArmed
     }
 
-    fun findColonyToProtect(unit: Unit): Colony? {
-        val threatModel = generateThreatModel(unit.owner)
+    fun findColonyToProtect(player: Player): Colony? {
+        val threatModel = generateThreatModel(player)
         val colonyDefencePriority = threatModel.calculateColonyDefencePriority()
         if (colonyDefencePriority.isEmpty()) {
             return null

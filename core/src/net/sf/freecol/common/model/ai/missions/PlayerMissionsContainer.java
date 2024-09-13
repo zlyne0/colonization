@@ -186,19 +186,29 @@ public class PlayerMissionsContainer extends ObjectWithId {
 	}
 
 	public void blockUnitForMission(Unit unit, AbstractMission mission) {
-		if (unit == null) {
-			return;
+		if (unit != null) {
+			unitMissionsMapping.blockUnit(unit, mission);
 		}
-		unitMissionsMapping.blockUnit(unit, mission);
+	}
+
+	public void blockUnitForMission(String unitId, AbstractMission mission) {
+		if (unitId != null) {
+			unitMissionsMapping.blockUnit(unitId, mission);
+		}
 	}
 
 	public void unblockUnitFromMission(Unit unit, AbstractMission mission) {
-		if (unit == null) {
-			return;
+		if (unit != null) {
+			unitMissionsMapping.unblockUnitFromMission(unit, mission);
 		}
-		unitMissionsMapping.unblockUnitFromMission(unit, mission);
 	}
-	
+
+	public void unblockUnitFromMission(String unitId, AbstractMission mission) {
+		if (unitId != null) {
+			unitMissionsMapping.unblockUnitFromMission(unitId, mission);
+		}
+	}
+
 	public void unblockUnitsFromMission(AbstractMission mission) {
 		mission.unblockUnits(unitMissionsMapping);
 	}

@@ -16,6 +16,7 @@ import net.sf.freecol.common.model.map.PowerInfluenceMap
 import net.sf.freecol.common.model.player.Player
 import net.sf.freecol.common.model.player.Stance
 import net.sf.freecol.common.model.player.Tension
+import net.sf.freecol.common.util.whenNotNull
 import promitech.colonization.orders.combat.DefencePower.calculatePaperDefencePower
 import promitech.colonization.orders.combat.OffencePower
 import promitech.map.FloatFloatArray
@@ -141,12 +142,14 @@ class ThreatModel(val game: Game, var player: Player) {
         val missionsContainer: PlayerMissionsContainer = game.aiContainer.missionContainer(player)
         val defenceMissionUnits = mutableSetOf<UnitId>()
         missionsContainer.foreachMission(DefenceMission::class.java) { defenceMission ->
-            defenceMissionUnits.add(defenceMission.unit.id)
-            val defTile = defenceMission.tile
-            singleTileDefence.addValue(
-                defTile.x, defTile.y,
-                calculatePaperDefencePower(defenceMission.unit.unitType, defenceMission.unit.unitRole)
-            )
+            player.units.getByIdOrNull(defenceMission.unitId).whenNotNull { defenceMissionUnit ->
+                defenceMissionUnits.add(defenceMissionUnit.id)
+                val defTile = defenceMission.tile
+                singleTileDefence.addValue(
+                    defTile.x, defTile.y,
+                    calculatePaperDefencePower(defenceMissionUnit.unitType, defenceMissionUnit.unitRole)
+                )
+            }
         }
 
         game.map.forEachTile { tile ->
