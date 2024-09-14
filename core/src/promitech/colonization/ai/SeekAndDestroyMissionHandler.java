@@ -4,11 +4,14 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.Map;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitMoveType;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.SeekAndDestroyMission;
 import net.sf.freecol.common.model.map.path.Path;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.player.Player;
+
 import promitech.colonization.SpiralIterator;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.move.MoveContext;
@@ -31,11 +34,15 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
     
     @Override
     public void handle(PlayerMissionsContainer playerMissionsContainer, SeekAndDestroyMission mission) {
-    	if (mission.unit == null || mission.unit.isDisposed() || mission.unit.isDamaged()) {
+        Player player = playerMissionsContainer.getPlayer();
+        Unit unit = player.units.getByIdOrNull(mission.getUnitId());
+
+        if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
     		mission.setDone();
     		return;
-    	}
-        Tile enemyTile = enemyTile(mission);
+        }
+
+        Tile enemyTile = enemyTile(mission, unit);
         System.out.println("enemy tile : " + enemyTile);
         if (enemyTile == null) {
             return;
@@ -43,14 +50,14 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         
         Path pathToEnemy = pathFinder.findToTile(
             game.map, 
-            mission.unit.getTileLocationOrNull(), enemyTile, 
-            mission.unit,
+            unit.getTileLocationOrNull(), enemyTile,
+            unit,
             PathFinder.includeUnexploredAndNavyThreatTiles
         );
 
         System.out.println("path to enemy = " + pathToEnemy);
         
-        MoveContext moveContext = new MoveContext(mission.unit, pathToEnemy);
+        MoveContext moveContext = new MoveContext(unit, pathToEnemy);
         moveContext.initNextPathStep();
         while (moveContext.canAiHandleMove()) {
             if (moveContext.isMoveType(MoveType.ATTACK_UNIT) 
@@ -65,13 +72,13 @@ public class SeekAndDestroyMissionHandler implements MissionHandler<SeekAndDestr
         }
     }
     
-    private Tile enemyTile(SeekAndDestroyMission mission) {
-        unitMoveType.init(mission.unit);
+    private Tile enemyTile(SeekAndDestroyMission mission, Unit unit) {
+        unitMoveType.init(unit);
 
         Map map = game.map;
-        Tile unitTileLocation = mission.unit.getTileLocationOrNull();
+        Tile unitTileLocation = unit.getTileLocationOrNull();
         
-        int radius = mission.unit.lineOfSight();
+        int radius = unit.lineOfSight();
         SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
         spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
         

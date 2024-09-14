@@ -9,31 +9,35 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 
 public class SeekAndDestroyMission extends AbstractMission {
 
-    public final Unit unit;
+    private final String unitId;
     
-    private SeekAndDestroyMission(String id, Unit unit) {
+    private SeekAndDestroyMission(String id, String unitId) {
         super(id);
-        this.unit = unit;
+        this.unitId = unitId;
     }
     
     public SeekAndDestroyMission(Unit unit) {
         super(Game.idGenerator.nextId(SeekAndDestroyMission.class));
-        this.unit = unit;
+        this.unitId = unit.getId();
     }
 
     @Override
     public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
-        unitMissionsMapping.blockUnit(unit, this);
+        unitMissionsMapping.blockUnit(unitId, this);
     }
 
     @Override
     public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
-        unitMissionsMapping.unblockUnitFromMission(unit, this);
+        unitMissionsMapping.unblockUnitFromMission(unitId, this);
     }
-    
+
+    public String getUnitId() {
+        return unitId;
+    }
+
     @Override
     public String toString() {
-        return "SeekAndDestroyMission unit: " + unit;
+        return "SeekAndDestroyMission unit: " + unitId;
     }
 
     public static class Xml extends AbstractMission.Xml<SeekAndDestroyMission> {
@@ -42,17 +46,17 @@ public class SeekAndDestroyMission extends AbstractMission {
 
         @Override
         public void startElement(XmlNodeAttributes attr) {
-            String unitId = attr.getStrAttributeNotNull(ATTR_UNIT);
-            Unit unit = PlayerMissionsContainer.Xml.getPlayerUnit(unitId);
-            
-            SeekAndDestroyMission m = new SeekAndDestroyMission(attr.getId(), unit);
+            SeekAndDestroyMission m = new SeekAndDestroyMission(
+                    attr.getId(),
+                    attr.getStrAttributeNotNull(ATTR_UNIT)
+            );
             nodeObject = m;
         }
 
         @Override
         public void startWriteAttr(SeekAndDestroyMission m, XmlNodeAttributesWriter attr) throws IOException {
             attr.setId(m);
-            attr.set(ATTR_UNIT, m.unit);
+            attr.set(ATTR_UNIT, m.unitId);
         }
         
         @Override
