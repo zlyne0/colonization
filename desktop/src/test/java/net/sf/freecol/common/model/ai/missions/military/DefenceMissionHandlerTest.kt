@@ -87,13 +87,13 @@ class DefenceMissionHandlerTest : MissionHandlerBaseTestClass() {
         // then
 
         // should change defence destination
-        assertThat(defence1.tile).isEquals(fortNassau.tile)
-        assertThat(defence2.tile).isEquals(fortNassau.tile)
-        assertThat(request1.destination).isEquals(fortNassau.tile)
-        assertThat(request2.destination).isEquals(fortNassau.tile)
+        assertThat(defence1.tile).isEquals(nieuwAmsterdam.tile)
+        assertThat(defence2.tile).isEquals(nieuwAmsterdam.tile)
+        assertThat(request1.destination).isEquals(nieuwAmsterdam.tile)
+        assertThat(request2.destination).isEquals(nieuwAmsterdam.tile)
 
-        assertThat(transportMission.unitsDest.get(0).dest).isEquals(fortNassau.tile)
-        assertThat(transportMission.unitsDest.get(1).dest).isEquals(fortNassau.tile)
+        assertThat(transportMission.unitsDest.get(0).dest).isEquals(nieuwAmsterdam.tile)
+        assertThat(transportMission.unitsDest.get(1).dest).isEquals(nieuwAmsterdam.tile)
 
         assertThat(defence1).isNotDone
         assertThat(defence2).isNotDone

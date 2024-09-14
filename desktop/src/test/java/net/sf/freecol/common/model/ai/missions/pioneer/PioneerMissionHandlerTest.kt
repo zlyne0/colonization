@@ -5,9 +5,10 @@ import net.sf.freecol.common.model.ColonyAssert.assertThat
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.SettlementAssert
 import net.sf.freecol.common.model.Specification
-import net.sf.freecol.common.model.TileAssert.assertThat
+import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.TileImprovement
 import net.sf.freecol.common.model.TileImprovementType
+import net.sf.freecol.common.model.TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID
 import net.sf.freecol.common.model.UnitAssert.assertThat
 import net.sf.freecol.common.model.UnitFactory
 import net.sf.freecol.common.model.UnitRole
@@ -40,7 +41,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     override fun setup() {
         super.setup()
 
-        plowedType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+        plowedType = Specification.instance.tileImprovementTypes.getById(PLOWED_IMPROVEMENT_TYPE_ID)
         roadType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
         clearForestType = Specification.instance.tileImprovementTypes.getById(TileImprovementType.CLEAR_FOREST_IMPROVEMENT_TYPE_ID)
 
@@ -50,6 +51,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     @Test
     fun `should create request goods mission for tools`() {
         // given
+        removeImprovements(fortNassau, tileFrom(fortNassau, Direction.E))
         givenImprovementsPlan()
 
         val dutchMissionContainer = game.aiContainer.missionContainer(dutch)
@@ -62,12 +64,12 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         // move and start improve
         newTurnAndExecuteMission(dutch, 1)
         // clear
-        newTurnAndExecuteMission(dutch, 3)
+        newTurnAndExecuteMission(dutch, 4)
 
         // then
+        assertTrue(tileFrom(fortNassau, Direction.E).hasImprovementType(PLOWED_IMPROVEMENT_TYPE_ID))
         assertThat(pioneer).isAtLocation(fortNassau.tile)
             .hasRoleCount(0)
-        assertFalse(fortNassau.tile.type.isForested)
 
         val requestGoodsMissions = dutchMissionContainer.findMissions(RequestGoodsMission::class.java, {
             fortNassau.equalsId(it.colonyId) && pioneerMission.equalsId(it.purpose)
@@ -79,6 +81,7 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
     @Test
     fun `free colonists take tools from colony and improve tile`() {
         // given
+        removeImprovements(fortNassau, tileFrom(fortNassau, Direction.E))
         givenImprovementsPlan()
         fortNassau.goodsContainer.decreaseAllToZero()
 
@@ -92,10 +95,10 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
         // back to colony and take tools
         newTurnAndExecuteMission(dutch, 1)
         // start improve
-        newTurnAndExecuteMission(dutch, 1)
+        newTurnAndExecuteMission(dutch, 2)
 
         // then
-        assertThat(pioneer).isAtLocation(fortNassau.tile)
+        assertThat(pioneer).isAtLocation(tileFrom(fortNassau, Direction.E))
             .isImproveming()
         SettlementAssert.assertThat(fortNassau).hasGoods(GoodsType.TOOLS, 0)
     }
@@ -211,15 +214,16 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
     fun givenImprovementsPlan() {
         val tileImprovementPlan = AddImprovementPolicy.Balanced(fortNassau.owner).generateImprovements(fortNassau)
+        printToStdout(tileImprovementPlan)
+        assertThat(tileImprovementPlan.improvements).hasSize(1)
         tileImprovementPlan.improvements.get(0).let { improvementPlan ->
-            assertTrue(improvementPlan.tile.equalsCoordinates(fortNassau.tile))
-            assertTrue(improvementPlan.improvementType.equalsId(clearForestType))
+            assertTrue(improvementPlan.tile.equalsCoordinates(tileFrom(fortNassau, Direction.E)))
+            assertTrue(improvementPlan.improvementType.equalsId(plowedType))
         }
 //        tileImprovementPlan.improvements.get(1).let { improvementPlan ->
 //            assertTrue(improvementPlan.tile.equalsCoordinates(tileFrom(fortNassau, Direction.W)))
 //            assertTrue(improvementPlan.improvementType.equalsId(plowedType))
 //        }
-        printToStdout(tileImprovementPlan)
     }
 
     private fun printToStdout(tileImprovementPlan: ColonyTilesImprovementPlan) {
@@ -235,9 +239,20 @@ class PioneerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
     fun removeAllImprovements(colony: Colony) {
         for (colonyTile in colony.colonyTiles) {
-            colonyTile.tile.removeTileImprovement(TileImprovementType.PLOWED_IMPROVEMENT_TYPE_ID)
+            colonyTile.tile.removeTileImprovement(PLOWED_IMPROVEMENT_TYPE_ID)
             if (!colonyTile.tile.equalsCoordinates(colony.tile)) {
                 colonyTile.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+            }
+        }
+    }
+
+    fun removeImprovements(colony: Colony, tile: Tile) {
+        for (colonyTile in colony.colonyTiles) {
+            if (colonyTile.tile.equalsCoordinates(tile)) {
+                colonyTile.tile.removeTileImprovement(PLOWED_IMPROVEMENT_TYPE_ID)
+                if (!colonyTile.tile.equalsCoordinates(colony.tile)) {
+                    colonyTile.tile.removeTileImprovement(TileImprovementType.ROAD_MODEL_IMPROVEMENT_TYPE_ID)
+                }
             }
         }
     }

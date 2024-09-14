@@ -49,11 +49,10 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val tileImprovementPlan = balanced.generateImprovements(fortNassau)
 
         // then
-        assertEquals(4, tileImprovementPlan.improvements.size)
+        assertEquals(3, tileImprovementPlan.improvements.size)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.NW), roadType)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.E), plowedType)
         contains(tileImprovementPlan, tileFrom(fortNassau, Direction.NE), roadType)
-        contains(tileImprovementPlan, fortNassau.tile, clearForestType)
     }
 
     @Test

@@ -203,4 +203,11 @@ public class ColonyAssert extends AbstractAssert<ColonyAssert, Colony> {
 		}
 		return this;
     }
+
+	public ColonyAssert isEqualId(@NotNull Colony colony) {
+		if (actual.notEqualsId(colony)) {
+			failWithMessage("expected colony <%s><%s> equals <%s><%s> but it is not", actual.name, actual.id, colony.name, colony.id);
+		}
+		return this;
+	}
 }

@@ -76,8 +76,7 @@ class DefencePlaner(
     }
 
     fun findColonyToProtect(player: Player): Colony? {
-        val threatModel = generateThreatModel(player)
-        val colonyDefencePriority = threatModel.calculateColonyDefencePriority()
+        val colonyDefencePriority = calculateColonyDefencePriorities(player)
         if (colonyDefencePriority.isEmpty()) {
             return null
         }
@@ -87,6 +86,11 @@ class DefencePlaner(
             }
         }
         return null
+    }
+
+    fun calculateColonyDefencePriorities(player: Player): List<ColonyThreat> {
+        val threatModel = generateThreatModel(player)
+        return threatModel.calculateColonyDefencePriority()
     }
 
     private fun findTheClosestDisembarkLocation(sourceTile: Tile, unit: Unit): Tile? {
