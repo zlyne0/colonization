@@ -1,7 +1,6 @@
 package promitech.colonization.savegame;
 
 import static net.sf.freecol.common.model.EuropeAssert.assertThat;
-import static net.sf.freecol.common.model.MapIdEntitiesAssert.assertThat;
 import static net.sf.freecol.common.model.colonyproduction.GoodsCollectionAssert.assertThat;
 import static net.sf.freecol.common.model.player.PlayerAssert.assertThat;
 import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.assertThat;
@@ -198,7 +197,7 @@ public class Savegame1600Verifier {
         ColonyWorkerMission m = playerMissions1.getMission("colonyWorkerMission:1");
 
 		TileAssert.assertThat(m.getTile()).isEquals(24, 78);
-        assertThat(m.getUnit().getId()).isEqualTo("unit:7095");
+        assertThat(m.getUnitId()).isEqualTo("unit:7095");
     }
 
     private void verifyDutchMissions(Game game) {

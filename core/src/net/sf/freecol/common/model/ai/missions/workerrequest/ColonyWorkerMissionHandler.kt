@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.workerrequest
 import net.sf.freecol.common.model.ColonyFactory
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.MoveType
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.transportunit.MoveNoAccessNotificationMissionHandler
@@ -25,37 +26,39 @@ class ColonyWorkerMissionHandler(
         mission: ColonyWorkerMission
     ) {
         val player = playerMissionsContainer.player
-        if (!CommonMissionHandler.isUnitExists(player, mission.unit)) {
+        val unit: Unit? = player.units.getByIdOrNull(mission.unitId)
+
+        if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
             mission.setDone()
             return
         }
-        if (mission.isUnitAtDestination) {
+        if (mission.isUnitAtDestination(unit)) {
             if (mission.tile.hasSettlement()) {
-                addWorkerToColony(mission)
+                addWorkerToColony(mission, unit)
             } else {
-                buildColony(mission)
+                buildColony(mission, unit)
             }
         } else {
             val transportUnitRequestMission = TransportUnitRequestMission(
-                game.turn, mission.unit, mission.tile, worthEmbark = true, worthEmbarkRange = NOT_WORTH_EMBARK_RANGE
+                game.turn, unit, mission.tile, worthEmbark = true, worthEmbarkRange = NOT_WORTH_EMBARK_RANGE
             ).withAllowMoveToDestination()
             playerMissionsContainer.addMission(mission, transportUnitRequestMission)
         }
     }
 
-    private fun addWorkerToColony(mission: ColonyWorkerMission) {
+    private fun addWorkerToColony(mission: ColonyWorkerMission, unit: Unit) {
         val colony = mission.tile.settlement.asColony()
-        ColonyProductionPlaner.initColonyBuilderUnit(colony, mission.unit)
+        ColonyProductionPlaner.initColonyBuilderUnit(colony, unit)
         ColonyProductionPlaner.createPlanForNewColony(colony)
         mission.setDone()
     }
 
-    private fun buildColony(mission: ColonyWorkerMission) {
+    private fun buildColony(mission: ColonyWorkerMission, unit: Unit) {
         val buildColonyOrder = BuildColonyOrder(game.map)
-        val check = buildColonyOrder.check(mission.unit, mission.tile)
+        val check = buildColonyOrder.check(unit, mission.tile)
         if (check == OrderStatus.OK) {
             val colonyFactory = ColonyFactory(game, pathFinder)
-            colonyFactory.buildColonyByAI(mission.unit, mission.tile)
+            colonyFactory.buildColonyByAI(unit, mission.tile)
             mission.setDone()
         } else {
             if (check == OrderStatus.NO_MOVE_POINTS) {
@@ -81,7 +84,7 @@ class ColonyWorkerMissionHandler(
                 MissionHandlerLogger.logger.debug("player[%s].ColonyWorkerMission[%s].unit[%s].destination[%s] no move access moveType[%s]",
                     playerMissionsContainer.player.getId(),
                     colonyWorkerMission.id,
-                    colonyWorkerMission.unit.id,
+                    colonyWorkerMission.unitId,
                     colonyWorkerMission.tile.toPrettyString(),
                     moveType
                 )
@@ -95,7 +98,7 @@ class ColonyWorkerMissionHandler(
                     MissionHandlerLogger.logger.debug("player[%s].ColonyWorkerMission[%s].unit[%s].destination[%s] no move access moveType[%s] max move attempt",
                         playerMissionsContainer.player.getId(),
                         colonyWorkerMission.id,
-                        colonyWorkerMission.unit.id,
+                        colonyWorkerMission.unitId,
                         colonyWorkerMission.tile.toPrettyString(),
                         moveType
                     )

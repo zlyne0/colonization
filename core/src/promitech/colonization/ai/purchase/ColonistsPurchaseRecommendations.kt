@@ -28,7 +28,7 @@ class ColonistsPurchaseRecommendations(
 
                 val mission = ColonyWorkerMission(buyRecommendation.location, newUnit, buyRecommendation.goodsType)
                 playerMissionContainer.addMission(mission)
-                val transportUnitRequestMission = TransportUnitRequestMission(game.turn, mission.unit, mission.tile)
+                val transportUnitRequestMission = TransportUnitRequestMission(game.turn, newUnit, mission.tile)
                 playerMissionContainer.addMission(mission, transportUnitRequestMission)
             }
         }
