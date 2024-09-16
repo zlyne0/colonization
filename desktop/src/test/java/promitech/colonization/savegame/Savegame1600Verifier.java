@@ -180,7 +180,7 @@ public class Savegame1600Verifier {
 		assertThat(playerMissionsContainer).isNotNull();
 		WanderMission wm = playerMissionsContainer.getMission("wanderMission:1");
 		
-		assertThat(wm.getUnit().getId()).isEqualTo("unit:6706");
+		assertThat(wm.getUnitId()).isEqualTo("unit:6706");
 
 		verifyColonyWorkerMission(game);
 		verifyTransportUnitMission(game);
@@ -213,7 +213,7 @@ public class Savegame1600Verifier {
 
         PioneerMission pioneerMission = missions.getMission("pioneerMission:1");
         assertThat(pioneerMission.getColonyId()).isEqualTo(nieuwAmsterdam.getId());
-        assertThat(pioneerMission.getPioneer()).isIdEquals("unit:6762");
+        assertThat(pioneerMission.getPioneerId()).isEqualTo("unit:6762");
 
         PlayerMissionsContainerAssert.assertThat(missions)
             .hasDependMission(pioneerMission, "requestGoodsMission:1", RequestGoodsMission.class);
@@ -230,7 +230,7 @@ public class Savegame1600Verifier {
 
         TakeRoleEquipmentMission takeRoleEquipmentMission = missions.getMission("takeRoleEquipmentMission:1");
         assertThat(takeRoleEquipmentMission.getColonyId()).isEqualTo(fortOranje.getId());
-        assertThat(takeRoleEquipmentMission.getUnit().getId()).isEqualTo("takeRole:6436");
+        assertThat(takeRoleEquipmentMission.getUnitId()).isEqualTo("takeRole:6436");
         assertThat(takeRoleEquipmentMission.getRole().getId()).isEqualTo(UnitRole.PIONEER);
         assertThat(takeRoleEquipmentMission.getRoleCount()).isEqualTo(4);
     }
@@ -283,7 +283,7 @@ public class Savegame1600Verifier {
         ExplorerMission em = missions.getMission("explorerMission:5");
         
         assertThat(em.getId()).isEqualTo("explorerMission:5");
-        assertThat(em.unit.getId()).isEqualTo("unit:6437");
+        assertThat(em.getUnitId()).isEqualTo("unit:6437");
     }
 
 	private void verifyTransportUnitMission(Game game) {

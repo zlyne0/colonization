@@ -6,6 +6,7 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.indian.IndianBringGiftMission.Phase;
 import net.sf.freecol.common.model.map.path.Path;
@@ -13,6 +14,7 @@ import net.sf.freecol.common.model.map.path.PathFinder;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
 
+import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
@@ -39,7 +41,14 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		Player indianPlayer = playerMissionsContainer.getPlayer();
 		
 		logger.debug("player[%s].IndianBringGiftMission start execute", indianPlayer.getId());
-		
+
+		Unit unit = indianPlayer.units.getByIdOrNull(mission.getTransportUnitId());
+		if (unit == null || !CommonMissionHandler.isUnitExists(indianPlayer, unit)) {
+			logger.debug("player[%s].DemandTributeMission[%s] no unit or destination. Set done.", indianPlayer.getId(), mission.getId());
+			mission.setDone();
+			return;
+		}
+
 		if (!mission.canExecuteMission(indianPlayer)) {
 			logger.debug("player[%s].IndianBringGiftMission done: can not execute mission", indianPlayer.getId());
 			mission.setDone();
@@ -50,82 +59,82 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			mission.changePhase(IndianBringGiftMission.Phase.BACK_TO_SETTLEMENT);
 		}
 		
-		if (!mission.correctTransportUnitLocation()) {
+		if (!mission.correctTransportUnitLocation(unit)) {
 			logger.debug(
 				"player[%s].IndianBringGiftMission done: incorrect transport unit[%s] location",
 				indianPlayer.getId(), 
-				mission.getTransportUnit().getId()
+				unit.getId()
 			);
 			mission.setDone();
 			return;
 		}
 		
 		if (mission.getPhase() == Phase.TAKE_GOODS) {
-			executeTakeGoodsPhase(mission);
+			executeTakeGoodsPhase(mission, unit);
 		}
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
-			executeMoveToColonyPhase(mission);
+			executeMoveToColonyPhase(mission, unit);
 		}
 		
 		if (mission.getPhase() == Phase.BACK_TO_SETTLEMENT) {
-			executeBackToSettlementPhase(mission);
+			executeBackToSettlementPhase(mission, unit);
 		}
 	}
 	
-	private void executeTakeGoodsPhase(IndianBringGiftMission mission) {
-		Tile unitActualLocation = mission.getTransportUnit().getTile();
+	private void executeTakeGoodsPhase(IndianBringGiftMission mission, Unit transportUnit) {
+		Tile unitActualLocation = transportUnit.getTile();
 
 		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
 			mission.getIndianSettlement().getGoodsContainer().decreaseGoodsQuantity(mission.getGift());
 			mission.changePhase(Phase.MOVE_TO_COLONY);
 			return;
 		}
-		if (!mission.getTransportUnit().hasMovesPoints()) {
+		if (!transportUnit.hasMovesPoints()) {
 			return;
 		}
 		logger.debug(
 			"player[%s].IndianBringGiftMission move to settlement[%s] take goods",
-			mission.getTransportUnit().getOwner().getId(), 
+			transportUnit.getOwner().getId(),
 			mission.getIndianSettlement().getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getIndianSettlement().tile, 
-			mission.getTransportUnit(),
+			mission.getIndianSettlement().tile,
+			transportUnit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
+			MoveContext moveContext = new MoveContext(transportUnit, path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}
 	
-	private void executeMoveToColonyPhase(IndianBringGiftMission mission) {
-		if (!mission.getTransportUnit().hasMovesPoints()) {
+	private void executeMoveToColonyPhase(IndianBringGiftMission mission, Unit transportUnit) {
+		if (!transportUnit.hasMovesPoints()) {
 			return;
 		}
-		Tile unitActualLocation = mission.getTransportUnit().getTile();
+		Tile unitActualLocation = transportUnit.getTile();
 		
 		logger.debug(
 			"player[%s].IndianBringGiftMission move to colony[%s]",
-			mission.getTransportUnit().getOwner().getId(), 
+			transportUnit.getOwner().getId(),
 			mission.getDestinationColony().getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getDestinationColony().tile, 
-			mission.getTransportUnit(),
+			mission.getDestinationColony().tile,
+			transportUnit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
+			MoveContext moveContext = new MoveContext(transportUnit, path);
 			
 			if (path.moveStepDest().equalsCoordinates(mission.getDestinationColony().tile)) {
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				AbstractGoods gift = mission.transferGoodsToColony();
+				AbstractGoods gift = mission.transferGoodsToColony(transportUnit);
 				
 				logger.debug("player[%s].IndianBringGiftMission deliver gift[%s:%s] to colony[%s]",
 					mission.getIndianSettlement().getOwner().getId(),
@@ -133,20 +142,20 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 					gift.getQuantity(),
 					mission.getDestinationColony().getId()
 				);
-				showGiftConfirmation(mission, gift);
+				showGiftConfirmation(mission, gift, transportUnit);
 			} else {
 				moveService.aiConfirmedMovePath(moveContext);
 			}
 		}
 	}
 	
-	private void showGiftConfirmation(IndianBringGiftMission mission, AbstractGoods gift) {
+	private void showGiftConfirmation(IndianBringGiftMission mission, AbstractGoods gift, Unit transportUnit) {
 		if (mission.getDestinationColony().getOwner().isAi()) {
 			return;
 		}
 				
     	StringTemplate st =  StringTemplate.template("model.unit.gift")
-    		.addStringTemplate("%player%", mission.getTransportUnit().getOwner().getNationName())
+    		.addStringTemplate("%player%", transportUnit.getOwner().getNationName())
     		.addAmount("%amount%", gift.getQuantity())
     		.addName("%type%", Specification.instance.goodsTypes.getById(gift.getTypeId()))
     		.add("%settlement%", mission.getDestinationColony().getName());
@@ -157,34 +166,34 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		);
 	}
 	
-	private void executeBackToSettlementPhase(IndianBringGiftMission mission) {
-		if (mission.getTransportUnit().isAtLocation(IndianSettlement.class)) {
+	private void executeBackToSettlementPhase(IndianBringGiftMission mission, Unit transportUnit) {
+		if (transportUnit.isAtLocation(IndianSettlement.class)) {
 			mission.setDone();
 			return;
 		}
-		Tile unitActualLocation = mission.getTransportUnit().getTile();
+		Tile unitActualLocation = transportUnit.getTile();
 		
 		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
-			mission.backUnitToSettlement();
+			mission.backUnitToSettlement(transportUnit);
 			mission.setDone();
 			return;
 		}
-		if (!mission.getTransportUnit().hasMovesPoints()) {
+		if (!transportUnit.hasMovesPoints()) {
 			return;
 		}
 		logger.debug(
-			"IndianBringGiftMission[%s] back to settlement[%s]", 
-			mission.getTransportUnit().getOwner().getId(), 
+			"IndianBringGiftMission[%s] back to settlement[%s]",
+			transportUnit.getOwner().getId(),
 			mission.getIndianSettlement().getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getIndianSettlement().tile, 
-			mission.getTransportUnit(),
+			mission.getIndianSettlement().tile,
+			transportUnit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(mission.getTransportUnit(), path);
+			MoveContext moveContext = new MoveContext(transportUnit, path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}

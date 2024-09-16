@@ -11,12 +11,14 @@ import net.sf.freecol.common.model.ai.ColonySupplyGoods
 import net.sf.freecol.common.model.ai.missions.MissionId
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.foreachMission
+import net.sf.freecol.common.model.ai.missions.pioneer.PioneerMissionHandler.Companion.isSpecialist
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.colonyproduction.GoodsCollection
 import net.sf.freecol.common.model.colonyproduction.amount
 import net.sf.freecol.common.model.colonyproduction.type
 import net.sf.freecol.common.model.map.path.PathFinder
 import net.sf.freecol.common.model.player.Player
+import net.sf.freecol.common.util.whenNotNull
 import promitech.colonization.ai.score.ObjectScoreList
 import java.util.HashSet
 
@@ -82,9 +84,11 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         val colonyWithMissions = HashSet<String>(playerMissionContainer.player.settlements.size())
         var hasSpecialistOnMission = false
         playerMissionContainer.foreachMission(PioneerMission::class.java) { pioneerMission ->
-            colonyWithMissions.add(pioneerMission.colonyId)
-            if (pioneerMission.isSpecialist()) {
-                hasSpecialistOnMission = true
+            player.units.getByIdOrNull(pioneerMission.pioneerId).whenNotNull { pionner ->
+                colonyWithMissions.add(pioneerMission.colonyId)
+                if (isSpecialist(pionner)) {
+                    hasSpecialistOnMission = true
+                }
             }
         }
         val improvementsPlanDestinationsScore = generateImprovementsPlanScore(player, AddImprovementPolicy.Balanced(player))
@@ -245,19 +249,19 @@ class PioneerMissionPlaner(val game: Game, val pathFinder: PathFinder) {
         return false
     }
 
-    fun findImprovementDestination(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer): PioneerDestination {
-        val improvementsPlan = generateImprovementsPlanForColony(mission.pioneer.owner, mission.colonyId)
+    fun findImprovementDestination(mission: PioneerMission, playerMissionContainer: PlayerMissionsContainer, pioneer: Unit): PioneerDestination {
+        val improvementsPlan = generateImprovementsPlanForColony(pioneer.owner, mission.colonyId)
         if (improvementsPlan.hasImprovements()) {
             val firstImprovement = improvementsPlan.firstImprovement()
 
-            pathFinder.findToTile(game.map, mission.pioneer, firstImprovement.tile, PathFinder.includeUnexploredTiles)
+            pathFinder.findToTile(game.map, pioneer, firstImprovement.tile, PathFinder.includeUnexploredTiles)
             if (pathFinder.isTurnCostAbove(firstImprovement.tile, minDistanceToUseShipTransport)) {
                 return PioneerDestination.OtherIsland(improvementsPlan)
             }
             return PioneerDestination.TheSameIsland(improvementsPlan)
         } else {
             return findNextColonyToImprove(
-                mission.pioneer,
+                pioneer,
                 mission.colonyId,
                 playerMissionContainer
             )

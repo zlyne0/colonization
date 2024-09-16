@@ -3,6 +3,7 @@ package net.sf.freecol.common.model.ai.missions.indian;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
+import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.indian.DemandTributeMission.Phase;
 import net.sf.freecol.common.model.map.path.Path;
@@ -11,6 +12,7 @@ import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.Goods;
 import net.sf.freecol.common.model.specification.NationType;
 
+import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.combat.CombatService;
 import promitech.colonization.orders.combat.OffencePower;
@@ -46,7 +48,13 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, DemandTributeMission mission) {
 		Player indianPlayer = playerMissionsContainer.getPlayer();
-		
+
+		Unit unit = indianPlayer.units.getByIdOrNull(mission.getUnitToDemandTributeId());
+		if (unit == null || !CommonMissionHandler.isUnitExists(indianPlayer, unit)) {
+			logger.debug("player[%s].DemandTributeMission[%s] no unit or destination. Set done.", indianPlayer.getId(), mission.getId());
+			mission.setDone();
+			return;
+		}
 		if (!mission.canExecuteMission(indianPlayer)) {
 			logger.debug("player[%s].DemandTributeMission[%s] no unit or destination. Set done.", indianPlayer.getId(), mission.getId());
 			mission.setDone();
@@ -58,15 +66,15 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
-			executeMoveToColonyPhase(mission);
+			executeMoveToColonyPhase(mission, unit);
 		}
 		
 		if (mission.getPhase() == Phase.ATTACK) {
 			// assumption unit is next to settlement
 			MoveContext moveContext = new MoveContext(
-				mission.getUnitToDemandTribute().getTile(), 
+				unit.getTile(),
 				mission.getColony().tile, 
-				mission.getUnitToDemandTribute()
+				unit
 			);
 			
 	        if (moveContext.canAiHandleMove() &&
@@ -75,23 +83,23 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
         		)
     		) {
 	        	combatService.doCombat(moveContext);
-	        	mission.backToSettlementAfterSuccessfulAttack();
+	        	mission.backToSettlementAfterSuccessfulAttack(unit);
 	        	return;
             }
 		}
 		
 		if (mission.getPhase() == Phase.BACK_TO_SETTLEMENT) {
-			executeBackToSettlementPhase(mission);
+			executeBackToSettlementPhase(mission, unit);
 		}
 	}
 	
-	private void executeMoveToColonyPhase(DemandTributeMission mission) {
-		mission.exitFromSettlementWhenOnIt();
+	private void executeMoveToColonyPhase(DemandTributeMission mission, Unit unit) {
+		mission.exitFromSettlementWhenOnIt(unit);
 
-		if (!mission.getUnitToDemandTribute().hasMovesPoints()) {
+		if (!unit.hasMovesPoints()) {
 			return;
 		}
-		Tile unitActualLocation = mission.getUnitToDemandTribute().getTile();
+		Tile unitActualLocation = unit.getTile();
 		
 		logger.debug(
 			"player[%s].DemandTributeMission[%s] move to colony[%s]",
@@ -102,64 +110,64 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getColony().tile, 
-			mission.getUnitToDemandTribute(), 
+			unit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(mission.getUnitToDemandTribute(), path);
+			MoveContext moveContext = new MoveContext(unit, path);
 			if (path.moveStepDest().equalsCoordinates(mission.getColony().tile)) {
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				demandConfirmation(mission);
+				demandConfirmation(mission, unit);
 			} else {
 				moveService.aiConfirmedMovePath(moveContext);
 			}
 		}
 	}
 	
-	private void demandConfirmation(DemandTributeMission mission) {
+	private void demandConfirmation(DemandTributeMission mission, Unit unit) {
 		int gold = 0;
-		Goods selectedGoods = mission.selectGoods();
+		Goods selectedGoods = mission.selectGoods(unit);
 		if (selectedGoods == null) {
 			gold = mission.selectGold();
 		}
 
 		if (mission.getColony().getOwner().isAi()) {
-			demandFromAiPlayer(selectedGoods, gold, mission);
+			demandFromAiPlayer(selectedGoods, gold, mission, unit);
 		} else {
-			demandFromHumanPlayer(selectedGoods, gold, mission);
+			demandFromHumanPlayer(selectedGoods, gold, mission, unit);
 		}
 	}
 
-	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission) {
+	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission, Unit unit) {
 		boolean agreeForDemands = false;
 		Player colonyOwner = mission.getColony().getOwner();
 		if (colonyOwner.nationType().equalsId(NationType.COOPERATION) || colonyOwner.nationType().equalsId(NationType.TRADE)) {
 			agreeForDemands = true;
 		} else {
-			if (OffencePower.calculateTileDefencePowerForAttacker(mission.getUnitToDemandTribute(), mission.getColony().tile) <= 3) {
+			if (OffencePower.calculateTileDefencePowerForAttacker(unit, mission.getColony().tile) <= 3) {
 				agreeForDemands = true;
 			}
 		}
 		if (agreeForDemands) {
-			mission.acceptDemands(goods, goldAmount);
+			mission.acceptDemands(goods, goldAmount, unit);
 		} else {
-			mission.rejectDemands(goods, goldAmount);
+			mission.rejectDemands(goods, goldAmount, unit);
 		}
 	}
 
-	private void demandFromHumanPlayer(final Goods goods, final int goldAmount, final DemandTributeMission mission) {
+	private void demandFromHumanPlayer(final Goods goods, final int goldAmount, final DemandTributeMission mission, final Unit unit) {
 		OptionAction<Goods> acceptDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.acceptDemands(goods, goldAmount);
+				mission.acceptDemands(goods, goldAmount, unit);
 			}
 		};
 		OptionAction<Goods> rejectDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.rejectDemands(goods, goldAmount);
+				mission.rejectDemands(goods, goldAmount, unit);
 			}
 		};
 
@@ -199,31 +207,31 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 	}
 
-	private void executeBackToSettlementPhase(DemandTributeMission mission) {
-		Tile unitActualLocation = mission.getUnitToDemandTribute().getTile();
+	private void executeBackToSettlementPhase(DemandTributeMission mission, Unit unit) {
+		Tile unitActualLocation = unit.getTile();
 		
 		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
-			mission.backUnitToSettlement();
+			mission.backUnitToSettlement(unit);
 			mission.setDone();
 			return;
 		}
-		if (!mission.getUnitToDemandTribute().hasMovesPoints()) {
+		if (!unit.hasMovesPoints()) {
 			return;
 		}
 		logger.debug(
 			"player[%s].DemandTributeMission[%s] back to settlement[%s]", 
-			mission.getUnitToDemandTribute().getOwner().getId(),
+			unit.getOwner().getId(),
 			mission.getId(),
 			mission.getIndianSettlement().getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
 			mission.getIndianSettlement().tile, 
-			mission.getUnitToDemandTribute(),
+			unit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
-			MoveContext moveContext = new MoveContext(mission.getUnitToDemandTribute(), path);
+			MoveContext moveContext = new MoveContext(unit, path);
 			moveService.aiConfirmedMovePath(moveContext);
 		}
 	}

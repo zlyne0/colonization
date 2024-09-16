@@ -46,6 +46,7 @@ import net.sf.freecol.common.model.specification.BuildableType
 import net.sf.freecol.common.model.specification.BuildingType
 import net.sf.freecol.common.model.specification.GoodsType
 import net.sf.freecol.common.model.specification.GoodsTypeId
+import net.sf.freecol.common.util.whenNotNull
 import promitech.colonization.DI
 import promitech.colonization.Direction
 import promitech.colonization.ai.ColonyProductionPlaner
@@ -504,6 +505,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val indianAiContainer = guiGameModel.game.aiContainer.missionContainer(tile.getSettlement().getOwner())
 		if (!indianAiContainer.hasMission(IndianBringGiftMission::class.java)) {
 			val transportUnit = tile.getSettlement().asIndianSettlement().getUnits().getById("unit:6351")
+			transportUnit.resetMovesLeftOnNewTurn()
 			mission = IndianBringGiftMission(
 				tile.getSettlement().asIndianSettlement(), colonyTile.getSettlement().asColony(),
 				transportUnit, AbstractGoods("model.goods.tobacco", 77)
@@ -511,9 +513,11 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			indianAiContainer.addMission(mission)
 		} else {
 			mission = indianAiContainer.firstMissionByType(IndianBringGiftMission::class.java)
+			indianAiContainer.player.units.getByIdOrNull(mission.transportUnitId).whenNotNull { u ->
+				u.resetMovesLeftOnNewTurn()
+			}
 		}
-		mission.getTransportUnit().resetMovesLeftOnNewTurn()
-		
+
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder, PathFinder())
@@ -537,7 +541,8 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				colonyTile.getSettlement().getOwner(),
 				Tension.Level.DISPLEASED.getLimit()
 			)
-			
+
+			unit.resetMovesLeftOnNewTurn()
 			mission = DemandTributeMission(
 				tile.getSettlement().asIndianSettlement(),
 				unit,
@@ -546,9 +551,11 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 			indianAiContainer.addMission(mission)
 		} else {
 			mission = indianAiContainer.firstMissionByType(DemandTributeMission::class.java)
+			indianAiContainer.player.units.getByIdOrNull(mission.unitToDemandTributeId).whenNotNull { u ->
+				u.resetMovesLeftOnNewTurn()
+			}
 		}
-		mission.getUnitToDemandTribute().resetMovesLeftOnNewTurn()
-		
+
 		ThreadsResources.instance.executeMovement(object : Runnable {
 			override fun run() {
 				MissionExecutorDebugRun(di.guiGameModel, di.moveService, mapActor, di.combatService, di.guiGameController, di.pathFinder, PathFinder())
@@ -695,7 +702,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		}
 
 		fun showOnMap(mission: PioneerMission) {
-			val tile = mission.colony().tile
+			val tile = mission.colony(player).tile
 			tileDebugView.appendStr(tile.x, tile.y, "Pioneer")
 		}
 
@@ -932,14 +939,15 @@ class DebugPioneer(
 	fun showOnMapImprovementsDestinations() {
 		val game = guiGameModel.game
 
-		val pionnerMissionPlaner = PioneerMissionPlaner(game, di.pathFinder)
+		val pioneerMissionPlaner = PioneerMissionPlaner(game, di.pathFinder)
 
 		missionContainer.foreachMission(PioneerMission::class.java) { mission ->
-			val improvementDestination = pionnerMissionPlaner.findImprovementDestination(mission, missionContainer)
-
-			when (improvementDestination) {
-				is PioneerDestination.OtherIsland -> improvementDestination.plan.printToMap(tileDebugView)
-				is PioneerDestination.TheSameIsland -> improvementDestination.plan.printToMap(tileDebugView)
+			missionContainer.player.units.getByIdOrNull(mission.pioneerId).whenNotNull { pioneer ->
+				val improvementDestination = pioneerMissionPlaner.findImprovementDestination(mission, missionContainer, pioneer)
+				when (improvementDestination) {
+					is PioneerDestination.OtherIsland -> improvementDestination.plan.printToMap(tileDebugView)
+					is PioneerDestination.TheSameIsland -> improvementDestination.plan.printToMap(tileDebugView)
+				}
 			}
 		}
 	}

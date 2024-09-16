@@ -9,26 +9,30 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 
 public class ExplorerMission extends AbstractMission {
 
-	public final Unit unit;
+    private final String unitId;
 
-    public ExplorerMission(String id, Unit unit) {
+    private ExplorerMission(String id, String unitId) {
         super(id);
-        this.unit = unit;
+        this.unitId = unitId;
     }
 	
 	public ExplorerMission(Unit unit) {
-	    this(Game.idGenerator.nextId(ExplorerMission.class), unit);
+	    this(Game.idGenerator.nextId(ExplorerMission.class), unit.getId());
 	}
 	
 	@Override
 	public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.blockUnit(unit, this);
+		unitMissionsMapping.blockUnit(unitId, this);
 	}
 
 	@Override
 	public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.unblockUnitFromMission(unit, this);
+		unitMissionsMapping.unblockUnitFromMission(unitId, this);
 	}
+
+    public String getUnitId() {
+        return unitId;
+    }
 
     public static class Xml extends AbstractMission.Xml<ExplorerMission> {
 
@@ -42,7 +46,7 @@ public class ExplorerMission extends AbstractMission {
         public void startElement(XmlNodeAttributes attr) {
             ExplorerMission m = new ExplorerMission(
                 attr.getId(),
-                PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
+                attr.getStrAttribute(ATTR_UNIT)
             );
             nodeObject = m;
 
@@ -54,7 +58,7 @@ public class ExplorerMission extends AbstractMission {
             super.startWriteAttr(node, attr);
 
             attr.setId(node);
-            attr.set(ATTR_UNIT, node.unit);
+            attr.set(ATTR_UNIT, node.unitId);
         }
         
         @Override

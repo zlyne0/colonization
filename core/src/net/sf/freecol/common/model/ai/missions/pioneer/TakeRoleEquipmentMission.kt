@@ -5,18 +5,18 @@ import net.sf.freecol.common.model.ColonyId
 import net.sf.freecol.common.model.Game
 import net.sf.freecol.common.model.Specification
 import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.model.UnitId
 import net.sf.freecol.common.model.UnitRole
 import net.sf.freecol.common.model.ai.missions.AbstractMission
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping
 import net.sf.freecol.common.model.player.Player
-import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.savegame.XmlNodeAttributes
 import promitech.colonization.savegame.XmlNodeAttributesWriter
 
 class TakeRoleEquipmentMission : AbstractMission {
 
-    var unit: Unit private set
+    var unitId: UnitId private set
     val colonyId: ColonyId
     val role: UnitRole
     val roleCount: Int
@@ -24,42 +24,36 @@ class TakeRoleEquipmentMission : AbstractMission {
     constructor(unit: Unit, colony: Colony, role: UnitRole, roleCount: Int = role.maximumCount)
         : super(Game.idGenerator.nextId(TakeRoleEquipmentMission::class.java))
     {
-        this.unit = unit
+        this.unitId = unit.id
         this.colonyId = colony.id
         this.role = role
         this.roleCount = roleCount
     }
 
-    private constructor(missionId: String, unit: Unit, colonyId: ColonyId, role: UnitRole, roleCount: Int) : super(missionId) {
-        this.unit = unit
+    private constructor(missionId: String, unitId: UnitId, colonyId: ColonyId, role: UnitRole, roleCount: Int) : super(missionId) {
+        this.unitId = unitId
         this.colonyId = colonyId
         this.role = role
         this.roleCount = roleCount
-    }
-
-    internal fun isUnitExists(player: Player): Boolean {
-        return CommonMissionHandler.isUnitExists(player, unit)
     }
 
     internal fun isColonyExist(player: Player): Boolean {
         return player.settlements.containsId(colonyId)
     }
 
-    internal fun colony(): Colony = unit.owner.settlements.getById(colonyId).asColony()
-
     override fun blockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.blockUnit(unit, this)
+        unitMissionsMapping.blockUnit(unitId, this)
     }
 
     override fun unblockUnits(unitMissionsMapping: UnitMissionsMapping) {
-        unitMissionsMapping.unblockUnitFromMission(unit, this)
+        unitMissionsMapping.unblockUnitFromMission(unitId, this)
     }
 
     internal fun changeUnit(unitToReplace: Unit, replaceBy: Unit, playerMissionsContainer: PlayerMissionsContainer) {
-        if (unit.equalsId(unitToReplace)) {
-            playerMissionsContainer.unblockUnitFromMission(unit, this)
-            unit = replaceBy
-            playerMissionsContainer.blockUnitForMission(unit, this)
+        if (unitToReplace.equalsId(unitId)) {
+            playerMissionsContainer.unblockUnitFromMission(unitId, this)
+            unitId = replaceBy.id
+            playerMissionsContainer.blockUnitForMission(unitId, this)
         }
     }
 
@@ -71,7 +65,7 @@ class TakeRoleEquipmentMission : AbstractMission {
     }
 
     override fun toString(): String {
-        return "TakeRoleEquipmentMission unitId: ${unit.id}, colonyId: ${colonyId}, role: ${role.id}, roleCount: ${roleCount}"
+        return "TakeRoleEquipmentMission unitId: ${unitId}, colonyId: ${colonyId}, role: ${role.id}, roleCount: ${roleCount}"
     }
 
     class Xml : AbstractMission.Xml<TakeRoleEquipmentMission>() {
@@ -84,7 +78,7 @@ class TakeRoleEquipmentMission : AbstractMission {
         override fun startElement(attr: XmlNodeAttributes) {
             nodeObject = TakeRoleEquipmentMission(
                 missionId = attr.id,
-                unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT)),
+                unitId = attr.getStrAttribute(ATTR_UNIT),
                 colonyId = attr.getStrAttribute(ATTR_COLONY),
                 role = attr.getEntity(ATTR_ROLE_TYPE, Specification.instance.unitRoles),
                 roleCount = attr.getIntAttribute(ATTR_ROLE_COUNT)
@@ -95,7 +89,7 @@ class TakeRoleEquipmentMission : AbstractMission {
         override fun startWriteAttr(mission: TakeRoleEquipmentMission, attr: XmlNodeAttributesWriter) {
             super.startWriteAttr(mission, attr)
             attr.setId(mission)
-            attr.set(ATTR_UNIT, mission.unit)
+            attr.set(ATTR_UNIT, mission.unitId)
             attr.set(ATTR_COLONY, mission.colonyId)
             attr.set(ATTR_ROLE_TYPE, mission.role)
             attr.set(ATTR_ROLE_COUNT, mission.roleCount)

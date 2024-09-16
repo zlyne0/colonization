@@ -9,6 +9,7 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.ReplaceUnitInMissionHandler
 import net.sf.freecol.common.model.ai.missions.hasMission
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
 
@@ -16,8 +17,9 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: TakeRoleEquipmentMission) {
         val player = playerMissionsContainer.player
+        val unit: Unit? = player.units.getByIdOrNull(mission.unitId)
 
-        if (!mission.isUnitExists(player)) {
+        if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
             MissionHandlerLogger.logger.debug("player[%s].TakeRoleEquipmentMissionHandler unit does not exists", player.getId())
             mission.setDone()
             return
@@ -27,25 +29,25 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
             mission.setDone()
             return
         }
+        val colony = player.settlements.getById(mission.colonyId).asColony()
 
-        if (mission.unit.isAtTileLocation) {
-            if (mission.unit.isAtLocation(mission.colony().tile)) {
-                equip(mission)
+        if (unit.isAtTileLocation) {
+            if (unit.isAtLocation(colony.tile)) {
+                equip(mission, unit, colony)
             } else {
-                createTransportRequest(playerMissionsContainer, mission)
+                createTransportRequest(playerMissionsContainer, mission, unit, colony)
             }
-        } else if (mission.unit.isAtUnitLocation) {
+        } else if (unit.isAtUnitLocation) {
             // do nothing, wait for transport
             return
-        } else if (mission.unit.isAtEuropeLocation) {
-            createTransportRequest(playerMissionsContainer, mission)
+        } else if (unit.isAtEuropeLocation) {
+            createTransportRequest(playerMissionsContainer, mission, unit, colony)
         }
     }
 
-    private fun equip(mission: TakeRoleEquipmentMission) {
-        val colony = mission.colony()
+    private fun equip(mission: TakeRoleEquipmentMission, unit: Unit, colony: Colony) {
         if (colony.hasGoodsToEquipRole(mission.role, mission.roleCount)) {
-            colony.changeUnitRole(mission.unit, mission.role, mission.roleCount)
+            colony.changeUnitRole(unit, mission.role, mission.roleCount)
             removeSupplyGoodsReservation(colony, mission.id)
             mission.setDone()
         }
@@ -62,15 +64,17 @@ class TakeRoleEquipmentMissionHandler(val game: Game): MissionHandler<TakeRoleEq
 
     private fun createTransportRequest(
         playerMissionsContainer: PlayerMissionsContainer,
-        mission: TakeRoleEquipmentMission
+        mission: TakeRoleEquipmentMission,
+        missionUnit: Unit,
+        colony: Colony
     ) {
         val requestMissionExists = playerMissionsContainer.hasMission(TransportUnitRequestMission::class.java) { requestMission ->
-            requestMission.unit.equalsId(mission.unit)
+            requestMission.unit.equalsId(mission.unitId)
         }
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(game.turn, mission.unit, mission.colony().tile)
+                TransportUnitRequestMission(game.turn, missionUnit, colony.tile)
                     .withAllowMoveToDestination()
             )
         }

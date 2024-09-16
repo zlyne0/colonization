@@ -6,8 +6,10 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.ExplorerMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.map.path.PathFinder;
+import net.sf.freecol.common.model.player.Player;
 
 import promitech.colonization.Direction;
+import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.ai.MissionHandler;
 import promitech.colonization.orders.move.MoveContext;
 import promitech.colonization.orders.move.MoveService;
@@ -34,11 +36,15 @@ public class ExplorerMissionHandler implements MissionHandler<ExplorerMission> {
 
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, ExplorerMission mission) {
-		if (mission.unit == null || mission.unit.isDisposed() || mission.unit.isDamaged()) {
+        Player player = playerMissionsContainer.getPlayer();
+
+        Unit unit = player.units.getByIdOrNull(mission.getUnitId());
+        if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
 			mission.setDone();
 			return;
-		}
-		exploreByAllMoves(mission.unit);
+        }
+
+		exploreByAllMoves(unit);
 		
 		// one turn mission
 		mission.setDone();

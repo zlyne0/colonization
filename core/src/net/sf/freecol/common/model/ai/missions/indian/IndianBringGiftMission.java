@@ -27,7 +27,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 	private IndianSettlement indianSettlement;
 	private Colony destinationColony;
 	private String destinationColonyOwnerId;
-	private Unit transportUnit;
+	private String transportUnitId;
 	private AbstractGoods gift;
 	private Phase phase;
 	
@@ -44,32 +44,23 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		
 		this.destinationColony = colony;
 		this.destinationColonyOwnerId = colony.getOwner().getId();
-		this.transportUnit = transportUnit;
+		this.transportUnitId = transportUnit.getId();
 		this.gift = gift;
 		this.phase = Phase.TAKE_GOODS;
 	}
 
 	@Override
 	public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.blockUnit(transportUnit, this);
+		unitMissionsMapping.blockUnit(transportUnitId, this);
 	}
 
 	@Override
 	public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.unblockUnitFromMission(transportUnit, this);
+		unitMissionsMapping.unblockUnitFromMission(transportUnitId, this);
 	}
 
 	public boolean canExecuteMission(Player player) {
-		if (player.isDead()) {
-			return false;
-		}
-		if (indianSettlement == null || !player.settlements.containsId(indianSettlement)) {
-			return false;
-		}
-		if (transportUnit == null || transportUnit.isDisposed() || !player.units.containsId(transportUnit)) {
-			return false;
-		}
-		if (destinationColonyOwnerId == null) {
+		if (player.isDead() || indianSettlement == null || !player.settlements.containsId(indianSettlement) || destinationColonyOwnerId == null) {
 			return false;
 		}
 		return true;
@@ -87,10 +78,10 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return false;
 	}
 	
-	public boolean correctTransportUnitLocation() {
-		if (transportUnit.getTileLocationOrNull() == null) {
-			if (transportUnit.isAtLocation(IndianSettlement.class)) {
-				transportUnit.changeUnitLocation(indianSettlement.tile);
+	public boolean correctTransportUnitLocation(Unit unit) {
+		if (unit.getTileLocationOrNull() == null) {
+			if (unit.isAtLocation(IndianSettlement.class)) {
+				unit.changeUnitLocation(indianSettlement.tile);
 			} else {
 				return false;
 			}
@@ -98,16 +89,16 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return true;
 	}
 	
-	public void backUnitToSettlement() {
+	public void backUnitToSettlement(Unit unit) {
 		if (gift.getQuantity() > 0) {
 			indianSettlement.getGoodsContainer().increaseGoodsQuantity(gift);
 		}
-		transportUnit.changeUnitLocation(indianSettlement);
+		unit.changeUnitLocation(indianSettlement);
 	}
 	
-	public AbstractGoods transferGoodsToColony() {
+	public AbstractGoods transferGoodsToColony(Unit unit) {
 		AbstractGoods transferedGoods = gift.clone();
-		transportUnit.reduceMovesLeftToZero();
+		unit.reduceMovesLeftToZero();
 		destinationColony.getGoodsContainer().increaseGoodsQuantity(gift);
 		gift.setQuantity(0);
 		changePhase(Phase.BACK_TO_SETTLEMENT);
@@ -123,8 +114,8 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return destinationColony;
 	}
 
-	public Unit getTransportUnit() {
-		return transportUnit;
+	public String getTransportUnitId() {
+		return transportUnitId;
 	}
 
 	public AbstractGoods getGift() {
@@ -165,7 +156,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 				m.destinationColony = colonySettlement.asColony();
 			}
 			
-			m.transportUnit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttributeNotNull(ATTR_TRANSPORT_UNIT_ID));
+			m.transportUnitId = attr.getStrAttributeNotNull(ATTR_TRANSPORT_UNIT_ID);
 			m.gift = new AbstractGoods(
 				attr.getStrAttributeNotNull(ATTR_GIFT_GOODS_TYPE_ID), 
 				attr.getIntAttribute(ATTR_GIFT_AMOUNT)
@@ -183,7 +174,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
 			attr.set(ATTR_COLONY_ID, m.destinationColony);
 			attr.set(ATTR_COLONY_OWNER_ID, m.destinationColonyOwnerId);
-			attr.set(ATTR_TRANSPORT_UNIT_ID, m.transportUnit);
+			attr.set(ATTR_TRANSPORT_UNIT_ID, m.transportUnitId);
 			attr.set(ATTR_GIFT_GOODS_TYPE_ID, m.gift.getTypeId());
 			attr.set(ATTR_GIFT_AMOUNT, m.gift.getQuantity());
 			attr.set(ATTR_PHASE, m.phase);

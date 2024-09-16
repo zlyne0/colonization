@@ -126,7 +126,7 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
         val mission = findMissions[0]
 
         assertThat(mission.isToColony(nieuwAmsterdam)).isTrue()
-        assertThat(mission.pioneer).isAtLocation(dutch.europe)
+        assertThat(dutch.units.getById(mission.pioneerId)).isAtLocation(dutch.europe)
     }
 
     @Test
@@ -203,15 +203,13 @@ internal class PioneerMissionPlanerTest : Savegame1600BaseClass() {
                 nieuwAmsterdam
             )
         )
-        val pioneerMission = PioneerMission(
-            UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, betweenColoniesTile),
-            fortMaurits
-        )
+        val pioneer = UnitFactory.create(UnitType.HARDY_PIONEER, UnitRole.PIONEER, dutch, betweenColoniesTile)
+        val pioneerMission = PioneerMission(pioneer, fortMaurits)
 
         val pioneerMissionPlaner = PioneerMissionPlaner(game, PathFinder())
         // when
         val improveDestination = pioneerMissionPlaner.findNextColonyToImprove(
-            pioneerMission.pioneer,
+            pioneer,
             pioneerMission.colonyId,
             playerMissionContainer
         )

@@ -131,13 +131,14 @@ class ReplaceColonyWorkerMissionHandlerTest : MissionHandlerBaseTestClass() {
 
         // then
         assertThat(expertFarmer).isAtLocation(ColonyTile::class.java)
-        assertThat(colonyWorker).isAtLocation(fortOranje.tile)
+        assertThat(colonyWorker)
+            .isAtLocation(fortOranje.tile)
+            .isIdEquals(takeRoleMission.unitId)
         assertThat(replaceColonyWorkerMission).isDone
 
         assertThat(takeRoleMission).isDone
-        assertThat(takeRoleMission.unit).isEqualsTo(colonyWorker)
 
-        assertThat(pioneerMission.pioneer).isEqualsTo(colonyWorker)
+        assertThat(colonyWorker).isIdEquals(pioneerMission.pioneerId)
         assertThat(pioneerMission)
             .isNotDone()
             .hasNotDependMission()
