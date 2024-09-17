@@ -204,7 +204,7 @@ public class Savegame1600Verifier {
         PlayerMissionsContainer missions = game.aiContainer.missionContainer(dutch);
 
         TransportGoodsToSellMission mission = missions.getMission("transportGoodsToSellMission:1");
-        UnitAssert.assertThat(mission.getTransporter()).isIdEquals("unit:6437");
+        assertThat(mission.getTransporterId()).isEqualTo("unit:6437");
         assertThat(mission.getVisitedSettlements()).containsExactly(
             fortMaurits.getId(),
             fortOranje.getId()
@@ -225,7 +225,7 @@ public class Savegame1600Verifier {
 
         ReplaceColonyWorkerMission replaceColonyWorkerMission = missions.getMission("replaceColonyWorkerMission:1");
         assertThat(replaceColonyWorkerMission.getColonyId()).isEqualTo(fortOranje.getId());
-        assertThat(replaceColonyWorkerMission.getReplaceByUnit().getId()).isEqualTo("replaceWorker:6436");
+        assertThat(replaceColonyWorkerMission.getReplaceByUnitId()).isEqualTo("replaceWorker:6436");
         assertThat(replaceColonyWorkerMission.getColonyWorkerUnitId()).isEqualTo("unit:6436");
 
         TakeRoleEquipmentMission takeRoleEquipmentMission = missions.getMission("takeRoleEquipmentMission:1");

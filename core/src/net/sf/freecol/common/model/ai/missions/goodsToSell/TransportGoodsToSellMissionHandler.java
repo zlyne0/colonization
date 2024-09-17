@@ -39,24 +39,25 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 	@Override
 	public void handle(PlayerMissionsContainer playerMissionsContainer, TransportGoodsToSellMission mission) {
 		Player player = playerMissionsContainer.getPlayer();
-		
-		if (!mission.isTransportUnitExists(player)) {
+
+		Unit unit = player.units.getByIdOrNull(mission.getTransporterId());
+		if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
 			logger.debug("player[%s].TransportGoodsToSellMissionHandler transport unit does not exists", player.getId());
 			mission.setDone();
 			return;
 		}
 		
 		if (mission.getPhase() == TransportGoodsToSellMission.Phase.MOVE_TO_COLONY) {
-			moveToSettlement(mission, player);
+			moveToSettlement(mission, player, unit);
 		}
 
 		if (mission.getPhase() == TransportGoodsToSellMission.Phase.MOVE_TO_EUROPE) {
-			moveToEurope(mission, player);
+			moveToEurope(mission, player, unit);
 		}
 	}
 
-	private void moveToSettlement(TransportGoodsToSellMission mission, Player player) {
-		if (mission.getTransporter().isAtLocation(Europe.class)) {
+	private void moveToSettlement(TransportGoodsToSellMission mission, Player player, Unit transporter) {
+		if (transporter.isAtLocation(Europe.class)) {
 			if (logger.isDebug()) {
 				Settlement firstSettlementToVisit = mission.firstSettlementToVisit(player);
 				logger.debug("player[%s].TransportGoodsToSellMissionHandler transporter sail to new world to colony[%s]",
@@ -64,35 +65,34 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 					firstSettlementToVisit
 				);
 			}
-			mission.getTransporter().sailUnitToNewWorld();
+			transporter.sailUnitToNewWorld();
 			return;
 		}
 		
 		// on HighSeas do nothing
 		
-		if (mission.getTransporter().isAtLocation(Tile.class)) {
-			
+		if (transporter.isAtLocation(Tile.class)) {
 			Settlement firstSettlementToVisit = mission.firstSettlementToVisit(player);
 			if (firstSettlementToVisit == null) {
-				firstSettlementToVisit = determineNextSettlementToVisit(mission, player);
+				firstSettlementToVisit = determineNextSettlementToVisit(mission, player, transporter);
 				if (firstSettlementToVisit == null) {
 					// end mission or move to Europe
 					return;
 				}
 			}
 			
-			if (mission.isTransporterOnSettlement(firstSettlementToVisit)) {
-				mission.loadGoodsFrom(firstSettlementToVisit);
+			if (isTransporterOnSettlement(transporter, firstSettlementToVisit)) {
+				mission.loadGoodsFrom(firstSettlementToVisit, transporter);
 				mission.addVisitedSettlement(firstSettlementToVisit);
 				
-				firstSettlementToVisit = determineNextSettlementToVisit(mission, player);
+				firstSettlementToVisit = determineNextSettlementToVisit(mission, player, transporter);
 				if (firstSettlementToVisit != null) {
-					moveToSettlement(mission.getTransporter(), firstSettlementToVisit);
+					moveToSettlement(transporter, firstSettlementToVisit);
 				} // else move to Europe
 			} else {
-				moveToSettlement(mission.getTransporter(), firstSettlementToVisit);
-				if (mission.isTransporterOnSettlement(firstSettlementToVisit)) {
-					mission.loadGoodsFrom(firstSettlementToVisit);
+				moveToSettlement(transporter, firstSettlementToVisit);
+				if (isTransporterOnSettlement(transporter, firstSettlementToVisit)) {
+					mission.loadGoodsFrom(firstSettlementToVisit, transporter);
 					mission.addVisitedSettlement(firstSettlementToVisit);
 					// load cargo after move use all move points so wait for another turn
 				}
@@ -100,13 +100,13 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		}
 	}
 	
-	private Settlement determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {
+	private Settlement determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player, Unit transporter) {
 		TransportGoodsToSellMissionPlaner planer = new TransportGoodsToSellMissionPlaner(game, pathFinder);
-		planer.determineNextSettlementToVisit(mission, player);
+		planer.determineNextSettlementToVisit(mission, player, transporter);
 		
 		Settlement firstSettlementToVisit = mission.firstSettlementToVisit(player);
 		if (firstSettlementToVisit == null) {
-			if (mission.hasTransporterCargo()) {
+			if (transporter.hasGoodsCargo()) {
 				logger.debug("player[%s].TransportGoodsToSellMissionHandler move to europe",player.getId());
 				mission.changePhase(Phase.MOVE_TO_EUROPE);
 			} else {
@@ -142,10 +142,10 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 		}
 	}
 
-	private void moveToEurope(TransportGoodsToSellMission mission, Player player) {
-		if (mission.getTransporter().isAtLocation(Europe.class)) {
+	private void moveToEurope(TransportGoodsToSellMission mission, Player player, Unit transporter) {
+		if (transporter.isAtLocation(Europe.class)) {
 			StringBuilder logStr = new StringBuilder();
-			mission.sellAllCargoInEurope(game, logStr);
+			mission.sellAllCargoInEurope(game, logStr, transporter);
 			
 			logger.debug("player[%s].TransportGoodsToSellMissionHandler.sellInEurope %s", player.getId(), logStr);
 			
@@ -153,6 +153,11 @@ public class TransportGoodsToSellMissionHandler implements MissionHandler<Transp
 			return;
 		}
 		
-		moveToEuropeStep.sail(mission.getTransporter(), mission);
+		moveToEuropeStep.sail(transporter, mission);
 	}
+
+	private boolean isTransporterOnSettlement(Unit transporter, Settlement settlement) {
+		return transporter.getTile().equalsCoordinates(settlement.tile);
+	}
+
 }

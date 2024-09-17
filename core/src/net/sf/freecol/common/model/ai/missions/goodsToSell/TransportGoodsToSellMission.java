@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model.ai.missions.goodsToSell;
 
+import static promitech.colonization.ai.MissionHandlerLogger.logger;
+
 import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 
 import net.sf.freecol.common.model.Game;
@@ -7,7 +9,6 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Market;
 import net.sf.freecol.common.model.player.Player;
@@ -18,12 +19,9 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
-
-import static promitech.colonization.ai.MissionHandlerLogger.logger;
 
 public class TransportGoodsToSellMission extends AbstractMission {
 	
@@ -32,14 +30,14 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		MOVE_TO_EUROPE
 	}
 	
-	private Unit transporter;
+	private String transporterId;
 	private String firstSettlementIdToVisit;
 	private final Set<String> visitedSettlements = new HashSet<String>();
 	private Phase phase;
 
 	public static TransportGoodsToSellMission sellTransportedCargoInEurope(Unit transporter) {
 		TransportGoodsToSellMission mission = new TransportGoodsToSellMission(Game.idGenerator.nextId(TransportGoodsToSellMission.class));
-		mission.transporter = transporter;
+		mission.transporterId = transporter.getId();
 		mission.phase = Phase.MOVE_TO_EUROPE;
 		return mission;
 	}
@@ -47,17 +45,13 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	public TransportGoodsToSellMission(Unit transporter, Settlement firstToVisit) {
 		super(Game.idGenerator.nextId(TransportGoodsToSellMission.class));
 		
-		this.transporter = transporter;
+		this.transporterId = transporter.getId();
 		this.firstSettlementIdToVisit = firstToVisit.getId();
 		this.phase = Phase.MOVE_TO_COLONY;
 	}
 	
 	private TransportGoodsToSellMission(String id) {
 		super(id);
-	}
-
-	public boolean isTransportUnitExists(Player player) {
-		return CommonMissionHandler.isUnitExists(player, transporter);
 	}
 
 	public void addVisitedSettlement(Settlement settlement) {
@@ -89,19 +83,15 @@ public class TransportGoodsToSellMission extends AbstractMission {
 	
 	@Override
 	public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.blockUnit(transporter, this);
+		unitMissionsMapping.blockUnit(transporterId, this);
 	}
 	
 	@Override
 	public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.unblockUnitFromMission(transporter, this);
+		unitMissionsMapping.unblockUnitFromMission(transporterId, this);
 	}
 
-	public boolean isTransporterOnSettlement(Settlement settlement) {
-		return transporter.getTile().equalsCoordinates(settlement.tile);
-	}
-
-	public void loadGoodsFrom(Settlement settlement) {
+	public void loadGoodsFrom(Settlement settlement, Unit transporter) {
 		logger.debug(
 			"player[%s].TransportGoodsToSellMissionHandler load goods in %s",
 			transporter.getOwner().getId(), settlement.getId()
@@ -114,12 +104,8 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		goodsLoader.load(settlement, transporter);
 	}
 	
-	public boolean hasTransporterCargo() {
-		return transporter.hasGoodsCargo();
-	}
-	
-	public Unit getTransporter() {
-		return transporter;
+	public String getTransporterId() {
+		return transporterId;
 	}
 
 	public Set<String> getVisitedSettlements() {
@@ -134,7 +120,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		this.phase = phase;
 	}
 	
-	public void sellAllCargoInEurope(Game game, StringBuilder logStr) {
+	public void sellAllCargoInEurope(Game game, StringBuilder logStr, Unit transporter) {
 		Market market = transporter.getOwner().market();
 		
 		// ai can sell without arrears
@@ -163,7 +149,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 
 	@Override
 	public String toString() {
-		String str = "unit[" + transporter.getId() + " " + transporter.unitType.toSmallIdStr() +  "] " + phase;
+		String str = "unit[" + transporterId + "] " + phase;
 		if (firstSettlementIdToVisit != null) {
 			str += ", next: " + firstSettlementIdToVisit;
 		} else {
@@ -183,7 +169,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
 			TransportGoodsToSellMission m = new TransportGoodsToSellMission(attr.getId());
-			m.transporter = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT));
+			m.transporterId = attr.getStrAttribute(ATTR_UNIT);
 			m.firstSettlementIdToVisit = attr.getStrAttribute(ATTR_FIRST_TO_VISIT);
 			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE);
 			nodeObject = m;
@@ -201,7 +187,7 @@ public class TransportGoodsToSellMission extends AbstractMission {
 		public void startWriteAttr(TransportGoodsToSellMission mission, XmlNodeAttributesWriter attr) throws IOException {
 			super.startWriteAttr(mission, attr);
 			attr.setId(mission);
-			attr.set(ATTR_UNIT, mission.transporter);
+			attr.set(ATTR_UNIT, mission.transporterId);
 			attr.set(ATTR_FIRST_TO_VISIT, mission.firstSettlementIdToVisit);
 			attr.set(ATTR_PHASE, mission.phase);
 			

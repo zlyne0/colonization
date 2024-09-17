@@ -697,7 +697,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		}
 
 		fun showOnMap(mission: ReplaceColonyWorkerMission) {
-			val tile = mission.colony().tile
+			val tile = player.settlements.getById(mission.colonyId).tile
 			tileDebugView.appendStr(tile.x, tile.y, "RplcWorker")
 		}
 

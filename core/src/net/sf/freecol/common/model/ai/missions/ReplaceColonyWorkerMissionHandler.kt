@@ -1,7 +1,10 @@
 package net.sf.freecol.common.model.ai.missions
 
+import net.sf.freecol.common.model.Colony
 import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.Unit
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
+import promitech.colonization.ai.CommonMissionHandler
 import promitech.colonization.ai.MissionExecutor
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
@@ -12,10 +15,10 @@ class ReplaceColonyWorkerMissionHandler(
 ) : MissionHandler<ReplaceColonyWorkerMission> {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: ReplaceColonyWorkerMission) {
-
         val player = playerMissionsContainer.player
 
-        if (!mission.isUnitExists(player)) {
+        val unit: Unit? = player.units.getByIdOrNull(mission.replaceByUnitId)
+        if (unit == null || !CommonMissionHandler.isUnitExists(player, unit)) {
             MissionHandlerLogger.logger.debug("player[%s].ReplaceColonyWorkerMissionHandler unit does not exists", player.getId())
             mission.setDone()
             return
@@ -25,32 +28,38 @@ class ReplaceColonyWorkerMissionHandler(
             mission.setDone()
             return
         }
+        val colony: Colony = player.settlements.getById(mission.colonyId).asColony()
 
-        if (mission.replaceByUnit.isAtTileLocation) {
-            if (mission.replaceByUnit.isAtLocation(mission.colony().tile)) {
-                replaceUnits(playerMissionsContainer, mission)
+        if (unit.isAtTileLocation) {
+            if (unit.isAtLocation(colony.tile)) {
+                replaceUnits(playerMissionsContainer, mission, unit, colony)
             } else {
-                createTransportRequest(playerMissionsContainer, mission)
+                createTransportRequest(playerMissionsContainer, mission, unit, colony)
             }
-        } else if (mission.replaceByUnit.isAtUnitLocation) {
+        } else if (unit.isAtUnitLocation) {
             // do nothing, wait for transport
             return
-        } else if (mission.replaceByUnit.isAtEuropeLocation) {
-            createTransportRequest(playerMissionsContainer, mission)
+        } else if (unit.isAtEuropeLocation) {
+            createTransportRequest(playerMissionsContainer, mission, unit, colony)
         }
     }
 
-    private fun replaceUnits(playerMissionsContainer: PlayerMissionsContainer, mission: ReplaceColonyWorkerMission) {
-        val colony = mission.colony()
-        colony.replaceWorker(mission.replaceByUnit, mission.colonyWorkerUnitId)
+    private fun replaceUnits(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: ReplaceColonyWorkerMission,
+        unit: Unit,
+        colony: Colony
+    ) {
+        colony.replaceWorker(unit, mission.colonyWorkerUnitId)
         mission.setDone()
 
-        notifyParentMissionAboutReplace(playerMissionsContainer, mission)
+        notifyParentMissionAboutReplace(playerMissionsContainer, mission, unit)
     }
 
     private fun notifyParentMissionAboutReplace(
         playerMissionsContainer: PlayerMissionsContainer,
-        mission: ReplaceColonyWorkerMission
+        mission: ReplaceColonyWorkerMission,
+        unit: Unit
     ) {
         val colonyWorkerUnit = playerMissionsContainer.player.units.getById(mission.colonyWorkerUnitId)
 
@@ -58,7 +67,7 @@ class ReplaceColonyWorkerMissionHandler(
         while (parentMission != null) {
             val parentMissionHandler = missionExecutor.findMissionHandler(parentMission)
             if (parentMissionHandler is ReplaceUnitInMissionHandler) {
-                parentMissionHandler.replaceUnitInMission(parentMission, mission.replaceByUnit, colonyWorkerUnit)
+                parentMissionHandler.replaceUnitInMission(parentMission, unit, colonyWorkerUnit)
             }
             parentMission = playerMissionsContainer.findParentMission(parentMission)
         }
@@ -66,15 +75,17 @@ class ReplaceColonyWorkerMissionHandler(
 
     private fun createTransportRequest(
         playerMissionsContainer: PlayerMissionsContainer,
-        mission: ReplaceColonyWorkerMission
+        mission: ReplaceColonyWorkerMission,
+        unit: Unit,
+        colony: Colony
     ) {
         val requestMissionExists = playerMissionsContainer.hasMission(TransportUnitRequestMission::class.java) { requestMission ->
-            requestMission.unit.equalsId(mission.replaceByUnit)
+            requestMission.unit.equalsId(mission.replaceByUnitId)
         }
         if (!requestMissionExists) {
             playerMissionsContainer.addMission(
                 mission,
-                TransportUnitRequestMission(game.turn, mission.replaceByUnit, mission.colony().tile)
+                TransportUnitRequestMission(game.turn, unit, colony.tile)
                     .withAllowMoveToDestination()
             )
         }

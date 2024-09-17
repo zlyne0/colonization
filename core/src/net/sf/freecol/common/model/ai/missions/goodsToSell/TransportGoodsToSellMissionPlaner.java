@@ -98,13 +98,13 @@ public class TransportGoodsToSellMissionPlaner {
 		return carrier.positionRelativeToMap(game.map);
 	}
 
-	public void determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player) {
+	public void determineNextSettlementToVisit(TransportGoodsToSellMission mission, Player player, Unit transporter) {
 		SettlementWarehouseScoreGoods scoreGoodsCalculator = new SettlementWarehouseScoreGoods(
 			Specification.instance.goodsTypeToScoreByPrice, player, game.map, pathFinder, mission.getVisitedSettlements()
 		);
 		ObjectScoreList<Settlement> score = scoreGoodsCalculator.score(
-			mission.getTransporter(), 
-			mission.getTransporter().getTile()
+			transporter,
+			transporter.getTile()
 		);
 		
 		mission.removeFirstSettlement();
