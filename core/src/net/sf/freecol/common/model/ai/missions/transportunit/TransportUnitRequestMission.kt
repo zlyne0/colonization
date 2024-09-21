@@ -146,8 +146,10 @@ class TransportUnitRequestMission : AbstractMission {
 
         override fun startElement(attr: XmlNodeAttributes) {
             val unit = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_UNIT))
+            if (unit == null) {
+                return;
+            }
             val destination = game.map.getSafeTile(attr.getPoint(ATTR_DESTINATION))
-
             nodeObject = TransportUnitRequestMission(attr.id, unit, destination, Turn(attr.getIntAttribute(ATTR_TURN)))
             nodeObject.transportUnitMissionId = attr.getStrAttribute(ATTR_TRANSPORT_MISSION_ID)
             nodeObject.allowMoveToDestination = attr.getBooleanAttribute(ATTR_ALLOW_MOVE_TO_DEST_ID, false)

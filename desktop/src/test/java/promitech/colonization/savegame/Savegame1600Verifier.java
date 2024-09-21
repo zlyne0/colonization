@@ -7,6 +7,7 @@ import static net.sf.freecol.common.model.specification.IndianNationTypeAssert.a
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static promitech.colonization.savegame.ObjectWithFeaturesAssert.assertThat;
 import static net.sf.freecol.common.model.UnitAssert.assertThat;
@@ -302,6 +303,9 @@ public class Savegame1600Verifier {
         assertThat(transportRequest.getUnit()).isIdEquals("unit:7095");
         assertThat(transportRequest.getDestination().equalsCoordinates(24,78)).isTrue();
         assertThat(transportRequest.getTransportUnitMissionId()).isEqualTo("transportUnitMission:2");
+
+        TransportUnitRequestMission transportRequest2 = playerMissions1.findMission("transportUnitRequestMission:2");
+        assertNull(transportRequest2);
     }
 
 	private void verifyGame(Game game) {

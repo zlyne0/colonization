@@ -47,11 +47,9 @@ public class SaveGameSaxXmlDefaultHandler extends DefaultHandler {
         if (xmlNodeParser instanceof MapIdEntities.Xml) {
             ((MapIdEntities.Xml)xmlNodeParser).setMap(parentXmlParser);
         }
-        if (xmlNodeParser.nodeObject == null) {
-            System.out.println("parsersName = " + parsersName);
-            throw new IllegalArgumentException("parser nodeObject is null for tag: " + xmlNodeParser.getTagName() + ", xml parser: " + xmlNodeParser.getClass() + ", attributes: " + nodeAttributes); 
+        if (xmlNodeParser.nodeObject != null) {
+            xmlNodeParser.addToParent(parentXmlParser);
         }
-        xmlNodeParser.addToParent(parentXmlParser);
     }
     
     @Override
