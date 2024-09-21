@@ -61,11 +61,11 @@ class Units {
 
         fun transporterCapacity(transporter: Unit, playerMissionContainer: PlayerMissionsContainer): Int {
             var capacity: Int = transporter.freeUnitsSlots()
-            playerMissionContainer.foreachMission(TransportUnitMission::class.java, { transportUnitMission ->
+            playerMissionContainer.foreachMission(TransportUnitMission::class.java) { transportUnitMission ->
                 if (transportUnitMission.isCarrier(transporter)) {
-                    capacity -= transportUnitMission.spaceTakenByUnits()
+                    capacity -= transportUnitMission.spaceTakenByUnits(transporter)
                 }
-            })
+            }
             return capacity
         }
     }

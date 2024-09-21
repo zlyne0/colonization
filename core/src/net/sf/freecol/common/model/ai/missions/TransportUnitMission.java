@@ -24,7 +24,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import promitech.colonization.ai.CommonMissionHandler;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 
@@ -71,7 +70,7 @@ public class TransportUnitMission extends AbstractMission {
 		}
 	}
 
-	private Unit carrier;
+	private String carrierId;
     private final List<UnitDest> unitsDest = new ArrayList<UnitDest>();
 	private final List<CargoDest> cargoDests = new ArrayList<CargoDest>();
 
@@ -81,7 +80,7 @@ public class TransportUnitMission extends AbstractMission {
 	
 	public TransportUnitMission(Unit carrier) {
         super(Game.idGenerator.nextId(TransportUnitMission.class));
-        this.carrier = carrier;
+        this.carrierId = carrier.getId();
 	}
 
 	public TransportUnitMission addUnitDest(Unit unit, Tile tile) {
@@ -125,14 +124,10 @@ public class TransportUnitMission extends AbstractMission {
 		return tiles;
 	}
 
-	public boolean canEmbarkUnit(Unit unit) {
+	public boolean canEmbarkUnit(Unit carrier, Unit unit) {
 		return carrier.freeUnitsSlots() - unitsDest.size() - unit.unitType.getSpaceTaken() >= 0;
 	}
     
-	public boolean isTransportUnitExists(Player player) {
-		return CommonMissionHandler.isUnitExists(player, carrier);
-	}
-	
 	public boolean isCarriedUnitTransportDestinationSet(Unit unit) {
 		for (UnitDest unitDest : unitsDest) {
 			if (unitDest.unit.equalsId(unit)) {
@@ -142,7 +137,7 @@ public class TransportUnitMission extends AbstractMission {
 		return false;
 	}
 	
-	public void embarkColonistsInEurope() {
+	public void embarkColonistsInEurope(Unit carrier) {
 		for (UnitDest unitDest : unitsDest) {
 			if (unitDest.unit.isAtLocation(Europe.class)) {
 				unitDest.unit.embarkTo(carrier);
@@ -202,7 +197,7 @@ public class TransportUnitMission extends AbstractMission {
 		return toRemoveList;
 	}
 
-	public void validateUnitDestination() {
+	public void validateUnitDestination(Unit carrier) {
 		Player player = carrier.getOwner();
 
 		List<UnitDest> toRemove = null;
@@ -219,7 +214,7 @@ public class TransportUnitMission extends AbstractMission {
 		}
 	}
 
-	public List<CargoDest> unloadCargo(Tile tile) {
+	public List<CargoDest> unloadCargo(Unit carrier, Tile tile) {
 		if (cargoDests.isEmpty()) {
 			return Collections.emptyList();
 		}
@@ -250,15 +245,15 @@ public class TransportUnitMission extends AbstractMission {
 
 	@Override
 	public void blockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.blockUnit(carrier, this);
+		unitMissionsMapping.blockUnit(carrierId, this);
 	}
 
 	@Override
 	public void unblockUnits(UnitMissionsMapping unitMissionsMapping) {
-		unitMissionsMapping.unblockUnitFromMission(carrier, this);
+		unitMissionsMapping.unblockUnitFromMission(carrierId, this);
 	}
 
-	public int spaceTakenByUnits() {
+	public int spaceTakenByUnits(Unit carrier) {
 		int slotsTaken = carrier.getGoodsContainer().getCargoSpaceTaken();
 		for (UnitDest unitDest : unitsDest) {
 			if (!carrier.getUnitContainer().isContainUnit(unitDest.unit)) {
@@ -269,16 +264,16 @@ public class TransportUnitMission extends AbstractMission {
 	}
 
 	public boolean isCarrier(Unit unit) {
-    	return this.carrier.equalsId(unit);
+    	return unit.equalsId(carrierId);
 	}
 
-	public Unit getCarrier() {
-		return carrier;
+	public String getCarrierId() {
+		return carrierId;
 	}
 
 	@Override
 	public String toString() {
-    	return "carrier[" + carrier.getId() + ", " + carrier.unitType.toSmallIdStr() + "] " + unitsDestListToString();
+    	return "carrier[" + carrierId + "] " + unitsDestListToString();
 	}
 
 	private String unitsDestListToString(Tile destinationLocation) {
@@ -364,7 +359,7 @@ public class TransportUnitMission extends AbstractMission {
 		return true;
 	}
 
-	public void addUnitDestForCarriedUnits(PlayerMissionsContainer missionsContainer) {
+	public void addUnitDestForCarriedUnits(PlayerMissionsContainer missionsContainer, Unit carrier) {
 		for (Unit unit : carrier.getUnitContainer().getUnits()) {
 			if (!isCarriedUnitTransportDestinationSet(unit)) {
 				TransportUnitRequestMission transportRequest = findFirstMissionKt(missionsContainer, unit, TransportUnitRequestMission.class);
@@ -393,8 +388,8 @@ public class TransportUnitMission extends AbstractMission {
         @Override
         public void startElement(XmlNodeAttributes attr) {
             TransportUnitMission m = new TransportUnitMission(attr.getId());
-            m.carrier = PlayerMissionsContainer.Xml.getPlayerUnit(attr.getStrAttribute(ATTR_CARRIER));
-            nodeObject = m;
+            m.carrierId = attr.getStrAttribute(ATTR_CARRIER);
+			nodeObject = m;
 			super.startElement(attr);
         }
 
@@ -425,7 +420,7 @@ public class TransportUnitMission extends AbstractMission {
         public void startWriteAttr(TransportUnitMission mission, XmlNodeAttributesWriter attr) throws IOException {
 			super.startWriteAttr(mission, attr);
 			attr.setId(mission);
-            attr.set(ATTR_CARRIER, mission.carrier);
+            attr.set(ATTR_CARRIER, mission.carrierId);
 
             for (UnitDest ud : mission.unitsDest) {
                 attr.xml.element(ELEMENT_UNIT);

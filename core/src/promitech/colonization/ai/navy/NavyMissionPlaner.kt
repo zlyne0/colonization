@@ -187,7 +187,7 @@ class NavyMissionPlaner(
         if (mission == null) {
             return navyUnit.hasSpaceForAdditionalUnit(unit.unitType)
         }
-        return mission.canEmbarkUnit(unit)
+        return mission.canEmbarkUnit(navyUnit, unit)
     }
 
 }

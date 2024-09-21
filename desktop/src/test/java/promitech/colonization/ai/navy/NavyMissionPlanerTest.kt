@@ -71,7 +71,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         PlayerMissionsContainerAssert.assertThat(missionContainer).hasMission(TransportUnitMission::class.java, 1)
 
         val transportUnitMission = missionContainer.findFirstMissionKt(TransportUnitMission::class.java)!!
-        assertThat(transportUnitMission.carrier).isEqualsTo(galleon)
+        assertThat(transportUnitMission.carrierId).isEqualTo(galleon.id)
         assertThat(transportUnitMission.unitsDest).hasSize(2)
 
         assertThat(transportUnitMission.unitsDest.get(0).unit.equalsId(u1)).isTrue()
@@ -114,7 +114,7 @@ class NavyMissionPlanerTest : MissionHandlerBaseTestClass() {
         PlayerMissionsContainerAssert.assertThat(missionContainer).hasMission(TransportUnitMission::class.java, 1)
 
         val transportUnitMission = missionContainer.findFirstMissionKt(TransportUnitMission::class.java)!!
-        assertThat(transportUnitMission.carrier).isEqualsTo(galleon)
+        assertThat(transportUnitMission.carrierId).isEqualTo(galleon.id)
 
         assertThat(transportUnitMission.unitsDest).hasSize(2)
         assertThat(transportUnitMission.unitsDest.get(0).unit.equalsId(u1)).isTrue()

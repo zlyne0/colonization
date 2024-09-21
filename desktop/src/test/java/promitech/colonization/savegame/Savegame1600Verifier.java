@@ -291,7 +291,7 @@ public class Savegame1600Verifier {
 		assertThat(playerMissions1).isNotNull();
 
 		TransportUnitMission tm = playerMissions1.getMission("transportUnitMission:2");
-        assertThat(tm.getCarrier().getId()).isEqualTo("unit:6437");
+        assertThat(tm.getCarrierId()).isEqualTo("unit:6437");
         assertThat(tm.getUnitsDest()).hasSize(1);
         TransportUnitMission.UnitDest unitDest = tm.getUnitsDest().get(0);
 
