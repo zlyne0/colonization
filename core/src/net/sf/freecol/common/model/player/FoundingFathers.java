@@ -151,7 +151,7 @@ public class FoundingFathers {
 					}
 					
 					for (Settlement settlement : p.settlements.entities()) {
-						player.revealMapSeeColony(game.map, settlement.asColony());
+						player.revealMapSeeColony(game.map, settlement.asColony(), game.getTurn());
 					}
 				}
 			}

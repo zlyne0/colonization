@@ -94,7 +94,7 @@ fun createCommands(
 			}
     	}
     	command("map_show") {
-		    guiGameModel.game.playingPlayer.explorAllTiles();
+		    guiGameModel.game.playingPlayer.playerExploredTiles.exploreAllTiles(guiGameModel.game.turn);
 		    guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 		    gameController.resetMapModel();
     	}

@@ -1,18 +1,28 @@
 package net.sf.freecol.common.model;
 
-import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerExploredTiles;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeParser;
 
 public class CachedTile {
 
-	private Player player;
-	
-	public Player getPlayer() {
-		return player;
+	private PlayerExploredTiles playerExploredTiles;
+	private byte turn;
+
+	public PlayerExploredTiles getPlayerExploredTiles() {
+		return playerExploredTiles;
+	}
+
+	public byte getTurn() {
+		return turn;
 	}
 
 	public static class Xml extends XmlNodeParser<CachedTile> {
+
+		public static final String ATTR_PLAYER = "player";
+		public static final String ATTR_TURN = "turn";
+		public static final String ELEMENT_CACHED_TILE = "cachedTile";
 
 		private CachedTile cachedTileObject; 
 		
@@ -21,9 +31,10 @@ public class CachedTile {
 			if (cachedTileObject == null) {
 				cachedTileObject = new CachedTile();
 			}
-			String playerId = attr.getStrAttribute("player");
-			cachedTileObject.player = game.players.getById(playerId);
-			
+			String playerId = attr.getStrAttribute(ATTR_PLAYER);
+			cachedTileObject.playerExploredTiles = game.players.getById(playerId).getPlayerExploredTiles();
+			cachedTileObject.turn = attr.getByteAttribute(ATTR_TURN, PlayerExploredTiles.FIRST);
+
 			nodeObject = cachedTileObject;
 		}
 
@@ -33,7 +44,7 @@ public class CachedTile {
 		}
 		
 		public static String tagName() {
-		    return "cachedTile";
+		    return ELEMENT_CACHED_TILE;
 		}
 	}
 }

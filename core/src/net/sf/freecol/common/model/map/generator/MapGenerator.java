@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.TileImprovement;
 import net.sf.freecol.common.model.TileImprovementType;
 import net.sf.freecol.common.model.TileType;
 import net.sf.freecol.common.model.TileTypeTransformation;
+import net.sf.freecol.common.model.Turn;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.map.Region;
 import net.sf.freecol.common.model.map.Region.RegionType;
@@ -77,7 +78,7 @@ public class MapGenerator {
 		new BonusResourcesGenerator(map).generate();
 		new IndianSettlementsGenerator(this, players, map).makeNativeSettlements();
 		
-		map.initPlayersMap(players);
+		map.initPlayersMap(players, new Turn(0));
 		generatePlayersStartPositions(map, players);
 		generateLostCityRumours(map);
 		
@@ -179,7 +180,7 @@ public class MapGenerator {
 				Unit carrier = carriers.get(0);
 				Tile tile = map.getSafeTile(player.getEntryLocation());
 				carrier.changeUnitLocation(tile);
-				player.revealMapAfterUnitMove(map, carrier, new MoveExploredTiles());
+				player.revealMapAfterUnitMove(map, carrier, new MoveExploredTiles(), new Turn(1));
 				
 				for (Unit passengerUnit : passengers) {
 					passengerUnit.changeUnitLocation(carrier);

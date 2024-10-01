@@ -37,7 +37,7 @@ public class ColonyFactory {
 				&& player.isLiveEuropeanPlayer() 
 				&& player.getFeatures().hasAbility(Ability.SEE_ALL_COLONIES)
 			) {
-				player.revealMapSeeColony(game.map, colony);
+				player.revealMapSeeColony(game.map, colony, game.getTurn());
 			}
 		}
 	}

@@ -36,6 +36,10 @@ public class XmlNodeAttributesWriter {
 		}
 	}
 
+	public void set(String attrName, byte val) throws IOException {
+		xml.attribute(attrName, Byte.toString(val));
+	}
+
 	public void set(String attrName, int val) throws IOException {
 		xml.attribute(attrName, Integer.toString(val));
 	}

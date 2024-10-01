@@ -127,7 +127,7 @@ public class FirstContactService {
 			spiralIterator.next();
 			
 			if (tile.getType().isLand() || tile.isNextToLand() || tile.isOnSeaSide()) {
-				player.setTileAsExplored(coordsIndex);
+				player.getPlayerExploredTiles().setTileAsExplored(coordsIndex, guiGameModel.game.getTurn());
 				player.fogOfWar.removeFogOfWar(coordsIndex);
 			}
 		}

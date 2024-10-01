@@ -143,7 +143,8 @@ public class MoveService {
             moveContext.unit.getOwner().revealMapAfterUnitMove(
         		guiGameModel.game.map, 
         		moveContext.unit, 
-        		exploredTiles
+        		exploredTiles,
+                guiGameModel.game.getTurn()
     		);
         }
         if (exploredTiles.isExploredNewTiles() && moveContext.isHuman()) {

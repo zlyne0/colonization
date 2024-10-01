@@ -6,7 +6,6 @@ import com.badlogic.gdx.math.GridPoint2;
 
 import net.sf.freecol.common.model.Identifiable;
 import net.sf.freecol.common.model.MapIdEntitiesReadOnly;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class XmlNodeAttributes {
     String qName; 
@@ -28,7 +27,15 @@ public class XmlNodeAttributes {
         }
         return Float.parseFloat(val);
     }
-    
+
+    public byte getByteAttribute(String name, byte defaultValue) {
+        String val = attributes.getValue(name);
+        if (val == null) {
+            return defaultValue;
+        }
+        return Byte.parseByte(val);
+    }
+
     public int getIntAttribute(String name) {
         return Integer.parseInt(attributes.getValue(name));
     }

@@ -167,10 +167,10 @@ public class Map extends ObjectWithId {
         }
     }
     
-	public void initPlayersMap(MapIdEntities<Player> players) {
+	public void initPlayersMap(MapIdEntities<Player> players, Turn turn) {
         for (Player player : players.entities()) {
             player.fogOfWar.initFromMap(this, player);
-            player.initExploredMap(this);
+            player.initExploredMap(this, turn);
         }
 	}
 	
@@ -295,7 +295,7 @@ public class Map extends ObjectWithId {
 			int height = attr.getIntAttribute(ATTR_HEIGHT);
 			Map map = new Map(idStr, width, height);
 			
-			map.initPlayersMap(game.players);
+			map.initPlayersMap(game.players, game.getTurn());
 			game.map = map;
 			nodeObject = map;
 		}

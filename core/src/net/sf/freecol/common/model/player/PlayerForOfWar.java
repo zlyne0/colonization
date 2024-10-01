@@ -99,7 +99,7 @@ public class PlayerForOfWar {
         int coordsIndex;
         while (spiralIterator.hasNext()) {
         	coordsIndex = spiralIterator.getCoordsIndex();
-        	if (player.isTileExplored(coordsIndex)) {
+        	if (player.getPlayerExploredTiles().isTileExplored(coordsIndex)) {
         		removeFogOfWar(coordsIndex);
         	}
             spiralIterator.next();

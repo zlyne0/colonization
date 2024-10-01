@@ -27,6 +27,7 @@ import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TradeRouteDefinition;
+import net.sf.freecol.common.model.Turn;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.specification.Ability;
@@ -40,7 +41,6 @@ import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
 import promitech.colonization.ui.resources.Messages;
 import promitech.colonization.ui.resources.StringTemplate;
-import promitech.map.Boolean2dArray;
 
 public class Player extends ObjectWithId {
 	
@@ -88,8 +88,8 @@ public class Player extends ObjectWithId {
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
     public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
-    private Boolean2dArray exploredTiles;
-    
+    private PlayerExploredTiles playerExploredTiles;
+
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
     private final java.util.Map<String, Tension> tension = new HashMap<String, Tension>();
     protected Set<String> banMission = null;
@@ -359,45 +359,30 @@ public class Player extends ObjectWithId {
         return (europe == null) ? null : nation.getId() + ".europe";
     }
 	
-	/**
-	 * @return boolean - return true when set some tile as explored 
-	 */
-	public boolean setTileAsExplored(Tile tile) {
-		return exploredTiles.setAndReturnDifference(tile.x, tile.y, true);
-	}
-	
-	public boolean setTileAsExplored(int coordsIndex) {
-		return exploredTiles.setAndReturnDifference(coordsIndex, true);
-	}
-	
 	public boolean isTileUnExplored(Tile tile) {
-		return !isTileExplored(tile.x, tile.y);
+		return playerExploredTiles.isTileUnExplored(tile.x, tile.y);
 	}
 	
 	public boolean isTileExplored(int x, int y) {
-		return exploredTiles.get(x, y);
+		return playerExploredTiles.isTileExplored(x, y);
 	}
 	
-	public boolean isTileExplored(int coordsIndex) {
-		return exploredTiles.get(coordsIndex);
+	public void initExploredMap(Map map, Turn turn) {
+		playerExploredTiles = new PlayerExploredTiles(map.width, map.height, turn);
 	}
 	
-	public void initExploredMap(Map map) {
-		exploredTiles = new Boolean2dArray(map.width, map.height, false);
+	public PlayerExploredTiles getPlayerExploredTiles() {
+		return playerExploredTiles;
 	}
-	
-	public void explorAllTiles() {
-		exploredTiles.set(true);
-	}
-    
+
 	/**
 	 * Method populate {@link MoveExploredTiles} <code>exploredTiles</code> with explored
 	 * tiles
 	 */
-	public void revealMapAfterUnitMove(Map map, Unit unit, MoveExploredTiles exploredTiles) {
+	public void revealMapAfterUnitMove(Map map, Unit unit, MoveExploredTiles exploredTiles, Turn turn) {
 		Tile unitTileLocation = unit.getTile();
-		
-		setTileAsExplored(unitTileLocation);
+
+		playerExploredTiles.setTileAsExplored(unitTileLocation, turn);
 		fogOfWar.removeFogOfWar(unitTileLocation);
 		
 		int radius = unit.lineOfSight();
@@ -407,7 +392,7 @@ public class Player extends ObjectWithId {
 		while (spiralIterator.hasNext()) {
 			int coordsIndex = spiralIterator.getCoordsIndex();
 			
-			if (setTileAsExplored(coordsIndex)) {
+			if (playerExploredTiles.setAndReturnDifference(coordsIndex, turn)) {
 				exploredTiles.addExploredTile(spiralIterator.getX(), spiralIterator.getY());
 			}
 			if (fogOfWar.removeFogOfWar(coordsIndex)) {
@@ -418,15 +403,15 @@ public class Player extends ObjectWithId {
 		}
 	}
 
-	public void revealMapSeeColony(Map map, Colony colony) {
+	public void revealMapSeeColony(Map map, Colony colony, Turn turn) {
 		int radius = (int)getFeatures().applyModifier(
 			Modifier.LINE_OF_SIGHT_BONUS, 
 			colony.settlementType.getVisibleRadius()
 		);
-		
-		setTileAsExplored(colony.tile);
+
+		playerExploredTiles.setTileAsExplored(colony.tile, turn);
 		for (Tile t : map.neighbourTiles(colony.tile, radius)) {
-			setTileAsExplored(t);
+			playerExploredTiles.setTileAsExplored(t, turn);
 		}
 	}
 	

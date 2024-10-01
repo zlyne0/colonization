@@ -8,6 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerExploredTiles;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
@@ -569,8 +570,6 @@ public class Tile implements UnitLocation, Identifiable {
 
     public static class Xml extends XmlNodeParser<Tile> {
 	    
-		private static final String ATTR_PLAYER = "player";
-		private static final String ELEMENT_CACHED_TILE = "cachedTile";
 		private static final String ATTR_OWNING_SETTLEMENT = "owningSettlement";
 		private static final String ATTR_OWNER = "owner";
 		private static final String ATTR_Y = "y";
@@ -582,7 +581,7 @@ public class Tile implements UnitLocation, Identifiable {
 			addNode(CachedTile.class, new ObjectFromNodeSetter<Tile, CachedTile>() {
 				@Override
 				public void set(Tile target, CachedTile entity) {
-					entity.getPlayer().setTileAsExplored(target);
+					entity.getPlayerExploredTiles().init(target, entity.getTurn());
 				}
 				@Override
 				public void generateXml(Tile tile, ChildObject2XmlCustomeHandler<CachedTile> xmlGenerator) throws IOException {
@@ -663,10 +662,13 @@ public class Tile implements UnitLocation, Identifiable {
 			attr.set(ATTR_OWNER, tile.owner);
 			attr.set(ATTR_OWNING_SETTLEMENT, tile.owningSettlement);
 			
-			for (Player player : game.players.entities()) {
-				if (player.isTileExplored(tile.x, tile.y)) {
-					attr.xml.element(ELEMENT_CACHED_TILE);
-					attr.set(ATTR_PLAYER, player);
+			for (Player player : game.players) {
+				PlayerExploredTiles playerExploredTiles = player.getPlayerExploredTiles();
+				byte exploredTurn = playerExploredTiles.exploredTurn(tile.x, tile.y);
+				if (exploredTurn != PlayerExploredTiles.UNEXPLORED) {
+					attr.xml.element(CachedTile.Xml.ELEMENT_CACHED_TILE);
+					attr.set(CachedTile.Xml.ATTR_PLAYER, player);
+					attr.set(CachedTile.Xml.ATTR_TURN, exploredTurn);
 					attr.xml.pop();
 				}
 			}
