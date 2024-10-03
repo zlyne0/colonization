@@ -2,6 +2,7 @@ package net.sf.freecol.common.model.ai.missions.indian;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
+import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.Unit;
@@ -67,7 +68,8 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
-			executeMoveToColonyPhase(mission, unit, mission.getDestinationColony(game));
+			IndianSettlement indianSettlement = indianPlayer.settlements.getById(mission.getIndianSettlementId()).asIndianSettlement();
+			executeMoveToColonyPhase(mission, unit, mission.getDestinationColony(game), indianSettlement);
 		}
 		
 		if (mission.getPhase() == Phase.ATTACK) {
@@ -91,12 +93,13 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 		
 		if (mission.getPhase() == Phase.BACK_TO_SETTLEMENT) {
-			executeBackToSettlementPhase(mission, unit);
+			IndianSettlement indianSettlement = indianPlayer.settlements.getById(mission.getIndianSettlementId()).asIndianSettlement();
+			executeBackToSettlementPhase(mission, unit, indianSettlement);
 		}
 	}
 	
-	private void executeMoveToColonyPhase(DemandTributeMission mission, Unit unit, Colony colony) {
-		mission.exitFromSettlementWhenOnIt(unit);
+	private void executeMoveToColonyPhase(DemandTributeMission mission, Unit unit, Colony colony, IndianSettlement indianSettlement) {
+		mission.exitFromSettlementWhenOnIt(unit, indianSettlement);
 
 		if (!unit.hasMovesPoints()) {
 			return;
@@ -105,7 +108,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		
 		logger.debug(
 			"player[%s].DemandTributeMission[%s] move to colony[%s]",
-			mission.getIndianSettlement().getOwner().getId(),
+			indianSettlement.getOwner().getId(),
 			mission.getId(),
 			colony.getId()
 		);
@@ -121,14 +124,14 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				demandConfirmation(mission, unit, colony);
+				demandConfirmation(mission, unit, colony, indianSettlement);
 			} else {
 				moveService.aiConfirmedMovePath(moveContext);
 			}
 		}
 	}
 	
-	private void demandConfirmation(DemandTributeMission mission, Unit unit, Colony colony) {
+	private void demandConfirmation(DemandTributeMission mission, Unit unit, Colony colony, IndianSettlement indianSettlement) {
 		int gold = 0;
 		Goods selectedGoods = mission.selectGoods(colony, unit);
 		if (selectedGoods == null) {
@@ -136,13 +139,13 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 
 		if (colony.getOwner().isAi()) {
-			demandFromAiPlayer(selectedGoods, gold, mission, unit, colony);
+			demandFromAiPlayer(selectedGoods, gold, mission, unit, colony, indianSettlement);
 		} else {
-			demandFromHumanPlayer(selectedGoods, gold, mission, unit, colony);
+			demandFromHumanPlayer(selectedGoods, gold, mission, unit, colony, indianSettlement);
 		}
 	}
 
-	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission, Unit unit, Colony colony) {
+	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission, Unit unit, Colony colony, IndianSettlement indianSettlement) {
 		boolean agreeForDemands = false;
 		Player colonyOwner = colony.getOwner();
 		if (colonyOwner.nationType().equalsId(NationType.COOPERATION) || colonyOwner.nationType().equalsId(NationType.TRADE)) {
@@ -153,9 +156,9 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			}
 		}
 		if (agreeForDemands) {
-			mission.acceptDemands(colony, goods, goldAmount, unit);
+			mission.acceptDemands(colony, goods, goldAmount, unit, indianSettlement);
 		} else {
-			mission.rejectDemands(colony, goods, goldAmount, unit);
+			mission.rejectDemands(colony, goods, goldAmount, unit, indianSettlement);
 		}
 	}
 
@@ -164,25 +167,26 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			final int goldAmount,
 			final DemandTributeMission mission,
 			final Unit unit,
-			final Colony colony
+			final Colony colony,
+			final IndianSettlement indianSettlement
 	) {
 		OptionAction<Goods> acceptDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.acceptDemands(colony, goods, goldAmount, unit);
+				mission.acceptDemands(colony, goods, goldAmount, unit, indianSettlement);
 			}
 		};
 		OptionAction<Goods> rejectDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.rejectDemands(colony, goods, goldAmount, unit);
+				mission.rejectDemands(colony, goods, goldAmount, unit, indianSettlement);
 			}
 		};
 
 		if (goods != null) {
 			if (goods.getType().isFood()) {
 				StringTemplate st = StringTemplate.template("indianDemand.food.text")
-					.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
+					.addStringTemplate("%nation%", indianSettlement.getOwner().getNationName())
 					.add("%colony%", colony.getName())
 					.addAmount("%amount%", goods.getAmount());
 
@@ -192,7 +196,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 				);
 			} else {
 				StringTemplate st = StringTemplate.template("indianDemand.other.text")
-					.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
+					.addStringTemplate("%nation%", indianSettlement.getOwner().getNationName())
 					.add("%colony%", colony.getName())
 					.addName("%goods%", goods)
 					.addAmount("%amount%", goods.getAmount());
@@ -204,7 +208,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			}
 		} else {
 			StringTemplate st = StringTemplate.template("indianDemand.gold.text")
-				.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
+				.addStringTemplate("%nation%", indianSettlement.getOwner().getNationName())
 				.add("%colony%", colony.getName())
 				.addAmount("%amount%", goldAmount);
 
@@ -215,11 +219,11 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 	}
 
-	private void executeBackToSettlementPhase(DemandTributeMission mission, Unit unit) {
+	private void executeBackToSettlementPhase(DemandTributeMission mission, Unit unit, IndianSettlement indianSettlement) {
 		Tile unitActualLocation = unit.getTile();
 		
-		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
-			mission.backUnitToSettlement(unit);
+		if (unitActualLocation.equalsCoordinates(indianSettlement.tile)) {
+			unit.changeUnitLocation(indianSettlement);
 			mission.setDone();
 			return;
 		}
@@ -230,11 +234,11 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			"player[%s].DemandTributeMission[%s] back to settlement[%s]", 
 			unit.getOwner().getId(),
 			mission.getId(),
-			mission.getIndianSettlement().getId()
+			mission.getIndianSettlementId()
 		);
 		
-		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getIndianSettlement().tile, 
+		Path path = pathFinder.findToTile(game.map, unitActualLocation,
+			indianSettlement.tile,
 			unit,
 			PathFinder.includeUnexploredTiles
 		);

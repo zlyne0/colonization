@@ -55,12 +55,13 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 			mission.setDone();
 			return;
 		}
-		
+		IndianSettlement indianSettlement = indianPlayer.settlements.getById(mission.getIndianSettlementId()).asIndianSettlement();
+
 		if (mission.isColonyOwnerChanged(game)) {
 			mission.changePhase(IndianBringGiftMission.Phase.BACK_TO_SETTLEMENT);
 		}
 		
-		if (!mission.correctTransportUnitLocation(unit)) {
+		if (!mission.correctTransportUnitLocation(unit, indianSettlement)) {
 			logger.debug(
 				"player[%s].IndianBringGiftMission done: incorrect transport unit[%s] location",
 				indianPlayer.getId(), 
@@ -71,23 +72,23 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		}
 		
 		if (mission.getPhase() == Phase.TAKE_GOODS) {
-			executeTakeGoodsPhase(mission, unit);
+			executeTakeGoodsPhase(mission, unit, indianSettlement);
 		}
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
-			executeMoveToColonyPhase(mission, unit, mission.getDestinationColony(game));
+			executeMoveToColonyPhase(mission, unit, mission.getDestinationColony(game), indianSettlement);
 		}
 		
 		if (mission.getPhase() == Phase.BACK_TO_SETTLEMENT) {
-			executeBackToSettlementPhase(mission, unit);
+			executeBackToSettlementPhase(mission, unit, indianSettlement);
 		}
 	}
 	
-	private void executeTakeGoodsPhase(IndianBringGiftMission mission, Unit transportUnit) {
+	private void executeTakeGoodsPhase(IndianBringGiftMission mission, Unit transportUnit, IndianSettlement indianSettlement) {
 		Tile unitActualLocation = transportUnit.getTile();
 
-		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
-			mission.getIndianSettlement().getGoodsContainer().decreaseGoodsQuantity(mission.getGift());
+		if (unitActualLocation.equalsCoordinates(indianSettlement.tile)) {
+			indianSettlement.getGoodsContainer().decreaseGoodsQuantity(mission.getGift());
 			mission.changePhase(Phase.MOVE_TO_COLONY);
 			return;
 		}
@@ -97,11 +98,11 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		logger.debug(
 			"player[%s].IndianBringGiftMission move to settlement[%s] take goods",
 			transportUnit.getOwner().getId(),
-			mission.getIndianSettlement().getId()
+			indianSettlement.getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getIndianSettlement().tile,
+			indianSettlement.tile,
 			transportUnit,
 			PathFinder.includeUnexploredTiles
 		);
@@ -111,7 +112,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		}
 	}
 	
-	private void executeMoveToColonyPhase(IndianBringGiftMission mission, Unit transportUnit, Colony destinationColony) {
+	private void executeMoveToColonyPhase(IndianBringGiftMission mission, Unit transportUnit, Colony destinationColony, IndianSettlement indianSettlement) {
 		if (!transportUnit.hasMovesPoints()) {
 			return;
 		}
@@ -138,7 +139,7 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 				AbstractGoods gift = mission.transferGoodsToColony(transportUnit, destinationColony);
 				
 				logger.debug("player[%s].IndianBringGiftMission deliver gift[%s:%s] to colony[%s]",
-					mission.getIndianSettlement().getOwner().getId(),
+					indianSettlement.getOwner().getId(),
 					gift.getTypeId(),
 					gift.getQuantity(),
 					destinationColony.getId()
@@ -167,15 +168,15 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		);
 	}
 	
-	private void executeBackToSettlementPhase(IndianBringGiftMission mission, Unit transportUnit) {
+	private void executeBackToSettlementPhase(IndianBringGiftMission mission, Unit transportUnit, IndianSettlement indianSettlement) {
 		if (transportUnit.isAtLocation(IndianSettlement.class)) {
 			mission.setDone();
 			return;
 		}
 		Tile unitActualLocation = transportUnit.getTile();
 		
-		if (unitActualLocation.equalsCoordinates(mission.getIndianSettlement().tile)) {
-			mission.backUnitToSettlement(transportUnit);
+		if (unitActualLocation.equalsCoordinates(indianSettlement.tile)) {
+			mission.backUnitToSettlement(transportUnit, indianSettlement);
 			mission.setDone();
 			return;
 		}
@@ -185,11 +186,11 @@ public class IndianBringGiftMissionHandler implements MissionHandler<IndianBring
 		logger.debug(
 			"IndianBringGiftMission[%s] back to settlement[%s]",
 			transportUnit.getOwner().getId(),
-			mission.getIndianSettlement().getId()
+			mission.getIndianSettlementId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getIndianSettlement().tile,
+			indianSettlement.tile,
 			transportUnit,
 			PathFinder.includeUnexploredTiles
 		);

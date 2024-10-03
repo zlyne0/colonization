@@ -8,7 +8,6 @@ import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.player.Tension;
@@ -33,7 +32,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		ATTACK
 	}
 
-	private IndianSettlement indianSettlement;
+	private String indianSettlementId;
 	private String unitToDemandTributeId;
 	private String colonyId;
 	private String colonyOwnerId;
@@ -45,7 +44,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 	
 	public DemandTributeMission(IndianSettlement indianSettlement, Unit unitToDemandTribute, Colony colony) {
 		super(Game.idGenerator.nextId(DemandTributeMission.class));
-		this.indianSettlement = indianSettlement;
+		this.indianSettlementId = indianSettlement.getId();
 		this.unitToDemandTributeId = unitToDemandTribute.getId();
 		this.colonyId = colony.getId();
 		this.colonyOwnerId = colony.getOwner().getId();
@@ -63,8 +62,8 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 	}
 
 	@Override
-	public IndianSettlement getIndianSettlement() {
-		return indianSettlement;
+	public String getIndianSettlementId() {
+		return indianSettlementId;
 	}
 
 	public Colony getDestinationColony(Game game) {
@@ -76,10 +75,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		if (indianPlayer.isDead()) {
 			return false;
 		}
-		if (indianSettlement == null || !indianPlayer.settlements.containsId(indianSettlement)) {
-			return false;
-		}
-		if (colonyOwnerId == null) {
+		if (colonyOwnerId == null || !indianPlayer.settlements.containsId(indianSettlementId)) {
 			return false;
 		}
 		return true;
@@ -90,7 +86,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return owner == null || owner.isDead() || !owner.settlements.containsId(colonyId);
 	}
 	
-	public void exitFromSettlementWhenOnIt(Unit unit) {
+	public void exitFromSettlementWhenOnIt(Unit unit, IndianSettlement indianSettlement) {
 		if (unit.getTileLocationOrNull() == null) {
 			if (unit.isAtLocation(IndianSettlement.class)) {
 				unit.changeUnitLocation(indianSettlement.tile);
@@ -197,7 +193,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		);
     }
 	
-	public void acceptDemands(Colony colony, Goods goods, int goldAmount, Unit unit) {
+	public void acceptDemands(Colony colony, Goods goods, int goldAmount, Unit unit, IndianSettlement indianSettlement) {
 		if (goods != null) {
 			colony.getGoodsContainer().transferGoods(
 				goods, 
@@ -231,7 +227,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		}
 	}
 	
-	public void rejectDemands(Colony colony, Goods goods, int goldAmount, Unit unit) {
+	public void rejectDemands(Colony colony, Goods goods, int goldAmount, Unit unit, IndianSettlement indianSettlement) {
 		Tension tension = Tension.worst(
 			indianSettlement.getTension(colony.getOwner()), 
 			indianSettlement.getOwner().getTension(colony.getOwner())
@@ -279,10 +275,6 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
     	}
 	}
 	
-	public void backUnitToSettlement(Unit unit) {
-		unit.changeUnitLocation(indianSettlement);
-	}
-	
 	public static class Xml extends AbstractMission.Xml<DemandTributeMission> {
 
 		private static final String ATTR_PHASE = "phase";
@@ -295,9 +287,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		public void startElement(XmlNodeAttributes attr) {
 			DemandTributeMission m = new DemandTributeMission(attr.getId());
 			
-			m.indianSettlement = PlayerMissionsContainer.Xml.getPlayerIndianSettlement(
-				attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID)
-			);
+			m.indianSettlementId = attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID);
 			m.colonyOwnerId = attr.getStrAttributeNotNull(ATTR_COLONY_OWNER_ID);
 			m.colonyId = attr.getStrAttributeNotNull(ATTR_COLONY_ID);
 			m.unitToDemandTributeId = attr.getStrAttributeNotNull(ATTR_UNIT_ID);
@@ -311,7 +301,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		public void startWriteAttr(DemandTributeMission m, XmlNodeAttributesWriter attr) throws IOException {
 			super.startWriteAttr(m, attr);
 			attr.setId(m);
-			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
+			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlementId);
 			attr.set(ATTR_COLONY_ID, m.colonyId);
 			attr.set(ATTR_COLONY_OWNER_ID, m.colonyOwnerId);
 			attr.set(ATTR_UNIT_ID, m.unitToDemandTributeId);

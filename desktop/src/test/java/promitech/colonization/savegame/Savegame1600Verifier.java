@@ -136,11 +136,11 @@ public class Savegame1600Verifier {
 		PlayerMissionsContainer missionContainer = game.aiContainer.getMissionContainer("player:154");
 		
 		IndianBringGiftMission mission = missionContainer.getMission("indianBringGiftMission:123");
-		assertThat(mission.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
+		assertThat(mission.getIndianSettlementId()).isEqualTo("indianSettlement:6339");
 		assertThat(missionContainer.isUnitBlockedForMission("unit:6351")).isTrue();
 		
 		DemandTributeMission mission2 = missionContainer.getMission("demandTributeMission:124");
-		assertThat(mission2.getIndianSettlement().getId()).isEqualTo("indianSettlement:6339");
+		assertThat(mission2.getIndianSettlementId()).isEqualTo("indianSettlement:6339");
 		assertThat(missionContainer.isUnitBlockedForMission("unit:6353")).isTrue();
 	}
 

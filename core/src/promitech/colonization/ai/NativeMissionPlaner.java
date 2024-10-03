@@ -240,7 +240,7 @@ public class NativeMissionPlaner {
 		for (AbstractMission ab : pmc.getMissions().entities()) {
 			if (ab.is(missionClass) 
 					&& ab instanceof MissionFromIndianSettlement 
-					&& ((MissionFromIndianSettlement)ab).getIndianSettlement().equalsId(settlementId)
+					&& ((MissionFromIndianSettlement)ab).getIndianSettlementId().equals(settlementId)
 			) {
 				return true;
 			}

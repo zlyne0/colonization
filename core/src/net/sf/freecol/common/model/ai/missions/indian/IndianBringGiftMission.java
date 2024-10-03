@@ -5,7 +5,6 @@ import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
-import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
@@ -23,7 +22,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		BACK_TO_SETTLEMENT
 	}
 	
-	private IndianSettlement indianSettlement;
+	private String indianSettlementId;
 	private String destinationColonyId;
 	private String destinationColonyOwnerId;
 	private String transportUnitId;
@@ -39,7 +38,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		Unit transportUnit, AbstractGoods gift
 	) {
 		super(Game.idGenerator.nextId(IndianBringGiftMission.class));
-		this.indianSettlement = indianSettlement;
+		this.indianSettlementId = indianSettlement.getId();
 		
 		this.destinationColonyId = colony.getId();
 		this.destinationColonyOwnerId = colony.getOwner().getId();
@@ -59,7 +58,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 	}
 
 	public boolean canExecuteMission(Player player) {
-		if (player.isDead() || indianSettlement == null || !player.settlements.containsId(indianSettlement) || destinationColonyOwnerId == null) {
+		if (player.isDead() || !player.settlements.containsId(indianSettlementId) || destinationColonyOwnerId == null) {
 			return false;
 		}
 		return true;
@@ -70,7 +69,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return owner == null || owner.isDead() || !owner.settlements.containsId(destinationColonyId);
 	}
 	
-	public boolean correctTransportUnitLocation(Unit unit) {
+	public boolean correctTransportUnitLocation(Unit unit, IndianSettlement indianSettlement) {
 		if (unit.getTileLocationOrNull() == null) {
 			if (unit.isAtLocation(IndianSettlement.class)) {
 				unit.changeUnitLocation(indianSettlement.tile);
@@ -81,7 +80,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return true;
 	}
 	
-	public void backUnitToSettlement(Unit unit) {
+	public void backUnitToSettlement(Unit unit, IndianSettlement indianSettlement) {
 		if (gift.getQuantity() > 0) {
 			indianSettlement.getGoodsContainer().increaseGoodsQuantity(gift);
 		}
@@ -98,8 +97,8 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 	}
 	
 	@Override
-	public IndianSettlement getIndianSettlement() {
-		return indianSettlement;
+	public String getIndianSettlementId() {
+		return indianSettlementId;
 	}
 
 	public String getTransportUnitId() {
@@ -137,10 +136,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		public void startElement(XmlNodeAttributes attr) {
 			IndianBringGiftMission m = new IndianBringGiftMission(attr.getId());
 			
-			m.indianSettlement = PlayerMissionsContainer.Xml.getPlayerIndianSettlement(
-				attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID)
-			);
-			
+			m.indianSettlementId = attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID);
 			m.destinationColonyOwnerId = attr.getStrAttributeNotNull(ATTR_COLONY_OWNER_ID);
 			m.destinationColonyId = attr.getStrAttributeNotNull(ATTR_COLONY_ID);
 			m.transportUnitId = attr.getStrAttributeNotNull(ATTR_TRANSPORT_UNIT_ID);
@@ -158,7 +154,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		public void startWriteAttr(IndianBringGiftMission m, XmlNodeAttributesWriter attr) throws IOException {
 			super.startWriteAttr(m, attr);
 			attr.setId(m);
-			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
+			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlementId);
 			attr.set(ATTR_COLONY_ID, m.destinationColonyId);
 			attr.set(ATTR_COLONY_OWNER_ID, m.destinationColonyOwnerId);
 			attr.set(ATTR_TRANSPORT_UNIT_ID, m.transportUnitId);
