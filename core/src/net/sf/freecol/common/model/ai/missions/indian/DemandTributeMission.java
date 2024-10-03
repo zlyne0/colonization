@@ -5,7 +5,6 @@ import com.badlogic.gdx.utils.ObjectIntMap.Entry;
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
@@ -23,7 +22,6 @@ import java.io.IOException;
 import promitech.colonization.ai.MissionHandlerLogger;
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class DemandTributeMission extends AbstractMission implements MissionFromIndianSettlement {
 
@@ -37,7 +35,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 
 	private IndianSettlement indianSettlement;
 	private String unitToDemandTributeId;
-	private Colony colony;
+	private String colonyId;
 	private String colonyOwnerId;
 	private Phase phase;
 	
@@ -49,7 +47,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		super(Game.idGenerator.nextId(DemandTributeMission.class));
 		this.indianSettlement = indianSettlement;
 		this.unitToDemandTributeId = unitToDemandTribute.getId();
-		this.colony = colony;
+		this.colonyId = colony.getId();
 		this.colonyOwnerId = colony.getOwner().getId();
 		this.phase = Phase.MOVE_TO_COLONY;
 	}
@@ -69,6 +67,11 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return indianSettlement;
 	}
 
+	public Colony getDestinationColony(Game game) {
+		Player colonyOwner = game.players.getById(colonyOwnerId);
+		return colonyOwner.settlements.getById(colonyId).asColony();
+	}
+
 	public boolean canExecuteMission(Player indianPlayer) {
 		if (indianPlayer.isDead()) {
 			return false;
@@ -83,15 +86,8 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 	}
 
 	public boolean isColonyOwnerChanged(Game game) {
-		Player owner = game.players.getById(colonyOwnerId);
-		if (owner.isDead()) {
-			return true;
-		}
-		if (colony == null || !colony.getOwner().equalsId(owner)
-				|| !owner.settlements.containsId(colony)) {
-			return true;
-		}
-		return false;
+		Player owner = game.players.getByIdOrNull(colonyOwnerId);
+		return owner == null || owner.isDead() || !owner.settlements.containsId(colonyId);
 	}
 	
 	public void exitFromSettlementWhenOnIt(Unit unit) {
@@ -102,7 +98,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		}
 	}
 	
-	public Goods selectGoods(Unit unit) {
+	public Goods selectGoods(Colony colony, Unit unit) {
 		int demandModifier = Specification.options.getIntValue(GameOptions.NATIVE_DEMANDS) + 1;
 		Level tensionLevel = unit.getOwner().getTension(colony.getOwner()).getLevel();
 		
@@ -117,17 +113,17 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 				demandModifier
 			));
 		} else if (Level.DISPLEASED.isWorstOrEquals(tensionLevel)) {
-			goods = demandMostValuableGoods(demandModifier);
+			goods = demandMostValuableGoods(colony, demandModifier);
 		} else {
-			goods = selectGoodsForAngryTension(demandModifier);
+			goods = selectGoodsForAngryTension(colony, demandModifier);
 		}
 		if (goods == null) {
-			goods = demandMostValuableGoods(demandModifier);
+			goods = demandMostValuableGoods(colony, demandModifier);
 		}
 		return goods;
 	}
 
-	public int selectGold() {
+	public int selectGold(Colony colony) {
 		int gold = colony.getOwner().getGold() / 20;
 		if (gold == 0) {
 			gold = colony.getOwner().getGold();
@@ -135,7 +131,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return gold;
 	}
 	
-	private Goods selectGoodsForAngryTension(int demandModifier) {
+	private Goods selectGoodsForAngryTension(Colony colony, int demandModifier) {
 		for (GoodsType goodsType : Specification.instance.goodsTypes.entities()) {
 			if (goodsType.isMilitary()) {
 				int amount = colony.getGoodsContainer().goodsAmount(goodsType);
@@ -171,7 +167,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		return null;
 	}
 
-	private Goods demandMostValuableGoods(int demandModifier) {
+	private Goods demandMostValuableGoods(Colony colony, int demandModifier) {
 		int maxGoodsValue = -1;
 		GoodsType maxGoodsType = null;
 		int maxGoodsAmount = 0;
@@ -201,7 +197,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 		);
     }
 	
-	public void acceptDemands(Goods goods, int goldAmount, Unit unit) {
+	public void acceptDemands(Colony colony, Goods goods, int goldAmount, Unit unit) {
 		if (goods != null) {
 			colony.getGoodsContainer().transferGoods(
 				goods, 
@@ -228,14 +224,14 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 				"player[%s].DemandTributeMission[%s] accept demand from player[%s] %s:%d", 
 				unit.getOwner().getId(),
 				getId(),
-				colony.getOwner().getId(),
+				colonyOwnerId,
 				goods != null ? goods.getType() : "gold",
 				goods != null ? goods.getAmount() : goldAmount
 			);
 		}
 	}
 	
-	public void rejectDemands(final Goods goods, final int goldAmount, Unit unit) {
+	public void rejectDemands(Colony colony, Goods goods, int goldAmount, Unit unit) {
 		Tension tension = Tension.worst(
 			indianSettlement.getTension(colony.getOwner()), 
 			indianSettlement.getOwner().getTension(colony.getOwner())
@@ -254,17 +250,13 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 				"player[%s].DemandTributeMission[%s] player[%s] reject demand %s:%d",
 				unit.getOwner().getId(),
 				getId(),
-				colony.getOwner().getId(),
+				colonyOwnerId,
 				goods != null ? goods.getType() : "gold",
 				goods != null ? goods.getAmount() : goldAmount
 			);
 		}
 	}
 	
-	public Colony getColony() {
-		return colony;
-	}
-
 	public String getUnitToDemandTributeId() {
 		return unitToDemandTributeId;
 	}
@@ -306,15 +298,8 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			m.indianSettlement = PlayerMissionsContainer.Xml.getPlayerIndianSettlement(
 				attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID)
 			);
-			
-			Player colonyOwner = attr.getEntity(ATTR_COLONY_OWNER_ID, XmlNodeParser.game.players);
-			m.colonyOwnerId = colonyOwner.getId();
-			
-			Settlement colonySettlement = colonyOwner.settlements.getByIdOrNull(attr.getStrAttributeNotNull(ATTR_COLONY_ID));
-			if (colonySettlement != null) {
-				m.colony = colonySettlement.asColony();
-			}
-			
+			m.colonyOwnerId = attr.getStrAttributeNotNull(ATTR_COLONY_OWNER_ID);
+			m.colonyId = attr.getStrAttributeNotNull(ATTR_COLONY_ID);
 			m.unitToDemandTributeId = attr.getStrAttributeNotNull(ATTR_UNIT_ID);
 			m.phase = attr.getEnumAttribute(Phase.class, ATTR_PHASE, Phase.BACK_TO_SETTLEMENT);
 			
@@ -327,7 +312,7 @@ public class DemandTributeMission extends AbstractMission implements MissionFrom
 			super.startWriteAttr(m, attr);
 			attr.setId(m);
 			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
-			attr.set(ATTR_COLONY_ID, m.colony);
+			attr.set(ATTR_COLONY_ID, m.colonyId);
 			attr.set(ATTR_COLONY_OWNER_ID, m.colonyOwnerId);
 			attr.set(ATTR_UNIT_ID, m.unitToDemandTributeId);
 			attr.set(ATTR_PHASE, m.phase);

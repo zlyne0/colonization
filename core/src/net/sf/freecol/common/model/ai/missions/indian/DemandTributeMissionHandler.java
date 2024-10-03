@@ -1,5 +1,6 @@
 package net.sf.freecol.common.model.ai.missions.indian;
 
+import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.MoveType;
 import net.sf.freecol.common.model.Tile;
@@ -66,14 +67,15 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 		
 		if (mission.getPhase() == Phase.MOVE_TO_COLONY) {
-			executeMoveToColonyPhase(mission, unit);
+			executeMoveToColonyPhase(mission, unit, mission.getDestinationColony(game));
 		}
 		
 		if (mission.getPhase() == Phase.ATTACK) {
+			Colony colony = mission.getDestinationColony(game);
 			// assumption unit is next to settlement
 			MoveContext moveContext = new MoveContext(
 				unit.getTile(),
-				mission.getColony().tile, 
+				colony.tile,
 				unit
 			);
 			
@@ -93,7 +95,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		}
 	}
 	
-	private void executeMoveToColonyPhase(DemandTributeMission mission, Unit unit) {
+	private void executeMoveToColonyPhase(DemandTributeMission mission, Unit unit, Colony colony) {
 		mission.exitFromSettlementWhenOnIt(unit);
 
 		if (!unit.hasMovesPoints()) {
@@ -105,69 +107,75 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			"player[%s].DemandTributeMission[%s] move to colony[%s]",
 			mission.getIndianSettlement().getOwner().getId(),
 			mission.getId(),
-			mission.getColony().getId()
+			colony.getId()
 		);
 		
 		Path path = pathFinder.findToTile(game.map, unitActualLocation, 
-			mission.getColony().tile, 
+			colony.tile,
 			unit,
 			PathFinder.includeUnexploredTiles
 		);
 		if (path.isReachedDestination()) {
 			MoveContext moveContext = new MoveContext(unit, path);
-			if (path.moveStepDest().equalsCoordinates(mission.getColony().tile)) {
+			if (path.moveStepDest().equalsCoordinates(colony.tile)) {
 				moveContext.initNextPathStep();
 				moveService.showMoveIfRequired(moveContext);
 
-				demandConfirmation(mission, unit);
+				demandConfirmation(mission, unit, colony);
 			} else {
 				moveService.aiConfirmedMovePath(moveContext);
 			}
 		}
 	}
 	
-	private void demandConfirmation(DemandTributeMission mission, Unit unit) {
+	private void demandConfirmation(DemandTributeMission mission, Unit unit, Colony colony) {
 		int gold = 0;
-		Goods selectedGoods = mission.selectGoods(unit);
+		Goods selectedGoods = mission.selectGoods(colony, unit);
 		if (selectedGoods == null) {
-			gold = mission.selectGold();
+			gold = mission.selectGold(colony);
 		}
 
-		if (mission.getColony().getOwner().isAi()) {
-			demandFromAiPlayer(selectedGoods, gold, mission, unit);
+		if (colony.getOwner().isAi()) {
+			demandFromAiPlayer(selectedGoods, gold, mission, unit, colony);
 		} else {
-			demandFromHumanPlayer(selectedGoods, gold, mission, unit);
+			demandFromHumanPlayer(selectedGoods, gold, mission, unit, colony);
 		}
 	}
 
-	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission, Unit unit) {
+	private void demandFromAiPlayer(Goods goods, int goldAmount, DemandTributeMission mission, Unit unit, Colony colony) {
 		boolean agreeForDemands = false;
-		Player colonyOwner = mission.getColony().getOwner();
+		Player colonyOwner = colony.getOwner();
 		if (colonyOwner.nationType().equalsId(NationType.COOPERATION) || colonyOwner.nationType().equalsId(NationType.TRADE)) {
 			agreeForDemands = true;
 		} else {
-			if (OffencePower.calculateTileDefencePowerForAttacker(unit, mission.getColony().tile) <= 3) {
+			if (OffencePower.calculateTileDefencePowerForAttacker(unit, colony.tile) <= 3) {
 				agreeForDemands = true;
 			}
 		}
 		if (agreeForDemands) {
-			mission.acceptDemands(goods, goldAmount, unit);
+			mission.acceptDemands(colony, goods, goldAmount, unit);
 		} else {
-			mission.rejectDemands(goods, goldAmount, unit);
+			mission.rejectDemands(colony, goods, goldAmount, unit);
 		}
 	}
 
-	private void demandFromHumanPlayer(final Goods goods, final int goldAmount, final DemandTributeMission mission, final Unit unit) {
+	private void demandFromHumanPlayer(
+			final Goods goods,
+			final int goldAmount,
+			final DemandTributeMission mission,
+			final Unit unit,
+			final Colony colony
+	) {
 		OptionAction<Goods> acceptDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.acceptDemands(goods, goldAmount, unit);
+				mission.acceptDemands(colony, goods, goldAmount, unit);
 			}
 		};
 		OptionAction<Goods> rejectDemandsAction = new OptionAction<Goods>() {
 			@Override
 			public void executeAction(Goods payload) {
-				mission.rejectDemands(goods, goldAmount, unit);
+				mission.rejectDemands(colony, goods, goldAmount, unit);
 			}
 		};
 
@@ -175,7 +183,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			if (goods.getType().isFood()) {
 				StringTemplate st = StringTemplate.template("indianDemand.food.text")
 					.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
-					.add("%colony%", mission.getColony().getName())
+					.add("%colony%", colony.getName())
 					.addAmount("%amount%", goods.getAmount());
 
 				guiGameController.showDialogBlocked(new QuestionDialog(st)
@@ -185,7 +193,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 			} else {
 				StringTemplate st = StringTemplate.template("indianDemand.other.text")
 					.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
-					.add("%colony%", mission.getColony().getName())
+					.add("%colony%", colony.getName())
 					.addName("%goods%", goods)
 					.addAmount("%amount%", goods.getAmount());
 
@@ -197,7 +205,7 @@ public class DemandTributeMissionHandler implements MissionHandler<DemandTribute
 		} else {
 			StringTemplate st = StringTemplate.template("indianDemand.gold.text")
 				.addStringTemplate("%nation%", mission.getIndianSettlement().getOwner().getNationName())
-				.add("%colony%", mission.getColony().getName())
+				.add("%colony%", colony.getName())
 				.addAmount("%amount%", goldAmount);
 
 			guiGameController.showDialogBlocked(new QuestionDialog(st)

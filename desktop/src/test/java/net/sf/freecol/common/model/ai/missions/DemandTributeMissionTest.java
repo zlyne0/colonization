@@ -48,7 +48,7 @@ class DemandTributeMissionTest {
     	DemandTributeMission mission = new DemandTributeMission(indianSettlement, unitToDemandTribute, colony);
     	
 		// when
-    	Goods demandGoods = mission.selectGoods(unitToDemandTribute);
+    	Goods demandGoods = mission.selectGoods(colony, unitToDemandTribute);
 
 		// then
     	assertThat(demandGoods).isEquals(GoodsType.FOOD, 90);
@@ -65,7 +65,7 @@ class DemandTributeMissionTest {
     	DemandTributeMission mission = new DemandTributeMission(indianSettlement, unitToDemandTribute, colony);
     	
 		// when
-    	Goods demandGoods = mission.selectGoods(unitToDemandTribute);
+    	Goods demandGoods = mission.selectGoods(colony, unitToDemandTribute);
 
 		// then
     	assertThat(demandGoods).isEquals("model.goods.ore", 40);
@@ -82,7 +82,7 @@ class DemandTributeMissionTest {
     	DemandTributeMission mission = new DemandTributeMission(indianSettlement, unitToDemandTribute, colony);
     	
 		// when
-    	Goods demandGoods = mission.selectGoods(unitToDemandTribute);
+    	Goods demandGoods = mission.selectGoods(colony, unitToDemandTribute);
 
 		// then
     	assertThat(demandGoods).isEquals(GoodsType.HORSES, 32);

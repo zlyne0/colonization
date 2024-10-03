@@ -1,20 +1,19 @@
 package net.sf.freecol.common.model.ai.missions.indian;
 
-import java.io.IOException;
-
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
 import net.sf.freecol.common.model.IndianSettlement;
-import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.missions.AbstractMission;
 import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer;
 import net.sf.freecol.common.model.ai.missions.UnitMissionsMapping;
 import net.sf.freecol.common.model.player.Player;
 import net.sf.freecol.common.model.specification.AbstractGoods;
+
+import java.io.IOException;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
-import promitech.colonization.savegame.XmlNodeParser;
 
 public class IndianBringGiftMission extends AbstractMission implements MissionFromIndianSettlement {
 
@@ -25,7 +24,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 	}
 	
 	private IndianSettlement indianSettlement;
-	private Colony destinationColony;
+	private String destinationColonyId;
 	private String destinationColonyOwnerId;
 	private String transportUnitId;
 	private AbstractGoods gift;
@@ -42,7 +41,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		super(Game.idGenerator.nextId(IndianBringGiftMission.class));
 		this.indianSettlement = indianSettlement;
 		
-		this.destinationColony = colony;
+		this.destinationColonyId = colony.getId();
 		this.destinationColonyOwnerId = colony.getOwner().getId();
 		this.transportUnitId = transportUnit.getId();
 		this.gift = gift;
@@ -68,14 +67,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 
 	public boolean isColonyOwnerChanged(Game game) {
 		Player owner = game.players.getById(destinationColonyOwnerId);
-		if (owner.isDead()) {
-			return true;
-		}
-		if (destinationColony == null || !destinationColony.getOwner().equalsId(owner)
-				|| !owner.settlements.containsId(destinationColony)) {
-			return true;
-		}
-		return false;
+		return owner == null || owner.isDead() || !owner.settlements.containsId(destinationColonyId);
 	}
 	
 	public boolean correctTransportUnitLocation(Unit unit) {
@@ -96,7 +88,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		unit.changeUnitLocation(indianSettlement);
 	}
 	
-	public AbstractGoods transferGoodsToColony(Unit unit) {
+	public AbstractGoods transferGoodsToColony(Unit unit, Colony destinationColony) {
 		AbstractGoods transferedGoods = gift.clone();
 		unit.reduceMovesLeftToZero();
 		destinationColony.getGoodsContainer().increaseGoodsQuantity(gift);
@@ -110,12 +102,13 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 		return indianSettlement;
 	}
 
-	public Colony getDestinationColony() {
-		return destinationColony;
-	}
-
 	public String getTransportUnitId() {
 		return transportUnitId;
+	}
+
+	public Colony getDestinationColony(Game game) {
+		Player colonyOwner = game.players.getById(destinationColonyOwnerId);
+		return colonyOwner.settlements.getById(destinationColonyId).asColony();
 	}
 
 	public AbstractGoods getGift() {
@@ -148,14 +141,8 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 				attr.getStrAttributeNotNull(ATTR_INDIAN_SETTLEMENT_ID)
 			);
 			
-			Player colonyOwner = attr.getEntity(ATTR_COLONY_OWNER_ID, XmlNodeParser.game.players);
-			m.destinationColonyOwnerId = colonyOwner.getId();
-			
-			Settlement colonySettlement = colonyOwner.settlements.getByIdOrNull(attr.getStrAttributeNotNull(ATTR_COLONY_ID));
-			if (colonySettlement != null) {
-				m.destinationColony = colonySettlement.asColony();
-			}
-			
+			m.destinationColonyOwnerId = attr.getStrAttributeNotNull(ATTR_COLONY_OWNER_ID);
+			m.destinationColonyId = attr.getStrAttributeNotNull(ATTR_COLONY_ID);
 			m.transportUnitId = attr.getStrAttributeNotNull(ATTR_TRANSPORT_UNIT_ID);
 			m.gift = new AbstractGoods(
 				attr.getStrAttributeNotNull(ATTR_GIFT_GOODS_TYPE_ID), 
@@ -172,7 +159,7 @@ public class IndianBringGiftMission extends AbstractMission implements MissionFr
 			super.startWriteAttr(m, attr);
 			attr.setId(m);
 			attr.set(ATTR_INDIAN_SETTLEMENT_ID, m.indianSettlement);
-			attr.set(ATTR_COLONY_ID, m.destinationColony);
+			attr.set(ATTR_COLONY_ID, m.destinationColonyId);
 			attr.set(ATTR_COLONY_OWNER_ID, m.destinationColonyOwnerId);
 			attr.set(ATTR_TRANSPORT_UNIT_ID, m.transportUnitId);
 			attr.set(ATTR_GIFT_GOODS_TYPE_ID, m.gift.getTypeId());
