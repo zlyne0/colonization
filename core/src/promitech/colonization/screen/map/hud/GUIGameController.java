@@ -378,7 +378,10 @@ public class GUIGameController {
 		
 		newTurnService.newTurn(guiGameModel.game.playingPlayer);
 		guiGameModel.game.increaseTurnNumber();
-		
+		for (Player player : guiGameModel.game.players) {
+			player.getPlayerExploredTiles().resetFogOfWar(guiGameModel.game, player, guiGameModel.game.getTurn());
+		}
+
 		mapActor.resetMapModel();
 		mapActor.resetUnexploredBorders();
 		

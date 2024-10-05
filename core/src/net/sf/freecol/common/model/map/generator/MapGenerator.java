@@ -180,7 +180,7 @@ public class MapGenerator {
 				Unit carrier = carriers.get(0);
 				Tile tile = map.getSafeTile(player.getEntryLocation());
 				carrier.changeUnitLocation(tile);
-				player.revealMapAfterUnitMove(map, carrier, new MoveExploredTiles(), new Turn(1));
+				player.getPlayerExploredTiles().revealMap(carrier, new MoveExploredTiles(), new Turn(1));
 				
 				for (Unit passengerUnit : passengers) {
 					passengerUnit.changeUnitLocation(carrier);

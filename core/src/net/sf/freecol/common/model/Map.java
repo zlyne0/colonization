@@ -169,7 +169,6 @@ public class Map extends ObjectWithId {
     
 	public void initPlayersMap(MapIdEntities<Player> players, Turn turn) {
         for (Player player : players.entities()) {
-            player.fogOfWar.initFromMap(this, player);
             player.initExploredMap(this, turn);
         }
 	}

@@ -618,7 +618,7 @@ public class IndianSettlement extends Settlement {
     	return missionary.unit.getOwner();
     }
 
-    public void changeMissionary(Unit newMissionary) {
+    public void changeMissionary(Unit newMissionary, Turn turn) {
     	if (missionary != null && missionary.unit != null) {
     		missionary.unit.getOwner().eventsNotifications.addMessageNotification(
 				StringTemplate.template("indianSettlement.mission.denounced")
@@ -632,8 +632,12 @@ public class IndianSettlement extends Settlement {
     	newMissionary.changeUnitLocation(missionary);
     	newMissionary.reduceMovesLeftToZero();
     	resetConvertProgress();
-    	modifyTensionWithOwnerTension(newMissionary.getOwner(), Tension.ALARM_NEW_MISSIONARY);
-    	newMissionary.getOwner().fogOfWar.fogOfWarForMissionary(this, newMissionary.getOwner());
+		modifyTensionWithOwnerTension(newMissionary.getOwner(), Tension.ALARM_NEW_MISSIONARY);
+		newMissionary.getOwner().getPlayerExploredTiles().resetForOfWar(
+				tile,
+				missionary.lineOfSight(settlementType),
+				turn
+		);
     }
     
 	public void removeMissionary() {

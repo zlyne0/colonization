@@ -95,7 +95,6 @@ fun createCommands(
     	}
     	command("map_show") {
 		    guiGameModel.game.playingPlayer.playerExploredTiles.exploreAllTiles(guiGameModel.game.turn);
-		    guiGameModel.game.playingPlayer.fogOfWar.removeFogOfWar();
 		    gameController.resetMapModel();
     	}
     	command("map_generate") {
@@ -594,6 +593,8 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 //				missionExecutor.executeMissions(missionContainer, RequestGoodsMission::class.java)
 
 				guiGameModel.game.increaseTurnNumber()
+				player.playerExploredTiles.resetFogOfWar(guiGameModel.game, player, guiGameModel.game.turn)
+
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 				player.setAi(false)
@@ -639,6 +640,10 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 				missionExecutor.dispose()
 
 				guiGameModel.game.increaseTurnNumber()
+				for (p in guiGameModel.game.players) {
+					p.playerExploredTiles.resetFogOfWar(guiGameModel.game, p, guiGameModel.game.turn)
+				}
+
 				mapActor.resetMapModel()
 				mapActor.resetUnexploredBorders()
 			}
@@ -749,7 +754,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		val debugPioneer = DebugPioneer(di, guiGameModel, tileDebugView, mapActor!!)
 		debugPioneer.showImprovementsPlan()
 
-		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+		player.playerExploredTiles.resetFogOfWar(guiGameModel.game, player, guiGameModel.game.turn)
 		mapActor?.resetMapModel()
 		mapActor?.resetUnexploredBorders()
 	}
@@ -782,7 +787,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		//playerDefencePlaner.scoreColoniesToDefend(tileDebugView)
 		playerThreatModel.printSingleTileDefence(tileDebugView)
 
-		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+		player.playerExploredTiles.resetFogOfWar(guiGameModel.game, player, guiGameModel.game.turn)
         mapActor?.resetMapModel()
         mapActor?.resetUnexploredBorders()
 	}
@@ -810,7 +815,7 @@ fun aiExplore(di: DI, tileDebugView: TileDebugView) {
 		debugMilitary.generateOrders()
 
 		// when
-		player.fogOfWar.resetFogOfWar(guiGameModel.game, player)
+		player.playerExploredTiles.resetFogOfWar(guiGameModel.game, player, guiGameModel.game.turn)
 		mapActor?.resetMapModel()
 		mapActor?.resetUnexploredBorders()
 	}

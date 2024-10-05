@@ -24,7 +24,7 @@ internal class ColonyTradeItem(val colony : Colony, fromPlayer : Player, toPlaye
 		colony.changeOwner(toPlayer)
 		colony.updateColonyFeatures()
 		colony.updateColonyPopulation()
-		toPlayer.fogOfWar.resetFogOfWarForSettlement(toPlayer, colony)
+		toPlayer.playerExploredTiles.resetForOfWar(colony.tile, colony.settlementType.visibleRadius, game.turn)
 	}
 
 	private fun moveNavyToFreeNeighbourTile(game : Game, colony : Colony) {

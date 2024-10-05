@@ -181,7 +181,10 @@ class IndianSettlementTest : Savegame1600BaseClass() {
         wagonTrain.goodsContainer.increaseGoodsQuantity(tradeGoods, 100)
         val tile = game.map.getSafeTile(19, 78)
         val settlement = tile.getSettlement().asIndianSettlement()
-        settlement.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, settlement.tile))
+        settlement.changeMissionary(
+            UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, settlement.tile),
+            game.turn
+        )
         val galleonTradeSession = TradeSession(game.map, settlement, galleon)
             .updateSettlementProduction()
         val wagonTrainTradeSession = TradeSession(game.map, settlement, wagonTrain)
@@ -227,7 +230,10 @@ class IndianSettlementTest : Savegame1600BaseClass() {
         // given
         val tile = game.map.getSafeTile(19, 78)
         val settlement = tile.getSettlement().asIndianSettlement()
-        settlement.changeMissionary(UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, settlement.tile))
+        settlement.changeMissionary(
+            UnitFactory.create("model.unit.jesuitMissionary", "model.role.missionary", dutch, settlement.tile),
+            game.turn
+        )
         val galleon = UnitFactory.create(UnitType.GALLEON, dutch, nieuwAmsterdamTile)
         galleon.goodsContainer.increaseGoodsQuantity(tradeGoods, 100)
         val wagonTrain = UnitFactory.create(UnitType.WAGON_TRAIN, dutch, nieuwAmsterdamTile)

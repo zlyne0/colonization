@@ -115,7 +115,7 @@ class DefaultCostDecider implements CostDecider {
 			}
 		}
 		
-	    if (avoidUnexploredTiles && unitMove.getOwner().isTileUnExplored(newTile)) {
+	    if (avoidUnexploredTiles && unitMove.getOwner().getPlayerExploredTiles().isTileUnExplored(newTile.x, newTile.y)) {
 	        moveCost = ILLEGAL_MOVE_COST;
 	        return true;
 	    }

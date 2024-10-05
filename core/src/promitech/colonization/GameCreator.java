@@ -96,8 +96,8 @@ public class GameCreator {
 		guiGameModel.game.playingPlayer.eventsNotifications.setAddNotificationListener(guiGameModel);
 		guiGameModel.unitIterator = new UnitIterator(guiGameModel.game.playingPlayer, new Unit.ActivePredicate());
 		
-		for (Player player : guiGameModel.game.players.entities()) {
-			player.fogOfWar.resetFogOfWar(guiGameModel.game, player);
+		for (Player player : guiGameModel.game.players) {
+			player.getPlayerExploredTiles().resetFogOfWar(guiGameModel.game, player, guiGameModel.game.getTurn());
 		}
 	}
 }

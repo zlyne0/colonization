@@ -134,7 +134,7 @@ public class HudInfoPanel extends Widget implements ChangeSelectedUnitListener {
     	BitmapFont titleFont = FontResource.getInfoPanelTitleFont();
     	
     	String descKey;
-    	if (mapActor.mapDrawModel().playingPlayer.isTileExplored(tile.x, tile.y)) {
+    	if (mapActor.mapDrawModel().playingPlayer.getPlayerExploredTiles().isTileExplored(tile.x, tile.y)) {
     		descKey = Messages.nameKey(tile.getType().getId());
     	} else {
     		descKey = "unexplored";

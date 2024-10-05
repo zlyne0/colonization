@@ -6,8 +6,6 @@ import java.util.List;
 
 import net.sf.freecol.common.model.Colony;
 import net.sf.freecol.common.model.Game;
-import net.sf.freecol.common.model.IndianSettlement;
-import net.sf.freecol.common.model.IndianSettlementWantedGoods;
 import net.sf.freecol.common.model.ResourceType;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Tile;
@@ -78,14 +76,12 @@ public class NewTurnService {
         	bombardEnemyShip(player);
         }
 
-        if (player.isAi()) {
+		if (player.isAi()) {
         	player.eventsNotifications.clearNotifications();
 			PlayerAiContainer playerAiContainer = guiGameModel.game.aiContainer.playerAiContainer(player);
 			playerAiContainer.removeOutdatedReservations(guiGameModel.game.aiContainer.missionContainer(player));
 			playerAiContainer.removeSupplyGoodsWhenNoColony();
 		}
-
-		player.fogOfWar.resetFogOfWar(guiGameModel.game, player);
 	}
 
 	private void bombardEnemyShip(Player player) {

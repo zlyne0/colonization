@@ -106,15 +106,15 @@ class TileDrawModelInitializer {
 		tileDrawModel = mapDrawModel.getTileDrawModel(x, y);
 		tileDrawModel.resetUnexploredBorders();
 		tileDrawModel.setTileVisibility(
-			player.isTileExplored(x, y),
-			player.fogOfWar.hasFogOfWar(x, y)
+			player.getPlayerExploredTiles().isTileExplored(x, y),
+			player.getPlayerExploredTiles().hasFogOfWar(x, y, game.getTurn())
 		);
 		for (Direction direction : Direction.values()) {
 			borderTile = map.getTile(x, y, direction);
 			if (borderTile == null) {
 				continue;
 			}
-			if (!player.isTileExplored(borderTile.x, borderTile.y)) {
+			if (!player.getPlayerExploredTiles().isTileExplored(borderTile.x, borderTile.y)) {
 				frame = gameResources.unexploredBorder(direction, x, y);
 				tileDrawModel.addUnexploredBorders(frame);
 			}

@@ -25,7 +25,12 @@ public class CachedTile {
 		public static final String ELEMENT_CACHED_TILE = "cachedTile";
 
 		private CachedTile cachedTileObject; 
-		
+		private final byte defaultRangedTurn;
+
+		public Xml() {
+			defaultRangedTurn = PlayerExploredTiles.ranged(game.getTurn().getNumber());
+		}
+
 		@Override
 		public void startElement(XmlNodeAttributes attr) {
 			if (cachedTileObject == null) {
@@ -33,7 +38,7 @@ public class CachedTile {
 			}
 			String playerId = attr.getStrAttribute(ATTR_PLAYER);
 			cachedTileObject.playerExploredTiles = game.players.getById(playerId).getPlayerExploredTiles();
-			cachedTileObject.turn = attr.getByteAttribute(ATTR_TURN, PlayerExploredTiles.FIRST);
+			cachedTileObject.turn = attr.getByteAttribute(ATTR_TURN, defaultRangedTurn);
 
 			nodeObject = cachedTileObject;
 		}

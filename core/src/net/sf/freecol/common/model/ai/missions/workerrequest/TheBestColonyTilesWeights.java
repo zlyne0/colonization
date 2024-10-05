@@ -12,6 +12,7 @@ import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.ai.MapTileDebugInfo;
 import net.sf.freecol.common.model.ai.missions.workerrequest.TilePlayer.NoClaimReason;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerExploredTiles;
 import net.sf.freecol.common.model.player.Stance;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
@@ -290,17 +291,18 @@ class TheBestColonyTilesWeights {
 	
 	public void generateWeights(Player player, Set<TileSelection> tileFilter) {
 		init(player);
-		
+		PlayerExploredTiles playerExploredTiles = player.getPlayerExploredTiles();
+
         boolean withoutUnexplored = tileFilter.contains(TileSelection.WITHOUT_UNEXPLORED);
         boolean onlySeaside = tileFilter.contains(TileSelection.ONLY_SEASIDE);
         int x, y;
         for (y=0; y<map.height; y++) {
             for (x=0; x<map.width; x++) {
                 Tile tile = map.getSafeTile(x, y);
-                if (tile.getType().isWater() || tile.hasLostCityRumour()) {
+				if (tile.getType().isWater() || tile.hasLostCityRumour()) {
                 	continue;
                 }
-                if (withoutUnexplored && player.isTileUnExplored(tile)) {
+				if (withoutUnexplored && playerExploredTiles.isTileUnExplored(x, y)) {
                     continue;
                 }
                 if (onlySeaside && !tile.isOnSeaSide()) {

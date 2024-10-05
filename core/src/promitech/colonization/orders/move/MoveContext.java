@@ -59,10 +59,6 @@ public class MoveContext {
 	public boolean isAi() {
 		return unit.getOwner().isAi();
 	}
-	
-	public boolean isHuman() {
-		return unit.getOwner().isHuman();
-	}
 
 	public void init(Tile sourceTile, Tile destTile, Unit unit) {
 		init(sourceTile, destTile, unit, Direction.fromCoordinates(sourceTile.x, sourceTile.y, destTile.x, destTile.y));

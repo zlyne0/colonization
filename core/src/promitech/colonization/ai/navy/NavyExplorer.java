@@ -109,7 +109,7 @@ public class NavyExplorer {
     }
     
     private boolean isTileUnexplored(int x, int y) {
-        return !player.isTileExplored(x, y);
+        return !player.getPlayerExploredTiles().isTileExplored(x, y);
     }
     
     public void generateExploreDestination(PathFinder pathFinder, Player player) {
@@ -117,7 +117,7 @@ public class NavyExplorer {
         for (int y=0; y<map.height; y++) {
             for (int x=0; x<map.width; x++) {
                 Tile t = map.getSafeTile(x, y);
-                if (player.isTileExplored(x, y)) {
+                if (player.getPlayerExploredTiles().isTileExplored(x, y)) {
                     if (t.getType().isHighSea()) {
                         highseaAddSource(t.x, t.y);
                     }

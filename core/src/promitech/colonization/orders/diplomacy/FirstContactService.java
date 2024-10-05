@@ -15,9 +15,10 @@ import net.sf.freecol.common.model.player.Tension;
 import net.sf.freecol.common.model.specification.Ability;
 import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.UnitTypeChange.ChangeType;
+import net.sf.freecol.common.util.Predicate;
+
 import promitech.colonization.Direction;
 import promitech.colonization.Randomizer;
-import promitech.colonization.SpiralIterator;
 import promitech.colonization.screen.map.hud.GUIGameModel;
 import promitech.colonization.ui.resources.StringTemplate;
 
@@ -117,20 +118,13 @@ public class FirstContactService {
 	}
 	
 	private void revealMap(Map map, Player player, Tile source, int radius) {
-		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
-		spiralIterator.reset(source.x, source.y, true, radius);
-		
-		int coordsIndex = 0;
-		while (spiralIterator.hasNext()) {
-			coordsIndex = spiralIterator.getCoordsIndex();
-			Tile tile = map.getSafeTile(spiralIterator.getX(), spiralIterator.getY());
-			spiralIterator.next();
-			
-			if (tile.getType().isLand() || tile.isNextToLand() || tile.isOnSeaSide()) {
-				player.getPlayerExploredTiles().setTileAsExplored(coordsIndex, guiGameModel.game.getTurn());
-				player.fogOfWar.removeFogOfWar(coordsIndex);
+		Predicate<Tile> tileTypesToReveal = new Predicate<Tile>() {
+			@Override
+			public boolean test(Tile tile) {
+				return tile.getType().isLand() || tile.isNextToLand() || tile.isOnSeaSide();
 			}
-		}
+		};
+		player.getPlayerExploredTiles().revealMap(map, source, radius, guiGameModel.game.getTurn(), tileTypesToReveal);
 	}
 	
 	int demandTributeFromIndian(Game game, IndianSettlement is, Unit unit) {
@@ -183,7 +177,7 @@ public class FirstContactService {
 			missionary.getOwner().removeUnit(missionary);
 			break;
 		default:
-			is.changeMissionary(missionary);
+			is.changeMissionary(missionary, guiGameModel.game.getTurn());
 		}
 	}
 	

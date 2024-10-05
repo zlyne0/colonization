@@ -15,6 +15,8 @@ import net.sf.freecol.common.model.UnitType;
 import net.sf.freecol.common.model.map.LostCityRumour;
 import net.sf.freecol.common.model.player.MoveExploredTiles;
 import net.sf.freecol.common.model.player.Player;
+import net.sf.freecol.common.model.player.PlayerExploredTiles;
+
 import promitech.colonization.orders.LostCityRumourService;
 import promitech.colonization.orders.combat.CombatController;
 import promitech.colonization.orders.combat.CombatService;
@@ -140,14 +142,13 @@ public class MoveService {
         moveContext.handleMove();
         if (moveContext.isMoveTypeRevealMap()) {
         	exploredTiles.clear();
-            moveContext.unit.getOwner().revealMapAfterUnitMove(
-        		guiGameModel.game.map, 
-        		moveContext.unit, 
+            moveContext.unit.getOwner().getPlayerExploredTiles().revealMap(
+        		moveContext.unit,
         		exploredTiles,
                 guiGameModel.game.getTurn()
     		);
         }
-        if (exploredTiles.isExploredNewTiles() && moveContext.isHuman()) {
+        if (exploredTiles.isExploredNewTiles() && moveContext.unit.getOwner().equalsId(guiGameModel.game.playingPlayer)) {
             guiGameController.resetUnexploredBorders(exploredTiles);
             exploredTiles.clear();
             
@@ -341,10 +342,11 @@ public class MoveService {
             moveController.blockedShowSuccessfulAttackWithMove(moveContext, loser);
         }
     }
-    
+
     private boolean showMoveOnPlayerScreen(Tile sourceTile, Tile destTile) {
-        return !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(sourceTile)
-                || !guiGameModel.game.playingPlayer.fogOfWar.hasFogOfWar(destTile);
+        PlayerExploredTiles playerExploredTiles = guiGameModel.game.playingPlayer.getPlayerExploredTiles();
+        return !playerExploredTiles.hasFogOfWar(sourceTile, guiGameModel.game.getTurn())
+            || !playerExploredTiles.hasFogOfWar(destTile, guiGameModel.game.getTurn());
     }
 
     public boolean disembarkUnits(Unit carrier, List<Unit> units, Tile sourceTile, Tile destTile) {

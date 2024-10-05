@@ -1,19 +1,146 @@
 package net.sf.freecol.common.model.player
 
+import net.sf.freecol.common.model.Game
+import net.sf.freecol.common.model.Map
 import net.sf.freecol.common.model.Tile
 import net.sf.freecol.common.model.Turn
+import net.sf.freecol.common.model.Unit
+import net.sf.freecol.common.util.Predicate
+import net.sf.freecol.common.util.whenNotNull
+import promitech.colonization.SpiralIterator
 import promitech.map.Byte2dArray
 
 class PlayerExploredTiles(width: Int, height: Int, turn: Turn) {
 
     private val tiles = Byte2dArray(width, height)
+    private val spiralIterator = SpiralIterator(width, height)
     private var lastRollTurnNumber = (turn.number / TURNS_RANGE) * TURNS_RANGE
+
+    fun resetFogOfWar(game: Game, player: Player, turn: Turn) {
+        roll(turn.number)
+        val rangedTurnValue = ranged(turn.number)
+
+        resetFogOfWarForUnits(player, rangedTurnValue)
+        resetFogOfWarForSettlements(player, rangedTurnValue)
+        resetFogOfWarForMissionary(player, game, rangedTurnValue)
+    }
+
+    private fun resetFogOfWarForUnits(player: Player, rangedTurnValue: Byte) {
+        for (unit in player.units) {
+            unit.tileLocationOrNull.whenNotNull { unitTile ->
+                val radius = unit.lineOfSight()
+                resetFogOfWarForNeighboursTiles(unitTile, radius, rangedTurnValue)
+            }
+        }
+    }
+
+    private fun resetFogOfWarForSettlements(player: Player, rangedTurnValue: Byte) {
+        for (settlement in player.settlements) {
+            val visibleRadius = settlement.settlementType.visibleRadius
+            resetFogOfWarForNeighboursTiles(settlement.tile, visibleRadius, rangedTurnValue)
+        }
+    }
+
+    private fun resetFogOfWarForMissionary(player: Player, game: Game, rangedTurnValue: Byte) {
+        if (player.isEuropean) {
+            for (indianPlayer in game.players) {
+                if (indianPlayer.isIndian) {
+                    for (settlement in indianPlayer.settlements.entities()) {
+                        val indianSettlement = settlement.asIndianSettlement()
+                        if (indianSettlement.hasMissionary(player)) {
+                            val radius = indianSettlement.missionary.lineOfSight(indianSettlement.settlementType)
+                            resetFogOfWarForNeighboursTiles(indianSettlement.tile, radius, rangedTurnValue)
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    fun resetForOfWar(tile: Tile, radius: Int, turn: Turn) {
+        roll(turn.number)
+        val rangedTurnValue = ranged(turn.number)
+        resetFogOfWarForNeighboursTiles(tile, radius, rangedTurnValue)
+    }
+
+    private fun resetFogOfWarForNeighboursTiles(tile: Tile, radius: Int, rangedTurnValue: Byte) {
+        tiles.set(tile.x, tile.y, rangedTurnValue)
+        spiralIterator.reset(tile.x, tile.y, true, radius)
+        var coordsIndex: Int
+        while (spiralIterator.hasNext()) {
+            coordsIndex = spiralIterator.coordsIndex
+            if (isTileExplored(coordsIndex)) {
+                tiles.set(coordsIndex, rangedTurnValue)
+            }
+            spiralIterator.next()
+        }
+    }
+
+    fun revealMap(map: Map, source: Tile, radius: Int, turn: Turn, tileFilter: Predicate<Tile>) {
+        roll(turn.number)
+        val rangedTurnValue = ranged(turn.number)
+
+        spiralIterator.reset(source.x, source.y, true, radius)
+        while (spiralIterator.hasNext()) {
+            val tile = map.getSafeTile(spiralIterator.x, spiralIterator.y)
+            if (tileFilter.test(tile)) {
+                tiles.set(spiralIterator.coordsIndex, rangedTurnValue)
+            }
+            spiralIterator.next()
+        }
+    }
+
+    fun revealMap(source: Tile, radius: Int, turn: Turn) {
+        roll(turn.number)
+        val rangedTurnValue = ranged(turn.number)
+
+        spiralIterator.reset(source.x, source.y, true, radius)
+        while (spiralIterator.hasNext()) {
+            tiles.set(spiralIterator.coordsIndex, rangedTurnValue)
+            spiralIterator.next()
+        }
+    }
+
+    /**
+     * Method populate [MoveExploredTiles] `exploredTiles` with explored tiles
+     */
+    fun revealMap(unit: Unit, exploredTiles: MoveExploredTiles, turn: Turn) {
+        val unitTileLocation = unit.tile
+
+        roll(turn.number)
+        val rangedTurnValue = ranged(turn.number)
+        tiles.set(unitTileLocation.x, unitTileLocation.y, rangedTurnValue)
+
+        val radius = unit.lineOfSight()
+        spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius)
+        while (spiralIterator.hasNext()) {
+            val coordsIndex = spiralIterator.coordsIndex
+
+            val currentVal = tiles.get(coordsIndex)
+            if (currentVal == UNEXPLORED) {
+                exploredTiles.addExploredTile(spiralIterator.x, spiralIterator.y)
+                exploredTiles.addRemoveFogOfWar(spiralIterator.x, spiralIterator.y)
+            } else {
+                exploredTiles.addRemoveFogOfWar(spiralIterator.x, spiralIterator.y)
+            }
+            tiles.set(coordsIndex, rangedTurnValue)
+            spiralIterator.next()
+        }
+    }
+
+    fun hasFogOfWar(tile: Tile, actualTurn: Turn): Boolean {
+        return tiles.get(tile.x, tile.y) < ranged(actualTurn.number)
+    }
+
+    fun hasFogOfWar(x: Int, y: Int, actualTurn: Turn): Boolean {
+        return tiles.get(x, y) < ranged(actualTurn.number)
+    }
 
     fun exploredTurn(x: Int, y: Int): Byte {
         return tiles.get(x, y)
     }
 
-    fun isTileExplored(coordsIndex: Int): Boolean {
+    private fun isTileExplored(coordsIndex: Int): Boolean {
         return tiles.get(coordsIndex) != UNEXPLORED
     }
 
@@ -33,26 +160,6 @@ class PlayerExploredTiles(width: Int, height: Int, turn: Turn) {
         tiles.set(x, y, turn)
     }
 
-    /**
-     * return boolean true when explore tile
-     */
-    fun setAndReturnDifference(coordsIndex: Int, turn: Turn): Boolean {
-        roll(turn.number)
-        val c = tiles.get(coordsIndex) == UNEXPLORED
-        tiles.set(coordsIndex, ranged(turn.number))
-        return c
-    }
-
-    fun setTileAsExplored(tile: Tile, turn: Turn) {
-        roll(turn.number)
-        tiles.set(tile.x, tile.y, ranged(turn.number))
-    }
-
-    fun setTileAsExplored(coordsIndex: Int, turn: Turn) {
-        roll(turn.number)
-        tiles.set(coordsIndex, ranged(turn.number))
-    }
-
     fun setTileAsExplored(x: Int, y: Int, turn: Turn) {
         roll(turn.number)
         tiles.set(x, y, ranged(turn.number))
@@ -61,10 +168,6 @@ class PlayerExploredTiles(width: Int, height: Int, turn: Turn) {
     fun exploreAllTiles(turn: Turn) {
         roll(turn.number)
         tiles.set(ranged(turn.number))
-    }
-
-    private fun ranged(turnNumber: Int): Byte {
-        return ((turnNumber % TURNS_RANGE) + TURN_PREFIX).toByte()
     }
 
     private fun roll(turnNumber: Int) {
@@ -92,10 +195,14 @@ class PlayerExploredTiles(width: Int, height: Int, turn: Turn) {
     companion object {
         @JvmField
         val UNEXPLORED: Byte = 0
-        @JvmField
         val FIRST: Byte = 1
         val TURNS_RANGE: Byte = 30
         val TURN_PREFIX: Byte = 90
+
+        @JvmStatic
+        fun ranged(turnNumber: Int): Byte {
+            return ((turnNumber % TURNS_RANGE) + TURN_PREFIX).toByte()
+        }
     }
 
 }

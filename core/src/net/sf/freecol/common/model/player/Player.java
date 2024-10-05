@@ -1,15 +1,5 @@
 package net.sf.freecol.common.model.player;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Map.Entry;
-import java.util.Set;
-
-import org.xml.sax.SAXException;
-
 import com.badlogic.gdx.math.GridPoint2;
 
 import net.sf.freecol.common.model.Colony;
@@ -25,7 +15,6 @@ import net.sf.freecol.common.model.ObjectWithId;
 import net.sf.freecol.common.model.ProductionSummary;
 import net.sf.freecol.common.model.Settlement;
 import net.sf.freecol.common.model.Specification;
-import net.sf.freecol.common.model.Tile;
 import net.sf.freecol.common.model.TradeRouteDefinition;
 import net.sf.freecol.common.model.Turn;
 import net.sf.freecol.common.model.Unit;
@@ -35,7 +24,17 @@ import net.sf.freecol.common.model.specification.GameOptions;
 import net.sf.freecol.common.model.specification.GoodsType;
 import net.sf.freecol.common.model.specification.Modifier;
 import net.sf.freecol.common.model.specification.NationType;
-import promitech.colonization.SpiralIterator;
+
+import org.xml.sax.SAXException;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map.Entry;
+import java.util.Set;
+
 import promitech.colonization.savegame.XmlNodeAttributes;
 import promitech.colonization.savegame.XmlNodeAttributesWriter;
 import promitech.colonization.savegame.XmlNodeParser;
@@ -87,7 +86,6 @@ public class Player extends ObjectWithId {
     
     public EventsNotifications eventsNotifications = new EventsNotifications();
     
-    public final PlayerForOfWar fogOfWar = new PlayerForOfWar(); 
     private PlayerExploredTiles playerExploredTiles;
 
     private final java.util.Map<String, Stance> stance = new HashMap<String, Stance>();
@@ -359,14 +357,6 @@ public class Player extends ObjectWithId {
         return (europe == null) ? null : nation.getId() + ".europe";
     }
 	
-	public boolean isTileUnExplored(Tile tile) {
-		return playerExploredTiles.isTileUnExplored(tile.x, tile.y);
-	}
-	
-	public boolean isTileExplored(int x, int y) {
-		return playerExploredTiles.isTileExplored(x, y);
-	}
-	
 	public void initExploredMap(Map map, Turn turn) {
 		playerExploredTiles = new PlayerExploredTiles(map.width, map.height, turn);
 	}
@@ -375,44 +365,12 @@ public class Player extends ObjectWithId {
 		return playerExploredTiles;
 	}
 
-	/**
-	 * Method populate {@link MoveExploredTiles} <code>exploredTiles</code> with explored
-	 * tiles
-	 */
-	public void revealMapAfterUnitMove(Map map, Unit unit, MoveExploredTiles exploredTiles, Turn turn) {
-		Tile unitTileLocation = unit.getTile();
-
-		playerExploredTiles.setTileAsExplored(unitTileLocation, turn);
-		fogOfWar.removeFogOfWar(unitTileLocation);
-		
-		int radius = unit.lineOfSight();
-		SpiralIterator spiralIterator = new SpiralIterator(map.width, map.height);
-		spiralIterator.reset(unitTileLocation.x, unitTileLocation.y, true, radius);
-		
-		while (spiralIterator.hasNext()) {
-			int coordsIndex = spiralIterator.getCoordsIndex();
-			
-			if (playerExploredTiles.setAndReturnDifference(coordsIndex, turn)) {
-				exploredTiles.addExploredTile(spiralIterator.getX(), spiralIterator.getY());
-			}
-			if (fogOfWar.removeFogOfWar(coordsIndex)) {
-				exploredTiles.addRemoveFogOfWar(spiralIterator.getX(), spiralIterator.getY());
-			}
-			
-			spiralIterator.next();
-		}
-	}
-
 	public void revealMapSeeColony(Map map, Colony colony, Turn turn) {
 		int radius = (int)getFeatures().applyModifier(
 			Modifier.LINE_OF_SIGHT_BONUS, 
 			colony.settlementType.getVisibleRadius()
 		);
-
-		playerExploredTiles.setTileAsExplored(colony.tile, turn);
-		for (Tile t : map.neighbourTiles(colony.tile, radius)) {
-			playerExploredTiles.setTileAsExplored(t, turn);
-		}
+		playerExploredTiles.revealMap(colony.tile, radius, turn);
 	}
 	
     public Europe getEurope() {
