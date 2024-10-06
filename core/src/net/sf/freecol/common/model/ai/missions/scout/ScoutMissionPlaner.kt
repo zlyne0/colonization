@@ -136,7 +136,7 @@ class ScoutMissionPlaner(
         for (y in 0 .. game.map.height-1) {
             for (x in 0 .. game.map.width-1) {
                 val tile = game.map.getSafeTile(x, y)
-                if (isScoutDestinationCandidate(tile)) {
+                if (isScoutDestinationCandidate(tile, player)) {
                     if (playerAiContainer.isScoutTileBlocked(tile)) {
                         continue
                     }
@@ -146,9 +146,9 @@ class ScoutMissionPlaner(
         }
     }
 
-    private fun isScoutDestinationCandidate(tile: Tile): Boolean {
+    private fun isScoutDestinationCandidate(tile: Tile, player: Player): Boolean {
         return tile.hasLostCityRumour()
-            || tile.hasSettlement() && tile.settlement.isIndianSettlement && !tile.settlement.asIndianSettlement().isScouted
+            || tile.hasSettlement() && tile.settlement.isIndianSettlement && !tile.settlement.asIndianSettlement().isVisitedBy(player)
     }
 
     fun printAllCandidates(player: Player, tileDebugView: TileDebugView) {

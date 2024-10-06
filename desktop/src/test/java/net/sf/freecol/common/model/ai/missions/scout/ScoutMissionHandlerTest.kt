@@ -26,6 +26,9 @@ internal class ScoutMissionHandlerTest : MissionHandlerBaseTestClass() {
     @Test
     fun should_find_scout_destination() {
         // given
+        val villageLocation = game.map.getTile(25, 71)
+        villageLocation.settlement.asIndianSettlement().resetContact()
+
         val pathFinder = PathFinder()
         val pathFinder2 = PathFinder()
         val scoutMissionPlaner = ScoutMissionPlaner(game, pathFinder, pathFinder2)
@@ -37,7 +40,6 @@ internal class ScoutMissionHandlerTest : MissionHandlerBaseTestClass() {
         val scoutDestination = scoutMissionPlaner.findScoutDestination(scout)
 
         // then
-        val villageLocation = game.map.getTile(25, 71)
 
         assertThat(scoutDestination is ScoutDestination.OtherIsland).isTrue
         if (scoutDestination is ScoutDestination.OtherIsland) {
@@ -51,7 +53,7 @@ internal class ScoutMissionHandlerTest : MissionHandlerBaseTestClass() {
         val missionContainer = game.aiContainer.missionContainer(dutch)
 
         val villageLocation = game.map.getTile(25, 71)
-        assertThat(villageLocation.settlement).isNotScouted()
+        villageLocation.settlement.asIndianSettlement().resetContact()
 
         val scoutLocation = game.map.getTile(25, 86)
         val scout = UnitFactory.create(UnitType.SCOUT, UnitRole.SCOUT, dutch, scoutLocation)

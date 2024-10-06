@@ -99,9 +99,9 @@ public class IndianSettlementAssert extends AbstractAssert<IndianSettlementAsser
 		return this;
 	}
 
-	public IndianSettlementAssert isNotScouted() {
-		if (actual.isScouted()) {
-			failWithMessage("expected indian settlement <%s> is not scouted", actual.getId());
+	public IndianSettlementAssert isNotVisited(Player player) {
+		if (actual.isVisitedBy(player)) {
+			failWithMessage("expected indian settlement <%s> is not visited", actual.getId());
 		}
 		return this;
 	}
