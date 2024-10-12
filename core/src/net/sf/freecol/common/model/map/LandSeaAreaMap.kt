@@ -62,4 +62,8 @@ class LandSeaAreaMap(private val width: Int, private val height: Int) {
     fun isTheSameArea(tile1: Tile, tile2: Tile): Boolean {
         return areas.get(tile1.x, tile1.y) == areas.get(tile2.x, tile2.y)
     }
+
+    fun areaId(x: Int, y: Int): Int {
+        return areas.get(x, y)
+    }
 }

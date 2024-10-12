@@ -86,7 +86,7 @@ public class MissionExecutor implements Disposable {
     		game, pathFinder
 		);
         ScoutMissionHandler scoutMissionHandler = new ScoutMissionHandler(
-            game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService
+            game, new ScoutMissionPlaner(game, pathFinder, pathFinder2), moveService, pathFinder
         );
         PioneerMissionHandler pioneerMissionHandler = new PioneerMissionHandler(
             game, new PioneerMissionPlaner(game, pathFinder), moveService, pathFinder

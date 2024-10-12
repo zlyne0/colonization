@@ -262,6 +262,14 @@ public class Map extends ObjectWithId {
     	return areas.isTheSameArea(tile1, tile2);
 	}
 
+	public int areaId(int x, int y) {
+		if (areas == null) {
+			areas = new LandSeaAreaMap(this.width, this.height);
+			areas.generate(this);
+		}
+		return areas.areaId(x, y);
+	}
+
 	public static class Xml extends XmlNodeParser<Map> {
 		
 		private static final String ATTR_HEIGHT = "height";

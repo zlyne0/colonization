@@ -198,11 +198,15 @@ class PlayerExploredTiles(width: Int, height: Int, turn: Turn) {
         val FIRST: Byte = 1
         val TURNS_RANGE: Byte = 30
         val TURN_PREFIX: Byte = 90
+        val RECENTLY_EXPLORED: Byte = Byte.MAX_VALUE
 
         @JvmStatic
         fun ranged(turnNumber: Int): Byte {
             return ((turnNumber % TURNS_RANGE) + TURN_PREFIX).toByte()
         }
+
+        @JvmStatic
+        fun isExplored(b: Byte): Boolean = b != UNEXPLORED
     }
 
 }

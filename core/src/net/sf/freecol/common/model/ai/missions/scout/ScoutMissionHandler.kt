@@ -7,8 +7,10 @@ import net.sf.freecol.common.model.ai.missions.PlayerMissionsContainer
 import net.sf.freecol.common.model.ai.missions.TransportUnitMission
 import net.sf.freecol.common.model.ai.missions.findFirstMissionKt
 import net.sf.freecol.common.model.ai.missions.hasMission
+import net.sf.freecol.common.model.ai.missions.scout.PatrolPlaner.PatrolDestinationPolicy.TheSameIsland
 import net.sf.freecol.common.model.ai.missions.transportunit.TransportUnitRequestMission
 import net.sf.freecol.common.model.map.path.Path
+import net.sf.freecol.common.model.map.path.PathFinder
 import promitech.colonization.ai.CommonMissionHandler.isUnitExists
 import promitech.colonization.ai.MissionHandler
 import promitech.colonization.ai.MissionHandlerLogger
@@ -19,7 +21,8 @@ import promitech.colonization.orders.move.MoveService
 class ScoutMissionHandler(
     private val game: Game,
     private val scoutMissionPlaner: ScoutMissionPlaner,
-    private val moveService: MoveService
+    private val moveService: MoveService,
+    private val pathFinder: PathFinder
 ): MissionHandler<ScoutMission>, TransportUnitNoDisembarkAccessNotification {
 
     override fun handle(playerMissionsContainer: PlayerMissionsContainer, mission: ScoutMission) {
@@ -75,7 +78,7 @@ class ScoutMissionHandler(
             is ScoutDestination.TheSameIsland -> moveToDestination(scoutDestination.path, scout)
             is ScoutDestination.OtherIsland -> moveToOtherIsland(playerMissionsContainer, scoutDestination, mission, scout)
             is ScoutDestination.OtherIslandFromCarrier -> moveToOtherIslandFromCarrier(playerMissionsContainer, mission, scout, scoutDestination)
-            is ScoutDestination.Lack -> doNothing(mission)
+            is ScoutDestination.Lack -> patrol(playerMissionsContainer, mission, scout)
         }
     }
 
@@ -135,9 +138,27 @@ class ScoutMissionHandler(
         }
     }
 
-    private fun doNothing(mission: ScoutMission) {
-        mission.setDoNothing()
-        mission.setDone()
-        // ColonyWorkerRequestPlaner should gather unit and find work
+    private fun patrol(
+        playerMissionsContainer: PlayerMissionsContainer,
+        mission: ScoutMission,
+        scout: Unit
+    ) {
+        if (scout.isAtUnitLocation || scout.isAtEuropeLocation) {
+            val patrolPlaner = PatrolPlaner(game, scout.owner)
+            val patrolDestination = patrolPlaner.findPatrolDestination()
+            if (patrolDestination is PatrolPlaner.PatrolDestination.OtherIsland) {
+                mission.waitForTransport(patrolDestination.tile)
+                playerMissionsContainer.addMission(mission, TransportUnitRequestMission(game.turn, scout, patrolDestination.tile))
+            }
+        }
+        if (scout.isAtTileLocation) {
+            val patrolPlaner = PatrolPlaner(game, scout.owner)
+            val patrolDestination = patrolPlaner.findPatrolDestination(scout.tile, TheSameIsland)
+
+            if (patrolDestination is PatrolPlaner.PatrolDestination.TheSameIsland) {
+                val path = pathFinder.findToTile(game.map, scout, patrolDestination.tile, PathFinder.includeUnexploredTiles)
+                moveToDestination(path, scout)
+            }
+        }
     }
 }
