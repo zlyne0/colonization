@@ -86,6 +86,7 @@ public class MapViewApplicationScreen extends ApplicationScreen {
     @Override
     public void onLeave() {
     	Gdx.input.setInputProcessor(null);
+        guiGameController.updateGamePlayerCenterPosition();
     	super.onLeave();
     }
     

@@ -120,10 +120,6 @@ public class GUIGameController {
 		}
 	}
 
-	public void centerMapOnEntryPoint() {
-		mapActor.centerCameraOnTile(guiGameModel.game.playingPlayer.getEntryLocation());
-	}
-	
 	public void nextActiveUnitAsGdxPostRunnable() {
         Gdx.app.postRunnable(new Runnable() {
             @Override
@@ -345,7 +341,8 @@ public class GUIGameController {
 
 	public void endTurn(EndOfTurnPhaseListener endOfTurnPhaseListener) {
 		blockUserInteraction = true;
-		
+
+		updateGamePlayerCenterPosition();
 		SaveGameList saveGameList = new SaveGameList();
 		saveGameList.saveAsAutosave(guiGameModel.game);
 		
@@ -487,6 +484,11 @@ public class GUIGameController {
 		Notification firstNotification = guiGameModel.game.playingPlayer.eventsNotifications.firstNotification();
 		guiGameModel.runListeners();
 		return firstNotification;
+	}
+
+	public void updateGamePlayerCenterPosition() {
+		Point p = mapActor.getCenterOfScreen();
+		guiGameModel.game.getPlayerCenterScreen().set(p.x, p.y);
 	}
 
 	public void resetMapModelOnTile(Tile tile) {

@@ -27,14 +27,14 @@ public class MapActor extends Widget implements Map {
 	private final MapDrawModel mapDrawModel = new MapDrawModel();
 	private final MapRenderer mapRenderer;
 	private final TileDrawModelInitializer initializer;
-	private final GridPoint2 mapCenteredToCords = new GridPoint2();
+	private final GridPoint2 tmpMapCenteredToCords = new GridPoint2();
 	private boolean mapCentered = true;
 	private boolean needResetMapModel = true;
 	private boolean needResetUnexploredBorders = false;
 	
     private final Array<UnitTileAnimation> unitAnimationsToStart = new Array<UnitTileAnimation>(2); 
 	
-	private ShapeRenderer shapeRenderer = new ShapeRenderer();
+	private final ShapeRenderer shapeRenderer = new ShapeRenderer();
 	
 	public MapActor(final GUIGameController gameController, GameResources gameResources, GUIGameModel guiGameModel) {
 		this.guiGameModel = guiGameModel;
@@ -123,6 +123,8 @@ public class MapActor extends Widget implements Map {
 	@Override
 	public void resetMapModel() {
 		needResetMapModel = true;
+		mapCentered = false;
+		tmpMapCenteredToCords.set(guiGameModel.game.getPlayerCenterScreen());
 		Gdx.graphics.requestRendering();
 	}
 	
@@ -147,7 +149,7 @@ public class MapActor extends Widget implements Map {
 		}
         if (!mapCentered) {
 			mapCentered = true;
-			mapRenderer.centerCameraOnTileCords(mapCenteredToCords.x, mapCenteredToCords.y);
+			mapRenderer.centerCameraOnTileCords(tmpMapCenteredToCords.x, tmpMapCenteredToCords.y);
 		}
         if (unitAnimationsToStart.size > 0) {
             for (int i = 0; i < unitAnimationsToStart.size; i++) {
@@ -167,13 +169,9 @@ public class MapActor extends Widget implements Map {
 
 	public void centerCameraOnTile(int x, int y) {
 		mapCentered = false;
-		mapCenteredToCords.set(x, y);
+		tmpMapCenteredToCords.set(x, y);
 	}
-	
-	public void centerCameraOnTile(GridPoint2 cords) {
-		centerCameraOnTile(cords.x, cords.y);
-	}
-	
+
 	public void centerCameraOnTile(Tile tile) {
 		centerCameraOnTile(tile.x, tile.y);
 	}

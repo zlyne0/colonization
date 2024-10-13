@@ -4,10 +4,8 @@ import com.badlogic.gdx.graphics.glutils.ShapeRenderer
 import com.badlogic.gdx.scenes.scene2d.Stage
 import com.badlogic.gdx.scenes.scene2d.ui.Label
 import com.badlogic.gdx.scenes.scene2d.ui.ScrollPane
-import com.badlogic.gdx.scenes.scene2d.ui.Skin
 import com.badlogic.gdx.scenes.scene2d.ui.TextButton
 import com.badlogic.gdx.utils.Align
-import promitech.colonization.GameResources
 import promitech.colonization.savegame.SaveGameList
 import promitech.colonization.screen.map.hud.GUIGameController
 import promitech.colonization.ui.ClosableDialog
@@ -111,7 +109,6 @@ class LoadGameDialog(
 				GameCreator(pathFinder, guiGameModel).load(gameNameLabel.text.toString())
 			}, {
 				guiGameController.resetMapModel()
-				guiGameController.centerMapOnEntryPoint()
 				guiGameController.showMapScreenAndActiveNextUnit()
 			}).show(this@LoadGameDialog.dialog.getStage())
 			

@@ -1,5 +1,7 @@
 package net.sf.freecol.common.model;
 
+import com.badlogic.gdx.math.GridPoint2;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -23,6 +25,7 @@ public class Game {
 	private Specification specification;
 	public Map map;
 	public Player playingPlayer;
+	private final GridPoint2 playerCenterScreen = new GridPoint2(-1, -1);
 	private String currentPlayerStr;
 	public final MapIdEntities<Player> players = MapIdEntities.linkedMapIdEntities();
 
@@ -67,13 +70,11 @@ public class Game {
     
 	private void setPlayingPlayer() {
 		this.playingPlayer = players.getById(currentPlayerStr);
+		if (playerCenterScreen.x == -1 && playerCenterScreen.y == -1) {
+			playerCenterScreen.set(playingPlayer.getEntryLocation());
+		}
 	}
 
-	public void setCurrentPlayer(Player player) {
-		this.playingPlayer = player;
-		this.currentPlayerStr = player.getId();
-	}
-	
 	public void setSpecification(Specification specification) {
 		this.specification = specification;
 	}
@@ -92,7 +93,11 @@ public class Game {
 			citiesOfCibola.add(LostCityRumour.CIBOLA_CITY_NAME_KEY_PREFIX + i);
 		}
 	}
-	
+
+	public GridPoint2 getPlayerCenterScreen() {
+		return playerCenterScreen;
+	}
+
 	public static class Xml extends XmlNodeParser<Game> {
 		private static final String UUID_ATTR = "uuid";
 		private static final String ELEMENT_CIBOLA = "cibola";
@@ -100,6 +105,7 @@ public class Game {
 		private static final String NEXT_ID_ATTR = "nextId";
 		private static final String TURN_ATTR = "turn";
 		private static final String ACTIVE_UNIT_ATTR = "activeUnit";
+		private static final String CURRENT_PLAYER_CENTER = "currentPlayerCenter";
 
 		public Xml() {
 			addNode(Specification.class, "specification");
@@ -117,7 +123,8 @@ public class Game {
 			game.activeUnitId = attr.getStrAttribute(ACTIVE_UNIT_ATTR);
 			game.turn = new Turn(attr.getIntAttribute(TURN_ATTR));
 			game.currentPlayerStr = attr.getStrAttribute(ATTR_CURRENT_PLAYER);
-			
+			game.playerCenterScreen.set(attr.getPoint(CURRENT_PLAYER_CENTER, -1, -1));
+
 			XmlNodeParser.game = game;
 			
 			nodeObject = game;
@@ -130,6 +137,7 @@ public class Game {
 			attr.set(TURN_ATTR, game.turn.getNumber());
 			attr.set(NEXT_ID_ATTR, Game.idGenerator.idSequence);
 			attr.set(ATTR_CURRENT_PLAYER, game.playingPlayer);
+			attr.setPoint(CURRENT_PLAYER_CENTER, game.playerCenterScreen);
 			
 			for (String cityOfCibola : game.citiesOfCibola) {
 				attr.xml.element(ELEMENT_CIBOLA);
