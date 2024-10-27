@@ -25,22 +25,18 @@ public class BuildColonyOrder {
 	
 	public OrderStatus check(Unit unit, Tile tile) {
 		if (!tile.getType().canSettle()) {
-			System.out.println("can not settle on tile type " + tile.getType());
 			return OrderStatus.INCORRECT_TILE;
 		}
 		if (map.isOnMapEdge(tile)) {
-			System.out.println("can not settle on map edge");
 			return OrderStatus.MAP_EDGE;
 		}
 		if (map.hasColonyInRange(tile, 1)) {
-			System.out.println("another colony in one tile range");
 			return OrderStatus.COLONY_IN_RANGE;
 		}
 		if (hasNoMovePoints(unit)) {
 			return OrderStatus.NO_MOVE_POINTS;
 		}
 		if (unitCanNotBuildColony(unit)) {
-			System.out.println("unit can not build colony");
 			return OrderStatus.UNIT_CAN_NOT_BUILD_COLONY;
 		}
 		return OrderStatus.OK;

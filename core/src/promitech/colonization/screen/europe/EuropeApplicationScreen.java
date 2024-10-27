@@ -77,7 +77,7 @@ public class EuropeApplicationScreen extends ApplicationScreen {
 		}
 		
 		private void createOrders(Unit unit, UnitActionOrdersDialog dialog) {
-			if (unit.isNaval()) {
+			if (unit.isNaval() && !unit.isDamaged()) {
 				dialog.addCommandItem(new UnitActionOrderItem("NewWorld", ActionTypes.SAIL_TO_NEW_WORLD));
 			}
 			if (unit.isPerson()) {

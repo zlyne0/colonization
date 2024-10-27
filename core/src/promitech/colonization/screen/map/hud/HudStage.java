@@ -28,6 +28,7 @@ import net.sf.freecol.common.model.specification.Ability;
 import promitech.colonization.DI;
 import promitech.colonization.Direction;
 import promitech.colonization.GameResources;
+import promitech.colonization.orders.BuildColonyOrder;
 import promitech.colonization.orders.move.MoveController;
 import promitech.colonization.screen.ApplicationScreenManager;
 import promitech.colonization.screen.ApplicationScreenType;
@@ -561,11 +562,15 @@ public class HudStage extends Stage {
 						if (unit.canChangeState(UnitState.FORTIFYING)) {
 							buttonsGroup.addActor(fortifyButton);
 						}
-						
-						buttonsGroup.addActor(buildColonyButton);
-						if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
-							buttonsGroup.addActor(plowButton);
-							buttonsGroup.addActor(roadButton);
+
+						if (unit.isAtTileLocation()) {
+							if (new BuildColonyOrder(model.game.map).check(unit, unit.getTile()) == BuildColonyOrder.OrderStatus.OK) {
+								buttonsGroup.addActor(buildColonyButton);
+							}
+							if (unit.hasAbility(Ability.IMPROVE_TERRAIN)) {
+								buttonsGroup.addActor(plowButton);
+								buttonsGroup.addActor(roadButton);
+							}
 						}
 					}
 					buttonsGroup.addActor(gotoLocationButton);
