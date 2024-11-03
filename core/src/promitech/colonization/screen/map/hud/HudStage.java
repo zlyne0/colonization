@@ -203,8 +203,13 @@ public class HudStage extends Stage {
     			return true;
     		}
     		
-    		if (keycode == Input.Keys.SPACE && unitWaitButton.getParent() != null) {
-    			gameController.skipUnit();
+    		if (keycode == Input.Keys.SPACE) {
+				if (unitWaitButton.getParent() != null) {
+					gameController.skipUnit();
+				} else if (endTurnButton.getParent() != null) {
+					HudStage.this.addActor(endOfTurnActor);
+					endOfTurnActor.start(gameController);
+				}
     		}
     		
     		if (keycode == Input.Keys.ESCAPE) {
