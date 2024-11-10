@@ -584,16 +584,19 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 	}
 
 	public void clearOrders() {
+		removeTradeRoute();
 		setState(UnitState.ACTIVE);
 		clearDestination();
 	}
 
 	public void sentry() {
+		removeTradeRoute();
 		setState(UnitState.SENTRY);
 		clearDestination();
 	}
 
 	public void activate() {
+		removeTradeRoute();
 		setState(UnitState.ACTIVE);
 		clearDestination();
 	}

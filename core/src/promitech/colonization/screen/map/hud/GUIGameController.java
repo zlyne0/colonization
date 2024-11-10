@@ -453,7 +453,7 @@ public class GUIGameController {
 	}
 
 	public void sentryUnit() {
-		guiGameModel.getActiveUnit().setState(UnitState.SENTRY);
+		guiGameModel.getActiveUnit().sentry();
 		logicNextActiveUnit();
 	}
 
