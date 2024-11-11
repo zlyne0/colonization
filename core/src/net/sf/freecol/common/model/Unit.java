@@ -178,6 +178,21 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
     	return isAtLocation(Colony.class);
 	}
 
+	public Colony getColonyLocation() {
+		if (location != null) {
+			if (location instanceof Colony) {
+				return (Colony) location;
+			}
+			if (location instanceof Tile) {
+				Tile tile = (Tile) location;
+				if (tile.hasSettlement()) {
+					return tile.getSettlement().asColony();
+				}
+			}
+		}
+		return null;
+	}
+
 	public boolean isAtLocation(Class<? extends UnitLocation> unitLocationClass) {
 	    return location != null && location.getClass().equals(unitLocationClass);
 	}
@@ -288,6 +303,10 @@ public class Unit extends ObjectWithId implements UnitLocation, ScopeAppliable {
 		return (int)lineOfSight;
 	}
 	
+	public void partlyRepair() {
+		hitPoints++;
+	}
+
     public boolean isDamaged() {
         return hitPoints < unitType.getHitPoints();
     }

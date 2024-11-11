@@ -15,6 +15,7 @@ import net.sf.freecol.common.model.TileResource;
 import net.sf.freecol.common.model.TileTypeTransformation;
 import net.sf.freecol.common.model.Unit;
 import net.sf.freecol.common.model.Unit.UnitState;
+import net.sf.freecol.common.model.UnitLabel;
 import net.sf.freecol.common.model.ai.PlayerAiContainer;
 import net.sf.freecol.common.model.player.HighSeas;
 import net.sf.freecol.common.model.player.MonarchLogic;
@@ -126,6 +127,33 @@ public class NewTurnService {
 		if (unit.isAtLocation(HighSeas.class)) {
 		    sailOnHighSeas(unit);
 		}
+		if (unit.isDamaged()) {
+			repairShip(unit);
+		}
+	}
+
+	private void repairShip(Unit unit) {
+		if (unit.isAtEuropeLocation()) {
+			unit.partlyRepair();
+			if (!unit.isDamaged()) {
+				addFinishRepairMessage(unit, StringTemplate.key(unit.getOwner().getEuropeNameKey()));
+			}
+		} else {
+			Colony colony = unit.getColonyLocation();
+			if (colony != null && colony.canRepairUnits()) {
+				unit.partlyRepair();
+				if (!unit.isDamaged()) {
+					addFinishRepairMessage(unit, StringTemplate.name(colony.getName()));
+				}
+			}
+		}
+	}
+
+	private void addFinishRepairMessage(Unit unit, StringTemplate repairLocationName) {
+		StringTemplate st = StringTemplate.template("model.unit.unitRepaired")
+				.addStringTemplate("%unit%", UnitLabel.getPlainUnitLabel(unit))
+				.addStringTemplate("%repairLocation%", repairLocationName);
+		unit.getOwner().eventsNotifications.addMessageNotification(st);
 	}
 
     private void wakeUpWhenSeeEnemy(Unit unit) {

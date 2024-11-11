@@ -406,8 +406,8 @@ public class UnitType extends BuildableType {
         	attr.set(ATTR_MAXIMUM_EXPERIENCE, ut.maximumExperience);
         	attr.set(ATTR_RECRUIT_PROBABILITY, ut.recruitProbability);
         	attr.set(ATTR_EXPERT_PRODUCTION, ut.expertProductionForGoodsId);
-        	attr.set(ATTR_SKILL, ut.skill);
-        	attr.set(ATTR_PRICE, ut.price);
+        	attr.set(ATTR_SKILL, ut.skill, Xml.UNDEFINED);
+        	attr.set(ATTR_PRICE, ut.price, Xml.UNDEFINED);
 
         	// "extends" (ATTR_EXTENDS) attribute there is only on reading in order to avoid save ObjectFeatures twice
         	// While saving ObjectFeatures it's difficulty to distinguish futures form parent and main object.
